@@ -101,3 +101,63 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Test the Taste of Gratitude e-commerce backend API with Stripe integration"
+
+backend:
+  - task: "Stripe Checkout API"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/checkout/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Initial testing - need to verify POST /api/checkout endpoint with valid/invalid products, multiple products, empty items array, and response structure"
+
+  - task: "Payment Status API"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/checkout/status/[sessionId]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Initial testing - need to verify GET /api/checkout/status/[sessionId] endpoint with valid/invalid session IDs and response structure"
+
+  - task: "Product Data Validation"
+    implemented: true
+    working: "NA"
+    file: "/app/lib/products.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Initial testing - need to verify all 4 products have correct prices in cents and proper catalog structure"
+
+frontend:
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Stripe Checkout API"
+    - "Payment Status API"
+    - "Product Data Validation"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "testing"
+      message: "Starting backend API testing for Taste of Gratitude e-commerce with Stripe integration. Will test checkout API, payment status API, and product data validation."
