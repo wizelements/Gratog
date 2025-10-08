@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { getOrders } from '@/lib/db-admin';
 import { createOrUpdateCustomer, updateCustomerStats } from '@/lib/db-customers';
 import { getDeliveryZoneByZip, calculateDeliveryFee } from '@/lib/delivery-zones';
-import { sendSMS } from '@/lib/sms-mock';
-import { sendEmail } from '@/lib/email-mock';
+import { sendSMS } from '@/lib/sms';
+import { sendEmail } from '@/lib/email';
 import { SMS_TEMPLATES, EMAIL_TEMPLATES } from '@/lib/message-templates';
 import { v4 as uuidv4 } from 'uuid';
 
