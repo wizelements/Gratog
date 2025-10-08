@@ -41,28 +41,29 @@ export default function HomePage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[600px] md:h-[700px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.unsplash.com/photo-1518495973542-4542c06a5843?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwyfHxob2xpc3RpYyUyMHdlbGxuZXNzfGVufDB8fHx8MTc1OTgwOTQzNXww&ixlib=rb-4.1.0&q=85"
             alt="Wellness background"
             fill
-            className="object-cover brightness-50"
+            className="object-cover"
             priority
           />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/60" />
         </div>
-        <div className="container relative z-10 text-center text-white">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
+        <div className="container relative z-10 text-center text-white px-4">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
             Nourish Your Wellness Journey
           </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl md:text-2xl mb-8 max-w-2xl mx-auto animate-slide-up">
             Premium sea moss gel infused with nature's finest ingredients
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-scale-in">
             <Button
               asChild
               size="lg"
-              className="bg-[#D4AF37] hover:bg-[#B8941F] text-white text-lg px-8"
+              className="bg-[#D4AF37] hover:bg-[#B8941F] text-white text-lg px-8 btn-shine shadow-xl hover:shadow-2xl transition-all"
             >
               <Link href="/catalog">
                 Shop Now <ArrowRight className="ml-2 h-5 w-5" />
@@ -72,10 +73,16 @@ export default function HomePage() {
               asChild
               size="lg"
               variant="outline"
-              className="bg-white/10 backdrop-blur-sm text-white border-white hover:bg-white/20 text-lg px-8"
+              className="bg-white/10 backdrop-blur-sm text-white border-white hover:bg-white/20 text-lg px-8 hover:border-[#D4AF37] transition-all"
             >
               <Link href="/about">Our Story</Link>
             </Button>
+          </div>
+        </div>
+        {/* Floating scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <div className="w-6 h-10 rounded-full border-2 border-white/50 flex items-start justify-center p-2">
+            <div className="w-1 h-2 bg-white/50 rounded-full" />
           </div>
         </div>
       </section>
