@@ -82,41 +82,67 @@ export default function ProductDetailPage() {
 
         {/* Product Details */}
         <div className="flex flex-col">
-          <div className="mb-6">
+          <div className="mb-6 animate-slide-up">
             {product.featured && (
-              <Badge className="mb-2 bg-[#D4AF37] hover:bg-[#B8941F]">Featured</Badge>
+              <Badge className="mb-2 bg-[#D4AF37] hover:bg-[#B8941F] shadow-md">
+                ⭐ Featured Product
+              </Badge>
             )}
-            <h1 className="text-4xl font-bold mb-2">{product.name}</h1>
-            <p className="text-xl text-muted-foreground mb-4">{product.subtitle}</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-bold text-[#D4AF37]">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-gradient-gold">
+              {product.name}
+            </h1>
+            <p className="text-lg sm:text-xl text-muted-foreground mb-4">
+              {product.subtitle}
+            </p>
+            <div className="flex items-baseline gap-3">
+              <span className="text-4xl sm:text-5xl font-bold text-[#D4AF37]">
                 ${(product.price / 100).toFixed(2)}
               </span>
-              <span className="text-muted-foreground">/ {product.size}</span>
+              <span className="text-lg text-muted-foreground">/ {product.size}</span>
+            </div>
+            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              In Stock
             </div>
           </div>
 
-          <Card className="p-6 mb-6">
-            <p className="text-lg mb-4">{product.description}</p>
+          <Card className="p-6 mb-6 border-2 hover:border-[#D4AF37]/30 transition-colors animate-scale-in">
+            <p className="text-base sm:text-lg leading-relaxed">{product.description}</p>
           </Card>
 
           {/* Benefits */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-3">Key Benefits</h3>
-            <div className="grid grid-cols-2 gap-2">
+          <div className="mb-6 animate-slide-up">
+            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#D4AF37] rounded" />
+              Key Benefits
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {product.benefits?.map((benefit, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#D4AF37]" />
-                  <span className="text-sm">{benefit}</span>
+                <div 
+                  key={index} 
+                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-[#D4AF37]/10 transition-colors"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#D4AF37]/20 flex items-center justify-center">
+                    <Check className="h-4 w-4 text-[#D4AF37]" />
+                  </div>
+                  <span className="text-sm font-medium">{benefit}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Ingredients */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-3">Ingredients</h3>
-            <p className="text-muted-foreground">{product.ingredients?.join(', ')}</p>
+          <div className="mb-6 animate-slide-up">
+            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#D4AF37] rounded" />
+              Ingredients
+            </h3>
+            <Card className="p-4 bg-muted/30">
+              <p className="text-muted-foreground leading-relaxed">
+                {product.ingredients?.join(' • ')}
+              </p>
+            </Card>
           </div>
 
           {/* Buy Button */}
@@ -124,11 +150,22 @@ export default function ProductDetailPage() {
             size="lg"
             onClick={handleBuyNow}
             disabled={isLoading}
-            className="w-full bg-[#D4AF37] hover:bg-[#B8941F] text-white text-lg"
+            className="w-full bg-[#D4AF37] hover:bg-[#B8941F] text-white text-lg py-6 btn-shine shadow-lg hover:shadow-xl transition-all"
           >
             <ShoppingCart className="mr-2 h-5 w-5" />
-            {isLoading ? 'Processing...' : 'Buy Now'}
+            {isLoading ? 'Processing...' : 'Add to Cart & Checkout'}
           </Button>
+          
+          <div className="mt-4 flex items-center justify-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Check className="h-4 w-4 text-green-500" />
+              <span>Secure Checkout</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Check className="h-4 w-4 text-green-500" />
+              <span>Fast Shipping</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
