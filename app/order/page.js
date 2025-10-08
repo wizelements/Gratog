@@ -96,45 +96,36 @@ export default function OrderPage() {
   const handleSubmitOrder = async () => {
     setIsSubmitting(true);
     try {
-      const orderData = {
+      const checkoutData = {
+        cart,
         customer: {
           ...customer,
           address: fulfillmentType === 'delivery' ? deliveryAddress : null
         },
-        items: cart.map(item => ({
-          productId: item.id,
-          productName: item.name,
-          quantity: item.quantity,
-          priceAtPurchase: item.price
-        })),
         fulfillmentType,
+        deliveryAddress: fulfillmentType === 'delivery' ? deliveryAddress : null,
         deliveryTimeSlot: fulfillmentType === 'delivery' ? deliveryTimeSlot : null,
-        deliveryInstructions: fulfillmentType === 'delivery' ? deliveryInstructions : null,
-        source: 'market_qr',
-        paymentMethod: 'cash' // Will integrate Stripe later
+        deliveryInstructions: fulfillmentType === 'delivery' ? deliveryInstructions : null
       };
 
-      const response = await fetch('/api/orders/create', {
+      const response = await fetch('/api/checkout/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
+        body: JSON.stringify(checkoutData)
       });
 
       const data = await response.json();
 
-      if (response.ok) {
-        toast.success(`Order ${data.orderNumber} created!`);
-        // Reset
-        setCart([]);
-        setStep(1);
-        setCustomer({ name: '', email: '', phone: '' });
+      if (response.ok && data.url) {
+        // Redirect to Stripe checkout
+        window.location.href = data.url;
       } else {
-        toast.error(data.error || 'Failed to create order');
+        toast.error(data.error || 'Failed to create checkout');
+        setIsSubmitting(false);
       }
     } catch (error) {
-      console.error('Order error:', error);
-      toast.error('Failed to create order');
-    } finally {
+      console.error('Checkout error:', error);
+      toast.error('Failed to create checkout');
       setIsSubmitting(false);
     }
   };
