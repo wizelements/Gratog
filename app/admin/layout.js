@@ -17,11 +17,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
+import { Users, Clock } from 'lucide-react';
+
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { name: 'Products', href: '/admin/products', icon: Package },
+  { name: 'Customers', href: '/admin/customers', icon: Users },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
+  { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Inventory', href: '/admin/inventory', icon: Warehouse },
+  { name: 'Waitlist', href: '/admin/waitlist', icon: Clock },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
