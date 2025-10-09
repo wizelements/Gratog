@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Get base URL from environment
-BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://gratitude-shop.preview.emergentagent.com')
+BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://taste-ecommerce.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 class TasteOfGratitudeAPITester:
