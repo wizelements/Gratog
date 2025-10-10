@@ -96,7 +96,7 @@ export async function POST(request) {
         sourceId,
         idempotencyKey: randomUUID(),
         amountMoney: {
-          amount: amountInCents,
+          amount: BigInt(amountInCents),
           currency
         },
         locationId: process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID,
