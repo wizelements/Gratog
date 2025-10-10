@@ -152,9 +152,9 @@ backend:
 
   - task: "Square Payment Integration API"
     implemented: true
-    working: true
+    working: false
     file: "/app/app/api/square-payment/route.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -167,6 +167,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ SQUARE PAYMENT JSON PARSING FIX VALIDATED: Comprehensive testing confirms JSON parsing errors are completely resolved. Fixed Square SDK imports (SquareClient, SquareEnvironment), corrected API method calls (client.payments.create), and implemented BigInt for amount values. ALL 8 JSON RESPONSE TESTS PASSED: Valid payment requests return proper JSON, missing field validation works with 400 status, invalid amount validation working, malformed JSON handling returns proper error responses, Square API errors return valid JSON format, GET method properly rejected with 405 JSON response, API stability confirmed with consistent JSON responses across multiple requests. No 'Unexpected end of JSON input' errors found. Authentication issue exists (401 Unauthorized) but this is expected with sandbox tokens and doesn't affect JSON response format. Core API functionality working correctly with proper error handling."
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL SQUARE API AUTHENTICATION FAILURE: Comprehensive testing reveals Square API returning 401 Unauthorized errors for all payment processing attempts. DETAILED FINDINGS: ✅ Input validation working (4/5 tests passed - missing sourceId, missing amount, invalid negative/string amounts properly rejected with 400 status). ✅ Error handling working (3/3 tests passed - all error scenarios return proper JSON responses). ✅ Order data structure handling working (complex order data with customer info, cart items, fulfillment details accepted). ✅ Notification data structure accepted. ❌ CRITICAL ISSUE: Square sandbox access token authentication failing with 401 'UNAUTHORIZED' error from connect.squareupsandbox.com. All payment processing attempts fail with 'Payment processing failed. Please try again.' Server logs show Square API rejecting requests with 'This request could not be authorized.' CAUSE: Square sandbox credentials (SQUARE_ACCESS_TOKEN) are invalid, expired, or lack proper permissions. IMPACT: No actual payments can be processed despite API structure being correct. REQUIRES: Square Developer Dashboard credential verification and access token renewal."
 
 frontend:
   - task: "Home Page UI and Navigation"
