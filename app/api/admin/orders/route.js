@@ -15,13 +15,16 @@ export async function GET(request) {
       );
     }
     
-    const orders = await getOrders();
-    const orderList = await orders.find({})
-      .sort({ createdAt: -1 })
-      .limit(100)
-      .toArray();
+    const result = await getOrders();
     
-    return NextResponse.json({ orders: orderList });
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error },
+        { status: 500 }
+      );
+    }
+    
+    return NextResponse.json({ orders: result.orders });
   } catch (error) {
     console.error('Get orders error:', error);
     return NextResponse.json(
