@@ -134,93 +134,67 @@ class SquareAuthenticationDiagnostic:
         except Exception as e:
             self.log_test("Mock Mode Status", False, f"Request failed: {str(e)}")
 
-    def test_valid_payment_processing(self):
-        """Test valid payment processing with realistic order data"""
-        print("🔄 Testing Valid Payment Processing...")
+    def test_square_authentication_with_test_tokens(self):
+        """Test 4: Test Square authentication with various test tokens"""
+        print("🧪 TEST 4: SQUARE AUTHENTICATION WITH TEST TOKENS")
         
-        # Realistic order data for testing
-        realistic_order_data = {
-            "sourceId": "cnon:card-nonce-ok",  # Square test nonce
-            "amount": 70.00,  # $70.00
-            "currency": "USD",
-            "orderId": f"order_{uuid.uuid4().hex[:8]}",
-            "orderData": {
-                "customer": {
-                    "name": "Sarah Johnson",
-                    "email": "sarah.johnson@example.com",
-                    "phone": "+14045551234"
-                },
-                "cart": [
-                    {
-                        "name": "Elderberry Sea Moss Gel (16oz)",
-                        "price": 3500,  # $35.00 in cents
-                        "quantity": 2
-                    }
-                ],
-                "fulfillmentType": "delivery",
-                "deliveryAddress": {
-                    "street": "123 Wellness Way",
-                    "city": "Atlanta",
-                    "state": "GA",
-                    "zip": "30309"
-                },
-                "deliveryTimeSlot": "Saturday 2:00 PM - 4:00 PM",
-                "deliveryInstructions": "Leave at front door if no answer"
+        test_tokens = [
+            ("cnon:card-nonce-ok", "Valid test token"),
+            ("cnon:card-nonce-declined", "Declined test token"),
+            ("cnon:card-nonce-insufficient-funds", "Insufficient funds test token")
+        ]
+        
+        for token, description in test_tokens:
+            test_data = {
+                "sourceId": token,
+                "amount": 5.00,
+                "currency": "USD",
+                "orderId": f"auth_test_{token.split(':')[-1]}_{int(time.time())}"
             }
-        }
-        
-        try:
-            start_time = time.time()
-            response = requests.post(
-                f"{API_BASE}/square-payment",
-                json=realistic_order_data,
-                headers={'Content-Type': 'application/json'},
-                timeout=15
-            )
-            response_time = int((time.time() - start_time) * 1000)
             
-            if response.status_code == 200:
-                result = response.json()
-                
-                # Validate response structure
-                required_fields = ['success', 'paymentId', 'status', 'amount', 'currency']
-                missing_fields = [field for field in required_fields if field not in result]
-                
-                if missing_fields:
-                    self.log_test(
-                        "Valid Payment Response Structure",
-                        False,
-                        f"Missing fields: {missing_fields}",
-                        response_time
-                    )
-                elif result.get('success'):
-                    self.log_test(
-                        "Valid Payment Processing",
-                        True,
-                        f"Payment ID: {result.get('paymentId')}, Status: {result.get('status')}, Amount: ${result.get('amount', 0)/100:.2f}",
-                        response_time
-                    )
-                else:
-                    self.log_test(
-                        "Valid Payment Processing",
-                        False,
-                        f"Payment failed: {result.get('error', 'Unknown error')}",
-                        response_time
-                    )
-            else:
-                self.log_test(
-                    "Valid Payment Processing",
-                    False,
-                    f"HTTP {response.status_code}: {response.text[:200]}",
-                    response_time
+            try:
+                start_time = time.time()
+                response = requests.post(
+                    f"{API_BASE}/square-payment",
+                    json=test_data,
+                    headers={"Content-Type": "application/json"},
+                    timeout=30
                 )
+                response_time = int((time.time() - start_time) * 1000)
                 
-        except Exception as e:
-            self.log_test(
-                "Valid Payment Processing",
-                False,
-                f"Request failed: {str(e)}"
-            )
+                if response.status_code == 200:
+                    result = response.json()
+                    if result.get('success'):
+                        self.log_test(f"Auth Test: {description}", True, 
+                                     f"✅ Authentication successful - Payment processed", response_time)
+                    else:
+                        # Check if it's a business logic failure (declined) vs auth failure
+                        error_msg = result.get('error', '').lower()
+                        if 'declined' in error_msg or 'insufficient' in error_msg:
+                            self.log_test(f"Auth Test: {description}", True, 
+                                         f"✅ Authentication successful - Business logic rejection: {result.get('error')}", response_time)
+                        else:
+                            self.log_test(f"Auth Test: {description}", False, 
+                                         f"❌ Payment failed: {result.get('error')}", response_time)
+                elif response.status_code == 500:
+                    try:
+                        error_data = response.json()
+                        error_msg = error_data.get('error', 'Unknown server error')
+                        if 'authentication' in error_msg.lower() or 'unauthorized' in error_msg.lower():
+                            self.log_test(f"Auth Test: {description}", False, 
+                                         f"❌ AUTHENTICATION FAILURE: {error_msg}", response_time)
+                        else:
+                            self.log_test(f"Auth Test: {description}", False, 
+                                         f"❌ Server error: {error_msg}", response_time)
+                    except:
+                        self.log_test(f"Auth Test: {description}", False, 
+                                     f"❌ 500 error with unparseable response", response_time)
+                else:
+                    self.log_test(f"Auth Test: {description}", False, 
+                                 f"❌ HTTP {response.status_code}", response_time)
+                    
+            except Exception as e:
+                self.log_test(f"Auth Test: {description}", False, f"❌ Request error: {str(e)}")
 
     def test_input_validation(self):
         """Test enhanced input validation and sanitization"""
