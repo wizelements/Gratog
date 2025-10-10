@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 
 // Mock mode for testing when Square credentials are not properly configured
-const MOCK_MODE = !process.env.SQUARE_ACCESS_TOKEN || !process.env.SQUARE_ACCESS_TOKEN.startsWith('sandbox-sq0atb');
+const MOCK_MODE = !process.env.SQUARE_ACCESS_TOKEN || 
+  (!process.env.SQUARE_ACCESS_TOKEN.startsWith('sandbox-sq0atb') && 
+   !process.env.SQUARE_ACCESS_TOKEN.startsWith('EAAA'));
 
 export async function POST(request) {
   const startTime = Date.now();
