@@ -17,6 +17,9 @@ function getSquareClient() {
   }
 }
 
+// Mock mode for testing when Square credentials are not properly configured
+const MOCK_MODE = !process.env.SQUARE_ACCESS_TOKEN || !process.env.SQUARE_ACCESS_TOKEN.startsWith('sandbox-sq0atb');
+
 export async function POST(request) {
   console.log('Square payment API called');
   
