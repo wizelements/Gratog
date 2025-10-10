@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
+import { Client, Environment } from 'square';
 import { randomUUID } from 'crypto';
+import { createOrder } from '@/lib/db-customers';
+import { sendOrderSMS } from '@/lib/sms';
+import { sendOrderEmail } from '@/lib/email';
 
 // Mock mode for testing when Square credentials are not properly configured
 const MOCK_MODE = !process.env.SQUARE_ACCESS_TOKEN || 
