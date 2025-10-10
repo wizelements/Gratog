@@ -295,20 +295,56 @@ export default function SquarePaymentForm({
             </div>
           </PaymentForm>
           
+          {/* Validation Errors */}
+          {Object.keys(validationErrors).length > 0 && (
+            <div className="validation-errors p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="text-sm font-semibold text-red-800 mb-2">Please fix the following issues:</h4>
+                  <ul className="text-sm text-red-700 space-y-1">
+                    {Object.entries(validationErrors).map(([field, error]) => (
+                      <li key={field} className="flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>
+                        {error}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Payment Status */}
           {paymentStatus.message && (
-            <div className={`payment-status p-3 rounded-lg text-center ${
+            <div className={`payment-status p-4 rounded-lg transition-all duration-300 ${
               paymentStatus.success 
-                ? 'bg-green-50 text-green-700 border border-green-200' 
+                ? 'bg-green-50 text-green-700 border border-green-200 animate-pulse' 
                 : paymentStatus.error
                 ? 'bg-red-50 text-red-700 border border-red-200'
                 : 'bg-blue-50 text-blue-700 border border-blue-200'
             }`}>
-              <div className="flex items-center justify-center gap-2">
-                {paymentStatus.loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                {paymentStatus.success && <CheckCircle className="h-4 w-4" />}
-                {paymentStatus.error && <AlertCircle className="h-4 w-4" />}
+              <div className="flex items-center justify-center gap-3">
+                {paymentStatus.loading && (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                    <div className="flex space-x-1">
+                      <div className="w-1 h-1 bg-blue-600 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                      <div className="w-1 h-1 bg-blue-600 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                      <div className="w-1 h-1 bg-blue-600 rounded-full animate-bounce"></div>
+                    </div>
+                  </div>
+                )}
+                {paymentStatus.success && <CheckCircle className="h-5 w-5 text-green-600" />}
+                {paymentStatus.error && <AlertCircle className="h-5 w-5 text-red-600" />}
                 <span className="text-sm font-medium">{paymentStatus.message}</span>
               </div>
+              
+              {paymentStatus.success && (
+                <div className="mt-2 text-xs text-center text-green-600">
+                  ✨ Redirecting to order confirmation...
+                </div>
+              )}
             </div>
           )}
           
