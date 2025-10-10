@@ -28,16 +28,40 @@ export default function SquarePaymentForm({
   const [validationErrors, setValidationErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
 
+  // Enhanced validation
+  const validatePayment = () => {
+    const errors = {};
+    
+    if (!amount || amount <= 0) {
+      errors.amount = 'Valid payment amount is required';
+    }
+    
+    if (!orderData?.customer?.email) {
+      errors.email = 'Customer email is required';
+    }
+    
+    if (!orderData?.cart?.length) {
+      errors.cart = 'Cart cannot be empty';
+    }
+    
+    setValidationErrors(errors);
+    setIsFormValid(Object.keys(errors).length === 0);
+    return Object.keys(errors).length === 0;
+  };
+
   const handlePaymentMethodSubmission = async (token, buyer) => {
     try {
+      // Pre-payment validation
+      if (!validatePayment()) {
+        throw new Error('Please complete all required fields');
+      }
+
       setPaymentStatus({ 
         loading: true, 
         error: null, 
         success: false, 
-        message: 'Processing payment...' 
+        message: 'Securely processing your payment...' 
       });
-      
-      console.log('Starting payment submission...');
       
       // Generate a unique idempotency key for this payment attempt
       const idempotencyKey = uuidv4();
