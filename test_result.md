@@ -259,20 +259,20 @@ frontend:
           agent: "testing"
           comment: "✅ ALL MARKETS PAGE TESTS PASSED: 'Find Us at Local Markets' page loads with hero section. 2 market cards display correctly (Serenbe Farmers Market and East Atlanta Village Market) with complete schedule and location information. Both 'Get Directions' buttons functional and link to Google Maps. 'Shop Online Now' CTA found and working. Market information is comprehensive and user-friendly."
 
-  - task: "Checkout Flow Integration"
+  - task: "Square Payment Integration"
     implemented: true
     working: true
-    file: "/app/app/checkout"
+    file: "/app/app/order/page.js, /components/SquarePaymentForm.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
-          agent: "testing"
-          comment: "Need to test Buy Now buttons redirect to Stripe, cancel page, and success page functionality"
+          agent: "main"
+          comment: "Migrated from Stripe to Square - need to test Square Web Payments SDK integration, payment form display, and backend payment processing"
         - working: true
-          agent: "testing"
-          comment: "✅ ALL CHECKOUT FLOW TESTS PASSED: Buy Now buttons successfully redirect to Stripe checkout (confirmed with actual Stripe session URLs). Stripe integration working perfectly with proper session creation. Cancel page (/checkout/cancel) loads correctly with 'Checkout Cancelled' heading and appropriate messaging. Cancel flow provides clear user feedback and navigation options back to catalog or home. Full e-commerce checkout flow functional and ready for production."
+          agent: "main"
+          comment: "✅ SQUARE INTEGRATION IMPLEMENTED: Successfully installed Square Web Payments SDK, created SquarePaymentForm component with proper error handling and styling. Payment form displays correctly in order flow with Square branding and secure badge. Backend API route created at /api/square-payment for payment processing. Square sandbox credentials configured. Frontend flow working - customer info, fulfillment selection, and Square payment form all displaying correctly."
 
   - task: "Responsive Design and UI/UX"
     implemented: true
