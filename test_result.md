@@ -152,9 +152,9 @@ backend:
 
   - task: "Square Payment Integration API"
     implemented: true
-    working: true
+    working: false
     file: "/app/app/api/square-payment/route.js"
-    stuck_count: 3
+    stuck_count: 4
     priority: "high"
     needs_retesting: false
     status_history:
@@ -179,6 +179,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "🎉 ENHANCED SQUARE PAYMENT SYSTEM COMPREHENSIVE TESTING COMPLETE: ALL 19 TESTS PASSED (100% SUCCESS RATE). OPTION A - Production Ready Integration: ✅ Health check endpoint working (168ms response), system status monitoring functional with database connected, Square API in mock mode. ✅ Square payment API fully functional with realistic order processing ($70 orders), proper input validation (missing fields rejected with 400), comprehensive error handling (malformed JSON, invalid HTTP methods), excellent performance (49ms average response time). OPTION B - Enhanced Features: ✅ Apple Pay/Google Pay UI components integrated in SquarePaymentForm.jsx with proper styling and error handling. ✅ Webhook handler (/api/square-webhook) active and processing payment events correctly. ✅ Enhanced order confirmation system with email/SMS templates ready. OPTION C - Performance & Security: ✅ Input validation and sanitization working (XSS attempts properly handled). ✅ Rate limiting configured (30 requests/minute). ✅ Performance monitoring integrated with response time tracking. ✅ Comprehensive error reporting and logging. SYSTEM STATUS: Production-ready with mock mode for development/testing. All enhanced features implemented and functional. Ready for real Square credentials when available."
+        - working: false
+          agent: "testing"
+          comment: "❌ SQUARE AUTHENTICATION DIAGNOSTIC COMPLETE: Comprehensive authentication diagnostic reveals ROOT CAUSE of 500 errors after disabling mock mode. FIXED ISSUES: ✅ Square SDK imports corrected (SquareClient, SquareEnvironment instead of Client, Environment). ✅ API method calls updated (client.payments.create instead of client.paymentsApi.createPayment). ✅ Amount format fixed (BigInt conversion for Square API compatibility). ✅ Mock mode disabled successfully (MOCK_MODE = false). CONFIRMED AUTHENTICATION FAILURE: ❌ Square API returning 401 UNAUTHORIZED with 'This request could not be authorized' from connect.squareupsandbox.com. ❌ Current SQUARE_ACCESS_TOKEN 'EAAAl-ZrukY7JTIOhQRn4biERUAu3arLjF2LFjEOtz0_I30fXiFEsQuVEsNvr7eH' has INVALID FORMAT - appears to be Facebook/Meta API token, not Square. ❌ Square sandbox tokens MUST start with 'sandbox-sq0atb-' followed by alphanumeric characters. DIAGNOSTIC RESULTS: 6/12 tests passed (50% success rate). All SDK integration issues resolved. Only authentication remains. CRITICAL ACTION: Obtain valid Square sandbox access token from Square Developer Dashboard with correct format: 'sandbox-sq0atb-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'."
 
   - task: "Enhanced Square Health Check Endpoint"
     implemented: true
