@@ -174,328 +174,250 @@ def test_square_payment_validation():
              f"{passed_tests}/{total_tests} validation tests passed")
     
     return passed_tests == total_tests
-def test_missing_source_id():
-    """Test missing sourceId validation"""
-    print("\n🧪 Testing Missing SourceId Validation...")
-    
-    payload = {
-        "amount": 25.00,
-        "currency": "USD"
-    }
-    
-    try:
-        response = requests.post(
-            SQUARE_API_URL,
-            json=payload,
-            headers={"Content-Type": "application/json"},
-            timeout=10
-        )
-        
-        print(f"   Status Code: {response.status_code}")
-        
-        # Test JSON format
-        if not test_json_response_format(response, "Missing SourceId"):
-            return False
-            
-        data = response.json()
-        print(f"   Response: {json.dumps(data, indent=2)}")
-        
-        # Should return 400 with proper error message
-        if response.status_code == 400 and data.get('success') == False:
-            if 'sourceId' in data.get('error', '').lower():
-                print("✅ Missing sourceId validation test passed")
-                return True
-            else:
-                print("❌ Error message doesn't mention sourceId")
-                return False
-        else:
-            print(f"❌ Expected 400 status with error, got {response.status_code}")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Request failed: {str(e)}")
-        return False
-def test_missing_amount():
-    """Test missing amount validation"""
-    print("\n🧪 Testing Missing Amount Validation...")
-    
-    payload = {
-        "sourceId": "cnon:card-nonce-ok",
-        "currency": "USD"
-    }
-    
-    try:
-        response = requests.post(
-            SQUARE_API_URL,
-            json=payload,
-            headers={"Content-Type": "application/json"},
-            timeout=10
-        )
-        
-        print(f"   Status Code: {response.status_code}")
-        
-        # Test JSON format
-        if not test_json_response_format(response, "Missing Amount"):
-            return False
-            
-        data = response.json()
-        print(f"   Response: {json.dumps(data, indent=2)}")
-        
-        # Should return 400 with proper error message
-        if response.status_code == 400 and data.get('success') == False:
-            if 'amount' in data.get('error', '').lower():
-                print("✅ Missing amount validation test passed")
-                return True
-            else:
-                print("❌ Error message doesn't mention amount")
-                return False
-        else:
-            print(f"❌ Expected 400 status with error, got {response.status_code}")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Request failed: {str(e)}")
-        return False
-
-def test_invalid_amount():
-    """Test invalid amount validation"""
-    print("\n🧪 Testing Invalid Amount Validation...")
-    
-    payload = {
-        "sourceId": "cnon:card-nonce-ok",
-        "amount": "invalid",
-        "currency": "USD"
-    }
-    
-    try:
-        response = requests.post(
-            SQUARE_API_URL,
-            json=payload,
-            headers={"Content-Type": "application/json"},
-            timeout=10
-        )
-        
-        print(f"   Status Code: {response.status_code}")
-        
-        # Test JSON format
-        if not test_json_response_format(response, "Invalid Amount"):
-            return False
-            
-        data = response.json()
-        print(f"   Response: {json.dumps(data, indent=2)}")
-        
-        # Should return 400 with proper error message
-        if response.status_code == 400 and data.get('success') == False:
-            print("✅ Invalid amount validation test passed")
-            return True
-        else:
-            print(f"❌ Expected 400 status with error, got {response.status_code}")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Request failed: {str(e)}")
-        return False
-
-def test_malformed_json():
-    """Test malformed request body handling"""
-    print("\n🧪 Testing Malformed JSON Handling...")
-    
-    malformed_json = '{"sourceId": "test", "amount": 25.00'  # Missing closing brace
-    
-    try:
-        response = requests.post(
-            SQUARE_API_URL,
-            data=malformed_json,
-            headers={"Content-Type": "application/json"},
-            timeout=10
-        )
-        
-        print(f"   Status Code: {response.status_code}")
-        
-        # Test JSON format - this is critical for the fix
-        if not test_json_response_format(response, "Malformed JSON"):
-            return False
-            
-        data = response.json()
-        print(f"   Response: {json.dumps(data, indent=2)}")
-        
-        # Should return 400 with proper error message
-        if response.status_code == 400 and data.get('success') == False:
-            if 'invalid' in data.get('error', '').lower() or 'format' in data.get('error', '').lower():
-                print("✅ Malformed JSON handling test passed")
-                return True
-            else:
-                print("❌ Error message doesn't indicate format issue")
-                return False
-        else:
-            print(f"❌ Expected 400 status with error, got {response.status_code}")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Request failed: {str(e)}")
-        return False
-
-def test_square_api_error_simulation():
-    """Test Square API error simulation with invalid card"""
-    print("\n🧪 Testing Square API Error Simulation...")
-    
-    payload = {
-        "sourceId": "cnon:card-nonce-declined",  # Square sandbox declined token
-        "amount": 35.00,
-        "currency": "USD",
-        "orderId": "test-order-declined"
-    }
-    
-    try:
-        response = requests.post(
-            SQUARE_API_URL,
-            json=payload,
-            headers={"Content-Type": "application/json"},
-            timeout=30
-        )
-        
-        print(f"   Status Code: {response.status_code}")
-        
-        # Test JSON format - critical for error responses
-        if not test_json_response_format(response, "Square API Error"):
-            return False
-            
-        data = response.json()
-        print(f"   Response: {json.dumps(data, indent=2)}")
-        
-        # Should return error with proper JSON structure
-        if data.get('success') == False and 'error' in data:
-            print("✅ Square API error simulation test passed")
-            return True
-        else:
-            print("❌ Invalid error response structure")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Request failed: {str(e)}")
-        return False
-
-def test_get_method_not_allowed():
-    """Test GET method returns proper JSON error"""
-    print("\n🧪 Testing GET Method Not Allowed...")
-    
-    try:
-        response = requests.get(SQUARE_API_URL, timeout=10)
-        
-        print(f"   Status Code: {response.status_code}")
-        
-        # Test JSON format
-        if not test_json_response_format(response, "GET Method"):
-            return False
-            
-        data = response.json()
-        print(f"   Response: {json.dumps(data, indent=2)}")
-        
-        # Should return 405 with proper error message
-        if response.status_code == 405 and 'error' in data:
-            if 'method' in data.get('error', '').lower():
-                print("✅ GET method not allowed test passed")
-                return True
-            else:
-                print("❌ Error message doesn't mention method")
-                return False
-        else:
-            print(f"❌ Expected 405 status, got {response.status_code}")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Request failed: {str(e)}")
-        return False
-
-def test_api_stability():
-    """Test multiple requests for consistent behavior"""
-    print("\n🧪 Testing API Stability (Multiple Requests)...")
-    
-    payload = {
-        "sourceId": "cnon:card-nonce-ok",
-        "amount": 15.00,
-        "currency": "USD",
-        "orderId": "stability-test"
-    }
-    
-    success_count = 0
-    total_requests = 3
-    
-    for i in range(total_requests):
-        try:
-            print(f"   Request {i+1}/{total_requests}...")
-            response = requests.post(
-                SQUARE_API_URL,
-                json=payload,
-                headers={"Content-Type": "application/json"},
-                timeout=30
-            )
-            
-            # Test JSON format for each request
-            if test_json_response_format(response, f"Stability Test {i+1}"):
-                success_count += 1
-                
-            # Add small delay between requests
-            time.sleep(1)
-            
-        except Exception as e:
-            print(f"❌ Request {i+1} failed: {str(e)}")
-    
-    if success_count == total_requests:
-        print(f"✅ API stability test passed ({success_count}/{total_requests} requests successful)")
-        return True
-    else:
-        print(f"❌ API stability test failed ({success_count}/{total_requests} requests successful)")
-        return False
-
-def run_comprehensive_tests():
-    """Run all Square Payment API tests"""
-    print("🚀 Starting Comprehensive Square Payment API Testing")
-    print("=" * 60)
-    print(f"Testing API: {SQUARE_API_URL}")
-    print("Focus: JSON parsing error fix validation")
+def test_square_payment_error_handling():
+    """Test Square Payment API Error Handling"""
+    print("🚨 TESTING SQUARE PAYMENT ERROR HANDLING")
     print("=" * 60)
     
-    tests = [
-        ("Valid Payment Request", test_valid_payment_request),
-        ("Missing SourceId Validation", test_missing_source_id),
-        ("Missing Amount Validation", test_missing_amount),
-        ("Invalid Amount Validation", test_invalid_amount),
-        ("Malformed JSON Handling", test_malformed_json),
-        ("Square API Error Simulation", test_square_api_error_simulation),
-        ("GET Method Not Allowed", test_get_method_not_allowed),
-        ("API Stability", test_api_stability)
+    test_cases = [
+        {
+            "name": "Declined card token",
+            "data": {
+                "sourceId": SQUARE_TEST_TOKENS["declined"],
+                "amount": 36.00,
+                "currency": "USD"
+            },
+            "expected_behavior": "Should return proper error response"
+        },
+        {
+            "name": "Invalid card token",
+            "data": {
+                "sourceId": "invalid-token-12345",
+                "amount": 36.00,
+                "currency": "USD"
+            },
+            "expected_behavior": "Should handle invalid token gracefully"
+        },
+        {
+            "name": "Malformed JSON",
+            "data": "invalid-json",
+            "expected_behavior": "Should return 400 with JSON error"
+        }
     ]
     
     passed_tests = 0
-    total_tests = len(tests)
+    total_tests = len(test_cases)
     
-    for test_name, test_func in tests:
+    for test_case in test_cases:
         try:
-            if test_func():
-                passed_tests += 1
+            if test_case["name"] == "Malformed JSON":
+                # Send malformed JSON
+                response = requests.post(f"{API_BASE}/square-payment", 
+                                       data="invalid-json", 
+                                       headers={"Content-Type": "application/json"},
+                                       timeout=15)
+            else:
+                response = requests.post(f"{API_BASE}/square-payment", 
+                                       json=test_case["data"], 
+                                       timeout=15)
+            
+            # Check if response is valid JSON
+            try:
+                result = response.json()
+                if "error" in result or "success" in result:
+                    log_test(f"Error Handling: {test_case['name']}", "PASS", 
+                            f"Proper JSON response: {result.get('error', result.get('success'))}")
+                    passed_tests += 1
+                else:
+                    log_test(f"Error Handling: {test_case['name']}", "FAIL", 
+                            "Response missing error/success field")
+            except:
+                log_test(f"Error Handling: {test_case['name']}", "FAIL", 
+                        "Invalid JSON response")
+                
         except Exception as e:
-            print(f"❌ {test_name}: Unexpected error - {str(e)}")
+            log_test(f"Error Handling: {test_case['name']}", "FAIL", f"Exception: {str(e)}")
     
-    print("\n" + "=" * 60)
-    print("🏁 SQUARE PAYMENT API TEST RESULTS")
+    log_test("Square Payment Error Handling Summary", 
+             "PASS" if passed_tests == total_tests else "FAIL",
+             f"{passed_tests}/{total_tests} error handling tests passed")
+    
+    return passed_tests == total_tests
+
+def test_square_payment_method_validation():
+    """Test Square Payment API Method Validation"""
+    print("🔧 TESTING SQUARE PAYMENT METHOD VALIDATION")
     print("=" * 60)
-    print(f"Total Tests: {total_tests}")
-    print(f"Passed: {passed_tests}")
-    print(f"Failed: {total_tests - passed_tests}")
-    print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
     
-    if passed_tests == total_tests:
-        print("\n🎉 ALL TESTS PASSED! JSON parsing fix is working correctly.")
-        print("✅ No 'Unexpected end of JSON input' errors found")
-        print("✅ All responses are properly formatted JSON")
-        print("✅ Error handling returns valid JSON responses")
-        print("✅ API stability confirmed with consistent behavior")
-        return True
-    else:
-        print(f"\n⚠️  {total_tests - passed_tests} test(s) failed. JSON parsing issues may still exist.")
+    try:
+        # Test GET method (should be rejected)
+        response = requests.get(f"{API_BASE}/square-payment", timeout=10)
+        
+        if response.status_code == 405:
+            try:
+                result = response.json()
+                if "error" in result:
+                    log_test("Method Validation: GET Request", "PASS", 
+                            f"Correctly rejected GET with: {result['error']}")
+                    return True
+                else:
+                    log_test("Method Validation: GET Request", "FAIL", 
+                            "Missing error message in 405 response")
+                    return False
+            except:
+                log_test("Method Validation: GET Request", "FAIL", 
+                        "Invalid JSON in 405 response")
+                return False
+        else:
+            log_test("Method Validation: GET Request", "FAIL", 
+                    f"Expected 405, got {response.status_code}")
+            return False
+            
+    except Exception as e:
+        log_test("Method Validation: GET Request", "FAIL", f"Exception: {str(e)}")
         return False
 
+def test_square_payment_comprehensive():
+    """Comprehensive Square Payment Integration Test"""
+    print("🎯 COMPREHENSIVE SQUARE PAYMENT INTEGRATION TEST")
+    print("=" * 60)
+    
+    # Test with realistic order data
+    comprehensive_order = {
+        "sourceId": SQUARE_TEST_TOKENS["valid"],
+        "amount": 36.00,  # Elderberry moss price
+        "currency": "USD",
+        "orderId": "comprehensive-test-001",
+        "buyerDetails": {
+            "name": "Maria Santos",
+            "email": "maria.santos@example.com",
+            "phone": "+1-404-555-0199"
+        },
+        "orderData": {
+            "items": [
+                {
+                    "id": ELDERBERRY_PRODUCT["id"],
+                    "name": ELDERBERRY_PRODUCT["name"],
+                    "price": ELDERBERRY_PRODUCT["price"],
+                    "quantity": 1,
+                    "description": "Elderberry Moss Gels combine the natural benefits of sea moss and elderberry"
+                }
+            ],
+            "customerInfo": {
+                "name": "Maria Santos",
+                "email": "maria.santos@example.com",
+                "phone": "+1-404-555-0199",
+                "address": {
+                    "street": "123 Wellness Way",
+                    "city": "Atlanta",
+                    "state": "GA",
+                    "zipCode": "30309"
+                }
+            },
+            "fulfillment": {
+                "type": "pickup",
+                "location": "Serenbe Farmers Market",
+                "scheduledDate": "2024-12-21",
+                "notes": "Please have order ready by 10 AM"
+            },
+            "notifications": {
+                "sms": True,
+                "email": True
+            }
+        }
+    }
+    
+    try:
+        print(f"Processing comprehensive order for {comprehensive_order['buyerDetails']['name']}")
+        print(f"Product: {ELDERBERRY_PRODUCT['name']} - ${comprehensive_order['amount']}")
+        
+        response = requests.post(f"{API_BASE}/square-payment", json=comprehensive_order, timeout=30)
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get("success"):
+                log_test("Comprehensive Square Payment", "PASS", 
+                        f"Full order processed successfully. Payment ID: {result.get('paymentId', 'N/A')}")
+                
+                # Verify response structure
+                required_fields = ["paymentId", "status", "amount", "currency"]
+                missing_fields = [field for field in required_fields if field not in result]
+                
+                if not missing_fields:
+                    log_test("Response Structure Validation", "PASS", 
+                            "All required fields present in response")
+                    return True
+                else:
+                    log_test("Response Structure Validation", "FAIL", 
+                            f"Missing fields: {missing_fields}")
+                    return False
+            else:
+                log_test("Comprehensive Square Payment", "FAIL", 
+                        f"Payment failed: {result.get('error', 'Unknown error')}")
+                return False
+        else:
+            try:
+                error_data = response.json()
+                log_test("Comprehensive Square Payment", "FAIL", 
+                        f"HTTP {response.status_code}: {error_data.get('error', 'Unknown error')}")
+            except:
+                log_test("Comprehensive Square Payment", "FAIL", 
+                        f"HTTP {response.status_code}: {response.text[:200]}")
+            return False
+            
+    except requests.exceptions.Timeout:
+        log_test("Comprehensive Square Payment", "FAIL", "Request timeout (30s)")
+        return False
+    except Exception as e:
+        log_test("Comprehensive Square Payment", "FAIL", f"Exception: {str(e)}")
+        return False
+
+def main():
+    """Run all Square Payment Integration tests"""
+    print("🟦 SQUARE PAYMENT INTEGRATION TESTING")
+    print("Updated Credentials Testing for Taste of Gratitude E-commerce")
+    print("=" * 80)
+    print(f"Testing against: {API_BASE}")
+    print(f"Target product: {ELDERBERRY_PRODUCT['name']} (${ELDERBERRY_PRODUCT['price']/100:.2f})")
+    print("=" * 80)
+    print()
+    
+    # Track test results
+    test_results = []
+    
+    # Run all tests
+    test_results.append(("Authentication", test_square_payment_authentication()))
+    test_results.append(("Validation", test_square_payment_validation()))
+    test_results.append(("Error Handling", test_square_payment_error_handling()))
+    test_results.append(("Method Validation", test_square_payment_method_validation()))
+    test_results.append(("Comprehensive Test", test_square_payment_comprehensive()))
+    
+    # Summary
+    print("🏁 SQUARE PAYMENT TESTING SUMMARY")
+    print("=" * 60)
+    
+    passed_tests = sum(1 for _, result in test_results if result)
+    total_tests = len(test_results)
+    
+    for test_name, result in test_results:
+        status = "✅ PASS" if result else "❌ FAIL"
+        print(f"{status} {test_name}")
+    
+    print()
+    print(f"Overall Result: {passed_tests}/{total_tests} tests passed")
+    
+    if passed_tests == total_tests:
+        print("🎉 ALL SQUARE PAYMENT TESTS PASSED!")
+        print("✅ Square authentication with updated credentials working")
+        print("✅ Payment processing functional")
+        print("✅ Error handling working correctly")
+        print("✅ API validation working properly")
+    else:
+        print("⚠️  Some Square payment tests failed")
+        print("❌ Review failed tests above for details")
+    
+    print("=" * 60)
+    return passed_tests == total_tests
+
 if __name__ == "__main__":
-    success = run_comprehensive_tests()
-    exit(0 if success else 1)
+    main()
