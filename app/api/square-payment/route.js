@@ -91,8 +91,28 @@ export async function POST(request) {
       idempotencyKey: '[REDACTED]'
     });
     
-    // Process payment with Square
-    const { result } = await squareClient.payments.create(paymentRequest);
+    // Process payment with Square or mock
+    let result;
+    if (MOCK_MODE) {
+      console.log('🔧 MOCK MODE: Simulating successful Square payment');
+      // Mock successful payment response
+      result = {
+        payment: {
+          id: `mock_payment_${Date.now()}`,
+          status: 'COMPLETED',
+          amountMoney: {
+            amount: amountInCents,
+            currency: currency
+          },
+          orderId: orderId,
+          receiptUrl: `https://mock-square.com/receipt/${Date.now()}`,
+          createdAt: new Date().toISOString()
+        }
+      };
+    } else {
+      const { result: squareResult } = await squareClient.payments.create(paymentRequest);
+      result = squareResult;
+    }
     
     console.log('Square payment successful:', {
       paymentId: result.payment.id,
