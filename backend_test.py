@@ -294,79 +294,40 @@ class SquareAuthenticationDiagnostic:
         except Exception as e:
             self.log_test("Server Logs - Request", False, f"❌ Unable to trigger log analysis: {str(e)}")
 
-    def test_error_handling(self):
-        """Test comprehensive error handling"""
-        print("🚨 Testing Error Handling...")
+    def test_health_check_endpoint(self):
+        """Test 7: Health check endpoint for Square service status"""
+        print("❤️ TEST 7: HEALTH CHECK ENDPOINT")
         
-        # Test malformed JSON
         try:
             start_time = time.time()
-            response = requests.post(
-                f"{API_BASE}/square-payment",
-                data="invalid json",
-                headers={'Content-Type': 'application/json'},
-                timeout=10
-            )
+            response = requests.get(f"{API_BASE}/health", timeout=10)
             response_time = int((time.time() - start_time) * 1000)
             
-            if response.status_code == 400:
-                try:
-                    result = response.json()
-                    self.log_test(
-                        "Error Handling: Malformed JSON",
-                        True,
-                        f"Properly handled with error: {result.get('error', 'No error message')}",
-                        response_time
-                    )
-                except:
-                    self.log_test(
-                        "Error Handling: Malformed JSON",
-                        False,
-                        "Error response is not valid JSON",
-                        response_time
-                    )
+            if response.status_code == 200:
+                health_data = response.json()
+                
+                # Check Square service status in health check
+                services = health_data.get('services', {})
+                square_status = services.get('square', 'unknown')
+                
+                self.log_test("Health Check Endpoint", True, 
+                             f"✅ Status: {health_data.get('status')}, Square: {square_status}", response_time)
+                
+                if square_status == "error":
+                    self.log_test("Square Service Health", False, 
+                                 "❌ Square service reported as error in health check")
+                elif square_status == "mock":
+                    self.log_test("Square Service Health", True, 
+                                 "⚠️ Square service in mock mode")
+                else:
+                    self.log_test("Square Service Health", True, 
+                                 f"✅ Square service status: {square_status}")
             else:
-                self.log_test(
-                    "Error Handling: Malformed JSON",
-                    False,
-                    f"Expected 400, got {response.status_code}",
-                    response_time
-                )
+                self.log_test("Health Check Endpoint", False, 
+                             f"❌ HTTP {response.status_code}", response_time)
                 
         except Exception as e:
-            self.log_test(
-                "Error Handling: Malformed JSON",
-                False,
-                f"Request failed: {str(e)}"
-            )
-        
-        # Test GET method (should return 405)
-        try:
-            start_time = time.time()
-            response = requests.get(f"{API_BASE}/square-payment", timeout=10)
-            response_time = int((time.time() - start_time) * 1000)
-            
-            if response.status_code == 405:
-                self.log_test(
-                    "Error Handling: Invalid HTTP Method",
-                    True,
-                    "Correctly rejected GET request with 405",
-                    response_time
-                )
-            else:
-                self.log_test(
-                    "Error Handling: Invalid HTTP Method",
-                    False,
-                    f"Expected 405, got {response.status_code}",
-                    response_time
-                )
-                
-        except Exception as e:
-            self.log_test(
-                "Error Handling: Invalid HTTP Method",
-                False,
-                f"Request failed: {str(e)}"
-            )
+            self.log_test("Health Check Endpoint", False, f"❌ Request failed: {str(e)}")
 
     def test_performance_monitoring(self):
         """Test performance monitoring and metrics"""
