@@ -5,10 +5,8 @@ import { createOrder } from '@/lib/db-customers';
 import { sendOrderSMS } from '@/lib/sms';
 import { sendOrderEmail } from '@/lib/email';
 
-// Mock mode for testing when Square credentials are not properly configured
-const MOCK_MODE = !process.env.SQUARE_ACCESS_TOKEN || 
-  (!process.env.SQUARE_ACCESS_TOKEN.startsWith('sandbox-sq0atb') && 
-   !process.env.SQUARE_ACCESS_TOKEN.startsWith('EAAA'));
+// Live mode enabled - disable mock mode to use real Square integration
+const MOCK_MODE = false;
 
 export async function POST(request) {
   const startTime = Date.now();
