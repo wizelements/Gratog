@@ -154,7 +154,7 @@ backend:
     implemented: true
     working: false
     file: "/app/app/api/square-payment/route.js"
-    stuck_count: 2
+    stuck_count: 3
     priority: "high"
     needs_retesting: false
     status_history:
@@ -170,6 +170,9 @@ backend:
         - working: false
           agent: "testing"
           comment: "❌ CRITICAL SQUARE API AUTHENTICATION FAILURE: Comprehensive testing reveals Square API returning 401 Unauthorized errors for all payment processing attempts. DETAILED FINDINGS: ✅ Input validation working (4/5 tests passed - missing sourceId, missing amount, invalid negative/string amounts properly rejected with 400 status). ✅ Error handling working (3/3 tests passed - all error scenarios return proper JSON responses). ✅ Order data structure handling working (complex order data with customer info, cart items, fulfillment details accepted). ✅ Notification data structure accepted. ❌ CRITICAL ISSUE: Square sandbox access token authentication failing with 401 'UNAUTHORIZED' error from connect.squareupsandbox.com. All payment processing attempts fail with 'Payment processing failed. Please try again.' Server logs show Square API rejecting requests with 'This request could not be authorized.' CAUSE: Square sandbox credentials (SQUARE_ACCESS_TOKEN) are invalid, expired, or lack proper permissions. IMPACT: No actual payments can be processed despite API structure being correct. REQUIRES: Square Developer Dashboard credential verification and access token renewal."
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL SQUARE TOKEN FORMAT ERROR: Comprehensive testing with updated credentials reveals INVALID TOKEN FORMAT. DETAILED ANALYSIS: ✅ API Structure Working (3/5 tests passed): Input validation (5/5), error handling (3/3), method validation (1/1) all working correctly. ❌ AUTHENTICATION FAILURE (2/5 tests failed): Square API returning 401 AUTHENTICATION_ERROR for all payment attempts. ROOT CAUSE IDENTIFIED: Current access token 'EAAAl-ZrukY7JTIOhQRn4biERUAu3arLjF2LFjEOtz0_I30fXiFEsQuVEsNvr7eH' does NOT match Square's required format. Square sandbox tokens must start with 'sandbox-sq0atb-' followed by alphanumeric characters. Current token appears to be from different service (possibly Facebook/Meta format). CRITICAL ACTION REQUIRED: Obtain valid Square sandbox access token from Square Developer Dashboard. Token should format: 'sandbox-sq0atb-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'. All other credentials (App ID: sq0idp-V1fV-MwsU5lET4rvzHKnIw, Location ID: L66TVG6867BG9) appear correctly formatted."
 
 frontend:
   - task: "Home Page UI and Navigation"
