@@ -205,37 +205,93 @@ export default function SquarePaymentForm({
             locationId={locationId}
             cardTokenizeResponseReceived={handlePaymentMethodSubmission}
           >
-            <div className="payment-methods space-y-3">
-              <CreditCard 
-                buttonProps={{
-                  isLoading: paymentStatus.loading,
-                  css: {
-                    backgroundColor: '#D4AF37',
-                    fontSize: '16px',
-                    color: '#fff',
-                    borderRadius: '8px',
-                    padding: '12px 24px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    width: '100%',
-                    '&:hover': {
-                      backgroundColor: '#B8941F'
-                    },
-                    '&:disabled': {
-                      backgroundColor: '#ccc',
-                      cursor: 'not-allowed'
+            <div className="payment-methods space-y-4">
+              {/* Primary Credit Card Payment */}
+              <div className="relative">
+                <CreditCard 
+                  buttonProps={{
+                    isLoading: paymentStatus.loading,
+                    css: {
+                      backgroundColor: paymentStatus.loading ? '#ccc' : '#D4AF37',
+                      fontSize: '16px',
+                      color: '#fff',
+                      borderRadius: '8px',
+                      padding: '16px 24px',
+                      border: 'none',
+                      cursor: paymentStatus.loading ? 'not-allowed' : 'pointer',
+                      width: '100%',
+                      transition: 'all 0.3s ease',
+                      position: 'relative',
+                      '&:hover': {
+                        backgroundColor: paymentStatus.loading ? '#ccc' : '#B8941F',
+                        transform: paymentStatus.loading ? 'none' : 'translateY(-2px)',
+                        boxShadow: paymentStatus.loading ? 'none' : '0 4px 12px rgba(212, 175, 55, 0.3)'
+                      },
+                      '&:disabled': {
+                        backgroundColor: '#ccc',
+                        cursor: 'not-allowed'
+                      }
                     }
-                  }
-                }}
-              />
-              
-              {/* Optional: Add Apple Pay and Google Pay support - commented out for now */}
-              {/* 
-              <div className="alternative-payments grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <ApplePay />
-                <GooglePay />
+                  }}
+                />
+                
+                {/* Loading overlay */}
+                {paymentStatus.loading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 rounded-lg">
+                    <div className="flex items-center space-x-2 text-white">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span className="text-sm font-medium">Processing...</span>
+                    </div>
+                  </div>
+                )}
               </div>
-              */}
+              
+              {/* Alternative Payment Methods */}
+              <div className="alternative-payments space-y-3">
+                <div className="flex items-center my-4">
+                  <div className="flex-1 border-t border-muted"></div>
+                  <span className="px-3 text-sm text-muted-foreground bg-background">or pay with</span>
+                  <div className="flex-1 border-t border-muted"></div>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Enhanced Apple Pay */}
+                  <div className="relative group">
+                    <ApplePay 
+                      buttonProps={{
+                        isLoading: paymentStatus.loading,
+                        css: {
+                          width: '100%',
+                          borderRadius: '8px',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: paymentStatus.loading ? 'none' : 'translateY(-1px)',
+                            boxShadow: paymentStatus.loading ? 'none' : '0 2px 8px rgba(0,0,0,0.15)'
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                  
+                  {/* Enhanced Google Pay */}
+                  <div className="relative group">
+                    <GooglePay 
+                      buttonProps={{
+                        isLoading: paymentStatus.loading,
+                        css: {
+                          width: '100%',
+                          borderRadius: '8px',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: paymentStatus.loading ? 'none' : 'translateY(-1px)',
+                            boxShadow: paymentStatus.loading ? 'none' : '0 2px 8px rgba(0,0,0,0.15)'
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </PaymentForm>
           
