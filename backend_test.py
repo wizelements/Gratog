@@ -16,7 +16,7 @@ import sys
 BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://taste-ecommerce.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
-class SquarePaymentSystemTester:
+class SquareAuthenticationDiagnostic:
     def __init__(self):
         self.test_results = []
         self.start_time = time.time()
@@ -32,7 +32,7 @@ class SquarePaymentSystemTester:
         }
         self.test_results.append(result)
         
-        status = "✅ PASS" if success else "❌ FAIL"
+        status = "✅ PASS" if success else "❌ FAIL" if not success else "⚠️ WARN"
         time_info = f" ({response_time}ms)" if response_time else ""
         print(f"{status}: {test_name}{time_info}")
         if details:
