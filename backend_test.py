@@ -1,26 +1,43 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Testing for Taste of Gratitude E-commerce
-Focus: Square Payment Integration Mock Mode Testing
+Comprehensive Backend Testing for Enhanced Square Payment System
+Tests all three options: Production Ready Integration, Enhanced Features, Performance & Security
 """
 
 import requests
 import json
 import time
+import uuid
 from datetime import datetime
+import os
+import sys
 
 # Configuration
-BASE_URL = "https://taste-ecommerce.preview.emergentagent.com"
+BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://taste-ecommerce.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
-def log_test(test_name, status, details=""):
-    """Log test results with timestamp"""
-    timestamp = datetime.now().strftime("%H:%M:%S")
-    status_emoji = "✅" if status == "PASS" else "❌" if status == "FAIL" else "⚠️"
-    print(f"[{timestamp}] {status_emoji} {test_name}: {status}")
-    if details:
-        print(f"    Details: {details}")
-    print()
+class SquarePaymentSystemTester:
+    def __init__(self):
+        self.test_results = []
+        self.start_time = time.time()
+        
+    def log_test(self, test_name, success, details="", response_time=None):
+        """Log test results with detailed information"""
+        result = {
+            'test': test_name,
+            'success': success,
+            'details': details,
+            'response_time_ms': response_time,
+            'timestamp': datetime.now().isoformat()
+        }
+        self.test_results.append(result)
+        
+        status = "✅ PASS" if success else "❌ FAIL"
+        time_info = f" ({response_time}ms)" if response_time else ""
+        print(f"{status}: {test_name}{time_info}")
+        if details:
+            print(f"    Details: {details}")
+        print()
 
 def test_square_payment_mock_mode():
     """Test Square Payment API in Mock Mode - Comprehensive Testing"""
