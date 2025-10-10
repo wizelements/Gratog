@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { 
   PaymentForm, 
-  CreditCard
+  CreditCard,
+  ApplePay,
+  GooglePay
 } from 'react-square-web-payments-sdk';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
