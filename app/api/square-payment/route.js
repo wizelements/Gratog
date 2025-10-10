@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Client, Environment } from 'square';
+import { SquareClient, SquareEnvironment } from 'square';
 import { randomUUID } from 'crypto';
 import { createOrder } from '@/lib/db-customers';
 import { sendOrderSMS } from '@/lib/sms';
