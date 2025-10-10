@@ -61,33 +61,131 @@ export async function POST(request) {
     const amountInCents = Math.round(numAmount * 100);
     console.log('Processing payment:', { amountInCents, currency, orderId });
     
-    // Process payment in mock mode (since we don't have valid Square credentials)
+    // Initialize Square client
+    const squareClient = new Client({
+      accessToken: process.env.SQUARE_ACCESS_TOKEN,
+      environment: process.env.NODE_ENV === 'production' 
+        ? Environment.Production 
+        : Environment.Sandbox
+    });
+
+    // Process payment with Square or mock
+    let result;
     if (MOCK_MODE) {
       console.log('🔧 MOCK MODE: Simulating successful Square payment');
       
       const endTime = Date.now();
       
       // Mock successful payment response
-      const result = {
-        success: true,
-        paymentId: `mock_payment_${Date.now()}`,
-        orderId: orderId || `order_${Date.now()}`,
-        receiptUrl: `https://mock-square.com/receipt/${Date.now()}`,
-        status: 'COMPLETED',
-        amount: amountInCents,
-        currency: currency,
-        processingTime: endTime - startTime
+      result = {
+        payment: {
+          id: `mock_payment_${Date.now()}`,
+          status: 'COMPLETED',
+          amountMoney: {
+            amount: amountInCents,
+            currency: currency
+          },
+          orderId: orderId,
+          receiptUrl: `https://mock-square.com/receipt/${Date.now()}`,
+          createdAt: new Date().toISOString()
+        }
+      };
+    } else {
+      console.log('💳 LIVE MODE: Processing real Square payment');
+      
+      // Create payment request for Square
+      const paymentRequest = {
+        sourceId,
+        idempotencyKey: randomUUID(),
+        amountMoney: {
+          amount: amountInCents,
+          currency
+        },
+        locationId: process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID,
+        note: `${process.env.NEXT_PUBLIC_SITE_NAME || 'Taste of Gratitude'} order ${orderId || 'unknown'}`
       };
       
-      console.log('Mock payment successful:', result);
-      return NextResponse.json(result);
-    } else {
-      // Real Square integration would go here
-      return NextResponse.json(
-        { success: false, error: 'Square integration not configured' },
-        { status: 500 }
-      );
+      console.log('Sending payment request to Square:', { 
+        ...paymentRequest, 
+        sourceId: '[REDACTED]'
+      });
+      
+      // Process payment with Square
+      const { result: squareResult } = await squareClient.paymentsApi.createPayment(paymentRequest);
+      result = { payment: squareResult.payment };
     }
+
+    console.log('Square payment successful:', {
+      paymentId: result.payment.id,
+      status: result.payment.status,
+      amount: result.payment.amountMoney?.amount
+    });
+
+    // If payment is successful, create order in database
+    if (result.payment && result.payment.status === 'COMPLETED') {
+      try {
+        // Create order in database
+        const orderDetails = {
+          id: orderId || result.payment.id,
+          customer: orderData?.customer || {
+            name: 'Unknown',
+            email: '',
+            phone: orderData?.customer?.phone || ''
+          },
+          items: orderData?.cart || [],
+          total: amountInCents,
+          fulfillmentType: orderData?.fulfillmentType || 'pickup',
+          status: 'paid',
+          createdAt: new Date().toISOString(),
+          paymentId: result.payment.id,
+          paymentMethod: 'square',
+          // Include delivery details if applicable
+          ...(orderData?.deliveryAddress && {
+            deliveryAddress: orderData.deliveryAddress,
+            deliveryTimeSlot: orderData.deliveryTimeSlot,
+            deliveryInstructions: orderData.deliveryInstructions
+          })
+        };
+        
+        await createOrder(orderDetails);
+        
+        // Send confirmation notifications (SMS/Email)
+        if (orderDetails.customer.phone) {
+          try {
+            await sendOrderSMS(orderDetails);
+          } catch (smsError) {
+            console.error('Failed to send SMS confirmation:', smsError);
+            // Don't fail the payment if SMS fails
+          }
+        }
+        
+        if (orderDetails.customer.email) {
+          try {
+            await sendOrderEmail(orderDetails);
+          } catch (emailError) {
+            console.error('Failed to send email confirmation:', emailError);
+            // Don't fail the payment if email fails
+          }
+        }
+      } catch (dbError) {
+        console.error('Failed to save order to database:', dbError);
+        // Don't fail the payment if database save fails
+      }
+    }
+
+    const endTime = Date.now();
+    
+    // Return successful response
+    return NextResponse.json({
+      success: true,
+      paymentId: result.payment.id,
+      orderId: result.payment.orderId || orderId,
+      receiptUrl: result.payment.receiptUrl,
+      status: result.payment.status,
+      amount: result.payment.amountMoney?.amount,
+      currency: result.payment.amountMoney?.currency,
+      processingTime: endTime - startTime
+    });
     
   } catch (error) {
     console.error('Square payment error:', error);
