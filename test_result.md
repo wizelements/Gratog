@@ -306,8 +306,7 @@ metadata:
 
 test_plan:
   current_focus: []
-  stuck_tasks: 
-    - "Square Payment Integration API"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
