@@ -161,18 +161,48 @@ export async function POST(request) {
       amount: result.payment.amountMoney?.amount
     });
     
-    // Simple success response (no background processing for now to avoid issues)
-    return NextResponse.json({
+    // Track successful payment metrics
+    const endTime = Date.now();
+    PerformanceMonitor.trackApiPerformance('/api/square-payment', startTime, endTime, 200);
+    PerformanceMonitor.trackPaymentMetrics({
+      paymentId: result.payment.id,
+      amount: amountInCents,
+      paymentMethod: 'square'
+    }, true, endTime - startTime);
+    
+    // Return successful response
+    const response = {
       success: true,
       paymentId: result.payment.id,
       orderId: result.payment.orderId || orderId,
       receiptUrl: result.payment.receiptUrl,
       status: result.payment.status,
       amount: result.payment.amountMoney?.amount,
-      currency: result.payment.amountMoney?.currency
-    });
+      currency: result.payment.amountMoney?.currency,
+      processingTime: endTime - startTime
+    };
+    
+    console.log('Payment successful:', response);
+    return NextResponse.json(response);
     
   } catch (error) {
+    const endTime = Date.now();
+    
+    // Report error and track metrics
+    ErrorReporter.reportError(error, {
+      orderId,
+      amount,
+      sourceId: sourceId ? 'provided' : 'missing',
+      endpoint: '/api/square-payment'
+    });
+    
+    PerformanceMonitor.trackApiPerformance('/api/square-payment', startTime, endTime, 500);
+    PerformanceMonitor.trackPaymentMetrics({
+      paymentId: orderId,
+      amount,
+      paymentMethod: 'square'
+    }, false, endTime - startTime);
+    
     console.error('Square payment error:', error);
     
     // Handle timeout errors specifically
