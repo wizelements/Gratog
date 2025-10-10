@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { SquareClient, SquareEnvironment } from 'square';
 import { randomUUID } from 'crypto';
+import { PerformanceMonitor, InputValidator, ErrorReporter, RateLimiter } from '@/lib/monitoring';
+
+// Rate limiter for payment API (30 requests per minute)
+const paymentRateLimiter = new RateLimiter(30, 60000);
 
 // Simple Square client initialization
 function getSquareClient() {
