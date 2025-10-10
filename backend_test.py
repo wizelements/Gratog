@@ -72,24 +72,67 @@ class SquareAuthenticationDiagnostic:
                          f"❌ CRITICAL ISSUE: Invalid token format. Current token '{access_token[:20]}...' appears to be from Facebook/Meta API, not Square. Square sandbox tokens must start with 'sandbox-sq0atb-' followed by alphanumeric characters.")
             return False
 
-    def test_square_payment_api_comprehensive(self):
-        """Comprehensive testing of Square Payment API with all enhanced features"""
-        print("💳 TESTING ENHANCED SQUARE PAYMENT API")
+    def test_square_api_connectivity(self):
+        """Test 2: Test Square API endpoint accessibility"""
+        print("🌐 TEST 2: SQUARE API ENDPOINT CONNECTIVITY")
         
-        # Test 1: Valid payment with realistic order data
-        self.test_valid_payment_processing()
+        try:
+            # Test Square sandbox API endpoint directly
+            response = requests.get("https://connect.squareupsandbox.com/v2/locations", timeout=10)
+            if response.status_code in [401, 403]:
+                self.log_test("Square Sandbox API Endpoint", True, 
+                             f"Square API accessible (Status: {response.status_code} - expected without auth)")
+            else:
+                self.log_test("Square Sandbox API Endpoint", False, 
+                             f"Unexpected status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Square Sandbox API Endpoint", False, f"Connection error: {str(e)}")
+    
+    def test_mock_mode_status(self):
+        """Test 3: Check if mock mode is enabled/disabled"""
+        print("🎭 TEST 3: MOCK MODE STATUS CHECK")
         
-        # Test 2: Input validation and sanitization
-        self.test_input_validation()
+        # Check the current mock mode setting by examining the API response patterns
+        test_data = {
+            "sourceId": "cnon:card-nonce-ok",
+            "amount": 1.00,
+            "currency": "USD",
+            "orderId": f"mock_check_{int(time.time())}"
+        }
         
-        # Test 3: Error handling and user-friendly messages
-        self.test_error_handling()
-        
-        # Test 4: Performance monitoring
-        self.test_performance_monitoring()
-        
-        # Test 5: Mock mode functionality
-        self.test_mock_mode_functionality()
+        try:
+            start_time = time.time()
+            response = requests.post(
+                f"{API_BASE}/square-payment",
+                json=test_data,
+                headers={"Content-Type": "application/json"},
+                timeout=30
+            )
+            response_time = int((time.time() - start_time) * 1000)
+            
+            if response.status_code == 200:
+                result = response.json()
+                payment_id = result.get('paymentId', '')
+                receipt_url = result.get('receiptUrl', '')
+                
+                # Check for mock indicators
+                is_mock = (
+                    payment_id.startswith('mock_payment_') or
+                    'mock-square.com' in receipt_url
+                )
+                
+                if is_mock:
+                    self.log_test("Mock Mode Status", True, 
+                                 f"✅ Mock mode is ENABLED - Payment ID: {payment_id}", response_time)
+                else:
+                    self.log_test("Mock Mode Status", True, 
+                                 f"⚠️ Mock mode is DISABLED - Using live Square API", response_time)
+            else:
+                self.log_test("Mock Mode Status", False, 
+                             f"Unable to determine mock mode status - HTTP {response.status_code}", response_time)
+                
+        except Exception as e:
+            self.log_test("Mock Mode Status", False, f"Request failed: {str(e)}")
 
     def test_valid_payment_processing(self):
         """Test valid payment processing with realistic order data"""
