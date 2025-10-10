@@ -253,6 +253,12 @@ export async function POST(request) {
       { success: false, error: 'Payment processing failed. Please try again.' },
       { status: 500 }
     );
+  } catch (outerError) {
+    console.error('Outer error in payment processing:', outerError);
+    return NextResponse.json(
+      { success: false, error: 'Payment system error. Please try again.' },
+      { status: 500 }
+    );
   }
 }
 
