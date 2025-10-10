@@ -45,8 +45,6 @@ export async function POST(request) {
         { status: 429 }
       );
     }
-    
-  try {
     // Parse request body
     let body;
     try {
