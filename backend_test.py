@@ -104,62 +104,76 @@ def test_square_payment_authentication():
     except Exception as e:
         log_test("Square Payment Authentication", "FAIL", f"Exception: {str(e)}")
         return False
-def test_valid_payment_request():
-    """Test valid payment request with mock Square token"""
-    print("\n🧪 Testing Valid Payment Request...")
+def test_square_payment_validation():
+    """Test Square Payment API Input Validation"""
+    print("🔍 TESTING SQUARE PAYMENT VALIDATION")
+    print("=" * 60)
     
-    payload = {
-        "sourceId": "cnon:card-nonce-ok",  # Square sandbox test token
-        "amount": 35.00,
-        "currency": "USD",
-        "orderId": "test-order-001",
-        "buyerDetails": {
-            "name": "John Doe",
-            "email": "john@example.com"
+    test_cases = [
+        {
+            "name": "Missing sourceId",
+            "data": {"amount": 36.00, "currency": "USD"},
+            "expected_status": 400,
+            "should_pass": True
+        },
+        {
+            "name": "Missing amount",
+            "data": {"sourceId": SQUARE_TEST_TOKENS["valid"], "currency": "USD"},
+            "expected_status": 400,
+            "should_pass": True
+        },
+        {
+            "name": "Invalid negative amount",
+            "data": {"sourceId": SQUARE_TEST_TOKENS["valid"], "amount": -10.00},
+            "expected_status": 400,
+            "should_pass": True
+        },
+        {
+            "name": "Invalid string amount",
+            "data": {"sourceId": SQUARE_TEST_TOKENS["valid"], "amount": "invalid"},
+            "expected_status": 400,
+            "should_pass": True
+        },
+        {
+            "name": "Zero amount",
+            "data": {"sourceId": SQUARE_TEST_TOKENS["valid"], "amount": 0},
+            "expected_status": 400,
+            "should_pass": True
         }
-    }
+    ]
     
-    try:
-        response = requests.post(
-            SQUARE_API_URL,
-            json=payload,
-            headers={"Content-Type": "application/json"},
-            timeout=30
-        )
-        
-        print(f"   Status Code: {response.status_code}")
-        
-        # Test JSON format first
-        if not test_json_response_format(response, "Valid Payment"):
-            return False
+    passed_tests = 0
+    total_tests = len(test_cases)
+    
+    for test_case in test_cases:
+        try:
+            response = requests.post(f"{API_BASE}/square-payment", json=test_case["data"], timeout=15)
             
-        data = response.json()
-        print(f"   Response: {json.dumps(data, indent=2)}")
-        
-        # Check for expected fields in success response
-        if response.status_code == 200:
-            required_fields = ['success', 'paymentId']
-            missing_fields = [field for field in required_fields if field not in data]
-            if missing_fields:
-                print(f"❌ Missing required fields: {missing_fields}")
-                return False
-            print("✅ Valid payment request test passed")
-            return True
-        else:
-            # Even error responses should be valid JSON
-            if 'success' in data and 'error' in data:
-                print("✅ Valid error response format")
-                return True
+            if response.status_code == test_case["expected_status"]:
+                try:
+                    result = response.json()
+                    if "error" in result:
+                        log_test(f"Validation: {test_case['name']}", "PASS", 
+                                f"Correctly rejected with: {result['error']}")
+                        passed_tests += 1
+                    else:
+                        log_test(f"Validation: {test_case['name']}", "FAIL", 
+                                "Expected error message in response")
+                except:
+                    log_test(f"Validation: {test_case['name']}", "FAIL", 
+                            "Invalid JSON response")
             else:
-                print("❌ Invalid error response structure")
-                return False
+                log_test(f"Validation: {test_case['name']}", "FAIL", 
+                        f"Expected status {test_case['expected_status']}, got {response.status_code}")
                 
-    except requests.exceptions.Timeout:
-        print("❌ Request timed out (>30s)")
-        return False
-    except Exception as e:
-        print(f"❌ Request failed: {str(e)}")
-        return False
+        except Exception as e:
+            log_test(f"Validation: {test_case['name']}", "FAIL", f"Exception: {str(e)}")
+    
+    log_test("Square Payment Validation Summary", 
+             "PASS" if passed_tests == total_tests else "FAIL",
+             f"{passed_tests}/{total_tests} validation tests passed")
+    
+    return passed_tests == total_tests
 def test_missing_source_id():
     """Test missing sourceId validation"""
     print("\n🧪 Testing Missing SourceId Validation...")
