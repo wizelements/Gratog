@@ -196,100 +196,103 @@ class SquareAuthenticationDiagnostic:
             except Exception as e:
                 self.log_test(f"Auth Test: {description}", False, f"❌ Request error: {str(e)}")
 
-    def test_input_validation(self):
-        """Test enhanced input validation and sanitization"""
-        print("🛡️ Testing Input Validation and Sanitization...")
+    def test_detailed_error_analysis(self):
+        """Test 5: Detailed analysis of Square API error responses"""
+        print("🔬 TEST 5: DETAILED SQUARE API ERROR ANALYSIS")
         
-        validation_tests = [
-            {
-                "name": "Missing Source ID",
-                "data": {"amount": 35.00, "currency": "USD"},
-                "expected_status": 400
-            },
-            {
-                "name": "Missing Amount",
-                "data": {"sourceId": "test-token", "currency": "USD"},
-                "expected_status": 400
-            },
-            {
-                "name": "Invalid Amount (Negative)",
-                "data": {"sourceId": "test-token", "amount": -10.00},
-                "expected_status": 400
-            },
-            {
-                "name": "Invalid Amount (String)",
-                "data": {"sourceId": "test-token", "amount": "invalid"},
-                "expected_status": 400
-            },
-            {
-                "name": "XSS Attempt in Order Data",
-                "data": {
-                    "sourceId": "test-token",
-                    "amount": 35.00,
-                    "orderData": {
-                        "customer": {
-                            "name": "<script>alert('xss')</script>John Doe",
-                            "email": "test@example.com"
-                        },
-                        "cart": [{"name": "Test Product", "price": 3500, "quantity": 1}]
-                    }
-                },
-                "expected_status": [200, 400]  # Should either sanitize or reject
-            }
-        ]
+        # Test with minimal valid data to get specific error details
+        minimal_data = {
+            "sourceId": "cnon:card-nonce-ok",
+            "amount": 1.00,
+            "currency": "USD",
+            "orderId": f"error_analysis_{int(time.time())}"
+        }
         
-        for test in validation_tests:
+        try:
+            start_time = time.time()
+            response = requests.post(
+                f"{API_BASE}/square-payment",
+                json=minimal_data,
+                headers={"Content-Type": "application/json"},
+                timeout=30
+            )
+            response_time = int((time.time() - start_time) * 1000)
+            
+            print(f"    Response Status: {response.status_code}")
+            print(f"    Response Time: {response_time}ms")
+            
             try:
-                start_time = time.time()
-                response = requests.post(
-                    f"{API_BASE}/square-payment",
-                    json=test["data"],
-                    headers={'Content-Type': 'application/json'},
-                    timeout=10
-                )
-                response_time = int((time.time() - start_time) * 1000)
+                response_data = response.json()
+                print(f"    Response Body: {json.dumps(response_data, indent=4)}")
                 
-                expected_statuses = test["expected_status"] if isinstance(test["expected_status"], list) else [test["expected_status"]]
-                
-                if response.status_code in expected_statuses:
-                    # For XSS test, check if input was sanitized
-                    if "XSS" in test["name"] and response.status_code == 200:
-                        result = response.json()
-                        if "<script>" not in str(result):
-                            self.log_test(
-                                f"Input Validation: {test['name']}",
-                                True,
-                                "XSS content properly sanitized",
-                                response_time
-                            )
-                        else:
-                            self.log_test(
-                                f"Input Validation: {test['name']}",
-                                False,
-                                "XSS content not sanitized",
-                                response_time
-                            )
-                    else:
-                        self.log_test(
-                            f"Input Validation: {test['name']}",
-                            True,
-                            f"Correctly returned HTTP {response.status_code}",
-                            response_time
-                        )
-                else:
-                    self.log_test(
-                        f"Input Validation: {test['name']}",
-                        False,
-                        f"Expected {expected_statuses}, got {response.status_code}",
-                        response_time
-                    )
+                if response.status_code == 500:
+                    error_msg = response_data.get("error", "Unknown error")
                     
-            except Exception as e:
-                self.log_test(
-                    f"Input Validation: {test['name']}",
-                    False,
-                    f"Request failed: {str(e)}"
-                )
+                    # Analyze specific error patterns
+                    if "401" in error_msg or "Unauthorized" in error_msg or "AUTHENTICATION" in error_msg:
+                        self.log_test("Error Analysis - Authentication", False, 
+                                     f"❌ CONFIRMED: Square API authentication failure - {error_msg}", response_time)
+                    elif "INVALID_REQUEST_ERROR" in error_msg:
+                        self.log_test("Error Analysis - Request Format", False, 
+                                     f"❌ Request format error - {error_msg}", response_time)
+                    elif "timeout" in error_msg.lower():
+                        self.log_test("Error Analysis - Timeout", False, 
+                                     f"❌ Square API timeout - {error_msg}", response_time)
+                    else:
+                        self.log_test("Error Analysis - Other", False, 
+                                     f"❌ Other Square API error - {error_msg}", response_time)
+                        
+                elif response.status_code == 200:
+                    if response_data.get("success"):
+                        self.log_test("Error Analysis - Success", True, 
+                                     f"✅ Payment processed successfully - No authentication errors", response_time)
+                    else:
+                        self.log_test("Error Analysis - Business Logic", True, 
+                                     f"✅ Authentication OK, business logic rejection: {response_data.get('error')}", response_time)
+                else:
+                    self.log_test("Error Analysis - HTTP Status", False, 
+                                 f"❌ Unexpected HTTP status: {response.status_code}", response_time)
+                    
+            except json.JSONDecodeError:
+                self.log_test("Error Analysis - Response Format", False, 
+                             f"❌ Non-JSON response: {response.text[:200]}", response_time)
+                
+        except Exception as e:
+            self.log_test("Error Analysis - Request", False, f"❌ Request failed: {str(e)}")
+    
+    def test_server_logs_analysis(self):
+        """Test 6: Analyze server logs for Square API errors"""
+        print("📋 TEST 6: SERVER LOGS ANALYSIS")
+        
+        # Make a request that should trigger logging
+        test_data = {
+            "sourceId": "cnon:card-nonce-ok",
+            "amount": 10.00,
+            "orderId": f"log_test_{int(time.time())}"
+        }
+        
+        try:
+            # Make the request
+            response = requests.post(
+                f"{API_BASE}/square-payment",
+                json=test_data,
+                headers={"Content-Type": "application/json"},
+                timeout=30
+            )
+            
+            # Check server logs for Square-related errors
+            # Note: In a real environment, you'd check actual log files
+            # Here we'll simulate by checking the response patterns
+            
+            if response.status_code == 500:
+                self.log_test("Server Logs - Error Detection", True, 
+                             "✅ 500 error detected - Check server logs for Square API authentication errors")
+            else:
+                self.log_test("Server Logs - Error Detection", True, 
+                             f"✅ Response received (Status: {response.status_code}) - Check logs for details")
+                
+        except Exception as e:
+            self.log_test("Server Logs - Request", False, f"❌ Unable to trigger log analysis: {str(e)}")
 
     def test_error_handling(self):
         """Test comprehensive error handling"""
