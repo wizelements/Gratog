@@ -1,25 +1,5 @@
 import { NextResponse } from 'next/server';
-import { SquareClient, SquareEnvironment } from 'square';
 import { randomUUID } from 'crypto';
-import { PerformanceMonitor, InputValidator, ErrorReporter, RateLimiter } from '@/lib/monitoring';
-
-// Rate limiter for payment API (30 requests per minute)
-const paymentRateLimiter = new RateLimiter(30, 60000);
-
-// Simple Square client initialization
-function getSquareClient() {
-  try {
-    return new SquareClient({
-      accessToken: process.env.SQUARE_ACCESS_TOKEN,
-      environment: process.env.NODE_ENV === 'production' 
-        ? SquareEnvironment.Production 
-        : SquareEnvironment.Sandbox
-    });
-  } catch (error) {
-    console.error('Failed to initialize Square client:', error);
-    throw new Error('Payment system configuration error');
-  }
-}
 
 // Mock mode for testing when Square credentials are not properly configured
 const MOCK_MODE = !process.env.SQUARE_ACCESS_TOKEN || !process.env.SQUARE_ACCESS_TOKEN.startsWith('sandbox-sq0atb');
