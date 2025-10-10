@@ -70,6 +70,24 @@ export async function POST(request) {
       orderData 
     } = body;
     
+    // Enhanced input validation
+    if (orderData) {
+      const validation = InputValidator.validateOrderData(orderData);
+      if (!validation.isValid) {
+        const endTime = Date.now();
+        PerformanceMonitor.trackApiPerformance('/api/square-payment', startTime, endTime, 400);
+        
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Validation failed',
+            details: validation.errors
+          },
+          { status: 400 }
+        );
+      }
+    }
+    
     // Validate required fields
     if (!sourceId || !amount) {
       console.error('Missing required fields:', { sourceId: !!sourceId, amount: !!amount });
