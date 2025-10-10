@@ -349,94 +349,50 @@ class SquareAuthenticationDiagnostic:
         # Generate diagnostic summary
         self.generate_diagnostic_summary(credentials_valid)
 
-    def test_mock_mode_functionality(self):
-        """Test mock mode functionality for development/testing"""
-        print("🎭 Testing Mock Mode Functionality...")
+    def generate_diagnostic_summary(self, credentials_valid):
+        """Generate comprehensive diagnostic summary"""
+        print("\n" + "=" * 70)
+        print("🎯 SQUARE AUTHENTICATION DIAGNOSTIC SUMMARY")
+        print("=" * 70)
         
-        # Test mock payment with complex order
-        mock_order_data = {
-            "sourceId": "mock-payment-token",
-            "amount": 105.00,  # $105.00
-            "currency": "USD",
-            "orderId": f"mock_order_{uuid.uuid4().hex[:8]}",
-            "orderData": {
-                "customer": {
-                    "name": "Test Customer",
-                    "email": "test@example.com",
-                    "phone": "+15551234567"
-                },
-                "cart": [
-                    {"name": "Elderberry Sea Moss", "price": 3500, "quantity": 2},
-                    {"name": "Original Sea Moss", "price": 3000, "quantity": 1},
-                    {"name": "Shipping", "price": 500, "quantity": 1}
-                ],
-                "fulfillmentType": "delivery"
-            }
-        }
+        total_tests = len(self.test_results)
+        passed_tests = len([t for t in self.test_results if t['success']])
+        failed_tests = total_tests - passed_tests
         
-        try:
-            start_time = time.time()
-            response = requests.post(
-                f"{API_BASE}/square-payment",
-                json=mock_order_data,
-                headers={'Content-Type': 'application/json'},
-                timeout=15
-            )
-            response_time = int((time.time() - start_time) * 1000)
-            
-            if response.status_code == 200:
-                result = response.json()
-                
-                # Check for mock payment indicators
-                payment_id = result.get('paymentId', '')
-                receipt_url = result.get('receiptUrl', '')
-                
-                is_mock = (
-                    payment_id.startswith('mock_payment_') or
-                    'mock-square.com' in receipt_url or
-                    result.get('status') == 'COMPLETED'
-                )
-                
-                if is_mock and result.get('success'):
-                    self.log_test(
-                        "Mock Mode Payment Processing",
-                        True,
-                        f"Mock payment successful - ID: {payment_id}, Amount: ${result.get('amount', 0)/100:.2f}",
-                        response_time
-                    )
-                    
-                    # Test mock receipt URL
-                    if receipt_url and 'mock' in receipt_url:
-                        self.log_test(
-                            "Mock Mode Receipt Generation",
-                            True,
-                            f"Mock receipt URL generated: {receipt_url}"
-                        )
-                    else:
-                        self.log_test(
-                            "Mock Mode Receipt Generation",
-                            False,
-                            f"No mock receipt URL found: {receipt_url}"
-                        )
-                else:
-                    self.log_test(
-                        "Mock Mode Payment Processing",
-                        False,
-                        f"Payment failed or not in mock mode: {result.get('error', 'Unknown error')}"
-                    )
-            else:
-                self.log_test(
-                    "Mock Mode Payment Processing",
-                    False,
-                    f"HTTP {response.status_code}: {response.text[:200]}"
-                )
-                
-        except Exception as e:
-            self.log_test(
-                "Mock Mode Payment Processing",
-                False,
-                f"Request failed: {str(e)}"
-            )
+        print(f"Total Tests: {total_tests}")
+        print(f"✅ Passed: {passed_tests}")
+        print(f"❌ Failed: {failed_tests}")
+        print(f"Success Rate: {(passed_tests/total_tests*100):.1f}%")
+        print()
+        
+        # Critical findings
+        print("🚨 CRITICAL FINDINGS:")
+        if not credentials_valid:
+            print("❌ INVALID SQUARE ACCESS TOKEN FORMAT")
+            print("   Current token appears to be from Facebook/Meta API, not Square")
+            print("   Required format: 'sandbox-sq0atb-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'")
+            print("   This is the ROOT CAUSE of 500 errors after disabling mock mode")
+        else:
+            print("✅ Square credentials format appears valid")
+        
+        # Failed tests details
+        if failed_tests > 0:
+            print("\n❌ FAILED TESTS:")
+            for test in self.test_results:
+                if not test['success']:
+                    print(f"  • {test['test']}: {test['details']}")
+        
+        print("\n🔧 RECOMMENDED ACTIONS:")
+        print("1. Log into Square Developer Dashboard (developer.squareup.com)")
+        print("2. Navigate to your application")
+        print("3. Generate new sandbox access token")
+        print("4. Update SQUARE_ACCESS_TOKEN in .env file with format: sandbox-sq0atb-XXXXX")
+        print("5. Restart the application")
+        print("6. Re-run tests to verify authentication")
+        
+        total_time = time.time() - self.start_time
+        print(f"\nTotal Diagnostic Time: {total_time:.1f} seconds")
+        print("=" * 70)
 
     def test_rate_limiting(self):
         """Test rate limiting (30 requests per minute)"""
