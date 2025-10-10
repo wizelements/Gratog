@@ -37,31 +37,72 @@ def log_test(test_name, status, details=""):
         print(f"    Details: {details}")
     print()
 
-def test_json_response_format(response, test_name: str) -> bool:
-    """Validate that response is proper JSON format"""
+def test_square_payment_authentication():
+    """Test Square Payment API Authentication with Updated Credentials"""
+    print("🔐 TESTING SQUARE PAYMENT AUTHENTICATION")
+    print("=" * 60)
+    
+    # Test 1: Valid payment with Square test token
     try:
-        # Check if response has content
-        if not response.content:
-            print(f"❌ {test_name}: Empty response body")
+        payment_data = {
+            "sourceId": SQUARE_TEST_TOKENS["valid"],
+            "amount": 36.00,  # Elderberry moss price
+            "currency": "USD",
+            "orderId": "test-order-001",
+            "buyerDetails": {
+                "name": "Emma Rodriguez",
+                "email": "emma.rodriguez@example.com",
+                "phone": "+1-555-0123"
+            },
+            "orderData": {
+                "items": [
+                    {
+                        "id": ELDERBERRY_PRODUCT["id"],
+                        "name": ELDERBERRY_PRODUCT["name"],
+                        "price": ELDERBERRY_PRODUCT["price"],
+                        "quantity": 1
+                    }
+                ],
+                "customerInfo": {
+                    "name": "Emma Rodriguez",
+                    "email": "emma.rodriguez@example.com",
+                    "phone": "+1-555-0123"
+                },
+                "fulfillment": {
+                    "type": "pickup",
+                    "location": "Serenbe Farmers Market"
+                }
+            }
+        }
+        
+        print(f"Testing payment processing with amount: ${payment_data['amount']}")
+        response = requests.post(f"{API_BASE}/square-payment", json=payment_data, timeout=30)
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get("success"):
+                log_test("Square Payment Authentication", "PASS", 
+                        f"Payment processed successfully. Payment ID: {result.get('paymentId', 'N/A')}")
+                return True
+            else:
+                log_test("Square Payment Authentication", "FAIL", 
+                        f"Payment failed: {result.get('error', 'Unknown error')}")
+                return False
+        else:
+            try:
+                error_data = response.json()
+                log_test("Square Payment Authentication", "FAIL", 
+                        f"HTTP {response.status_code}: {error_data.get('error', 'Unknown error')}")
+            except:
+                log_test("Square Payment Authentication", "FAIL", 
+                        f"HTTP {response.status_code}: {response.text[:200]}")
             return False
             
-        # Try to parse JSON
-        json_data = response.json()
-        
-        # Validate JSON structure
-        if not isinstance(json_data, dict):
-            print(f"❌ {test_name}: Response is not a JSON object")
-            return False
-            
-        print(f"✅ {test_name}: Valid JSON response format")
-        return True
-        
-    except json.JSONDecodeError as e:
-        print(f"❌ {test_name}: JSON parsing failed - {str(e)}")
-        print(f"   Response content: {response.content[:200]}...")
+    except requests.exceptions.Timeout:
+        log_test("Square Payment Authentication", "FAIL", "Request timeout (30s)")
         return False
     except Exception as e:
-        print(f"❌ {test_name}: Unexpected error - {str(e)}")
+        log_test("Square Payment Authentication", "FAIL", f"Exception: {str(e)}")
         return False
 def test_valid_payment_request():
     """Test valid payment request with mock Square token"""
