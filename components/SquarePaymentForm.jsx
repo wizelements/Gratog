@@ -25,6 +25,8 @@ export default function SquarePaymentForm({
     success: false,
     message: ''
   });
+  const [validationErrors, setValidationErrors] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
 
   const handlePaymentMethodSubmission = async (token, buyer) => {
     try {
