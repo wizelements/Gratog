@@ -22,7 +22,7 @@ def log_test(test_name, status, details=""):
         print(f"    Details: {details}")
     print()
 
-def test_square_payment_authentication():
+def test_square_payment_mock_mode():
     """Test Square Payment API Authentication with Updated Credentials"""
     print("🔐 TESTING SQUARE PAYMENT AUTHENTICATION")
     print("=" * 60)
