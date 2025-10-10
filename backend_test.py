@@ -1,18 +1,41 @@
 #!/usr/bin/env python3
 """
-Comprehensive Square Payment API Testing
-Focus: JSON parsing error fix validation and response format testing
+Comprehensive Backend Testing for Taste of Gratitude E-commerce
+Focus: Square Payment Integration with Updated Credentials
 """
 
 import requests
 import json
 import time
 import os
-from typing import Dict, Any
+from datetime import datetime
 
-# Get base URL from environment
+# Configuration
 BASE_URL = "https://taste-ecommerce.preview.emergentagent.com"
-SQUARE_API_URL = f"{BASE_URL}/api/square-payment"
+API_BASE = f"{BASE_URL}/api"
+
+# Test data for elderberry moss product ($36.00 as specified in review request)
+ELDERBERRY_PRODUCT = {
+    "id": "elderberry-moss",
+    "name": "Elderberry Moss",
+    "price": 3600  # $36.00 in cents
+}
+
+# Square test tokens for sandbox testing
+SQUARE_TEST_TOKENS = {
+    "valid": "cnon:card-nonce-ok",
+    "declined": "cnon:card-nonce-declined",
+    "invalid": "cnon:invalid-card-nonce"
+}
+
+def log_test(test_name, status, details=""):
+    """Log test results with timestamp"""
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    status_emoji = "✅" if status == "PASS" else "❌" if status == "FAIL" else "⚠️"
+    print(f"[{timestamp}] {status_emoji} {test_name}: {status}")
+    if details:
+        print(f"    Details: {details}")
+    print()
 
 def test_json_response_format(response, test_name: str) -> bool:
     """Validate that response is proper JSON format"""
