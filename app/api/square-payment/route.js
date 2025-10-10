@@ -60,11 +60,11 @@ export async function POST(request) {
     console.log('Processing payment:', { amountInCents, currency, orderId });
     
     // Initialize Square client
-    const squareClient = new Client({
+    const squareClient = new SquareClient({
       accessToken: process.env.SQUARE_ACCESS_TOKEN,
       environment: process.env.NODE_ENV === 'production' 
-        ? Environment.Production 
-        : Environment.Sandbox
+        ? SquareEnvironment.Production 
+        : SquareEnvironment.Sandbox
     });
 
     // Process payment with Square or mock
