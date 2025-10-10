@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for Enhanced Square Payment System
-Tests all three options: Production Ready Integration, Enhanced Features, Performance & Security
+Square Payment API Authentication Diagnostic Test Suite
+Focused testing for Square payment integration authentication issues after disabling mock mode
 """
 
 import requests
