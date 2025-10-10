@@ -25,8 +25,27 @@ function getSquareClient() {
 const MOCK_MODE = !process.env.SQUARE_ACCESS_TOKEN || !process.env.SQUARE_ACCESS_TOKEN.startsWith('sandbox-sq0atb');
 
 export async function POST(request) {
+  const startTime = Date.now();
+  const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  
   console.log('Square payment API called');
   
+  try {
+    // Rate limiting check
+    if (!paymentRateLimiter.isAllowed(clientIP)) {
+      const endTime = Date.now();
+      PerformanceMonitor.trackApiPerformance('/api/square-payment', startTime, endTime, 429);
+      
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Rate limit exceeded. Please try again later.',
+          retryAfter: 60
+        },
+        { status: 429 }
+      );
+    }
+    
   try {
     // Parse request body
     let body;
