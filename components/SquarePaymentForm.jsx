@@ -3,9 +3,7 @@
 import { useState } from 'react';
 import { 
   PaymentForm, 
-  CreditCard,
-  ApplePay,
-  GooglePay
+  CreditCard
 } from 'react-square-web-payments-sdk';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
@@ -37,25 +35,60 @@ export default function SquarePaymentForm({
         message: 'Processing payment...' 
       });
       
+      console.log('Starting payment submission...');
+      
       // Generate a unique idempotency key for this payment attempt
       const idempotencyKey = uuidv4();
+      
+      const paymentData = {
+        sourceId: token.token,
+        amount,
+        currency,
+        idempotencyKey,
+        orderId,
+        buyerDetails: buyer,
+        orderData
+      };
+      
+      console.log('Payment data prepared:', { ...paymentData, sourceId: '[REDACTED]' });
       
       // Call the backend API to process payment
       const response = await fetch('/api/square-payment', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sourceId: token.token,
-          amount,
-          currency,
-          idempotencyKey,
-          orderId,
-          buyerDetails: buyer,
-          orderData
-        })
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(paymentData)
       });
       
-      const result = await response.json();
+      console.log('Payment API response status:', response.status);
+      
+      // Check if response is ok
+      if (!response.ok) {
+        console.error('Payment API error response:', response.status, response.statusText);
+        throw new Error(`Payment API returned ${response.status}: ${response.statusText}`);
+      }
+      
+      // Check if response has content
+      const responseText = await response.text();
+      console.log('Payment API response text length:', responseText.length);
+      
+      if (!responseText || responseText.trim() === '') {
+        throw new Error('Payment API returned empty response');
+      }
+      
+      // Parse JSON response
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (jsonError) {
+        console.error('JSON parse error:', jsonError);
+        console.error('Response text:', responseText);
+        throw new Error('Invalid response from payment system. Please try again.');
+      }
+      
+      console.log('Payment result:', result);
       
       if (result.success) {
         setPaymentStatus({
@@ -74,7 +107,19 @@ export default function SquarePaymentForm({
       }
     } catch (error) {
       console.error('Payment error:', error);
-      const errorMessage = error.message || 'Payment processing failed. Please try again.';
+      let errorMessage = 'Payment processing failed. Please try again.';
+      
+      // Provide specific error messages for common issues
+      if (error.message.includes('JSON')) {
+        errorMessage = 'Payment system error. Please refresh the page and try again.';
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'Payment processing timed out. Please try again.';
+      } else if (error.message.includes('network') || error.message.includes('fetch')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       setPaymentStatus({
         loading: false,
         error: true,
@@ -156,11 +201,13 @@ export default function SquarePaymentForm({
                 }}
               />
               
-              {/* Optional: Add Apple Pay and Google Pay support */}
+              {/* Optional: Add Apple Pay and Google Pay support - commented out for now */}
+              {/* 
               <div className="alternative-payments grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <ApplePay />
                 <GooglePay />
               </div>
+              */}
             </div>
           </PaymentForm>
           

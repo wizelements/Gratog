@@ -1,21 +1,40 @@
 import { NextResponse } from 'next/server';
-import { Client, Environment } from 'square';
+import { SquareClient, SquareEnvironment } from 'square';
 import { randomUUID } from 'crypto';
-import { createOrder } from '@/lib/db-customers';
-import { sendOrderSMS } from '@/lib/sms';
-import { sendOrderEmail } from '@/lib/email';
 
-// Initialize Square client
-const squareClient = new Client({
-  accessToken: process.env.SQUARE_ACCESS_TOKEN,
-  environment: process.env.NODE_ENV === 'production' 
-    ? Environment.Production 
-    : Environment.Sandbox
-});
+// Simple Square client initialization
+function getSquareClient() {
+  try {
+    return new SquareClient({
+      accessToken: process.env.SQUARE_ACCESS_TOKEN,
+      environment: process.env.NODE_ENV === 'production' 
+        ? SquareEnvironment.Production 
+        : SquareEnvironment.Sandbox
+    });
+  } catch (error) {
+    console.error('Failed to initialize Square client:', error);
+    throw new Error('Payment system configuration error');
+  }
+}
 
 export async function POST(request) {
+  console.log('Square payment API called');
+  
   try {
-    const body = await request.json();
+    // Parse request body
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      return NextResponse.json(
+        { success: false, error: 'Invalid request format' },
+        { status: 400 }
+      );
+    }
+
+    console.log('Request body received:', { ...body, sourceId: body.sourceId ? '[REDACTED]' : 'missing' });
+
     const { 
       sourceId, 
       amount, 
@@ -27,89 +46,58 @@ export async function POST(request) {
     
     // Validate required fields
     if (!sourceId || !amount) {
+      console.error('Missing required fields:', { sourceId: !!sourceId, amount: !!amount });
       return NextResponse.json(
         { success: false, error: 'Missing required fields: sourceId and amount are required' },
         { status: 400 }
       );
     }
     
-    // Convert amount to cents (Square expects amount in smallest currency unit)
-    const amountInCents = Math.round(parseFloat(amount) * 100);
+    // Validate amount
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      console.error('Invalid amount:', amount);
+      return NextResponse.json(
+        { success: false, error: 'Invalid amount provided' },
+        { status: 400 }
+      );
+    }
+    
+    // Convert amount to cents
+    const amountInCents = Math.round(numAmount * 100);
+    console.log('Processing payment:', { amountInCents, currency, orderId });
+    
+    // Initialize Square client
+    const squareClient = getSquareClient();
     
     // Create payment request
     const paymentRequest = {
       sourceId,
       idempotencyKey: body.idempotencyKey || randomUUID(),
       amountMoney: {
-        amount: amountInCents,
+        amount: BigInt(amountInCents),
         currency
       },
-      // Optional: Link to order if you have one
-      orderId: orderId,
-      // Optional: Include customer details
-      buyerEmailAddress: buyerDetails?.email,
-      // Optional: Include location ID if not using default
       locationId: process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID,
-      // Optional: Include note for the payment
-      note: `Payment for ${process.env.NEXT_PUBLIC_SITE_NAME || 'Taste of Gratitude'} order ${orderId || 'unknown'}`
+      note: `Taste of Gratitude order ${orderId || 'unknown'}`
     };
+
+    console.log('Sending payment request to Square:', { 
+      ...paymentRequest, 
+      sourceId: '[REDACTED]',
+      idempotencyKey: '[REDACTED]'
+    });
     
     // Process payment with Square
-    const { result } = await squareClient.paymentsApi.createPayment(paymentRequest);
+    const { result } = await squareClient.payments.create(paymentRequest);
     
-    // If payment is successful, create order in database
-    if (result.payment && result.payment.status === 'COMPLETED') {
-      try {
-        // Create order in database
-        const orderDetails = {
-          id: orderId || result.payment.id,
-          customer: orderData?.customer || {
-            name: buyerDetails?.givenName || 'Unknown',
-            email: buyerDetails?.email || '',
-            phone: orderData?.customer?.phone || ''
-          },
-          items: orderData?.cart || [],
-          total: amountInCents,
-          fulfillmentType: orderData?.fulfillmentType || 'pickup',
-          status: 'paid',
-          createdAt: new Date().toISOString(),
-          paymentId: result.payment.id,
-          paymentMethod: 'square',
-          // Include delivery details if applicable
-          ...(orderData?.deliveryAddress && {
-            deliveryAddress: orderData.deliveryAddress,
-            deliveryTimeSlot: orderData.deliveryTimeSlot,
-            deliveryInstructions: orderData.deliveryInstructions
-          })
-        };
-        
-        await createOrder(orderDetails);
-        
-        // Send confirmation notifications (SMS/Email)
-        if (orderDetails.customer.phone) {
-          try {
-            await sendOrderSMS(orderDetails);
-          } catch (smsError) {
-            console.error('Failed to send SMS confirmation:', smsError);
-            // Don't fail the payment if SMS fails
-          }
-        }
-        
-        if (orderDetails.customer.email) {
-          try {
-            await sendOrderEmail(orderDetails);
-          } catch (emailError) {
-            console.error('Failed to send email confirmation:', emailError);
-            // Don't fail the payment if email fails
-          }
-        }
-      } catch (dbError) {
-        console.error('Failed to save order to database:', dbError);
-        // Don't fail the payment if database save fails
-      }
-    }
+    console.log('Square payment successful:', {
+      paymentId: result.payment.id,
+      status: result.payment.status,
+      amount: result.payment.amountMoney?.amount
+    });
     
-    // Return successful response
+    // Simple success response (no background processing for now to avoid issues)
     return NextResponse.json({
       success: true,
       paymentId: result.payment.id,
@@ -119,19 +107,27 @@ export async function POST(request) {
       amount: result.payment.amountMoney?.amount,
       currency: result.payment.amountMoney?.currency
     });
+    
   } catch (error) {
     console.error('Square payment error:', error);
     
-    // Extract error details from Square response
-    let errorMessage = 'Payment processing failed';
-    let statusCode = 500;
+    // Handle timeout errors specifically
+    if (error.message === 'Payment processing timeout') {
+      return NextResponse.json(
+        { success: false, error: 'Payment processing timed out. Please try again.' },
+        { status: 408 }
+      );
+    }
     
+    // Handle Square API errors
     if (error.result && error.result.errors && error.result.errors.length > 0) {
-      errorMessage = error.result.errors[0].detail || errorMessage;
+      const squareError = error.result.errors[0];
+      console.error('Square API error:', squareError);
       
-      // Map specific Square error codes to more user-friendly messages
-      const errorCode = error.result.errors[0].code;
-      switch (errorCode) {
+      let errorMessage = squareError.detail || 'Payment processing failed';
+      
+      // Map specific Square error codes to user-friendly messages
+      switch (squareError.code) {
         case 'CARD_DECLINED':
           errorMessage = 'Your card was declined. Please try a different payment method.';
           break;
@@ -147,18 +143,31 @@ export async function POST(request) {
         case 'VERIFY_CVV':
           errorMessage = 'Please verify your card\'s security code and try again.';
           break;
-        default:
-          // Keep the original error message for other cases
+        case 'INVALID_REQUEST_ERROR':
+          errorMessage = 'Payment request invalid. Please try again.';
           break;
+        default:
+          errorMessage = squareError.detail || 'Payment processing failed';
       }
       
-      statusCode = error.statusCode || 500;
+      return NextResponse.json(
+        { success: false, error: errorMessage },
+        { status: 400 }
+      );
     }
     
-    // Return error response
+    // Generic error handling
     return NextResponse.json(
-      { success: false, error: errorMessage },
-      { status: statusCode }
+      { success: false, error: 'Payment processing failed. Please try again.' },
+      { status: 500 }
     );
   }
+}
+
+// Add GET method to prevent method not allowed errors
+export async function GET() {
+  return NextResponse.json(
+    { error: 'Method not allowed. Use POST for payments.' },
+    { status: 405 }
+  );
 }

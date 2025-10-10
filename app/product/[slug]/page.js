@@ -30,27 +30,8 @@ export default function ProductDetailPage() {
   const handleBuyNow = async () => {
     setIsLoading(true);
     try {
-      const origin = window.location.origin;
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Origin': origin,
-        },
-        body: JSON.stringify({
-          items: [{ id: product.id, quantity: 1 }],
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create checkout session');
-      }
-
-      const { url } = await response.json();
-      if (url) {
-        window.location.href = url;
-      }
+      // Redirect to order page for Square checkout flow
+      window.location.href = '/order';
     } catch (error) {
       console.error('Checkout error:', error);
       toast.error('Failed to start checkout. Please try again.');
