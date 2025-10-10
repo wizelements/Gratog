@@ -109,8 +109,8 @@ export async function POST(request) {
       });
       
       // Process payment with Square
-      const { result: squareResult } = await squareClient.paymentsApi.createPayment(paymentRequest);
-      result = { payment: squareResult.payment };
+      const squareResult = await squareClient.payments.create(paymentRequest);
+      result = { payment: squareResult.result.payment };
     }
 
     console.log('Square payment successful:', {
