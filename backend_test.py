@@ -329,73 +329,25 @@ class SquareAuthenticationDiagnostic:
         except Exception as e:
             self.log_test("Health Check Endpoint", False, f"❌ Request failed: {str(e)}")
 
-    def test_performance_monitoring(self):
-        """Test performance monitoring and metrics"""
-        print("📊 Testing Performance Monitoring...")
+    def run_comprehensive_diagnostic(self):
+        """Run comprehensive Square authentication diagnostic"""
+        print("🔍 SQUARE PAYMENT API AUTHENTICATION DIAGNOSTIC")
+        print("=" * 70)
+        print(f"Testing against: {BASE_URL}")
+        print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print("=" * 70)
         
-        # Test multiple requests to check consistency
-        response_times = []
+        # Run all diagnostic tests
+        credentials_valid = self.test_square_credentials_format()
+        self.test_square_api_connectivity()
+        self.test_mock_mode_status()
+        self.test_square_authentication_with_test_tokens()
+        self.test_detailed_error_analysis()
+        self.test_server_logs_analysis()
+        self.test_health_check_endpoint()
         
-        for i in range(3):
-            try:
-                test_data = {
-                    "sourceId": "test-token",
-                    "amount": 35.00,
-                    "orderId": f"perf_test_{i}_{uuid.uuid4().hex[:6]}"
-                }
-                
-                start_time = time.time()
-                response = requests.post(
-                    f"{API_BASE}/square-payment",
-                    json=test_data,
-                    headers={'Content-Type': 'application/json'},
-                    timeout=10
-                )
-                response_time = int((time.time() - start_time) * 1000)
-                response_times.append(response_time)
-                
-                # Check if response includes performance metrics
-                if response.status_code == 200:
-                    result = response.json()
-                    if 'processingTime' in result:
-                        self.log_test(
-                            f"Performance Monitoring: Request {i+1}",
-                            True,
-                            f"Response time: {response_time}ms, Processing time: {result['processingTime']}ms",
-                            response_time
-                        )
-                    else:
-                        self.log_test(
-                            f"Performance Monitoring: Request {i+1}",
-                            True,
-                            f"Response time: {response_time}ms (no processing time in response)",
-                            response_time
-                        )
-                        
-            except Exception as e:
-                self.log_test(
-                    f"Performance Monitoring: Request {i+1}",
-                    False,
-                    f"Request failed: {str(e)}"
-                )
-        
-        # Analyze performance consistency
-        if response_times:
-            avg_time = sum(response_times) / len(response_times)
-            max_time = max(response_times)
-            
-            if max_time < 5000:  # Under 5 seconds
-                self.log_test(
-                    "Performance Consistency",
-                    True,
-                    f"Average: {avg_time:.0f}ms, Max: {max_time}ms (all under 5s threshold)"
-                )
-            else:
-                self.log_test(
-                    "Performance Consistency",
-                    False,
-                    f"Average: {avg_time:.0f}ms, Max: {max_time}ms (exceeds 5s threshold)"
-                )
+        # Generate diagnostic summary
+        self.generate_diagnostic_summary(credentials_valid)
 
     def test_mock_mode_functionality(self):
         """Test mock mode functionality for development/testing"""
