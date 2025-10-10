@@ -39,73 +39,38 @@ class SquareAuthenticationDiagnostic:
             print(f"    Details: {details}")
         print()
 
-    def test_health_check_endpoint(self):
-        """Test health check endpoint for system status monitoring"""
-        print("🏥 TESTING HEALTH CHECK ENDPOINT")
+    def test_square_credentials_format(self):
+        """Test 1: Validate Square credentials format"""
+        print("🔍 TEST 1: SQUARE CREDENTIALS FORMAT VALIDATION")
         
-        try:
-            start_time = time.time()
-            response = requests.get(f"{API_BASE}/health", timeout=10)
-            response_time = int((time.time() - start_time) * 1000)
-            
-            if response.status_code == 200:
-                health_data = response.json()
-                
-                # Validate health response structure
-                required_fields = ['status', 'timestamp', 'services', 'response_time_ms']
-                missing_fields = [field for field in required_fields if field not in health_data]
-                
-                if missing_fields:
-                    self.log_test(
-                        "Health Check Response Structure",
-                        False,
-                        f"Missing required fields: {missing_fields}",
-                        response_time
-                    )
-                else:
-                    # Check service statuses
-                    services = health_data.get('services', {})
-                    service_status = []
-                    
-                    for service, status in services.items():
-                        service_status.append(f"{service}: {status}")
-                    
-                    self.log_test(
-                        "Health Check Endpoint",
-                        True,
-                        f"Status: {health_data.get('status')}, Services: {', '.join(service_status)}",
-                        response_time
-                    )
-                    
-                    # Test performance threshold (should respond within 2 seconds)
-                    if response_time > 2000:
-                        self.log_test(
-                            "Health Check Performance",
-                            False,
-                            f"Response time {response_time}ms exceeds 2000ms threshold",
-                            response_time
-                        )
-                    else:
-                        self.log_test(
-                            "Health Check Performance",
-                            True,
-                            f"Response time within acceptable limits",
-                            response_time
-                        )
-            else:
-                self.log_test(
-                    "Health Check Endpoint",
-                    False,
-                    f"HTTP {response.status_code}: {response.text}",
-                    response_time
-                )
-                
-        except Exception as e:
-            self.log_test(
-                "Health Check Endpoint",
-                False,
-                f"Request failed: {str(e)}"
-            )
+        # Check environment variables (from .env file analysis)
+        app_id = "sq0idp-V1fV-MwsU5lET4rvzHKnIw"
+        location_id = "L66TVG6867BG9"
+        access_token = "EAAAl-ZrukY7JTIOhQRn4biERUAu3arLjF2LFjEOtz0_I30fXiFEsQuVEsNvr7eH"
+        
+        # Validate App ID format
+        if app_id.startswith("sq0idp-"):
+            self.log_test("App ID Format", True, f"Correct format: {app_id}")
+        else:
+            self.log_test("App ID Format", False, f"Invalid format: {app_id}")
+        
+        # Validate Location ID format
+        if len(location_id) > 5 and location_id.isalnum():
+            self.log_test("Location ID Format", True, f"Correct format: {location_id}")
+        else:
+            self.log_test("Location ID Format", False, f"Invalid format: {location_id}")
+        
+        # Validate Access Token format - THIS IS THE CRITICAL ISSUE
+        if access_token.startswith("sandbox-sq0atb-"):
+            self.log_test("Access Token Format", True, f"Correct sandbox format")
+            return True
+        elif access_token.startswith("sq0atb-"):
+            self.log_test("Access Token Format", True, f"Correct production format")
+            return True
+        else:
+            self.log_test("Access Token Format", False, 
+                         f"❌ CRITICAL ISSUE: Invalid token format. Current token '{access_token[:20]}...' appears to be from Facebook/Meta API, not Square. Square sandbox tokens must start with 'sandbox-sq0atb-' followed by alphanumeric characters.")
+            return False
 
     def test_square_payment_api_comprehensive(self):
         """Comprehensive testing of Square Payment API with all enhanced features"""
