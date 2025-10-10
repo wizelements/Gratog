@@ -1,32 +1,17 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for Taste of Gratitude E-commerce
-Focus: Square Payment Integration with Updated Credentials
+Comprehensive Backend API Testing for Taste of Gratitude E-commerce
+Focus: Square Payment Integration Mock Mode Testing
 """
 
 import requests
 import json
 import time
-import os
 from datetime import datetime
 
 # Configuration
 BASE_URL = "https://taste-ecommerce.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
-
-# Test data for elderberry moss product ($36.00 as specified in review request)
-ELDERBERRY_PRODUCT = {
-    "id": "elderberry-moss",
-    "name": "Elderberry Moss",
-    "price": 3600  # $36.00 in cents
-}
-
-# Square test tokens for sandbox testing
-SQUARE_TEST_TOKENS = {
-    "valid": "cnon:card-nonce-ok",
-    "declined": "cnon:card-nonce-declined",
-    "invalid": "cnon:invalid-card-nonce"
-}
 
 def log_test(test_name, status, details=""):
     """Log test results with timestamp"""
