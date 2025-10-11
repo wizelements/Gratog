@@ -258,6 +258,14 @@ export default function SquarePaymentForm({
                   {/* Enhanced Apple Pay */}
                   <div className="relative group">
                     <ApplePay 
+                      createPaymentRequest={() => ({
+                        countryCode: 'US',
+                        currencyCode: currency,
+                        total: {
+                          amount: amount.toString(),
+                          label: 'Taste of Gratitude'
+                        }
+                      })}
                       buttonProps={{
                         isLoading: paymentStatus.loading,
                         css: {
@@ -276,6 +284,14 @@ export default function SquarePaymentForm({
                   {/* Enhanced Google Pay */}
                   <div className="relative group">
                     <GooglePay 
+                      createPaymentRequest={() => ({
+                        countryCode: 'US',
+                        currencyCode: currency,
+                        total: {
+                          amount: amount.toString(),
+                          label: 'Taste of Gratitude'
+                        }
+                      })}
                       buttonProps={{
                         isLoading: paymentStatus.loading,
                         css: {
