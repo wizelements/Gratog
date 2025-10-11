@@ -225,11 +225,12 @@ export async function POST(request) {
       compress: true
     });
     
-  } catch (error) {
-    console.error('Square payment error:', error);
-    
-    return ResponseOptimizer.error('Payment processing failed. Please try again.', 500, { success: false });
-  }
+    } catch (error) {
+      console.error('Square payment error:', error);
+      
+      return ResponseOptimizer.error('Payment processing failed. Please try again.', 500, { success: false });
+    }
+  }, { endpoint: 'square-payment' });
 }
 
 // Add GET method to prevent method not allowed errors
