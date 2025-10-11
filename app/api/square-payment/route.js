@@ -125,7 +125,7 @@ export async function POST(request) {
 
       // If payment is successful, create order in database
       if (result.payment && result.payment.status === 'COMPLETED') {
-      try {
+        try {
         // Create order in database
         const orderDetails = {
           id: orderId || result.payment.id,
