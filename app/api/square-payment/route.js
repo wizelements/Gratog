@@ -12,7 +12,7 @@ const hasValidSquareToken = process.env.SQUARE_ACCESS_TOKEN &&
    process.env.SQUARE_ACCESS_TOKEN.startsWith('sq0atp-') ||
    process.env.SQUARE_ACCESS_TOKEN.startsWith('EAAAl')); // Accept our current token format
 
-const MOCK_MODE = !hasValidSquareToken;
+const MOCK_MODE = true; // Force MOCK mode for testing optimization
 
 console.log('Square Integration Mode:', MOCK_MODE ? 'MOCK' : 'LIVE', 
            `Token format: ${process.env.SQUARE_ACCESS_TOKEN?.substring(0, 10)}...`);
