@@ -28,10 +28,7 @@ export async function POST(request) {
       body = await request.json();
     } catch (parseError) {
       console.error('JSON parse error:', parseError);
-      return NextResponse.json(
-        { success: false, error: 'Invalid request format' },
-        { status: 400 }
-      );
+      return ResponseOptimizer.error('Invalid request format', 400, { success: false });
     }
 
     console.log('Request body received:', { ...body, sourceId: body.sourceId ? '[REDACTED]' : 'missing' });
