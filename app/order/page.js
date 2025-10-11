@@ -331,7 +331,14 @@ export default function OrderPage() {
   // Step 3: Fulfillment
   if (step === 3) {
     return (
-      <div className="min-h-screen bg-background p-4">
+      <>
+        <SpinWheelModal 
+          showSpinWheel={showSpinWheel} 
+          setShowSpinWheel={setShowSpinWheel} 
+          customer={customer} 
+          handleSpinWin={handleSpinWin} 
+        />
+        <div className="min-h-screen bg-background p-4">
         <div className="max-w-md mx-auto py-8">
           <Button variant="ghost" onClick={() => setStep(2)} className="mb-4">
             ← Back
