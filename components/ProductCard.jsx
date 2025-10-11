@@ -1,11 +1,11 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Eye } from 'lucide-react';
 import { useState } from 'react';
+import { ProductCardImage } from '@/components/ProductImage';
 
 export default function ProductCard({ product, onCheckout }) {
   const [isLoading, setIsLoading] = useState(false);
