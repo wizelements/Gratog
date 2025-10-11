@@ -1,19 +1,11 @@
-import { MongoClient } from 'mongodb'
-import { v4 as uuidv4 } from 'uuid'
 import { NextResponse } from 'next/server'
-
-// MongoDB connection
-let client
-let db
-
-async function connectToMongo() {
-  if (!client) {
-    client = new MongoClient(process.env.MONGO_URL)
-    await client.connect()
-    db = client.db(process.env.DB_NAME)
-  }
-  return db
-}
+import { v4 as uuidv4 } from 'uuid'
+import { 
+  connectToDatabase, 
+  getProductsOptimized, 
+  getProductByIdOptimized,
+  getCachedQuery 
+} from '@/lib/db-optimized'
 
 // Helper function to handle CORS
 function handleCORS(response) {
