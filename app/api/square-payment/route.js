@@ -119,6 +119,9 @@ export async function POST(request) {
       amount: result.payment.amountMoney?.amount
     });
 
+    // Monitor memory usage after payment processing
+    MemoryOptimizer.monitorMemoryPressure();
+
     // If payment is successful, create order in database
     if (result.payment && result.payment.status === 'COMPLETED') {
       try {
