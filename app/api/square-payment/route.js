@@ -215,8 +215,8 @@ export async function POST(request) {
 
     const endTime = Date.now();
     
-    // Return successful response
-    return NextResponse.json({
+    // Return optimized successful response
+    return ResponseOptimizer.json({
       success: true,
       paymentId: result.payment.id,
       orderId: result.payment.orderId || orderId,
@@ -225,6 +225,9 @@ export async function POST(request) {
       amount: result.payment.amountMoney?.amount,
       currency: result.payment.amountMoney?.currency,
       processingTime: endTime - startTime
+    }, {
+      cacheMaxAge: 0, // Don't cache payment responses
+      compress: true
     });
     
   } catch (error) {
