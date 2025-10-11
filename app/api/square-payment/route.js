@@ -114,17 +114,17 @@ export async function POST(request) {
         result = { payment: squareResult.result.payment };
       }
 
-    console.log('Square payment successful:', {
-      paymentId: result.payment.id,
-      status: result.payment.status,
-      amount: result.payment.amountMoney?.amount
-    });
+      console.log('Square payment successful:', {
+        paymentId: result.payment.id,
+        status: result.payment.status,
+        amount: result.payment.amountMoney?.amount
+      });
 
-    // Monitor memory usage after payment processing
-    MemoryOptimizer.monitorMemoryPressure();
+      // Monitor memory usage after payment processing
+      MemoryOptimizer.monitorMemoryPressure();
 
-    // If payment is successful, create order in database
-    if (result.payment && result.payment.status === 'COMPLETED') {
+      // If payment is successful, create order in database
+      if (result.payment && result.payment.status === 'COMPLETED') {
       try {
         // Create order in database
         const orderDetails = {
