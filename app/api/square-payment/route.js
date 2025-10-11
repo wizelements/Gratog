@@ -164,7 +164,7 @@ export async function POST(request) {
           })
         };
         
-        await createOrder(orderDetails);
+        await createOrderOptimized(orderDetails);
         
         // Mark coupon as used if one was applied
         if (orderData?.appliedCoupon?.code) {
