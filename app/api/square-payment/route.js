@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 import { createOrderOptimized } from '@/lib/db-optimized';
 import { sendOrderSMS } from '@/lib/sms';
 import { sendOrderEmail } from '@/lib/email';
+import { ResponseOptimizer, MemoryOptimizer } from '@/lib/response-optimizer';
 
 // Check if we have valid Square credentials - if not, use mock mode
 const hasValidSquareToken = process.env.SQUARE_ACCESS_TOKEN && 
