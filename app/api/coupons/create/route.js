@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { SquareClient, SquareEnvironment } from 'square';
 import { randomUUID } from 'crypto';
-import { connectToDatabase } from '@/lib/db-admin';
+import { connectToDatabase } from '@/lib/db-optimized';
 
 // Initialize Square client
 const squareClient = new SquareClient({
