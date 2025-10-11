@@ -408,11 +408,14 @@ metadata:
 
 test_plan:
   current_focus: []
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Square Integration with Coupons"
   test_all: false
   test_priority: "high_first"
   completed_comprehensive_testing: true
   enhanced_square_system_status: "fully_functional"
+  coupon_system_status: "fully_functional"
+  coupon_testing_complete: true
 
 agent_communication:
     - agent: "testing"
