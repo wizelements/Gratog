@@ -32,41 +32,41 @@ export async function POST(request) {
         return ResponseOptimizer.error('Invalid request format', 400, { success: false });
       }
 
-    console.log('Request body received:', { ...body, sourceId: body.sourceId ? '[REDACTED]' : 'missing' });
+      console.log('Request body received:', { ...body, sourceId: body.sourceId ? '[REDACTED]' : 'missing' });
 
-    const { 
-      sourceId, 
-      amount, 
-      currency = 'USD', 
-      orderId, 
-      buyerDetails, 
-      orderData 
-    } = body;
-    
-    // Validate required fields
-    if (!sourceId || !amount) {
-      console.error('Missing required fields:', { sourceId: !!sourceId, amount: !!amount });
-      return ResponseOptimizer.error('Missing required fields: sourceId and amount are required', 400, { success: false });
-    }
-    
-    // Validate amount
-    const numAmount = parseFloat(amount);
-    if (isNaN(numAmount) || numAmount <= 0) {
-      console.error('Invalid amount:', amount);
-      return ResponseOptimizer.error('Invalid amount provided', 400, { success: false });
-    }
-    
-    // Convert amount to cents
-    const amountInCents = Math.round(numAmount * 100);
-    console.log('Processing payment:', { amountInCents, currency, orderId });
-    
-    // Initialize Square client
-    const squareClient = new SquareClient({
-      accessToken: process.env.SQUARE_ACCESS_TOKEN,
-      environment: process.env.NODE_ENV === 'production' 
-        ? SquareEnvironment.Production 
-        : SquareEnvironment.Sandbox
-    });
+      const { 
+        sourceId, 
+        amount, 
+        currency = 'USD', 
+        orderId, 
+        buyerDetails, 
+        orderData 
+      } = body;
+      
+      // Validate required fields
+      if (!sourceId || !amount) {
+        console.error('Missing required fields:', { sourceId: !!sourceId, amount: !!amount });
+        return ResponseOptimizer.error('Missing required fields: sourceId and amount are required', 400, { success: false });
+      }
+      
+      // Validate amount
+      const numAmount = parseFloat(amount);
+      if (isNaN(numAmount) || numAmount <= 0) {
+        console.error('Invalid amount:', amount);
+        return ResponseOptimizer.error('Invalid amount provided', 400, { success: false });
+      }
+      
+      // Convert amount to cents
+      const amountInCents = Math.round(numAmount * 100);
+      console.log('Processing payment:', { amountInCents, currency, orderId });
+      
+      // Initialize Square client
+      const squareClient = new SquareClient({
+        accessToken: process.env.SQUARE_ACCESS_TOKEN,
+        environment: process.env.NODE_ENV === 'production' 
+          ? SquareEnvironment.Production 
+          : SquareEnvironment.Sandbox
+      });
 
     // Process payment with Square or mock
     let result;
