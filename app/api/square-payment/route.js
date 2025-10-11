@@ -224,10 +224,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('Square payment error:', error);
     
-    return NextResponse.json(
-      { success: false, error: 'Payment processing failed. Please try again.' },
-      { status: 500 }
-    );
+    return ResponseOptimizer.error('Payment processing failed. Please try again.', 500, { success: false });
   }
 }
 
