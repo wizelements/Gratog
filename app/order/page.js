@@ -225,11 +225,9 @@ export default function OrderPage() {
             {products.map(product => (
               <Card key={product.id} className="overflow-hidden hover-lift">
                 <div className="relative h-48 bg-muted">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
+                  <ProductCardImage
+                    product={product}
+                    className="w-full h-48"
                   />
                   {product.stock === 0 ? (
                     <Badge className="absolute top-3 right-3 bg-red-600">
