@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/db-admin';
+import { connectToDatabase } from '@/lib/db-optimized';
 
 export async function POST(request) {
   try {
