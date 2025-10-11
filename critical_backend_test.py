@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://taste-ecommerce.preview.emergentagent.com"
+BASE_URL = "https://gratitude-square.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 class CriticalBackendTest:
