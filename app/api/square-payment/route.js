@@ -18,10 +18,11 @@ console.log('Square Integration Mode:', MOCK_MODE ? 'MOCK' : 'LIVE',
            `Token format: ${process.env.SQUARE_ACCESS_TOKEN?.substring(0, 10)}...`);
 
 export async function POST(request) {
-  const startTime = Date.now();
-  console.log('Square payment API called');
-  
-  try {
+  return ResponseOptimizer.withTiming(async () => {
+    const startTime = Date.now();
+    console.log('Square payment API called');
+    
+    try {
     // Parse request body
     let body;
     try {
