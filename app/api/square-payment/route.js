@@ -126,41 +126,41 @@ export async function POST(request) {
       // If payment is successful, create order in database
       if (result.payment && result.payment.status === 'COMPLETED') {
         try {
-        // Create order in database
-        const orderDetails = {
-          id: orderId || result.payment.id,
-          customer: orderData?.customer || {
-            name: 'Unknown',
-            email: '',
-            phone: orderData?.customer?.phone || ''
-          },
-          items: orderData?.cart || [],
-          total: amountInCents,
-          fulfillmentType: orderData?.fulfillmentType || 'pickup',
-          status: 'paid',
-          createdAt: new Date().toISOString(),
-          paymentId: result.payment.id,
-          paymentMethod: 'square',
-          // Include coupon details if applied
-          ...(orderData?.appliedCoupon && {
-            appliedCoupon: {
-              code: orderData.appliedCoupon.code,
-              discountAmount: orderData.appliedCoupon.discountAmount,
-              freeShipping: orderData.appliedCoupon.freeShipping
+          // Create order in database
+          const orderDetails = {
+            id: orderId || result.payment.id,
+            customer: orderData?.customer || {
+              name: 'Unknown',
+              email: '',
+              phone: orderData?.customer?.phone || ''
             },
-            subtotal: orderData.subtotal,
-            couponDiscount: orderData.couponDiscount,
-            originalTotal: orderData.subtotal + (orderData.originalDeliveryFee || 0)
-          }),
-          // Include delivery details if applicable
-          ...(orderData?.deliveryAddress && {
-            deliveryAddress: orderData.deliveryAddress,
-            deliveryTimeSlot: orderData.deliveryTimeSlot,
-            deliveryInstructions: orderData.deliveryInstructions
-          })
-        };
-        
-        await createOrderOptimized(orderDetails);
+            items: orderData?.cart || [],
+            total: amountInCents,
+            fulfillmentType: orderData?.fulfillmentType || 'pickup',
+            status: 'paid',
+            createdAt: new Date().toISOString(),
+            paymentId: result.payment.id,
+            paymentMethod: 'square',
+            // Include coupon details if applied
+            ...(orderData?.appliedCoupon && {
+              appliedCoupon: {
+                code: orderData.appliedCoupon.code,
+                discountAmount: orderData.appliedCoupon.discountAmount,
+                freeShipping: orderData.appliedCoupon.freeShipping
+              },
+              subtotal: orderData.subtotal,
+              couponDiscount: orderData.couponDiscount,
+              originalTotal: orderData.subtotal + (orderData.originalDeliveryFee || 0)
+            }),
+            // Include delivery details if applicable
+            ...(orderData?.deliveryAddress && {
+              deliveryAddress: orderData.deliveryAddress,
+              deliveryTimeSlot: orderData.deliveryTimeSlot,
+              deliveryInstructions: orderData.deliveryInstructions
+            })
+          };
+          
+          await createOrderOptimized(orderDetails);
         
         // Mark coupon as used if one was applied
         if (orderData?.appliedCoupon?.code) {
