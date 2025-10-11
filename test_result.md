@@ -152,7 +152,7 @@ backend:
 
   - task: "Square Payment Integration API"
     implemented: true
-    working: false
+    working: true
     file: "/app/app/api/square-payment/route.js"
     stuck_count: 4
     priority: "high"
