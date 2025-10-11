@@ -38,8 +38,8 @@ const ProductImage = ({
     setHasError(true);
     
     // Try fallback image if we haven't already
-    if (imgSrc !== fallbackSrc && fallbackSrc) {
-      setImgSrc(fallbackSrc);
+    if (imgSrc !== defaultFallback && defaultFallback) {
+      setImgSrc(defaultFallback);
       setIsLoading(true);
       setHasError(false);
     }
