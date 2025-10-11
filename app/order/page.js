@@ -324,6 +324,7 @@ export default function OrderPage() {
           </Card>
         </div>
       </div>
+      </>
     );
   }
 
