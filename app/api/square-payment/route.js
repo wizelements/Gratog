@@ -158,6 +158,28 @@ export async function POST(request) {
         
         await createOrder(orderDetails);
         
+        // Mark coupon as used if one was applied
+        if (orderData?.appliedCoupon?.code) {
+          try {
+            const couponResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/coupons/validate`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                couponCode: orderData.appliedCoupon.code,
+                orderId: orderDetails.id
+              })
+            });
+            
+            if (couponResponse.ok) {
+              console.log('Coupon marked as used:', orderData.appliedCoupon.code);
+            } else {
+              console.warn('Failed to mark coupon as used:', orderData.appliedCoupon.code);
+            }
+          } catch (couponError) {
+            console.error('Error marking coupon as used:', couponError);
+          }
+        }
+        
         // Send confirmation notifications (SMS/Email)
         if (orderDetails.customer.phone) {
           try {
