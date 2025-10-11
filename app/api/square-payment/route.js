@@ -23,14 +23,14 @@ export async function POST(request) {
     console.log('Square payment API called');
     
     try {
-    // Parse request body
-    let body;
-    try {
-      body = await request.json();
-    } catch (parseError) {
-      console.error('JSON parse error:', parseError);
-      return ResponseOptimizer.error('Invalid request format', 400, { success: false });
-    }
+      // Parse request body
+      let body;
+      try {
+        body = await request.json();
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        return ResponseOptimizer.error('Invalid request format', 400, { success: false });
+      }
 
     console.log('Request body received:', { ...body, sourceId: body.sourceId ? '[REDACTED]' : 'missing' });
 
