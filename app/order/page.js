@@ -37,6 +37,11 @@ export default function OrderPage() {
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [products, setProducts] = useState([]);
+  
+  // Coupon state
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [showSpinWheel, setShowSpinWheel] = useState(false);
+  const [hasWonPrize, setHasWonPrize] = useState(false);
 
   useEffect(() => {
     fetchProducts();
