@@ -68,51 +68,51 @@ export async function POST(request) {
           : SquareEnvironment.Sandbox
       });
 
-    // Process payment with Square or mock
-    let result;
-    if (MOCK_MODE) {
-      console.log('🔧 MOCK MODE: Simulating successful Square payment');
-      
-      const endTime = Date.now();
-      
-      // Mock successful payment response
-      result = {
-        payment: {
-          id: `mock_payment_${Date.now()}`,
-          status: 'COMPLETED',
+      // Process payment with Square or mock
+      let result;
+      if (MOCK_MODE) {
+        console.log('🔧 MOCK MODE: Simulating successful Square payment');
+        
+        const endTime = Date.now();
+        
+        // Mock successful payment response
+        result = {
+          payment: {
+            id: `mock_payment_${Date.now()}`,
+            status: 'COMPLETED',
+            amountMoney: {
+              amount: amountInCents,
+              currency: currency
+            },
+            orderId: orderId,
+            receiptUrl: `https://mock-square.com/receipt/${Date.now()}`,
+            createdAt: new Date().toISOString()
+          }
+        };
+      } else {
+        console.log('💳 LIVE MODE: Processing real Square payment');
+        
+        // Create payment request for Square
+        const paymentRequest = {
+          sourceId,
+          idempotencyKey: randomUUID(),
           amountMoney: {
-            amount: amountInCents,
-            currency: currency
+            amount: BigInt(amountInCents),
+            currency
           },
-          orderId: orderId,
-          receiptUrl: `https://mock-square.com/receipt/${Date.now()}`,
-          createdAt: new Date().toISOString()
-        }
-      };
-    } else {
-      console.log('💳 LIVE MODE: Processing real Square payment');
-      
-      // Create payment request for Square
-      const paymentRequest = {
-        sourceId,
-        idempotencyKey: randomUUID(),
-        amountMoney: {
-          amount: BigInt(amountInCents),
-          currency
-        },
-        locationId: process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID,
-        note: `${process.env.NEXT_PUBLIC_SITE_NAME || 'Taste of Gratitude'} order ${orderId || 'unknown'}`
-      };
-      
-      console.log('Sending payment request to Square:', { 
-        ...paymentRequest, 
-        sourceId: '[REDACTED]'
-      });
-      
-      // Process payment with Square
-      const squareResult = await squareClient.payments.create(paymentRequest);
-      result = { payment: squareResult.result.payment };
-    }
+          locationId: process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID,
+          note: `${process.env.NEXT_PUBLIC_SITE_NAME || 'Taste of Gratitude'} order ${orderId || 'unknown'}`
+        };
+        
+        console.log('Sending payment request to Square:', { 
+          ...paymentRequest, 
+          sourceId: '[REDACTED]'
+        });
+        
+        // Process payment with Square
+        const squareResult = await squareClient.payments.create(paymentRequest);
+        result = { payment: squareResult.result.payment };
+      }
 
     console.log('Square payment successful:', {
       paymentId: result.payment.id,
