@@ -218,7 +218,7 @@ class CouponSystemTester:
             coupon_code = self.created_coupons[0]
             validation_data = {
                 "couponCode": coupon_code,
-                "customerEmail": "validation.test@example.com",
+                "customerEmail": "test.customer@example.com",  # Use same email as coupon creation
                 "orderTotal": 5000  # $50.00 in cents
             }
             
