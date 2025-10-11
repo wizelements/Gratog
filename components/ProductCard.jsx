@@ -22,12 +22,9 @@ export default function ProductCard({ product, onCheckout }) {
       <CardHeader className="p-0 relative">
         <Link href={`/product/${product.slug}`}>
           <div className="relative h-64 w-full overflow-hidden bg-muted">
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              className="object-cover group-hover:scale-110 transition-transform duration-500"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            <ProductCardImage
+              product={product}
+              className="object-cover group-hover:scale-110 transition-transform duration-500 w-full h-64"
             />
             {product.featured && (
               <div className="absolute top-3 right-3 bg-[#D4AF37] text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg z-10">
