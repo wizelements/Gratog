@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
-import { Client, Environment } from 'square';
+import { Client as SquareClient, Environment as SquareEnvironment } from 'square';
 import { randomUUID } from 'crypto';
 import { connectToDatabase } from '@/lib/db-admin';
 
 // Initialize Square client
-const squareClient = new Client({
+const squareClient = new SquareClient({
   accessToken: process.env.SQUARE_ACCESS_TOKEN,
   environment: process.env.NODE_ENV === 'production' 
-    ? Environment.Production 
-    : Environment.Sandbox
+    ? SquareEnvironment.Production 
+    : SquareEnvironment.Sandbox
 });
 
 export async function POST(request) {
