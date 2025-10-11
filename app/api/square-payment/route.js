@@ -45,10 +45,7 @@ export async function POST(request) {
     // Validate required fields
     if (!sourceId || !amount) {
       console.error('Missing required fields:', { sourceId: !!sourceId, amount: !!amount });
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields: sourceId and amount are required' },
-        { status: 400 }
-      );
+      return ResponseOptimizer.error('Missing required fields: sourceId and amount are required', 400, { success: false });
     }
     
     // Validate amount
