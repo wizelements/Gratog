@@ -147,7 +147,14 @@ export default function OrderPage() {
   // Step 1: Browse Products
   if (step === 1) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#D4AF37]/5 to-background">
+      <>
+        <SpinWheelModal 
+          showSpinWheel={showSpinWheel} 
+          setShowSpinWheel={setShowSpinWheel} 
+          customer={customer} 
+          handleSpinWin={handleSpinWin} 
+        />
+        <div className="min-h-screen bg-gradient-to-b from-[#D4AF37]/5 to-background">
         {/* Header */}
         <div className="bg-white border-b sticky top-0 z-40">
           <div className="container py-4">
