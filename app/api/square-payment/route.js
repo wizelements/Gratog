@@ -137,6 +137,17 @@ export async function POST(request) {
           createdAt: new Date().toISOString(),
           paymentId: result.payment.id,
           paymentMethod: 'square',
+          // Include coupon details if applied
+          ...(orderData?.appliedCoupon && {
+            appliedCoupon: {
+              code: orderData.appliedCoupon.code,
+              discountAmount: orderData.appliedCoupon.discountAmount,
+              freeShipping: orderData.appliedCoupon.freeShipping
+            },
+            subtotal: orderData.subtotal,
+            couponDiscount: orderData.couponDiscount,
+            originalTotal: orderData.subtotal + (orderData.originalDeliveryFee || 0)
+          }),
           // Include delivery details if applicable
           ...(orderData?.deliveryAddress && {
             deliveryAddress: orderData.deliveryAddress,
