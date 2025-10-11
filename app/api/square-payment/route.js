@@ -52,10 +52,7 @@ export async function POST(request) {
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
       console.error('Invalid amount:', amount);
-      return NextResponse.json(
-        { success: false, error: 'Invalid amount provided' },
-        { status: 400 }
-      );
+      return ResponseOptimizer.error('Invalid amount provided', 400, { success: false });
     }
     
     // Convert amount to cents
