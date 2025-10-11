@@ -230,8 +230,5 @@ export async function POST(request) {
 
 // Add GET method to prevent method not allowed errors
 export async function GET() {
-  return NextResponse.json(
-    { error: 'Method not allowed. Use POST for payments.' },
-    { status: 405 }
-  );
+  return ResponseOptimizer.error('Method not allowed. Use POST for payments.', 405);
 }
