@@ -184,46 +184,46 @@ export async function POST(request) {
           }
         }
         
-        // Send confirmation notifications (SMS/Email)
-        if (orderDetails.customer.phone) {
-          try {
-            await sendOrderSMS(orderDetails);
-          } catch (smsError) {
-            console.error('Failed to send SMS confirmation:', smsError);
-            // Don't fail the payment if SMS fails
+          // Send confirmation notifications (SMS/Email)
+          if (orderDetails.customer.phone) {
+            try {
+              await sendOrderSMS(orderDetails);
+            } catch (smsError) {
+              console.error('Failed to send SMS confirmation:', smsError);
+              // Don't fail the payment if SMS fails
+            }
           }
-        }
-        
-        if (orderDetails.customer.email) {
-          try {
-            await sendOrderEmail(orderDetails);
-          } catch (emailError) {
-            console.error('Failed to send email confirmation:', emailError);
-            // Don't fail the payment if email fails
+          
+          if (orderDetails.customer.email) {
+            try {
+              await sendOrderEmail(orderDetails);
+            } catch (emailError) {
+              console.error('Failed to send email confirmation:', emailError);
+              // Don't fail the payment if email fails
+            }
           }
+        } catch (dbError) {
+          console.error('Failed to save order to database:', dbError);
+          // Don't fail the payment if database save fails
         }
-      } catch (dbError) {
-        console.error('Failed to save order to database:', dbError);
-        // Don't fail the payment if database save fails
       }
-    }
 
-    const endTime = Date.now();
-    
-    // Return optimized successful response
-    return ResponseOptimizer.json({
-      success: true,
-      paymentId: result.payment.id,
-      orderId: result.payment.orderId || orderId,
-      receiptUrl: result.payment.receiptUrl,
-      status: result.payment.status,
-      amount: result.payment.amountMoney?.amount,
-      currency: result.payment.amountMoney?.currency,
-      processingTime: endTime - startTime
-    }, {
-      cacheMaxAge: 0, // Don't cache payment responses
-      compress: true
-    });
+      const endTime = Date.now();
+      
+      // Return optimized successful response
+      return ResponseOptimizer.json({
+        success: true,
+        paymentId: result.payment.id,
+        orderId: result.payment.orderId || orderId,
+        receiptUrl: result.payment.receiptUrl,
+        status: result.payment.status,
+        amount: result.payment.amountMoney?.amount,
+        currency: result.payment.amountMoney?.currency,
+        processingTime: endTime - startTime
+      }, {
+        cacheMaxAge: 0, // Don't cache payment responses
+        compress: true
+      });
     
     } catch (error) {
       console.error('Square payment error:', error);
