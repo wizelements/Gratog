@@ -17,6 +17,7 @@ import { getDeliveryZoneByZip, calculateDynamicDeliveryFee, getDeliveryTimeSlots
 import SquarePaymentForm from '@/components/SquarePaymentForm';
 import SpinWheel from '@/components/SpinWheel';
 import CouponInput from '@/components/CouponInput';
+import { ProductCardImage } from '@/components/ProductImage';
 
 export default function OrderPage() {
   const [step, setStep] = useState(1); // 1: Browse, 2: Info, 3: Fulfillment, 4: Review
