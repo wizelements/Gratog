@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
+import { ResponseOptimizer, MemoryOptimizer } from '@/lib/response-optimizer';
 
 export async function POST(request) {
   try {
