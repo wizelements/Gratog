@@ -102,8 +102,34 @@ export default function OrderPage() {
     setCart(cart.filter(item => item.id !== productId));
   };
 
+  // Coupon handlers
+  const handleSpinWin = (prize) => {
+    setHasWonPrize(true);
+    if (prize.couponCode) {
+      setAppliedCoupon({
+        code: prize.couponCode,
+        discountAmount: prize.value,
+        freeShipping: prize.freeShipping || false,
+        description: prize.label
+      });
+      toast.success(`🎉 ${prize.label} applied to your order!`);
+    }
+    setShowSpinWheel(false);
+  };
+
+  const handleCouponApplied = (coupon) => {
+    setAppliedCoupon(coupon);
+  };
+
+  const handleCouponRemoved = () => {
+    setAppliedCoupon(null);
+  };
+
+  // Calculate totals with coupon
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const total = subtotal + (fulfillmentType === 'delivery' ? deliveryFee : 0);
+  const couponDiscount = appliedCoupon?.discountAmount || 0;
+  const adjustedDeliveryFee = appliedCoupon?.freeShipping ? 0 : (fulfillmentType === 'delivery' ? deliveryFee : 0);
+  const total = Math.max(0, subtotal - couponDiscount + adjustedDeliveryFee);
 
   const handlePaymentSuccess = (result) => {
     toast.success('Payment successful! Order confirmed.');
