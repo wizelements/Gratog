@@ -156,19 +156,32 @@ export default function OrderPage() {
                 <h1 className="text-2xl font-bold text-gradient-gold">Taste of Gratitude</h1>
                 <p className="text-sm text-muted-foreground">Serenbe Farmers Market</p>
               </div>
-              <Button
-                onClick={() => cart.length > 0 && setStep(2)}
-                className="bg-[#D4AF37] hover:bg-[#B8941F] relative"
-                disabled={cart.length === 0}
-              >
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Cart ({cart.length})
-                {cart.length > 0 && (
-                  <Badge className="ml-2 bg-white text-[#D4AF37]">
-                    ${(subtotal / 100).toFixed(2)}
-                  </Badge>
-                )}
-              </Button>
+              <div className="flex items-center gap-3">
+                {/* Spin Wheel Button */}
+                <Button
+                  onClick={() => setShowSpinWheel(true)}
+                  variant="outline"
+                  className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white"
+                  disabled={!customer.email}
+                >
+                  🎡 Spin & Win!
+                </Button>
+                
+                {/* Cart Button */}
+                <Button
+                  onClick={() => cart.length > 0 && setStep(2)}
+                  className="bg-[#D4AF37] hover:bg-[#B8941F] relative"
+                  disabled={cart.length === 0}
+                >
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Cart ({cart.length})
+                  {cart.length > 0 && (
+                    <Badge className="ml-2 bg-white text-[#D4AF37]">
+                      ${(subtotal / 100).toFixed(2)}
+                    </Badge>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
