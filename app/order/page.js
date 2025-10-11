@@ -545,7 +545,14 @@ export default function OrderPage() {
   // Step 4: Review & Submit
   if (step === 4) {
     return (
-      <div className="min-h-screen bg-background p-4">
+      <>
+        <SpinWheelModal 
+          showSpinWheel={showSpinWheel} 
+          setShowSpinWheel={setShowSpinWheel} 
+          customer={customer} 
+          handleSpinWin={handleSpinWin} 
+        />
+        <div className="min-h-screen bg-background p-4">
         <div className="max-w-md mx-auto py-8">
           <Button variant="ghost" onClick={() => setStep(3)} className="mb-4">
             ← Back
