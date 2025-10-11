@@ -605,22 +605,54 @@ export default function OrderPage() {
                 </div>
               </div>
 
+              {/* Coupon Section */}
+              <CouponInput
+                onCouponApplied={handleCouponApplied}
+                onCouponRemoved={handleCouponRemoved}
+                appliedCoupon={appliedCoupon}
+                orderTotal={subtotal}
+                customerEmail={customer.email}
+                disabled={isSubmitting}
+              />
+
               {/* Total */}
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal</span>
                   <span>${(subtotal / 100).toFixed(2)}</span>
                 </div>
-                {fulfillmentType === 'delivery' && (
-                  <div className="flex justify-between text-sm">
-                    <span>Delivery Fee</span>
-                    <span>${(deliveryFee / 100).toFixed(2)}</span>
+                
+                {appliedCoupon && appliedCoupon.discountAmount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Coupon Discount ({appliedCoupon.code})</span>
+                    <span>-${(couponDiscount / 100).toFixed(2)}</span>
                   </div>
                 )}
+                
+                {fulfillmentType === 'delivery' && (
+                  <div className="flex justify-between text-sm">
+                    <span>
+                      Delivery Fee
+                      {appliedCoupon?.freeShipping && (
+                        <span className="text-green-600 ml-1">(Free with coupon!)</span>
+                      )}
+                    </span>
+                    <span className={appliedCoupon?.freeShipping ? 'line-through text-muted-foreground' : ''}>
+                      ${(deliveryFee / 100).toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
                   <span className="text-[#D4AF37]">${(total / 100).toFixed(2)}</span>
                 </div>
+                
+                {appliedCoupon && (
+                  <div className="text-xs text-green-600 text-center">
+                    🎉 You saved ${((couponDiscount + (appliedCoupon.freeShipping ? deliveryFee : 0)) / 100).toFixed(2)} with your coupon!
+                  </div>
+                )}
               </div>
 
               {/* Square Payment Form */}
