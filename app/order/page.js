@@ -666,7 +666,12 @@ export default function OrderPage() {
                   fulfillmentType,
                   deliveryAddress: fulfillmentType === 'delivery' ? deliveryAddress : null,
                   deliveryTimeSlot: fulfillmentType === 'delivery' ? deliveryTimeSlot : null,
-                  deliveryInstructions: fulfillmentType === 'delivery' ? deliveryInstructions : null
+                  deliveryInstructions: fulfillmentType === 'delivery' ? deliveryInstructions : null,
+                  appliedCoupon,
+                  subtotal,
+                  couponDiscount,
+                  originalDeliveryFee: deliveryFee,
+                  adjustedDeliveryFee
                 }}
                 onSuccess={handlePaymentSuccess}
                 onError={handlePaymentError}
