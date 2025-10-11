@@ -15,6 +15,8 @@ import { toast } from 'sonner';
 import { PRODUCTS } from '@/lib/products';
 import { getDeliveryZoneByZip, calculateDynamicDeliveryFee, getDeliveryTimeSlots, getFulfillmentOptions } from '@/lib/delivery-zones';
 import SquarePaymentForm from '@/components/SquarePaymentForm';
+import SpinWheel from '@/components/SpinWheel';
+import CouponInput from '@/components/CouponInput';
 
 export default function OrderPage() {
   const [step, setStep] = useState(1); // 1: Browse, 2: Info, 3: Fulfillment, 4: Review
