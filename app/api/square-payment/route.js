@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { SquareClient, SquareEnvironment } from 'square';
 import { randomUUID } from 'crypto';
-import { createOrder } from '@/lib/db-customers';
+import { createOrderOptimized } from '@/lib/db-optimized';
 import { sendOrderSMS } from '@/lib/sms';
 import { sendOrderEmail } from '@/lib/email';
 
