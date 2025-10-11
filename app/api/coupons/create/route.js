@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Client as SquareClient, Environment as SquareEnvironment } from 'square';
+import { SquareClient, SquareEnvironment } from 'square';
 import { randomUUID } from 'crypto';
 import { connectToDatabase } from '@/lib/db-admin';
 
