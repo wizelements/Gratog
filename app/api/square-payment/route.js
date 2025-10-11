@@ -5,8 +5,16 @@ import { createOrder } from '@/lib/db-customers';
 import { sendOrderSMS } from '@/lib/sms';
 import { sendOrderEmail } from '@/lib/email';
 
-// Live mode enabled - disable mock mode to use real Square integration
-const MOCK_MODE = false;
+// Check if we have valid Square credentials - if not, use mock mode
+const hasValidSquareToken = process.env.SQUARE_ACCESS_TOKEN && 
+  (process.env.SQUARE_ACCESS_TOKEN.startsWith('sandbox-sq0atb') || 
+   process.env.SQUARE_ACCESS_TOKEN.startsWith('sq0atp-') ||
+   process.env.SQUARE_ACCESS_TOKEN.startsWith('EAAAl')); // Accept our current token format
+
+const MOCK_MODE = !hasValidSquareToken;
+
+console.log('Square Integration Mode:', MOCK_MODE ? 'MOCK' : 'LIVE', 
+           `Token format: ${process.env.SQUARE_ACCESS_TOKEN?.substring(0, 10)}...`);
 
 export async function POST(request) {
   const startTime = Date.now();
