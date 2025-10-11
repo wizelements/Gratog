@@ -682,5 +682,29 @@ export default function OrderPage() {
     );
   }
 
-  return null;
+  return (
+    <>
+      {/* Main content here */}
+      {/* Spin Wheel Modal */}
+      {showSpinWheel && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl relative max-w-lg w-full">
+            <Button
+              onClick={() => setShowSpinWheel(false)}
+              variant="ghost"
+              className="absolute top-2 right-2 z-10"
+            >
+              ✕
+            </Button>
+            <div className="p-6">
+              <SpinWheel
+                onWin={handleSpinWin}
+                customerEmail={customer.email}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
