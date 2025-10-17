@@ -465,8 +465,8 @@ export default function OrderPage() {
             <Card key={product.slug} className="group cursor-pointer hover:shadow-lg transition-all">
               <CardContent className="p-4">
                 <div className="aspect-square mb-3 overflow-hidden rounded-lg bg-gray-100">
-                  <ProductImage 
-                    src={product.images?.[0]} 
+                  <img 
+                    src={product.image || product.images?.[0]} 
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                   />
