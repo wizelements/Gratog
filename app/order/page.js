@@ -1050,13 +1050,9 @@ export default function OrderPage() {
         </div>
       </div>
       
-      {/* Spin Wheel Modal */}
-      {showSpinWheel && (
-        <SpinWheel
-          customer={customer} 
-          onWin={handleSpinWin}
-          onClose={() => setShowSpinWheel(false)}
-        />
+      {/* Spin Wheel Modal - Temporarily disabled */}
+      {false && showSpinWheel && (
+        <div>Spin wheel temporarily disabled</div>
       )}
       
       <Toaster position="top-center" />
