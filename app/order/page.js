@@ -880,7 +880,6 @@ export default function OrderPage() {
             <div className="p-4 border border-dashed border-gray-300 rounded-lg text-center">
               <p className="text-sm text-muted-foreground">Coupon input temporarily disabled</p>
             </div>
-            // <CouponInput onCouponApply={handleCouponApply} />
           )}
           
           {appliedCoupon && (
