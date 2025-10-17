@@ -14,7 +14,7 @@ import uuid
 load_dotenv()
 
 # Get base URL from environment
-BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://gratitude-square.preview.emergentagent.com')
+BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://square-payments-2.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 class SquarePaymentTester:

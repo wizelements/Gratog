@@ -9,7 +9,7 @@ import json
 import time
 from datetime import datetime
 
-BASE_URL = "https://gratitude-square.preview.emergentagent.com"
+BASE_URL = "https://square-payments-2.preview.emergentagent.com"
 
 def log_analysis(title, status, details=""):
     """Log analysis results"""
