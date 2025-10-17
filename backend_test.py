@@ -21,7 +21,8 @@ class SquareBackendTester:
         self.session = requests.Session()
         self.session.headers.update({
             'Content-Type': 'application/json',
-            'User-Agent': 'Backend-Tester/1.0'
+            'User-Agent': 'Backend-Tester/1.0',
+            'Origin': BASE_URL  # Add Origin header for CSRF protection
         })
     
     def log_result(self, test_name, success, details, response_time=None):
