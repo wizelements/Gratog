@@ -461,7 +461,7 @@ export default function OrderPage() {
         
         {/* Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Object.values(products).slice(0, 9).map((product) => (
+          {PRODUCTS.slice(0, 9).map((product) => (
             <Card key={product.slug} className="group cursor-pointer hover:shadow-lg transition-all">
               <CardContent className="p-4">
                 <div className="aspect-square mb-3 overflow-hidden rounded-lg bg-gray-100">
