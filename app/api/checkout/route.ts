@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     
     console.log('Sending payment link request to Square...');
     
-    const { result } = await (square.checkout as any).createPaymentLink(paymentLinkRequest);
+    const { result } = await square.checkout.paymentLinks.create(paymentLinkRequest);
     
     if (!result.paymentLink) {
       console.error('Square Payment Link creation failed:', result);
