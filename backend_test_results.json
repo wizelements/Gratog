@@ -1,0 +1,306 @@
+{
+  "summary": {
+    "total_tests": 17,
+    "passed_tests": 3,
+    "failed_tests": 14,
+    "success_rate": 17.647058823529413,
+    "avg_response_time_ms": 284.88235294117646,
+    "max_response_time_ms": 2294,
+    "min_response_time_ms": 12,
+    "mock_mode_detected": true,
+    "auth_errors_detected": false
+  },
+  "api_breakdown": {
+    "Health Check API": {
+      "passed": 1,
+      "failed": 0,
+      "tests": [
+        {
+          "test": "Health Check API",
+          "success": true,
+          "details": "Status: healthy, Square: mock_mode, DB: connected",
+          "timestamp": "2025-10-17T04:22:24.729138",
+          "response_time_ms": 2013
+        }
+      ]
+    },
+    "Square Payments API": {
+      "passed": 0,
+      "failed": 2,
+      "tests": [
+        {
+          "test": "Square Payments API - Validation",
+          "success": false,
+          "details": "Expected 400, got 403",
+          "timestamp": "2025-10-17T04:22:24.752640",
+          "response_time_ms": 23
+        },
+        {
+          "test": "Square Payments API - Processing",
+          "success": false,
+          "details": "HTTP 403: {\"error\":\"CSRF validation failed\"}",
+          "timestamp": "2025-10-17T04:22:24.769620",
+          "response_time_ms": 16
+        }
+      ]
+    },
+    "Square Checkout API": {
+      "passed": 0,
+      "failed": 2,
+      "tests": [
+        {
+          "test": "Square Checkout API - Validation",
+          "success": false,
+          "details": "Expected 400, got 403",
+          "timestamp": "2025-10-17T04:22:24.783567",
+          "response_time_ms": 13
+        },
+        {
+          "test": "Square Checkout API - Creation",
+          "success": false,
+          "details": "HTTP 403: {\"error\":\"CSRF validation failed\"}",
+          "timestamp": "2025-10-17T04:22:24.797831",
+          "response_time_ms": 14
+        }
+      ]
+    },
+    "Cart Pricing API": {
+      "passed": 1,
+      "failed": 2,
+      "tests": [
+        {
+          "test": "Cart Pricing API - Health",
+          "success": true,
+          "details": "API healthy, mock mode: True, location: Mock Location (Sandbox credentials invalid)",
+          "timestamp": "2025-10-17T04:22:27.091887",
+          "response_time_ms": 2294
+        },
+        {
+          "test": "Cart Pricing API - Validation",
+          "success": false,
+          "details": "Expected 400, got 403",
+          "timestamp": "2025-10-17T04:22:27.148665",
+          "response_time_ms": 56
+        },
+        {
+          "test": "Cart Pricing API - Calculation",
+          "success": false,
+          "details": "HTTP 403: {\"error\":\"CSRF validation failed\"}",
+          "timestamp": "2025-10-17T04:22:27.161338",
+          "response_time_ms": 12
+        }
+      ]
+    },
+    "Orders Create API": {
+      "passed": 0,
+      "failed": 2,
+      "tests": [
+        {
+          "test": "Orders Create API - Validation",
+          "success": false,
+          "details": "Expected 400, got 403",
+          "timestamp": "2025-10-17T04:22:27.173643",
+          "response_time_ms": 12
+        },
+        {
+          "test": "Orders Create API - Creation",
+          "success": false,
+          "details": "HTTP 403: {\"error\":\"CSRF validation failed\"}",
+          "timestamp": "2025-10-17T04:22:27.186656",
+          "response_time_ms": 12
+        }
+      ]
+    },
+    "Coupons Create API": {
+      "passed": 0,
+      "failed": 2,
+      "tests": [
+        {
+          "test": "Coupons Create API - Validation",
+          "success": false,
+          "details": "Expected 400, got 403",
+          "timestamp": "2025-10-17T04:22:27.199474",
+          "response_time_ms": 12
+        },
+        {
+          "test": "Coupons Create API - Creation",
+          "success": false,
+          "details": "HTTP 403: {\"error\":\"CSRF validation failed\"}",
+          "timestamp": "2025-10-17T04:22:27.211923",
+          "response_time_ms": 12
+        }
+      ]
+    },
+    "Coupons Validate API": {
+      "passed": 0,
+      "failed": 2,
+      "tests": [
+        {
+          "test": "Coupons Validate API - Validation",
+          "success": false,
+          "details": "Expected 400, got 403",
+          "timestamp": "2025-10-17T04:22:27.224056",
+          "response_time_ms": 12
+        },
+        {
+          "test": "Coupons Validate API - Invalid Code",
+          "success": false,
+          "details": "HTTP 403: {\"error\":\"CSRF validation failed\"}",
+          "timestamp": "2025-10-17T04:22:27.237539",
+          "response_time_ms": 13
+        }
+      ]
+    },
+    "Square Create Checkout API": {
+      "passed": 1,
+      "failed": 2,
+      "tests": [
+        {
+          "test": "Square Create Checkout API - Config",
+          "success": true,
+          "details": "Configured: True, Environment: sandbox",
+          "timestamp": "2025-10-17T04:22:27.540925",
+          "response_time_ms": 303
+        },
+        {
+          "test": "Square Create Checkout API - Validation",
+          "success": false,
+          "details": "Expected 400, got 403",
+          "timestamp": "2025-10-17T04:22:27.555289",
+          "response_time_ms": 14
+        },
+        {
+          "test": "Square Create Checkout API - Creation",
+          "success": false,
+          "details": "HTTP 403: {\"error\":\"CSRF validation failed\"}",
+          "timestamp": "2025-10-17T04:22:27.567682",
+          "response_time_ms": 12
+        }
+      ]
+    }
+  },
+  "test_results": [
+    {
+      "test": "Health Check API",
+      "success": true,
+      "details": "Status: healthy, Square: mock_mode, DB: connected",
+      "timestamp": "2025-10-17T04:22:24.729138",
+      "response_time_ms": 2013
+    },
+    {
+      "test": "Square Payments API - Validation",
+      "success": false,
+      "details": "Expected 400, got 403",
+      "timestamp": "2025-10-17T04:22:24.752640",
+      "response_time_ms": 23
+    },
+    {
+      "test": "Square Payments API - Processing",
+      "success": false,
+      "details": "HTTP 403: {\"error\":\"CSRF validation failed\"}",
+      "timestamp": "2025-10-17T04:22:24.769620",
+      "response_time_ms": 16
+    },
+    {
+      "test": "Square Checkout API - Validation",
+      "success": false,
+      "details": "Expected 400, got 403",
+      "timestamp": "2025-10-17T04:22:24.783567",
+      "response_time_ms": 13
+    },
+    {
+      "test": "Square Checkout API - Creation",
+      "success": false,
+      "details": "HTTP 403: {\"error\":\"CSRF validation failed\"}",
+      "timestamp": "2025-10-17T04:22:24.797831",
+      "response_time_ms": 14
+    },
+    {
+      "test": "Cart Pricing API - Health",
+      "success": true,
+      "details": "API healthy, mock mode: True, location: Mock Location (Sandbox credentials invalid)",
+      "timestamp": "2025-10-17T04:22:27.091887",
+      "response_time_ms": 2294
+    },
+    {
+      "test": "Cart Pricing API - Validation",
+      "success": false,
+      "details": "Expected 400, got 403",
+      "timestamp": "2025-10-17T04:22:27.148665",
+      "response_time_ms": 56
+    },
+    {
+      "test": "Cart Pricing API - Calculation",
+      "success": false,
+      "details": "HTTP 403: {\"error\":\"CSRF validation failed\"}",
+      "timestamp": "2025-10-17T04:22:27.161338",
+      "response_time_ms": 12
+    },
+    {
+      "test": "Orders Create API - Validation",
+      "success": false,
+      "details": "Expected 400, got 403",
+      "timestamp": "2025-10-17T04:22:27.173643",
+      "response_time_ms": 12
+    },
+    {
+      "test": "Orders Create API - Creation",
+      "success": false,
+      "details": "HTTP 403: {\"error\":\"CSRF validation failed\"}",
+      "timestamp": "2025-10-17T04:22:27.186656",
+      "response_time_ms": 12
+    },
+    {
+      "test": "Coupons Create API - Validation",
+      "success": false,
+      "details": "Expected 400, got 403",
+      "timestamp": "2025-10-17T04:22:27.199474",
+      "response_time_ms": 12
+    },
+    {
+      "test": "Coupons Create API - Creation",
+      "success": false,
+      "details": "HTTP 403: {\"error\":\"CSRF validation failed\"}",
+      "timestamp": "2025-10-17T04:22:27.211923",
+      "response_time_ms": 12
+    },
+    {
+      "test": "Coupons Validate API - Validation",
+      "success": false,
+      "details": "Expected 400, got 403",
+      "timestamp": "2025-10-17T04:22:27.224056",
+      "response_time_ms": 12
+    },
+    {
+      "test": "Coupons Validate API - Invalid Code",
+      "success": false,
+      "details": "HTTP 403: {\"error\":\"CSRF validation failed\"}",
+      "timestamp": "2025-10-17T04:22:27.237539",
+      "response_time_ms": 13
+    },
+    {
+      "test": "Square Create Checkout API - Config",
+      "success": true,
+      "details": "Configured: True, Environment: sandbox",
+      "timestamp": "2025-10-17T04:22:27.540925",
+      "response_time_ms": 303
+    },
+    {
+      "test": "Square Create Checkout API - Validation",
+      "success": false,
+      "details": "Expected 400, got 403",
+      "timestamp": "2025-10-17T04:22:27.555289",
+      "response_time_ms": 14
+    },
+    {
+      "test": "Square Create Checkout API - Creation",
+      "success": false,
+      "details": "HTTP 403: {\"error\":\"CSRF validation failed\"}",
+      "timestamp": "2025-10-17T04:22:27.567682",
+      "response_time_ms": 12
+    }
+  ],
+  "timestamp": "2025-10-17T04:22:27.567901",
+  "base_url": "https://gratitude-square.preview.emergentagent.com",
+  "test_focus": "Square Payment Integration with SQUARE_MOCK_MODE=true"
+}
