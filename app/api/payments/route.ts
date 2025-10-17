@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     
     console.log('Sending payment request to Square...');
     
-    const { result } = await (square.payments as any).createPayment(paymentRequest);
+    const { result } = await square.payments.create(paymentRequest);
     
     if (!result.payment) {
       console.error('Square payment creation failed:', result);
