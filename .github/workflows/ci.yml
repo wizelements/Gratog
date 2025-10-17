@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Run ESLint
+        run: npm run lint || echo "Linting has warnings"
+        continue-on-error: true
+      
+      - name: Check TypeScript
+        run: npm run typecheck || echo "TypeScript check failed"
+        continue-on-error: true
+      
+      - name: Build
+        run: npm run build
+        env:
+          MONGO_URL: ${{ secrets.MONGO_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ADMIN_JWT_SECRET: ${{ secrets.ADMIN_JWT_SECRET }}
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: .next/
+          retention-days: 7

@@ -1,0 +1,8 @@
+node_modules
+.next
+.vercel
+*.py
+*.json
+*.md
+package-lock.json
+yarn.lock

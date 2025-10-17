@@ -1,81 +1,181 @@
-import Image from 'next/image';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+'use client';
+
+import { useEffect } from 'react';
+import EnhancedMarketCard from '@/components/EnhancedMarketCard';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPin, Calendar, ExternalLink } from 'lucide-react';
-import { MARKETS } from '@/lib/products';
+import { MapPin, Clock, Heart, QrCode } from 'lucide-react';
+import AnalyticsSystem from '@/lib/analytics';
+
+const MARKETS = [
+  'Serenbe',
+  'East Atlanta Village',
+  'Ponce City Market'
+];
 
 export default function MarketsPage() {
-  return (
-    <div className="flex flex-col">
-      {/* Hero */}
-      <section className="relative h-[400px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="https://images.unsplash.com/photo-1567306295427-94503f8300d7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwzfHxmYXJtZXJzJTIwbWFya2V0fGVufDB8fHx8MTc1OTg5MzE4NXww&ixlib=rb-4.1.0&q=85"
-            alt="Farmers Market"
-            fill
-            className="object-cover brightness-50"
-          />
-        </div>
-        <div className="container relative z-10 text-center text-white">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4">Find Us at Local Markets</h1>
-          <p className="text-xl max-w-2xl mx-auto">
-            Visit us in person to sample our products and experience the Taste of Gratitude difference
-          </p>
-        </div>
-      </section>
+  useEffect(() => {
+    // Initialize analytics
+    AnalyticsSystem.initPostHog();
+  }, []);
 
-      {/* Markets List */}
-      <section className="container py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {MARKETS.map((market) => (
-            <Card key={market.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-2xl">{market.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Calendar className="h-5 w-5 text-[#D4AF37] mt-0.5" />
-                  <div>
-                    <p className="font-semibold">When</p>
-                    <p className="text-muted-foreground">{market.when}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-[#D4AF37] mt-0.5" />
-                  <div>
-                    <p className="font-semibold">Where</p>
-                    <p className="text-muted-foreground">{market.where}</p>
-                  </div>
-                </div>
-                <Button
-                  asChild
-                  className="w-full bg-[#D4AF37] hover:bg-[#B8941F] text-white"
-                >
-                  <a href={market.mapsUrl} target="_blank" rel="noopener noreferrer">
-                    Get Directions <ExternalLink className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
-              </CardContent>
-            </Card>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 py-12 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="flex justify-center mb-4">
+            <div className="w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center">
+              <MapPin className="w-10 h-10 text-white" />
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold text-emerald-800 mb-4">
+            Find Us at Local Markets
+          </h1>
+          <p className="text-xl text-emerald-600 max-w-2xl mx-auto mb-8">
+            Experience Taste of Gratitude in person! Visit our booths at Atlanta's 
+            finest farmers markets for samples, consultations, and the full product line.
+          </p>
+          <div className="flex flex-wrap justify-center gap-6 text-sm">
+            <div className="flex items-center gap-2 text-emerald-700">
+              <Heart className="w-4 h-4" />
+              <span>Fresh Samples Available</span>
+            </div>
+            <div className="flex items-center gap-2 text-emerald-700">
+              <Clock className="w-4 h-4" />
+              <span>Wellness Consultations</span>
+            </div>
+            <div className="flex items-center gap-2 text-emerald-700">
+              <QrCode className="w-4 h-4" />
+              <span>Passport Rewards</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Market Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          {MARKETS.map((marketName) => (
+            <EnhancedMarketCard key={marketName} marketName={marketName} />
           ))}
         </div>
 
-        {/* Call to Action */}
-        <div className="mt-16 text-center max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold mb-4">Can't Make It to a Market?</h2>
-          <p className="text-lg text-muted-foreground mb-6">
-            Shop online and have our premium sea moss products delivered right to your door!
-          </p>
-          <Button
-            asChild
-            size="lg"
-            className="bg-[#D4AF37] hover:bg-[#B8941F] text-white"
-          >
-            <a href="/catalog">Shop Online Now</a>
-          </Button>
+        {/* Market Passport CTA */}
+        <Card className="bg-gradient-to-r from-emerald-100 to-teal-100 border-emerald-200">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <QrCode className="w-8 h-8 text-emerald-600" />
+            </div>
+            <CardTitle className="text-2xl text-emerald-800">
+              Get Your Market Passport
+            </CardTitle>
+            <CardDescription className="text-lg text-emerald-700">
+              Collect stamps at markets, earn XP points, and unlock exclusive rewards
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="text-center">
+                <div className="text-2xl mb-2">🎆</div>
+                <div className="font-medium text-emerald-800">2 Stamps</div>
+                <div className="text-sm text-emerald-600">Free 2oz Shot</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl mb-2">🌟</div>
+                <div className="font-medium text-emerald-800">5 Stamps</div>
+                <div className="text-sm text-emerald-600">15% Off Coupon</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl mb-2">🏆</div>
+                <div className="font-medium text-emerald-800">10 Stamps</div>
+                <div className="text-sm text-emerald-600">VIP Status</div>
+              </div>
+            </div>
+            <Button 
+              onClick={() => window.location.href = '/passport'}
+              className="bg-emerald-600 hover:bg-emerald-700"
+              size="lg"
+            >
+              <QrCode className="w-4 h-4 mr-2" />
+              Get My Passport
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Additional Info */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-emerald-800">What to Expect</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2"></div>
+                  <div>
+                    <div className="font-medium">Product Sampling</div>
+                    <div className="text-gray-600">Try before you buy with generous samples</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2"></div>
+                  <div>
+                    <div className="font-medium">Wellness Guidance</div>
+                    <div className="text-gray-600">Get personalized product recommendations</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2"></div>
+                  <div>
+                    <div className="font-medium">Community Connection</div>
+                    <div className="text-gray-600">Meet other wellness enthusiasts</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2"></div>
+                  <div>
+                    <div className="font-medium">Fresh Products</div>
+                    <div className="text-gray-600">Weekly small-batch, wildcrafted goods</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-emerald-800">Can't Make It?</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                Shop our complete product line online with convenient pickup or delivery options.
+              </p>
+              <div className="space-y-3">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => window.location.href = '/catalog'}
+                >
+                  🛍️ Browse Full Catalog
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => window.location.href = '/order'}
+                >
+                  📦 Order for Delivery
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => window.location.href = '/ugc/spicy-bloom'}
+                >
+                  🌶️ Join Spicy Bloom Challenge
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

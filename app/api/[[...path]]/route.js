@@ -28,7 +28,7 @@ async function handleRoute(request, { params }) {
   const method = request.method
 
   try {
-    const db = await connectToMongo()
+    const { db } = await connectToDatabase()
 
     // Root endpoint - GET /api/root (since /api/ is not accessible with catch-all)
     if (route === '/root' && method === 'GET') {

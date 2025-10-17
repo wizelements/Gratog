@@ -1,0 +1,64 @@
+{
+  "overall_status": "CRITICAL_ISSUES",
+  "success_rate": 12.5,
+  "passed_tests": 1,
+  "total_tests": 8,
+  "test_results": [
+    {
+      "test_name": "Square Environment Variables Configuration",
+      "success": true,
+      "details": "Square API configured in production mode. Environment variables properly set.",
+      "response_time_ms": 1765.29,
+      "timestamp": "2025-10-16T22:09:47.547954"
+    },
+    {
+      "test_name": "Square API Client Connectivity",
+      "success": false,
+      "details": "Square API connectivity test failed with status 500",
+      "response_time_ms": 8455.87,
+      "timestamp": "2025-10-16T22:09:56.003862"
+    },
+    {
+      "test_name": "Square Catalog API Pricing Integration",
+      "success": false,
+      "details": "Catalog API test failed with status 500",
+      "response_time_ms": 750.56,
+      "timestamp": "2025-10-16T22:09:56.754460"
+    },
+    {
+      "test_name": "Square Checkout Payment Links",
+      "success": false,
+      "details": "Checkout API failed with status 500",
+      "response_time_ms": 2361.69,
+      "timestamp": "2025-10-16T22:09:59.116192"
+    },
+    {
+      "test_name": "Square Web Payments SDK Integration",
+      "success": false,
+      "details": "Exception during payments test: Expecting value: line 1 column 1 (char 0)",
+      "response_time_ms": 0,
+      "timestamp": "2025-10-16T22:09:59.959871"
+    },
+    {
+      "test_name": "Square Webhook System Availability",
+      "success": false,
+      "details": "Webhook endpoint failed with status 500",
+      "response_time_ms": 851.65,
+      "timestamp": "2025-10-16T22:10:00.811559"
+    },
+    {
+      "test_name": "Square SDK Version & Compatibility",
+      "success": false,
+      "details": "Square SDK integration issues detected. Details: Health Check: \u2705 Working (38ms); Catalog API: \u274c Failed (HTTP 500); Webhook Handler: \u274c Failed (HTTP 500)",
+      "response_time_ms": 0,
+      "timestamp": "2025-10-16T22:10:01.409399"
+    },
+    {
+      "test_name": "Square Authentication Diagnostic",
+      "success": false,
+      "details": "Authentication issues detected (0/3). Details: Config Status: production; Catalog Access: Failed (HTTP 500); Payments API: Exception (Expecting value: line 1 column)",
+      "response_time_ms": 0,
+      "timestamp": "2025-10-16T22:10:01.928115"
+    }
+  ]
+}

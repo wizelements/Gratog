@@ -27,7 +27,7 @@ export default function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
+        <nav className="hidden lg:flex items-center space-x-6">
           <Link 
             href="/" 
             className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
@@ -62,6 +62,17 @@ export default function Header() {
             }`} />
           </Link>
           <Link 
+            href="/passport" 
+            className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
+              isActive('/passport') ? 'text-[#D4AF37]' : ''
+            }`}
+          >
+            Rewards
+            <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
+              isActive('/passport') ? 'w-full' : ''
+            }`} />
+          </Link>
+          <Link 
             href="/about" 
             className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
               isActive('/about') ? 'text-[#D4AF37]' : ''
@@ -72,18 +83,26 @@ export default function Header() {
               isActive('/about') ? 'w-full' : ''
             }`} />
           </Link>
-          <Link 
-            href="/contact" 
-            className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
-              isActive('/contact') ? 'text-[#D4AF37]' : ''
-            }`}
-          >
-            Contact
-            <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
-              isActive('/contact') ? 'w-full' : ''
-            }`} />
-          </Link>
         </nav>
+
+        {/* Action Buttons */}
+        <div className="hidden md:flex items-center space-x-3">
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white"
+          >
+            <Link href="/ugc/spicy-bloom">Challenge 🌶️</Link>
+          </Button>
+          <Button
+            asChild
+            size="sm"
+            className="bg-[#D4AF37] hover:bg-[#B8941F] text-white"
+          >
+            <Link href="/order">Order Now</Link>
+          </Button>
+        </div>
 
         {/* Mobile Menu Button */}
         <Button
@@ -98,7 +117,7 @@ export default function Header() {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden border-t bg-background/98 backdrop-blur animate-slide-up">
+        <div className="lg:hidden border-t bg-background/98 backdrop-blur animate-slide-up">
           <nav className="container flex flex-col space-y-1 py-4">
             <Link
               href="/"
@@ -128,6 +147,24 @@ export default function Header() {
               Markets
             </Link>
             <Link
+              href="/passport"
+              className={`text-sm font-medium py-3 px-4 rounded-md transition-all hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] ${
+                isActive('/passport') ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : ''
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Rewards
+            </Link>
+            <Link
+              href="/ugc/spicy-bloom"
+              className={`text-sm font-medium py-3 px-4 rounded-md transition-all hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] ${
+                isActive('/ugc/spicy-bloom') ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : ''
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Challenge 🌶️
+            </Link>
+            <Link
               href="/about"
               className={`text-sm font-medium py-3 px-4 rounded-md transition-all hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] ${
                 isActive('/about') ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : ''
@@ -136,15 +173,15 @@ export default function Header() {
             >
               About
             </Link>
-            <Link
-              href="/contact"
-              className={`text-sm font-medium py-3 px-4 rounded-md transition-all hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] ${
-                isActive('/contact') ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : ''
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Contact
-            </Link>
+            <div className="border-t pt-3 mt-3">
+              <Link
+                href="/order"
+                className="flex items-center justify-center bg-[#D4AF37] hover:bg-[#B8941F] text-white font-medium py-3 px-4 rounded-md transition-all"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Order Now
+              </Link>
+            </div>
           </nav>
         </div>
       )}

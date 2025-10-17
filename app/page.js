@@ -1,15 +1,25 @@
 'use client';
 
-import Image from 'next/image';
+import { useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import ProductCard from '@/components/ProductCard';
+import FitQuiz from '@/components/FitQuiz';
+import EnhancedHero from '@/components/EnhancedHero';
 import { getFeaturedProducts } from '@/lib/products';
-import { ArrowRight, Leaf, Heart, Award, MapPin } from 'lucide-react';
+import { ArrowRight, Leaf, Heart, Award, MapPin, QrCode, Camera, Gift, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import AnalyticsSystem from '@/lib/analytics';
 
 export default function HomePage() {
   const featuredProducts = getFeaturedProducts();
+
+  useEffect(() => {
+    // Initialize analytics
+    AnalyticsSystem.initPostHog();
+  }, []);
 
   const handleCheckout = async (items) => {
     try {
@@ -21,54 +31,23 @@ export default function HomePage() {
     }
   };
 
+  const handleQuizRecommendations = (recommendations) => {
+    // Handle quiz recommendations
+    console.log('Quiz recommendations:', recommendations);
+  };
+
+  const handleAddToCart = (product) => {
+    // Add product to cart and redirect to order page
+    toast.success(`${product.name} added to cart!`);
+    setTimeout(() => {
+      window.location.href = '/order';
+    }, 1000);
+  };
+
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="relative h-[600px] md:h-[700px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="https://images.unsplash.com/photo-1518495973542-4542c06a5843?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwyfHxob2xpc3RpYyUyMHdlbGxuZXNzfGVufDB8fHx8MTc1OTgwOTQzNXww&ixlib=rb-4.1.0&q=85"
-            alt="Wellness background"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/60" />
-        </div>
-        <div className="container relative z-10 text-center text-white px-4">
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
-            Nourish Your Wellness Journey
-          </h1>
-          <p className="text-lg sm:text-xl md:text-2xl mb-8 max-w-2xl mx-auto animate-slide-up">
-            Premium sea moss gel infused with nature's finest ingredients
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-scale-in">
-            <Button
-              asChild
-              size="lg"
-              className="bg-[#D4AF37] hover:bg-[#B8941F] text-white text-lg px-8 btn-shine shadow-xl hover:shadow-2xl transition-all"
-            >
-              <Link href="/catalog">
-                Shop Now <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="bg-white/10 backdrop-blur-sm text-white border-white hover:bg-white/20 text-lg px-8 hover:border-[#D4AF37] transition-all"
-            >
-              <Link href="/about">Our Story</Link>
-            </Button>
-          </div>
-        </div>
-        {/* Floating scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 rounded-full border-2 border-white/50 flex items-start justify-center p-2">
-            <div className="w-1 h-2 bg-white/50 rounded-full" />
-          </div>
-        </div>
-      </section>
+      {/* Enhanced Hero Section */}
+      <EnhancedHero />
 
       {/* Features */}
       <section className="py-16 bg-muted/50">
@@ -111,15 +90,26 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Fit Quiz Section */}
+      <section className="py-16 bg-gradient-to-br from-emerald-50 to-teal-50">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-emerald-800 mb-4">Find Your Perfect Blend</h2>
+            <p className="text-lg text-emerald-600 max-w-2xl mx-auto">
+              Take our personalized wellness quiz to discover sea moss products crafted for your unique goals
+            </p>
+          </div>
+          <FitQuiz 
+            onRecommendations={handleQuizRecommendations}
+            onAddToCart={handleAddToCart}
+          />
+        </div>
+      </section>
+
       {/* Featured Products */}
       <section className="py-16">
         <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Products</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Discover our signature sea moss gel blends, each crafted to support your unique wellness goals
-            </p>
-          </div>
+          <h2 className="text-3xl font-bold text-center mb-12">Featured Products</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredProducts.map((product) => (
               <ProductCard
@@ -140,6 +130,69 @@ export default function HomePage() {
                 View All Products <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Rewards & Community Section */}
+      <section className="py-16 bg-gradient-to-r from-orange-50 to-yellow-50">
+        <div className="container">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Market Passport */}
+            <div className="text-center lg:text-left">
+              <div className="flex justify-center lg:justify-start mb-6">
+                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <QrCode className="w-8 h-8 text-emerald-600" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-emerald-800 mb-4">Market Passport Rewards</h3>
+              <p className="text-lg text-emerald-600 mb-6">
+                Collect stamps at our markets and unlock exclusive rewards! Start your journey to wellness VIP status.
+              </p>
+              <div className="flex justify-center lg:justify-start gap-4 mb-6">
+                <Badge className="bg-emerald-100 text-emerald-700">2 Stamps = Free Shot</Badge>
+                <Badge className="bg-yellow-100 text-yellow-700">5 Stamps = 15% Off</Badge>
+                <Badge className="bg-purple-100 text-purple-700">10 Stamps = VIP</Badge>
+              </div>
+              <Button
+                asChild
+                size="lg"
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                <Link href="/passport">
+                  <QrCode className="mr-2 h-4 w-4" />
+                  Get My Passport
+                </Link>
+              </Button>
+            </div>
+
+            {/* UGC Challenge */}
+            <div className="text-center lg:text-left">
+              <div className="flex justify-center lg:justify-start mb-6">
+                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
+                  <Camera className="w-8 h-8 text-orange-600" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-orange-800 mb-4">Spicy Bloom Challenge 🌶️</h3>
+              <p className="text-lg text-orange-600 mb-6">
+                Join our viral challenge! Experience the 10-second flavor bloom and share your reaction for a chance to win.
+              </p>
+              <div className="flex justify-center lg:justify-start gap-4 mb-6">
+                <Badge className="bg-yellow-100 text-yellow-700">$100 Grand Prize</Badge>
+                <Badge className="bg-orange-100 text-orange-700">Monthly Raffle</Badge>
+                <Badge className="bg-red-100 text-red-700">Community Fame</Badge>
+              </div>
+              <Button
+                asChild
+                size="lg"
+                className="bg-orange-600 hover:bg-orange-700"
+              >
+                <Link href="/ugc/spicy-bloom">
+                  <Camera className="mr-2 h-4 w-4" />
+                  Join Challenge
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>

@@ -8,8 +8,16 @@ export async function POST(request) {
   try {
     const { secret } = await request.json();
     
-    // Simple secret to prevent unauthorized init
-    if (secret !== 'taste-of-gratitude-init-2025') {
+    // Validate initialization secret from environment
+    const INIT_SECRET = process.env.INIT_SECRET;
+    if (!INIT_SECRET) {
+      return NextResponse.json(
+        { error: 'Server misconfigured: INIT_SECRET not set' },
+        { status: 500 }
+      );
+    }
+    
+    if (secret !== INIT_SECRET) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -29,16 +37,25 @@ export async function POST(request) {
       });
     }
 
-    // Create default admin user
-    const hashedPassword = await hashPassword('TasteOfGratitude2025!');
+    // Create default admin user with env password
+    const defaultPassword = process.env.ADMIN_DEFAULT_PASSWORD;
+    if (!defaultPassword) {
+      return NextResponse.json(
+        { error: 'Server misconfigured: ADMIN_DEFAULT_PASSWORD not set' },
+        { status: 500 }
+      );
+    }
+    
+    const hashedPassword = await hashPassword(defaultPassword);
     await adminUsers.insertOne({
       _id: uuidv4(),
-      email: 'admin@tasteofgratitude.com',
+      email: process.env.ADMIN_DEFAULT_EMAIL || 'admin@tasteofgratitude.com',
       passwordHash: hashedPassword,
       name: 'Admin User',
       role: 'admin',
       createdAt: new Date(),
-      isActive: true
+      isActive: true,
+      mustChangePassword: true // Force password change on first login
     });
 
     // Initialize inventory for all products
@@ -63,9 +80,8 @@ export async function POST(request) {
       success: true,
       message: 'Admin initialized successfully',
       credentials: {
-        email: 'admin@tasteofgratitude.com',
-        password: 'TasteOfGratitude2025!',
-        note: 'Please change this password after first login'
+        email: process.env.ADMIN_DEFAULT_EMAIL || 'admin@tasteofgratitude.com',
+        note: 'Use ADMIN_DEFAULT_PASSWORD from environment. MUST change password after first login.'
       }
     });
   } catch (error) {

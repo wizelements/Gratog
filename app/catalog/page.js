@@ -1,10 +1,26 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import ProductCard from '@/components/ProductCard';
+import FitQuiz from '@/components/FitQuiz';
 import { PRODUCTS } from '@/lib/products';
+import { Sparkles, Filter, Grid, List } from 'lucide-react';
 import { toast } from 'sonner';
+import AnalyticsSystem from '@/lib/analytics';
 
 export default function CatalogPage() {
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [filteredProducts, setFilteredProducts] = useState(PRODUCTS);
+  const [selectedFilter, setSelectedFilter] = useState('all');
+  const [viewMode, setViewMode] = useState('grid');
+
+  useEffect(() => {
+    AnalyticsSystem.initPostHog();
+  }, []);
+
   const handleCheckout = async (items) => {
     try {
       // Redirect to order page for Square checkout flow
@@ -15,24 +31,182 @@ export default function CatalogPage() {
     }
   };
 
-  return (
-    <div className="container py-16">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">Our Products</h1>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Explore our full collection of premium sea moss gel products, each uniquely crafted to support your wellness journey
-        </p>
-      </div>
+  const handleAddToCart = (product) => {
+    toast.success(`${product.name} added to cart!`);
+    AnalyticsSystem.trackPDPView(product.id);
+    setTimeout(() => {
+      window.location.href = '/order';
+    }, 1000);
+  };
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {PRODUCTS.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onCheckout={handleCheckout}
-          />
-        ))}
-      </div>
+  const handleQuizRecommendations = (recommendations) => {
+    // Highlight recommended products
+    setFilteredProducts(recommendations.length > 0 ? recommendations : PRODUCTS);
+    setSelectedFilter('recommended');
+    setShowQuiz(false);
+    toast.success(`Found ${recommendations.length} perfect matches for you!`);
+  };
+
+  const filterProducts = (filter) => {
+    setSelectedFilter(filter);
+    
+    if (filter === 'all') {
+      setFilteredProducts(PRODUCTS);
+    } else if (filter === 'gels') {
+      setFilteredProducts(PRODUCTS.filter(p => p.category === 'Sea Moss Gel'));
+    } else if (filter === 'lemonades') {
+      setFilteredProducts(PRODUCTS.filter(p => p.category === 'Lemonade'));
+    } else if (filter === 'shots') {
+      setFilteredProducts(PRODUCTS.filter(p => p.size && p.size.includes('2oz')));
+    } else if (filter === 'bundles') {
+      setFilteredProducts(PRODUCTS.filter(p => p.name.toLowerCase().includes('bundle') || p.name.toLowerCase().includes('trio')));
+    }
+  };
+
+  const productCategories = [
+    { id: 'all', label: 'All Products', count: PRODUCTS.length },
+    { id: 'gels', label: 'Sea Moss Gels', count: PRODUCTS.filter(p => p.category === 'Sea Moss Gel').length },
+    { id: 'lemonades', label: 'Lemonades', count: PRODUCTS.filter(p => p.category === 'Lemonade').length },
+    { id: 'shots', label: 'Wellness Shots', count: PRODUCTS.filter(p => p.size && p.size.includes('2oz')).length },
+  ];
+
+  return (
+    <div className="min-h-screen">
+      {/* Header Section */}
+      <section className="bg-gradient-to-br from-emerald-50 to-teal-50 py-16">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold text-emerald-800 mb-4">Our Products</h1>
+            <p className="text-lg text-emerald-600 max-w-2xl mx-auto mb-8">
+              Explore our full collection of premium sea moss products, each uniquely crafted to support your wellness journey
+            </p>
+            
+            {/* Personalized Quiz CTA */}
+            <Card className="max-w-2xl mx-auto bg-white/80 backdrop-blur-sm border-emerald-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <Sparkles className="w-6 h-6 text-emerald-600" />
+                  <h3 className="text-xl font-semibold text-emerald-800">Not sure where to start?</h3>
+                </div>
+                <p className="text-emerald-600 mb-4">
+                  Take our 60-second wellness quiz for personalized product recommendations
+                </p>
+                <Button 
+                  onClick={() => setShowQuiz(true)}
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Take the Quiz
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Fit Quiz Modal */}
+          {showQuiz && (
+            <div className="mb-12">
+              <FitQuiz 
+                onRecommendations={handleQuizRecommendations}
+                onAddToCart={handleAddToCart}
+              />
+              <div className="text-center mt-6">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowQuiz(false)}
+                  className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                >
+                  Browse All Products Instead
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Product Catalog */}
+      <section className="py-16">
+        <div className="container">
+          {/* Filters and View Options */}
+          <div className="flex flex-col lg:flex-row justify-between items-center mb-8 gap-4">
+            {/* Category Filters */}
+            <div className="flex flex-wrap gap-2">
+              {productCategories.map((category) => (
+                <Button
+                  key={category.id}
+                  variant={selectedFilter === category.id ? "default" : "outline"}
+                  onClick={() => filterProducts(category.id)}
+                  className={`${
+                    selectedFilter === category.id 
+                      ? "bg-emerald-600 hover:bg-emerald-700" 
+                      : "border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                  }`}
+                >
+                  {category.label} ({category.count})
+                </Button>
+              ))}
+              {selectedFilter === 'recommended' && (
+                <Badge className="bg-yellow-100 text-yellow-700 px-3 py-1">
+                  ✨ Personalized for You
+                </Badge>
+              )}
+            </div>
+
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={viewMode === 'grid' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+              >
+                <Grid className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Results Header */}
+          <div className="mb-6">
+            <p className="text-muted-foreground">
+              Showing {filteredProducts.length} of {PRODUCTS.length} products
+              {selectedFilter === 'recommended' && (
+                <span className="text-emerald-600 font-medium"> - Recommended for you</span>
+              )}
+            </p>
+          </div>
+
+          {/* Products Grid */}
+          <div className={`grid gap-8 ${
+            viewMode === 'grid' 
+              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
+              : 'grid-cols-1 lg:grid-cols-2'
+          }`}>
+            {filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onCheckout={handleCheckout}
+                viewMode={viewMode}
+                isRecommended={selectedFilter === 'recommended'}
+              />
+            ))}
+          </div>
+
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg mb-4">No products found for this category.</p>
+              <Button onClick={() => filterProducts('all')} variant="outline">
+                Show All Products
+              </Button>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,15 +1,6 @@
 import { NextResponse } from 'next/server';
-import { SquareClient, SquareEnvironment } from 'square';
 import { randomUUID } from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
-
-// Initialize Square client
-const squareClient = new SquareClient({
-  accessToken: process.env.SQUARE_ACCESS_TOKEN,
-  environment: process.env.NODE_ENV === 'production' 
-    ? SquareEnvironment.Production 
-    : SquareEnvironment.Sandbox
-});
 
 export async function POST(request) {
   try {
@@ -19,7 +10,8 @@ export async function POST(request) {
       discountAmount, 
       freeShipping = false, 
       type = 'spin_wheel',
-      source = 'manual'
+      source = 'website',
+      metadata = {}
     } = body;
 
     if (!customerEmail) {
@@ -36,55 +28,18 @@ export async function POST(request) {
     const expiryDate = new Date();
     expiryDate.setHours(expiryDate.getHours() + 24);
 
-    let squareDiscountId = null;
-    let squareDiscount = null;
-
-    // Create discount in Square (if not in mock mode)
-    const hasValidSquareToken = process.env.SQUARE_ACCESS_TOKEN?.startsWith('sandbox-sq0atb') || 
-                                process.env.SQUARE_ACCESS_TOKEN?.startsWith('sq0atb');
-
-    if (hasValidSquareToken && (discountAmount > 0 || freeShipping)) {
-      try {
-        const discountRequest = {
-          idempotencyKey: randomUUID(),
-          discount: {
-            name: `Spin Wheel - ${couponCode}`,
-            discountType: discountAmount > 0 ? 'FIXED_AMOUNT' : 'VARIABLE_PERCENTAGE',
-            ...(discountAmount > 0 && {
-              amountMoney: {
-                amount: discountAmount,
-                currency: 'USD'
-              }
-            }),
-            ...(freeShipping && !discountAmount && {
-              percentage: '0' // Free shipping handled separately
-            })
-          }
-        };
-
-        const { result } = await squareClient.catalogApi.upsertCatalogObject(discountRequest);
-        squareDiscountId = result.catalogObject?.id;
-        squareDiscount = result.catalogObject;
-        
-        console.log('Square discount created:', squareDiscountId);
-      } catch (squareError) {
-        console.error('Square discount creation failed:', squareError);
-        // Continue without Square integration in case of errors
-      }
-    }
-
-    // Save coupon to database
+    // Save coupon to database (no Square SDK integration needed)
     const { db } = await connectToDatabase();
     
     const couponData = {
       id: randomUUID(),
       code: couponCode,
       customerEmail,
-      discountAmount,
+      discountAmount: discountAmount || 0,
       freeShipping,
       type,
       source,
-      squareDiscountId,
+      metadata,
       isUsed: false,
       createdAt: new Date().toISOString(),
       expiresAt: expiryDate.toISOString(),
@@ -99,7 +54,7 @@ export async function POST(request) {
       email: customerEmail,
       amount: discountAmount,
       freeShipping,
-      squareId: squareDiscountId
+      type
     });
 
     return NextResponse.json({
@@ -107,10 +62,11 @@ export async function POST(request) {
       coupon: {
         id: couponData.id,
         code: couponCode,
-        discountAmount,
+        discountAmount: discountAmount || 0,
         freeShipping,
         expiresAt: expiryDate.toISOString(),
-        squareDiscountId
+        type,
+        metadata
       },
       message: 'Coupon created successfully'
     });
@@ -118,54 +74,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('Coupon creation error:', error);
     return NextResponse.json(
-      { error: 'Failed to create coupon' },
-      { status: 500 }
-    );
-  }
-}
-
-// GET endpoint to retrieve active coupons for a customer
-export async function GET(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const email = searchParams.get('email');
-
-    if (!email) {
-      return NextResponse.json(
-        { error: 'Email parameter is required' },
-        { status: 400 }
-      );
-    }
-
-    const { db } = await connectToDatabase();
-    
-    // Get active, unused coupons for the customer
-    const coupons = await db.collection('coupons')
-      .find({
-        customerEmail: email,
-        isUsed: false,
-        expiresAt: { $gt: new Date().toISOString() }
-      })
-      .sort({ createdAt: -1 })
-      .toArray();
-
-    return NextResponse.json({
-      success: true,
-      coupons: coupons.map(coupon => ({
-        id: coupon.id,
-        code: coupon.code,
-        discountAmount: coupon.discountAmount,
-        freeShipping: coupon.freeShipping,
-        type: coupon.type,
-        createdAt: coupon.createdAt,
-        expiresAt: coupon.expiresAt
-      }))
-    });
-
-  } catch (error) {
-    console.error('Error fetching coupons:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch coupons' },
+      { error: 'Failed to create coupon', details: error.message },
       { status: 500 }
     );
   }

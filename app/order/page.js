@@ -1,748 +1,1063 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingCart, Plus, Minus, Package, Truck, Check, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
-import { PRODUCTS } from '@/lib/products';
-import { getDeliveryZoneByZip, calculateDynamicDeliveryFee, getDeliveryTimeSlots, getFulfillmentOptions } from '@/lib/delivery-zones';
-import SquarePaymentForm from '@/components/SquarePaymentForm';
-import SpinWheel from '@/components/SpinWheel';
-import CouponInput from '@/components/CouponInput';
-import { ProductCardImage } from '@/components/ProductImage';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Toaster, toast } from 'sonner';
+import { 
+  ShoppingCart, 
+  Truck, 
+  MapPin, 
+  Clock, 
+  CreditCard,
+  Package,
+  Star,
+  Gift,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle,
+  Loader2,
+  AlertCircle
+} from 'lucide-react';
+import { ProductImage } from '@/components/ProductImage';
+import { CouponInput } from '@/components/CouponInput';
+import { SpinWheel } from '@/components/SpinWheel';
+import { products } from '@/lib/products';
+
+// Delivery zones configuration
+const DELIVERY_ZONES = {
+  zone1: { name: 'Atlanta Metro', fee: 15, timeSlots: ['9:00-11:00 AM', '11:00-1:00 PM', '1:00-3:00 PM', '3:00-5:00 PM'] },
+  zone2: { name: 'Decatur/DeKalb', fee: 12, timeSlots: ['10:00-12:00 PM', '12:00-2:00 PM', '2:00-4:00 PM', '4:00-6:00 PM'] },
+  zone3: { name: 'South Atlanta', fee: 18, timeSlots: ['9:00-12:00 PM', '12:00-3:00 PM', '3:00-6:00 PM'] }
+};
+
+// Fulfillment options
+const FULFILLMENT_OPTIONS = {
+  pickup_market: {
+    label: 'Serenbe Farmers Market',
+    description: 'Saturdays 9:00 AM - 1:00 PM',
+    fee: 0,
+    icon: Package
+  },
+  pickup_browns_mill: {
+    label: 'Browns Mill Community',
+    description: 'Saturdays 3:00 PM - 6:00 PM', 
+    fee: 0,
+    icon: Package
+  },
+  delivery: {
+    label: 'Home Delivery',
+    description: 'Various time slots available',
+    fee: 'varies',
+    icon: Truck
+  }
+};
 
 export default function OrderPage() {
-  const [step, setStep] = useState(1); // 1: Browse, 2: Info, 3: Fulfillment, 4: Review
+  // Core state management
+  const [step, setStep] = useState(1);
   const [cart, setCart] = useState([]);
-  const [customer, setCustomer] = useState({
-    name: '',
-    email: '',
-    phone: ''
-  });
-  const [fulfillmentType, setFulfillmentType] = useState('pickup_market');
+  const [customer, setCustomer] = useState({ name: '', email: '', phone: '' });
+  const [fulfillmentType, setFulfillmentType] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState({
     street: '',
-    city: 'Atlanta',
+    city: '',
     state: 'GA',
     zip: ''
   });
+  const [deliveryZone, setDeliveryZone] = useState('');
   const [deliveryTimeSlot, setDeliveryTimeSlot] = useState('');
   const [deliveryInstructions, setDeliveryInstructions] = useState('');
-  const [deliveryZone, setDeliveryZone] = useState(null);
-  const [deliveryFee, setDeliveryFee] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [products, setProducts] = useState([]);
-  
-  // Coupon state
+  const [errors, setErrors] = useState({});
+
+  // Coupon and rewards state
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
-  const [hasWonPrize, setHasWonPrize] = useState(false);
+  const [userPassport, setUserPassport] = useState(null);
 
-  // Spin Wheel Modal component
-  const SpinWheelModal = ({ showSpinWheel, setShowSpinWheel, customer, handleSpinWin }) => {
-    if (!showSpinWheel) return null;
-    
-    return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl relative max-w-lg w-full">
-          <Button
-            onClick={() => setShowSpinWheel(false)}
-            variant="ghost"
-            className="absolute top-2 right-2 z-10"
-          >
-            ✕
-          </Button>
-          <div className="p-6">
-            <SpinWheel
-              onWin={handleSpinWin}
-              customerEmail={customer.email}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  };
-
+  // Load saved data on component mount
   useEffect(() => {
-    fetchProducts();
+    loadSavedData();
   }, []);
 
+  // Auto-save data when state changes
   useEffect(() => {
-    if (deliveryAddress.zip && deliveryAddress.zip.length === 5) {
-      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      const deliveryResult = calculateDynamicDeliveryFee(
-        deliveryAddress.zip, 
-        subtotal, 
-        deliveryAddress.city, 
-        deliveryAddress.state
-      );
-      setDeliveryZone(deliveryResult.zone);
-      setDeliveryFee(deliveryResult.fee);
-    }
-  }, [deliveryAddress.zip, deliveryAddress.city, deliveryAddress.state, cart]);
+    saveDataToLocal();
+  }, [step, cart, customer, fulfillmentType, deliveryAddress, appliedCoupon]);
 
-  const fetchProducts = async () => {
+  // Load user passport when customer email changes
+  useEffect(() => {
+    if (customer.email) {
+      loadUserPassport(customer.email);
+    }
+  }, [customer.email]);
+
+  const loadSavedData = () => {
     try {
-      const response = await fetch('/api/admin/products');
-      const data = await response.json();
-      setProducts(data.products || []);
+      const savedCart = localStorage.getItem('taste-of-gratitude-cart');
+      const savedStep = localStorage.getItem('taste-of-gratitude-step');
+      const savedCustomer = localStorage.getItem('taste-of-gratitude-customer');
+      
+      if (savedCart) setCart(JSON.parse(savedCart));
+      if (savedStep) setStep(parseInt(savedStep));
+      if (savedCustomer) setCustomer(JSON.parse(savedCustomer));
     } catch (error) {
-      console.error('Failed to fetch products:', error);
-      setProducts(PRODUCTS.map(p => ({ ...p, stock: 50 })));
+      console.error('Error loading saved data:', error);
     }
   };
 
-  const addToCart = (product) => {
-    const existing = cart.find(item => item.id === product.id);
-    if (existing) {
-      setCart(cart.map(item =>
-        item.id === product.id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
-    } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
+  const saveDataToLocal = () => {
+    try {
+      localStorage.setItem('taste-of-gratitude-cart', JSON.stringify(cart));
+      localStorage.setItem('taste-of-gratitude-step', step.toString());
+      localStorage.setItem('taste-of-gratitude-customer', JSON.stringify(customer));
+    } catch (error) {
+      console.error('Error saving data:', error);
     }
+  };
+
+  const loadUserPassport = async (email) => {
+    try {
+      const response = await fetch('/api/rewards/passport', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name: customer.name })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setUserPassport(data.passport);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user passport:', error);
+    }
+  };
+
+  // Cart management
+  const addToCart = (product, size = 'Regular', quantity = 1) => {
+    const cartItem = {
+      id: `${product.slug}_${size}`,
+      slug: product.slug,
+      name: product.name,
+      price: product.price,
+      size,
+      quantity,
+      image: product.images?.[0],
+      category: product.category,
+      rewardPoints: product.rewardPoints || Math.floor(product.price),
+      squareProductUrl: product.squareProductUrl
+    };
+    
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === cartItem.id);
+      if (existingItem) {
+        return prevCart.map(item => 
+          item.id === cartItem.id 
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      }
+      return [...prevCart, cartItem];
+    });
+    
     toast.success(`Added ${product.name} to cart`);
   };
 
-  const updateQuantity = (productId, change) => {
-    setCart(cart.map(item => {
-      if (item.id === productId) {
-        const newQty = item.quantity + change;
-        return newQty > 0 ? { ...item, quantity: newQty } : null;
-      }
-      return item;
-    }).filter(Boolean));
-  };
-
-  const removeFromCart = (productId) => {
-    setCart(cart.filter(item => item.id !== productId));
-  };
-
-  // Coupon handlers
-  const handleSpinWin = (prize) => {
-    setHasWonPrize(true);
-    if (prize.couponCode) {
-      setAppliedCoupon({
-        code: prize.couponCode,
-        discountAmount: prize.value,
-        freeShipping: prize.freeShipping || false,
-        description: prize.label
-      });
-      toast.success(`🎉 ${prize.label} applied to your order!`);
+  const updateCartItemQuantity = (itemId, newQuantity) => {
+    if (newQuantity <= 0) {
+      removeFromCart(itemId);
+      return;
     }
-    setShowSpinWheel(false);
+    
+    setCart(prevCart => 
+      prevCart.map(item => 
+        item.id === itemId 
+          ? { ...item, quantity: newQuantity }
+          : item
+      )
+    );
   };
 
-  const handleCouponApplied = (coupon) => {
-    setAppliedCoupon(coupon);
+  const removeFromCart = (itemId) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== itemId));
+    toast.success('Item removed from cart');
   };
 
-  const handleCouponRemoved = () => {
-    setAppliedCoupon(null);
-  };
-
-  // Calculate totals with coupon
+  // Price calculations
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const couponDiscount = appliedCoupon?.discountAmount || 0;
-  const adjustedDeliveryFee = appliedCoupon?.freeShipping ? 0 : (fulfillmentType === 'delivery' ? deliveryFee : 0);
-  const total = Math.max(0, subtotal - couponDiscount + adjustedDeliveryFee);
+  const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
+  const deliveryFee = fulfillmentType === 'delivery' ? getDeliveryFee() : 0;
+  const adjustedDeliveryFee = appliedCoupon?.type === 'free_delivery' ? 0 : deliveryFee;
+  const total = subtotal - couponDiscount + adjustedDeliveryFee;
 
-  const handlePaymentSuccess = (result) => {
-    toast.success('Payment successful! Order confirmed.');
-    // Redirect to order confirmation page
-    setTimeout(() => {
-      window.location.href = `/order/${result.orderId || result.paymentId}`;
-    }, 2000);
+  const getDeliveryFee = () => {
+    if (!deliveryZone || fulfillmentType !== 'delivery') return 0;
+    return DELIVERY_ZONES[deliveryZone]?.fee || 15;
   };
 
-  const handlePaymentError = (error) => {
-    toast.error(error.message || 'Payment failed. Please try again.');
-    console.error('Payment error:', error);
+  // Validation functions
+  const validateStep = (stepNumber) => {
+    const newErrors = {};
+    
+    switch (stepNumber) {
+      case 1:
+        if (cart.length === 0) {
+          newErrors.cart = 'Please add items to your cart';
+        }
+        break;
+        
+      case 2:
+        if (!customer.name.trim()) newErrors.name = 'Name is required';
+        if (!customer.email.trim()) newErrors.email = 'Email is required';
+        else if (!/\S+@\S+\.\S+/.test(customer.email)) newErrors.email = 'Valid email is required';
+        if (!customer.phone.trim()) newErrors.phone = 'Phone number is required';
+        break;
+        
+      case 3:
+        if (!fulfillmentType) newErrors.fulfillment = 'Please select a fulfillment option';
+        
+        if (fulfillmentType === 'delivery') {
+          if (!deliveryAddress.street.trim()) newErrors.street = 'Street address is required';
+          if (!deliveryAddress.city.trim()) newErrors.city = 'City is required';
+          if (!deliveryAddress.zip.trim()) newErrors.zip = 'ZIP code is required';
+          if (!deliveryZone) newErrors.zone = 'Please select a delivery zone';
+          if (!deliveryTimeSlot) newErrors.timeSlot = 'Please select a delivery time';
+        }
+        break;
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  // Step 1: Browse Products
-  if (step === 1) {
-    return (
-      <>
-        <SpinWheelModal 
-          showSpinWheel={showSpinWheel} 
-          setShowSpinWheel={setShowSpinWheel} 
-          customer={customer} 
-          handleSpinWin={handleSpinWin} 
-        />
-        <div className="min-h-screen bg-gradient-to-b from-[#D4AF37]/5 to-background">
-        {/* Header */}
-        <div className="bg-white border-b sticky top-0 z-40">
-          <div className="container py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-gradient-gold">Taste of Gratitude</h1>
-                <p className="text-sm text-muted-foreground">Serenbe Farmers Market</p>
-              </div>
-              <div className="flex items-center gap-3">
-                {/* Spin Wheel Button */}
-                <Button
-                  onClick={() => setShowSpinWheel(true)}
-                  variant="outline"
-                  className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white"
-                  disabled={!customer.email}
-                >
-                  🎡 Spin & Win!
-                </Button>
+  const nextStep = () => {
+    if (validateStep(step)) {
+      setStep(prev => Math.min(prev + 1, 4));
+    }
+  };
+
+  const prevStep = () => {
+    setStep(prev => Math.max(prev - 1, 1));
+  };
+
+  // Coupon handling
+  const handleCouponApply = (coupon) => {
+    setAppliedCoupon(coupon);
+    toast.success(`Coupon "${coupon.code}" applied! $${coupon.discount} off`);
+  };
+
+  const handleCouponRemove = () => {
+    setAppliedCoupon(null);
+    toast.success('Coupon removed');
+  };
+
+  // Spin wheel handling
+  const handleSpinWin = async (prize) => {
+    try {
+      // Award spin points
+      if (customer.email) {
+        await fetch('/api/rewards/add-points', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: customer.email,
+            points: 10,
+            activityType: 'spin_wheel_win',
+            activityData: { prize: prize.label, discount: prize.discount }
+          })
+        });
+      }
+      
+      // Apply the coupon
+      const spinCoupon = {
+        code: `SPIN${Date.now()}`,
+        discount: prize.discount,
+        type: 'spin_wheel',
+        description: `Spin & Win: $${prize.discount} off`
+      };
+      
+      setAppliedCoupon(spinCoupon);
+      setShowSpinWheel(false);
+      
+      toast.success(`🎉 You won $${prize.discount} off your order!`);
+    } catch (error) {
+      console.error('Error processing spin win:', error);
+      toast.error('Error processing your prize. Please try again.');
+    }
+  };
+
+  // Clear all data
+  const clearCart = () => {
+    setCart([]);
+    setStep(1);
+    setCustomer({ name: '', email: '', phone: '' });
+    localStorage.removeItem('taste-of-gratitude-cart');
+    localStorage.removeItem('taste-of-gratitude-step');
+    localStorage.removeItem('taste-of-gratitude-customer');
+  };
+
+  // Enhanced checkout process
+  const handleCheckout = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      // Create order record via enhanced API
+      const orderData = {
+        cart,
+        customer,
+        fulfillmentType,
+        deliveryAddress: fulfillmentType === 'delivery' ? deliveryAddress : null,
+        deliveryTimeSlot: fulfillmentType === 'delivery' ? deliveryTimeSlot : null,
+        deliveryInstructions: fulfillmentType === 'delivery' ? deliveryInstructions : null,
+        deliveryFee: adjustedDeliveryFee,
+        appliedCoupon,
+        subtotal,
+        couponDiscount,
+        total,
+        source: 'website',
+        deviceInfo: {
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString()
+        }
+      };
+      
+      const response = await fetch('/api/orders/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          const order = result.order;
+          
+          // Generate Square checkout URL using simple redirect system
+          const squareUrl = generateSquareCheckoutUrl(order);
+          
+          // Show success message
+          const message = result.isFallback 
+            ? 'Order created offline! Redirecting to Square for payment...'
+            : 'Order created! Redirecting to Square for payment...';
+          toast.success(message);
+          
+          // Award order completion points
+          if (customer.email) {
+            try {
+              await fetch('/api/rewards/add-points', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  email: customer.email,
+                  points: Math.floor(total), // 1 point per dollar
+                  activityType: 'purchase',
+                  activityData: {
+                    orderId: order.id,
+                    orderTotal: total,
+                    itemCount: cart.length
+                  }
+                })
+              });
+            } catch (pointsError) {
+              console.warn('Failed to award purchase points:', pointsError);
+            }
+          }
+          
+          // Clear cart
+          clearCart();
+          
+          // Redirect to Square after a short delay
+          setTimeout(() => {
+            window.open(squareUrl, '_blank');
+            // Also redirect to order confirmation page
+            window.location.href = `/order/success?orderId=${order.id}`;
+          }, 2000);
+        } else {
+          throw new Error(result.error || 'Failed to create order');
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || 'Failed to create order');
+      }
+      
+    } catch (error) {
+      console.error('Checkout failed:', error);
+      
+      // Enhanced error handling with fallback options
+      if (error.message.includes('offline') || error.message.includes('network')) {
+        toast.error('Connection issue. Order saved locally and will sync when online.');
+        
+        // Try to create fallback order in localStorage
+        try {
+          const fallbackOrder = {
+            id: `fallback_${Date.now()}`,
+            cart,
+            customer,
+            fulfillmentType,
+            total,
+            createdAt: new Date(),
+            isFallback: true
+          };
+          
+          const fallbackOrders = JSON.parse(localStorage.getItem('taste-of-gratitude-fallback-orders') || '[]');
+          fallbackOrders.push(fallbackOrder);
+          localStorage.setItem('taste-of-gratitude-fallback-orders', JSON.stringify(fallbackOrders));
+          
+          // Still proceed with Square checkout
+          const squareUrl = generateSquareCheckoutUrl({ items: cart });
+          setTimeout(() => {
+            window.open(squareUrl, '_blank');
+          }, 3000);
+          
+        } catch (fallbackError) {
+          console.error('Fallback order creation failed:', fallbackError);
+          toast.error('Please check your connection and try again.');
+        }
+      } else {
+        toast.error('Checkout failed. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  // Simple Square checkout URL generation
+  const generateSquareCheckoutUrl = (order) => {
+    if (!order.items || order.items.length === 0) {
+      return 'https://square.link/u/default';
+    }
+    
+    if (order.items.length === 1) {
+      // Single product - use direct Square product link
+      const item = order.items[0];
+      return item.squareProductUrl || `https://square.link/u/${item.slug}`;
+    } else {
+      // Multiple products - redirect to first item for now
+      // Future enhancement: create Square bundle or multi-item cart
+      const firstItem = order.items[0];
+      return firstItem.squareProductUrl || `https://square.link/u/${firstItem.slug}`;
+    }
+  };
+
+  // Step 1: Product Selection
+  const renderProductSelection = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ShoppingCart className="h-5 w-5" />
+          Select Products
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        
+        {/* Product Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Object.values(products).slice(0, 9).map((product) => (
+            <Card key={product.slug} className="group cursor-pointer hover:shadow-lg transition-all">
+              <CardContent className="p-4">
+                <div className="aspect-square mb-3 overflow-hidden rounded-lg bg-gray-100">
+                  <ProductImage 
+                    src={product.images?.[0]} 
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  />
+                </div>
                 
-                {/* Cart Button */}
-                <Button
-                  onClick={() => cart.length > 0 && setStep(2)}
-                  className="bg-[#D4AF37] hover:bg-[#B8941F] relative"
-                  disabled={cart.length === 0}
-                >
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                  Cart ({cart.length})
-                  {cart.length > 0 && (
-                    <Badge className="ml-2 bg-white text-[#D4AF37]">
-                      ${(subtotal / 100).toFixed(2)}
+                <h3 className="font-semibold text-sm mb-1">{product.name}</h3>
+                <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{product.description}</p>
+                
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-bold text-[#D4AF37]">${product.price}</span>
+                  {product.rewardPoints && (
+                    <Badge variant="secondary" className="text-xs">
+                      +{product.rewardPoints} pts
                     </Badge>
                   )}
+                </div>
+                
+                <Button 
+                  onClick={() => addToCart(product)}
+                  size="sm" 
+                  className="w-full bg-[#D4AF37] hover:bg-[#B8941F]"
+                >
+                  Add to Cart
                 </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        
+        {/* Current Cart */}
+        {cart.length > 0 && (
+          <div>
+            <h3 className="font-semibold mb-3">Your Cart ({cart.length} items)</h3>
+            <div className="space-y-2">
+              {cart.map((item) => (
+                <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden">
+                      <ProductImage 
+                        src={item.image} 
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <div className="font-medium text-sm">{item.name}</div>
+                      <div className="text-xs text-muted-foreground">{item.size}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)}
+                      size="sm"
+                      variant="outline"
+                      className="h-7 w-7 p-0"
+                    >
+                      -
+                    </Button>
+                    <span className="w-8 text-center text-sm">{item.quantity}</span>
+                    <Button
+                      onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)}
+                      size="sm"
+                      variant="outline"
+                      className="h-7 w-7 p-0"
+                    >
+                      +
+                    </Button>
+                    <Button
+                      onClick={() => removeFromCart(item.id)}
+                      size="sm"
+                      variant="destructive"
+                      className="h-7 w-16 text-xs ml-2"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-4 p-3 bg-[#D4AF37]/10 rounded-lg">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold">Subtotal:</span>
+                <span className="font-bold text-[#D4AF37]">${subtotal.toFixed(2)}</span>
               </div>
             </div>
           </div>
-        </div>
+        )}
+        
+        {errors.cart && (
+          <div className="flex items-center gap-2 text-red-600 text-sm">
+            <AlertCircle className="h-4 w-4" />
+            {errors.cart}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 
-        {/* Products */}
-        <div className="container py-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map(product => (
-              <Card key={product.id} className="overflow-hidden hover-lift">
-                <div className="relative h-48 bg-muted">
-                  <ProductCardImage
-                    product={product}
-                    className="w-full h-48"
-                  />
-                  {product.stock === 0 ? (
-                    <Badge className="absolute top-3 right-3 bg-red-600">
-                      Out of Stock
-                    </Badge>
-                  ) : product.stock <= product.lowStockThreshold ? (
-                    <Badge className="absolute top-3 right-3 bg-yellow-600">
-                      Only {product.stock} left!
-                    </Badge>
-                  ) : (
-                    <Badge className="absolute top-3 right-3 bg-green-600">
-                      In Stock
-                    </Badge>
+  // Step 2: Customer Information
+  const renderCustomerInfo = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Package className="h-5 w-5" />
+          Customer Information
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        
+        {userPassport && (
+          <div className="p-4 bg-gradient-to-r from-[#D4AF37]/5 to-[#D4AF37]/10 rounded-lg border border-[#D4AF37]/20">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-2xl">{userPassport.levelInfo?.emoji || '🌱'}</span>
+              <div>
+                <div className="font-semibold text-sm">{userPassport.levelInfo?.name || 'Explorer'}</div>
+                <div className="text-xs text-muted-foreground">{userPassport.points || 0} reward points</div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name *</Label>
+            <Input
+              id="name"
+              value={customer.name}
+              onChange={(e) => setCustomer(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="Enter your full name"
+              className={errors.name ? 'border-red-500' : ''}
+            />
+            {errors.name && <span className="text-red-500 text-xs">{errors.name}</span>}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number *</Label>
+            <Input
+              id="phone"
+              value={customer.phone}
+              onChange={(e) => setCustomer(prev => ({ ...prev, phone: e.target.value }))}
+              placeholder="(555) 123-4567"
+              className={errors.phone ? 'border-red-500' : ''}
+            />
+            {errors.phone && <span className="text-red-500 text-xs">{errors.phone}</span>}
+          </div>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="email">Email Address *</Label>
+          <Input
+            id="email"
+            type="email"
+            value={customer.email}
+            onChange={(e) => setCustomer(prev => ({ ...prev, email: e.target.value }))}
+            placeholder="your@email.com"
+            className={errors.email ? 'border-red-500' : ''}
+          />
+          {errors.email && <span className="text-red-500 text-xs">{errors.email}</span>}
+        </div>
+        
+        {/* Spin & Win Section */}
+        {customer.email && !appliedCoupon && (
+          <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-sm mb-1">🎰 Spin & Win a Discount!</h3>
+                <p className="text-xs text-muted-foreground">Get a chance to win up to $10 off your order</p>
+              </div>
+              <Button
+                onClick={() => setShowSpinWheel(true)}
+                size="sm"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              >
+                <Gift className="mr-2 h-4 w-4" />
+                Spin Now
+              </Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  // Step 3: Fulfillment Options
+  const renderFulfillmentOptions = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Truck className="h-5 w-5" />
+          Fulfillment Options
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        
+        <RadioGroup value={fulfillmentType} onValueChange={setFulfillmentType}>
+          {Object.entries(FULFILLMENT_OPTIONS).map(([key, option]) => {
+            const IconComponent = option.icon;
+            return (
+              <div key={key} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                <RadioGroupItem value={key} id={key} className="mt-1" />
+                <div className="flex-1 cursor-pointer" onClick={() => setFulfillmentType(key)}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <IconComponent className="h-4 w-4" />
+                    <Label htmlFor={key} className="font-medium cursor-pointer">{option.label}</Label>
+                    {option.fee === 0 && <Badge variant="secondary">Free</Badge>}
+                  </div>
+                  <p className="text-sm text-muted-foreground">{option.description}</p>
+                  {typeof option.fee === 'number' && option.fee > 0 && (
+                    <p className="text-sm font-medium text-[#D4AF37] mt-1">+${option.fee} delivery fee</p>
                   )}
                 </div>
-                <CardHeader>
-                  <CardTitle className="text-lg">{product.name}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{product.subtitle}</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-2xl font-bold text-[#D4AF37]">
-                      ${(product.price / 100).toFixed(2)}
-                    </span>
-                    <span className="text-sm text-muted-foreground">{product.size}</span>
+              </div>
+            );
+          })}
+        </RadioGroup>
+        
+        {errors.fulfillment && (
+          <div className="flex items-center gap-2 text-red-600 text-sm">
+            <AlertCircle className="h-4 w-4" />
+            {errors.fulfillment}
+          </div>
+        )}
+        
+        {/* Delivery Address Form */}
+        {fulfillmentType === 'delivery' && (
+          <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+            <h3 className="font-semibold flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Delivery Address
+            </h3>
+            
+            <div className="space-y-2">
+              <Label htmlFor="street">Street Address *</Label>
+              <Input
+                id="street"
+                value={deliveryAddress.street}
+                onChange={(e) => setDeliveryAddress(prev => ({ ...prev, street: e.target.value }))}
+                placeholder="123 Main Street"
+                className={errors.street ? 'border-red-500' : ''}
+              />
+              {errors.street && <span className="text-red-500 text-xs">{errors.street}</span>}
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city">City *</Label>
+                <Input
+                  id="city"
+                  value={deliveryAddress.city}
+                  onChange={(e) => setDeliveryAddress(prev => ({ ...prev, city: e.target.value }))}
+                  placeholder="Atlanta"
+                  className={errors.city ? 'border-red-500' : ''}
+                />
+                {errors.city && <span className="text-red-500 text-xs">{errors.city}</span>}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="state">State</Label>
+                <Select value={deliveryAddress.state} onValueChange={(value) => setDeliveryAddress(prev => ({ ...prev, state: value }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="GA">Georgia</SelectItem>
+                    <SelectItem value="AL">Alabama</SelectItem>
+                    <SelectItem value="FL">Florida</SelectItem>
+                    <SelectItem value="TN">Tennessee</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="zip">ZIP Code *</Label>
+                <Input
+                  id="zip"
+                  value={deliveryAddress.zip}
+                  onChange={(e) => setDeliveryAddress(prev => ({ ...prev, zip: e.target.value }))}
+                  placeholder="30309"
+                  className={errors.zip ? 'border-red-500' : ''}
+                />
+                {errors.zip && <span className="text-red-500 text-xs">{errors.zip}</span>}
+              </div>
+            </div>
+            
+            {/* Delivery Zone Selection */}
+            <div className="space-y-2">
+              <Label>Delivery Zone *</Label>
+              <RadioGroup value={deliveryZone} onValueChange={setDeliveryZone}>
+                {Object.entries(DELIVERY_ZONES).map(([key, zone]) => (
+                  <div key={key} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem value={key} id={`zone-${key}`} />
+                      <Label htmlFor={`zone-${key}`} className="cursor-pointer">
+                        {zone.name}
+                        <div className="text-xs text-muted-foreground">Delivery fee: ${zone.fee}</div>
+                      </Label>
+                    </div>
                   </div>
-                  {product.stock === 0 ? (
-                    <Button variant="outline" className="w-full" disabled>
-                      <AlertCircle className="mr-2 h-4 w-4" />
-                      Out of Stock
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => addToCart(product)}
-                      className="w-full bg-[#D4AF37] hover:bg-[#B8941F]"
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add to Cart
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
+                ))}
+              </RadioGroup>
+              {errors.zone && <span className="text-red-500 text-xs">{errors.zone}</span>}
+            </div>
+            
+            {/* Time Slot Selection */}
+            {deliveryZone && (
+              <div className="space-y-2">
+                <Label>Preferred Delivery Time *</Label>
+                <Select value={deliveryTimeSlot} onValueChange={setDeliveryTimeSlot}>
+                  <SelectTrigger className={errors.timeSlot ? 'border-red-500' : ''}>
+                    <SelectValue placeholder="Select a time slot" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DELIVERY_ZONES[deliveryZone]?.timeSlots.map((slot) => (
+                      <SelectItem key={slot} value={slot}>{slot}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.timeSlot && <span className="text-red-500 text-xs">{errors.timeSlot}</span>}
+              </div>
+            )}
+            
+            {/* Delivery Instructions */}
+            <div className="space-y-2">
+              <Label htmlFor="instructions">Delivery Instructions (Optional)</Label>
+              <Input
+                id="instructions"
+                value={deliveryInstructions}
+                onChange={(e) => setDeliveryInstructions(e.target.value)}
+                placeholder="Apartment number, gate code, special instructions..."
+              />
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  // Step 4: Review & Payment
+  const renderReviewPayment = () => (
+    <div className="space-y-6">
+      
+      {/* Order Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Order Review
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          
+          {/* Items Summary */}
+          <div>
+            <h3 className="font-semibold mb-3">Items ({cart.length})</h3>
+            <div className="space-y-2">
+              {cart.map((item) => (
+                <div key={item.id} className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden">
+                      <ProductImage 
+                        src={item.image} 
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <div className="font-medium text-sm">{item.name}</div>
+                      <div className="text-xs text-muted-foreground">{item.size} × {item.quantity}</div>
+                    </div>
+                  </div>
+                  <div className="text-sm font-medium">${(item.price * item.quantity).toFixed(2)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <Separator />
+          
+          {/* Customer & Fulfillment Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <h4 className="font-semibold mb-2">Customer</h4>
+              <div className="space-y-1 text-muted-foreground">
+                <div>{customer.name}</div>
+                <div>{customer.email}</div>
+                <div>{customer.phone}</div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-2">Fulfillment</h4>
+              <div className="space-y-1 text-muted-foreground">
+                <div>{FULFILLMENT_OPTIONS[fulfillmentType]?.label}</div>
+                {fulfillmentType === 'delivery' && (
+                  <>
+                    <div>{deliveryAddress.street}</div>
+                    <div>{deliveryAddress.city}, {deliveryAddress.state} {deliveryAddress.zip}</div>
+                    <div>{deliveryTimeSlot}</div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          <Separator />
+          
+          {/* Coupon Section */}
+          {!appliedCoupon && (
+            <CouponInput onCouponApply={handleCouponApply} />
+          )}
+          
+          {appliedCoupon && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium text-green-800">Coupon Applied: {appliedCoupon.code}</div>
+                  <div className="text-sm text-green-600">{appliedCoupon.description}</div>
+                </div>
+                <Button onClick={handleCouponRemove} variant="ghost" size="sm" className="text-green-700">
+                  Remove
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          <Separator />
+          
+          {/* Price Breakdown */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>Subtotal</span>
+              <span>${subtotal.toFixed(2)}</span>
+            </div>
+            
+            {couponDiscount > 0 && (
+              <div className="flex justify-between text-sm text-green-600">
+                <span>Coupon Discount</span>
+                <span>-${couponDiscount.toFixed(2)}</span>
+              </div>
+            )}
+            
+            {adjustedDeliveryFee > 0 && (
+              <div className="flex justify-between text-sm">
+                <span>Delivery Fee</span>
+                <span>${adjustedDeliveryFee.toFixed(2)}</span>
+              </div>
+            )}
+            
+            {appliedCoupon?.type === 'free_delivery' && deliveryFee > 0 && (
+              <div className="flex justify-between text-sm text-green-600">
+                <span>Free Delivery Savings</span>
+                <span>-${deliveryFee.toFixed(2)}</span>
+              </div>
+            )}
+            
+            <Separator />
+            
+            <div className="flex justify-between text-lg font-bold">
+              <span>Total</span>
+              <span className="text-[#D4AF37]">${total.toFixed(2)}</span>
+            </div>
+          </div>
+          
+          {/* Checkout Button */}
+          <Button 
+            onClick={handleCheckout}
+            disabled={isSubmitting || total <= 0}
+            className="w-full bg-[#D4AF37] hover:bg-[#B8941F] text-white py-6 text-lg font-semibold"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Processing Order...
+              </>
+            ) : (
+              <>
+                <CreditCard className="mr-2 h-5 w-5" />
+                Proceed to Square Payment - ${total.toFixed(2)}
+              </>
+            )}
+          </Button>
+          
+          <p className="text-xs text-center text-muted-foreground">
+            You will be redirected to Square's secure payment system to complete your purchase.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#D4AF37]/5 to-background">
+      
+      {/* Progress Bar */}
+      <div className="bg-white border-b">
+        <div className="container py-4">
+          <div className="flex items-center justify-between max-w-2xl mx-auto">
+            {[1, 2, 3, 4].map((stepNum) => (
+              <div key={stepNum} className="flex items-center">
+                <div className={`
+                  w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors
+                  ${step >= stepNum 
+                    ? 'bg-[#D4AF37] text-white' 
+                    : 'bg-gray-200 text-gray-500'
+                  }
+                `}>
+                  {step > stepNum ? <CheckCircle className="h-4 w-4" /> : stepNum}
+                </div>
+                
+                {stepNum < 4 && (
+                  <div className={`
+                    w-16 h-1 mx-2 transition-colors
+                    ${step > stepNum ? 'bg-[#D4AF37]' : 'bg-gray-200'}
+                  `} />
+                )}
+              </div>
             ))}
+          </div>
+          
+          <div className="text-center mt-2">
+            <span className="text-sm text-muted-foreground">
+              Step {step} of 4: {
+                step === 1 ? 'Select Products' :
+                step === 2 ? 'Customer Info' :
+                step === 3 ? 'Fulfillment' :
+                'Review & Pay'
+              }
+            </span>
           </div>
         </div>
       </div>
-      </>
-    );
-  }
-
-  // Step 2: Customer Info
-  if (step === 2) {
-    return (
-      <>
-        <SpinWheelModal 
-          showSpinWheel={showSpinWheel} 
-          setShowSpinWheel={setShowSpinWheel} 
-          customer={customer} 
-          handleSpinWin={handleSpinWin} 
-        />
-        <div className="min-h-screen bg-background p-4">
-        <div className="max-w-md mx-auto py-8">
-          <Button variant="ghost" onClick={() => setStep(1)} className="mb-4">
-            ← Back to Products
-          </Button>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Information</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                We'll use this to contact you about your order
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
-                <Input
-                  id="name"
-                  value={customer.name}
-                  onChange={(e) => setCustomer({...customer, name: e.target.value})}
-                  placeholder="Jane Smith"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={customer.email}
-                  onChange={(e) => setCustomer({...customer, email: e.target.value})}
-                  placeholder="jane@example.com"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone *</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={customer.phone}
-                  onChange={(e) => setCustomer({...customer, phone: e.target.value})}
-                  placeholder="(404) 555-1234"
-                  required
-                />
-              </div>
-
-              <Button
-                onClick={() => setStep(3)}
-                className="w-full bg-[#D4AF37] hover:bg-[#B8941F]"
-                disabled={!customer.name || !customer.email || !customer.phone}
+      
+      {/* Main Content */}
+      <div className="container py-8">
+        <div className="max-w-4xl mx-auto">
+          
+          {step === 1 && renderProductSelection()}
+          {step === 2 && renderCustomerInfo()}
+          {step === 3 && renderFulfillmentOptions()}
+          {step === 4 && renderReviewPayment()}
+          
+          {/* Navigation Buttons */}
+          {step < 4 && (
+            <div className="flex justify-between mt-6">
+              <Button 
+                onClick={prevStep} 
+                disabled={step === 1}
+                variant="outline"
+                className="flex items-center gap-2"
               >
-                Continue to Fulfillment
+                <ArrowLeft className="h-4 w-4" />
+                Previous
               </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-      </>
-    );
-  }
-
-  // Step 3: Fulfillment
-  if (step === 3) {
-    return (
-      <>
-        <SpinWheelModal 
-          showSpinWheel={showSpinWheel} 
-          setShowSpinWheel={setShowSpinWheel} 
-          customer={customer} 
-          handleSpinWin={handleSpinWin} 
-        />
-        <div className="min-h-screen bg-background p-4">
-        <div className="max-w-md mx-auto py-8">
-          <Button variant="ghost" onClick={() => setStep(2)} className="mb-4">
-            ← Back
-          </Button>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>How would you like to receive your order?</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <RadioGroup value={fulfillmentType} onValueChange={setFulfillmentType}>
-                {/* Pickup during market */}
-                <div className="flex items-start space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-muted" onClick={() => setFulfillmentType('pickup_market')}>
-                  <RadioGroupItem value="pickup_market" id="pickup_market" />
-                  <Label htmlFor="pickup_market" className="flex-1 cursor-pointer">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Package className="h-5 w-5 text-[#D4AF37]" />
-                      <span className="font-semibold">Pick up during market</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Serenbe Farmers Market - Saturdays 9:00 AM to 1:00 PM at Booth #12
-                    </p>
-                  </Label>
-                </div>
-
-                {/* Pickup after market at Browns Mill */}
-                <div className="flex items-start space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-muted" onClick={() => setFulfillmentType('pickup_browns_mill')}>
-                  <RadioGroupItem value="pickup_browns_mill" id="pickup_browns_mill" />
-                  <Label htmlFor="pickup_browns_mill" className="flex-1 cursor-pointer">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Package className="h-5 w-5 text-[#D4AF37]" />
-                      <span className="font-semibold">Pick up after market</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Browns Mill Community - Saturdays 3:00 PM to 6:00 PM
-                    </p>
-                  </Label>
-                </div>
-
-                {/* Pickup at next event */}
-                <div className="flex items-start space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-muted opacity-60" onClick={() => setFulfillmentType('pickup_event')}>
-                  <RadioGroupItem value="pickup_event" id="pickup_event" disabled />
-                  <Label htmlFor="pickup_event" className="flex-1 cursor-pointer">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Package className="h-5 w-5 text-muted-foreground" />
-                      <span className="font-semibold text-muted-foreground">Pick up at next event</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      No upcoming events scheduled - check back soon!
-                    </p>
-                  </Label>
-                </div>
-
-                {/* Delivery */}
-                <div className="flex items-start space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-muted" onClick={() => setFulfillmentType('delivery')}>
-                  <RadioGroupItem value="delivery" id="delivery" />
-                  <Label htmlFor="delivery" className="flex-1 cursor-pointer">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Truck className="h-5 w-5 text-[#D4AF37]" />
-                      <span className="font-semibold">Delivery</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Atlanta metro area - fee varies by location (sliding scale)
-                    </p>
-                  </Label>
-                </div>
-              </RadioGroup>
-
-              {fulfillmentType === 'delivery' && (
-                <div className="space-y-4 pt-4 border-t">
-                  <div className="space-y-2">
-                    <Label htmlFor="street">Street Address *</Label>
-                    <Input
-                      id="street"
-                      value={deliveryAddress.street}
-                      onChange={(e) => setDeliveryAddress({...deliveryAddress, street: e.target.value})}
-                      placeholder="123 Main St"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="city">City *</Label>
-                        <Input
-                          id="city"
-                          value={deliveryAddress.city}
-                          onChange={(e) => setDeliveryAddress({...deliveryAddress, city: e.target.value})}
-                          placeholder="Atlanta"
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="state">State *</Label>
-                        <Select 
-                          value={deliveryAddress.state} 
-                          onValueChange={(value) => setDeliveryAddress({...deliveryAddress, state: value})}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="GA" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="GA">Georgia</SelectItem>
-                            <SelectItem value="AL">Alabama</SelectItem>
-                            <SelectItem value="SC">South Carolina</SelectItem>
-                            <SelectItem value="NC">North Carolina</SelectItem>
-                            <SelectItem value="FL">Florida</SelectItem>
-                            <SelectItem value="TN">Tennessee</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="zip">Zip Code *</Label>
-                      <Input
-                        id="zip"
-                        value={deliveryAddress.zip}
-                        onChange={(e) => setDeliveryAddress({...deliveryAddress, zip: e.target.value})}
-                        placeholder="30344"
-                        maxLength={5}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {deliveryZone && (
-                    <div className="p-4 bg-[#D4AF37]/10 rounded-lg space-y-2">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-semibold">Delivery Zone: {deliveryZone.name}</p>
-                        {deliveryZone.estimated && (
-                          <Badge variant="outline" className="text-xs">Estimated</Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">Distance: {deliveryZone.distance}</p>
-                      <p className="text-sm text-muted-foreground">Est. Time: {deliveryZone.estimatedTime}</p>
-                      
-                      <div className="pt-2 border-t border-[#D4AF37]/20">
-                        <p className="text-lg font-bold text-[#D4AF37]">
-                          Delivery Fee: ${(deliveryFee / 100).toFixed(2)}
-                          {deliveryFee === 0 ? (
-                            <Badge className="ml-2 bg-green-600">FREE DELIVERY!</Badge>
-                          ) : deliveryZone.fee && deliveryFee < deliveryZone.fee ? (
-                            <Badge className="ml-2 bg-blue-600">DISCOUNTED!</Badge>
-                          ) : null}
-                        </p>
-                        
-                        {deliveryZone.freeThreshold && subtotal < deliveryZone.freeThreshold && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            💡 Free delivery on orders ${(deliveryZone.freeThreshold / 100).toFixed(0)}+
-                            {deliveryZone.fee && deliveryFee < deliveryZone.fee && (
-                              <span> • Sliding scale discount applied!</span>
-                            )}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <Label htmlFor="timeSlot">Delivery Time</Label>
-                    <Select value={deliveryTimeSlot} onValueChange={setDeliveryTimeSlot}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select time slot" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getDeliveryTimeSlots().map(slot => (
-                          <SelectItem key={slot.value} value={slot.value}>
-                            {slot.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="instructions">Delivery Instructions (optional)</Label>
-                    <Textarea
-                      id="instructions"
-                      value={deliveryInstructions}
-                      onChange={(e) => setDeliveryInstructions(e.target.value)}
-                      placeholder="e.g., Leave at front door, ring bell"
-                      rows={3}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <Button
-                onClick={() => setStep(4)}
-                className="w-full bg-[#D4AF37] hover:bg-[#B8941F]"
-                disabled={fulfillmentType === 'delivery' && (!deliveryAddress.street || !deliveryAddress.zip || !deliveryAddress.city || !deliveryTimeSlot)}
+              
+              <Button 
+                onClick={nextStep}
+                className="flex items-center gap-2 bg-[#D4AF37] hover:bg-[#B8941F]"
               >
-                Review Order
+                Next
+                <ArrowRight className="h-4 w-4" />
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          )}
+          
+          {step === 4 && (
+            <div className="flex justify-center mt-6">
+              <Button 
+                onClick={prevStep}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Fulfillment
+              </Button>
+            </div>
+          )}
         </div>
       </div>
-      </>
-    );
-  }
-
-  // Step 4: Review & Submit
-  if (step === 4) {
-    return (
-      <>
-        <SpinWheelModal 
-          showSpinWheel={showSpinWheel} 
-          setShowSpinWheel={setShowSpinWheel} 
+      
+      {/* Spin Wheel Modal */}
+      {showSpinWheel && (
+        <SpinWheel
           customer={customer} 
-          handleSpinWin={handleSpinWin} 
+          onWin={handleSpinWin}
+          onClose={() => setShowSpinWheel(false)}
         />
-        <div className="min-h-screen bg-background p-4">
-        <div className="max-w-md mx-auto py-8">
-          <Button variant="ghost" onClick={() => setStep(3)} className="mb-4">
-            ← Back
-          </Button>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Review Your Order</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Customer */}
-              <div>
-                <h3 className="font-semibold mb-2">Customer</h3>
-                <p className="text-sm text-muted-foreground">{customer.name}</p>
-                <p className="text-sm text-muted-foreground">{customer.email}</p>
-                <p className="text-sm text-muted-foreground">{customer.phone}</p>
-              </div>
-
-              {/* Fulfillment */}
-              <div>
-                <h3 className="font-semibold mb-2">Fulfillment</h3>
-                {fulfillmentType === 'pickup_market' ? (
-                  <div className="flex items-start gap-2">
-                    <Package className="h-5 w-5 text-[#D4AF37] mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium">Pickup at Market</p>
-                      <p className="text-sm text-muted-foreground">Serenbe Farmers Market - Booth #12</p>
-                      <p className="text-sm text-muted-foreground">Saturdays 9:00 AM - 1:00 PM</p>
-                    </div>
-                  </div>
-                ) : fulfillmentType === 'pickup_browns_mill' ? (
-                  <div className="flex items-start gap-2">
-                    <Package className="h-5 w-5 text-[#D4AF37] mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium">Pickup after Market</p>
-                      <p className="text-sm text-muted-foreground">Browns Mill Community Center</p>
-                      <p className="text-sm text-muted-foreground">Saturdays 3:00 PM - 6:00 PM</p>
-                    </div>
-                  </div>
-                ) : fulfillmentType === 'pickup_event' ? (
-                  <div className="flex items-start gap-2">
-                    <Package className="h-5 w-5 text-[#D4AF37] mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium">Pickup at Event</p>
-                      <p className="text-sm text-muted-foreground">Next community event</p>
-                      <p className="text-sm text-muted-foreground">Details will be sent via SMS/email</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-start gap-2">
-                    <Truck className="h-5 w-5 text-[#D4AF37] mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium">Delivery</p>
-                      <p className="text-sm text-muted-foreground">{deliveryAddress.street}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {deliveryAddress.city}, {deliveryAddress.state} {deliveryAddress.zip}
-                      </p>
-                      {deliveryTimeSlot && (
-                        <p className="text-sm text-muted-foreground">{deliveryTimeSlot}</p>
-                      )}
-                      {deliveryZone && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Zone: {deliveryZone.name} ({deliveryZone.distance})
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Items */}
-              <div>
-                <h3 className="font-semibold mb-2">Items</h3>
-                <div className="space-y-2">
-                  {cart.map(item => (
-                    <div key={item.id} className="flex justify-between text-sm">
-                      <span>{item.name} (x{item.quantity})</span>
-                      <span>${((item.price * item.quantity) / 100).toFixed(2)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Coupon Section */}
-              <CouponInput
-                onCouponApplied={handleCouponApplied}
-                onCouponRemoved={handleCouponRemoved}
-                appliedCoupon={appliedCoupon}
-                orderTotal={subtotal}
-                customerEmail={customer.email}
-                disabled={isSubmitting}
-              />
-
-              {/* Total */}
-              <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Subtotal</span>
-                  <span>${(subtotal / 100).toFixed(2)}</span>
-                </div>
-                
-                {appliedCoupon && appliedCoupon.discountAmount > 0 && (
-                  <div className="flex justify-between text-sm text-green-600">
-                    <span>Coupon Discount ({appliedCoupon.code})</span>
-                    <span>-${(couponDiscount / 100).toFixed(2)}</span>
-                  </div>
-                )}
-                
-                {fulfillmentType === 'delivery' && (
-                  <div className="flex justify-between text-sm">
-                    <span>
-                      Delivery Fee
-                      {appliedCoupon?.freeShipping && (
-                        <span className="text-green-600 ml-1">(Free with coupon!)</span>
-                      )}
-                    </span>
-                    <span className={appliedCoupon?.freeShipping ? 'line-through text-muted-foreground' : ''}>
-                      ${(deliveryFee / 100).toFixed(2)}
-                    </span>
-                  </div>
-                )}
-                
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total</span>
-                  <span className="text-[#D4AF37]">${(total / 100).toFixed(2)}</span>
-                </div>
-                
-                {appliedCoupon && (
-                  <div className="text-xs text-green-600 text-center">
-                    🎉 You saved ${((couponDiscount + (appliedCoupon.freeShipping ? deliveryFee : 0)) / 100).toFixed(2)} with your coupon!
-                  </div>
-                )}
-              </div>
-
-              {/* Square Payment Form */}
-              <SquarePaymentForm
-                amount={total / 100} // Convert cents to dollars for Square
-                currency="USD"
-                orderId={`TOG-${Date.now()}`}
-                orderData={{
-                  cart,
-                  customer,
-                  fulfillmentType,
-                  deliveryAddress: fulfillmentType === 'delivery' ? deliveryAddress : null,
-                  deliveryTimeSlot: fulfillmentType === 'delivery' ? deliveryTimeSlot : null,
-                  deliveryInstructions: fulfillmentType === 'delivery' ? deliveryInstructions : null,
-                  appliedCoupon,
-                  subtotal,
-                  couponDiscount,
-                  originalDeliveryFee: deliveryFee,
-                  adjustedDeliveryFee
-                }}
-                onSuccess={handlePaymentSuccess}
-                onError={handlePaymentError}
-              />
-
-              <p className="text-xs text-center text-muted-foreground">
-                You'll receive a confirmation via SMS and email
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-      </>
-    );
-  }
-
-  // This should never be reached in normal flow, but just in case
-  return null;
+      )}
+      
+      <Toaster position="top-center" />
+    </div>
+  );
 }

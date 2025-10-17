@@ -19,8 +19,25 @@ export async function GET(request) {
       healthStatus.status = 'degraded';
     }
     
-    // Test Square API connectivity (if not in mock mode)
-    const squareStatus = process.env.SQUARE_ACCESS_TOKEN?.startsWith('sandbox-sq0atb') ? 'connected' : 'mock_mode';
+    // Test Square API connectivity (production or sandbox)
+    const hasValidSquareToken = process.env.SQUARE_ACCESS_TOKEN && 
+      (process.env.SQUARE_ACCESS_TOKEN.startsWith('sandbox-sq0atb') || 
+       process.env.SQUARE_ACCESS_TOKEN.startsWith('sq0atp-') ||
+       process.env.SQUARE_ACCESS_TOKEN.startsWith('EAAA') ||
+       process.env.SQUARE_ACCESS_TOKEN.startsWith('sq0csp-')); // Production/sandbox token formats
+    
+    const isProduction = process.env.SQUARE_ENVIRONMENT === 'production' || 
+                        process.env.SQUARE_ACCESS_TOKEN?.startsWith('EAAA');
+    
+    let squareStatus = 'not_configured';
+    if (hasValidSquareToken) {
+      if (process.env.SQUARE_MOCK_MODE === 'true' || !hasValidSquareToken) {
+        squareStatus = 'mock_mode';
+      } else {
+        squareStatus = isProduction ? 'production' : 'sandbox';
+      }
+    }
+    
     healthStatus.services.square_api = squareStatus;
     
     // Test external services
