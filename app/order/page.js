@@ -25,9 +25,9 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react';
-import { ProductImage } from '@/components/ProductImage';
-import { CouponInput } from '@/components/CouponInput';
-import { SpinWheel } from '@/components/SpinWheel';
+import ProductImage from '@/components/ProductImage';
+import CouponInput from '@/components/CouponInput';
+import SpinWheel from '@/components/SpinWheel';
 import { PRODUCTS } from '@/lib/products';
 
 // Delivery zones configuration
