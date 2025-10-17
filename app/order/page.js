@@ -505,7 +505,7 @@ export default function OrderPage() {
                 <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden">
-                      <ProductImage 
+                      <img 
                         src={item.image} 
                         alt={item.name}
                         className="w-full h-full object-cover"
@@ -828,7 +828,7 @@ export default function OrderPage() {
                 <div key={item.id} className="flex items-center justify-between py-2">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden">
-                      <ProductImage 
+                      <img 
                         src={item.image} 
                         alt={item.name}
                         className="w-full h-full object-cover"
