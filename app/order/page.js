@@ -432,19 +432,21 @@ export default function OrderPage() {
   
   // Simple Square checkout URL generation
   const generateSquareCheckoutUrl = (order) => {
+    const baseUrl = process.env.NEXT_PUBLIC_SQUARE_LINK_BASE_URL || 'https://square.link/u';
+    
     if (!order.items || order.items.length === 0) {
-      return 'https://square.link/u/default';
+      return `${baseUrl}/default`;
     }
     
     if (order.items.length === 1) {
       // Single product - use direct Square product link
       const item = order.items[0];
-      return item.squareProductUrl || `https://square.link/u/${item.slug}`;
+      return item.squareProductUrl || `${baseUrl}/${item.slug}`;
     } else {
       // Multiple products - redirect to first item for now
       // Future enhancement: create Square bundle or multi-item cart
       const firstItem = order.items[0];
-      return firstItem.squareProductUrl || `https://square.link/u/${firstItem.slug}`;
+      return firstItem.squareProductUrl || `${baseUrl}/${firstItem.slug}`;
     }
   };
 
