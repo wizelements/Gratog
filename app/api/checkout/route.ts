@@ -107,17 +107,17 @@ export async function POST(request: NextRequest) {
     
     console.log('Sending payment link request to Square...');
     
-    const { result } = await square.checkout.paymentLinks.create(paymentLinkRequest);
+    const response = await square.checkout.paymentLinks.create(paymentLinkRequest) as any;
     
-    if (!result.paymentLink) {
-      console.error('Square Payment Link creation failed:', result);
+    if (!response.result?.paymentLink) {
+      console.error('Square Payment Link creation failed:', response.result);
       return NextResponse.json(
         { error: 'Failed to create payment link - no payment link returned' },
         { status: 500 }
       );
     }
     
-    const paymentLink = result.paymentLink;
+    const paymentLink = response.result.paymentLink;
     
     console.log('Square Payment Link created successfully:', {
       paymentLinkId: paymentLink.id,
@@ -216,15 +216,11 @@ export async function GET(request: NextRequest) {
     
     if (paymentLinkId) {
       // Get payment link status
-      const response = await (square.checkout as any).retrievePaymentLink({
-        id: paymentLinkId
-      });
+      const response = await square.checkout.paymentLinks.get(paymentLinkId) as any;
       result = response.result;
     } else if (orderId) {
       // Get order status
-      const response = await (square.orders as any).retrieveOrder({
-        orderId: orderId
-      });
+      const response = await square.orders.get(orderId) as any;
       result = response.result;
     }
     

@@ -10,12 +10,9 @@ import { fromCents } from './money';
  */
 export async function priceFromVariation(variationId: string) {
   try {
-    const { result } = await (square.catalog as any).retrieveCatalogObject({
-      objectId: variationId,
-      includeRelatedObjects: true
-    });
+    const response = await square.catalog.object.get(variationId, true) as any;
     
-    return result.object?.itemVariationData?.priceMoney || null;
+    return response.result?.object?.itemVariationData?.priceMoney || null;
   } catch (error) {
     console.error(`Failed to get price for variation ${variationId}:`, error);
     return null;
@@ -29,15 +26,15 @@ export async function priceFromVariation(variationId: string) {
  */
 export async function batchPriceFromVariations(variationIds: string[]) {
   try {
-    const { result } = await square.catalogApi.batchRetrieveCatalogObjects({
+    const response = await square.catalog.batchGet({
       objectIds: variationIds,
       includeRelatedObjects: true
-    });
+    }) as any;
     
     const priceMap = new Map();
     
-    if (result.objects) {
-      for (const obj of result.objects) {
+    if (response.result?.objects) {
+      for (const obj of response.result.objects) {
         if (obj.type === 'ITEM_VARIATION' && obj.itemVariationData?.priceMoney) {
           priceMap.set(obj.id, obj.itemVariationData.priceMoney);
         }
@@ -59,12 +56,12 @@ export async function batchPriceFromVariations(variationIds: string[]) {
  */
 export async function getInventoryCount(variationId: string, locationId: string): Promise<number> {
   try {
-    const { result } = await square.inventoryApi.retrieveInventoryCount({
-      catalogObjectId: variationId,
+    const response = await (square.inventory as any).batchRetrieveInventoryCounts({
+      catalogObjectIds: [variationId],
       locationIds: [locationId]
     });
     
-    const count = result.counts?.find(c => 
+    const count = response.result?.counts?.find((c: any) => 
       c.catalogObjectId === variationId && 
       c.locationId === locationId &&
       c.state === 'IN_STOCK'
@@ -87,18 +84,18 @@ export async function calculateOrderTotals(lineItems: any[], locationId: string)
   try {
     // First, get the catalog objects to build proper line items
     const variationIds = lineItems.map(item => item.variationId);
-    const { result: catalogResult } = await square.catalogApi.batchRetrieveCatalogObjects({
+    const catalogResponse = await square.catalog.batchGet({
       objectIds: variationIds,
       includeRelatedObjects: true
-    });
+    }) as any;
     
-    if (!catalogResult.objects) {
+    if (!catalogResponse.result?.objects) {
       throw new Error('No catalog objects found');
     }
     
     // Build Square line items
     const squareLineItems = lineItems.map(item => {
-      const catalogObj = catalogResult.objects?.find(obj => obj.id === item.variationId);
+      const catalogObj = catalogResponse.result.objects?.find((obj: any) => obj.id === item.variationId);
       
       if (!catalogObj || catalogObj.type !== 'ITEM_VARIATION') {
         throw new Error(`Invalid variation ID: ${item.variationId}`);
@@ -113,7 +110,7 @@ export async function calculateOrderTotals(lineItems: any[], locationId: string)
     });
     
     // Calculate order using Square Orders API
-    const { result: orderResult } = await square.ordersApi.calculateOrder({
+    const orderResponse = await square.orders.calculate({
       order: {
         locationId,
         lineItems: squareLineItems,
@@ -122,9 +119,9 @@ export async function calculateOrderTotals(lineItems: any[], locationId: string)
           autoApplyDiscounts: true
         }
       }
-    });
+    }) as any;
     
-    return orderResult.order;
+    return orderResponse.result?.order;
   } catch (error) {
     console.error('Failed to calculate order totals:', error);
     throw error;

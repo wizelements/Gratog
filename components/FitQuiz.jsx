@@ -129,7 +129,12 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
               );
             })}
           </div>
-          <Button onClick={handleStart} size="lg" className="bg-emerald-600 hover:bg-emerald-700">
+          <Button 
+            onClick={handleStart} 
+            size="lg" 
+            data-testid="quiz-start-button"
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
             Start Your Journey
           </Button>
         </CardContent>

@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     console.log('Built line items for Square API:', lineItems.length);
     
     // Calculate order using Square Orders API with auto-applied taxes and discounts
-    const { result: orderResult } = await (square.orders as any).calculateOrder({
+    const orderResponse = await square.orders.calculate({
       order: {
         locationId: SQUARE_LOCATION_ID,
         lineItems,
@@ -128,9 +128,9 @@ export async function POST(request: NextRequest) {
           autoApplyDiscounts: true
         }
       }
-    });
+    }) as any;
     
-    if (!orderResult.order) {
+    if (!orderResponse.result?.order) {
       return NextResponse.json(
         { error: 'Failed to calculate order - no order returned from Square' },
         { status: 500 }
@@ -140,11 +140,11 @@ export async function POST(request: NextRequest) {
     console.log('Square order calculation successful');
     
     // Format the response with human-readable values
-    const formattedOrder = formatOrder(orderResult.order);
+    const formattedOrder = formatOrder(orderResponse.result.order);
     
     return NextResponse.json({
       success: true,
-      order: orderResult.order, // Raw Square order for advanced use
+      order: orderResponse.result.order, // Raw Square order for advanced use
       pricing: formattedOrder, // Formatted for easy consumption
       message: 'Pricing calculated successfully with Square-applied taxes and discounts'
     });
@@ -187,7 +187,7 @@ export async function GET(request: NextRequest) {
     let authValid = false;
     
     try {
-      locationResult = await (square.locations as any).get(SQUARE_LOCATION_ID);
+      locationResult = await square.locations.get(SQUARE_LOCATION_ID) as any;
       authValid = true;
     } catch (authError: any) {
       // Handle authentication errors gracefully

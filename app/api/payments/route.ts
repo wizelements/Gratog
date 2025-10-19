@@ -71,17 +71,17 @@ export async function POST(request: NextRequest) {
     
     console.log('Sending payment request to Square...');
     
-    const { result } = await square.payments.create(paymentRequest);
+    const response = await square.payments.create(paymentRequest) as any;
     
-    if (!result.payment) {
-      console.error('Square payment creation failed:', result);
+    if (!response.result?.payment) {
+      console.error('Square payment creation failed:', response.result);
       return NextResponse.json(
         { error: 'Payment processing failed - no payment returned' },
         { status: 500 }
       );
     }
     
-    const payment = result.payment;
+    const payment = response.result.payment;
     
     console.log('Square payment completed:', {
       paymentId: payment.id,
@@ -241,8 +241,8 @@ export async function GET(request: NextRequest) {
     let squarePayment;
     if (paymentId) {
       try {
-        const { result } = await (square.payments as any).getPayment({ paymentId });
-        squarePayment = result.payment;
+        const response = await square.payments.get(paymentId) as any;
+        squarePayment = response.result?.payment;
       } catch (squareError) {
         console.error('Failed to get payment from Square:', squareError);
       }

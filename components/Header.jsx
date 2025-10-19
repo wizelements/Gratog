@@ -62,14 +62,14 @@ export default function Header() {
             }`} />
           </Link>
           <Link 
-            href="/passport" 
+            href="/rewards" 
             className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
-              isActive('/passport') ? 'text-[#D4AF37]' : ''
+              isActive('/rewards') || isActive('/passport') ? 'text-[#D4AF37]' : ''
             }`}
           >
             Rewards
             <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
-              isActive('/passport') ? 'w-full' : ''
+              isActive('/rewards') || isActive('/passport') ? 'w-full' : ''
             }`} />
           </Link>
           <Link 
@@ -147,9 +147,9 @@ export default function Header() {
               Markets
             </Link>
             <Link
-              href="/passport"
+              href="/rewards"
               className={`text-sm font-medium py-3 px-4 rounded-md transition-all hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] ${
-                isActive('/passport') ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : ''
+                isActive('/rewards') || isActive('/passport') ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : ''
               }`}
               onClick={() => setIsMenuOpen(false)}
             >

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 import { 
   ShoppingCart, 
   Truck, 
@@ -23,11 +23,14 @@ import {
   ArrowRight,
   CheckCircle,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  X,
+  Lock,
+  Shield
 } from 'lucide-react';
-// import ProductImage from '@/components/ProductImage';
-// import CouponInput from '@/components/CouponInput';
-// import SpinWheel from '@/components/SpinWheel';
+import ProductImage from '@/components/ProductImage';
+import CouponInput from '@/components/CouponInput';
+import SpinWheel from '@/components/SpinWheel';
 import { PRODUCTS } from '@/lib/products';
 
 // Delivery zones configuration
@@ -37,23 +40,17 @@ const DELIVERY_ZONES = {
   zone3: { name: 'South Atlanta', fee: 18, timeSlots: ['9:00-12:00 PM', '12:00-3:00 PM', '3:00-6:00 PM'] }
 };
 
-// Fulfillment options
+// Fulfillment options - Only Serenbe pickup per user request
 const FULFILLMENT_OPTIONS = {
   pickup_market: {
-    label: 'Serenbe Farmers Market',
-    description: 'Saturdays 9:00 AM - 1:00 PM',
-    fee: 0,
-    icon: Package
-  },
-  pickup_browns_mill: {
-    label: 'Browns Mill Community',
-    description: 'Saturdays 3:00 PM - 6:00 PM', 
+    label: 'Pick up at Serenbe Market',
+    description: 'Serenbe Farmers Market - Saturdays 9:00 AM - 1:00 PM',
     fee: 0,
     icon: Package
   },
   delivery: {
     label: 'Home Delivery',
-    description: 'Various time slots available',
+    description: 'Atlanta metro area - fee varies by location',
     fee: 'varies',
     icon: Truck
   }
@@ -76,6 +73,7 @@ export default function OrderPage() {
   const [deliveryInstructions, setDeliveryInstructions] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Coupon and rewards state
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -85,12 +83,11 @@ export default function OrderPage() {
   // Load saved data on component mount
   useEffect(() => {
     loadSavedData();
+    setIsHydrated(true);
   }, []);
 
-  // Auto-save data when state changes
-  useEffect(() => {
-    saveDataToLocal();
-  }, [step, cart, customer, fulfillmentType, deliveryAddress, appliedCoupon]);
+  // REMOVED auto-save useEffect to prevent race condition with React 19
+  // Manual saves are now done in each state update function
 
   // Load user passport when customer email changes
   useEffect(() => {
@@ -142,16 +139,22 @@ export default function OrderPage() {
     }
   };
 
-  // Cart management
+  // Cart management - Fixed for React 19 with manual localStorage save
   const addToCart = (product, size = 'Regular', quantity = 1) => {
+    if (!product || !product.slug) {
+      console.error('Invalid product:', product);
+      toast.error('Invalid product');
+      return;
+    }
+    
     const cartItem = {
       id: `${product.slug}_${size}`,
       slug: product.slug,
       name: product.name,
       price: product.price,
-      size,
+      size: product.size || size,
       quantity,
-      image: product.images?.[0],
+      image: product.image || product.images?.[0],
       category: product.category,
       rewardPoints: product.rewardPoints || Math.floor(product.price),
       squareProductUrl: product.squareProductUrl
@@ -159,14 +162,25 @@ export default function OrderPage() {
     
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === cartItem.id);
+      let newCart;
       if (existingItem) {
-        return prevCart.map(item => 
+        newCart = prevCart.map(item => 
           item.id === cartItem.id 
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
+      } else {
+        newCart = [...prevCart, cartItem];
       }
-      return [...prevCart, cartItem];
+      
+      // Save immediately after state calculation
+      try {
+        localStorage.setItem('taste-of-gratitude-cart', JSON.stringify(newCart));
+      } catch (e) {
+        console.error('Failed to save cart:', e);
+      }
+      
+      return newCart;
     });
     
     toast.success(`Added ${product.name} to cart`);
@@ -178,17 +192,37 @@ export default function OrderPage() {
       return;
     }
     
-    setCart(prevCart => 
-      prevCart.map(item => 
+    setCart(prevCart => {
+      const newCart = prevCart.map(item => 
         item.id === itemId 
           ? { ...item, quantity: newQuantity }
           : item
-      )
-    );
+      );
+      
+      // Save to localStorage
+      try {
+        localStorage.setItem('taste-of-gratitude-cart', JSON.stringify(newCart));
+      } catch (e) {
+        console.error('Failed to save cart:', e);
+      }
+      
+      return newCart;
+    });
   };
 
   const removeFromCart = (itemId) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== itemId));
+    setCart(prevCart => {
+      const newCart = prevCart.filter(item => item.id !== itemId);
+      
+      // Save to localStorage
+      try {
+        localStorage.setItem('taste-of-gratitude-cart', JSON.stringify(newCart));
+      } catch (e) {
+        console.error('Failed to save cart:', e);
+      }
+      
+      return newCart;
+    });
     toast.success('Item removed from cart');
   };
 
@@ -241,12 +275,28 @@ export default function OrderPage() {
 
   const nextStep = () => {
     if (validateStep(step)) {
-      setStep(prev => Math.min(prev + 1, 4));
+      const newStep = Math.min(step + 1, 4);
+      setStep(newStep);
+      
+      // Save step to localStorage
+      try {
+        localStorage.setItem('taste-of-gratitude-step', newStep.toString());
+      } catch (e) {
+        console.error('Failed to save step:', e);
+      }
     }
   };
 
   const prevStep = () => {
-    setStep(prev => Math.max(prev - 1, 1));
+    const newStep = Math.max(step - 1, 1);
+    setStep(newStep);
+    
+    // Save step to localStorage
+    try {
+      localStorage.setItem('taste-of-gratitude-step', newStep.toString());
+    } catch (e) {
+      console.error('Failed to save step:', e);
+    }
   };
 
   // Coupon handling
@@ -305,13 +355,14 @@ export default function OrderPage() {
     localStorage.removeItem('taste-of-gratitude-customer');
   };
 
-  // Enhanced checkout process
+  // Enhanced checkout process - Redirect to Square Online for payment
   const handleCheckout = async () => {
     setIsSubmitting(true);
     
     try {
-      // Create order record via enhanced API
+      // Create order record in our database
       const orderData = {
+        id: `ORDER-${Date.now()}`,
         cart,
         customer,
         fulfillmentType,
@@ -324,110 +375,126 @@ export default function OrderPage() {
         couponDiscount,
         total,
         source: 'website',
-        deviceInfo: {
-          userAgent: navigator.userAgent,
-          timestamp: new Date().toISOString()
-        }
+        status: 'pending_payment',
+        squareRedirect: true,
+        createdAt: new Date().toISOString()
       };
       
-      const response = await fetch('/api/orders/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
+      // Save to database
+      try {
+        const response = await fetch('/api/orders/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            items: cart,
+            customer,
+            fulfillmentType,
+            deliveryAddress,
+            deliveryTimeSlot,
+            total,
+            coupon: appliedCoupon 
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          orderData.id = data.orderId || orderData.id;
+        }
+      } catch (err) {
+        console.warn('Failed to save order to database:', err);
+        // Continue anyway - customer can still checkout on Square
+      }
+      
+      // Store order for reference
+      localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+      
+      // Award order initiation points
+      if (customer.email) {
+        try {
+          await fetch('/api/rewards/add-points', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: customer.email,
+              points: 5,
+              activityType: 'checkout_started',
+              activityData: {
+                orderId: orderData.id,
+                itemCount: cart.length,
+                total: total
+              }
+            })
+          });
+        } catch (pointsError) {
+          console.warn('Failed to award checkout points:', pointsError);
+        }
+      }
+      
+      // Build Square Online checkout URL with all cart items
+      const squareCheckoutUrl = buildSquareCartUrl(cart, customer, orderData.id);
+      
+      // Show success message
+      toast.success('Preparing your Square checkout...', {
+        description: 'We\'ll show you how to complete your order on Square'
       });
       
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          const order = result.order;
-          
-          // Generate Square checkout URL using simple redirect system
-          const squareUrl = generateSquareCheckoutUrl(order);
-          
-          // Show success message
-          const message = result.isFallback 
-            ? 'Order created offline! Redirecting to Square for payment...'
-            : 'Order created! Redirecting to Square for payment...';
-          toast.success(message);
-          
-          // Award order completion points
-          if (customer.email) {
-            try {
-              await fetch('/api/rewards/add-points', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  email: customer.email,
-                  points: Math.floor(total), // 1 point per dollar
-                  activityType: 'purchase',
-                  activityData: {
-                    orderId: order.id,
-                    orderTotal: total,
-                    itemCount: cart.length
-                  }
-                })
-              });
-            } catch (pointsError) {
-              console.warn('Failed to award purchase points:', pointsError);
-            }
-          }
-          
-          // Clear cart
-          clearCart();
-          
-          // Redirect to Square after a short delay
-          setTimeout(() => {
-            window.open(squareUrl, '_blank');
-            // Also redirect to order confirmation page
-            window.location.href = `/order/success?orderId=${order.id}`;
-          }, 2000);
-        } else {
-          throw new Error(result.error || 'Failed to create order');
-        }
-      } else {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || 'Failed to create order');
-      }
+      // Redirect to our Square checkout helper page
+      setTimeout(() => {
+        window.location.href = '/checkout/square';
+      }, 1500);
       
     } catch (error) {
       console.error('Checkout failed:', error);
-      
-      // Enhanced error handling with fallback options
-      if (error.message.includes('offline') || error.message.includes('network')) {
-        toast.error('Connection issue. Order saved locally and will sync when online.');
-        
-        // Try to create fallback order in localStorage
-        try {
-          const fallbackOrder = {
-            id: `fallback_${Date.now()}`,
-            cart,
-            customer,
-            fulfillmentType,
-            total,
-            createdAt: new Date(),
-            isFallback: true
-          };
-          
-          const fallbackOrders = JSON.parse(localStorage.getItem('taste-of-gratitude-fallback-orders') || '[]');
-          fallbackOrders.push(fallbackOrder);
-          localStorage.setItem('taste-of-gratitude-fallback-orders', JSON.stringify(fallbackOrders));
-          
-          // Still proceed with Square checkout
-          const squareUrl = generateSquareCheckoutUrl({ items: cart });
-          setTimeout(() => {
-            window.open(squareUrl, '_blank');
-          }, 3000);
-          
-        } catch (fallbackError) {
-          console.error('Fallback order creation failed:', fallbackError);
-          toast.error('Please check your connection and try again.');
-        }
-      } else {
-        toast.error('Checkout failed. Please try again.');
-      }
-    } finally {
+      toast.error(error.message || 'Checkout failed. Please try again.');
       setIsSubmitting(false);
     }
+  };
+  
+  // Build Square Online cart URL with all items
+  const buildSquareCartUrl = (cartItems, customerInfo, orderId) => {
+    const baseUrl = 'https://tasteofgratitude.shop/s/order';
+    
+    if (!cartItems || cartItems.length === 0) {
+      return baseUrl;
+    }
+    
+    // Build URL with all cart items
+    // Format: https://tasteofgratitude.shop/s/order?add=product1&add=product2&add=product3
+    const productParams = cartItems.map(item => {
+      const slug = item.slug || item.id;
+      // Add quantity if more than 1
+      if (item.quantity > 1) {
+        return Array(item.quantity).fill(`add=${slug}`).join('&');
+      }
+      return `add=${slug}`;
+    }).join('&');
+    
+    // Add customer info and order reference as URL params for tracking
+    const params = new URLSearchParams();
+    if (customerInfo.email) params.append('email', customerInfo.email);
+    if (customerInfo.name) params.append('name', customerInfo.name);
+    if (orderId) params.append('ref', orderId);
+    
+    const customerParams = params.toString();
+    const fullUrl = `${baseUrl}?${productParams}${customerParams ? '&' + customerParams : ''}`;
+    
+    return fullUrl;
+  };
+  
+  // Check if customer qualifies for spin wheel
+  const checkSpinWheelEligibility = () => {
+    // First order $15+ OR repeat orders $20+
+    const isFirstOrder = !customer.email || !userPassport || userPassport.totalOrders === 0;
+    
+    if (isFirstOrder && total >= 15) {
+      return true; // First order $15+
+    }
+    
+    if (!isFirstOrder && total >= 20) {
+      return true; // Repeat order $20+
+    }
+    
+    return false;
   };
   
   // Simple Square checkout URL generation
@@ -597,6 +664,7 @@ export default function OrderPage() {
             <Label htmlFor="name">Full Name *</Label>
             <Input
               id="name"
+              data-testid="customer-name-input"
               value={customer.name}
               onChange={(e) => setCustomer(prev => ({ ...prev, name: e.target.value }))}
               placeholder="Enter your full name"
@@ -609,6 +677,7 @@ export default function OrderPage() {
             <Label htmlFor="phone">Phone Number *</Label>
             <Input
               id="phone"
+              data-testid="customer-phone-input"
               value={customer.phone}
               onChange={(e) => setCustomer(prev => ({ ...prev, phone: e.target.value }))}
               placeholder="(555) 123-4567"
@@ -623,6 +692,7 @@ export default function OrderPage() {
           <Input
             id="email"
             type="email"
+            data-testid="customer-email-input"
             value={customer.email}
             onChange={(e) => setCustomer(prev => ({ ...prev, email: e.target.value }))}
             placeholder="your@email.com"
@@ -631,7 +701,7 @@ export default function OrderPage() {
           {errors.email && <span className="text-red-500 text-xs">{errors.email}</span>}
         </div>
         
-        {/* Spin & Win Section */}
+        {/* Spin & Win Section - MOVED TO POST-PURCHASE
         {customer.email && !appliedCoupon && (
           <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border">
             <div className="flex items-center justify-between">
@@ -647,6 +717,22 @@ export default function OrderPage() {
                 <Gift className="mr-2 h-4 w-4" />
                 Spin Now
               </Button>
+            </div>
+          </div>
+        )}
+        */}
+        
+        {/* Info: Earn spins after purchase */}
+        {customer.email && (
+          <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+            <div className="flex items-center gap-2">
+              <Gift className="w-5 h-5 text-purple-600" />
+              <div className="text-sm">
+                <span className="font-semibold text-purple-800">Complete your order to earn spins!</span>
+                <p className="text-xs text-purple-600 mt-1">
+                  $15+ first order = 1 spin • $20+ orders = 1 spin per $20 • Spins stack and never expire!
+                </p>
+              </div>
             </div>
           </div>
         )}
@@ -879,9 +965,14 @@ export default function OrderPage() {
           
           {/* Coupon Section */}
           {!appliedCoupon && (
-            <div className="p-4 border border-dashed border-gray-300 rounded-lg text-center">
-              <p className="text-sm text-muted-foreground">Coupon input temporarily disabled</p>
-            </div>
+            <CouponInput
+              onCouponApplied={handleCouponApply}
+              onCouponRemoved={handleCouponRemove}
+              appliedCoupon={appliedCoupon}
+              orderTotal={total}
+              customerEmail={customer.email}
+              disabled={isSubmitting}
+            />
           )}
           
           {appliedCoupon && (
@@ -940,23 +1031,25 @@ export default function OrderPage() {
           <Button 
             onClick={handleCheckout}
             disabled={isSubmitting || total <= 0}
-            className="w-full bg-[#D4AF37] hover:bg-[#B8941F] text-white py-6 text-lg font-semibold"
+            data-testid="complete-order-button"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Processing Order...
+                Preparing checkout...
               </>
             ) : (
               <>
-                <CreditCard className="mr-2 h-5 w-5" />
-                Proceed to Square Payment - ${total.toFixed(2)}
+                <Lock className="mr-2 h-5 w-5" />
+                Continue to Square Checkout → ${total.toFixed(2)}
               </>
             )}
           </Button>
           
-          <p className="text-xs text-center text-muted-foreground">
-            You will be redirected to Square's secure payment system to complete your purchase.
+          <p className="text-xs text-center text-gray-600 flex items-center justify-center gap-2">
+            <Shield className="h-3 w-3 text-green-600" />
+            We'll show you how to complete your order on Square
           </p>
         </CardContent>
       </Card>
@@ -1052,12 +1145,26 @@ export default function OrderPage() {
         </div>
       </div>
       
-      {/* Spin Wheel Modal - Temporarily disabled */}
-      {false && showSpinWheel && (
-        <div>Spin wheel temporarily disabled</div>
+      {/* Spin Wheel Modal */}
+      {showSpinWheel && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setShowSpinWheel(false)}
+              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="p-6">
+              <SpinWheel
+                onWin={handleSpinWin}
+                customerEmail={customer.email}
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+        </div>
       )}
-      
-      <Toaster position="top-center" />
     </div>
   );
 }

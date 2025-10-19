@@ -53,11 +53,11 @@ export default function CatalogPage() {
     if (filter === 'all') {
       setFilteredProducts(PRODUCTS);
     } else if (filter === 'gels') {
-      setFilteredProducts(PRODUCTS.filter(p => p.category === 'Sea Moss Gel'));
+      setFilteredProducts(PRODUCTS.filter(p => p.category === 'gel'));
     } else if (filter === 'lemonades') {
-      setFilteredProducts(PRODUCTS.filter(p => p.category === 'Lemonade'));
+      setFilteredProducts(PRODUCTS.filter(p => p.category === 'lemonade'));
     } else if (filter === 'shots') {
-      setFilteredProducts(PRODUCTS.filter(p => p.size && p.size.includes('2oz')));
+      setFilteredProducts(PRODUCTS.filter(p => p.category === 'shot'));
     } else if (filter === 'bundles') {
       setFilteredProducts(PRODUCTS.filter(p => p.name.toLowerCase().includes('bundle') || p.name.toLowerCase().includes('trio')));
     }
@@ -65,9 +65,9 @@ export default function CatalogPage() {
 
   const productCategories = [
     { id: 'all', label: 'All Products', count: PRODUCTS.length },
-    { id: 'gels', label: 'Sea Moss Gels', count: PRODUCTS.filter(p => p.category === 'Sea Moss Gel').length },
-    { id: 'lemonades', label: 'Lemonades', count: PRODUCTS.filter(p => p.category === 'Lemonade').length },
-    { id: 'shots', label: 'Wellness Shots', count: PRODUCTS.filter(p => p.size && p.size.includes('2oz')).length },
+    { id: 'gels', label: 'Sea Moss Gels', count: PRODUCTS.filter(p => p.category === 'gel').length },
+    { id: 'lemonades', label: 'Lemonades', count: PRODUCTS.filter(p => p.category === 'lemonade').length },
+    { id: 'shots', label: 'Wellness Shots', count: PRODUCTS.filter(p => p.category === 'shot').length },
   ];
 
   return (

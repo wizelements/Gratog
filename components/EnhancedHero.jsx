@@ -98,6 +98,7 @@ export default function EnhancedHero() {
           <Button 
             onClick={() => handleCTAClick('shop')}
             size="lg"
+            data-testid="hero-shop-now-btn"
             className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
           >
             Shop Now
@@ -108,6 +109,7 @@ export default function EnhancedHero() {
             onClick={() => handleCTAClick('story')}
             variant="outline"
             size="lg"
+            data-testid="hero-our-story-btn"
             className="border-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50 px-8 py-4 text-lg font-medium transition-all duration-200 hover:scale-105"
           >
             Our Story

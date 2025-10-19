@@ -67,13 +67,14 @@ class CatalogSync {
       // Test Square API connectivity first
       try {
         console.log('🔌 Testing Square API connectivity...');
-        const testResponse = await square.locationsApi.retrieveLocation({
-          locationId: SQUARE_LOCATION_ID
-        });
+        const testResponse = await square.locations.get(SQUARE_LOCATION_ID);
         console.log('✅ Connected to Square successfully');
         console.log('   Location:', testResponse.result.location?.name);
       } catch (error) {
         console.error('❌ Square API connection failed:', error.message);
+        if (error.errors) {
+          console.error('   Square errors:', error.errors);
+        }
         throw new Error('Cannot connect to Square API. Please check your credentials.');
       }
 
@@ -82,10 +83,7 @@ class CatalogSync {
         page++;
         console.log(`📄 Fetching page ${page}${cursor ? ` (cursor: ${cursor.substring(0, 10)}...)` : ''}`);
         
-        const { result } = await square.catalogApi.listCatalog({
-          cursor,
-          types: ['ITEM', 'ITEM_VARIATION', 'CATEGORY', 'IMAGE']
-        });
+        const { result } = await square.catalog.list(cursor, ['ITEM', 'ITEM_VARIATION', 'CATEGORY', 'IMAGE']);
         
         if (result.objects) {
           objects.push(...result.objects);

@@ -20,16 +20,16 @@ export function middleware(request: NextRequest) {
   // Generate CSP nonce for inline scripts
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   
-  // Content Security Policy
+  // Content Security Policy - Optimized for Emergent preview
   const cspHeader = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://web.squarecdn.com https://sandbox.web.squarecdn.com`,
+    `script-src 'self' 'unsafe-eval' 'nonce-${nonce}' 'strict-dynamic' https://web.squarecdn.com https://sandbox.web.squarecdn.com`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
     "connect-src 'self' https://web.squarecdn.com https://sandbox.web.squarecdn.com https://*.posthog.com",
     "frame-src 'self' https://web.squarecdn.com https://sandbox.web.squarecdn.com",
-    "frame-ancestors 'none'",
+    // Allow embedding in Emergent app preview (remove frame-ancestors restriction)
     "base-uri 'self'",
     "form-action 'self'",
     "upgrade-insecure-requests",

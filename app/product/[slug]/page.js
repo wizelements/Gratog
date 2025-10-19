@@ -77,7 +77,7 @@ export default function ProductDetailPage() {
             </p>
             <div className="flex items-baseline gap-3">
               <span className="text-4xl sm:text-5xl font-bold text-[#D4AF37]">
-                ${(product.price / 100).toFixed(2)}
+                ${product.price.toFixed(2)}
               </span>
               <span className="text-lg text-muted-foreground">/ {product.size}</span>
             </div>
@@ -127,6 +127,7 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Buy Button */}
+          <div className="space-y-3 animate-scale-in">
           <Button
             size="lg"
             onClick={handleBuyNow}
@@ -137,6 +138,18 @@ export default function ProductDetailPage() {
             {isLoading ? 'Processing...' : 'Add to Cart & Checkout'}
           </Button>
           
+          {product.squareProductUrl && (
+            <Button
+              size="lg"
+              onClick={() => window.open(product.squareProductUrl, '_blank')}
+              variant="outline"
+              className="w-full border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-lg py-6"
+            >
+              <span className="mr-2">🛒</span>
+              Buy Directly on Square
+            </Button>
+          )}
+          
           <div className="mt-4 flex items-center justify-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Check className="h-4 w-4 text-green-500" />
@@ -146,6 +159,7 @@ export default function ProductDetailPage() {
               <Check className="h-4 w-4 text-green-500" />
               <span>Fast Shipping</span>
             </div>
+          </div>
           </div>
         </div>
       </div>
