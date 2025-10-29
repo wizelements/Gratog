@@ -393,10 +393,17 @@ def test_square_checkout_post():
             "total": 35.00
         }
         
+        # Add Origin header to bypass CSRF
+        headers = {
+            "Origin": BASE_URL,
+            "Content-Type": "application/json"
+        }
+        
         start = time.time()
         response = requests.post(
             f"{API_BASE}/square/create-checkout",
             json=payload,
+            headers=headers,
             timeout=10
         )
         response_time = int((time.time() - start) * 1000)
