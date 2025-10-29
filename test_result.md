@@ -662,16 +662,16 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
-  stuck_tasks: 
-    - "Square Payment Integration API"
-    - "Production Square Payment Live Testing"
-  test_all: false
+  current_focus:
+    - "Square Web Payments SDK Integration (POST /api/payments)"
+    - "Square Payment Links Creation (POST /api/checkout)"
+    - "Square Webhook Handler (POST /api/webhooks/square)"
+    - "Complete Checkout Flow End-to-End"
+    - "Square API Connectivity and Credential Validation"
+  stuck_tasks:
+    - "Square API Authentication (401 UNAUTHORIZED) - Multiple tokens attempted"
+  test_all: true
   test_priority: "high_first"
-  completed_comprehensive_testing: true
-  enhanced_square_system_status: "fully_functional"
-  coupon_system_status: "fully_functional"
-  coupon_testing_complete: true
   production_readiness_assessment: "complete"
   final_production_testing: "complete"
   production_square_live_testing: "complete"
