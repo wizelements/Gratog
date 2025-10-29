@@ -7,7 +7,7 @@
 
 **Goal**: Create a mobile-first e-commerce platform for Taste of Gratitude that integrates with Square Online for payments while maintaining a custom branded experience with rewards, passport stamps, and enhanced customer engagement features.
 
-**Live URL**: https://square-payments-2.preview.emergentagent.com
+**Live URL**: https://gratitude-ecom.preview.emergentagent.com
 
 ---
 

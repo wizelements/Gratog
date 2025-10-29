@@ -249,22 +249,22 @@ curl -X POST https://connect.squareup.com/v2/orders/search \
 
 ### Generate OAuth URL
 ```bash
-curl "https://square-payments-2.preview.emergentagent.com/api/square/oauth/authorize?environment=production"
+curl "https://gratitude-ecom.preview.emergentagent.com/api/square/oauth/authorize?environment=production"
 ```
 
 ### Validate Current Token (Quick)
 ```bash
-curl "https://square-payments-2.preview.emergentagent.com/api/square/validate-token"
+curl "https://gratitude-ecom.preview.emergentagent.com/api/square/validate-token"
 ```
 
 ### Validate Current Token (Comprehensive with Scope Tests)
 ```bash
-curl "https://square-payments-2.preview.emergentagent.com/api/square/validate-token?comprehensive=true"
+curl "https://gratitude-ecom.preview.emergentagent.com/api/square/validate-token?comprehensive=true"
 ```
 
 ### Test New Token Before Deploying
 ```bash
-curl -X POST https://square-payments-2.preview.emergentagent.com/api/square/validate-token \
+curl -X POST https://gratitude-ecom.preview.emergentagent.com/api/square/validate-token \
   -H "Content-Type: application/json" \
   -d '{
     "accessToken": "YOUR_NEW_TOKEN",

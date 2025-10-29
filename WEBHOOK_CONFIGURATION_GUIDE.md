@@ -36,7 +36,7 @@ Without webhooks, you'd have to constantly poll Square's API. With webhooks, Squ
 
 #### Production Webhook URL:
 ```
-https://square-payments-2.preview.emergentagent.com/api/webhooks/square
+https://gratitude-ecom.preview.emergentagent.com/api/webhooks/square
 ```
 
 **Steps:**
@@ -208,7 +208,7 @@ ngrok http 3000
 **Solution:**
 ```bash
 # Test your webhook endpoint is accessible
-curl https://square-payments-2.preview.emergentagent.com/api/webhooks/square
+curl https://gratitude-ecom.preview.emergentagent.com/api/webhooks/square
 
 # Should return:
 # {"status":"ok","message":"Square webhook endpoint is active"}
@@ -305,7 +305,7 @@ Before marking webhooks as complete:
 
 **Webhook URL:**
 ```
-https://square-payments-2.preview.emergentagent.com/api/webhooks/square
+https://gratitude-ecom.preview.emergentagent.com/api/webhooks/square
 ```
 
 **Signature Key:**
@@ -321,7 +321,7 @@ jdpVqg2RUVe7XnNt_GGS2Q
 **Test Command:**
 ```bash
 # Test endpoint is live
-curl https://square-payments-2.preview.emergentagent.com/api/webhooks/square
+curl https://gratitude-ecom.preview.emergentagent.com/api/webhooks/square
 
 # View webhook logs
 tail -f /var/log/supervisor/nextjs.out.log | grep webhook

@@ -11,7 +11,7 @@ from datetime import datetime
 import os
 
 # Configuration
-BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://square-payments-2.preview.emergentagent.com')
+BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://gratitude-ecom.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 class SimpleBackendTester:

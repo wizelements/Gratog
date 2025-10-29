@@ -367,7 +367,7 @@ def main():
     """Main execution function"""
     # Get base URL from environment or use default
     import os
-    base_url = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://square-payments-2.preview.emergentagent.com')
+    base_url = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://gratitude-ecom.preview.emergentagent.com')
     
     print("🎯 TASTE OF GRATITUDE E-COMMERCE PLATFORM")
     print("📊 FOCUSED BACKEND ANALYSIS STARTING...")

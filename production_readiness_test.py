@@ -21,7 +21,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://square-payments-2.preview.emergentagent.com"
+BASE_URL = "https://gratitude-ecom.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 class ProductionReadinessTest:

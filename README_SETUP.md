@@ -12,7 +12,7 @@
 | **Webhooks** | 🔧 Ready | Needs dashboard config |
 | **Mock Mode** | ✅ Active | Full functionality |
 
-**Live URL:** https://square-payments-2.preview.emergentagent.com
+**Live URL:** https://gratitude-ecom.preview.emergentagent.com
 
 ---
 
@@ -122,7 +122,7 @@ MONGO_URL=mongodb://localhost:27017
 DB_NAME=taste_of_gratitude
 
 # App
-NEXT_PUBLIC_BASE_URL=https://square-payments-2.preview.emergentagent.com
+NEXT_PUBLIC_BASE_URL=https://gratitude-ecom.preview.emergentagent.com
 
 # Security
 JWT_SECRET=[configured]
@@ -166,7 +166,7 @@ node scripts/syncCatalog.js
 cat /app/WEBHOOK_CONFIGURATION_GUIDE.md
 
 # Webhook URL to use:
-# https://square-payments-2.preview.emergentagent.com/api/webhooks/square
+# https://gratitude-ecom.preview.emergentagent.com/api/webhooks/square
 ```
 
 ### Step 4: Disable Mock Mode
@@ -179,7 +179,7 @@ sudo supervisorctl restart nextjs
 ```
 
 ### Step 5: Test Complete Flow
-1. Visit: https://square-payments-2.preview.emergentagent.com
+1. Visit: https://gratitude-ecom.preview.emergentagent.com
 2. Browse catalog
 3. Add items to cart
 4. Complete checkout
@@ -219,7 +219,7 @@ node scripts/syncCatalog.js
 
 ### Test Webhook Endpoint
 ```bash
-curl https://square-payments-2.preview.emergentagent.com/api/webhooks/square
+curl https://gratitude-ecom.preview.emergentagent.com/api/webhooks/square
 ```
 
 **Expected Output:**
@@ -404,7 +404,7 @@ node scripts/syncCatalog.js
 sudo supervisorctl restart nextjs
 
 # 5. Visit site and test!
-# https://square-payments-2.preview.emergentagent.com
+# https://gratitude-ecom.preview.emergentagent.com
 ```
 
 **You're ready to take payments!** 🎉
