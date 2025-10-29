@@ -36,7 +36,7 @@ async function testSquareConnectivity() {
   // Test 1: Retrieve location details
   console.log('Test 1: Retrieving location details...');
   try {
-    const { result } = await client.locationsApi.retrieveLocation(locationId);
+    const { result } = await client.locations.retrieveLocation(locationId);
     console.log('✅ SUCCESS: Location retrieved');
     console.log(`   Name: ${result.location?.name || 'N/A'}`);
     console.log(`   Address: ${result.location?.address?.addressLine1 || 'N/A'}`);
@@ -53,7 +53,7 @@ async function testSquareConnectivity() {
   // Test 2: List catalog items
   console.log('Test 2: Listing catalog items...');
   try {
-    const { result } = await client.catalogApi.listCatalog(undefined, 'ITEM');
+    const { result } = await client.catalog.listCatalog(undefined, 'ITEM');
     const items = result.objects || [];
     console.log(`✅ SUCCESS: Retrieved ${items.length} catalog items`);
     if (items.length > 0) {
@@ -72,7 +72,7 @@ async function testSquareConnectivity() {
   // Test 3: Check inventory
   console.log('Test 3: Checking inventory access...');
   try {
-    const { result } = await client.inventoryApi.batchRetrieveInventoryCounts({
+    const { result } = await client.inventory.batchRetrieveInventoryCounts({
       locationIds: [locationId],
     });
     console.log('✅ SUCCESS: Inventory API accessible');
@@ -90,7 +90,7 @@ async function testSquareConnectivity() {
   // Test 4: Test payment capability (create minimal order)
   console.log('Test 4: Testing payment API access...');
   try {
-    const { result } = await client.ordersApi.createOrder({
+    const { result } = await client.orders.createOrder({
       order: {
         locationId: locationId,
         lineItems: [
