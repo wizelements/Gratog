@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { square, SQUARE_LOCATION_ID } from '@/lib/square';
+import { getSquareClient, SQUARE_LOCATION_ID } from '@/lib/square';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
+import { createOrder, createPaymentLink } from '@/lib/square-ops';
 
 /**
  * Square Checkout API - Payment Links Integration
@@ -44,6 +45,9 @@ export async function POST(request: NextRequest) {
       customerEmail: customer?.email,
       orderId
     });
+    
+    // Get fresh Square client instance
+    const square = getSquareClient();
     
     // Prepare order for Square
     const orderRequest: any = {
@@ -95,33 +99,75 @@ export async function POST(request: NextRequest) {
       prePopulatedData.buyerPhoneNumber = customer.phone;
     }
     
-    // Create the payment link
-    const paymentLinkRequest: any = {
-      order: orderRequest,
-      checkoutOptions
+    console.log('Creating order and payment link via REST...');
+    
+    // Step 1: Create order via REST API
+    const orderBody = {
+      line_items: lineItems.map((item: any) => ({
+        catalog_object_id: item.catalogObjectId,
+        quantity: String(item.quantity),
+        base_price_money: item.basePriceMoney,
+        name: item.name,
+        variation_name: item.variationName,
+        metadata: {
+          originalProductId: item.productId,
+          category: item.category,
+          size: item.size
+        }
+      })),
+      pricing_options: {
+        auto_apply_taxes: true,
+        auto_apply_discounts: true
+      },
+      metadata: {
+        orderId: orderId || randomUUID(),
+        source: 'website',
+        fulfillmentType: fulfillmentType || 'pickup',
+        customerEmail: customer?.email || '',
+        customerName: customer?.name || '',
+        customerPhone: customer?.phone || '',
+        createdAt: new Date().toISOString()
+      }
     };
     
-    if (Object.keys(prePopulatedData).length > 0) {
-      paymentLinkRequest.prePopulatedData = prePopulatedData;
+    // Add customer ID if provided
+    if (customerId) {
+      orderBody.customer_id = customerId;
     }
     
-    console.log('Sending payment link request to Square...');
+    const orderResponse = await createOrder(SQUARE_LOCATION_ID, orderBody);
     
-    const response = await square.checkout.paymentLinks.create(paymentLinkRequest) as any;
+    if (!orderResponse.order) {
+      console.error('Square order creation failed:', orderResponse);
+      return NextResponse.json(
+        { error: 'Failed to create order' },
+        { status: 500 }
+      );
+    }
     
-    if (!response.result?.paymentLink) {
-      console.error('Square Payment Link creation failed:', response.result);
+    // Step 2: Create payment link for the order
+    const paymentLinkResponse = await createPaymentLink({
+      orderId: orderResponse.order.id,
+      idempotencyKey: randomUUID(),
+      checkoutOptions: {
+        redirectUrl: redirectUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success`,
+        askForShippingAddress: fulfillmentType === 'delivery'
+      }
+    });
+    
+    if (!paymentLinkResponse.payment_link) {
+      console.error('Square Payment Link creation failed:', paymentLinkResponse);
       return NextResponse.json(
         { error: 'Failed to create payment link - no payment link returned' },
         { status: 500 }
       );
     }
     
-    const paymentLink = response.result.paymentLink;
+    const paymentLink = paymentLinkResponse.payment_link;
     
     console.log('Square Payment Link created successfully:', {
       paymentLinkId: paymentLink.id,
-      orderId: paymentLink.orderId,
+      orderId: paymentLink.order_id,
       url: paymentLink.url?.substring(0, 50) + '...'
     });
     
@@ -130,7 +176,7 @@ export async function POST(request: NextRequest) {
       const { db } = await connectToDatabase();
       const preOrder = {
         id: orderId || randomUUID(),
-        squareOrderId: paymentLink.orderId,
+        squareOrderId: paymentLink.order_id,
         paymentLinkId: paymentLink.id,
         paymentLinkUrl: paymentLink.url,
         customer: customer || {},
@@ -155,7 +201,7 @@ export async function POST(request: NextRequest) {
       paymentLink: {
         id: paymentLink.id,
         url: paymentLink.url,
-        orderId: paymentLink.orderId
+        orderId: paymentLink.order_id
       },
       message: 'Payment link created successfully'
     });
@@ -212,6 +258,7 @@ export async function GET(request: NextRequest) {
       );
     }
     
+    const square = getSquareClient();
     let result;
     
     if (paymentLinkId) {

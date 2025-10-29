@@ -72,7 +72,7 @@
         "recharts": "^2.15.3",
         "redis": "^5.8.3",
         "sonner": "^2.0.7",
-        "square": "^43.1.1",
+        "square": "^43.2.0",
         "swr": "^2.3.6",
         "tailwind-merge": "^3.3.1",
         "tailwindcss-animate": "^1.0.7",

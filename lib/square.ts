@@ -1,10 +1,34 @@
 import { SquareClient, SquareEnvironment } from 'square';
 
-// Initialize Square client with proper authentication (server-only)
-export const square = new SquareClient({
-  accessToken: process.env.SQUARE_ACCESS_TOKEN!,
-  environment: process.env.SQUARE_ENVIRONMENT === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox,
-});
+/**
+ * Get Square client instance with fresh environment variables
+ * Creates a new client on each call to avoid Next.js module caching issues
+ */
+export function getSquareClient(): SquareClient {
+  const accessToken = process.env.SQUARE_ACCESS_TOKEN;
+  const environment = process.env.SQUARE_ENVIRONMENT;
+
+  if (!accessToken) {
+    throw new Error('SQUARE_ACCESS_TOKEN is not configured');
+  }
+
+  // Debug logging to verify token is loaded correctly
+  console.log('Creating Square client with:', {
+    tokenPrefix: accessToken.substring(0, 10),
+    tokenLength: accessToken.length,
+    environment: environment || 'sandbox (default)'
+  });
+
+  return new SquareClient({
+    accessToken,
+    environment: environment === 'production' 
+      ? SquareEnvironment.Production 
+      : SquareEnvironment.Sandbox,
+  });
+}
+
+// Export for backwards compatibility (but prefer getSquareClient())
+export const square = getSquareClient();
 
 // Required Square configuration
 export const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID!;

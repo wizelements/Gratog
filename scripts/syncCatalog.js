@@ -1,24 +1,47 @@
 #!/usr/bin/env node
 /**
- * Square Catalog Sync Script (JavaScript version)
+ * Square Catalog Sync Script (REST API version)
  * 
- * Syncs Square Catalog data to local database/cache
+ * Syncs Square Catalog data to local database/cache using REST API
  * Run with: node scripts/syncCatalog.js
  */
 
 // Load environment variables
 require('dotenv').config();
 
-const { SquareClient, SquareEnvironment } = require('square');
 const { MongoClient } = require('mongodb');
 
-// Initialize Square client
-const square = new SquareClient({
-  accessToken: process.env.SQUARE_ACCESS_TOKEN,
-  environment: process.env.SQUARE_ENVIRONMENT === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox,
-});
-
+// REST API client
+const SQUARE_ENV = process.env.SQUARE_ENVIRONMENT?.toLowerCase() === 'production' ? 'production' : 'sandbox';
+const SQUARE_BASE = SQUARE_ENV === 'production' 
+  ? 'https://connect.squareup.com'
+  : 'https://connect.squareupsandbox.com';
+const SQUARE_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID;
+const SQUARE_VERSION = '2025-10-16';
+
+async function squareFetch(path, options = {}) {
+  const url = `${SQUARE_BASE}${path}`;
+  const headers = {
+    'Authorization': `Bearer ${SQUARE_TOKEN}`,
+    'Square-Version': SQUARE_VERSION,
+    'Content-Type': 'application/json',
+    ...options.headers
+  };
+  
+  const response = await fetch(url, { ...options, headers });
+  const text = await response.text();
+  const json = text ? JSON.parse(text) : {};
+  
+  if (!response.ok) {
+    const error = new Error(json?.errors?.[0]?.detail || `Square ${response.status}`);
+    error.status = response.status;
+    error.errors = json?.errors;
+    throw error;
+  }
+  
+  return json;
+}
 
 // MongoDB connection
 async function connectToDatabase() {
@@ -67,9 +90,9 @@ class CatalogSync {
       // Test Square API connectivity first
       try {
         console.log('🔌 Testing Square API connectivity...');
-        const testResponse = await square.locations.get(SQUARE_LOCATION_ID);
+        const testResponse = await squareFetch(`/v2/locations/${SQUARE_LOCATION_ID}`);
         console.log('✅ Connected to Square successfully');
-        console.log('   Location:', testResponse.result.location?.name);
+        console.log('   Location:', testResponse.location?.name);
       } catch (error) {
         console.error('❌ Square API connection failed:', error.message);
         if (error.errors) {
@@ -83,7 +106,9 @@ class CatalogSync {
         page++;
         console.log(`📄 Fetching page ${page}${cursor ? ` (cursor: ${cursor.substring(0, 10)}...)` : ''}`);
         
-        const { result } = await square.catalog.list(cursor, ['ITEM', 'ITEM_VARIATION', 'CATEGORY', 'IMAGE']);
+        const types = ['ITEM', 'ITEM_VARIATION', 'CATEGORY', 'IMAGE'].join(',');
+        const path = `/v2/catalog/list?types=${types}${cursor ? `&cursor=${cursor}` : ''}`;
+        const result = await squareFetch(path);
         
         if (result.objects) {
           objects.push(...result.objects);
@@ -121,7 +146,10 @@ class CatalogSync {
       // Create image lookup map
       const imageMap = new Map();
       images.forEach(img => {
-        imageMap.set(img.id, img.imageData?.url);
+        const imageData = img.image_data || img.imageData;
+        if (imageData?.url) {
+          imageMap.set(img.id, imageData.url);
+        }
       });
       
       // Process items and their variations
@@ -156,7 +184,7 @@ class CatalogSync {
   }
 
   processItem(item, variationMap, imageMap) {
-    const itemData = item.itemData;
+    const itemData = item.item_data || item.itemData;
     if (!itemData) return null;
 
     // Get variations for this item
@@ -164,7 +192,8 @@ class CatalogSync {
     
     if (itemData.variations) {
       for (const varRef of itemData.variations) {
-        const variation = variationMap.get(varRef.id);
+        // Variations can be inline objects or references
+        const variation = varRef.type === 'ITEM_VARIATION' ? varRef : variationMap.get(varRef.id);
         if (variation) {
           const syncedVar = this.processVariation(variation);
           if (syncedVar) {
@@ -177,8 +206,9 @@ class CatalogSync {
     
     // Get images for this item
     const itemImages = [];
-    if (itemData.imageIds) {
-      for (const imageId of itemData.imageIds) {
+    const imageIds = itemData.image_ids || itemData.imageIds || [];
+    if (imageIds.length > 0) {
+      for (const imageId of imageIds) {
         const imageUrl = imageMap.get(imageId);
         if (imageUrl) {
           itemImages.push(imageUrl);
@@ -192,20 +222,20 @@ class CatalogSync {
       type: item.type,
       name: itemData.name || 'Unnamed Item',
       description: itemData.description,
-      categoryId: itemData.categoryId,
+      categoryId: itemData.category_id || itemData.categoryId,
       variations: itemVariations,
       images: itemImages,
       createdAt: new Date(),
       updatedAt: new Date(),
-      squareUpdatedAt: item.updatedAt
+      squareUpdatedAt: item.updated_at || item.updatedAt
     };
   }
 
   processVariation(variation) {
-    const varData = variation.itemVariationData;
+    const varData = variation.item_variation_data || variation.itemVariationData;
     if (!varData) return null;
 
-    const priceMoney = varData.priceMoney;
+    const priceMoney = varData.price_money || varData.priceMoney;
     const priceCents = priceMoney?.amount ? Number(priceMoney.amount) : 0;
     
     return {
@@ -215,8 +245,8 @@ class CatalogSync {
       price: fromCents(priceMoney),
       priceCents,
       currency: priceMoney?.currency || 'USD',
-      trackQuantity: varData.trackQuantity || false,
-      inventoryAlertThreshold: varData.inventoryAlertThreshold
+      trackQuantity: varData.track_quantity || varData.trackQuantity || false,
+      inventoryAlertThreshold: varData.inventory_alert_threshold || varData.inventoryAlertThreshold
     };
   }
 
@@ -239,10 +269,10 @@ class CatalogSync {
       const processedCategories = categories.map(cat => ({
         id: cat.id,
         type: cat.type,
-        name: cat.categoryData?.name || 'Unnamed Category',
+        name: (cat.category_data || cat.categoryData)?.name || 'Unnamed Category',
         createdAt: new Date(),
         updatedAt: new Date(),
-        squareUpdatedAt: cat.updatedAt
+        squareUpdatedAt: cat.updated_at || cat.updatedAt
       }));
       
       if (processedCategories.length > 0) {

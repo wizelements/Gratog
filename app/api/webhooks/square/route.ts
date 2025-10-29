@@ -3,6 +3,9 @@ import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { SQUARE_WEBHOOK_SIGNATURE_KEY } from '@/lib/square';
 
+// Force Node.js runtime for crypto operations and raw body access
+export const runtime = 'nodejs';
+
 /**
  * Square Webhooks Handler
  * Handles inventory updates and catalog changes for real-time synchronization

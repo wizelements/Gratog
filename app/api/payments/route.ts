@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { square, SQUARE_LOCATION_ID } from '@/lib/square';
+import { getSquareClient, SQUARE_LOCATION_ID } from '@/lib/square';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
 import { fromCents, toSquareMoney } from '@/lib/money';
+import { createPayment } from '@/lib/square-ops';
 
 /**
  * Square Payments API - Web Payments SDK Integration
@@ -49,6 +50,9 @@ export async function POST(request: NextRequest) {
       orderId
     });
     
+    // Get fresh Square client instance
+    const square = getSquareClient();
+    
     // Prepare payment request
     const paymentRequest: any = {
       sourceId,
@@ -69,19 +73,27 @@ export async function POST(request: NextRequest) {
       paymentRequest.orderId = orderId;
     }
     
-    console.log('Sending payment request to Square...');
+    console.log('Sending payment request to Square via REST...');
     
-    const response = await square.payments.create(paymentRequest) as any;
+    // Use REST API instead of SDK
+    const response = await createPayment({
+      sourceId,
+      amount: amountCents,
+      currency,
+      locationId: SQUARE_LOCATION_ID,
+      idempotencyKey: paymentIdempotencyKey,
+      note: `Payment for order ${orderId || 'unknown'}`
+    });
     
-    if (!response.result?.payment) {
-      console.error('Square payment creation failed:', response.result);
+    if (!response.payment) {
+      console.error('Square payment creation failed:', response);
       return NextResponse.json(
         { error: 'Payment processing failed - no payment returned' },
         { status: 500 }
       );
     }
     
-    const payment = response.result.payment;
+    const payment = response.payment;
     
     console.log('Square payment completed:', {
       paymentId: payment.id,
@@ -241,6 +253,7 @@ export async function GET(request: NextRequest) {
     let squarePayment;
     if (paymentId) {
       try {
+        const square = getSquareClient();
         const response = await square.payments.get(paymentId) as any;
         squarePayment = response.result?.payment;
       } catch (squareError) {
