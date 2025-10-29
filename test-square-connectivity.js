@@ -3,17 +3,45 @@
  * Tests if Square credentials are valid and can access the API
  */
 
-const { SquareClient, SquareEnvironment } = require('square');
+const env = (process.env.SQUARE_ENVIRONMENT?.toLowerCase() === 'production' ? 'production' : 'sandbox');
+const BASES = {
+  production: 'https://connect.squareup.com',
+  sandbox: 'https://connect.squareupsandbox.com',
+};
+
+async function sqFetch(path, options = {}) {
+  const token = process.env.SQUARE_ACCESS_TOKEN;
+  const url = `${BASES[env]}${path}`;
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Square-Version': '2025-10-16',
+    'Content-Type': 'application/json',
+    ...(options.headers || {})
+  };
+  
+  const res = await fetch(url, { ...options, headers });
+  const text = await res.text();
+  const json = text ? JSON.parse(text) : {};
+  
+  if (!res.ok) {
+    throw Object.assign(
+      new Error(json?.errors?.[0]?.detail || `Square ${res.status}`),
+      { status: res.status, errors: json?.errors, body: json }
+    );
+  }
+  
+  return json;
+}
 
 async function testSquareConnectivity() {
   console.log('=== SQUARE API CONNECTIVITY TEST ===\n');
 
   const accessToken = process.env.SQUARE_ACCESS_TOKEN;
   const locationId = process.env.SQUARE_LOCATION_ID;
-  const environment = process.env.SQUARE_ENVIRONMENT || 'sandbox';
 
   console.log('Configuration:');
-  console.log(`- Environment: ${environment}`);
+  console.log(`- Environment: ${env}`);
+  console.log(`- Base URL: ${BASES[env]}`);
   console.log(`- Location ID: ${locationId}`);
   console.log(`- Token Prefix: ${accessToken ? accessToken.substring(0, 15) + '...' : 'NOT SET'}`);
   console.log(`- Token Length: ${accessToken ? accessToken.length : 0}`);
@@ -24,14 +52,7 @@ async function testSquareConnectivity() {
     process.exit(1);
   }
 
-  const client = new SquareClient({
-    accessToken,
-    environment: environment === 'production' 
-      ? SquareEnvironment.Production 
-      : SquareEnvironment.Sandbox,
-  });
-
-  console.log('Testing Square API connectivity...\n');
+  console.log('Testing Square API connectivity via REST...\n');
 
   // Test 1: Retrieve location details
   console.log('Test 1: Retrieving location details...');
