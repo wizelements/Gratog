@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Get Square payments working in mock mode and implement full feature set according to current codebase. User requested to proceed voraciously with Square integration and complete feature implementation."
+user_problem_statement: "Test and validate complete Square payment integration with current credentials. User requested: 1) Test complete checkout flow end-to-end, 2) Validate Web Payments SDK integration, 3) Verify Payment Links creation, 4) Configure Square webhooks, 5) Perform comprehensive backend testing."
 
 backend:
   - task: "Stripe Checkout API"
