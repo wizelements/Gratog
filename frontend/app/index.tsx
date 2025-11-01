@@ -20,7 +20,7 @@ export default function Index() {
   }
 
   if (isAuthenticated) {
-    return <Redirect href="/feed" />;
+    return <Redirect href="/feed-simple" />;
   }
 
   return <Redirect href="/onboarding" />;
