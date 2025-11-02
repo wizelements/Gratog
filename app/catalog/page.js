@@ -244,7 +244,6 @@ export default function CatalogPage() {
               </Button>
             </div>
           )}
-          )}
         </div>
       </section>
     </div>
