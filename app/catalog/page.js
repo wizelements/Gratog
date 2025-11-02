@@ -203,14 +203,23 @@ export default function CatalogPage() {
           {/* Results Header */}
           <div className="mb-6">
             <p className="text-muted-foreground">
-              Showing {filteredProducts.length} of {PRODUCTS.length} products
+              Showing {filteredProducts.length} of {products.length} products
               {selectedFilter === 'recommended' && (
                 <span className="text-emerald-600 font-medium"> - Recommended for you</span>
               )}
             </p>
           </div>
 
+          {/* Loading State */}
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="h-12 w-12 animate-spin text-emerald-600 mb-4" />
+              <p className="text-lg text-emerald-600">Loading products from Square catalog...</p>
+            </div>
+          )}
+
           {/* Products Grid */}
+          {!loading && (
           <div className={`grid gap-8 ${
             viewMode === 'grid' 
               ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
