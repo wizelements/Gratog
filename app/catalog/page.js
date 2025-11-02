@@ -97,11 +97,11 @@ export default function CatalogPage() {
       {/* Header Section */}
       <section className="bg-gradient-to-br from-emerald-50 to-teal-50 py-16">
         <div className="container">
-          {/* NEW: Square Integration Badge */}
+          {/* Square Integration Badge */}
           <div className="text-center mb-8">
             <Badge className="bg-emerald-600 text-white px-4 py-2 text-sm mb-4">
               <Sparkles className="h-4 w-4 mr-2 inline" />
-              19 Premium Products Available with Square Checkout
+              {loading ? 'Loading...' : `${products.length} Premium Products`} Available with Square Checkout
             </Badge>
           </div>
 
