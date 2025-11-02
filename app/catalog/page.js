@@ -220,29 +220,32 @@ export default function CatalogPage() {
 
           {/* Products Grid */}
           {!loading && (
-          <div className={`grid gap-8 ${
-            viewMode === 'grid' 
-              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-              : 'grid-cols-1 lg:grid-cols-2'
-          }`}>
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onCheckout={handleCheckout}
-                viewMode={viewMode}
-                isRecommended={selectedFilter === 'recommended'}
-              />
-            ))}
-          </div>
+            <>
+              <div className={`grid gap-8 ${
+                viewMode === 'grid' 
+                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
+                  : 'grid-cols-1 lg:grid-cols-2'
+              }`}>
+                {filteredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onCheckout={handleCheckout}
+                    viewMode={viewMode}
+                    isRecommended={selectedFilter === 'recommended'}
+                  />
+                ))}
+              </div>
 
-          {filteredProducts.length === 0 && !loading && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg mb-4">No products found for this category.</p>
-              <Button onClick={() => filterProducts('all')} variant="outline">
-                Show All Products
-              </Button>
-            </div>
+              {filteredProducts.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground text-lg mb-4">No products found for this category.</p>
+                  <Button onClick={() => filterProducts('all')} variant="outline">
+                    Show All Products
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
