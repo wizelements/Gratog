@@ -63,7 +63,7 @@ export default function CatalogPage() {
 
   const handleQuizRecommendations = (recommendations) => {
     // Highlight recommended products
-    setFilteredProducts(recommendations.length > 0 ? recommendations : PRODUCTS);
+    setFilteredProducts(recommendations.length > 0 ? recommendations : products);
     setSelectedFilter('recommended');
     setShowQuiz(false);
     toast.success(`Found ${recommendations.length} perfect matches for you!`);
@@ -73,23 +73,23 @@ export default function CatalogPage() {
     setSelectedFilter(filter);
     
     if (filter === 'all') {
-      setFilteredProducts(PRODUCTS);
+      setFilteredProducts(products);
     } else if (filter === 'gels') {
-      setFilteredProducts(PRODUCTS.filter(p => p.category === 'gel'));
+      setFilteredProducts(products.filter(p => p.category === 'gel'));
     } else if (filter === 'lemonades') {
-      setFilteredProducts(PRODUCTS.filter(p => p.category === 'lemonade'));
+      setFilteredProducts(products.filter(p => p.category === 'lemonade'));
     } else if (filter === 'shots') {
-      setFilteredProducts(PRODUCTS.filter(p => p.category === 'shot'));
+      setFilteredProducts(products.filter(p => p.category === 'shot'));
     } else if (filter === 'bundles') {
-      setFilteredProducts(PRODUCTS.filter(p => p.name.toLowerCase().includes('bundle') || p.name.toLowerCase().includes('trio')));
+      setFilteredProducts(products.filter(p => p.name.toLowerCase().includes('bundle') || p.name.toLowerCase().includes('trio')));
     }
   };
 
   const productCategories = [
-    { id: 'all', label: 'All Products', count: PRODUCTS.length },
-    { id: 'gels', label: 'Sea Moss Gels', count: PRODUCTS.filter(p => p.category === 'gel').length },
-    { id: 'lemonades', label: 'Lemonades', count: PRODUCTS.filter(p => p.category === 'lemonade').length },
-    { id: 'shots', label: 'Wellness Shots', count: PRODUCTS.filter(p => p.category === 'shot').length },
+    { id: 'all', label: 'All Products', count: products.length },
+    { id: 'gels', label: 'Sea Moss Gels', count: products.filter(p => p.category === 'gel').length },
+    { id: 'lemonades', label: 'Lemonades', count: products.filter(p => p.category === 'lemonade').length },
+    { id: 'shots', label: 'Wellness Shots', count: products.filter(p => p.category === 'shot').length },
   ];
 
   return (
