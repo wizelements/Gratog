@@ -236,13 +236,14 @@ export default function CatalogPage() {
             ))}
           </div>
 
-          {filteredProducts.length === 0 && (
+          {filteredProducts.length === 0 && !loading && (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg mb-4">No products found for this category.</p>
               <Button onClick={() => filterProducts('all')} variant="outline">
                 Show All Products
               </Button>
             </div>
+          )}
           )}
         </div>
       </section>
