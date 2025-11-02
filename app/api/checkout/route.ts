@@ -99,55 +99,26 @@ export async function POST(request: NextRequest) {
       prePopulatedData.buyerPhoneNumber = customer.phone;
     }
     
-    console.log('Creating order and payment link via REST...');
+    console.log('Creating payment link directly with line items (quick_pay approach)...');
     
-    // Step 1: Create order via REST API
-    const orderBody = {
-      line_items: lineItems.map((item: any) => ({
-        catalog_object_id: item.catalogObjectId,
-        quantity: String(item.quantity),
-        base_price_money: item.basePriceMoney,
-        name: item.name,
-        variation_name: item.variationName,
-        metadata: {
-          originalProductId: item.productId,
-          category: item.category,
-          size: item.size
-        }
-      })),
-      pricing_options: {
-        auto_apply_taxes: true,
-        auto_apply_discounts: true
-      },
+    // Prepare line items for payment link (without pre-creating order)
+    const paymentLinkLineItems = lineItems.map((item: any) => ({
+      catalog_object_id: item.catalogObjectId,
+      quantity: String(item.quantity),
+      base_price_money: item.basePriceMoney,
+      name: item.name,
+      variation_name: item.variationName,
       metadata: {
-        orderId: orderId || randomUUID(),
-        source: 'website',
-        fulfillmentType: fulfillmentType || 'pickup',
-        customerEmail: customer?.email || '',
-        customerName: customer?.name || '',
-        customerPhone: customer?.phone || '',
-        createdAt: new Date().toISOString()
+        originalProductId: item.productId,
+        category: item.category,
+        size: item.size
       }
-    };
+    }));
     
-    // Add customer ID if provided
-    if (customerId) {
-      orderBody.customer_id = customerId;
-    }
-    
-    const orderResponse = await createOrder(SQUARE_LOCATION_ID, orderBody);
-    
-    if (!orderResponse.order) {
-      console.error('Square order creation failed:', orderResponse);
-      return NextResponse.json(
-        { error: 'Failed to create order' },
-        { status: 500 }
-      );
-    }
-    
-    // Step 2: Create payment link for the order
+    // Create payment link directly with line items
     const paymentLinkResponse = await createPaymentLink({
-      orderId: orderResponse.order.id,
+      locationId: SQUARE_LOCATION_ID,
+      lineItems: paymentLinkLineItems,
       idempotencyKey: randomUUID(),
       checkoutOptions: {
         redirectUrl: redirectUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success`,
@@ -176,7 +147,7 @@ export async function POST(request: NextRequest) {
       const { db } = await connectToDatabase();
       const preOrder = {
         id: orderId || randomUUID(),
-        squareOrderId: paymentLink.order_id,
+        squareOrderId: paymentLink.order_id,  // Order ID from payment link
         paymentLinkId: paymentLink.id,
         paymentLinkUrl: paymentLink.url,
         customer: customer || {},
@@ -208,6 +179,11 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('Checkout API error:', error);
+    
+    // Log full error details for debugging
+    if (error && typeof error === 'object') {
+      console.error('Error details:', JSON.stringify(error, null, 2));
+    }
     
     // Handle specific Square API errors
     if (error instanceof Error) {

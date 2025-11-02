@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import ProductCard from '@/components/ProductCard';
 import FitQuiz from '@/components/FitQuiz';
 import EnhancedHero from '@/components/EnhancedHero';
+import WhatsNewModal from '@/components/WhatsNewModal';
 import { getFeaturedProducts } from '@/lib/products';
 import { ArrowRight, Leaf, Heart, Award, MapPin, QrCode, Camera, Gift, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
@@ -46,8 +47,108 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col">
+      {/* What's New Modal */}
+      <WhatsNewModal />
+
+      {/* NEW: Square Integration Announcement Banner */}
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white">
+        <div className="container py-3">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-center sm:text-left">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 animate-pulse" />
+              <span className="font-semibold">NEW: Secure Square Checkout!</span>
+            </div>
+            <span className="hidden sm:inline">•</span>
+            <span className="text-sm">Shop our 19 premium products with fast, secure payments</span>
+            <Button
+              asChild
+              size="sm"
+              variant="secondary"
+              className="ml-0 sm:ml-4 bg-white text-emerald-600 hover:bg-emerald-50"
+            >
+              <Link href="/catalog">
+                Shop Now <ArrowRight className="ml-1 h-3 w-3" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* Enhanced Hero Section */}
       <EnhancedHero />
+
+      {/* NEW: Square Checkout Benefits */}
+      <section className="py-12 bg-gradient-to-br from-white to-emerald-50 border-b">
+        <div className="container">
+          <div className="text-center mb-8">
+            <Badge className="mb-4 bg-emerald-600 text-white px-4 py-1">
+              <Sparkles className="h-4 w-4 mr-2 inline" />
+              Now Powered by Square
+            </Badge>
+            <h2 className="text-2xl md:text-3xl font-bold text-emerald-900 mb-3">
+              Checkout Made Simple & Secure
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Experience our new Square-powered checkout with 19 premium sea moss products
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
+            <div className="text-center p-6 bg-white rounded-lg shadow-sm border border-emerald-100">
+              <div className="mx-auto w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold mb-2">Secure Payments</h3>
+              <p className="text-sm text-muted-foreground">Bank-level encryption with Square</p>
+            </div>
+            
+            <div className="text-center p-6 bg-white rounded-lg shadow-sm border border-emerald-100">
+              <div className="mx-auto w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold mb-2">Multiple Options</h3>
+              <p className="text-sm text-muted-foreground">Card, Apple Pay & Google Pay</p>
+            </div>
+            
+            <div className="text-center p-6 bg-white rounded-lg shadow-sm border border-emerald-100">
+              <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold mb-2">Lightning Fast</h3>
+              <p className="text-sm text-muted-foreground">Complete orders in seconds</p>
+            </div>
+            
+            <div className="text-center p-6 bg-white rounded-lg shadow-sm border border-emerald-100">
+              <div className="mx-auto w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+              </div>
+              <h3 className="font-semibold mb-2">Order Tracking</h3>
+              <p className="text-sm text-muted-foreground">Track every step of your order</p>
+            </div>
+          </div>
+
+          <div className="text-center mt-8">
+            <Button
+              asChild
+              size="lg"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg hover:shadow-xl transition-all"
+            >
+              <Link href="/order">
+                <Gift className="mr-2 h-5 w-5" />
+                Try New Checkout Experience
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
 
       {/* Features */}
       <section className="py-16 bg-muted/50">

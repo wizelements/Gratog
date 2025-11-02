@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Menu, X, ShoppingBag, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
+import CartBadge from '@/components/CartBadge';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -98,6 +99,7 @@ export default function Header() {
 
         {/* Action Buttons */}
         <div className="hidden md:flex items-center space-x-3">
+          <CartBadge />
           <Button
             asChild
             size="sm"

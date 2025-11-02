@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { orderTracking } from '@/lib/enhanced-order-tracking';
-import { sendOrderConfirmationEmail } from '@/lib/email';
+import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { sendOrderConfirmationSMS } from '@/lib/sms';
+import { calculateDeliveryFee } from '@/lib/delivery-fees';
 
 export async function POST(request) {
   try {
@@ -29,14 +30,122 @@ export async function POST(request) {
       );
     }
     
-    // Add request metadata
+    // Validate delivery fulfillment
+    if (orderData.fulfillmentType === 'delivery') {
+      // Check if delivery is enabled
+      if (process.env.NEXT_PUBLIC_FULFILLMENT_DELIVERY !== 'enabled') {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Home Delivery is temporarily unavailable',
+            message: 'Home Delivery is temporarily unavailable. Please choose Pickup or Shipping.',
+            code: 'FULFILLMENT_METHOD_UNAVAILABLE'
+          },
+          { status: 409 }
+        );
+      }
+      
+      // Validate delivery address
+      if (!orderData.deliveryAddress?.street || !orderData.deliveryAddress?.city || !orderData.deliveryAddress?.zip) {
+        return NextResponse.json(
+          { success: false, error: 'Complete delivery address is required' },
+          { status: 400 }
+        );
+      }
+      
+      // Validate ZIP code
+      const zipWhitelist = (process.env.DELIVERY_ZIP_WHITELIST || '').split(',').map(z => z.trim());
+      const cleanZip = orderData.deliveryAddress.zip.replace(/\D/g, '').slice(0, 5);
+      
+      if (!zipWhitelist.includes(cleanZip)) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: "We're not in your area yet. Try Pickup or Shipping, or use a different address.",
+            code: 'DELIVERY_AREA_UNAVAILABLE'
+          },
+          { status: 400 }
+        );
+      }
+      
+      // Validate minimum order
+      const subtotal = orderData.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const minSubtotal = parseFloat(process.env.DELIVERY_MIN_SUBTOTAL || '30');
+      
+      if (subtotal < minSubtotal) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: `Minimum order for delivery is $${minSubtotal.toFixed(2)}`,
+            code: 'DELIVERY_MINIMUM_NOT_MET'
+          },
+          { status: 400 }
+        );
+      }
+      
+      // Validate delivery window
+      if (!orderData.deliveryTimeSlot) {
+        return NextResponse.json(
+          { success: false, error: 'Delivery time window is required' },
+          { status: 400 }
+        );
+      }
+      
+      // Validate tip if provided
+      if (orderData.deliveryTip !== undefined && orderData.deliveryTip !== null) {
+        const tip = parseFloat(orderData.deliveryTip);
+        if (isNaN(tip) || tip < 0 || tip > 100) {
+          return NextResponse.json(
+            { success: false, error: 'Invalid tip amount' },
+            { status: 400 }
+          );
+        }
+      }
+    }
+    
+    // Validate fulfillment-specific requirements
+    if (orderData.fulfillmentType === 'pickup_market') {
+      if (!orderData.pickupMarket) {
+        return NextResponse.json(
+          { success: false, error: 'Pickup market selection is required' },
+          { status: 400 }
+        );
+      }
+      if (!orderData.pickupDate) {
+        return NextResponse.json(
+          { success: false, error: 'Pickup date is required' },
+          { status: 400 }
+        );
+      }
+    }
+    
+    if (orderData.fulfillmentType === 'shipping') {
+      if (!orderData.deliveryAddress || !orderData.deliveryAddress.street || !orderData.deliveryAddress.city || !orderData.deliveryAddress.zip) {
+        return NextResponse.json(
+          { success: false, error: 'Complete shipping address is required' },
+          { status: 400 }
+        );
+      }
+    }
+    
+    // Calculate delivery fee if applicable
+    let deliveryFee = 0;
+    if (orderData.fulfillmentType === 'delivery') {
+      const subtotal = orderData.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      deliveryFee = calculateDeliveryFee(subtotal);
+      console.log(`Delivery fee calculated: $${deliveryFee} for subtotal $${subtotal}`);
+    }
+    
+    // Add request metadata and delivery fee
     const enhancedOrderData = {
       ...orderData,
+      deliveryFee, // Add calculated delivery fee
       metadata: {
         ...orderData.metadata,
         ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
         userAgent: request.headers.get('user-agent') || 'unknown',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        deliveryFee // Also store in metadata for tracking
       }
     };
     

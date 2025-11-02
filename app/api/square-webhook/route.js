@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { updateOrderStatus } from '@/lib/db-customers';
 import { sendOrderUpdateSMS } from '@/lib/sms';
 import { sendOrderUpdateEmail } from '@/lib/email';
+import { updateWebhookActivity } from '../health/route';
 
 // Get webhook signature key from environment
 const SQUARE_WEBHOOK_SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
@@ -100,6 +101,9 @@ export async function POST(request) {
       default:
         console.log(`Unhandled webhook event type: ${eventType}`);
     }
+    
+    // Track webhook activity
+    updateWebhookActivity(eventType, 'success');
     
     // Return success response
     return NextResponse.json({ 

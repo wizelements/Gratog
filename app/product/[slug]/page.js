@@ -10,6 +10,7 @@ import { getProductBySlug } from '@/lib/products';
 import { ArrowLeft, ShoppingCart, Check } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import ProductReviews from '@/components/ProductReviews';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -162,6 +163,11 @@ export default function ProductDetailPage() {
           </div>
           </div>
         </div>
+      </div>
+
+      {/* Product Reviews Section */}
+      <div className="mt-16 pt-16 border-t">
+        <ProductReviews productId={product.id} productName={product.name} />
       </div>
     </div>
   );

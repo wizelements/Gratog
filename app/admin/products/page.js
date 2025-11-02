@@ -92,7 +92,7 @@ export default function ProductsPage() {
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4 text-[#D4AF37]" />
                       <span className="font-bold text-lg">
-                        ${(product.price / 100).toFixed(2)}
+                        ${typeof product.price === 'number' && product.price > 100 ? (product.price / 100).toFixed(2) : product.price.toFixed(2)}
                       </span>
                     </div>
                     <span className="text-sm text-muted-foreground">

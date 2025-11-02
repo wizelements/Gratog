@@ -31,6 +31,7 @@ import {
 import ProductImage from '@/components/ProductImage';
 import CouponInput from '@/components/CouponInput';
 import SpinWheel from '@/components/SpinWheel';
+import SquareWebPaymentForm from '@/components/SquareWebPaymentForm';
 import { PRODUCTS } from '@/lib/products';
 
 // Delivery zones configuration
@@ -40,21 +41,63 @@ const DELIVERY_ZONES = {
   zone3: { name: 'South Atlanta', fee: 18, timeSlots: ['9:00-12:00 PM', '12:00-3:00 PM', '3:00-6:00 PM'] }
 };
 
-// Fulfillment options - Only Serenbe pickup per user request
+// Fulfillment options - Read from environment
 const FULFILLMENT_OPTIONS = {
   pickup_market: {
-    label: 'Pick up at Serenbe Market',
+    label: 'Pick up at Market',
     description: 'Serenbe Farmers Market - Saturdays 9:00 AM - 1:00 PM',
     fee: 0,
-    icon: Package
+    icon: Package,
+    enabled: process.env.NEXT_PUBLIC_FULFILLMENT_PICKUP === 'enabled'
+  },
+  shipping: {
+    label: 'Shipping',
+    description: 'USPS Priority Mail - 2-3 business days',
+    fee: 8.99,
+    freeShippingThreshold: 50,
+    icon: MapPin,
+    enabled: process.env.NEXT_PUBLIC_FULFILLMENT_SHIPPING === 'enabled'
   },
   delivery: {
     label: 'Home Delivery',
-    description: 'Atlanta metro area - fee varies by location',
+    description: 'Local delivery available to select South Fulton and Atlanta ZIP codes today.',
+    tooltip: "Same-day delivery to your door with flexible time windows",
     fee: 'varies',
-    icon: Truck
+    icon: Truck,
+    enabled: process.env.NEXT_PUBLIC_FULFILLMENT_DELIVERY === 'enabled'
   }
 };
+
+// Markets for pickup
+const PICKUP_MARKETS = [
+  {
+    id: 'serenbe',
+    name: 'Serenbe Farmers Market',
+    schedule: 'Saturdays 9:00 AM - 1:00 PM',
+    location: '10950 Hutcheson Ferry Rd, Palmetto, GA 30268',
+    booth: 'Look for the Taste of Gratitude booth near the entrance'
+  },
+  {
+    id: 'east-atlanta',
+    name: 'East Atlanta Village Market',
+    schedule: 'Sundays 11:00 AM - 4:00 PM',
+    location: '477 Flat Shoals Ave SE, Atlanta, GA 30316',
+    booth: 'Find us in the covered pavilion area'
+  }
+];
+
+// Shipping rates by state
+const SHIPPING_RATES = {
+  'GA': 8.99,
+  'AL': 9.99,
+  'FL': 9.99,
+  'TN': 9.99,
+  'SC': 9.99,
+  'NC': 10.99,
+  'default': 12.99
+};
+
+const FREE_SHIPPING_THRESHOLD = 50;
 
 export default function OrderPage() {
   // Core state management
@@ -62,6 +105,20 @@ export default function OrderPage() {
   const [cart, setCart] = useState([]);
   const [customer, setCustomer] = useState({ name: '', email: '', phone: '' });
   const [fulfillmentType, setFulfillmentType] = useState('');
+  
+  // Pickup state
+  const [pickupMarket, setPickupMarket] = useState('');
+  const [pickupDate, setPickupDate] = useState('');
+  
+  // Shipping state
+  const [shippingAddress, setShippingAddress] = useState({
+    street: '',
+    city: '',
+    state: 'GA',
+    zip: ''
+  });
+  
+  // Legacy delivery state (disabled)
   const [deliveryAddress, setDeliveryAddress] = useState({
     street: '',
     city: '',
@@ -71,9 +128,14 @@ export default function OrderPage() {
   const [deliveryZone, setDeliveryZone] = useState('');
   const [deliveryTimeSlot, setDeliveryTimeSlot] = useState('');
   const [deliveryInstructions, setDeliveryInstructions] = useState('');
+  const [deliveryTip, setDeliveryTip] = useState(0);
+  const [customTipAmount, setCustomTipAmount] = useState('');
+  const [deliveryZipValid, setDeliveryZipValid] = useState(null);
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [isHydrated, setIsHydrated] = useState(false);
+  const [orderId, setOrderId] = useState(null); // Stable order ID for payment
 
   // Coupon and rewards state
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -96,15 +158,22 @@ export default function OrderPage() {
     }
   }, [customer.email]);
 
+  // Generate stable order ID when reaching Step 4
+  useEffect(() => {
+    if (step === 4 && !orderId) {
+      setOrderId(`ORDER-${Date.now()}`);
+    }
+  }, [step, orderId]);
+
   const loadSavedData = () => {
     try {
       const savedCart = localStorage.getItem('taste-of-gratitude-cart');
-      const savedStep = localStorage.getItem('taste-of-gratitude-step');
       const savedCustomer = localStorage.getItem('taste-of-gratitude-customer');
       
       if (savedCart) setCart(JSON.parse(savedCart));
-      if (savedStep) setStep(parseInt(savedStep));
       if (savedCustomer) setCustomer(JSON.parse(savedCustomer));
+      
+      // NOTE: Step is NOT persisted - checkout should restart from Step 1 on page reload
     } catch (error) {
       console.error('Error loading saved data:', error);
     }
@@ -113,8 +182,8 @@ export default function OrderPage() {
   const saveDataToLocal = () => {
     try {
       localStorage.setItem('taste-of-gratitude-cart', JSON.stringify(cart));
-      localStorage.setItem('taste-of-gratitude-step', step.toString());
       localStorage.setItem('taste-of-gratitude-customer', JSON.stringify(customer));
+      // NOTE: Step is NOT saved - prevents React 19 Strict Mode race condition
     } catch (error) {
       console.error('Error saving data:', error);
     }
@@ -229,9 +298,37 @@ export default function OrderPage() {
   // Price calculations
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
-  const deliveryFee = fulfillmentType === 'delivery' ? getDeliveryFee() : 0;
-  const adjustedDeliveryFee = appliedCoupon?.type === 'free_delivery' ? 0 : deliveryFee;
-  const total = subtotal - couponDiscount + adjustedDeliveryFee;
+  
+  // Calculate shipping/delivery fee
+  const getShippingFee = () => {
+    if (fulfillmentType === 'pickup_market') return 0;
+    if (fulfillmentType === 'shipping') {
+      // Free shipping over threshold
+      if (subtotal >= FREE_SHIPPING_THRESHOLD) return 0;
+      // Calculate based on state
+      const state = shippingAddress.state;
+      return SHIPPING_RATES[state] || SHIPPING_RATES.default;
+    }
+    if (fulfillmentType === 'delivery') {
+      // Calculate delivery fee based on subtotal and free delivery threshold
+      const freeDeliveryThreshold = parseFloat(process.env.NEXT_PUBLIC_DELIVERY_FREE_THRESHOLD || '75');
+      const baseFee = parseFloat(process.env.NEXT_PUBLIC_DELIVERY_BASE_FEE || '6.99');
+      return subtotal >= freeDeliveryThreshold ? 0 : baseFee;
+    }
+    return 0;
+  };
+  
+  const shippingFee = getShippingFee();
+  const adjustedShippingFee = appliedCoupon?.type === 'free_delivery' || appliedCoupon?.type === 'free_shipping' ? 0 : shippingFee;
+  const total = subtotal - couponDiscount + adjustedShippingFee + (fulfillmentType === 'delivery' ? deliveryTip : 0);
+  
+  // Calculate free shipping progress
+  const freeShippingProgress = fulfillmentType === 'shipping' && subtotal < FREE_SHIPPING_THRESHOLD
+    ? {
+        remaining: FREE_SHIPPING_THRESHOLD - subtotal,
+        percentage: (subtotal / FREE_SHIPPING_THRESHOLD) * 100
+      }
+    : null;
 
   const getDeliveryFee = () => {
     if (!deliveryZone || fulfillmentType !== 'delivery') return 0;
@@ -257,8 +354,32 @@ export default function OrderPage() {
         break;
         
       case 3:
-        if (!fulfillmentType) newErrors.fulfillment = 'Please select a fulfillment option';
+        if (!fulfillmentType) {
+          newErrors.fulfillment = 'Please select a fulfillment option';
+        }
         
+        // Block delivery attempts
+        if (fulfillmentType === 'delivery') {
+          newErrors.fulfillment = 'Home Delivery is temporarily unavailable. Please choose Pickup or Shipping.';
+        }
+        
+        // Validate pickup
+        if (fulfillmentType === 'pickup_market') {
+          if (!pickupMarket) newErrors.pickupMarket = 'Please select a market location';
+          if (!pickupDate) newErrors.pickupDate = 'Please select a pickup date';
+        }
+        
+        // Validate shipping
+        if (fulfillmentType === 'shipping') {
+          if (!shippingAddress.street.trim()) newErrors.shippingStreet = 'Street address is required';
+          if (!shippingAddress.city.trim()) newErrors.shippingCity = 'City is required';
+          if (!shippingAddress.zip.trim()) newErrors.shippingZip = 'ZIP code is required';
+          else if (!/^\d{5}(-\d{4})?$/.test(shippingAddress.zip.trim())) {
+            newErrors.shippingZip = 'Please enter a valid ZIP code';
+          }
+        }
+        
+        // Legacy delivery validation (should not reach here due to block above)
         if (fulfillmentType === 'delivery') {
           if (!deliveryAddress.street.trim()) newErrors.street = 'Street address is required';
           if (!deliveryAddress.city.trim()) newErrors.city = 'City is required';
@@ -274,16 +395,20 @@ export default function OrderPage() {
   };
 
   const nextStep = () => {
+    console.log('nextStep called, current step:', step, 'cart length:', cart.length);
+    
     if (validateStep(step)) {
       const newStep = Math.min(step + 1, 4);
+      console.log('Validation passed, setting new step:', newStep);
       setStep(newStep);
       
-      // Save step to localStorage
-      try {
-        localStorage.setItem('taste-of-gratitude-step', newStep.toString());
-      } catch (e) {
-        console.error('Failed to save step:', e);
-      }
+      // Scroll to top of page after step change
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
+    } else {
+      console.log('Validation failed for step:', step, 'errors:', errors);
+      toast.error('Please complete all required fields');
     }
   };
 
@@ -291,12 +416,10 @@ export default function OrderPage() {
     const newStep = Math.max(step - 1, 1);
     setStep(newStep);
     
-    // Save step to localStorage
-    try {
-      localStorage.setItem('taste-of-gratitude-step', newStep.toString());
-    } catch (e) {
-      console.error('Failed to save step:', e);
-    }
+    // Scroll to top of page after step change
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   // Coupon handling
@@ -351,62 +474,42 @@ export default function OrderPage() {
     setStep(1);
     setCustomer({ name: '', email: '', phone: '' });
     localStorage.removeItem('taste-of-gratitude-cart');
-    localStorage.removeItem('taste-of-gratitude-step');
     localStorage.removeItem('taste-of-gratitude-customer');
   };
 
   // Enhanced checkout process - Redirect to Square Online for payment
   const handleCheckout = async () => {
+    // Block delivery attempts
+    if (fulfillmentType === 'delivery') {
+      toast.error('Home Delivery is temporarily unavailable. Please choose Pickup or Shipping.');
+      setErrors({ fulfillment: 'Home Delivery is temporarily unavailable. Please choose Pickup or Shipping.' });
+      setStep(3); // Go back to fulfillment selection
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
-      // Create order record in our database
-      const orderData = {
-        id: `ORDER-${Date.now()}`,
-        cart,
-        customer,
-        fulfillmentType,
-        deliveryAddress: fulfillmentType === 'delivery' ? deliveryAddress : null,
-        deliveryTimeSlot: fulfillmentType === 'delivery' ? deliveryTimeSlot : null,
-        deliveryInstructions: fulfillmentType === 'delivery' ? deliveryInstructions : null,
-        deliveryFee: adjustedDeliveryFee,
-        appliedCoupon,
-        subtotal,
-        couponDiscount,
-        total,
-        source: 'website',
-        status: 'pending_payment',
-        squareRedirect: true,
-        createdAt: new Date().toISOString()
-      };
+      // Prepare fulfillment data based on type
+      let fulfillmentData = {};
       
-      // Save to database
-      try {
-        const response = await fetch('/api/orders/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            items: cart,
-            customer,
-            fulfillmentType,
-            deliveryAddress,
-            deliveryTimeSlot,
-            total,
-            coupon: appliedCoupon 
-          })
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          orderData.id = data.orderId || orderData.id;
-        }
-      } catch (err) {
-        console.warn('Failed to save order to database:', err);
-        // Continue anyway - customer can still checkout on Square
+      if (fulfillmentType === 'pickup_market') {
+        fulfillmentData = {
+          type: 'pickup_market',
+          market: pickupMarket,
+          pickupDate: pickupDate,
+          marketDetails: PICKUP_MARKETS.find(m => m.id === pickupMarket)
+        };
+      } else if (fulfillmentType === 'shipping') {
+        fulfillmentData = {
+          type: 'shipping',
+          address: shippingAddress,
+          estimatedDelivery: '2-3 business days'
+        };
       }
       
-      // Store order for reference
-      localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+      // Generate order ID
+      const orderId = `ORDER-${Date.now()}`;
       
       // Award order initiation points
       if (customer.email) {
@@ -419,7 +522,7 @@ export default function OrderPage() {
               points: 5,
               activityType: 'checkout_started',
               activityData: {
-                orderId: orderData.id,
+                orderId,
                 itemCount: cart.length,
                 total: total
               }
@@ -430,18 +533,74 @@ export default function OrderPage() {
         }
       }
       
-      // Build Square Online checkout URL with all cart items
-      const squareCheckoutUrl = buildSquareCartUrl(cart, customer, orderData.id);
+      // Convert cart to Square line items format
+      const lineItems = cart.map(item => ({
+        catalogObjectId: item.catalogObjectId || item.squareVariationId,
+        quantity: item.quantity,
+        name: item.name,
+        basePriceMoney: {
+          amount: Math.round(item.price * 100), // Convert to cents
+          currency: 'USD'
+        },
+        productId: item.id,
+        category: item.category,
+        size: item.size
+      }));
       
-      // Show success message
-      toast.success('Preparing your Square checkout...', {
-        description: 'We\'ll show you how to complete your order on Square'
+      // Create Square Payment Link via our API
+      toast.loading('Creating secure checkout...', { id: 'checkout-loading' });
+      
+      const checkoutResponse = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lineItems,
+          redirectUrl: `${window.location.origin}/checkout/success`,
+          customer: {
+            email: customer.email,
+            name: customer.name,
+            phone: customer.phone
+          },
+          orderId,
+          fulfillmentType,
+          deliveryAddress: fulfillmentType === 'shipping' ? shippingAddress : null
+        })
       });
       
-      // Redirect to our Square checkout helper page
+      const checkoutData = await checkoutResponse.json();
+      
+      if (!checkoutResponse.ok || !checkoutData.success) {
+        throw new Error(checkoutData.error || 'Failed to create checkout');
+      }
+      
+      // Store order reference
+      const orderData = {
+        id: orderId,
+        squareOrderId: checkoutData.paymentLink.orderId,
+        paymentLinkId: checkoutData.paymentLink.id,
+        cart,
+        customer,
+        fulfillmentType,
+        fulfillmentData,
+        deliveryAddress: fulfillmentType === 'shipping' ? shippingAddress : null,
+        shippingFee: adjustedShippingFee,
+        appliedCoupon,
+        subtotal,
+        couponDiscount,
+        total,
+        source: 'website',
+        status: 'pending_payment',
+        createdAt: new Date().toISOString()
+      };
+      
+      localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+      
+      // Redirect to Square Hosted Checkout
+      toast.success('Redirecting to secure checkout...', { id: 'checkout-loading' });
+      
       setTimeout(() => {
-        window.location.href = '/checkout/square';
-      }, 1500);
+        window.location.href = checkoutData.paymentLink.url;
+      }, 500);
       
     } catch (error) {
       console.error('Checkout failed:', error);
@@ -451,35 +610,6 @@ export default function OrderPage() {
   };
   
   // Build Square Online cart URL with all items
-  const buildSquareCartUrl = (cartItems, customerInfo, orderId) => {
-    const baseUrl = 'https://tasteofgratitude.shop/s/order';
-    
-    if (!cartItems || cartItems.length === 0) {
-      return baseUrl;
-    }
-    
-    // Build URL with all cart items
-    // Format: https://tasteofgratitude.shop/s/order?add=product1&add=product2&add=product3
-    const productParams = cartItems.map(item => {
-      const slug = item.slug || item.id;
-      // Add quantity if more than 1
-      if (item.quantity > 1) {
-        return Array(item.quantity).fill(`add=${slug}`).join('&');
-      }
-      return `add=${slug}`;
-    }).join('&');
-    
-    // Add customer info and order reference as URL params for tracking
-    const params = new URLSearchParams();
-    if (customerInfo.email) params.append('email', customerInfo.email);
-    if (customerInfo.name) params.append('name', customerInfo.name);
-    if (orderId) params.append('ref', orderId);
-    
-    const customerParams = params.toString();
-    const fullUrl = `${baseUrl}?${productParams}${customerParams ? '&' + customerParams : ''}`;
-    
-    return fullUrl;
-  };
   
   // Check if customer qualifies for spin wheel
   const checkSpinWheelEligibility = () => {
@@ -497,26 +627,6 @@ export default function OrderPage() {
     return false;
   };
   
-  // Simple Square checkout URL generation
-  const generateSquareCheckoutUrl = (order) => {
-    const baseUrl = process.env.NEXT_PUBLIC_SQUARE_LINK_BASE_URL || 'https://square.link/u';
-    
-    if (!order.items || order.items.length === 0) {
-      return `${baseUrl}/default`;
-    }
-    
-    if (order.items.length === 1) {
-      // Single product - use direct Square product link
-      const item = order.items[0];
-      return item.squareProductUrl || `${baseUrl}/${item.slug}`;
-    } else {
-      // Multiple products - redirect to first item for now
-      // Future enhancement: create Square bundle or multi-item cart
-      const firstItem = order.items[0];
-      return firstItem.squareProductUrl || `${baseUrl}/${firstItem.slug}`;
-    }
-  };
-
   // Step 1: Product Selection
   const renderProductSelection = () => (
     <Card>
@@ -751,21 +861,62 @@ export default function OrderPage() {
       </CardHeader>
       <CardContent className="space-y-6">
         
-        <RadioGroup value={fulfillmentType} onValueChange={setFulfillmentType}>
+        <RadioGroup 
+          value={fulfillmentType} 
+          onValueChange={(value) => {
+            setFulfillmentType(value);
+          }}
+        >
           {Object.entries(FULFILLMENT_OPTIONS).map(([key, option]) => {
             const IconComponent = option.icon;
+            const isDisabled = !option.enabled;
+            
             return (
-              <div key={key} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                <RadioGroupItem value={key} id={key} className="mt-1" />
-                <div className="flex-1 cursor-pointer" onClick={() => setFulfillmentType(key)}>
+              <div 
+                key={key} 
+                className={`flex items-start space-x-3 p-4 border rounded-lg transition-colors ${
+                  isDisabled 
+                    ? 'bg-muted/30 opacity-60 cursor-not-allowed' 
+                    : 'hover:bg-muted/50 cursor-pointer'
+                }`}
+              >
+                <RadioGroupItem 
+                  value={key} 
+                  id={key} 
+                  className="mt-1" 
+                  disabled={isDisabled}
+                  aria-disabled={isDisabled}
+                  aria-describedby={isDisabled ? `${key}-disabled-message` : undefined}
+                />
+                <div 
+                  className="flex-1" 
+                  onClick={() => {
+                    if (!isDisabled) {
+                      setFulfillmentType(key);
+                    }
+                  }}
+                >
                   <div className="flex items-center gap-2 mb-1">
                     <IconComponent className="h-4 w-4" />
-                    <Label htmlFor={key} className="font-medium cursor-pointer">{option.label}</Label>
+                    <Label 
+                      htmlFor={key} 
+                      className={`font-medium ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                    >
+                      {option.label}
+                    </Label>
                     {option.fee === 0 && <Badge variant="secondary">Free</Badge>}
+                    {isDisabled && <Badge variant="destructive" className="text-xs">Unavailable</Badge>}
                   </div>
                   <p className="text-sm text-muted-foreground">{option.description}</p>
                   {typeof option.fee === 'number' && option.fee > 0 && (
-                    <p className="text-sm font-medium text-[#D4AF37] mt-1">+${option.fee} delivery fee</p>
+                    <p className="text-sm font-medium text-[#D4AF37] mt-1">
+                      ${option.fee.toFixed(2)} {key === 'shipping' && <span className="text-xs text-muted-foreground">(Free over $50)</span>}
+                    </p>
+                  )}
+                  {option.tooltip && !isDisabled && (
+                    <p id={`${key}-tooltip`} className="text-xs text-muted-foreground mt-2 italic">
+                      💡 {option.tooltip}
+                    </p>
                   )}
                 </div>
               </div>
@@ -774,48 +925,117 @@ export default function OrderPage() {
         </RadioGroup>
         
         {errors.fulfillment && (
-          <div className="flex items-center gap-2 text-red-600 text-sm">
-            <AlertCircle className="h-4 w-4" />
-            {errors.fulfillment}
+          <div className="flex items-center gap-2 text-red-600 text-sm p-3 bg-red-50 rounded-lg border border-red-200">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            <span>{errors.fulfillment}</span>
           </div>
         )}
         
-        {/* Delivery Address Form */}
-        {fulfillmentType === 'delivery' && (
+        {/* Free Shipping Progress */}
+        {fulfillmentType === 'shipping' && freeShippingProgress && (
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-green-900">
+                Add ${freeShippingProgress.remaining.toFixed(2)} more for free shipping!
+              </p>
+              <Gift className="h-4 w-4 text-green-600" />
+            </div>
+            <div className="w-full bg-green-200 rounded-full h-2">
+              <div 
+                className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${Math.min(freeShippingProgress.percentage, 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
+        
+        {/* Pickup Market Selection */}
+        {fulfillmentType === 'pickup_market' && (
+          <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+            <h3 className="font-semibold flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              Select Pickup Location
+            </h3>
+            
+            <RadioGroup value={pickupMarket} onValueChange={setPickupMarket}>
+              {PICKUP_MARKETS.map((market) => (
+                <div key={market.id} className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
+                  <RadioGroupItem value={market.id} id={`market-${market.id}`} className="mt-1" />
+                  <div className="flex-1 cursor-pointer" onClick={() => setPickupMarket(market.id)}>
+                    <Label htmlFor={`market-${market.id}`} className="font-medium cursor-pointer">
+                      {market.name}
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      <Clock className="h-3 w-3 inline mr-1" />
+                      {market.schedule}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      <MapPin className="h-3 w-3 inline mr-1" />
+                      {market.location}
+                    </p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      📍 {market.booth}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </RadioGroup>
+            {errors.pickupMarket && <span className="text-red-500 text-xs">{errors.pickupMarket}</span>}
+            
+            {/* Pickup Date */}
+            {pickupMarket && (
+              <div className="space-y-2">
+                <Label htmlFor="pickupDate">Preferred Pickup Date *</Label>
+                <Input
+                  id="pickupDate"
+                  type="date"
+                  value={pickupDate}
+                  onChange={(e) => setPickupDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className={errors.pickupDate ? 'border-red-500' : ''}
+                />
+                {errors.pickupDate && <span className="text-red-500 text-xs">{errors.pickupDate}</span>}
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Shipping Address Form */}
+        {fulfillmentType === 'shipping' && (
           <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
             <h3 className="font-semibold flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              Delivery Address
+              Shipping Address
             </h3>
             
             <div className="space-y-2">
-              <Label htmlFor="street">Street Address *</Label>
+              <Label htmlFor="shippingStreet">Street Address *</Label>
               <Input
-                id="street"
-                value={deliveryAddress.street}
-                onChange={(e) => setDeliveryAddress(prev => ({ ...prev, street: e.target.value }))}
+                id="shippingStreet"
+                value={shippingAddress.street}
+                onChange={(e) => setShippingAddress(prev => ({ ...prev, street: e.target.value }))}
                 placeholder="123 Main Street"
-                className={errors.street ? 'border-red-500' : ''}
+                className={errors.shippingStreet ? 'border-red-500' : ''}
               />
-              {errors.street && <span className="text-red-500 text-xs">{errors.street}</span>}
+              {errors.shippingStreet && <span className="text-red-500 text-xs">{errors.shippingStreet}</span>}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="city">City *</Label>
+                <Label htmlFor="shippingCity">City *</Label>
                 <Input
-                  id="city"
-                  value={deliveryAddress.city}
-                  onChange={(e) => setDeliveryAddress(prev => ({ ...prev, city: e.target.value }))}
+                  id="shippingCity"
+                  value={shippingAddress.city}
+                  onChange={(e) => setShippingAddress(prev => ({ ...prev, city: e.target.value }))}
                   placeholder="Atlanta"
-                  className={errors.city ? 'border-red-500' : ''}
+                  className={errors.shippingCity ? 'border-red-500' : ''}
                 />
-                {errors.city && <span className="text-red-500 text-xs">{errors.city}</span>}
+                {errors.shippingCity && <span className="text-red-500 text-xs">{errors.shippingCity}</span>}
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="state">State</Label>
-                <Select value={deliveryAddress.state} onValueChange={(value) => setDeliveryAddress(prev => ({ ...prev, state: value }))}>
+                <Label htmlFor="shippingState">State *</Label>
+                <Select value={shippingAddress.state} onValueChange={(value) => setShippingAddress(prev => ({ ...prev, state: value }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -824,69 +1044,263 @@ export default function OrderPage() {
                     <SelectItem value="AL">Alabama</SelectItem>
                     <SelectItem value="FL">Florida</SelectItem>
                     <SelectItem value="TN">Tennessee</SelectItem>
+                    <SelectItem value="SC">South Carolina</SelectItem>
+                    <SelectItem value="NC">North Carolina</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="zip">ZIP Code *</Label>
+                <Label htmlFor="shippingZip">ZIP Code *</Label>
                 <Input
-                  id="zip"
-                  value={deliveryAddress.zip}
-                  onChange={(e) => setDeliveryAddress(prev => ({ ...prev, zip: e.target.value }))}
+                  id="shippingZip"
+                  value={shippingAddress.zip}
+                  onChange={(e) => setShippingAddress(prev => ({ ...prev, zip: e.target.value }))}
                   placeholder="30309"
-                  className={errors.zip ? 'border-red-500' : ''}
+                  maxLength={10}
+                  className={errors.shippingZip ? 'border-red-500' : ''}
                 />
-                {errors.zip && <span className="text-red-500 text-xs">{errors.zip}</span>}
+                {errors.shippingZip && <span className="text-red-500 text-xs">{errors.shippingZip}</span>}
               </div>
             </div>
             
-            {/* Delivery Zone Selection */}
+            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-900">
+                <Shield className="h-3 w-3 inline mr-1" />
+                Estimated delivery: 2-3 business days via USPS Priority Mail
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {/* Home Delivery Form */}
+        {fulfillmentType === 'delivery' && (
+          <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+            <h3 className="font-semibold flex items-center gap-2">
+              <Truck className="h-4 w-4" />
+              Delivery Details
+            </h3>
+            
+            {/* ZIP Code Validation */}
             <div className="space-y-2">
-              <Label>Delivery Zone *</Label>
-              <RadioGroup value={deliveryZone} onValueChange={setDeliveryZone}>
-                {Object.entries(DELIVERY_ZONES).map(([key, zone]) => (
-                  <div key={key} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <RadioGroupItem value={key} id={`zone-${key}`} />
-                      <Label htmlFor={`zone-${key}`} className="cursor-pointer">
-                        {zone.name}
-                        <div className="text-xs text-muted-foreground">Delivery fee: ${zone.fee}</div>
-                      </Label>
-                    </div>
-                  </div>
-                ))}
-              </RadioGroup>
-              {errors.zone && <span className="text-red-500 text-xs">{errors.zone}</span>}
+              <Label htmlFor="deliveryZip">Delivery ZIP Code *</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="deliveryZip"
+                  value={deliveryAddress.zip}
+                  onChange={(e) => {
+                    const zip = e.target.value.replace(/\D/g, '').slice(0, 5);
+                    setDeliveryAddress(prev => ({ ...prev, zip }));
+                    
+                    // Validate ZIP in real-time
+                    if (zip.length === 5) {
+                      const zipWhitelist = (process.env.NEXT_PUBLIC_DELIVERY_ZIP_WHITELIST || '').split(',');
+                      const isValid = zipWhitelist.includes(zip);
+                      setDeliveryZipValid(isValid);
+                      
+                      if (!isValid) {
+                        toast.error("We're not in your area yet. Try Pickup or Shipping, or use a different address.");
+                      } else {
+                        toast.success('Delivery available in your area!');
+                      }
+                    } else {
+                      setDeliveryZipValid(null);
+                    }
+                  }}
+                  placeholder="30310"
+                  maxLength={5}
+                  className={errors.deliveryZip ? 'border-red-500' : deliveryZipValid === false ? 'border-red-500' : deliveryZipValid === true ? 'border-green-500' : ''}
+                />
+                {deliveryZipValid === true && (
+                  <CheckCircle className="h-10 w-10 text-green-600 flex-shrink-0" />
+                )}
+                {deliveryZipValid === false && (
+                  <X className="h-10 w-10 text-red-600 flex-shrink-0" />
+                )}
+              </div>
+              {errors.deliveryZip && <span className="text-red-500 text-xs">{errors.deliveryZip}</span>}
+              {deliveryZipValid === false && (
+                <p className="text-xs text-red-600 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  Delivery not available in your area. Available ZIPs: South Fulton & Atlanta (30310-30318, 30331-30349)
+                </p>
+              )}
             </div>
             
-            {/* Time Slot Selection */}
-            {deliveryZone && (
+            {/* Street Address */}
+            <div className="space-y-2">
+              <Label htmlFor="deliveryStreet">Street Address *</Label>
+              <Input
+                id="deliveryStreet"
+                value={deliveryAddress.street}
+                onChange={(e) => setDeliveryAddress(prev => ({ ...prev, street: e.target.value }))}
+                placeholder="123 Main Street"
+                className={errors.deliveryStreet ? 'border-red-500' : ''}
+              />
+              {errors.deliveryStreet && <span className="text-red-500 text-xs">{errors.deliveryStreet}</span>}
+            </div>
+            
+            {/* Apt/Unit */}
+            <div className="space-y-2">
+              <Label htmlFor="deliveryApt">Apt/Suite (Optional)</Label>
+              <Input
+                id="deliveryApt"
+                value={deliveryAddress.apt || ''}
+                onChange={(e) => setDeliveryAddress(prev => ({ ...prev, apt: e.target.value }))}
+                placeholder="Apt 4B"
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Preferred Delivery Time *</Label>
-                <Select value={deliveryTimeSlot} onValueChange={setDeliveryTimeSlot}>
-                  <SelectTrigger className={errors.timeSlot ? 'border-red-500' : ''}>
-                    <SelectValue placeholder="Select a time slot" />
+                <Label htmlFor="deliveryCity">City *</Label>
+                <Input
+                  id="deliveryCity"
+                  value={deliveryAddress.city}
+                  onChange={(e) => setDeliveryAddress(prev => ({ ...prev, city: e.target.value }))}
+                  placeholder="Atlanta"
+                  className={errors.deliveryCity ? 'border-red-500' : ''}
+                />
+                {errors.deliveryCity && <span className="text-red-500 text-xs">{errors.deliveryCity}</span>}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="deliveryState">State *</Label>
+                <Select
+                  value={deliveryAddress.state}
+                  onValueChange={(value) => setDeliveryAddress(prev => ({ ...prev, state: value }))}
+                >
+                  <SelectTrigger id="deliveryState">
+                    <SelectValue placeholder="Select state" />
                   </SelectTrigger>
                   <SelectContent>
-                    {DELIVERY_ZONES[deliveryZone]?.timeSlots.map((slot) => (
-                      <SelectItem key={slot} value={slot}>{slot}</SelectItem>
-                    ))}
+                    <SelectItem value="GA">Georgia</SelectItem>
                   </SelectContent>
                 </Select>
-                {errors.timeSlot && <span className="text-red-500 text-xs">{errors.timeSlot}</span>}
               </div>
-            )}
+            </div>
+            
+            {/* Delivery Window */}
+            <div className="space-y-2">
+              <Label htmlFor="deliveryWindow">Delivery Time Window *</Label>
+              <Select
+                value={deliveryTimeSlot}
+                onValueChange={setDeliveryTimeSlot}
+              >
+                <SelectTrigger id="deliveryWindow" className={errors.deliveryTimeSlot ? 'border-red-500' : ''}>
+                  <SelectValue placeholder="Select delivery time" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(process.env.NEXT_PUBLIC_DELIVERY_WINDOWS || '09:00-12:00|12:00-15:00|15:00-18:00')
+                    .split('|')
+                    .map((window) => (
+                      <SelectItem key={window} value={window}>
+                        <Clock className="h-3 w-3 inline mr-2" />
+                        {window}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              {errors.deliveryTimeSlot && <span className="text-red-500 text-xs">{errors.deliveryTimeSlot}</span>}
+            </div>
             
             {/* Delivery Instructions */}
             <div className="space-y-2">
-              <Label htmlFor="instructions">Delivery Instructions (Optional)</Label>
+              <Label htmlFor="deliveryInstructions">Delivery Instructions (Optional)</Label>
               <Input
-                id="instructions"
+                id="deliveryInstructions"
                 value={deliveryInstructions}
-                onChange={(e) => setDeliveryInstructions(e.target.value)}
-                placeholder="Apartment number, gate code, special instructions..."
+                onChange={(e) => setDeliveryInstructions(e.target.value.slice(0, 200))}
+                placeholder="e.g., Leave at front door, Ring doorbell"
+                maxLength={200}
               />
+              <p className="text-xs text-muted-foreground">{deliveryInstructions.length}/200 characters</p>
+            </div>
+            
+            {/* Delivery Fee Progress */}
+            {subtotal < 75 && (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-green-900">
+                    Add ${(75 - subtotal).toFixed(2)} for Free Delivery!
+                  </p>
+                  <Gift className="h-4 w-4 text-green-600" />
+                </div>
+                <div className="w-full bg-green-200 rounded-full h-2">
+                  <div 
+                    className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${Math.min((subtotal / 75) * 100, 100)}%` }}
+                  />
+                </div>
+                <p className="text-xs text-green-700 mt-2">
+                  Current delivery fee: ${subtotal >= 75 ? '0.00' : process.env.NEXT_PUBLIC_DELIVERY_BASE_FEE || '6.99'}
+                </p>
+              </div>
+            )}
+            
+            {subtotal >= 75 && (
+              <div className="p-3 bg-green-50 rounded-lg border border-green-200 flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <p className="text-sm font-medium text-green-900">
+                  🎉 You qualify for Free Delivery!
+                </p>
+              </div>
+            )}
+            
+            {/* Tip Selection */}
+            <div className="space-y-3">
+              <Label>Add a Tip for Your Driver (Optional)</Label>
+              <div className="grid grid-cols-4 gap-2">
+                {[0, 2, 4, 6].map((amount) => (
+                  <Button
+                    key={amount}
+                    type="button"
+                    variant={deliveryTip === amount ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => {
+                      setDeliveryTip(amount);
+                      setCustomTipAmount('');
+                    }}
+                    className="w-full"
+                  >
+                    {amount === 0 ? 'No Tip' : `$${amount}`}
+                  </Button>
+                ))}
+              </div>
+              
+              <div className="flex gap-2">
+                <div className="flex-1 space-y-1">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value={customTipAmount}
+                    onChange={(e) => {
+                      setCustomTipAmount(e.target.value);
+                      const val = parseFloat(e.target.value);
+                      if (!isNaN(val) && val >= 0) {
+                        setDeliveryTip(val);
+                      }
+                    }}
+                    placeholder="Custom amount"
+                    className="text-sm"
+                  />
+                </div>
+              </div>
+              
+              {deliveryTip > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  💚 Thank you for supporting our delivery drivers!
+                </p>
+              )}
+            </div>
+            
+            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-900">
+                <Shield className="h-3 w-3 inline mr-1" />
+                Same-day delivery • Contactless delivery available • Track your order in real-time
+              </p>
             </div>
           </div>
         )}
@@ -950,11 +1364,32 @@ export default function OrderPage() {
               <h4 className="font-semibold mb-2">Fulfillment</h4>
               <div className="space-y-1 text-muted-foreground">
                 <div>{FULFILLMENT_OPTIONS[fulfillmentType]?.label}</div>
+                
+                {fulfillmentType === 'pickup_market' && pickupMarket && (
+                  <>
+                    <div className="text-xs mt-2">
+                      {PICKUP_MARKETS.find(m => m.id === pickupMarket)?.name}
+                    </div>
+                    <div className="text-xs">
+                      Pickup Date: {pickupDate ? new Date(pickupDate).toLocaleDateString() : 'Not selected'}
+                    </div>
+                  </>
+                )}
+                
+                {fulfillmentType === 'shipping' && (
+                  <>
+                    <div className="text-xs mt-2">{shippingAddress.street}</div>
+                    <div className="text-xs">{shippingAddress.city}, {shippingAddress.state} {shippingAddress.zip}</div>
+                    <div className="text-xs text-blue-600 mt-1">Est. 2-3 business days</div>
+                  </>
+                )}
+                
                 {fulfillmentType === 'delivery' && (
                   <>
-                    <div>{deliveryAddress.street}</div>
-                    <div>{deliveryAddress.city}, {deliveryAddress.state} {deliveryAddress.zip}</div>
-                    <div>{deliveryTimeSlot}</div>
+                    <div className="text-xs mt-2 text-red-600">⚠️ Temporarily Unavailable</div>
+                    <div className="text-xs">{deliveryAddress.street}</div>
+                    <div className="text-xs">{deliveryAddress.city}, {deliveryAddress.state} {deliveryAddress.zip}</div>
+                    <div className="text-xs">{deliveryTimeSlot}</div>
                   </>
                 )}
               </div>
@@ -1005,17 +1440,41 @@ export default function OrderPage() {
               </div>
             )}
             
-            {adjustedDeliveryFee > 0 && (
+            {/* Show shipping/delivery fee */}
+            {adjustedShippingFee > 0 && (
               <div className="flex justify-between text-sm">
-                <span>Delivery Fee</span>
-                <span>${adjustedDeliveryFee.toFixed(2)}</span>
+                <span>
+                  {fulfillmentType === 'shipping' ? 'Shipping' : 
+                   fulfillmentType === 'delivery' ? 'Delivery' : 'Fulfillment'} Fee
+                </span>
+                <span>${adjustedShippingFee.toFixed(2)}</span>
               </div>
             )}
             
-            {appliedCoupon?.type === 'free_delivery' && deliveryFee > 0 && (
+            {/* Show free shipping benefit */}
+            {fulfillmentType === 'shipping' && shippingFee > 0 && adjustedShippingFee === 0 && (
               <div className="flex justify-between text-sm text-green-600">
-                <span>Free Delivery Savings</span>
-                <span>-${deliveryFee.toFixed(2)}</span>
+                <span>Free Shipping</span>
+                <span>-${shippingFee.toFixed(2)}</span>
+              </div>
+            )}
+            
+            {/* Show free delivery from coupon */}
+            {(appliedCoupon?.type === 'free_delivery' || appliedCoupon?.type === 'free_shipping') && shippingFee > 0 && (
+              <div className="flex justify-between text-sm text-green-600">
+                <span>Free {fulfillmentType === 'shipping' ? 'Shipping' : 'Delivery'} Savings</span>
+                <span>-${shippingFee.toFixed(2)}</span>
+              </div>
+            )}
+            
+            {/* Delivery Tip */}
+            {fulfillmentType === 'delivery' && deliveryTip > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="flex items-center gap-1">
+                  Driver Tip 
+                  <span className="text-xs text-muted-foreground">💚</span>
+                </span>
+                <span>${deliveryTip.toFixed(2)}</span>
               </div>
             )}
             
@@ -1027,29 +1486,72 @@ export default function OrderPage() {
             </div>
           </div>
           
-          {/* Checkout Button */}
-          <Button 
-            onClick={handleCheckout}
-            disabled={isSubmitting || total <= 0}
-            data-testid="complete-order-button"
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Preparing checkout...
-              </>
-            ) : (
-              <>
-                <Lock className="mr-2 h-5 w-5" />
-                Continue to Square Checkout → ${total.toFixed(2)}
-              </>
-            )}
-          </Button>
+          {/* Square Web Payment Form - In-Page Checkout */}
+          <div className="mt-6">
+            <SquareWebPaymentForm
+              amountCents={Math.round(total * 100)}
+              currency="USD"
+              orderId={`ORDER-${Date.now()}`}
+              customer={{
+                name: customer.name,
+                email: customer.email,
+                phone: customer.phone
+              }}
+              lineItems={cart.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price,
+                catalogObjectId: item.catalogObjectId || item.squareVariationId
+              }))}
+              onPaymentSuccess={async (paymentResult) => {
+                // Payment successful - save order and redirect to success page
+                const orderData = {
+                  id: paymentResult.orderId || `ORDER-${Date.now()}`,
+                  paymentId: paymentResult.paymentId,
+                  cart,
+                  customer,
+                  fulfillmentType,
+                  fulfillmentData: fulfillmentType === 'pickup_market' ? {
+                    market: pickupMarket,
+                    pickupDate,
+                    marketDetails: PICKUP_MARKETS.find(m => m.id === pickupMarket)
+                  } : fulfillmentType === 'shipping' ? {
+                    address: shippingAddress
+                  } : {},
+                  appliedCoupon,
+                  subtotal,
+                  couponDiscount,
+                  shippingFee: adjustedShippingFee,
+                  total,
+                  status: 'paid',
+                  createdAt: new Date().toISOString()
+                };
+                
+                // Save to database
+                try {
+                  await fetch('/api/orders/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                  });
+                } catch (err) {
+                  console.error('Failed to save order:', err);
+                }
+                
+                // Clear cart and redirect
+                clearCart();
+                window.location.href = `/order/success?orderId=${orderData.id}&payment=success`;
+              }}
+              onPaymentError={(error) => {
+                console.error('Payment error:', error);
+                toast.error(error.message || 'Payment failed. Please try again.');
+              }}
+            />
+          </div>
           
-          <p className="text-xs text-center text-gray-600 flex items-center justify-center gap-2">
+          <p className="text-xs text-center text-gray-600 flex items-center justify-center gap-2 mt-4">
             <Shield className="h-3 w-3 text-green-600" />
-            We'll show you how to complete your order on Square
+            Your payment is secured with bank-level encryption
           </p>
         </CardContent>
       </Card>

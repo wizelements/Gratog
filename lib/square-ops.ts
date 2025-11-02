@@ -43,19 +43,37 @@ export async function listCatalog(types?: string) {
 
 export async function createPaymentLink(input: {
   orderId?: string;
+  locationId?: string;
+  lineItems?: any[];
   idempotencyKey: string;
   checkoutOptions?: {
     redirectUrl?: string;
     askForShippingAddress?: boolean;
   };
 }) {
+  const body: any = {
+    idempotency_key: input.idempotencyKey,
+    checkout_options: input.checkoutOptions,
+  };
+  
+  // Square API: Either reference existing order OR create new order with line items
+  if (input.orderId && !input.lineItems) {
+    // Reference existing order - ONLY pass id and location_id
+    body.order = {
+      id: input.orderId,
+      location_id: input.locationId
+    };
+  } else if (input.lineItems && input.lineItems.length > 0) {
+    // Create new order with line items - do NOT include order.id
+    body.order = {
+      location_id: input.locationId,
+      line_items: input.lineItems
+    };
+  }
+  
   return sqFetch<any>(env, "/v2/online-checkout/payment-links", token, {
     method: "POST",
-    body: JSON.stringify({
-      idempotency_key: input.idempotencyKey,
-      order_id: input.orderId,
-      checkout_options: input.checkoutOptions,
-    }),
+    body: JSON.stringify(body),
   });
 }
 

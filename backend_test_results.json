@@ -1,133 +1,121 @@
 {
-  "total": 21,
-  "passed": 20,
+  "total": 19,
+  "passed": 18,
   "failed": 1,
   "tests": [
     {
-      "name": "Health Check API",
-      "status": "\u2705 PASS",
-      "details": "Status: 200, DB: connected, Square: mock_mode",
-      "timestamp": "2025-10-18T03:25:35.122769"
-    },
-    {
-      "name": "Square Mock Mode Enabled",
-      "status": "\u2705 PASS",
-      "details": "SQUARE_MOCK_MODE=true confirmed",
-      "timestamp": "2025-10-18T03:25:35.122796"
-    },
-    {
-      "name": "Square Checkout - Auth Response",
-      "status": "\u2705 PASS",
-      "details": "401 response expected with invalid credentials (mock mode should handle this)",
-      "timestamp": "2025-10-18T03:25:36.294732"
-    },
-    {
-      "name": "Square Checkout - Missing Items Validation",
-      "status": "\u2705 PASS",
-      "details": "Status: 400",
-      "timestamp": "2025-10-18T03:25:36.400489"
-    },
-    {
-      "name": "Square Webhook - GET Endpoint",
-      "status": "\u2705 PASS",
-      "details": "Status: 200",
-      "timestamp": "2025-10-18T03:25:37.274131"
-    },
-    {
-      "name": "Square Webhook - Payment Event",
-      "status": "\u2705 PASS",
-      "details": "Status: 200, Received: True",
-      "timestamp": "2025-10-18T03:25:37.383764"
-    },
-    {
-      "name": "Coupon Creation - Valid Request",
-      "status": "\u2705 PASS",
-      "details": "Status: 200, Code: TOG9376879BZ",
-      "timestamp": "2025-10-18T03:25:37.702006"
-    },
-    {
-      "name": "Coupon Creation - Missing Email Validation",
-      "status": "\u2705 PASS",
-      "details": "Status: 400",
-      "timestamp": "2025-10-18T03:25:37.764178"
-    },
-    {
-      "name": "Coupon Validation - Valid Coupon",
-      "status": "\u2705 PASS",
-      "details": "Status: 200, Valid: True, Discount: 5",
-      "timestamp": "2025-10-18T03:25:38.090476"
-    },
-    {
-      "name": "Coupon Validation - Invalid Coupon",
-      "status": "\u2705 PASS",
-      "details": "Status: 200, Valid: False",
-      "timestamp": "2025-10-18T03:25:38.153296"
-    },
-    {
-      "name": "Order Creation - Valid Request",
-      "status": "\u2705 PASS",
-      "details": "Status: 200, Order ID: f01f14ce-ee9b-41a3-b9bd-d95f07b56d2b",
-      "timestamp": "2025-10-18T03:25:38.716164"
-    },
-    {
-      "name": "Order Creation - Missing Cart Validation",
-      "status": "\u2705 PASS",
-      "details": "Status: 400",
-      "timestamp": "2025-10-18T03:25:38.791973"
-    },
-    {
-      "name": "Order Retrieval - By ID",
-      "status": "\u2705 PASS",
-      "details": "Status: 200",
-      "timestamp": "2025-10-18T03:25:38.854687"
-    },
-    {
-      "name": "Order Retrieval - By Email",
-      "status": "\u2705 PASS",
-      "details": "Status: 200, Orders: 3",
-      "timestamp": "2025-10-18T03:25:38.914471"
-    },
-    {
-      "name": "Passport Creation/Retrieval",
-      "status": "\u2705 PASS",
-      "details": "Status: 200, Points: 35",
-      "timestamp": "2025-10-18T03:25:39.141986"
-    },
-    {
-      "name": "Passport Retrieval - By Email",
-      "status": "\u2705 PASS",
-      "details": "Status: 200",
-      "timestamp": "2025-10-18T03:25:39.196303"
-    },
-    {
-      "name": "Add Reward Points",
-      "status": "\u2705 PASS",
-      "details": "Status: 200",
-      "timestamp": "2025-10-18T03:25:39.548125"
-    },
-    {
-      "name": "Add Market Stamp",
+      "name": "Checkout API - Valid Payment Link Creation",
       "status": "\u274c FAIL",
-      "details": "Status: 400",
-      "timestamp": "2025-10-18T03:25:39.861291"
+      "details": "Status 500: {\"success\":false,\"error\":\"Failed to create checkout\",\"details\":\"Item variation with catalog object ID `TEST_CATALOG_OBJ_123` not found.\"}",
+      "timestamp": "2025-11-02T11:31:49.870023"
     },
     {
-      "name": "Admin - Get Products",
+      "name": "Checkout API - Empty Line Items Validation",
       "status": "\u2705 PASS",
-      "details": "Status: 200, Products: 13",
-      "timestamp": "2025-10-18T03:25:41.182497"
+      "details": "Properly rejected: Line items array is required",
+      "timestamp": "2025-11-02T11:31:49.952400"
     },
     {
-      "name": "Admin - Get Orders",
+      "name": "Checkout API - Missing catalogObjectId Validation",
       "status": "\u2705 PASS",
-      "details": "401 - Authentication required (expected)",
-      "timestamp": "2025-10-18T03:25:41.991147"
+      "details": "Properly rejected: Each line item must have catalogObjectId and quantity",
+      "timestamp": "2025-11-02T11:31:50.015187"
     },
     {
-      "name": "Admin - Get Coupons",
+      "name": "Checkout API - GET Status Endpoint",
       "status": "\u2705 PASS",
-      "details": "Status: 200",
-      "timestamp": "2025-10-18T03:25:42.252626"
+      "details": "Status 500: Proper JSON response",
+      "timestamp": "2025-11-02T11:31:50.210605"
+    },
+    {
+      "name": "Payments API - Missing sourceId Validation",
+      "status": "\u2705 PASS",
+      "details": "Properly rejected: Payment source ID (token) is required",
+      "timestamp": "2025-11-02T11:31:52.116922"
+    },
+    {
+      "name": "Payments API - Invalid Amount (Zero) Validation",
+      "status": "\u2705 PASS",
+      "details": "Properly rejected: Valid amount in cents is required",
+      "timestamp": "2025-11-02T11:31:52.174980"
+    },
+    {
+      "name": "Payments API - Invalid Amount (Negative) Validation",
+      "status": "\u2705 PASS",
+      "details": "Properly rejected: Valid amount in cents is required",
+      "timestamp": "2025-11-02T11:31:52.223611"
+    },
+    {
+      "name": "Payments API - Valid Payment Request",
+      "status": "\u2705 PASS",
+      "details": "Expected auth/not found error - API structure correct",
+      "timestamp": "2025-11-02T11:31:52.542302"
+    },
+    {
+      "name": "Payments API - GET Status Endpoint",
+      "status": "\u2705 PASS",
+      "details": "Status 404: Proper JSON response",
+      "timestamp": "2025-11-02T11:31:52.691451"
+    },
+    {
+      "name": "Order API - Valid Pickup Order Creation",
+      "status": "\u2705 PASS",
+      "details": "Order created: 74d7885b-1299-4bf6-bbce-6315be41164b - TOG116608",
+      "timestamp": "2025-11-02T11:31:56.779294"
+    },
+    {
+      "name": "Order API - Valid Delivery Order Creation",
+      "status": "\u2705 PASS",
+      "details": "Order created: 1c02291b-2a15-44c2-8638-824429f96097, Delivery Fee: $6.99",
+      "timestamp": "2025-11-02T11:31:56.992452"
+    },
+    {
+      "name": "Order API - Missing Cart Validation",
+      "status": "\u2705 PASS",
+      "details": "Properly rejected: Cart items are required",
+      "timestamp": "2025-11-02T11:31:57.049409"
+    },
+    {
+      "name": "Order API - Missing Customer Info Validation",
+      "status": "\u2705 PASS",
+      "details": "Properly rejected: Customer information (email, name, phone) is required",
+      "timestamp": "2025-11-02T11:31:57.099292"
+    },
+    {
+      "name": "Order API - Invalid Delivery ZIP Validation",
+      "status": "\u2705 PASS",
+      "details": "Properly rejected: We're not in your area yet. Try Pickup or Shipping, or use a different address.",
+      "timestamp": "2025-11-02T11:31:57.153263"
+    },
+    {
+      "name": "Order API - Delivery Minimum Order Validation",
+      "status": "\u2705 PASS",
+      "details": "Properly rejected: Minimum order for delivery is $30.00",
+      "timestamp": "2025-11-02T11:31:57.207961"
+    },
+    {
+      "name": "Cart Price API - Valid Calculation",
+      "status": "\u2705 PASS",
+      "details": "Expected catalog/auth error - API structure correct",
+      "timestamp": "2025-11-02T11:31:58.587911"
+    },
+    {
+      "name": "Cart Price API - Empty Lines Validation",
+      "status": "\u2705 PASS",
+      "details": "Properly rejected: Cart lines are required",
+      "timestamp": "2025-11-02T11:31:58.641351"
+    },
+    {
+      "name": "Cart Price API - Missing Lines Field",
+      "status": "\u2705 PASS",
+      "details": "Properly rejected: Cart lines are required",
+      "timestamp": "2025-11-02T11:31:58.688594"
+    },
+    {
+      "name": "Complete Flow - Order to Checkout Integration",
+      "status": "\u2705 PASS",
+      "details": "Flow completed: Order 00ffefdd-c622-446e-91f7-260bf8a503c3 \u2192 Checkout API",
+      "timestamp": "2025-11-02T11:32:00.898276"
     }
   ]
 }

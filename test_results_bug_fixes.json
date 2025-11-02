@@ -1,0 +1,105 @@
+{
+  "total": 14,
+  "passed": 12,
+  "failed": 2,
+  "tests": [
+    {
+      "category": "Catalog Webhook",
+      "test": "Empty data object handling",
+      "status": "\u2705 PASS",
+      "details": "Webhook processed successfully with empty data. Response: {\"received\": true, \"eventType\": \"catalog.version.updated\", \"eventId\": \"test_456\", \"processedAt\": \"2025-10-30T00:23:28.907Z\"}",
+      "response_time_ms": 599
+    },
+    {
+      "category": "Catalog Webhook",
+      "test": "Partial data with empty object",
+      "status": "\u2705 PASS",
+      "details": "Webhook processed successfully with partial data. Response: {\"received\": true, \"eventType\": \"catalog.version.updated\", \"eventId\": \"test_789\", \"processedAt\": \"2025-10-30T00:23:28.965Z\"}",
+      "response_time_ms": 58
+    },
+    {
+      "category": "Catalog Webhook",
+      "test": "Missing object_id and object_type",
+      "status": "\u2705 PASS",
+      "details": "Webhook processed with safe defaults. Received: True",
+      "response_time_ms": 54
+    },
+    {
+      "category": "Catalog Webhook",
+      "test": "Sync queue entry creation",
+      "status": "\u2705 PASS",
+      "details": "Webhook created sync queue entry successfully",
+      "response_time_ms": 56
+    },
+    {
+      "category": "Passport Stamp API",
+      "test": "Create test passport",
+      "status": "\u2705 PASS",
+      "details": "Passport created: 6902b00161c9653e3f76ae74",
+      "response_time_ms": 59
+    },
+    {
+      "category": "Passport Stamp API",
+      "test": "Add stamp with email parameter",
+      "status": "\u2705 PASS",
+      "details": "Stamp added successfully using email. Stamps: 1, All fields present: True",
+      "response_time_ms": 59
+    },
+    {
+      "category": "Passport Stamp API",
+      "test": "Add stamp with passportId (existing)",
+      "status": "\u274c FAIL",
+      "details": "Status: 500",
+      "response_time_ms": 0
+    },
+    {
+      "category": "Passport Stamp API",
+      "test": "Error case - email with no passport",
+      "status": "\u274c FAIL",
+      "details": "Expected 404, got 200",
+      "response_time_ms": 0
+    },
+    {
+      "category": "Passport Stamp API",
+      "test": "Response structure completeness",
+      "status": "\u2705 PASS",
+      "details": "All required fields present. Missing: None",
+      "response_time_ms": 58
+    },
+    {
+      "category": "Quiz Recommendations",
+      "test": "Energy + Lemonade + Bold",
+      "status": "\u2705 PASS",
+      "details": "Products: 4, Confidence: [0.71, 0.95, 0.87, 0.7899999999999999], Match Scores: [40, 35, 35, 0], Has Lemonade: False",
+      "response_time_ms": 50
+    },
+    {
+      "category": "Quiz Recommendations",
+      "test": "Immune + Shot + Bold",
+      "status": "\u2705 PASS",
+      "details": "Products: 4, Confidence: [0.87, 0.95, 0.7899999999999999, 0.71], Has Shot: False, Has Reasons: True",
+      "response_time_ms": 48
+    },
+    {
+      "category": "Quiz Recommendations",
+      "test": "Gut + Gel + Mild",
+      "status": "\u2705 PASS",
+      "details": "Products: 3, Match Scores Sorted: True, Scores: [35, 25, 0]",
+      "response_time_ms": 48
+    },
+    {
+      "category": "Quiz Recommendations",
+      "test": "Skin + Lemonade + Mild",
+      "status": "\u2705 PASS",
+      "details": "Products: 3, Meaningful Reasons: True",
+      "response_time_ms": 49
+    },
+    {
+      "category": "Quiz Recommendations",
+      "test": "Calm + Shot + Bold",
+      "status": "\u2705 PASS",
+      "details": "Products: 4, All Required Fields: True",
+      "response_time_ms": 53
+    }
+  ]
+}

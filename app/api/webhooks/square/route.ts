@@ -95,6 +95,15 @@ export async function POST(request: NextRequest) {
     const eventType = webhookEvent.type;
     const eventData = webhookEvent.data;
     
+    // FIX: Proper event data structure handling
+    if (!eventData || !eventData.object) {
+      console.error('Invalid webhook event structure - missing data.object');
+      return NextResponse.json(
+        { error: 'Invalid event structure' },
+        { status: 400 }
+      );
+    }
+    
     switch (eventType) {
       case 'inventory.count.updated':
         await handleInventoryUpdate(eventData.object);
@@ -105,19 +114,19 @@ export async function POST(request: NextRequest) {
         break;
         
       case 'payment.created':
-        await handlePaymentCreated(eventData.object.payment);
+        await handlePaymentCreated(eventData.object.payment || eventData.object);
         break;
         
       case 'payment.updated':
-        await handlePaymentUpdated(eventData.object.payment);
+        await handlePaymentUpdated(eventData.object.payment || eventData.object);
         break;
         
       case 'order.created':
-        await handleOrderCreated(eventData.object.order);
+        await handleOrderCreated(eventData.object.order || eventData.object);
         break;
         
       case 'order.updated':
-        await handleOrderUpdated(eventData.object.order);
+        await handleOrderUpdated(eventData.object.order || eventData.object);
         break;
         
       default:
@@ -186,45 +195,40 @@ async function handleInventoryUpdate(inventoryChange: any) {
     
     console.log('Inventory updated successfully');
     
-    // Optionally trigger ISR revalidation for affected product pages
-    // await revalidateProductPages(inventoryChange.catalog_object_id);
-    
   } catch (error) {
     console.error('Failed to update inventory:', error);
     throw error;
   }
 }
 
-// Handle catalog version updates
-async function handleCatalogUpdate(catalogUpdate: any) {
+// Handle catalog version updates - FIX: Proper object structure handling
+async function handleCatalogUpdate(catalogObject: any) {
   console.log('Processing catalog update:', {
-    objectType: catalogUpdate.object_type,
-    objectId: catalogUpdate.object_id,
-    version: catalogUpdate.version
+    objectType: catalogObject.type || 'unknown',
+    objectId: catalogObject.id || 'unknown',
+    version: catalogObject.version || 'unknown',
+    updatedAt: catalogObject.updated_at
   });
   
   try {
-    // For significant catalog changes, trigger a partial resync
-    // This could be optimized to only sync specific objects
-    
     const { db } = await connectToDatabase();
     
     // Mark for resync
     await db.collection('square_sync_queue').insertOne({
-      objectId: catalogUpdate.object_id,
-      objectType: catalogUpdate.object_type,
-      version: catalogUpdate.version,
+      objectId: catalogObject.id || 'unknown',
+      objectType: catalogObject.type || 'UNKNOWN',
+      version: catalogObject.version,
+      catalogObject: catalogObject, // Store full object for processing
       action: 'sync_object',
       status: 'pending',
       createdAt: new Date(),
       attempts: 0
     });
     
-    console.log('Catalog sync queued for object:', catalogUpdate.object_id);
+    console.log('Catalog sync queued for object:', catalogObject.id);
     
     // Optionally process immediately for critical updates
-    if (catalogUpdate.object_type === 'ITEM' || catalogUpdate.object_type === 'ITEM_VARIATION') {
-      // Could trigger immediate resync here
+    if (catalogObject.type === 'ITEM' || catalogObject.type === 'ITEM_VARIATION') {
       console.log('High priority catalog update - consider immediate sync');
     }
     

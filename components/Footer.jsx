@@ -1,9 +1,21 @@
+'use client';
+
 import Link from 'next/link';
 import { Facebook, Instagram, Mail } from 'lucide-react';
+import NewsletterSignup from '@/components/NewsletterSignup';
 
 export default function Footer() {
   return (
     <footer className="border-t bg-gradient-to-b from-muted/30 to-muted/60">
+      {/* Newsletter Section */}
+      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-b">
+        <div className="container py-12">
+          <div className="max-w-2xl mx-auto">
+            <NewsletterSignup />
+          </div>
+        </div>
+      </div>
+
       <div className="container py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Brand */}
