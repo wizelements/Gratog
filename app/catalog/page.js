@@ -6,18 +6,40 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import ProductCard from '@/components/ProductCard';
 import FitQuiz from '@/components/FitQuiz';
-import { PRODUCTS } from '@/lib/products';
-import { Sparkles, Filter, Grid, List } from 'lucide-react';
+import { Sparkles, Filter, Grid, List, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import AnalyticsSystem from '@/lib/analytics';
 
 export default function CatalogPage() {
   const [showQuiz, setShowQuiz] = useState(false);
-  const [filteredProducts, setFilteredProducts] = useState(PRODUCTS);
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
+  const [loading, setLoading] = useState(true);
 
+  // Fetch products from Square catalog API
   useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        
+        if (data.success && data.products) {
+          setProducts(data.products);
+          setFilteredProducts(data.products);
+          console.log(`✅ Loaded ${data.products.length} products from ${data.source}`);
+        }
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+        toast.error('Failed to load products. Please refresh the page.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProducts();
     AnalyticsSystem.initPostHog();
   }, []);
 
