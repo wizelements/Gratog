@@ -53,6 +53,10 @@ export async function POST(request: NextRequest) {
     // Get fresh Square client instance
     const square = getSquareClient();
     
+    // Truncate note to Square's 45 character limit (must be defined before use)
+    const noteText = `Payment for order ${orderId || 'unknown'}`;
+    const truncatedNote = noteText.length > 45 ? noteText.substring(0, 45) : noteText;
+    
     // Prepare payment request
     const paymentRequest: any = {
       sourceId,
@@ -64,7 +68,7 @@ export async function POST(request: NextRequest) {
       locationId: SQUARE_LOCATION_ID,
       autocomplete: true, // Immediately complete the payment
       acceptPartialAuthorization: false,
-      note: `Payment for order ${orderId || 'unknown'}`,
+      note: truncatedNote,
       ...(customer?.email && { buyerEmailAddress: customer.email })
     };
     
@@ -82,7 +86,7 @@ export async function POST(request: NextRequest) {
       currency,
       locationId: SQUARE_LOCATION_ID,
       idempotencyKey: paymentIdempotencyKey,
-      note: `Payment for order ${orderId || 'unknown'}`
+      note: truncatedNote
     });
     
     if (!response.payment) {

@@ -17,7 +17,7 @@ export default function Footer() {
       </div>
 
       <div className="container py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div>
             <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-[#D4AF37] to-[#8B7355] bg-clip-text text-transparent">
@@ -55,6 +55,15 @@ export default function Footer() {
               </li>
               <li>
                 <Link 
+                  href="/community" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Community
+                </Link>
+              </li>
+              <li>
+                <Link 
                   href="/about" 
                   className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
                 >
@@ -69,6 +78,49 @@ export default function Footer() {
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
                   Contact Us
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Support & Legal */}
+          <div>
+            <h4 className="font-semibold mb-4 text-lg">Support & Legal</h4>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <Link 
+                  href="/faq" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/terms" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/privacy" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/rewards" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Rewards Program
                 </Link>
               </li>
             </ul>

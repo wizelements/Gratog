@@ -34,8 +34,15 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
     texture: null,
     adventure: null
   });
+  const [customer, setCustomer] = useState({
+    name: '',
+    email: ''
+  });
+  const [emailConsent, setEmailConsent] = useState(true);
   const [recommendations, setRecommendations] = useState([]);
+  const [quizId, setQuizId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const handleStart = () => {
     AnalyticsSystem.trackQuizStarted();
@@ -49,38 +56,88 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
     if (step < 3) {
       setStep(step + 1);
     } else {
-      // Final step - get recommendations
-      getRecommendations(newAnswers);
+      // After all 3 questions, move to lead capture (step 3.5)
+      setStep(3.5);
     }
   };
 
-  const getRecommendations = async (quizAnswers) => {
+  const validateLeadCapture = () => {
+    const newErrors = {};
+    
+    if (!customer.name || customer.name.trim().length < 2) {
+      newErrors.name = 'Please enter your name';
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!customer.email || !emailRegex.test(customer.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleLeadCaptureSubmit = async () => {
+    if (!validateLeadCapture()) {
+      toast.error('Please complete all required fields');
+      return;
+    }
+    
     setLoading(true);
+    
     try {
-      const response = await fetch('/api/quiz/recommendations', {
+      // First, get recommendations
+      const recResponse = await fetch('/api/quiz/recommendations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(quizAnswers)
+        body: JSON.stringify(answers)
       });
       
-      if (response.ok) {
-        const data = await response.json();
-        setRecommendations(data.recommendations || []);
-        AnalyticsSystem.trackQuizCompleted(
-          quizAnswers.goal, 
-          quizAnswers.adventure === 'bold', 
-          data.recommendations || []
-        );
-        setStep(4);
-        if (onRecommendations) {
-          onRecommendations(data.recommendations || []);
-        }
-      } else {
+      if (!recResponse.ok) {
         throw new Error('Failed to get recommendations');
       }
+      
+      const recData = await recResponse.json();
+      const recommendations = recData.recommendations || [];
+      
+      // Then, submit quiz results with customer info
+      const submitResponse = await fetch('/api/quiz/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer,
+          answers,
+          recommendations
+        })
+      });
+      
+      if (!submitResponse.ok) {
+        throw new Error('Failed to save quiz results');
+      }
+      
+      const submitData = await submitResponse.json();
+      
+      setRecommendations(recommendations);
+      setQuizId(submitData.quizId);
+      
+      AnalyticsSystem.trackQuizCompleted(
+        answers.goal, 
+        answers.adventure === 'bold', 
+        recommendations
+      );
+      
+      setStep(4);
+      
+      if (submitData.emailSent) {
+        toast.success('Check your email for personalized recommendations!');
+      }
+      
+      if (onRecommendations) {
+        onRecommendations(recommendations);
+      }
     } catch (error) {
-      console.error('Quiz error:', error);
-      toast.error('Unable to get recommendations. Please try again.');
+      console.error('Quiz submission error:', error);
+      toast.error('Unable to save your results. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -100,7 +157,11 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
   const resetQuiz = () => {
     setStep(0);
     setAnswers({ goal: null, texture: null, adventure: null });
+    setCustomer({ name: '', email: '' });
+    setEmailConsent(true);
     setRecommendations([]);
+    setQuizId(null);
+    setErrors({});
   };
 
   if (step === 0) {
@@ -231,6 +292,100 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
     );
   }
 
+  if (step === 3.5) {
+    return (
+      <Card className="w-full max-w-2xl mx-auto">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center">
+              <Sparkles className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl">Save Your Personalized Blend</CardTitle>
+          <CardDescription className="text-base">
+            Get your results via email and unlock exclusive wellness tips
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                Your Name *
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={customer.name}
+                onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Enter your name"
+                disabled={loading}
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+              )}
+            </div>
+            
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address *
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={customer.email}
+                onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
+                  errors.email ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="your.email@example.com"
+                disabled={loading}
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              )}
+            </div>
+            
+            <div className="flex items-start space-x-2 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+              <input
+                id="emailConsent"
+                type="checkbox"
+                checked={emailConsent}
+                onChange={(e) => setEmailConsent(e.target.checked)}
+                className="mt-1 h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+              />
+              <label htmlFor="emailConsent" className="text-sm text-gray-700">
+                Email me my personalized results and wellness tips. You can unsubscribe anytime.
+              </label>
+            </div>
+            
+            <Button
+              onClick={handleLeadCaptureSubmit}
+              disabled={loading}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 text-lg font-semibold"
+            >
+              {loading ? (
+                <>
+                  <span className="inline-block animate-spin mr-2">⏳</span>
+                  Getting Your Results...
+                </>
+              ) : (
+                'Get My Personalized Blend ✨'
+              )}
+            </Button>
+            
+            <p className="text-xs text-center text-gray-500">
+              By continuing, you agree to receive personalized product recommendations. 
+              Your privacy is important to us.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (step === 4) {
     return (
       <Card className="w-full max-w-2xl mx-auto">
@@ -239,6 +394,16 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
           <CardDescription>
             Based on your answers, here are our top recommendations crafted just for you
           </CardDescription>
+          {quizId && (
+            <div className="mt-3">
+              <a 
+                href={`/quiz/results/${quizId}`}
+                className="inline-flex items-center text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+              >
+                📧 View & share your full results page →
+              </a>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {recommendations.length > 0 ? (
@@ -251,7 +416,7 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
                       {index === 0 && <Badge className="bg-emerald-100 text-emerald-700">Top Pick</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground mb-2">{product.description}</p>
-                    <p className="font-medium text-emerald-600">${(product.priceCents / 100).toFixed(2)}</p>
+                    <p className="font-medium text-emerald-600">${((product.price || product.priceCents) / 100).toFixed(2)}</p>
                   </div>
                   <Button 
                     onClick={() => handleAddToCart(product)}

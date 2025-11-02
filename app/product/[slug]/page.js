@@ -6,16 +6,24 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getProductBySlug } from '@/lib/products';
 import { ArrowLeft, ShoppingCart, Check } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import ProductReviews from '@/components/ProductReviews';
+import { IngredientsShowcase } from '@/components/ingredients/IngredientsShowcase';
+import { getProductIngredients, hasIngredientsData } from '@/data/ingredients/product-ingredients-map';
+import { IngredientsSchema } from '@/components/IngredientsSchema';
 
 export default function ProductDetailPage() {
   const params = useParams();
   const product = getProductBySlug(params.slug);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Get ingredients data for this product
+  const ingredients = hasIngredientsData(params.slug) ? getProductIngredients(params.slug) : [];
+  const hasIngredients = ingredients.length > 0;
 
   if (!product) {
     return (
@@ -43,6 +51,18 @@ export default function ProductDetailPage() {
 
   return (
     <div className="container py-8">
+      {/* Schema.org structured data for SEO */}
+      {hasIngredients && (
+        <IngredientsSchema
+          productName={product.name}
+          productDescription={product.description}
+          productPrice={product.price}
+          productImage={product.image}
+          ingredients={ingredients}
+          productUrl={`https://gratitude-ecom.preview.emergentagent.com/product/${params.slug}`}
+        />
+      )}
+
       <Button asChild variant="ghost" className="mb-6">
         <Link href="/catalog">
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -165,9 +185,67 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Product Reviews Section */}
-      <div className="mt-16 pt-16 border-t">
-        <ProductReviews productId={product.id} productName={product.name} />
+      {/* Tabbed Content Section */}
+      <div className="mt-16">
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 lg:w-[600px] mx-auto">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            {hasIngredients && (
+              <TabsTrigger value="ingredients">Ingredients Deep Dive</TabsTrigger>
+            )}
+            <TabsTrigger value="reviews">Reviews</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="mt-8">
+            <Card className="p-8">
+              <h2 className="text-2xl font-bold mb-6 text-gradient-gold">About This Product</h2>
+              <div className="prose prose-lg max-w-none">
+                <p className="text-muted-foreground leading-relaxed mb-6">
+                  {product.description}
+                </p>
+                
+                {/* Simple ingredients list */}
+                <div className="mt-8">
+                  <h3 className="text-xl font-semibold mb-4">What's Inside</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {product.ingredients?.map((ingredient, index) => (
+                      <Badge key={index} variant="outline" className="text-sm px-3 py-1">
+                        {ingredient}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Benefits */}
+                <div className="mt-8">
+                  <h3 className="text-xl font-semibold mb-4">Key Benefits</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {product.benefits?.map((benefit, index) => (
+                      <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                        <Check className="h-5 w-5 text-[#D4AF37] flex-shrink-0" />
+                        <span>{benefit}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+
+          {hasIngredients && (
+            <TabsContent value="ingredients" className="mt-8">
+              <IngredientsShowcase 
+                ingredients={ingredients}
+                productName={product.name}
+                accentColor="from-[#D4AF37] to-amber-600"
+              />
+            </TabsContent>
+          )}
+
+          <TabsContent value="reviews" className="mt-8">
+            <ProductReviews productId={product.id} productName={product.name} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
