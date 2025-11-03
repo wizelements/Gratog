@@ -12,7 +12,7 @@ import QuickAddButton from './QuickAddButton';
 export default function ProductCard({ product, onCheckout, variant = 'default' }) {
   const [imageError, setImageError] = useState(false);
   
-  const fallbackImage = '/images/sea-moss-default.jpg';
+  const fallbackImage = '/images/sea-moss-default.svg';
   
   return (
     <Card 
