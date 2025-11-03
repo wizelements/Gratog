@@ -706,7 +706,8 @@ export default function OrderPage() {
               </CardContent>
             </Card>
           ))}
-        </div>
+          </div>
+        )}
         
         {/* Current Cart */}
         {cart.length > 0 && (
