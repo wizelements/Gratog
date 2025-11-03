@@ -44,15 +44,16 @@ export default function ComposeDirectScreen() {
     }
 
     setIsLoading(true);
+    console.log('=== Starting message send ===');
     try {
-      console.log('Sending message to:', recipientUsername);
+      console.log('1. Sending message to:', recipientUsername);
       
       // Resolve recipient devices
       const handleHash = generateHandleHash(recipientUsername.trim());
-      console.log('Handle hash:', handleHash);
+      console.log('2. Handle hash:', handleHash);
       
       const resolved = await resolveDevices(handleHash);
-      console.log('Resolved devices:', resolved);
+      console.log('3. Resolved devices:', JSON.stringify(resolved, null, 2));
 
       if (!resolved.devices || resolved.devices.length === 0) {
         Alert.alert('Error', `Recipient "${recipientUsername}" not found. Make sure they have registered.`);
