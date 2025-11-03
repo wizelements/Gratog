@@ -32,7 +32,7 @@ import ProductImage from '@/components/ProductImage';
 import CouponInput from '@/components/CouponInput';
 import SpinWheel from '@/components/SpinWheel';
 import SquareWebPaymentForm from '@/components/SquareWebPaymentForm';
-import { PRODUCTS } from '@/lib/products';
+// REMOVED: import { PRODUCTS } from '@/lib/products'; // Fix #7: No more hardcoded products
 
 // Delivery zones configuration
 const DELIVERY_ZONES = {
