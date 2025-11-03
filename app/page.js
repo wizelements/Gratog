@@ -6,22 +6,6 @@ export default function HomePage() {
   return <EnhancedHomePage />;
 }
 
-/* LEGACY CODE - Keeping for reference
-import { useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import ProductCard from '@/components/ProductCard';
-import FitQuiz from '@/components/FitQuiz';
-import EnhancedHero from '@/components/EnhancedHero';
-import WhatsNewModal from '@/components/WhatsNewModal';
-import { getFeaturedProducts } from '@/lib/products';
-import { ArrowRight, Leaf, Heart, Award, MapPin, QrCode, Camera, Gift, Sparkles } from 'lucide-react';
-import { toast } from 'sonner';
-import AnalyticsSystem from '@/lib/analytics';
-
-function LegacyHomePage() {
   const featuredProducts = getFeaturedProducts();
 
   useEffect(() => {
