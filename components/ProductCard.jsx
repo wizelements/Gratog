@@ -68,7 +68,7 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
           {product.points && (
             <Badge 
               variant="outline" 
-              className="text-xs border-[#D4AF37] text-[#D4AF37] shrink-0"
+              className="text-xs border-emerald-600 text-emerald-600 shrink-0"
               data-testid="points-badge"
             >
               +{product.points} pts
@@ -90,7 +90,7 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
       
       <CardContent>
         <div className="flex items-baseline gap-2 mb-4">
-          <span className="text-2xl font-bold text-[#D4AF37]">${product.price.toFixed(2)}</span>
+          <span className="text-2xl font-bold text-emerald-600">${product.price.toFixed(2)}</span>
           {product.size && (
             <span className="text-sm text-muted-foreground">/ {product.size}</span>
           )}
@@ -105,10 +105,14 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
       
       <CardFooter className="flex flex-col gap-2">
         <div className="flex gap-2 w-full">
-          <QuickAddButton 
-            product={product}
-            className="flex-1 bg-[#D4AF37] hover:bg-[#B8941F]"
-          />
+          <Button 
+            onClick={() => onCheckout ? onCheckout([product]) : window.location.href = '/order'}
+            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+            data-testid={`add-to-cart-${product.id}`}
+          >
+            <ShoppingCart className="mr-2 h-4 w-4" />
+            Add to Cart
+          </Button>
           
           <Link href={`/product/${product.slug || product.id}`} className="flex-1">
             <Button 
