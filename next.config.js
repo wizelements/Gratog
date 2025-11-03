@@ -24,7 +24,12 @@ const nextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'tasteofgratitude.shop' },
       { protocol: 'https', hostname: 'cdn.shopify.com' },
-      { protocol: 'https', hostname: '127690646.cdn6.editmysite.com' }
+      { protocol: 'https', hostname: '127690646.cdn6.editmysite.com' },
+      // Square image hosting
+      { protocol: 'https', hostname: 'items-images-production.s3.us-west-2.amazonaws.com' },
+      { protocol: 'https', hostname: 'items-images-sandbox.s3.us-west-2.amazonaws.com' },
+      { protocol: 'https', hostname: 'square-catalog-images.s3.amazonaws.com' },
+      { protocol: 'https', hostname: 'squareup.com' },
     ],
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 31536000, // 1 year
