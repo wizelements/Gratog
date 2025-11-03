@@ -217,7 +217,7 @@ export default function HomePage() {
               {
                 icon: Zap,
                 title: '92 Essential Minerals',
-                description: "Nature's multivitamin packed with everything your body needs to thrive"
+                description: 'Natures multivitamin packed with everything your body needs to thrive'
               },
               {
                 icon: Star,
@@ -238,7 +238,8 @@ export default function HomePage() {
                   </p>
                 </CardContent>
               </Card>
-            ))}\n          </div>
+            ))}
+          </div>
         </div>
       </section>
 
