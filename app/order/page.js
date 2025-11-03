@@ -674,38 +674,39 @@ export default function OrderPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {availableProducts.slice(0, 9).map((product) => (
-            <Card key={product.slug} className="group cursor-pointer hover:shadow-lg transition-all">
-              <CardContent className="p-4">
-                <div className="aspect-square mb-3 overflow-hidden rounded-lg bg-gray-100">
-                  <img 
-                    src={product.image || product.images?.[0]} 
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  />
-                </div>
-                
-                <h3 className="font-semibold text-sm mb-1">{product.name}</h3>
-                <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{product.description}</p>
-                
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-bold text-[#D4AF37]">${product.price}</span>
-                  {product.rewardPoints && (
+              <Card key={product.id} className="group cursor-pointer hover:shadow-lg transition-all">
+                <CardContent className="p-4">
+                  <div className="aspect-square mb-3 overflow-hidden rounded-lg bg-gray-100">
+                    <img 
+                      src={product.image || product.images?.[0] || '/images/sea-moss-default.svg'} 
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
+                  </div>
+                  
+                  <h3 className="font-semibold text-sm mb-1">{product.name}</h3>
+                  <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                    {product.description || 'Premium sea moss product'}
+                  </p>
+                  
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-bold text-emerald-600">${product.price.toFixed(2)}</span>
                     <Badge variant="secondary" className="text-xs">
-                      +{product.rewardPoints} pts
+                      +{Math.floor(product.price)} pts
                     </Badge>
-                  )}
-                </div>
-                
-                <Button 
-                  onClick={() => addToCart(product)}
-                  size="sm" 
-                  className="w-full bg-[#D4AF37] hover:bg-[#B8941F]"
-                >
-                  Add to Cart
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                  </div>
+                  
+                  <Button 
+                    onClick={() => addToCart(product)}
+                    size="sm" 
+                    className="w-full bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Add to Cart
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
         
