@@ -55,7 +55,7 @@ export default function FeedSimpleScreen() {
     return (
       <TouchableOpacity
         style={[styles.messageCard, isOutgoing && styles.outgoingCard]}
-        onPress={() => router.push(`/message/${item._id}`)}
+        onPress={() => router.push(`/message-detail/${item._id}`)}
       >
         <View style={styles.messageHeader}>
           <View style={styles.senderInfo}>
