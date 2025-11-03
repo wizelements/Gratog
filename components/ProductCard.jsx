@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { ShoppingCart, Star, Leaf, Sparkles } from 'lucide-react';
+import { ShoppingCart, Star, Leaf, Sparkles, Eye } from 'lucide-react';
 import Link from 'next/link';
+import QuickAddButton from './QuickAddButton';
+import { QuickViewButton } from './ProductQuickView';
 
 export default function ProductCard({ product, onCheckout, variant = 'default' }) {
   const [imageError, setImageError] = useState(false);
@@ -19,8 +21,8 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
       data-testid={`product-card-${product.id}`}
       data-product={product.id}
     >
-      <Link href={`/product/${product.slug || product.id}`}>
-        <div className="relative h-64 overflow-hidden bg-gray-100">
+      <div className="relative h-64 overflow-hidden bg-gray-100">
+        <Link href={`/product/${product.slug || product.id}`}>
           <Image
             src={imageError ? fallbackImage : (product.image || fallbackImage)}
             alt={`${product.name} - Premium wildcrafted sea moss product from Taste of Gratitude`}
@@ -29,26 +31,33 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
             onError={() => setImageError(true)}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
-          
-          {product.featured && (
-            <Badge 
-              className="absolute top-3 right-3 bg-[#D4AF37] text-white border-none"
-              data-testid="featured-badge"
-            >
-              Featured
-            </Badge>
-          )}
-          
-          {product.badge && (
-            <Badge 
-              className="absolute top-3 left-3 bg-emerald-600 text-white border-none"
-              data-testid="special-badge"
-            >
-              {product.badge}
-            </Badge>
-          )}
+        </Link>
+        
+        {/* Quick Action Overlay */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+          <QuickViewButton product={product} className="bg-white hover:bg-gray-100" />
+          <QuickAddButton product={product} variant="icon" />
         </div>
-      </Link>
+        
+        {product.featured && (
+          <Badge 
+            className="absolute top-3 right-3 bg-[#D4AF37] text-white border-none"
+            data-testid="featured-badge"
+          >
+            <Star className="h-3 w-3 mr-1 fill-white" />
+            Featured
+          </Badge>
+        )}
+        
+        {product.badge && (
+          <Badge 
+            className="absolute top-3 left-3 bg-emerald-600 text-white border-none"
+            data-testid="special-badge"
+          >
+            {product.badge}
+          </Badge>
+        )}
+      </div>
       
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
