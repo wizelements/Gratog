@@ -1,5 +1,12 @@
 'use client';
 
+import EnhancedHomePage from '@/components/EnhancedHomePage';
+
+export default function HomePage() {
+  return <EnhancedHomePage />;
+}
+
+/* LEGACY CODE - Keeping for reference
 import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,7 +21,7 @@ import { ArrowRight, Leaf, Heart, Award, MapPin, QrCode, Camera, Gift, Sparkles 
 import { toast } from 'sonner';
 import AnalyticsSystem from '@/lib/analytics';
 
-export default function HomePage() {
+function LegacyHomePage() {
   const featuredProducts = getFeaturedProducts();
 
   useEffect(() => {
