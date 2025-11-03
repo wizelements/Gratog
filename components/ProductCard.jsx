@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { ShoppingCart, Star, Leaf, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import QuickAddButton from './QuickAddButton';
 
 export default function ProductCard({ product, onCheckout, variant = 'default' }) {
   const [imageError, setImageError] = useState(false);
@@ -105,14 +106,10 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
       
       <CardFooter className="flex flex-col gap-2">
         <div className="flex gap-2 w-full">
-          <Button 
-            onClick={() => onCheckout ? onCheckout([product]) : window.location.href = '/order'}
-            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
-            data-testid={`add-to-cart-${product.id}`}
-          >
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            Add to Cart
-          </Button>
+          <QuickAddButton 
+            product={product}
+            className="flex-1"
+          />
           
           <Link href={`/product/${product.slug || product.id}`} className="flex-1">
             <Button 
@@ -124,18 +121,6 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
             </Button>
           </Link>
         </div>
-        
-        {product.squareProductUrl && (
-          <Button
-            onClick={() => window.open(product.squareProductUrl, '_blank')}
-            variant="secondary"
-            size="sm"
-            className="w-full text-xs"
-            data-testid={`buy-on-square-${product.id}`}
-          >
-            Or Buy Directly on Square →
-          </Button>
-        )}
       </CardFooter>
     </Card>
   );
