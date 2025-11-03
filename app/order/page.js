@@ -666,8 +666,14 @@ export default function OrderPage() {
       <CardContent className="space-y-6">
         
         {/* Product Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {PRODUCTS.slice(0, 9).map((product) => (
+        {productsLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+            <span className="ml-3 text-emerald-600">Loading products...</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {availableProducts.slice(0, 9).map((product) => (
             <Card key={product.slug} className="group cursor-pointer hover:shadow-lg transition-all">
               <CardContent className="p-4">
                 <div className="aspect-square mb-3 overflow-hidden rounded-lg bg-gray-100">
