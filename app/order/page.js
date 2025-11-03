@@ -106,6 +106,10 @@ export default function OrderPage() {
   const [customer, setCustomer] = useState({ name: '', email: '', phone: '' });
   const [fulfillmentType, setFulfillmentType] = useState('');
   
+  // Fix #7: Fetch products from API instead of hardcoded
+  const [availableProducts, setAvailableProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  
   // Pickup state
   const [pickupMarket, setPickupMarket] = useState('');
   const [pickupDate, setPickupDate] = useState('');
@@ -141,6 +145,29 @@ export default function OrderPage() {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [userPassport, setUserPassport] = useState(null);
+
+  // Fix #7: Load products from Square API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        
+        if (data.success && data.products) {
+          setAvailableProducts(data.products);
+          console.log(`✅ Loaded ${data.products.length} products from Square`);
+        }
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+        // Fallback to empty array - cart items will still work
+        setAvailableProducts([]);
+      } finally {
+        setProductsLoading(false);
+      }
+    };
+    
+    fetchProducts();
+  }, []);
 
   // Load saved data on component mount
   useEffect(() => {
