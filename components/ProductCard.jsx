@@ -107,14 +107,10 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
       
       <CardFooter className="flex flex-col gap-2">
         <div className="flex gap-2 w-full">
-          <Button 
-            onClick={() => onCheckout ? onCheckout([product]) : window.location.href = '/order'}
-            className="flex-1 bg-[#D4AF37] hover:bg-[#B8941F] text-white"
-            data-testid={`add-to-cart-${product.id}`}
-          >
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            Add to Cart
-          </Button>
+          <QuickAddButton 
+            product={product}
+            className="flex-1 bg-[#D4AF37] hover:bg-[#B8941F]"
+          />
           
           <Link href={`/product/${product.slug || product.id}`} className="flex-1">
             <Button 
