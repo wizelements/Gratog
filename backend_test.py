@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://gratitude-ecom.preview.emergentagent.com/api"
+BASE_URL = "https://cart-rescue-1.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 # Test results tracking

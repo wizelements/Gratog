@@ -59,7 +59,7 @@ export default function ProductDetailPage() {
           productPrice={product.price}
           productImage={product.image}
           ingredients={ingredients}
-          productUrl={`https://gratitude-ecom.preview.emergentagent.com/product/${params.slug}`}
+          productUrl={`https://cart-rescue-1.preview.emergentagent.com/product/${params.slug}`}
         />
       )}
 

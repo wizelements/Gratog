@@ -392,7 +392,7 @@ Customer notified via email
 
 ### Test 1: First Order $18 (Should Get 1 Spin)
 ```bash
-curl -X POST https://gratitude-ecom.preview.emergentagent.com/api/tracking/user \
+curl -X POST https://cart-rescue-1.preview.emergentagent.com/api/tracking/user \
   -H "Content-Type: application/json" \
   -d '{
     "action": "track_order",
@@ -409,7 +409,7 @@ curl -X POST https://gratitude-ecom.preview.emergentagent.com/api/tracking/user 
 
 ### Test 2: Repeat Order $65 (Should Get 3 Spins)
 ```bash
-curl -X POST https://gratitude-ecom.preview.emergentagent.com/api/tracking/user \
+curl -X POST https://cart-rescue-1.preview.emergentagent.com/api/tracking/user \
   -H "Content-Type: application/json" \
   -d '{
     "action": "track_order",
@@ -426,7 +426,7 @@ curl -X POST https://gratitude-ecom.preview.emergentagent.com/api/tracking/user 
 
 ### Test 3: Use a Spin
 ```bash
-curl -X POST https://gratitude-ecom.preview.emergentagent.com/api/tracking/user \
+curl -X POST https://cart-rescue-1.preview.emergentagent.com/api/tracking/user \
   -H "Content-Type: application/json" \
   -d '{
     "action": "use_spin",
@@ -443,7 +443,7 @@ curl -X POST https://gratitude-ecom.preview.emergentagent.com/api/tracking/user 
 
 ### Test 4: Get User Stats
 ```bash
-curl "https://gratitude-ecom.preview.emergentagent.com/api/tracking/user?email=user@example.com"
+curl "https://cart-rescue-1.preview.emergentagent.com/api/tracking/user?email=user@example.com"
 
 # Expected: Full user statistics with orders, spins, coupons
 ```
@@ -522,7 +522,7 @@ Hi [Name],
 Thank you for your $XX order! Your order [ORDER-ID] is confirmed.
 
 🎉 You earned X spins!
-Visit: https://gratitude-ecom.preview.emergentagent.com/rewards
+Visit: https://cart-rescue-1.preview.emergentagent.com/rewards
 Use your spins to win discount codes for your next orders.
 
 Your available spins: X

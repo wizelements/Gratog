@@ -10,11 +10,11 @@ import sys
 from datetime import datetime
 
 # Backend URL
-BASE_URL = "https://gratitude-ecom.preview.emergentagent.com/api"
+BASE_URL = "https://cart-rescue-1.preview.emergentagent.com/api"
 
 # Headers for CSRF protection
 HEADERS = {
-    "Origin": "https://gratitude-ecom.preview.emergentagent.com",
+    "Origin": "https://cart-rescue-1.preview.emergentagent.com",
     "Content-Type": "application/json"
 }
 

@@ -1,6 +1,6 @@
 {
   "timestamp": "2025-10-12T15:17:40.202919",
-  "base_url": "https://gratitude-ecom.preview.emergentagent.com",
+  "base_url": "https://cart-rescue-1.preview.emergentagent.com",
   "api_endpoints": {
     "total_tested": 20,
     "successful": 10,
@@ -8,7 +8,7 @@
     "average_response_time_ms": 791.35,
     "detailed_results": {
       "Health Check": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/health",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/health",
         "method": "GET",
         "status_code": 200,
         "response_time_ms": 105.73,
@@ -51,7 +51,7 @@
         }
       },
       "Root API": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/root",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/root",
         "method": "GET",
         "status_code": 500,
         "response_time_ms": 1571.73,
@@ -76,7 +76,7 @@
         }
       },
       "Status Check (GET)": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/status",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/status",
         "method": "GET",
         "status_code": 500,
         "response_time_ms": 112.27,
@@ -101,7 +101,7 @@
         }
       },
       "Status Check (POST)": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/status",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/status",
         "method": "POST",
         "status_code": 500,
         "response_time_ms": 101.6,
@@ -126,7 +126,7 @@
         }
       },
       "Square Payment Info": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/square-payment",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/square-payment",
         "method": "GET",
         "status_code": 405,
         "response_time_ms": 4307.91,
@@ -153,7 +153,7 @@
         }
       },
       "Square Payment Processing": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/square-payment",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/square-payment",
         "method": "POST",
         "status_code": 200,
         "response_time_ms": 1502.73,
@@ -186,7 +186,7 @@
         }
       },
       "Square Diagnostic": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/square-diagnose",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/square-diagnose",
         "method": "POST",
         "status_code": 200,
         "response_time_ms": 2428.3,
@@ -255,7 +255,7 @@
         }
       },
       "Square Diagnostic Info": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/square-diagnose",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/square-diagnose",
         "method": "GET",
         "status_code": 200,
         "response_time_ms": 20.64,
@@ -281,7 +281,7 @@
         }
       },
       "Square Webhook Status": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/square-webhook",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/square-webhook",
         "method": "GET",
         "status_code": 200,
         "response_time_ms": 625.11,
@@ -307,7 +307,7 @@
         }
       },
       "Square Webhook Processing": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/square-webhook",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/square-webhook",
         "method": "POST",
         "status_code": 500,
         "response_time_ms": 103.59,
@@ -331,7 +331,7 @@
         }
       },
       "Coupon Creation": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/coupons/create",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/coupons/create",
         "method": "POST",
         "status_code": 200,
         "response_time_ms": 934.11,
@@ -364,7 +364,7 @@
         }
       },
       "Coupon Retrieval": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/coupons/create?email=analyzer@test.com",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/coupons/create?email=analyzer@test.com",
         "method": "GET",
         "status_code": 200,
         "response_time_ms": 23.62,
@@ -399,7 +399,7 @@
         }
       },
       "Coupon Validation": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/coupons/validate",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/coupons/validate",
         "method": "POST",
         "status_code": 200,
         "response_time_ms": 800.5,
@@ -424,7 +424,7 @@
         }
       },
       "Admin Coupon Management": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/admin/coupons",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/admin/coupons",
         "method": "GET",
         "status_code": 200,
         "response_time_ms": 1427.19,
@@ -716,7 +716,7 @@
         }
       },
       "Admin Authentication": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/admin/auth",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/admin/auth",
         "method": "POST",
         "status_code": 500,
         "response_time_ms": 142.35,
@@ -741,7 +741,7 @@
         }
       },
       "Customer List": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/customers",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/customers",
         "method": "GET",
         "status_code": 401,
         "response_time_ms": 590.34,
@@ -765,7 +765,7 @@
         }
       },
       "Customer Creation": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/customers",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/customers",
         "method": "POST",
         "status_code": 200,
         "response_time_ms": 45.61,
@@ -790,7 +790,7 @@
         }
       },
       "Order Creation": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/orders/create",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/orders/create",
         "method": "POST",
         "status_code": 500,
         "response_time_ms": 1010.22,
@@ -814,7 +814,7 @@
         }
       },
       "Analytics Data": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/analytics",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/analytics",
         "method": "GET",
         "status_code": 401,
         "response_time_ms": 492.52,
@@ -838,7 +838,7 @@
         }
       },
       "Waitlist Registration": {
-        "url": "https://gratitude-ecom.preview.emergentagent.com/api/waitlist",
+        "url": "https://cart-rescue-1.preview.emergentagent.com/api/waitlist",
         "method": "POST",
         "status_code": 400,
         "response_time_ms": 494.68,

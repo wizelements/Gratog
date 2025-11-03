@@ -309,8 +309,8 @@
 ## 🚀 Live URLs
 
 **Production URLs:**
-- https://square-payments-2.preview.emergentagent.com/faq
-- https://square-payments-2.preview.emergentagent.com/community
+- https://cart-rescue-1.preview.emergentagent.com/faq
+- https://cart-rescue-1.preview.emergentagent.com/community
 - Footer visible on all pages
 
 **Footer Links to:**

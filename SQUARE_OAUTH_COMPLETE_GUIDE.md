@@ -16,19 +16,19 @@ I've created a **complete OAuth authorization flow** to get valid Square tokens 
 
 ### Callback URL (REQUIRED in Square Dashboard):
 ```
-https://gratitude-ecom.preview.emergentagent.com/api/oauth/square/callback
+https://cart-rescue-1.preview.emergentagent.com/api/oauth/square/callback
 ```
 
 ### Authorization URLs (Visit These After Step 1):
 
 **Production:**
 ```
-https://connect.squareup.com/oauth2/authorize?client_id=sq0idp-V1fV-MwsU5lET4rvzHKnIw&scope=MERCHANT_PROFILE_READ%20ITEMS_READ%20ITEMS_WRITE%20ORDERS_READ%20ORDERS_WRITE%20PAYMENTS_READ%20PAYMENTS_WRITE%20CUSTOMERS_READ%20CUSTOMERS_WRITE%20INVENTORY_READ%20INVENTORY_WRITE&state=RANDOM&redirect_uri=https://gratitude-ecom.preview.emergentagent.com/api/oauth/square/callback
+https://connect.squareup.com/oauth2/authorize?client_id=sq0idp-V1fV-MwsU5lET4rvzHKnIw&scope=MERCHANT_PROFILE_READ%20ITEMS_READ%20ITEMS_WRITE%20ORDERS_READ%20ORDERS_WRITE%20PAYMENTS_READ%20PAYMENTS_WRITE%20CUSTOMERS_READ%20CUSTOMERS_WRITE%20INVENTORY_READ%20INVENTORY_WRITE&state=RANDOM&redirect_uri=https://cart-rescue-1.preview.emergentagent.com/api/oauth/square/callback
 ```
 
 **Sandbox:**
 ```
-https://connect.squareupsandbox.com/oauth2/authorize?client_id=sandbox-sq0idb-yygbGJe58k9ZsmpZhJ6kjA&scope=MERCHANT_PROFILE_READ%20ITEMS_READ%20ITEMS_WRITE%20ORDERS_READ%20ORDERS_WRITE%20PAYMENTS_READ%20PAYMENTS_WRITE%20CUSTOMERS_READ%20CUSTOMERS_WRITE%20INVENTORY_READ%20INVENTORY_WRITE&state=RANDOM&redirect_uri=https://gratitude-ecom.preview.emergentagent.com/api/oauth/square/callback
+https://connect.squareupsandbox.com/oauth2/authorize?client_id=sandbox-sq0idb-yygbGJe58k9ZsmpZhJ6kjA&scope=MERCHANT_PROFILE_READ%20ITEMS_READ%20ITEMS_WRITE%20ORDERS_READ%20ORDERS_WRITE%20PAYMENTS_READ%20PAYMENTS_WRITE%20CUSTOMERS_READ%20CUSTOMERS_WRITE%20INVENTORY_READ%20INVENTORY_WRITE&state=RANDOM&redirect_uri=https://cart-rescue-1.preview.emergentagent.com/api/oauth/square/callback
 ```
 
 ---
@@ -53,7 +53,7 @@ https://connect.squareupsandbox.com/oauth2/authorize?client_id=sandbox-sq0idb-yy
    - Click **"+ Add URL"** or **"Add Redirect URL"**
    - Paste this EXACTLY (no trailing slash!):
      ```
-     https://gratitude-ecom.preview.emergentagent.com/api/oauth/square/callback
+     https://cart-rescue-1.preview.emergentagent.com/api/oauth/square/callback
      ```
    - Click **"Save"**
 
@@ -94,7 +94,7 @@ https://connect.squareupsandbox.com/oauth2/authorize?client_id=sandbox-sq0idb-yy
 ### STEP 3: Authorize Your Application (3 minutes)
 
 #### Option A: Use the Admin Page (Easiest)
-1. Visit: **https://gratitude-ecom.preview.emergentagent.com/admin/square-oauth**
+1. Visit: **https://cart-rescue-1.preview.emergentagent.com/admin/square-oauth**
 2. Click **"Authorize Production"** (or Sandbox for testing)
 3. Log in to Square as the account owner
 4. Review permissions on the consent screen
@@ -104,12 +104,12 @@ https://connect.squareupsandbox.com/oauth2/authorize?client_id=sandbox-sq0idb-yy
 #### Option B: Use Direct Authorization URL
 1. Open this URL in your browser (Production):
    ```
-   https://connect.squareup.com/oauth2/authorize?client_id=sq0idp-V1fV-MwsU5lET4rvzHKnIw&scope=MERCHANT_PROFILE_READ%20ITEMS_READ%20ITEMS_WRITE%20ORDERS_READ%20ORDERS_WRITE%20PAYMENTS_READ%20PAYMENTS_WRITE%20CUSTOMERS_READ%20CUSTOMERS_WRITE%20INVENTORY_READ%20INVENTORY_WRITE&state=OAUTH123&redirect_uri=https://gratitude-ecom.preview.emergentagent.com/api/oauth/square/callback
+   https://connect.squareup.com/oauth2/authorize?client_id=sq0idp-V1fV-MwsU5lET4rvzHKnIw&scope=MERCHANT_PROFILE_READ%20ITEMS_READ%20ITEMS_WRITE%20ORDERS_READ%20ORDERS_WRITE%20PAYMENTS_READ%20PAYMENTS_WRITE%20CUSTOMERS_READ%20CUSTOMERS_WRITE%20INVENTORY_READ%20INVENTORY_WRITE&state=OAUTH123&redirect_uri=https://cart-rescue-1.preview.emergentagent.com/api/oauth/square/callback
    ```
 
 2. Or for Sandbox:
    ```
-   https://connect.squareupsandbox.com/oauth2/authorize?client_id=sandbox-sq0idb-yygbGJe58k9ZsmpZhJ6kjA&scope=MERCHANT_PROFILE_READ%20ITEMS_READ%20ITEMS_WRITE%20ORDERS_READ%20ORDERS_WRITE%20PAYMENTS_READ%20PAYMENTS_WRITE%20CUSTOMERS_READ%20CUSTOMERS_WRITE%20INVENTORY_READ%20INVENTORY_WRITE&state=OAUTH123&redirect_uri=https://gratitude-ecom.preview.emergentagent.com/api/oauth/square/callback
+   https://connect.squareupsandbox.com/oauth2/authorize?client_id=sandbox-sq0idb-yygbGJe58k9ZsmpZhJ6kjA&scope=MERCHANT_PROFILE_READ%20ITEMS_READ%20ITEMS_WRITE%20ORDERS_READ%20ORDERS_WRITE%20PAYMENTS_READ%20PAYMENTS_WRITE%20CUSTOMERS_READ%20CUSTOMERS_WRITE%20INVENTORY_READ%20INVENTORY_WRITE&state=OAUTH123&redirect_uri=https://cart-rescue-1.preview.emergentagent.com/api/oauth/square/callback
    ```
 
 3. **Log in** with your Square account credentials
@@ -184,7 +184,7 @@ node scripts/syncCatalog.js
 sudo supervisorctl restart nextjs
 
 # Visit your site
-# https://gratitude-ecom.preview.emergentagent.com
+# https://cart-rescue-1.preview.emergentagent.com
 
 # Test a real payment!
 ```
@@ -201,7 +201,7 @@ sudo supervisorctl restart nextjs
 
 **Value to Add:**
 ```
-https://gratitude-ecom.preview.emergentagent.com/api/oauth/square/callback
+https://cart-rescue-1.preview.emergentagent.com/api/oauth/square/callback
 ```
 
 **Also Need:** Client Secret (from same OAuth page)
@@ -222,7 +222,7 @@ https://gratitude-ecom.preview.emergentagent.com/api/oauth/square/callback
 
 **Fix:** Update Square Dashboard to match exactly:
 ```
-https://gratitude-ecom.preview.emergentagent.com/api/oauth/square/callback
+https://cart-rescue-1.preview.emergentagent.com/api/oauth/square/callback
 ```
 
 ### Issue: "Invalid client_id"
@@ -265,7 +265,7 @@ node test-square-credentials.js
 
 ## 🎨 Using the Admin OAuth Page
 
-**URL:** https://gratitude-ecom.preview.emergentagent.com/admin/square-oauth
+**URL:** https://cart-rescue-1.preview.emergentagent.com/admin/square-oauth
 
 **Features:**
 - ✅ Visual step-by-step guide
@@ -334,9 +334,9 @@ Once you have valid tokens:
 
 ## 📞 Quick Links
 
-- **Admin OAuth Page:** https://gratitude-ecom.preview.emergentagent.com/admin/square-oauth
+- **Admin OAuth Page:** https://cart-rescue-1.preview.emergentagent.com/admin/square-oauth
 - **Square Developer Console:** https://developer.squareup.com/apps
-- **OAuth Status API:** https://gratitude-ecom.preview.emergentagent.com/api/oauth/square/status
+- **OAuth Status API:** https://cart-rescue-1.preview.emergentagent.com/api/oauth/square/status
 - **Square OAuth Docs:** https://developer.squareup.com/docs/oauth-api/overview
 
 ---
@@ -351,7 +351,7 @@ SQUARE_CLIENT_SECRET=<get_from_dashboard>
 sudo supervisorctl restart nextjs
 
 # 3. Visit this page and click "Authorize Production"
-https://gratitude-ecom.preview.emergentagent.com/admin/square-oauth
+https://cart-rescue-1.preview.emergentagent.com/admin/square-oauth
 
 # 4. Log in to Square and click "Allow"
 

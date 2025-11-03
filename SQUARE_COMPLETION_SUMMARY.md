@@ -92,7 +92,7 @@ node scripts/syncCatalog.js
 
 **Webhook Endpoint:**
 ```
-https://square-payments-2.preview.emergentagent.com/api/webhooks/square
+https://cart-rescue-1.preview.emergentagent.com/api/webhooks/square
 ```
 
 **Implementation File:** `/app/app/api/webhooks/square/route.ts`
@@ -188,7 +188,7 @@ webhook_logs: {
 
 **Sample API Call:**
 ```bash
-curl -X POST https://square-payments-2.preview.emergentagent.com/api/checkout \
+curl -X POST https://cart-rescue-1.preview.emergentagent.com/api/checkout \
   -H "Content-Type: application/json" \
   -d '{
     "lineItems": [
@@ -331,7 +331,7 @@ SQUARE_MOCK_MODE=false
 1. **Configure Square Webhooks in Dashboard** ⚠️
    - Go to https://developer.squareup.com/
    - Navigate to Webhooks section
-   - Add webhook URL: `https://square-payments-2.preview.emergentagent.com/api/webhooks/square`
+   - Add webhook URL: `https://cart-rescue-1.preview.emergentagent.com/api/webhooks/square`
    - Subscribe to events: `inventory.count.updated`, `catalog.version.updated`, `payment.created`, `payment.updated`
    - Use signature key: `taste-of-gratitude-webhook-key-2024`
    - See `/app/SQUARE_WEBHOOK_CONFIGURATION.md` for detailed instructions
@@ -475,7 +475,7 @@ SQUARE_MOCK_MODE=false
 cd /app && node scripts/syncCatalog.js
 
 # Check webhook endpoint
-curl https://square-payments-2.preview.emergentagent.com/api/webhooks/square
+curl https://cart-rescue-1.preview.emergentagent.com/api/webhooks/square
 
 # View MongoDB data
 mongo taste_of_gratitude --eval "db.square_catalog_items.find().limit(5).pretty()"

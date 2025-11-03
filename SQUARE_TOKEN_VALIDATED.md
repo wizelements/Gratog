@@ -112,7 +112,7 @@ Try a complete checkout:
 
 ```bash
 # Visit the order page
-https://gratitude-ecom.preview.emergentagent.com/order
+https://cart-rescue-1.preview.emergentagent.com/order
 
 # Add products to cart
 # Complete checkout with Square test card:
@@ -133,7 +133,7 @@ Set up webhooks to receive real-time updates:
 
 2. **Add Webhook Endpoint**
    ```
-   URL: https://gratitude-ecom.preview.emergentagent.com/api/webhooks/square
+   URL: https://cart-rescue-1.preview.emergentagent.com/api/webhooks/square
    ```
 
 3. **Subscribe to Events**
@@ -154,10 +154,10 @@ Check diagnostic endpoint regularly:
 
 ```bash
 # Quick health check
-curl https://gratitude-ecom.preview.emergentagent.com/api/square/diagnose
+curl https://cart-rescue-1.preview.emergentagent.com/api/square/diagnose
 
 # Token validation
-curl "https://gratitude-ecom.preview.emergentagent.com/api/square/validate-token?comprehensive=true"
+curl "https://cart-rescue-1.preview.emergentagent.com/api/square/validate-token?comprehensive=true"
 ```
 
 ---
@@ -207,12 +207,12 @@ If you encounter any issues:
 
 2. **Validate token status**:
    ```bash
-   curl "https://gratitude-ecom.preview.emergentagent.com/api/square/validate-token"
+   curl "https://cart-rescue-1.preview.emergentagent.com/api/square/validate-token"
    ```
 
 3. **Review diagnostic results**:
    ```bash
-   curl https://gratitude-ecom.preview.emergentagent.com/api/square/diagnose
+   curl https://cart-rescue-1.preview.emergentagent.com/api/square/diagnose
    ```
 
 4. **Consult documentation**:
