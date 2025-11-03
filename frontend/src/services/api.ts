@@ -1,8 +1,9 @@
 import Constants from 'expo-constants';
 import { MessageEnvelope } from '../crypto/envelope';
 
-// Use relative URL for API calls - Kubernetes routes /api/* to port 8001
-const API_URL = '/api';
+// Get backend URL from environment
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+const API_URL = `${BACKEND_URL}/api`;
 
 export interface Device {
   _id: string;
