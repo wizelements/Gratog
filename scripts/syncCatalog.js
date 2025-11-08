@@ -68,7 +68,7 @@ class CatalogSync {
     };
   }
 
-  async sync() {
+  async sync(options = {}) {
     console.log('🔄 Starting Square Catalog sync...');
     
     try {
@@ -81,7 +81,7 @@ class CatalogSync {
       console.log('  Environment:', process.env.SQUARE_ENVIRONMENT || 'sandbox');
       console.log('  Location ID:', SQUARE_LOCATION_ID);
       
-      const { client: mongoClient, db } = await connectToDatabase();
+      const { client: mongoClient, db } = options.db ? { client: null, db: options.db } : await connectToDatabase();
       
       const objects = [];
       let cursor = undefined;
@@ -152,12 +152,21 @@ class CatalogSync {
         }
       });
       
+      // Create category lookup map
+      const categoryMap = new Map();
+      categories.forEach(cat => {
+        const catData = cat.category_data || cat.categoryData;
+        if (catData?.name) {
+          categoryMap.set(cat.id, catData.name);
+        }
+      });
+      
       // Process items and their variations
       const syncedItems = [];
       
       for (const item of items) {
         try {
-          const syncedItem = this.processItem(item, variationMap, imageMap);
+          const syncedItem = this.processItem(item, variationMap, imageMap, categoryMap);
           if (syncedItem) {
             syncedItems.push(syncedItem);
             this.stats.items++;
@@ -174,7 +183,11 @@ class CatalogSync {
       console.log('✅ Catalog sync completed');
       console.log(`📈 Stats: ${this.stats.items} items, ${this.stats.variations} variations, ${this.stats.images} images, ${this.stats.errors} errors`);
       
-      mongoClient.close();
+      if (mongoClient) {
+        mongoClient.close();
+      }
+      
+      return this.stats;
       
     } catch (error) {
       console.error('💥 Catalog sync failed:', error.message);
@@ -183,7 +196,7 @@ class CatalogSync {
     }
   }
 
-  processItem(item, variationMap, imageMap) {
+  processItem(item, variationMap, imageMap, categoryMap) {
     const itemData = item.item_data || item.itemData;
     if (!itemData) return null;
 
@@ -217,12 +230,17 @@ class CatalogSync {
       }
     }
 
+    // Get category information
+    const categoryId = itemData.category_id || itemData.categoryId;
+    const categoryName = categoryId ? categoryMap.get(categoryId) : null;
+
     return {
       id: item.id,
       type: item.type,
       name: itemData.name || 'Unnamed Item',
       description: itemData.description,
-      categoryId: itemData.category_id || itemData.categoryId,
+      categoryId: categoryId,
+      category: categoryName,
       variations: itemVariations,
       images: itemImages,
       createdAt: new Date(),
@@ -319,6 +337,9 @@ async function main() {
     process.exit(1);
   }
 }
+
+// Export for programmatic use
+module.exports = { CatalogSync, squareFetch, connectToDatabase, fromCents };
 
 // Run if called directly
 if (require.main === module) {

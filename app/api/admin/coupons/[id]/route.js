@@ -1,7 +1,18 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-admin';
+import { verifyToken } from '@/lib/auth';
 
 export async function DELETE(request, { params }) {
+  // Verify admin authentication
+  const token = request.cookies.get('admin_token')?.value;
+  const decoded = verifyToken(token);
+  
+  if (!decoded) {
+    return NextResponse.json(
+      { error: 'Authentication required' },
+      { status: 401 }
+    );
+  }
   try {
     const { id } = params;
     
@@ -39,6 +50,16 @@ export async function DELETE(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
+  // Verify admin authentication
+  const token = request.cookies.get('admin_token')?.value;
+  const decoded = verifyToken(token);
+  
+  if (!decoded) {
+    return NextResponse.json(
+      { error: 'Authentication required' },
+      { status: 401 }
+    );
+  }
   try {
     const { id } = params;
     const updates = await request.json();

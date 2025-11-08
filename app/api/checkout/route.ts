@@ -3,6 +3,7 @@ import { getSquareClient, SQUARE_LOCATION_ID } from '@/lib/square';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
 import { createOrder, createPaymentLink } from '@/lib/square-ops';
+import { shouldAllowFallback, getAuthFailureResponse, logSquareOperation } from '@/lib/square-guard';
 
 /**
  * Square Checkout API - Payment Links Integration
@@ -202,8 +203,20 @@ export async function POST(request: NextRequest) {
       }
       
       if (error.message.includes('UNAUTHORIZED')) {
+        logSquareOperation('Checkout/Payment Link', false, { error: 'UNAUTHORIZED' });
+        
+        if (!shouldAllowFallback()) {
+          const failureResponse = getAuthFailureResponse(error);
+          return NextResponse.json(failureResponse, { status: 503 });
+        }
+        
+        // Development fallback mode
         return NextResponse.json(
-          { error: 'Square API authentication failed' },
+          { 
+            error: 'Square API authentication failed',
+            fallbackMode: true,
+            warning: 'Development mode - no real checkout links generated'
+          },
           { status: 500 }
         );
       }

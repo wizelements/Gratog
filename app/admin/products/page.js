@@ -3,14 +3,18 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Search, Package, DollarSign } from 'lucide-react';
+import { Search, Package, DollarSign, Edit, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -23,8 +27,31 @@ export default function ProductsPage() {
       setProducts(data.products || []);
     } catch (error) {
       console.error('Failed to fetch products:', error);
+      toast.error('Failed to load products');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSyncFromSquare = async () => {
+    setSyncing(true);
+    try {
+      const response = await fetch('/api/admin/products/sync', {
+        method: 'POST'
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success(`Synced ${data.synced} products from Square`);
+        fetchProducts();
+      } else {
+        toast.error(data.error || 'Sync failed');
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
+      toast.error('Failed to sync from Square');
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -40,9 +67,26 @@ export default function ProductsPage() {
         <div>
           <h1 className="text-3xl font-bold">Products</h1>
           <p className="text-muted-foreground mt-1">
-            Manage your product catalog
+            Manage your product catalog - {products.length} products
           </p>
         </div>
+        <Button
+          onClick={handleSyncFromSquare}
+          disabled={syncing}
+          variant="outline"
+        >
+          {syncing ? (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              Syncing...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Sync from Square
+            </>
+          )}
+        </Button>
       </div>
 
       {/* Search */}
@@ -92,23 +136,20 @@ export default function ProductsPage() {
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4 text-[#D4AF37]" />
                       <span className="font-bold text-lg">
-                        ${typeof product.price === 'number' && product.price > 100 ? (product.price / 100).toFixed(2) : product.price.toFixed(2)}
+                        ${typeof product.price === 'number' && product.price > 100 ? (product.price / 100).toFixed(2) : (product.price || 0).toFixed(2)}
                       </span>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {product.size}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between pt-3 border-t">
-                    <div className="flex items-center gap-2">
-                      <Package className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">Stock:</span>
-                    </div>
-                    <Badge
-                      variant={product.stock > product.lowStockThreshold ? 'default' : 'destructive'}
-                    >
-                      {product.stock} units
+                    <Badge variant="outline">
+                      {product.category || 'Uncategorized'}
                     </Badge>
+                  </div>
+                  <div className="pt-3 border-t">
+                    <Link href={`/admin/products/${product.id}`}>
+                      <Button className="w-full" variant="outline" size="sm">
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Product
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </CardContent>

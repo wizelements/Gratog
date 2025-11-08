@@ -1,5 +1,6 @@
 const nextConfig = {
-  output: 'standalone',
+  // Removed 'standalone' output for Vercel compatibility
+  // Vercel uses its own build output optimization
   
   // ESLint - Don't fail build on warnings
   eslint: {

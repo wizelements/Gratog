@@ -1,10 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { generateMetadata } from '@/lib/seo';
+import { generateMetadata, generateViewport } from '@/lib/seo';
 
 export const metadata = generateMetadata({
   title: "Privacy Policy | Taste of Gratitude",
   description: "Learn how Taste of Gratitude protects your privacy and handles your personal information when you shop with us.",
 });
+
+export const viewport = generateViewport();
 
 export default function PrivacyPage() {
   return (

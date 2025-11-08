@@ -78,66 +78,62 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
   };
 
   const handleLeadCaptureSubmit = async () => {
-    if (!validateLeadCapture()) {
-      toast.error('Please complete all required fields');
-      return;
-    }
-    
+    // Skip validation - show results immediately, make email optional
     setLoading(true);
     
     try {
-      // First, get recommendations
-      const recResponse = await fetch('/api/quiz/recommendations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(answers)
-      });
+      // Import quiz utils
+      const { fetchRecommendations, submitQuizResults } = await import('@/lib/quiz-utils');
       
-      if (!recResponse.ok) {
-        throw new Error('Failed to get recommendations');
-      }
+      // Fetch all products for heuristic fallback
+      const productsResponse = await fetch('/api/products');
+      const productsData = await productsResponse.json();
+      const allProducts = productsData.products || [];
       
-      const recData = await recResponse.json();
-      const recommendations = recData.recommendations || [];
+      // Get recommendations (API or heuristic)
+      const result = await fetchRecommendations(answers, allProducts);
       
-      // Then, submit quiz results with customer info
-      const submitResponse = await fetch('/api/quiz/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer,
-          answers,
-          recommendations
-        })
-      });
+      setRecommendations(result.recommendations);
       
-      if (!submitResponse.ok) {
-        throw new Error('Failed to save quiz results');
-      }
+      // Show results immediately
+      setStep(4);
       
-      const submitData = await submitResponse.json();
-      
-      setRecommendations(recommendations);
-      setQuizId(submitData.quizId);
-      
+      // Track analytics
       AnalyticsSystem.trackQuizCompleted(
         answers.goal, 
         answers.adventure === 'bold', 
-        recommendations
+        result.recommendations
       );
       
-      setStep(4);
+      // If email provided, submit async (non-blocking)
+      if (customer.email && validateLeadCapture()) {
+        submitQuizResults(customer, answers, result.recommendations).then(submitData => {
+          if (submitData.success) {
+            setQuizId(submitData.quizId);
+            if (submitData.emailSent) {
+              toast.success('Check your email for personalized recommendations!');
+            }
+          }
+        }).catch(err => {
+          console.warn('Quiz submission failed (non-blocking):', err);
+        });
+      }
       
-      if (submitData.emailSent) {
-        toast.success('Check your email for personalized recommendations!');
+      // Show message based on source
+      if (result.source === 'heuristic') {
+        toast.info('Showing best matches for you', {
+          description: 'Our recommendations are based on your preferences'
+        });
+      } else {
+        toast.success(`Found ${result.recommendations.length} perfect matches!`);
       }
       
       if (onRecommendations) {
-        onRecommendations(recommendations);
+        onRecommendations(result.recommendations);
       }
     } catch (error) {
-      console.error('Quiz submission error:', error);
-      toast.error('Unable to save your results. Please try again.');
+      console.error('Quiz error:', error);
+      toast.error('Unable to show results. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -376,6 +372,19 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
               )}
             </Button>
             
+            <Button
+              onClick={async () => {
+                // Skip email, show results immediately
+                setCustomer({ name: '', email: '' });
+                await handleLeadCaptureSubmit();
+              }}
+              disabled={loading}
+              variant="outline"
+              className="w-full h-12 text-base border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+            >
+              Skip for Now - Show My Results
+            </Button>
+            
             <p className="text-xs text-center text-gray-500">
               By continuing, you agree to receive personalized product recommendations. 
               Your privacy is important to us.
@@ -426,16 +435,40 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
                   </Button>
                 </div>
               ))}
-              <div className="flex gap-3 pt-4">
-                <Button variant="outline" onClick={resetQuiz} className="flex-1">
-                  Retake Quiz
-                </Button>
-                <Button 
-                  onClick={() => window.location.href = '/catalog'}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
-                >
-                  Browse All Products
-                </Button>
+              <div className="flex flex-col gap-3 pt-4">
+                {/* Action Buttons Row 1 */}
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setStep(1)}
+                    className="flex-1 border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+                  >
+                    ← Modify Answers
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      // Add all recommendations to cart
+                      recommendations.forEach(product => handleAddToCart(product));
+                      toast.success(`Added ${recommendations.length} products to your cart!`);
+                    }}
+                    className="flex-1 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
+                  >
+                    💾 Save All My Picks
+                  </Button>
+                </div>
+                
+                {/* Action Buttons Row 2 */}
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={resetQuiz} className="flex-1">
+                    🔄 Retake Quiz
+                  </Button>
+                  <Button 
+                    onClick={() => window.location.href = '/catalog'}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    📚 Browse All Products
+                  </Button>
+                </div>
               </div>
             </div>
           ) : (

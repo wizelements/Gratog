@@ -23,9 +23,21 @@ export function middleware(req: NextRequest) {
     return res;
   }
 
+  // Protect admin pages (except login)
+  if (url.pathname.startsWith('/admin') && url.pathname !== '/admin/login') {
+    const token = req.cookies.get('admin_token')?.value;
+    
+    if (!token) {
+      // Redirect to login if no token
+      const loginUrl = new URL('/admin/login', req.url);
+      loginUrl.searchParams.set('redirect', url.pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/delivery', '/order', '/'],
+  matcher: ['/delivery', '/', '/admin/:path*'],
 };

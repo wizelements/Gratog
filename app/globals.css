@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -93,6 +109,35 @@
   
   .btn-shine:hover::before {
     left: 100%;
+  }
+
+  .fade-in-section {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .fade-in-section.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .prose {
+    max-width: 65ch;
+  }
+
+  .prose h3 {
+    margin-top: 1.5em;
+    margin-bottom: 0.75em;
+  }
+
+  .prose p {
+    margin-top: 1em;
+    margin-bottom: 1em;
+  }
+
+  .prose ul {
+    margin-top: 1em;
+    margin-bottom: 1em;
   }
 }
 

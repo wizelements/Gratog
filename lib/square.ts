@@ -1,49 +1,107 @@
 import { SquareClient, SquareEnvironment } from 'square';
 
+const LOG_PREFIX = '[SQUARE]';
+
 /**
  * Get Square client instance with fresh environment variables
  * Creates a new client on each call to avoid Next.js module caching issues
  */
 export function getSquareClient(): SquareClient {
-  const accessToken = process.env.SQUARE_ACCESS_TOKEN;
-  const environment = process.env.SQUARE_ENVIRONMENT;
+  // Trim and normalize environment variables to avoid whitespace issues
+  const accessToken = (process.env.SQUARE_ACCESS_TOKEN || '').trim();
+  const envRaw = process.env.SQUARE_ENVIRONMENT || 'sandbox';
+  const environment = envRaw.trim().toLowerCase();
+
+  console.log(`${LOG_PREFIX} 🔍 Square client configuration:`, {
+    tokenPrefix: accessToken.substring(0, 10),
+    tokenLength: accessToken.length,
+    envRaw,
+    envNormalized: environment,
+    willUseEnvironment: environment === 'production' ? 'Production' : 'Sandbox'
+  });
 
   if (!accessToken) {
     throw new Error('SQUARE_ACCESS_TOKEN is not configured');
   }
 
-  // Debug logging to verify token is loaded correctly
-  console.log('Creating Square client with:', {
-    tokenPrefix: accessToken.substring(0, 10),
-    tokenLength: accessToken.length,
-    environment: environment || 'sandbox (default)'
-  });
+  // Validate environment value
+  if (!['production', 'sandbox'].includes(environment)) {
+    console.error(`${LOG_PREFIX} ❌ Invalid SQUARE_ENVIRONMENT="${envRaw}"`);
+    throw new Error(
+      `Invalid SQUARE_ENVIRONMENT="${envRaw}". Must be exactly "production" or "sandbox" (lowercase).`
+    );
+  }
+
+  // Detect token/environment mismatch
+  const tokenLooksSandbox = accessToken.startsWith('sandbox-');
+  const tokenLooksProduction = accessToken.startsWith('EAAA') || accessToken.startsWith('sq0atp-');
+
+  if (environment === 'production' && tokenLooksSandbox) {
+    console.error(`${LOG_PREFIX} ❌ Sandbox token with production environment`);
+    throw new Error(
+      'Token/Environment mismatch: Sandbox token detected while SQUARE_ENVIRONMENT=production'
+    );
+  }
+
+  if (environment === 'sandbox' && tokenLooksProduction) {
+    console.warn(`${LOG_PREFIX} ⚠️  Production token with sandbox environment - this will cause 401 errors!`);
+    console.warn(`${LOG_PREFIX} Fix: Set SQUARE_ENVIRONMENT=production in Vercel`);
+  }
+
+  const squareEnvironment = environment === 'production' 
+    ? SquareEnvironment.Production 
+    : SquareEnvironment.Sandbox;
+
+  console.log(`${LOG_PREFIX} ✅ Creating Square client for ${squareEnvironment}`);
 
   return new SquareClient({
     accessToken,
-    environment: environment === 'production' 
-      ? SquareEnvironment.Production 
-      : SquareEnvironment.Sandbox,
+    environment: squareEnvironment,
   });
 }
 
-// Export for backwards compatibility (but prefer getSquareClient())
-export const square = getSquareClient();
+// Lazy getters for Square configuration - only validate when accessed
+export function getSquareLocationId(): string {
+  const locationId = process.env.SQUARE_LOCATION_ID;
+  if (!locationId) {
+    throw new Error('SQUARE_LOCATION_ID is not configured');
+  }
+  return locationId;
+}
 
-// Required Square configuration
-export const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID!;
-export const SQUARE_APPLICATION_ID = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID!;
+export function getSquareApplicationId(): string {
+  const appId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID;
+  if (!appId) {
+    throw new Error('NEXT_PUBLIC_SQUARE_APPLICATION_ID is not configured');
+  }
+  return appId;
+}
 
-// Webhook signature verification key (server-only)
-export const SQUARE_WEBHOOK_SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY!;
+export function getSquareWebhookSignatureKey(): string {
+  const key = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
+  if (!key) {
+    throw new Error('SQUARE_WEBHOOK_SIGNATURE_KEY is not configured');
+  }
+  return key;
+}
+
+// Export for backwards compatibility
+export const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID || '';
+export const SQUARE_APPLICATION_ID = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || '';
+export const SQUARE_WEBHOOK_SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || '';
 
 // Helper to validate Square environment configuration
 export function validateSquareConfig() {
+  const accessToken = process.env.SQUARE_ACCESS_TOKEN || '';
+  const appId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || '';
+  const locationId = process.env.SQUARE_LOCATION_ID || '';
+  const environment = process.env.SQUARE_ENVIRONMENT || 'sandbox';
+  
   const required = {
-    SQUARE_ACCESS_TOKEN: process.env.SQUARE_ACCESS_TOKEN,
-    SQUARE_LOCATION_ID: process.env.SQUARE_LOCATION_ID,
-    SQUARE_APPLICATION_ID: process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID,
-    SQUARE_ENVIRONMENT: process.env.SQUARE_ENVIRONMENT || 'sandbox'
+    SQUARE_ACCESS_TOKEN: accessToken,
+    SQUARE_LOCATION_ID: locationId,
+    SQUARE_APPLICATION_ID: appId,
+    SQUARE_ENVIRONMENT: environment
   };
   
   const missing = Object.entries(required)
@@ -51,14 +109,55 @@ export function validateSquareConfig() {
     .map(([key]) => key);
   
   if (missing.length > 0) {
-    throw new Error(`Missing required Square configuration: ${missing.join(', ')}`);
+    throw new Error(`❌ Missing required Square configuration: ${missing.join(', ')}`);
   }
   
+  // Validate token type - prevent using wrong credential types
+  if (accessToken.startsWith('sq0csp-')) {
+    throw new Error(
+      '❌ SQUARE_ACCESS_TOKEN is a Client Secret (sq0csp-). ' +
+      'Use Production Access Token (EAAA... or sq0atp-...) instead. ' +
+      'Get it from Square Developer Dashboard → Credentials → Production.'
+    );
+  }
+  
+  if (accessToken.startsWith('sq0idp-') || accessToken.startsWith('sq0idb-')) {
+    throw new Error(
+      '❌ SQUARE_ACCESS_TOKEN appears to be an Application ID. ' +
+      'Use Production Access Token (EAAA... or sq0atp-...) instead.'
+    );
+  }
+  
+  // Validate production environment consistency
+  if (environment === 'production') {
+    if (!appId.startsWith('sq0idp-')) {
+      console.warn(
+        '⚠️ Production environment but Application ID does not start with sq0idp-. ' +
+        'This may indicate a sandbox Application ID in production.'
+      );
+    }
+    
+    if (accessToken.toLowerCase().includes('sandbox') || accessToken.startsWith('sandbox-')) {
+      throw new Error(
+        '❌ Sandbox token detected in production environment. ' +
+        'Use production credentials for SQUARE_ENVIRONMENT=production.'
+      );
+    }
+  }
+  
+  console.log('✅ Square configuration validated:', {
+    environment,
+    tokenPrefix: accessToken.substring(0, 10) + '...',
+    tokenLength: accessToken.length,
+    applicationIdPrefix: appId.substring(0, 10) + '...',
+    locationId: locationId
+  });
+  
   return {
-    environment: process.env.SQUARE_ENVIRONMENT || 'sandbox',
-    isProduction: process.env.SQUARE_ENVIRONMENT === 'production',
-    locationId: SQUARE_LOCATION_ID,
-    applicationId: SQUARE_APPLICATION_ID
+    environment,
+    isProduction: environment === 'production',
+    locationId,
+    applicationId: appId
   };
 }
 

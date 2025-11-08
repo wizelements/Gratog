@@ -134,14 +134,18 @@ export default function Footer() {
             </p>
             <div className="flex space-x-3">
               <a
-                href="#"
+                href="https://www.facebook.com/tasteofgratitude"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-muted hover:bg-[#D4AF37] text-muted-foreground hover:text-white transition-all flex items-center justify-center group"
                 aria-label="Facebook"
               >
                 <Facebook className="h-5 w-5 group-hover:scale-110 transition-transform" />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/tasteofgratitude"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-muted hover:bg-[#D4AF37] text-muted-foreground hover:text-white transition-all flex items-center justify-center group"
                 aria-label="Instagram"
               >

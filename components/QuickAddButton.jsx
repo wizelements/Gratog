@@ -6,7 +6,19 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cartUtils';
 
-export default function QuickAddButton({ product, className = '', variant = 'default', size = '16oz' }) {
+/**
+ * QuickAddButton - WITH VARIANT SUPPORT
+ * @param {Object} product - Product object
+ * @param {Object} selectedVariant - Selected variant object (id, name, price)
+ * @param {string} className - Additional classes
+ * @param {string} variant - Button variant style ('default' or 'icon')
+ */
+export default function QuickAddButton({ 
+  product, 
+  selectedVariant = null,
+  className = '', 
+  variant = 'default'
+}) {
   const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
 
@@ -17,9 +29,15 @@ export default function QuickAddButton({ product, className = '', variant = 'def
     setIsAdding(true);
 
     try {
-      const updatedCart = addToCart(product, 1, size);
+      // Use variant object if provided, otherwise use first variant or null
+      const variantToAdd = selectedVariant || product.variations?.[0] || null;
       
-      toast.success(`${product.name} added to cart!`, {
+      const updatedCart = addToCart(product, 1, variantToAdd);
+      
+      // Build toast message with variant info
+      const variantInfo = variantToAdd ? ` (${variantToAdd.name})` : '';
+      
+      toast.success(`${product.name}${variantInfo} added to cart!`, {
         description: 'View your cart to checkout',
         action: {
           label: 'View Cart',
@@ -30,6 +48,11 @@ export default function QuickAddButton({ product, className = '', variant = 'def
       setIsAdding(false);
       setIsAdded(true);
       setTimeout(() => setIsAdded(false), 2000);
+      
+      // Dispatch cart update event
+      window.dispatchEvent(new CustomEvent('cartUpdated', { 
+        detail: { cart: updatedCart } 
+      }));
     } catch (error) {
       console.error('Failed to add to cart:', error);
       toast.error('Failed to add to cart');

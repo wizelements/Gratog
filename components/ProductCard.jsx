@@ -8,11 +8,28 @@ import Image from 'next/image';
 import { ShoppingCart, Star, Leaf, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import QuickAddButton from './QuickAddButton';
+import VariantSelector from './VariantSelector';
 
 export default function ProductCard({ product, onCheckout, variant = 'default' }) {
   const [imageError, setImageError] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState(null);
   
   const fallbackImage = '/images/sea-moss-default.svg';
+  
+  // Determine if product has multiple variants
+  const hasMultipleVariants = product.variations && product.variations.length > 1;
+  
+  // Get display price - use selected variant or first variant or product price
+  const displayPrice = selectedVariant?.price 
+    || product.variations?.[0]?.price 
+    || product.price 
+    || 0;
+  
+  // Get display size
+  const displaySize = selectedVariant?.name 
+    || product.variations?.[0]?.name 
+    || product.size 
+    || '';
   
   return (
     <Card 
@@ -91,11 +108,22 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
       
       <CardContent>
         <div className="flex items-baseline gap-2 mb-4">
-          <span className="text-2xl font-bold text-emerald-600">${product.price.toFixed(2)}</span>
-          {product.size && (
-            <span className="text-sm text-muted-foreground">/ {product.size}</span>
+          <span className="text-2xl font-bold text-emerald-600">${displayPrice.toFixed(2)}</span>
+          {displaySize && (
+            <span className="text-sm text-muted-foreground">/ {displaySize}</span>
           )}
         </div>
+        
+        {/* Variant Selector - only show if multiple variants */}
+        {hasMultipleVariants && (
+          <div className="mb-4">
+            <VariantSelector
+              variations={product.variations}
+              defaultVariant={product.variations[0]}
+              onVariantChange={setSelectedVariant}
+            />
+          </div>
+        )}
         
         {product.description && (
           <p className="text-sm text-muted-foreground line-clamp-2">
@@ -108,6 +136,7 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
         <div className="flex gap-2 w-full">
           <QuickAddButton 
             product={product}
+            selectedVariant={selectedVariant || product.variations?.[0]}
             className="flex-1"
           />
           

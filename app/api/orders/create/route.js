@@ -197,9 +197,20 @@ export async function POST(request) {
     });
     
   } catch (error) {
-    console.error('Create order error:', error);
+    console.error('❌ Order creation error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      ...(error.cause && { cause: error.cause })
+    });
+    
     return NextResponse.json(
-      { success: false, error: 'Failed to create order' },
+      { 
+        success: false, 
+        error: 'Failed to create order',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     );
   }

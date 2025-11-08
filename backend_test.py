@@ -1,415 +1,377 @@
 #!/usr/bin/env python3
 """
-VORACIOUS BACKEND VALIDATION - COMPLETE SQUARE INTEGRATION TESTING
-Testing all critical Square APIs with real synced catalog data
+Comprehensive Backend API Testing for Unified Intelligent Flow
+Tests all new intelligent APIs and verifies backward compatibility
 """
 
 import requests
 import json
-import time
 from datetime import datetime
 
-# Configuration
+# Backend URL
 BASE_URL = "https://cart-rescue-1.preview.emergentagent.com/api"
-HEADERS = {"Content-Type": "application/json"}
 
 # Test results tracking
 test_results = {
-    "total": 0,
     "passed": 0,
     "failed": 0,
     "tests": []
 }
 
-def log_test(name, passed, details="", response_time=0):
+def log_test(name, passed, details=""):
     """Log test result"""
-    test_results["total"] += 1
-    if passed:
-        test_results["passed"] += 1
-        status = "✅ PASS"
-    else:
-        test_results["failed"] += 1
-        status = "❌ FAIL"
-    
+    status = "✅ PASS" if passed else "❌ FAIL"
     test_results["tests"].append({
         "name": name,
-        "status": status,
-        "details": details,
-        "response_time_ms": response_time
+        "passed": passed,
+        "details": details
     })
-    print(f"{status} - {name}")
-    if details:
-        print(f"  Details: {details}")
-    if response_time > 0:
-        print(f"  Response time: {response_time}ms")
-    print()
+    if passed:
+        test_results["passed"] += 1
+        print(f"{status}: {name}")
+    else:
+        test_results["failed"] += 1
+        print(f"{status}: {name}")
+        if details:
+            print(f"   Details: {details}")
 
-def test_health_endpoint():
-    """Test GET /api/health - System status"""
-    print("=" * 80)
-    print("TEST 1: Health Check Endpoint")
-    print("=" * 80)
+def test_get_products_unified():
+    """Test GET /api/products (Unified Intelligent)"""
+    print("\n🧪 Testing GET /api/products (Unified Intelligent)...")
     
     try:
-        start = time.time()
-        response = requests.get(f"{BASE_URL}/health", timeout=10)
-        response_time = int((time.time() - start) * 1000)
+        # Test 1: Get all products
+        response = requests.get(f"{BASE_URL}/products", timeout=10)
         
         if response.status_code == 200:
             data = response.json()
-            details = f"Status: {data.get('status')}, DB: {data.get('services', {}).get('database')}, Square: {data.get('services', {}).get('square_api')}"
-            log_test("GET /api/health", True, details, response_time)
-            return data
-        else:
-            log_test("GET /api/health", False, f"Status {response.status_code}: {response.text}", response_time)
-            return None
-    except Exception as e:
-        log_test("GET /api/health", False, f"Exception: {str(e)}")
-        return None
-
-def test_square_catalog_sync():
-    """Test Square catalog sync - Check MongoDB for synced products"""
-    print("=" * 80)
-    print("TEST 2: Square Catalog Sync Verification")
-    print("=" * 80)
-    
-    try:
-        # Connect to MongoDB to verify synced catalog
-        from pymongo import MongoClient
-        client = MongoClient("mongodb://localhost:27017")
-        db = client["taste_of_gratitude"]
-        
-        # Check square_catalog_items collection
-        items_count = db.square_catalog_items.count_documents({})
-        categories_count = db.square_catalog_categories.count_documents({})
-        
-        if items_count > 0:
-            # Get sample products
-            sample_products = list(db.square_catalog_items.find({}).limit(3))
-            product_names = [p.get('name', 'Unknown') for p in sample_products]
+            products = data.get('products', [])
             
-            details = f"Found {items_count} products, {categories_count} categories. Samples: {', '.join(product_names)}"
-            log_test("MongoDB Catalog Sync", True, details)
-            
-            # Return sample product for testing
-            if sample_products:
-                return sample_products[0]
-        else:
-            log_test("MongoDB Catalog Sync", False, "No products found in square_catalog_items collection")
-            return None
-            
-    except Exception as e:
-        log_test("MongoDB Catalog Sync", False, f"Exception: {str(e)}")
-        return None
-
-def test_checkout_api(catalog_item=None):
-    """Test POST /api/checkout - Create payment links with real synced products"""
-    print("=" * 80)
-    print("TEST 3: Square Checkout API (Payment Links)")
-    print("=" * 80)
-    
-    if not catalog_item:
-        log_test("POST /api/checkout", False, "No catalog item available for testing")
-        return None
-    
-    # Extract catalog object ID from variations
-    catalog_object_id = None
-    if catalog_item.get('variations') and len(catalog_item['variations']) > 0:
-        catalog_object_id = catalog_item['variations'][0].get('id')
-    
-    if not catalog_object_id:
-        log_test("POST /api/checkout", False, "No catalog object ID found in product variations")
-        return None
-    
-    # Test 1: Valid checkout with real catalog ID
-    try:
-        payload = {
-            "lineItems": [
-                {
-                    "catalogObjectId": catalog_object_id,
-                    "quantity": 1,
-                    "name": catalog_item.get('name', 'Test Product'),
-                    "basePriceMoney": {
-                        "amount": catalog_item['variations'][0].get('price_cents', 1000),
-                        "currency": "USD"
-                    }
-                }
-            ],
-            "customer": {
-                "name": "Sarah Johnson",
-                "email": "sarah.test@example.com",
-                "phone": "(404) 555-1234"
-            },
-            "fulfillmentType": "pickup",
-            "redirectUrl": f"{BASE_URL.replace('/api', '')}/checkout/success"
-        }
-        
-        start = time.time()
-        response = requests.post(f"{BASE_URL}/checkout", json=payload, headers=HEADERS, timeout=15)
-        response_time = int((time.time() - start) * 1000)
-        
-        if response.status_code == 200:
-            data = response.json()
-            if data.get('success') and data.get('paymentLink'):
-                payment_link = data['paymentLink']
-                details = f"Payment Link ID: {payment_link.get('id')}, URL: {payment_link.get('url')[:50]}..."
-                log_test("POST /api/checkout - Valid Request", True, details, response_time)
-                return payment_link
+            # Check product count
+            if len(products) == 29:
+                log_test("GET /api/products - Returns 29 products", True)
             else:
-                log_test("POST /api/checkout - Valid Request", False, f"Missing payment link in response: {data}", response_time)
-        else:
-            # 500 error might be expected if catalog not synced to Square
-            details = f"Status {response.status_code}: {response.text[:200]}"
-            log_test("POST /api/checkout - Valid Request", False, details, response_time)
+                log_test("GET /api/products - Returns 29 products", False, 
+                        f"Expected 29 products, got {len(products)}")
             
-    except Exception as e:
-        log_test("POST /api/checkout - Valid Request", False, f"Exception: {str(e)}")
-    
-    # Test 2: Empty line items validation
-    try:
-        payload = {"lineItems": []}
-        start = time.time()
-        response = requests.post(f"{BASE_URL}/checkout", json=payload, headers=HEADERS, timeout=10)
-        response_time = int((time.time() - start) * 1000)
-        
-        if response.status_code == 400:
-            log_test("POST /api/checkout - Empty Items Validation", True, "Properly rejected with 400", response_time)
-        else:
-            log_test("POST /api/checkout - Empty Items Validation", False, f"Expected 400, got {response.status_code}", response_time)
-    except Exception as e:
-        log_test("POST /api/checkout - Empty Items Validation", False, f"Exception: {str(e)}")
-    
-    return None
-
-def test_payments_api():
-    """Test POST /api/payments - Web Payments SDK flow"""
-    print("=" * 80)
-    print("TEST 4: Square Payments API (Web Payments SDK)")
-    print("=" * 80)
-    
-    # Test 1: Missing sourceId validation
-    try:
-        payload = {"amountCents": 1000}
-        start = time.time()
-        response = requests.post(f"{BASE_URL}/payments", json=payload, headers=HEADERS, timeout=10)
-        response_time = int((time.time() - start) * 1000)
-        
-        if response.status_code == 400:
-            data = response.json()
-            if 'source' in data.get('error', '').lower() or 'token' in data.get('error', '').lower():
-                log_test("POST /api/payments - Missing sourceId", True, "Properly rejected with 400", response_time)
-            else:
-                log_test("POST /api/payments - Missing sourceId", False, f"Wrong error message: {data.get('error')}", response_time)
-        else:
-            log_test("POST /api/payments - Missing sourceId", False, f"Expected 400, got {response.status_code}", response_time)
-    except Exception as e:
-        log_test("POST /api/payments - Missing sourceId", False, f"Exception: {str(e)}")
-    
-    # Test 2: Invalid amount validation
-    try:
-        payload = {"sourceId": "test-token", "amountCents": 0}
-        start = time.time()
-        response = requests.post(f"{BASE_URL}/payments", json=payload, headers=HEADERS, timeout=10)
-        response_time = int((time.time() - start) * 1000)
-        
-        if response.status_code == 400:
-            log_test("POST /api/payments - Invalid Amount", True, "Properly rejected with 400", response_time)
-        else:
-            log_test("POST /api/payments - Invalid Amount", False, f"Expected 400, got {response.status_code}", response_time)
-    except Exception as e:
-        log_test("POST /api/payments - Invalid Amount", False, f"Exception: {str(e)}")
-    
-    # Test 3: Valid payment request (will fail with test nonce against production)
-    try:
-        payload = {
-            "sourceId": "cnon:card-nonce-ok",  # Test nonce
-            "amountCents": 1000,
-            "currency": "USD",
-            "customer": {
-                "name": "Test Customer",
-                "email": "test@example.com"
-            }
-        }
-        start = time.time()
-        response = requests.post(f"{BASE_URL}/payments", json=payload, headers=HEADERS, timeout=15)
-        response_time = int((time.time() - start) * 1000)
-        
-        # Expected to fail with 500 (test nonce doesn't work with production API)
-        # But this confirms API structure is correct
-        if response.status_code in [400, 500]:
-            data = response.json()
-            error_msg = data.get('error', '').lower()
-            if 'nonce' in error_msg or 'not found' in error_msg or 'unauthorized' in error_msg:
-                details = f"API structure correct, expected error: {data.get('error')[:100]}"
-                log_test("POST /api/payments - API Structure", True, details, response_time)
-            else:
-                log_test("POST /api/payments - API Structure", False, f"Unexpected error: {data.get('error')}", response_time)
-        elif response.status_code == 200:
-            # Unexpected success (shouldn't happen with test nonce)
-            log_test("POST /api/payments - API Structure", True, "Payment processed (unexpected)", response_time)
-        else:
-            log_test("POST /api/payments - API Structure", False, f"Unexpected status {response.status_code}", response_time)
-    except Exception as e:
-        log_test("POST /api/payments - API Structure", False, f"Exception: {str(e)}")
-
-def test_orders_api():
-    """Test POST /api/orders/create and GET /api/orders"""
-    print("=" * 80)
-    print("TEST 5: Order Management APIs")
-    print("=" * 80)
-    
-    # Test 1: Create order with valid data
-    try:
-        payload = {
-            "cart": [
-                {
-                    "productId": "test-product-1",
-                    "name": "Kissed by Gods",
-                    "price": 11.00,
-                    "quantity": 2,
-                    "image": "/images/product.jpg"
-                }
-            ],
-            "customer": {
-                "name": "Sarah Johnson",
-                "email": "sarah.test@example.com",
-                "phone": "(404) 555-1234"
-            },
-            "fulfillmentType": "pickup",
-            "pickupMarket": "serenbe",
-            "pickupDate": "2025-02-01"
-        }
-        
-        start = time.time()
-        response = requests.post(f"{BASE_URL}/orders/create", json=payload, headers=HEADERS, timeout=15)
-        response_time = int((time.time() - start) * 1000)
-        
-        if response.status_code == 200:
-            data = response.json()
-            if data.get('success') and data.get('order'):
-                order = data['order']
-                order_id = order.get('id')
-                details = f"Order ID: {order_id}, Status: {order.get('status')}, Total: ${order.get('pricing', {}).get('total', 0)}"
-                log_test("POST /api/orders/create - Valid Order", True, details, response_time)
+            # Check product structure
+            if products:
+                product = products[0]
+                has_intelligent_category = 'intelligentCategory' in product
+                has_ingredients = 'ingredients' in product
+                has_benefit_story = 'benefitStory' in product
+                has_ingredient_icons = 'ingredientIcons' in product
+                has_tags = 'tags' in product
+                has_price = product.get('price') is not None
                 
-                # Test 2: Retrieve order by ID
-                if order_id:
-                    try:
-                        start = time.time()
-                        response = requests.get(f"{BASE_URL}/orders/create?id={order_id}", timeout=10)
-                        response_time = int((time.time() - start) * 1000)
-                        
-                        if response.status_code == 200:
-                            data = response.json()
-                            if data.get('success') and data.get('order'):
-                                log_test("GET /api/orders - Retrieve by ID", True, f"Order retrieved: {order_id}", response_time)
-                            else:
-                                log_test("GET /api/orders - Retrieve by ID", False, "Order not found in response", response_time)
-                        else:
-                            log_test("GET /api/orders - Retrieve by ID", False, f"Status {response.status_code}", response_time)
-                    except Exception as e:
-                        log_test("GET /api/orders - Retrieve by ID", False, f"Exception: {str(e)}")
+                log_test("GET /api/products - Products have intelligentCategory", has_intelligent_category)
+                log_test("GET /api/products - Products have ingredients[]", has_ingredients)
+                log_test("GET /api/products - Products have benefitStory", has_benefit_story)
+                log_test("GET /api/products - Products have ingredientIcons[]", has_ingredient_icons)
+                log_test("GET /api/products - Products have tags[]", has_tags)
+                log_test("GET /api/products - Prices showing correctly (not null)", has_price)
+            
+            # Test 2: Filter by category
+            response = requests.get(f"{BASE_URL}/products?category=Lemonades & Juices", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                filtered_products = data.get('products', [])
+                log_test("GET /api/products?category=Lemonades & Juices", True, 
+                        f"Returned {len(filtered_products)} products")
             else:
-                log_test("POST /api/orders/create - Valid Order", False, f"Missing order in response: {data}", response_time)
+                log_test("GET /api/products?category=Lemonades & Juices", False, 
+                        f"Status: {response.status_code}")
+            
+            # Test 3: Filter by tag
+            response = requests.get(f"{BASE_URL}/products?tag=detox", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                log_test("GET /api/products?tag=detox", True, 
+                        f"Returned {len(data.get('products', []))} products")
+            else:
+                log_test("GET /api/products?tag=detox", False, f"Status: {response.status_code}")
+            
+            # Test 4: Filter by ingredient
+            response = requests.get(f"{BASE_URL}/products?ingredient=ginger", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                log_test("GET /api/products?ingredient=ginger", True, 
+                        f"Returned {len(data.get('products', []))} products")
+            else:
+                log_test("GET /api/products?ingredient=ginger", False, 
+                        f"Status: {response.status_code}")
         else:
-            log_test("POST /api/orders/create - Valid Order", False, f"Status {response.status_code}: {response.text[:200]}", response_time)
-    except Exception as e:
-        log_test("POST /api/orders/create - Valid Order", False, f"Exception: {str(e)}")
+            log_test("GET /api/products - Basic request", False, 
+                    f"Status: {response.status_code}, Response: {response.text[:200]}")
     
-    # Test 3: Missing cart validation
-    try:
-        payload = {
-            "customer": {"name": "Test", "email": "test@example.com", "phone": "1234567890"},
-            "fulfillmentType": "pickup"
-        }
-        start = time.time()
-        response = requests.post(f"{BASE_URL}/orders/create", json=payload, headers=HEADERS, timeout=10)
-        response_time = int((time.time() - start) * 1000)
-        
-        if response.status_code == 400:
-            log_test("POST /api/orders/create - Missing Cart", True, "Properly rejected with 400", response_time)
-        else:
-            log_test("POST /api/orders/create - Missing Cart", False, f"Expected 400, got {response.status_code}", response_time)
     except Exception as e:
-        log_test("POST /api/orders/create - Missing Cart", False, f"Exception: {str(e)}")
+        log_test("GET /api/products - Exception", False, str(e))
+
+def test_unified_products():
+    """Test GET /api/unified/products"""
+    print("\n🧪 Testing GET /api/unified/products...")
     
-    # Test 4: Delivery validation with invalid ZIP
     try:
-        payload = {
-            "cart": [{"productId": "test", "name": "Test", "price": 35, "quantity": 1}],
-            "customer": {"name": "Test", "email": "test@example.com", "phone": "1234567890"},
-            "fulfillmentType": "delivery",
-            "deliveryAddress": {
-                "street": "123 Test St",
-                "city": "Los Angeles",
-                "state": "CA",
-                "zip": "90210"  # Not in Atlanta/South Fulton whitelist
-            },
-            "deliveryTimeSlot": "09:00-12:00"
-        }
-        start = time.time()
-        response = requests.post(f"{BASE_URL}/orders/create", json=payload, headers=HEADERS, timeout=10)
-        response_time = int((time.time() - start) * 1000)
+        # Test 1: Get all products
+        response = requests.get(f"{BASE_URL}/unified/products", timeout=10)
         
-        if response.status_code == 400:
+        if response.status_code == 200:
             data = response.json()
-            if 'area' in data.get('error', '').lower() or 'zip' in data.get('error', '').lower():
-                log_test("POST /api/orders/create - Invalid ZIP", True, "Properly rejected invalid ZIP", response_time)
+            log_test("GET /api/unified/products - Basic request", True, 
+                    f"Returned {data.get('count', 0)} products")
+            
+            # Test 2: Category filtering
+            response = requests.get(f"{BASE_URL}/unified/products?category=Lemonades & Juices", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                log_test("GET /api/unified/products - Category filtering", True, 
+                        f"Returned {data.get('count', 0)} products")
             else:
-                log_test("POST /api/orders/create - Invalid ZIP", False, f"Wrong error: {data.get('error')}", response_time)
+                log_test("GET /api/unified/products - Category filtering", False, 
+                        f"Status: {response.status_code}")
+            
+            # Test 3: Search functionality
+            response = requests.get(f"{BASE_URL}/unified/products?search=ginger", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                log_test("GET /api/unified/products - Search functionality", True, 
+                        f"Returned {data.get('count', 0)} products")
+            else:
+                log_test("GET /api/unified/products - Search functionality", False, 
+                        f"Status: {response.status_code}")
         else:
-            log_test("POST /api/orders/create - Invalid ZIP", False, f"Expected 400, got {response.status_code}", response_time)
+            log_test("GET /api/unified/products - Basic request", False, 
+                    f"Status: {response.status_code}")
+    
     except Exception as e:
-        log_test("POST /api/orders/create - Invalid ZIP", False, f"Exception: {str(e)}")
+        log_test("GET /api/unified/products - Exception", False, str(e))
+
+def test_unified_sync():
+    """Test GET /api/unified/sync"""
+    print("\n🧪 Testing GET /api/unified/sync...")
+    
+    try:
+        response = requests.get(f"{BASE_URL}/unified/sync", timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            stats = data.get('stats', {})
+            
+            has_total_products = 'totalProducts' in stats
+            has_last_sync = 'lastSync' in stats
+            
+            log_test("GET /api/unified/sync - Returns sync stats", True, 
+                    f"Total products: {stats.get('totalProducts', 'N/A')}")
+            log_test("GET /api/unified/sync - Has totalProducts", has_total_products)
+            log_test("GET /api/unified/sync - Has lastSync timestamp", has_last_sync)
+        else:
+            log_test("GET /api/unified/sync", False, f"Status: {response.status_code}")
+    
+    except Exception as e:
+        log_test("GET /api/unified/sync - Exception", False, str(e))
+
+def test_unified_sync_post():
+    """Test POST /api/unified/sync"""
+    print("\n🧪 Testing POST /api/unified/sync...")
+    
+    try:
+        # Test sync action
+        payload = {"action": "sync"}
+        response = requests.post(f"{BASE_URL}/unified/sync", json=payload, timeout=30)
+        
+        if response.status_code == 200:
+            data = response.json()
+            log_test("POST /api/unified/sync - Sync action", True, 
+                    f"Message: {data.get('message', 'N/A')}")
+        else:
+            log_test("POST /api/unified/sync - Sync action", False, 
+                    f"Status: {response.status_code}")
+    
+    except Exception as e:
+        log_test("POST /api/unified/sync - Exception", False, str(e))
+
+def test_recommendations():
+    """Test GET /api/recommendations"""
+    print("\n🧪 Testing GET /api/recommendations...")
+    
+    try:
+        # Test 1: Ingredient recommendations
+        response = requests.get(f"{BASE_URL}/recommendations?type=ingredient&ingredient=ginger", timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            products = data.get('products', [])
+            
+            log_test("GET /api/recommendations?type=ingredient&ingredient=ginger", True, 
+                    f"Returned {len(products)} products")
+            
+            # Check if benefit data is included
+            if products:
+                has_benefit_data = any('benefit' in p or 'benefitStory' in p for p in products)
+                log_test("GET /api/recommendations - Benefit data included", has_benefit_data)
+        else:
+            log_test("GET /api/recommendations?type=ingredient", False, 
+                    f"Status: {response.status_code}")
+        
+        # Test 2: Basic recommendations endpoint
+        response = requests.get(f"{BASE_URL}/recommendations", timeout=10)
+        if response.status_code == 200:
+            log_test("GET /api/recommendations - Basic endpoint", True)
+        else:
+            log_test("GET /api/recommendations - Basic endpoint", False, 
+                    f"Status: {response.status_code}")
+    
+    except Exception as e:
+        log_test("GET /api/recommendations - Exception", False, str(e))
+
+def test_analytics():
+    """Test GET /api/analytics"""
+    print("\n🧪 Testing GET /api/analytics...")
+    
+    try:
+        response = requests.get(f"{BASE_URL}/analytics", timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            dashboard = data.get('dashboard', {})
+            
+            log_test("GET /api/analytics - Dashboard data", True, 
+                    f"Keys: {list(dashboard.keys())}")
+            log_test("GET /api/analytics - Metrics structure", 'dashboard' in data)
+        else:
+            log_test("GET /api/analytics", False, f"Status: {response.status_code}")
+    
+    except Exception as e:
+        log_test("GET /api/analytics - Exception", False, str(e))
+
+def test_admin_dashboard():
+    """Test GET /api/admin/dashboard"""
+    print("\n🧪 Testing GET /api/admin/dashboard...")
+    
+    try:
+        response = requests.get(f"{BASE_URL}/admin/dashboard", timeout=15)
+        
+        if response.status_code == 200:
+            data = response.json()
+            dashboard = data.get('dashboard', {})
+            
+            has_analytics = 'analytics' in dashboard
+            has_sync_stats = 'syncStats' in dashboard
+            has_product_stats = 'productStats' in dashboard
+            has_recent_orders = 'recentOrders' in dashboard
+            has_payment_stats = 'paymentStats' in dashboard
+            
+            log_test("GET /api/admin/dashboard - Basic request", True)
+            log_test("GET /api/admin/dashboard - Has analytics", has_analytics)
+            log_test("GET /api/admin/dashboard - Has syncStats", has_sync_stats)
+            log_test("GET /api/admin/dashboard - Has productStats", has_product_stats)
+            log_test("GET /api/admin/dashboard - Has recentOrders", has_recent_orders)
+            log_test("GET /api/admin/dashboard - Has paymentStats", has_payment_stats)
+        else:
+            log_test("GET /api/admin/dashboard", False, f"Status: {response.status_code}")
+    
+    except Exception as e:
+        log_test("GET /api/admin/dashboard - Exception", False, str(e))
+
+def test_transaction_stats():
+    """Test GET /api/transactions/stats"""
+    print("\n🧪 Testing GET /api/transactions/stats...")
+    
+    try:
+        response = requests.get(f"{BASE_URL}/transactions/stats", timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            stats = data.get('stats', {})
+            
+            has_success_rate = 'successRate' in stats
+            
+            log_test("GET /api/transactions/stats - Basic request", True, 
+                    f"Total transactions: {stats.get('total', 0)}")
+            log_test("GET /api/transactions/stats - Success rate calculation", has_success_rate, 
+                    f"Success rate: {stats.get('successRate', 'N/A')}%")
+        else:
+            log_test("GET /api/transactions/stats", False, f"Status: {response.status_code}")
+    
+    except Exception as e:
+        log_test("GET /api/transactions/stats - Exception", False, str(e))
+
+def test_original_square_apis():
+    """Test original Square APIs for backward compatibility"""
+    print("\n🧪 Testing Original Square APIs (Backward Compatibility)...")
+    
+    try:
+        # Test 1: Health check
+        response = requests.get(f"{BASE_URL}/health", timeout=10)
+        if response.status_code == 200:
+            log_test("GET /api/health - System health", True)
+        else:
+            log_test("GET /api/health - System health", False, f"Status: {response.status_code}")
+        
+        # Test 2: Order creation (validation test)
+        payload = {
+            "cart": [],
+            "customer": {"name": "Test User", "email": "test@example.com", "phone": "1234567890"},
+            "fulfillment": {"type": "pickup"}
+        }
+        response = requests.post(f"{BASE_URL}/orders/create", json=payload, timeout=10)
+        # Should fail validation for empty cart
+        if response.status_code == 400:
+            log_test("POST /api/orders/create - Validation working", True, "Empty cart rejected")
+        else:
+            log_test("POST /api/orders/create - Validation", False, 
+                    f"Expected 400, got {response.status_code}")
+        
+        # Test 3: Checkout endpoint (validation test)
+        payload = {"lineItems": []}
+        response = requests.post(f"{BASE_URL}/checkout", json=payload, timeout=10)
+        # Should fail validation for empty items
+        if response.status_code == 400:
+            log_test("POST /api/checkout - Validation working", True, "Empty items rejected")
+        else:
+            log_test("POST /api/checkout - Validation", False, 
+                    f"Expected 400, got {response.status_code}")
+    
+    except Exception as e:
+        log_test("Original Square APIs - Exception", False, str(e))
 
 def print_summary():
     """Print test summary"""
-    print("\n" + "=" * 80)
-    print("TEST SUMMARY")
-    print("=" * 80)
-    print(f"Total Tests: {test_results['total']}")
-    print(f"Passed: {test_results['passed']} ✅")
-    print(f"Failed: {test_results['failed']} ❌")
-    print(f"Success Rate: {(test_results['passed'] / test_results['total'] * 100):.1f}%")
-    print("=" * 80)
+    print("\n" + "="*80)
+    print("📊 TEST SUMMARY")
+    print("="*80)
+    print(f"Total Tests: {test_results['passed'] + test_results['failed']}")
+    print(f"✅ Passed: {test_results['passed']}")
+    print(f"❌ Failed: {test_results['failed']}")
+    
+    success_rate = (test_results['passed'] / (test_results['passed'] + test_results['failed']) * 100) if (test_results['passed'] + test_results['failed']) > 0 else 0
+    print(f"Success Rate: {success_rate:.1f}%")
     
     if test_results['failed'] > 0:
-        print("\nFailed Tests:")
+        print("\n❌ FAILED TESTS:")
         for test in test_results['tests']:
-            if "❌" in test['status']:
-                print(f"  - {test['name']}: {test['details']}")
+            if not test['passed']:
+                print(f"  - {test['name']}")
+                if test['details']:
+                    print(f"    {test['details']}")
     
-    print("\n" + "=" * 80)
-    print("DETAILED TEST RESULTS")
-    print("=" * 80)
-    for test in test_results['tests']:
-        print(f"{test['status']} - {test['name']}")
-        if test['details']:
-            print(f"  {test['details']}")
-        if test['response_time_ms'] > 0:
-            print(f"  Response time: {test['response_time_ms']}ms")
+    print("="*80)
 
-def main():
-    """Run all backend tests"""
-    print("\n" + "=" * 80)
-    print("VORACIOUS BACKEND VALIDATION - COMPLETE SQUARE INTEGRATION TESTING")
-    print("=" * 80)
-    print(f"Base URL: {BASE_URL}")
-    print(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("=" * 80 + "\n")
+if __name__ == "__main__":
+    print("🚀 Starting Comprehensive Backend API Testing")
+    print(f"Backend URL: {BASE_URL}")
+    print(f"Timestamp: {datetime.now().isoformat()}")
     
-    # Run tests in sequence
-    health_data = test_health_endpoint()
-    catalog_item = test_square_catalog_sync()
-    test_checkout_api(catalog_item)
-    test_payments_api()
-    test_orders_api()
+    # Run all tests
+    test_get_products_unified()
+    test_unified_products()
+    test_unified_sync()
+    test_unified_sync_post()
+    test_recommendations()
+    test_analytics()
+    test_admin_dashboard()
+    test_transaction_stats()
+    test_original_square_apis()
     
     # Print summary
     print_summary()
-    
-    print(f"\nCompleted: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("=" * 80 + "\n")
-
-if __name__ == "__main__":
-    main()

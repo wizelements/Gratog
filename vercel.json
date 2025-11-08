@@ -1,20 +1,23 @@
 {
-  "crons": [
-    {
-      "path": "/api/cron/hourly-reindex",
-      "schedule": "0 * * * *"
-    }
-  ],
   "functions": {
-    "app/api/v1/admin/reindex/route.ts": {
-      "maxDuration": 300
+    "app/api/**/*.{ts,js}": {
+      "maxDuration": 30
     },
-    "app/api/cron/hourly-reindex/route.ts": {
-      "maxDuration": 300
+    "app/api/orders/create/route.js": {
+      "maxDuration": 60
     },
-    "app/lib/crawler.ts": {
+    "app/api/payments/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/checkout/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/square-webhook/route.js": {
       "maxDuration": 60
     }
+  },
+  "env": {
+    "NEXT_PUBLIC_APP_URL": "https://cart-rescue-1.preview.emergentagent.com"
   },
   "headers": [
     {

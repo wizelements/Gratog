@@ -37,15 +37,15 @@ export async function GET(request: NextRequest) {
     const isProduction = true; // Assume production for now
     
     const clientId = isProduction
-      ? 'sq0idp-V1fV-MwsU5lET4rvzHKnIw'
-      : 'sandbox-sq0idb-yygbGJe58k9ZsmpZhJ6kjA';
+      ? (process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || process.env.NEXT_PUBLIC_SQUARE_APP_ID)
+      : (process.env.NEXT_PUBLIC_SQUARE_SANDBOX_APPLICATION_ID || 'sandbox-sq0idb-yygbGJe58k9ZsmpZhJ6kjA');
     
     const clientSecret = process.env.SQUARE_CLIENT_SECRET || '';
     
-    if (!clientSecret) {
-      console.error('SQUARE_CLIENT_SECRET not configured');
+    if (!clientSecret || !clientId) {
+      console.error('SQUARE_CLIENT_SECRET or Application ID not configured');
       return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/admin?oauth_error=config&message=Client secret not configured`
+        `${process.env.NEXT_PUBLIC_BASE_URL}/admin?oauth_error=config&message=Square OAuth credentials not configured`
       );
     }
     

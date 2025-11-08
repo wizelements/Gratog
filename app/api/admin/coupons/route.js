@@ -1,7 +1,18 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-admin';
+import { verifyToken } from '@/lib/auth';
 
 export async function GET(request) {
+  // Verify admin authentication
+  const token = request.cookies.get('admin_token')?.value;
+  const decoded = verifyToken(token);
+  
+  if (!decoded) {
+    return NextResponse.json(
+      { error: 'Authentication required' },
+      { status: 401 }
+    );
+  }
   try {
     const { db } = await connectToDatabase();
     
@@ -40,6 +51,16 @@ export async function GET(request) {
 
 // Analytics endpoint for coupon statistics
 export async function POST(request) {
+  // Verify admin authentication
+  const token = request.cookies.get('admin_token')?.value;
+  const decoded = verifyToken(token);
+  
+  if (!decoded) {
+    return NextResponse.json(
+      { error: 'Authentication required' },
+      { status: 401 }
+    );
+  }
   try {
     const { action } = await request.json();
     

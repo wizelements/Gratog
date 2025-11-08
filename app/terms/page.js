@@ -1,10 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { generateMetadata } from '@/lib/seo';
+import { generateMetadata, generateViewport } from '@/lib/seo';
 
 export const metadata = generateMetadata({
   title: "Terms of Service | Taste of Gratitude",
   description: "Read our terms of service to understand the conditions for using Taste of Gratitude products and services.",
 });
+
+export const viewport = generateViewport();
 
 export default function TermsPage() {
   return (

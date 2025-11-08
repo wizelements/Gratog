@@ -1,0 +1,55 @@
+# Test files
+**/*.test.js
+**/*.test.ts
+**/*.test.tsx
+**/*.test.jsx
+**/*.spec.js
+**/*.spec.ts
+**/*_test.py
+**/test-*.js
+**/test-*.sh
+
+# Documentation
+*.md
+!README.md
+docs/
+AGENTS.md
+
+# Development files
+.vscode/
+.git/
+.github/
+.emergent/
+
+# Logs
+*.log
+logs/
+dev.log
+
+# Test results
+**/test_results*.json
+**/backend_test_results.json
+**/square_api_test_results.json
+**/comprehensive_analysis_results.json
+**/fix_verification_results.json
+
+# Python test files
+**/*_test.py
+**/*test*.py
+comprehensive_system_analysis.py
+verify_all_fixes.py
+
+# Temporary files
+.next/
+node_modules/
+.env.local.example
+tmp/
+temp/
+
+# Build artifacts
+*.tsbuildinfo
+dist/
+
+# Database files
+*.db
+*.sqlite

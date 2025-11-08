@@ -4,6 +4,7 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
 import { fromCents, toSquareMoney } from '@/lib/money';
 import { createPayment } from '@/lib/square-ops';
+import { shouldAllowFallback, getAuthFailureResponse, logSquareOperation } from '@/lib/square-guard';
 
 /**
  * Square Payments API - Web Payments SDK Integration
@@ -206,8 +207,20 @@ export async function POST(request: NextRequest) {
       }
       
       if (error.message.includes('UNAUTHORIZED')) {
+        logSquareOperation('Payment Processing', false, { error: 'UNAUTHORIZED' });
+        
+        if (!shouldAllowFallback()) {
+          const failureResponse = getAuthFailureResponse(error);
+          return NextResponse.json(failureResponse, { status: 503 });
+        }
+        
+        // Development fallback mode
         return NextResponse.json(
-          { error: 'Payment processing temporarily unavailable' },
+          { 
+            error: 'Payment processing temporarily unavailable',
+            fallbackMode: true,
+            warning: 'Development mode - no real charges processed'
+          },
           { status: 500 }
         );
       }

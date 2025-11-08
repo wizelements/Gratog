@@ -3,7 +3,6 @@ import crypto from 'crypto';
 import { updateOrderStatus } from '@/lib/db-customers';
 import { sendOrderUpdateSMS } from '@/lib/sms';
 import { sendOrderUpdateEmail } from '@/lib/email';
-import { updateWebhookActivity } from '../health/route';
 
 // Get webhook signature key from environment
 const SQUARE_WEBHOOK_SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
@@ -102,9 +101,6 @@ export async function POST(request) {
         console.log(`Unhandled webhook event type: ${eventType}`);
     }
     
-    // Track webhook activity
-    updateWebhookActivity(eventType, 'success');
-    
     // Return success response
     return NextResponse.json({ 
       received: true,
@@ -113,9 +109,20 @@ export async function POST(request) {
     });
     
   } catch (error) {
-    console.error('Webhook processing error:', error);
+    console.error('❌ Webhook processing error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      ...(error.cause && { cause: error.cause })
+    });
+    
+    
     return NextResponse.json(
-      { error: 'Webhook processing failed' },
+      { 
+        error: 'Webhook processing failed',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     );
   }
@@ -124,9 +131,15 @@ export async function POST(request) {
 // Handler functions for different Square webhook events
 
 async function handlePaymentCreated(payment) {
-  console.log('Payment created:', payment.id);
+  console.log('Payment created:', payment?.id);
   
   try {
+    // Validate payment data
+    if (!payment || !payment.id) {
+      console.error('Invalid payment data received:', payment);
+      return;
+    }
+    
     // Update order status to payment_processing
     if (payment.order_id) {
       await updateOrderStatus(payment.order_id, 'payment_processing', {
@@ -134,11 +147,13 @@ async function handlePaymentCreated(payment) {
         status: payment.status,
         updatedAt: new Date().toISOString()
       });
+      console.log(`Order ${payment.order_id} status updated to payment_processing`);
+    } else {
+      console.log('Payment created without order_id:', payment.id);
     }
-    
-    console.log(`Order ${payment.order_id} status updated to payment_processing`);
   } catch (error) {
-    console.error('Error handling payment created:', error);
+    console.error('❌ Error handling payment created:', error);
+    console.error('Payment data:', payment);
   }
 }
 

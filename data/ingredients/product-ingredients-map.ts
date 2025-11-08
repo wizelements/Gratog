@@ -12,10 +12,17 @@ export const PRODUCT_INGREDIENTS: Record<string, string[]> = {
   'grateful-greens': ['basil', 'spirulina', 'local-honey'],
   'floral-tide': ['hibiscus', 'cranberry', 'pineapple', 'turmeric', 'ginger', 'lemon', 'agave'],
   
+  // FREEBIES (4oz versions)
+  '4oz-blue-lotus-freebies': ['spirulina', 'ashwagandha', 'maca-root', 'ginger', 'agave'],
+  '4oz-floral-tide-freebies': ['hibiscus', 'cranberry', 'pineapple', 'turmeric', 'ginger', 'lemon', 'agave'],
+  '4oz-golden-glow-freebies': ['pineapple', 'turmeric', 'ginger', 'local-honey', 'alkaline-water'],
+  
   // LEMONADES
   'pineapple-basil': ['pineapple', 'basil', 'lemon', 'alkaline-water', 'agave'],
   'apple-cranberry': ['pineapple', 'cranberry', 'ginger', 'lemon', 'sea-moss'],
   'grateful-guardian': ['elderberry', 'cranberry', 'ginger', 'lemon', 'sea-moss'],
+  'always-pursue-gratitude': ['pineapple', 'ginger', 'lemon', 'sea-moss', 'agave'],
+  'alkaline-aura': ['sea-moss', 'ginger', 'lemon', 'mint', 'alkaline-water'],
   'rejuvenate': ['turmeric', 'ginger', 'lemon', 'sea-moss', 'alkaline-water'],
   'supplemint': ['mint', 'ginger', 'agave', 'sea-moss', 'alkaline-water'],
   'pineapple-mango': ['pineapple', 'ginger', 'lemon', 'sea-moss', 'agave'],
@@ -24,6 +31,10 @@ export const PRODUCT_INGREDIENTS: Record<string, string[]> = {
   'herbal-vibe': ['pineapple', 'ginger', 'mint', 'lemon'],
   'strawberry-rhubarb': ['sea-moss', 'ginger', 'lemon'],
   'strawberry-bliss': ['lemon', 'sea-moss', 'ginger'],
+  'berry-zinger': ['sea-moss', 'ginger', 'lemon', 'cranberry'],
+  'blueberry-lemonade': ['sea-moss', 'ginger', 'lemon', 'agave'],
+  'peach-lemonade': ['sea-moss', 'ginger', 'lemon', 'agave'],
+  'horchata': ['sea-moss', 'ginger', 'alkaline-water', 'agave'],
   
   // SHOTS
   'gratitude-defense': ['elderberry', 'cranberry', 'ginger', 'lemon', 'sea-moss'],
