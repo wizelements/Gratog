@@ -3,6 +3,7 @@ import { orderTracking } from '@/lib/enhanced-order-tracking';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { sendOrderConfirmationSMS } from '@/lib/sms';
 import { calculateDeliveryFee } from '@/lib/delivery-fees';
+import { validateDeliveryFulfillment } from '@/lib/validation/fulfillment';
 import { createLogger } from '@/lib/logger';
 import { randomUUID } from 'crypto';
 
