@@ -23,6 +23,7 @@ export default function OrderPage() {
   const [cart, setCart] = useState([]);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('in-app'); // Always in-app (Payment Links removed)
   const [orderCreated, setOrderCreated] = useState(null); // Stores created order for payment
   
   // Form state
