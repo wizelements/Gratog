@@ -25,8 +25,14 @@ export default function SquarePaymentForm({ orderId, orderTotal, squareOrderId, 
   const initializeSquare = async () => {
     let attempts = 0;
     const maxAttempts = 20;
+    let isInitialized = false; // Prevent double initialization
     
     const tryInit = async () => {
+      if (isInitialized) {
+        logger.debug('Already initialized, skipping');
+        return;
+      }
+      
       attempts++;
       logger.debug(`Init attempt ${attempts}/${maxAttempts}`);
 
@@ -64,6 +70,9 @@ export default function SquarePaymentForm({ orderId, orderTotal, squareOrderId, 
           throw new Error('Square not configured');
         }
 
+        // Clear container to prevent duplicates
+        container.innerHTML = '';
+        
         logger.info('Initializing Square SDK', { appId: appId.substring(0, 10) + '...', locationId });
         const payments = window.Square.payments(appId, locationId);
         
@@ -73,6 +82,7 @@ export default function SquarePaymentForm({ orderId, orderTotal, squareOrderId, 
         logger.info('Attaching to container');
         await cardInstance.attach('#square-card-container');
         
+        isInitialized = true; // Mark as initialized
         setCard(cardInstance);
         setPaymentStatus('idle');
         logger.info('✅ Square Payment Form initialized successfully!');
