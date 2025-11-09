@@ -103,7 +103,6 @@ export async function POST(request) {
     
     // CRITICAL: Create Square Order FIRST
     let squareOrderId = null;
-    let checkoutUrl = null;
     const ALLOW_FALLBACK = process.env.SQUARE_FALLBACK_MODE === 'true';
     
     const SQUARE_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
