@@ -178,81 +178,6 @@ export async function POST(request) {
         } else {
           squareOrderId = orderResponseData.order.id;
           logger.info('✅ Square Order created', { squareOrderId });
-          
-          // Step 2: Create Payment Link using quick_pay (simpler approach)
-          // Calculate total amount in cents
-          const totalAmountCents = Math.round(
-            orderData.cart.reduce((sum, item) => sum + (item.price * item.quantity * 100), 0) +
-            (deliveryFee * 100)
-          );
-          
-          // Format phone number to E.164 format (+1234567890) if valid
-          let formattedPhone = orderData.customer.phone?.replace(/\D/g, '') || ''; // Remove all non-digits
-          if (formattedPhone.length === 10) {
-            formattedPhone = '+1' + formattedPhone; // Add +1 for US numbers
-          } else if (formattedPhone.length > 0 && !formattedPhone.startsWith('+')) {
-            formattedPhone = '+' + formattedPhone;
-          }
-          
-          // Build pre_populated_data with optional phone
-          const prePopulatedData = {
-            buyer_email: orderData.customer.email
-          };
-          
-          // Only include phone if valid (10+ digits)
-          if (formattedPhone.length >= 11) {
-            prePopulatedData.buyer_phone_number = formattedPhone;
-          }
-          
-          const paymentLinkPayload = {
-            idempotency_key: `link_${orderId}_${Date.now()}`,
-            description: `Order #${orderNumber} - ${orderData.customer.name}`,
-            quick_pay: {
-              name: `Order #${orderNumber}`,
-              price_money: {
-                amount: totalAmountCents,
-                currency: 'USD'
-              },
-              location_id: SQUARE_LOCATION_ID // Required for quick_pay
-            },
-            checkout_options: {
-              redirect_url: `${process.env.NEXT_PUBLIC_BASE_URL}/order/success?orderId=${orderId}&squareOrderId=${squareOrderId}`
-            }
-            // Commenting out pre_populated_data for now - Square is rejecting test data
-            // pre_populated_data: prePopulatedData
-          };
-          
-          logger.debug('Payment Link payload (quick_pay)', { 
-            payload: { ...paymentLinkPayload, formattedPhone, phoneLength: formattedPhone.length } 
-          });
-          
-          const paymentLinkResponse = await fetch(`${SQUARE_BASE}/v2/online-checkout/payment-links`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${SQUARE_TOKEN}`,
-              'Content-Type': 'application/json',
-              'Square-Version': '2024-12-18' // Latest stable version
-            },
-            body: JSON.stringify(paymentLinkPayload)
-          });
-          
-          const paymentLinkData = await paymentLinkResponse.json();
-          
-          logger.debug('Payment Link response', { 
-            status: paymentLinkResponse.status,
-            data: paymentLinkData 
-          });
-          
-          if (paymentLinkResponse.ok) {
-            checkoutUrl = paymentLinkData.payment_link.url;
-            logger.info('✅ Square Payment Link created', { checkoutUrl });
-          } else {
-            logger.warn('Payment Link creation failed', { 
-              status: paymentLinkResponse.status,
-              error: paymentLinkData.errors?.[0]?.detail,
-              fullErrors: paymentLinkData.errors 
-            });
-          }
         }
       } catch (squareError) {
         logger.error('Square integration error', { error: squareError.message });
@@ -271,9 +196,8 @@ export async function POST(request) {
       }
     }
     
-    // Create local order
+    // Create local order (NO payment link generation - in-app payment only)
     enhancedOrderData.metadata.squareOrderId = squareOrderId;
-    enhancedOrderData.metadata.checkoutUrl = checkoutUrl;
     
     const result = await orderTracking.createOrder(enhancedOrderData, true);
     
