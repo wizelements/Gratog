@@ -899,11 +899,11 @@ frontend:
 
   - task: "Complete Checkout Flow"
     implemented: true
-    working: true
+    working: false
     file: "/app/app/order/page.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
           agent: "testing"
@@ -911,6 +911,9 @@ frontend:
         - working: true
           agent: "testing"
           comment: "🎉 SQUARE PAYMENT LINKS INTEGRATION - COMPREHENSIVE FRONTEND TESTING COMPLETE: Executed complete end-to-end customer journey testing from homepage to Square checkout completion. PERFECT SUCCESS: 100% of critical user flows validated and working. ✅ COMPLETE 4-STEP CHECKOUT VALIDATED: Step 1 (Product Selection) - 9 products displayed in grid, Add to Cart working, cart updates in real-time showing items with quantity controls. Step 2 (Customer Info) - All form fields functional (name, email, phone), validation working, test data filled successfully (Sarah Johnson, sarah.johnson@example.com, (404) 555-1234). Step 3 (Fulfillment) - Both options present and selectable (Pickup at Serenbe Market, Home Delivery with address form). Step 4 (Order Review) - Complete order summary with 1 item (Elderberry Moss $36.00), customer details, fulfillment info, coupon input section, price breakdown (Subtotal $36.00, Total $36.00), prominent Square checkout button 'Continue to Square Checkout → $36.00'. ✅ SQUARE INTEGRATION VERIFIED: Square checkout button clearly visible and functional, proper Square branding present, payment flow designed to redirect to Square Online for payment completion. ✅ CATALOG DISPLAY: 19 products from Square catalog sync displaying correctly with proper images, pricing, and product details. Category filters working (All Products 19, Sea Moss Gels 6, Lemonades 11, Wellness Shots 2). ✅ RESPONSIVE DESIGN CONFIRMED: Mobile (390x844) and Tablet (768x1024) views working correctly with responsive layouts. ✅ PERFORMANCE EXCELLENT: Homepage 1.31s, Catalog 1.32s, checkout flow smooth with no blocking errors. ASSESSMENT: Complete customer journey from product discovery → cart → checkout → Square payment is FULLY FUNCTIONAL and production-ready. Square Payment Links integration working as designed."
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL BUG FOUND - ORDER PAGE CRASHING: Comprehensive live site testing on https://cart-rescue-1.preview.emergentagent.com reveals CRITICAL JavaScript error blocking entire checkout flow. ERROR: 'ReferenceError: paymentMethod is not defined' at line 149 in /app/app/order/page.js. ROOT CAUSE: Variable 'paymentMethod' is used in 3 locations (lines 149, 546, 562) but NEVER DEFINED in component state. The variable is referenced in: (1) Logger at line 149 during order submission, (2) Button text conditional at line 546 ('Continue to Payment' vs 'Place Order'), (3) Security message at line 562 ('payment' vs 'checkout'). IMPACT: Order page shows error screen 'Something went wrong' when cart has items (tested with 3 products: 4oz Blue Lotus Freebies, 4oz Floral Tide Freebies, 4oz Golden Glow Freebies, subtotal $33). Cart functionality WORKING (Quick Add buttons successfully add products, FloatingCart badge updates correctly showing 3 items). TESTING RESULTS: ✅ Catalog page loads correctly (32 products displayed), ✅ Quick Add buttons functional (successfully added 3 products to cart), ✅ Cart persistence working (cart saved to localStorage), ✅ FloatingCart badge updates correctly, ❌ Order page crashes with ReferenceError when cart has items, ❌ Checkout form not accessible due to crash, ❌ Payment form never reached due to crash. VERIFIED: ✅ No 'Pay via Link' option present (correctly removed as per requirements). FIX NEEDED: Add missing state variable 'const [paymentMethod, setPaymentMethod] = useState('in-app')' after line 41 in /app/app/order/page.js. Since Payment Links were removed and only in-app Square Web Payments SDK is supported, default value should be 'in-app'."
 
   - task: "Home Page UI and Navigation"
     implemented: true
