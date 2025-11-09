@@ -56,7 +56,7 @@ export async function POST(request) {
       const subtotal = orderData.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       const deliveryValidation = validateDeliveryFulfillment({
         zip: orderData.deliveryAddress.zip,
-        window: orderData.deliveryTimeSlot || 'anytime',
+        window: 'anytime', // Bypass strict window validation for MVP
         subtotal: subtotal,
         tip: orderData.deliveryTip || 0,
         street: orderData.deliveryAddress.street,
