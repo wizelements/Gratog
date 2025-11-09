@@ -1,111 +1,98 @@
 'use client';
 
 import { useState } from 'react';
-import { ShoppingCart, Check } from 'lucide-react';
+import { ShoppingCart, Plus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cartUtils';
+import { createLogger } from '@/lib/logger';
 
-/**
- * QuickAddButton - WITH VARIANT SUPPORT
- * @param {Object} product - Product object
- * @param {Object} selectedVariant - Selected variant object (id, name, price)
- * @param {string} className - Additional classes
- * @param {string} variant - Button variant style ('default' or 'icon')
- */
-export default function QuickAddButton({ 
-  product, 
-  selectedVariant = null,
-  className = '', 
-  variant = 'default'
-}) {
+const logger = createLogger('QuickAddButton');
+
+export default function QuickAddButton({ product, size = 'default', className = '' }) {
   const [isAdding, setIsAdding] = useState(false);
-  const [isAdded, setIsAdded] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
 
-  const handleQuickAdd = (e) => {
+  const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
+    if (isAdding || justAdded) return;
+
+    logger.info('Adding product to cart', { 
+      productId: product.id, 
+      productName: product.name,
+      price: product.price 
+    });
+
     setIsAdding(true);
 
     try {
-      // Use variant object if provided, otherwise use first variant or null
-      const variantToAdd = selectedVariant || product.variations?.[0] || null;
+      // Ensure product has required fields
+      const productToAdd = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        priceCents: product.priceCents,
+        image: product.image || product.images?.[0],
+        category: product.category,
+        slug: product.slug,
+        variationId: product.variationId || product.catalogObjectId || product.id,
+      };
+
+      logger.debug('Product data prepared', productToAdd);
+
+      const updatedCart = addToCart(productToAdd);
       
-      const updatedCart = addToCart(product, 1, variantToAdd);
-      
-      // Build toast message with variant info
-      const variantInfo = variantToAdd ? ` (${variantToAdd.name})` : '';
-      
-      toast.success(`${product.name}${variantInfo} added to cart!`, {
-        description: 'View your cart to checkout',
-        action: {
-          label: 'View Cart',
-          onClick: () => window.dispatchEvent(new CustomEvent('openCart'))
-        }
+      logger.info('Product added to cart successfully', { 
+        cartSize: updatedCart.length,
+        productId: product.id 
       });
 
-      setIsAdding(false);
-      setIsAdded(true);
-      setTimeout(() => setIsAdded(false), 2000);
-      
       // Dispatch cart update event
-      window.dispatchEvent(new CustomEvent('cartUpdated', { 
-        detail: { cart: updatedCart } 
-      }));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cartUpdated', {
+          detail: { cart: updatedCart }
+        }));
+        logger.debug('Cart updated event dispatched');
+      }
+
+      setJustAdded(true);
+      toast.success(`${product.name} added to cart! 🎉`, {
+        duration: 2000,
+      });
+
+      // Reset after 2 seconds
+      setTimeout(() => {
+        setJustAdded(false);
+      }, 2000);
+
     } catch (error) {
-      console.error('Failed to add to cart:', error);
-      toast.error('Failed to add to cart');
+      logger.error('Failed to add product to cart', { 
+        error: error.message,
+        productId: product.id 
+      });
+      toast.error('Failed to add to cart. Please try again.');
+    } finally {
       setIsAdding(false);
     }
   };
 
-  if (variant === 'icon') {
-    return (
-      <Button
-        onClick={handleQuickAdd}
-        size="icon"
-        className={`relative ${className} ${
-          isAdded 
-            ? 'bg-green-600 hover:bg-green-700' 
-            : 'bg-emerald-600 hover:bg-emerald-700'
-        } transition-all duration-300`}
-        disabled={isAdding}
-      >
-        {isAdding ? (
-          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-        ) : isAdded ? (
-          <Check className="h-5 w-5 animate-bounce" />
-        ) : (
-          <ShoppingCart className="h-5 w-5" />
-        )}
-      </Button>
-    );
-  }
-
   return (
     <Button
-      onClick={handleQuickAdd}
-      className={`relative group ${className} ${
-        isAdded 
-          ? 'bg-green-600 hover:bg-green-700' 
-          : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700'
-      } transition-all duration-300`}
-      disabled={isAdding}
+      onClick={handleAddToCart}
+      disabled={isAdding || justAdded}
+      size={size}
+      className={`${justAdded ? 'bg-green-600 hover:bg-green-700' : 'bg-emerald-600 hover:bg-emerald-700'} transition-all ${className}`}
     >
-      {isAdding ? (
+      {justAdded ? (
         <>
-          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-          Adding...
-        </>
-      ) : isAdded ? (
-        <>
-          <Check className="mr-2 h-5 w-5 animate-bounce" />
+          <Check className="mr-2 h-4 w-4" />
           Added!
         </>
       ) : (
         <>
-          <ShoppingCart className="mr-2 h-5 w-5 group-hover:animate-bounce" />
+          <Plus className="mr-2 h-4 w-4" />
           Add to Cart
         </>
       )}

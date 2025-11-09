@@ -9,12 +9,9 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowRight, ShoppingBag, Trash2, Plus, Minus, MapPin, Home, Package, CreditCard, ExternalLink, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ArrowRight, ShoppingBag, Trash2, Plus, Minus, MapPin, Home, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { loadCart, updateQuantity, removeFromCart, clearCart, getCartTotal, formatPrice } from '@/lib/cartUtils';
-import SquarePaymentForm from '@/components/SquarePaymentForm';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('OrderPage');
@@ -24,8 +21,6 @@ export default function OrderPage() {
   const [cart, setCart] = useState([]);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('hosted'); // hosted or in-app
-  const [orderCreated, setOrderCreated] = useState(null); // Stores created order for payment
   
   // Form state
   const [customer, setCustomer] = useState({
@@ -34,7 +29,7 @@ export default function OrderPage() {
     phone: '',
   });
   
-  const [fulfillmentType, setFulfillmentType] = useState('pickup');
+  const [fulfillmentType, setFulfillmentType] = useState('pickup'); // pickup, delivery
   const [deliveryAddress, setDeliveryAddress] = useState({
     street: '',
     city: '',
@@ -44,15 +39,10 @@ export default function OrderPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      try {
-        const loadedCart = loadCart();
-        setCart(loadedCart);
-        setIsHydrated(true);
-        logger.info('Order page loaded', { cartItems: loadedCart.length });
-      } catch (error) {
-        logger.error('Failed to load cart', { error: error.message });
-        toast.error('Failed to load cart. Please try again.');
-      }
+      const loadedCart = loadCart();
+      setCart(loadedCart);
+      setIsHydrated(true);
+      logger.info('Order page loaded', { cartItems: loadedCart.length });
     }
   }, []);
 
@@ -61,73 +51,24 @@ export default function OrderPage() {
   const total = subtotal + deliveryFee;
 
   const handleQuantityChange = (productId, change) => {
-    try {
-      const item = cart.find(i => i.id === productId);
-      if (!item) {
-        logger.warn('Item not found in cart', { productId });
-        return;
-      }
-      
-      const newQuantity = item.quantity + change;
-      if (newQuantity > 0) {
-        const newCart = updateQuantity(productId, newQuantity);
-        setCart(newCart);
-        logger.info('Quantity updated', { productId, newQuantity });
-      } else {
-        handleRemoveItem(productId);
-      }
-    } catch (error) {
-      logger.error('Failed to update quantity', { error: error.message, productId });
-      toast.error('Failed to update quantity');
+    const item = cart.find(i => i.id === productId);
+    if (!item) return;
+    
+    const newQuantity = item.quantity + change;
+    if (newQuantity > 0) {
+      const newCart = updateQuantity(productId, newQuantity);
+      setCart(newCart);
+      logger.info('Quantity updated', { productId, newQuantity });
+    } else {
+      handleRemoveItem(productId);
     }
   };
 
   const handleRemoveItem = (productId) => {
-    try {
-      const newCart = removeFromCart(productId);
-      setCart(newCart);
-      toast.success('Item removed from cart');
-      logger.info('Item removed', { productId });
-    } catch (error) {
-      logger.error('Failed to remove item', { error: error.message, productId });
-      toast.error('Failed to remove item');
-    }
-  };
-
-  const validateForm = () => {
-    // Validate customer info
-    if (!customer.name.trim()) {
-      toast.error('Please enter your name');
-      return false;
-    }
-    
-    if (!customer.email.trim() || !customer.email.includes('@')) {
-      toast.error('Please enter a valid email address');
-      return false;
-    }
-    
-    if (!customer.phone.trim()) {
-      toast.error('Please enter your phone number');
-      return false;
-    }
-
-    // Validate delivery address if applicable
-    if (fulfillmentType === 'delivery') {
-      if (!deliveryAddress.street.trim()) {
-        toast.error('Please enter your street address');
-        return false;
-      }
-      if (!deliveryAddress.city.trim()) {
-        toast.error('Please enter your city');
-        return false;
-      }
-      if (!deliveryAddress.zip.trim() || deliveryAddress.zip.length < 5) {
-        toast.error('Please enter a valid ZIP code');
-        return false;
-      }
-    }
-
-    return true;
+    const newCart = removeFromCart(productId);
+    setCart(newCart);
+    toast.success('Item removed from cart');
+    logger.info('Item removed', { productId });
   };
 
   const handleSubmit = async (e) => {
@@ -135,41 +76,45 @@ export default function OrderPage() {
     
     if (cart.length === 0) {
       toast.error('Your cart is empty');
-      logger.warn('Attempted checkout with empty cart');
       return;
     }
 
-    if (!validateForm()) {
+    // Validation
+    if (!customer.name || !customer.email || !customer.phone) {
+      toast.error('Please fill in all customer information');
       return;
+    }
+
+    if (fulfillmentType === 'delivery') {
+      if (!deliveryAddress.street || !deliveryAddress.city || !deliveryAddress.zip) {
+        toast.error('Please fill in complete delivery address');
+        return;
+      }
     }
 
     setIsSubmitting(true);
     logger.info('Submitting order', { 
       fulfillmentType, 
       cartItems: cart.length, 
-      total,
-      paymentMethod
+      total 
     });
 
     try {
       const orderData = {
         cart: cart.map(item => ({
-          catalogObjectId: item.variationId || item.catalogObjectId || item.id,
-          variationId: item.variationId || item.catalogObjectId || item.id,
+          catalogObjectId: item.variationId || item.catalogObjectId,
           name: item.name,
           price: item.price,
           quantity: item.quantity,
         })),
         customer: {
-          name: customer.name.trim(),
-          email: customer.email.trim(),
-          phone: customer.phone.trim(),
+          name: customer.name,
+          email: customer.email,
+          phone: customer.phone,
         },
         fulfillmentType,
         ...(fulfillmentType === 'delivery' && { deliveryAddress }),
       };
-
-      logger.debug('Order data prepared', { orderData });
 
       const response = await fetch('/api/orders/create', {
         method: 'POST',
@@ -177,77 +122,33 @@ export default function OrderPage() {
         body: JSON.stringify(orderData),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
       const result = await response.json();
 
       if (result.success) {
-        logger.info('Order created successfully', { 
-          orderId: result.order.id,
-          squareOrderId: result.order.squareOrderId 
-        });
+        logger.info('Order created successfully', { orderId: result.order.id });
         
-        // Store order for payment
-        setOrderCreated(result.order);
+        // Clear cart
+        clearCart();
+        setCart([]);
         
-        // Handle payment method
-        if (paymentMethod === 'hosted') {
-          // Clear cart immediately for hosted checkout
-          clearCart();
-          setCart([]);
-          
-          if (result.order?.checkoutUrl) {
-            // Redirect to Square hosted checkout
-            logger.info('Redirecting to Square checkout', { checkoutUrl: result.order.checkoutUrl });
-            toast.success('Redirecting to secure checkout...', { duration: 2000 });
-            setTimeout(() => {
-              window.location.href = result.order.checkoutUrl;
-            }, 1000);
-          } else {
-            // No checkout URL, go to success page
-            logger.warn('No checkout URL provided', { orderId: result.order.id });
-            toast.success('Order placed! Redirecting...', { duration: 2000 });
-            setTimeout(() => {
-              router.push(`/order/success?orderId=${result.order.id}&squareOrderId=${result.order.squareOrderId}`);
-            }, 1000);
-          }
-        } else if (paymentMethod === 'in-app') {
-          // Keep cart for now, show payment form
-          toast.success('Order created! Please complete payment.');
-          logger.info('Order created, showing in-app payment form', { orderId: result.order.id });
-          // The payment form will be shown via orderCreated state
+        toast.success('Order placed successfully! 🎉');
+        
+        // Redirect to success page or checkout
+        if (result.order?.checkoutUrl) {
+          window.location.href = result.order.checkoutUrl;
+        } else {
+          router.push(`/order/success?orderId=${result.order.id}`);
         }
       } else {
-        throw new Error(result.error || 'Failed to create order');
+        logger.error('Order creation failed', { error: result.error });
+        toast.error(result.error || 'Failed to create order');
       }
     } catch (error) {
-      logger.error('Order submission error', { 
-        error: error.message,
-        stack: error.stack 
-      });
-      toast.error(error.message || 'Failed to create order. Please try again.');
+      logger.error('Order submission error', { error: error.message });
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handlePaymentSuccess = (paymentData) => {
-    logger.info('Payment successful', { 
-      orderId: orderCreated?.id,
-      paymentId: paymentData.payment?.id 
-    });
-    
-    // Clear cart
-    clearCart();
-    setCart([]);
-    
-    // Redirect to success page
-    toast.success('Payment successful! 🎉', { duration: 3000 });
-    setTimeout(() => {
-      router.push(`/order/success?orderId=${orderCreated.id}&squareOrderId=${orderCreated.squareOrderId}&paid=true`);
-    }, 1500);
   };
 
   if (!isHydrated) {
@@ -258,7 +159,7 @@ export default function OrderPage() {
     );
   }
 
-  if (cart.length === 0 && !orderCreated) {
+  if (cart.length === 0) {
     return (
       <div className="container py-20">
         <Card className="max-w-md mx-auto text-center p-12">
@@ -274,43 +175,12 @@ export default function OrderPage() {
     );
   }
 
-  // Show payment form if order created and in-app payment selected
-  if (orderCreated && paymentMethod === 'in-app') {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-12">
-        <div className="container max-w-2xl">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Complete Payment</h1>
-            <p className="text-gray-600">Order #{orderCreated.orderNumber} - Total: ${total.toFixed(2)}</p>
-          </div>
-
-          <SquarePaymentForm
-            orderId={orderCreated.id}
-            orderTotal={total}
-            squareOrderId={orderCreated.squareOrderId}
-            onPaymentSuccess={handlePaymentSuccess}
-          />
-
-          <div className="mt-6 text-center">
-            <Button
-              variant="ghost"
-              onClick={() => setOrderCreated(null)}
-              className="text-gray-600"
-            >
-              ← Back to Order Form
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-12">
       <div className="container max-w-6xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Checkout</h1>
-          <p className="text-gray-600">Complete your order in just a few steps</p>
+          <p className="text-gray-600">Complete your order in just a few clicks</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -334,7 +204,6 @@ export default function OrderPage() {
                       onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
                       placeholder="John Doe"
                       required
-                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
@@ -347,7 +216,6 @@ export default function OrderPage() {
                         onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
                         placeholder="john@example.com"
                         required
-                        disabled={isSubmitting}
                       />
                     </div>
                     <div>
@@ -357,9 +225,8 @@ export default function OrderPage() {
                         type="tel"
                         value={customer.phone}
                         onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
-                        placeholder="(404) 555-1234"
+                        placeholder="(555) 123-4567"
                         required
-                        disabled={isSubmitting}
                       />
                     </div>
                   </div>
@@ -375,8 +242,8 @@ export default function OrderPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <RadioGroup value={fulfillmentType} onValueChange={setFulfillmentType} disabled={isSubmitting}>
-                    <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:border-emerald-600 transition-colors">
+                  <RadioGroup value={fulfillmentType} onValueChange={setFulfillmentType}>
+                    <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:border-emerald-600">
                       <RadioGroupItem value="pickup" id="pickup" />
                       <Label htmlFor="pickup" className="flex-1 cursor-pointer">
                         <div className="flex items-center gap-3">
@@ -389,7 +256,7 @@ export default function OrderPage() {
                       </Label>
                     </div>
                     
-                    <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:border-emerald-600 transition-colors">
+                    <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:border-emerald-600">
                       <RadioGroupItem value="delivery" id="delivery" />
                       <Label htmlFor="delivery" className="flex-1 cursor-pointer">
                         <div className="flex items-center gap-3">
@@ -406,7 +273,7 @@ export default function OrderPage() {
                   </RadioGroup>
 
                   {fulfillmentType === 'delivery' && (
-                    <div className="mt-6 p-4 bg-emerald-50 rounded-lg space-y-4 animate-in slide-in-from-top duration-300">
+                    <div className="mt-6 p-4 bg-emerald-50 rounded-lg space-y-4">
                       <div className="flex items-center gap-2 text-emerald-800 font-semibold mb-3">
                         <MapPin className="h-4 w-4" />
                         Delivery Address
@@ -419,7 +286,6 @@ export default function OrderPage() {
                           onChange={(e) => setDeliveryAddress({ ...deliveryAddress, street: e.target.value })}
                           placeholder="123 Main St"
                           required={fulfillmentType === 'delivery'}
-                          disabled={isSubmitting}
                         />
                       </div>
                       <div className="grid md:grid-cols-3 gap-4">
@@ -431,7 +297,6 @@ export default function OrderPage() {
                             onChange={(e) => setDeliveryAddress({ ...deliveryAddress, city: e.target.value })}
                             placeholder="Atlanta"
                             required={fulfillmentType === 'delivery'}
-                            disabled={isSubmitting}
                           />
                         </div>
                         <div>
@@ -441,7 +306,6 @@ export default function OrderPage() {
                             value={deliveryAddress.state}
                             onChange={(e) => setDeliveryAddress({ ...deliveryAddress, state: e.target.value })}
                             placeholder="GA"
-                            disabled={isSubmitting}
                           />
                         </div>
                         <div>
@@ -452,54 +316,11 @@ export default function OrderPage() {
                             onChange={(e) => setDeliveryAddress({ ...deliveryAddress, zip: e.target.value })}
                             placeholder="30303"
                             required={fulfillmentType === 'delivery'}
-                            disabled={isSubmitting}
                           />
                         </div>
                       </div>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-
-              {/* Payment Method Selection */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Badge className="bg-emerald-600">3</Badge>
-                    Payment Method
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Tabs value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="in-app" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        Pay Now
-                      </TabsTrigger>
-                      <TabsTrigger value="hosted" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Pay via Link
-                      </TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="in-app" className="mt-4">
-                      <Alert className="bg-blue-50 border-blue-200">
-                        <CreditCard className="h-4 w-4 text-blue-600" />
-                        <AlertDescription className="text-blue-900">
-                          Pay securely right here without leaving the page. Your card details are encrypted and never stored.
-                        </AlertDescription>
-                      </Alert>
-                    </TabsContent>
-                    
-                    <TabsContent value="hosted" className="mt-4">
-                      <Alert className="bg-green-50 border-green-200">
-                        <ExternalLink className="h-4 w-4 text-green-600" />
-                        <AlertDescription className="text-green-900">
-                          You'll be redirected to Square's secure checkout page to complete your payment.
-                        </AlertDescription>
-                      </Alert>
-                    </TabsContent>
-                  </Tabs>
                 </CardContent>
               </Card>
             </div>
@@ -514,9 +335,9 @@ export default function OrderPage() {
                   {/* Cart Items */}
                   <div className="space-y-3 max-h-64 overflow-y-auto">
                     {cart.map((item) => (
-                      <div key={item.id} className="flex gap-3 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div key={item.id} className="flex gap-3 p-2 bg-gray-50 rounded-lg">
                         <div className="flex-1">
-                          <div className="font-medium text-sm line-clamp-1">{item.name}</div>
+                          <div className="font-medium text-sm">{item.name}</div>
                           <div className="text-emerald-600 font-bold">{formatPrice(item.price)}</div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -526,7 +347,6 @@ export default function OrderPage() {
                             variant="outline"
                             onClick={() => handleQuantityChange(item.id, -1)}
                             className="h-7 w-7 p-0"
-                            disabled={isSubmitting}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
@@ -537,7 +357,6 @@ export default function OrderPage() {
                             variant="outline"
                             onClick={() => handleQuantityChange(item.id, 1)}
                             className="h-7 w-7 p-0"
-                            disabled={isSubmitting}
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
@@ -547,7 +366,6 @@ export default function OrderPage() {
                             variant="ghost"
                             onClick={() => handleRemoveItem(item.id)}
                             className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
-                            disabled={isSubmitting}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -594,23 +412,14 @@ export default function OrderPage() {
                       </span>
                     ) : (
                       <>
-                        {paymentMethod === 'in-app' ? (
-                          <>
-                            <CreditCard className="mr-2 h-5 w-5" />
-                            Continue to Payment
-                          </>
-                        ) : (
-                          <>
-                            Place Order
-                            <ArrowRight className="ml-2 h-5 w-5" />
-                          </>
-                        )}
+                        Place Order
+                        <ArrowRight className="ml-2 h-5 w-5" />
                       </>
                     )}
                   </Button>
 
                   <p className="text-xs text-center text-gray-500">
-                    🔒 Secure {paymentMethod === 'in-app' ? 'payment' : 'checkout'} powered by Square
+                    You'll be redirected to Square for secure payment
                   </p>
                 </CardContent>
               </Card>

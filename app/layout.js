@@ -61,6 +61,14 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* Square Web Payments SDK */}
+        <script 
+          type="text/javascript" 
+          src="https://web.squarecdn.com/v1/square.js"
+          async
+        />
+      </head>
       <body className={inter.className}>
         <div className="flex min-h-screen flex-col">
           <Header />

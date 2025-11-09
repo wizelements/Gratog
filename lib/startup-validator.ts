@@ -118,8 +118,8 @@ export function requireValidStartup() {
   return result;
 }
 
-// Log startup validation on module load (development only)
-if (process.env.NODE_ENV !== 'test') {
+// Log startup validation on module load (runtime only, not during build)
+if (process.env.NODE_ENV !== 'test' && typeof window === 'undefined' && process.env.VERCEL_ENV !== undefined) {
   try {
     validateStartupConfig();
   } catch (error) {

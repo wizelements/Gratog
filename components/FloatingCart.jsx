@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { loadCart, saveCart, updateCartQuantity, removeFromCart, clearCart, getCartTotals } from '@/lib/cartUtils';
+import { loadCart, saveCart, updateQuantity, removeFromCart, clearCart, getCartTotal } from '@/lib/cartUtils';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('FloatingCart');
 
 export default function FloatingCart() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,15 +19,22 @@ export default function FloatingCart() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setCart(loadCart());
+      logger.debug('FloatingCart mounting, loading cart');
+      const loadedCart = loadCart();
+      setCart(loadedCart);
       setIsHydrated(true);
+      logger.info('Cart loaded on mount', { itemCount: loadedCart.length });
     }
 
     const handleCartUpdate = (event) => {
+      logger.debug('Cart update event received', { 
+        itemCount: event.detail.cart.length 
+      });
       setCart(event.detail.cart);
     };
 
     const handleOpenCart = () => {
+      logger.info('Open cart event received');
       setIsOpen(true);
     };
 
@@ -39,7 +49,7 @@ export default function FloatingCart() {
 
   if (!isHydrated) return null;
 
-  const { subtotal, itemCount } = getCartTotals(cart);
+  const { subtotal, totalItems: itemCount } = getCartTotal();
 
   const handleUpdateQuantity = (itemId, change) => {
     const item = cart.find(i => i.id === itemId);
@@ -47,7 +57,7 @@ export default function FloatingCart() {
     
     const newQuantity = item.quantity + change;
     if (newQuantity > 0) {
-      const newCart = updateCartQuantity(itemId, newQuantity);
+      const newCart = updateQuantity(itemId, newQuantity);
       setCart(newCart);
     } else {
       handleRemoveItem(itemId);

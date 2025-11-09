@@ -1,259 +1,175 @@
 {
-  "total": 36,
-  "passed": 36,
-  "failed": 0,
+  "total": 28,
+  "passed": 20,
+  "failed": 8,
   "tests": [
     {
-      "name": "Products API returns 200 status",
-      "status": "\u2705 PASS",
+      "name": "Health Check - Returns 200 status",
       "passed": true,
-      "message": "Status: 200",
-      "details": null
+      "details": "Status: 200, Response time: 709ms",
+      "timestamp": "2025-11-08T03:10:58.082244"
     },
     {
-      "name": "Products API has success field",
-      "status": "\u2705 PASS",
+      "name": "Health Check - Has status field",
       "passed": true,
-      "message": "Success: True",
-      "details": null
+      "details": "Status: ok",
+      "timestamp": "2025-11-08T03:10:58.082280"
     },
     {
-      "name": "Products API has products array",
-      "status": "\u2705 PASS",
+      "name": "Health Check - Response time < 2000ms",
       "passed": true,
-      "message": "Products count: 29",
-      "details": null
+      "details": "Response time: 709ms",
+      "timestamp": "2025-11-08T03:10:58.082286"
     },
     {
-      "name": "Products API returns 29 products",
-      "status": "\u2705 PASS",
+      "name": "Products API - Returns 200 status",
       "passed": true,
-      "message": "Expected: 29, Got: 29",
-      "details": null
+      "details": "Status: 200, Response time: 141ms",
+      "timestamp": "2025-11-08T03:10:58.224159"
     },
     {
-      "name": "Products have required fields (id, name, price, image, slug)",
-      "status": "\u2705 PASS",
+      "name": "Products API - Returns products array",
       "passed": true,
-      "message": "Sample product: 4oz Blue Lotus Freebies ",
-      "details": null
+      "details": "Product count: 29",
+      "timestamp": "2025-11-08T03:10:58.224875"
     },
     {
-      "name": "Products have Square catalogObjectId",
-      "status": "\u2705 PASS",
+      "name": "Products API - Returns 29 products from Square catalog",
       "passed": true,
-      "message": "CatalogObjectId: ULZOXXDSFBNINO5LCYZQ2LPY",
-      "details": null
+      "details": "Expected: 29, Got: 29",
+      "timestamp": "2025-11-08T03:10:58.224886"
     },
     {
-      "name": "Price format correct (dollars and priceCents)",
-      "status": "\u2705 PASS",
+      "name": "Products API - Products have required fields (id, name, price, image)",
       "passed": true,
-      "message": "Price: $11, PriceCents: 1100",
-      "details": null
+      "details": "Sample product fields: ['_id', 'id', 'benefitStory', 'category', 'categoryData', 'createdAt', 'currency', 'description', 'image', 'images', 'inStock', 'ingredientIcons', 'ingredients', 'intelligentCategory', 'name', 'price', 'priceCents', 'slug', 'source', 'squareData', 'squareId', 'syncedAt', 'tags', 'updatedAt', 'variations', 'squareCategory', 'squareCategoryId', 'fallbackCategory', 'manualCategoryOverride']",
+      "timestamp": "2025-11-08T03:10:58.224903"
     },
     {
-      "name": "Product images are valid URLs",
-      "status": "\u2705 PASS",
+      "name": "Products API - Products have price field in dollars",
       "passed": true,
-      "message": "Image: /images/sea-moss-default.svg...",
-      "details": null
+      "details": "Sample price: $11",
+      "timestamp": "2025-11-08T03:10:58.224912"
     },
     {
-      "name": "Catalog includes expected products",
-      "status": "\u2705 PASS",
+      "name": "Products API - Products have priceCents field",
       "passed": true,
-      "message": "Found 'Kissed by Gods' or similar products",
-      "details": null
+      "details": "Sample priceCents: 1100",
+      "timestamp": "2025-11-08T03:10:58.224919"
     },
     {
-      "name": "Products API response time < 2000ms",
-      "status": "\u2705 PASS",
+      "name": "Products API - Price to priceCents conversion correct",
       "passed": true,
-      "message": "Response time: 138ms",
-      "details": null
+      "details": "Price: $11, PriceCents: 1100, Expected: 1100",
+      "timestamp": "2025-11-08T03:10:58.224926"
     },
     {
-      "name": "Health API returns 200 status",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Status: 200",
-      "details": null
+      "name": "Products API - API accessible",
+      "passed": false,
+      "details": "Error: 'NoneType' object is not subscriptable",
+      "timestamp": "2025-11-08T03:10:58.224936"
     },
     {
-      "name": "Health API has status field",
-      "status": "\u2705 PASS",
+      "name": "Cart Price API - Rejects empty lines array",
       "passed": true,
-      "message": "Status: healthy",
-      "details": null
+      "details": "Status: 400",
+      "timestamp": "2025-11-08T03:11:05.813597"
     },
     {
-      "name": "Database is connected",
-      "status": "\u2705 PASS",
+      "name": "Cart Price API - Rejects missing lines field",
       "passed": true,
-      "message": "Database status: connected",
-      "details": null
+      "details": "Status: 400",
+      "timestamp": "2025-11-08T03:11:05.901503"
     },
     {
-      "name": "Square API status available",
-      "status": "\u2705 PASS",
+      "name": "Cart Price API - Responds to valid request structure",
       "passed": true,
-      "message": "Square API: production",
-      "details": null
+      "details": "Status: 500 (Expected catalog validation error)",
+      "timestamp": "2025-11-08T03:11:06.066935"
     },
     {
-      "name": "Health API response time < 2000ms",
-      "status": "\u2705 PASS",
+      "name": "Order Creation - Rejects missing cart",
       "passed": true,
-      "message": "Response time: 1042ms",
-      "details": null
+      "details": "Status: 400",
+      "timestamp": "2025-11-08T03:11:11.216163"
     },
     {
-      "name": "Small delivery order creates successfully",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Status: 200",
-      "details": null
+      "name": "Order Creation - Rejects missing customer info",
+      "passed": false,
+      "details": "Status: 502",
+      "timestamp": "2025-11-08T03:11:11.413105"
     },
     {
-      "name": "Delivery fee $6.99 for order < $75",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Expected: $6.99, Got: $6.99",
-      "details": null
+      "name": "Order Creation - Creates valid pickup order",
+      "passed": false,
+      "details": "Status: 502",
+      "timestamp": "2025-11-08T03:11:11.450040"
     },
     {
-      "name": "Subtotal calculated correctly",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Expected: $33, Got: $33",
-      "details": null
+      "name": "Order Creation - Creates valid delivery order (Atlanta ZIP 30310)",
+      "passed": false,
+      "details": "Status: 502",
+      "timestamp": "2025-11-08T03:11:11.485803"
     },
     {
-      "name": "Total includes subtotal + delivery fee + tip",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Expected: $41.99, Got: $41.99",
-      "details": null
+      "name": "Order Creation - Rejects invalid ZIP code (10001 - New York)",
+      "passed": false,
+      "details": "Status: 502",
+      "timestamp": "2025-11-08T03:11:11.521333"
     },
     {
-      "name": "Order number generated",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Order number: TOG441177",
-      "details": null
+      "name": "Order Creation - Rejects delivery order below $30 minimum",
+      "passed": false,
+      "details": "Status: 502",
+      "timestamp": "2025-11-08T03:11:11.555929"
     },
     {
-      "name": "Large delivery order creates successfully",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Status: 200",
-      "details": null
+      "name": "Order Creation - Creates large delivery order (>=$75)",
+      "passed": false,
+      "details": "Status: 502",
+      "timestamp": "2025-11-08T03:11:11.594664"
     },
     {
-      "name": "Free delivery ($0) for order >= $75",
-      "status": "\u2705 PASS",
+      "name": "Checkout API - Rejects empty line items",
       "passed": true,
-      "message": "Expected: $0, Got: $0",
-      "details": null
+      "details": "Status: 400",
+      "timestamp": "2025-11-08T03:11:19.423772"
     },
     {
-      "name": "Invalid ZIP code rejected with 400",
-      "status": "\u2705 PASS",
+      "name": "Checkout API - Rejects missing catalogObjectId",
       "passed": true,
-      "message": "Status: 400",
-      "details": null
+      "details": "Status: 400",
+      "timestamp": "2025-11-08T03:11:19.722240"
     },
     {
-      "name": "User-friendly error message for invalid ZIP",
-      "status": "\u2705 PASS",
+      "name": "Checkout API - Responds to valid request with real catalogObjectId",
       "passed": true,
-      "message": "Error: We're not in your area yet. Try Pickup or Shipping, or use a different address.",
-      "details": null
+      "details": "Status: 500 (Testing Square API integration)",
+      "timestamp": "2025-11-08T03:11:21.808029"
     },
     {
-      "name": "Order below $30 minimum rejected with 400",
-      "status": "\u2705 PASS",
+      "name": "Checkout v2 - GET endpoint returns service status",
       "passed": true,
-      "message": "Status: 400",
-      "details": null
+      "details": "Status: 200",
+      "timestamp": "2025-11-08T03:11:24.240522"
     },
     {
-      "name": "Error message mentions $30 minimum",
-      "status": "\u2705 PASS",
+      "name": "Checkout v2 - Service configured",
       "passed": true,
-      "message": "Error: Minimum order for delivery is $30.00",
-      "details": null
+      "details": "Configured: True, Environment: production",
+      "timestamp": "2025-11-08T03:11:24.240580"
     },
     {
-      "name": "Pickup order creates successfully",
-      "status": "\u2705 PASS",
+      "name": "Checkout v2 - Rejects empty cart",
       "passed": true,
-      "message": "Status: 200",
-      "details": null
+      "details": "Status: 400",
+      "timestamp": "2025-11-08T03:11:24.300445"
     },
     {
-      "name": "No delivery fee for pickup orders",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Delivery fee: $0",
-      "details": null
-    },
-    {
-      "name": "Empty line items rejected with 400",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Status: 400",
-      "details": null
-    },
-    {
-      "name": "Missing catalogObjectId rejected with 400",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Status: 400",
-      "details": null
-    },
-    {
-      "name": "Checkout API responds to valid request",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Status: 500",
-      "details": null
-    },
-    {
-      "name": "Missing sourceId rejected with 400",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Status: 400",
-      "details": null
-    },
-    {
-      "name": "Error message mentions sourceId/token",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Error: Payment source ID (token) is required",
-      "details": null
-    },
-    {
-      "name": "Zero amount rejected with 400",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Status: 400",
-      "details": null
-    },
-    {
-      "name": "Negative amount rejected with 400",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Status: 400",
-      "details": null
-    },
-    {
-      "name": "Payments API responds to valid request",
-      "status": "\u2705 PASS",
-      "passed": true,
-      "message": "Status: 500",
-      "details": null
+      "name": "Checkout v2 - Processes valid checkout request",
+      "passed": false,
+      "details": "Status: 401",
+      "timestamp": "2025-11-08T03:11:24.503618"
     }
   ]
 }
