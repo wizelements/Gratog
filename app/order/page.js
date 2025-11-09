@@ -247,8 +247,8 @@ export default function OrderPage() {
     );
   }
 
-  // Show payment form if order created and in-app payment selected
-  if (orderCreated && paymentMethod === 'in-app') {
+  // Show payment form if order created
+  if (orderCreated) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-12">
         <div className="container max-w-2xl">
