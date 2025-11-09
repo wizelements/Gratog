@@ -51,6 +51,27 @@ export async function POST(request) {
           { status: 400 }
         );
       }
+      
+      // Validate delivery fulfillment (ZIP code, minimum order, etc.)
+      const subtotal = orderData.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const deliveryValidation = validateDeliveryFulfillment({
+        zip: orderData.deliveryAddress.zip,
+        window: orderData.deliveryTimeSlot || 'anytime',
+        subtotal: subtotal,
+        tip: orderData.deliveryTip || 0,
+        street: orderData.deliveryAddress.street,
+        city: orderData.deliveryAddress.city,
+        state: orderData.deliveryAddress.state || 'GA'
+      });
+      
+      if (!deliveryValidation.valid) {
+        const errorMessage = deliveryValidation.errors.map(e => e.message).join(', ');
+        logger.warn('Delivery validation failed', { errors: deliveryValidation.errors });
+        return NextResponse.json(
+          { success: false, error: errorMessage },
+          { status: 400 }
+        );
+      }
     }
     
     // Calculate delivery fee if applicable
