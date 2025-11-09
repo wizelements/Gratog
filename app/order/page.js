@@ -188,36 +188,11 @@ export default function OrderPage() {
           squareOrderId: result.order.squareOrderId 
         });
         
-        // Store order for payment
+        // Store order for in-app payment
         setOrderCreated(result.order);
-        
-        // Handle payment method
-        if (paymentMethod === 'hosted') {
-          // Clear cart immediately for hosted checkout
-          clearCart();
-          setCart([]);
-          
-          if (result.order?.checkoutUrl) {
-            // Redirect to Square hosted checkout
-            logger.info('Redirecting to Square checkout', { checkoutUrl: result.order.checkoutUrl });
-            toast.success('Redirecting to secure checkout...', { duration: 2000 });
-            setTimeout(() => {
-              window.location.href = result.order.checkoutUrl;
-            }, 1000);
-          } else {
-            // No checkout URL, go to success page
-            logger.warn('No checkout URL provided', { orderId: result.order.id });
-            toast.success('Order placed! Redirecting...', { duration: 2000 });
-            setTimeout(() => {
-              router.push(`/order/success?orderId=${result.order.id}&squareOrderId=${result.order.squareOrderId}`);
-            }, 1000);
-          }
-        } else if (paymentMethod === 'in-app') {
-          // Keep cart for now, show payment form
-          toast.success('Order created! Please complete payment.');
-          logger.info('Order created, showing in-app payment form', { orderId: result.order.id });
-          // The payment form will be shown via orderCreated state
-        }
+        toast.success('Order created! Please complete payment.');
+        logger.info('Order created, showing payment form', { orderId: result.order.id });
+        // The payment form will be shown via orderCreated state
       } else {
         throw new Error(result.error || 'Failed to create order');
       }
