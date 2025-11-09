@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -16,8 +16,15 @@ export default function SquarePaymentForm({ orderId, orderTotal, squareOrderId, 
   const [paymentStatus, setPaymentStatus] = useState('initializing');
   const [errorMessage, setErrorMessage] = useState('');
   const [card, setCard] = useState(null);
+  const hasInitialized = useRef(false); // Prevent double initialization
 
   useEffect(() => {
+    if (hasInitialized.current) {
+      logger.debug('Already initialized, skipping');
+      return;
+    }
+    
+    hasInitialized.current = true;
     logger.info('SquarePaymentForm mounted - starting initialization');
     initializeSquare();
   }, []);
