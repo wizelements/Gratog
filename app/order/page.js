@@ -435,45 +435,21 @@ export default function OrderPage() {
                 </CardContent>
               </Card>
 
-              {/* Payment Method Selection */}
+              {/* Payment Information */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Badge className="bg-emerald-600">3</Badge>
-                    Payment Method
+                    Payment
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Tabs value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="in-app" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        Pay Now
-                      </TabsTrigger>
-                      <TabsTrigger value="hosted" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Pay via Link
-                      </TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="in-app" className="mt-4">
-                      <Alert className="bg-blue-50 border-blue-200">
-                        <CreditCard className="h-4 w-4 text-blue-600" />
-                        <AlertDescription className="text-blue-900">
-                          Pay securely right here without leaving the page. Your card details are encrypted and never stored.
-                        </AlertDescription>
-                      </Alert>
-                    </TabsContent>
-                    
-                    <TabsContent value="hosted" className="mt-4">
-                      <Alert className="bg-green-50 border-green-200">
-                        <ExternalLink className="h-4 w-4 text-green-600" />
-                        <AlertDescription className="text-green-900">
-                          You'll be redirected to Square's secure checkout page to complete your payment.
-                        </AlertDescription>
-                      </Alert>
-                    </TabsContent>
-                  </Tabs>
+                  <Alert className="bg-blue-50 border-blue-200">
+                    <CreditCard className="h-4 w-4 text-blue-600" />
+                    <AlertDescription className="text-blue-900">
+                      You'll complete payment securely on the next page using Square's encrypted checkout. Your card details are never stored.
+                    </AlertDescription>
+                  </Alert>
                 </CardContent>
               </Card>
             </div>
