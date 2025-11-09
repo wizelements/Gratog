@@ -239,8 +239,7 @@ export async function POST(request) {
         customer: order.customer,
         items: order.items,
         pricing: order.pricing,
-        squareOrderId,
-        checkoutUrl
+        squareOrderId
       }
     });
     
