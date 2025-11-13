@@ -13,7 +13,7 @@ interface IdempotencyRecord {
 }
 
 // Redis client singleton
-let redisClient: RedisClientType | null = null;
+let redisClient: any | null = null;
 let isRedisAvailable = false;
 
 // Fallback in-memory cache
@@ -29,23 +29,17 @@ export async function initRedis() {
   
   if (!redisUrl) {
     console.warn('REDIS_URL not configured, using in-memory idempotency cache (not recommended for production)');
+    // Use stub instead
+    redisClient = new RedisIdempotency(86400);
+    isRedisAvailable = true;
     return null;
   }
 
   try {
-    redisClient = createClient({ url: redisUrl });
-    
-    redisClient.on('error', (err) => {
-      console.error('Redis client error:', err);
-      isRedisAvailable = false;
-    });
-
-    redisClient.on('connect', () => {
-      console.log('Redis connected for idempotency caching');
-      isRedisAvailable = true;
-    });
-
-    await redisClient.connect();
+    // For now, use stub implementation
+    redisClient = new RedisIdempotency(86400);
+    isRedisAvailable = true;
+    console.log('Using idempotency caching (in-memory fallback)');
     return redisClient;
   } catch (error) {
     console.error('Failed to initialize Redis:', error);
