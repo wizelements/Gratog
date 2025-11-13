@@ -58,11 +58,9 @@ export function getSquareClient(): SquareClient {
   console.log(`${LOG_PREFIX} ✅ Creating Square client for ${squareEnvironment}`);
 
   return new SquareClient({
-    bearerAuthCredentials: {
-      accessToken,
-    },
+    accessToken,
     environment: squareEnvironment,
-  });
+  } as any);
 }
 
 // Lazy getters for Square configuration - only validate when accessed
