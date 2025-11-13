@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
     console.log('Testing Payments API capability...');
     try {
       // Try to get a non-existent payment (should return 404, not 401)
-      await square.paymentsApi.getPayment({ paymentId: 'test-payment-id-that-does-not-exist' }) as any;
+      await square.payments.getPayment({ paymentId: 'test-payment-id-that-does-not-exist' }) as any;
       diagnostics.tests.paymentsApiCapability = {
         status: 'PASS',
         note: 'Payments API accessible (expected 404 for test ID)'

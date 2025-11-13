@@ -50,7 +50,7 @@ async function testSquareIntegration() {
     console.log('\n🔌 Testing Square Client...');
     try {
       // Test with a simple API call that doesn't require special permissions
-      const response = await square.locationsApi.listLocations();
+      const response = await square.locations.listLocations();
       const locationFound = response.result.locations?.some(loc => loc.id === SQUARE_LOCATION_ID);
       testResult('Square Client Connection', response.statusCode === 200,
         `Status: ${response.statusCode}, Locations found: ${response.result.locations?.length || 0}`);
@@ -110,7 +110,7 @@ async function testSquareIntegration() {
         }
       };
       
-      const response = await square.ordersApi.calculateOrder(testOrder);
+      const response = await square.orders.calculateOrder(testOrder);
       const calculated = response.statusCode === 200 && response.result.order;
       const totalAmount = response.result.order?.totalMoney ? fromCents(response.result.order.totalMoney) : 0;
       testResult('Orders API (Calculate)', !!calculated,
@@ -141,7 +141,7 @@ async function testSquareIntegration() {
         }
       };
       
-      const response = await square.checkoutApi.createPaymentLink(testCheckout);
+      const response = await square.checkout.createPaymentLink(testCheckout);
       const linkCreated = response.statusCode === 200 && response.result.paymentLink;
       testResult('Checkout API (Payment Links)', !!linkCreated,
         linkCreated ? `Link ID: ${response.result.paymentLink!.id}` : 'Link creation failed');
