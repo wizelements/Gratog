@@ -293,7 +293,7 @@ export async function GET(request: NextRequest) {
     if (paymentId) {
       try {
         const square = getSquareClient();
-        const response = await square.paymentsApi.getPayment(paymentId) as any;
+        const response = await square.paymentsApi.getPayment({ paymentId }) as any;
         squarePayment = response.result?.payment;
       } catch (squareError) {
         console.error('Failed to get payment from Square:', squareError);
