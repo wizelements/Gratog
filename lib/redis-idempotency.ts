@@ -3,7 +3,7 @@
  * Falls back to in-memory cache if Redis is not available
  */
 
-import { createClient, RedisClientType } from 'redis';
+import RedisIdempotency from './redis-idempotency-stub';
 
 interface IdempotencyRecord {
   key: string;
