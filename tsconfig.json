@@ -30,8 +30,7 @@
     "target": "ES2017",
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noImplicitAny": false,
-    "suppressImplicitAnyIndexErrors": true
+    "noImplicitAny": false
   },
   "include": [
     "next-env.d.ts",
