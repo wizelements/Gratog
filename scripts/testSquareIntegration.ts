@@ -64,7 +64,7 @@ async function testSquareIntegration() {
     // Test 3: Catalog API Access
     console.log('\n📋 Testing Catalog API...');
     try {
-      const response = await square.catalogApi.listCatalog({ limit: 5 });
+      const response = await square.listCatalog({ limit: 5 });
       testResult('Catalog API Access', response.statusCode === 200,
         `Status: ${response.statusCode}, Objects found: ${response.result.objects?.length || 0}`);
     } catch (error) {

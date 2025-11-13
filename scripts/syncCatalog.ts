@@ -66,7 +66,7 @@ class CatalogSync {
         page++;
         console.log(`📄 Fetching page ${page}${cursor ? ` (cursor: ${cursor.substring(0, 10)}...)` : ''}`);
         
-        const { result } = await square.catalogApi.listCatalog({
+        const { result } = await square.listCatalog({
           cursor,
           types: ['ITEM', 'ITEM_VARIATION', 'CATEGORY', 'IMAGE']
         });

@@ -134,7 +134,7 @@ export async function GET(request: NextRequest) {
     // Test 4: Test Catalog API (required for products)
     console.log('Testing Catalog API access...');
     try {
-      const response = await square.catalogApi.listCatalog({ types: 'ITEM' }) as any;
+      const response = await square.listCatalog({ types: 'ITEM' }) as any;
       
       diagnostics.tests.catalogAccess = {
         status: 'PASS',
