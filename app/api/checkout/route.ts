@@ -256,7 +256,7 @@ export async function GET(request: NextRequest) {
       result = response.result;
     } else if (orderId) {
       // Get order status
-      const response = await square.ordersApi.retrieveOrder(orderId) as any;
+      const response = await square.ordersApi.retrieveOrder({ orderId }) as any;
       result = response.result;
     }
     
