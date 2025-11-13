@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { hashPassword } from '@/lib/auth';
+import { hashPassword } from '@/lib/auth.js';
 
 /**
  * EMERGENCY ADMIN INITIALIZATION
