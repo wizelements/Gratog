@@ -3,10 +3,10 @@ import { connectToDatabase } from '@/lib/db-optimized';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
 
     const { db } = await connectToDatabase();
     const collection = db.collection('instagram_posts');
