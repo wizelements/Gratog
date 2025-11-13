@@ -10,7 +10,8 @@ export type AnalyticsEvent =
   | 'payment_initiated'
   | 'payment_completed'
   | 'payment_failed'
-  | 'checkout_abandoned';
+  | 'checkout_abandoned'
+  | 'field_completion_time';
 
 export interface AnalyticsProps {
   [key: string]: any;
