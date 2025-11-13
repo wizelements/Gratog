@@ -68,7 +68,15 @@ export const CartAPI = {
   clear: () => clearCart(),
   
   // Get cart totals
-  getTotals: (cart: CartItem[]): CartTotals => getCartTotal(cart),
+  getTotals: (cart?: CartItem[]): CartTotals => {
+    const result = getCartTotal();
+    return {
+      subtotal: result.subtotal,
+      itemCount: result.totalItems,
+      tax: 0,
+      total: result.subtotal
+    };
+  },
   
   // Subscribe to cart changes
   subscribe: (callback: (cart: CartItem[]) => void) => {
