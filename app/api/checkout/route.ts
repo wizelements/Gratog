@@ -252,11 +252,11 @@ export async function GET(request: NextRequest) {
     
     if (paymentLinkId) {
       // Get payment link status
-      const response = await square.checkout.paymentLinks.get(paymentLinkId) as any;
+      const response = await square.checkoutApi.retrievePaymentLink(paymentLinkId) as any;
       result = response.result;
     } else if (orderId) {
       // Get order status
-      const response = await square.orders.get(orderId) as any;
+      const response = await square.ordersApi.retrieveOrder(orderId) as any;
       result = response.result;
     }
     

@@ -16,7 +16,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://cart-rescue-1.preview.emergentagent.com"
+BASE_URL = "https://taste-gratitude-pay.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 class FrontendBackendTester:

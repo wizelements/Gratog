@@ -9,7 +9,7 @@ import {
   getDeliveryConfig,
   isFulfillmentEnabled,
   sanitizeTip
-} from './fulfillment';
+} from '../fulfillment';
 
 export interface ValidationError {
   field: string;

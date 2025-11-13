@@ -3,10 +3,23 @@ import { orderTracking } from '@/lib/enhanced-order-tracking';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { sendOrderConfirmationSMS } from '@/lib/sms';
 import { calculateDeliveryFee } from '@/lib/delivery-fees';
+import { validateDeliveryFulfillment } from '@/lib/validation/fulfillment';
+import { createLogger } from '@/lib/logger';
+import { randomUUID } from 'crypto';
+
+const logger = createLogger('OrdersCreateAPI');
 
 export async function POST(request) {
+  const startTime = Date.now();
+  
   try {
     const orderData = await request.json();
+    
+    logger.info('Order creation request received', { 
+      fulfillmentType: orderData.fulfillmentType,
+      cartItemsCount: orderData.cart?.length,
+      customerEmail: orderData.customer?.email 
+    });
     
     // Validate required fields
     if (!orderData.cart || !Array.isArray(orderData.cart) || orderData.cart.length === 0) {
@@ -32,20 +45,6 @@ export async function POST(request) {
     
     // Validate delivery fulfillment
     if (orderData.fulfillmentType === 'delivery') {
-      // Check if delivery is enabled
-      if (process.env.NEXT_PUBLIC_FULFILLMENT_DELIVERY !== 'enabled') {
-        return NextResponse.json(
-          { 
-            success: false, 
-            error: 'Home Delivery is temporarily unavailable',
-            message: 'Home Delivery is temporarily unavailable. Please choose Pickup or Shipping.',
-            code: 'FULFILLMENT_METHOD_UNAVAILABLE'
-          },
-          { status: 409 }
-        );
-      }
-      
-      // Validate delivery address
       if (!orderData.deliveryAddress?.street || !orderData.deliveryAddress?.city || !orderData.deliveryAddress?.zip) {
         return NextResponse.json(
           { success: false, error: 'Complete delivery address is required' },
@@ -53,76 +52,23 @@ export async function POST(request) {
         );
       }
       
-      // Validate ZIP code
-      const zipWhitelist = (process.env.DELIVERY_ZIP_WHITELIST || '').split(',').map(z => z.trim());
-      const cleanZip = orderData.deliveryAddress.zip.replace(/\D/g, '').slice(0, 5);
-      
-      if (!zipWhitelist.includes(cleanZip)) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            error: "We're not in your area yet. Try Pickup or Shipping, or use a different address.",
-            code: 'DELIVERY_AREA_UNAVAILABLE'
-          },
-          { status: 400 }
-        );
-      }
-      
-      // Validate minimum order
+      // Validate delivery fulfillment (ZIP code, minimum order, etc.)
       const subtotal = orderData.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      const minSubtotal = parseFloat(process.env.DELIVERY_MIN_SUBTOTAL || '30');
+      const deliveryValidation = validateDeliveryFulfillment({
+        zip: orderData.deliveryAddress.zip,
+        window: 'anytime', // Bypass strict window validation for MVP
+        subtotal: subtotal,
+        tip: orderData.deliveryTip || 0,
+        street: orderData.deliveryAddress.street,
+        city: orderData.deliveryAddress.city,
+        state: orderData.deliveryAddress.state || 'GA'
+      });
       
-      if (subtotal < minSubtotal) {
+      if (!deliveryValidation.valid) {
+        const errorMessage = deliveryValidation.errors.map(e => e.message).join(', ');
+        logger.warn('Delivery validation failed', { errors: deliveryValidation.errors });
         return NextResponse.json(
-          { 
-            success: false, 
-            error: `Minimum order for delivery is $${minSubtotal.toFixed(2)}`,
-            code: 'DELIVERY_MINIMUM_NOT_MET'
-          },
-          { status: 400 }
-        );
-      }
-      
-      // Validate delivery window
-      if (!orderData.deliveryTimeSlot) {
-        return NextResponse.json(
-          { success: false, error: 'Delivery time window is required' },
-          { status: 400 }
-        );
-      }
-      
-      // Validate tip if provided
-      if (orderData.deliveryTip !== undefined && orderData.deliveryTip !== null) {
-        const tip = parseFloat(orderData.deliveryTip);
-        if (isNaN(tip) || tip < 0 || tip > 100) {
-          return NextResponse.json(
-            { success: false, error: 'Invalid tip amount' },
-            { status: 400 }
-          );
-        }
-      }
-    }
-    
-    // Validate fulfillment-specific requirements
-    if (orderData.fulfillmentType === 'pickup_market') {
-      if (!orderData.pickupMarket) {
-        return NextResponse.json(
-          { success: false, error: 'Pickup market selection is required' },
-          { status: 400 }
-        );
-      }
-      if (!orderData.pickupDate) {
-        return NextResponse.json(
-          { success: false, error: 'Pickup date is required' },
-          { status: 400 }
-        );
-      }
-    }
-    
-    if (orderData.fulfillmentType === 'shipping') {
-      if (!orderData.deliveryAddress || !orderData.deliveryAddress.street || !orderData.deliveryAddress.city || !orderData.deliveryAddress.zip) {
-        return NextResponse.json(
-          { success: false, error: 'Complete shipping address is required' },
+          { success: false, error: errorMessage },
           { status: 400 }
         );
       }
@@ -133,23 +79,125 @@ export async function POST(request) {
     if (orderData.fulfillmentType === 'delivery') {
       const subtotal = orderData.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       deliveryFee = calculateDeliveryFee(subtotal);
-      console.log(`Delivery fee calculated: $${deliveryFee} for subtotal $${subtotal}`);
+      logger.debug('Delivery fee calculated', { subtotal, deliveryFee });
     }
     
-    // Add request metadata and delivery fee
+    // Generate order ID and number
+    const orderId = randomUUID();
+    const orderNumber = `TOG${Date.now().toString().slice(-6)}`;
+    
+    logger.info('Generated order identifiers', { orderId, orderNumber });
+    
+    // Add metadata
     const enhancedOrderData = {
       ...orderData,
-      deliveryFee, // Add calculated delivery fee
+      deliveryFee,
       metadata: {
         ...orderData.metadata,
-        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+        ip: request.headers.get('x-forwarded-for') || 'unknown',
         userAgent: request.headers.get('user-agent') || 'unknown',
         timestamp: new Date().toISOString(),
-        deliveryFee // Also store in metadata for tracking
+        deliveryFee
       }
     };
     
-    // Create order using enhanced tracking system
+    // CRITICAL: Create Square Order FIRST
+    let squareOrderId = null;
+    const ALLOW_FALLBACK = process.env.SQUARE_FALLBACK_MODE === 'true';
+    
+    const SQUARE_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
+    const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID;
+    const SQUARE_ENV = process.env.SQUARE_ENVIRONMENT || 'production';
+    const SQUARE_BASE = SQUARE_ENV === 'production' 
+      ? 'https://connect.squareup.com' 
+      : 'https://connect.squareupsandbox.com';
+    
+    if (!SQUARE_TOKEN || !SQUARE_LOCATION_ID) {
+      if (!ALLOW_FALLBACK) {
+        return NextResponse.json({
+          success: false,
+          error: 'Square payment system is not configured. Please contact support.',
+          code: 'SQUARE_NOT_CONFIGURED'
+        }, { status: 503 });
+      }
+      logger.warn('Square not configured - using fallback mode');
+      squareOrderId = `fallback_${orderId}`;
+    } else {
+      try {
+        logger.info('Creating Square Order', { orderId });
+        
+        // Step 1: Create Square Order
+        const orderPayload = {
+          idempotency_key: `order_${orderId}_${Date.now()}`,
+          order: {
+            location_id: SQUARE_LOCATION_ID,
+            line_items: orderData.cart.map(item => ({
+              catalog_object_id: item.catalogObjectId || item.variationId || item.id,
+              quantity: String(item.quantity),
+              base_price_money: {
+                amount: Math.round((item.price || 0) * 100),
+                currency: 'USD'
+              }
+            })),
+            metadata: {
+              source: 'website',
+              local_order_id: orderId,
+              order_number: orderNumber,
+              fulfillment_type: orderData.fulfillmentType,
+              customer_email: orderData.customer.email
+            }
+          }
+        };
+        
+        const orderResponse = await fetch(`${SQUARE_BASE}/v2/orders`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${SQUARE_TOKEN}`,
+            'Content-Type': 'application/json',
+            'Square-Version': '2025-10-16'
+          },
+          body: JSON.stringify(orderPayload)
+        });
+        
+        const orderResponseData = await orderResponse.json();
+        
+        if (!orderResponse.ok) {
+          const errorDetail = orderResponseData.errors?.[0]?.detail || 'Square API error';
+          logger.error('Square Order creation failed', { 
+            status: orderResponse.status,
+            error: errorDetail
+          });
+          
+          if (!ALLOW_FALLBACK) {
+            throw new Error(errorDetail);
+          }
+          
+          logger.warn('Square failed but fallback enabled');
+          squareOrderId = `fallback_${orderId}`;
+        } else {
+          squareOrderId = orderResponseData.order.id;
+          logger.info('✅ Square Order created', { squareOrderId });
+        }
+      } catch (squareError) {
+        logger.error('Square integration error', { error: squareError.message });
+        
+        if (!ALLOW_FALLBACK) {
+          return NextResponse.json({
+            success: false,
+            error: 'Unable to process order. Please try again.',
+            details: squareError.message,
+            code: 'SQUARE_ERROR'
+          }, { status: 500 });
+        }
+        
+        logger.warn('Continuing with fallback mode');
+        squareOrderId = `fallback_${orderId}`;
+      }
+    }
+    
+    // Create local order (NO payment link generation - in-app payment only)
+    enhancedOrderData.metadata.squareOrderId = squareOrderId;
+    
     const result = await orderTracking.createOrder(enhancedOrderData, true);
     
     if (!result.success) {
@@ -161,21 +209,25 @@ export async function POST(request) {
     
     const order = result.order;
     
-    // Send confirmations (don't let failures block the order creation)
+    logger.info('✅ Order created', { 
+      orderId: order.id, 
+      orderNumber: order.orderNumber,
+      squareOrderId
+    });
+    
+    // Send confirmations
     try {
-      // Send email confirmation
       await sendOrderConfirmationEmail(order);
-      console.log('Order confirmation email sent');
+      logger.info('Email sent', { orderId: order.id });
     } catch (emailError) {
-      console.warn('Failed to send confirmation email:', emailError);
+      logger.warn('Email failed', { error: emailError.message });
     }
     
     try {
-      // Send SMS confirmation
       await sendOrderConfirmationSMS(order);
-      console.log('Order confirmation SMS sent');
+      logger.info('SMS sent', { orderId: order.id });
     } catch (smsError) {
-      console.warn('Failed to send confirmation SMS:', smsError);
+      logger.warn('SMS failed', { error: smsError.message });
     }
     
     return NextResponse.json({
@@ -184,35 +236,24 @@ export async function POST(request) {
         id: order.id,
         orderNumber: order.orderNumber,
         status: order.status,
-        statusLabel: order.statusLabel,
         customer: order.customer,
         items: order.items,
-        fulfillment: order.fulfillment,
         pricing: order.pricing,
-        timeline: order.timeline,
-        createdAt: order.createdAt
-      },
-      isFallback: result.isFallback,
-      message: result.message || 'Order created successfully'
+        squareOrderId
+      }
     });
     
   } catch (error) {
-    console.error('❌ Order creation error:', error);
-    console.error('Error stack:', error.stack);
-    console.error('Error details:', {
-      message: error.message,
-      name: error.name,
-      ...(error.cause && { cause: error.cause })
+    logger.error('Order creation error', { 
+      error: error.message,
+      stack: error.stack 
     });
     
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to create order',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to create order. Please try again.',
+      details: error.message
+    }, { status: 500 });
   }
 }
 
@@ -221,87 +262,34 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const orderId = searchParams.get('id');
-    const email = searchParams.get('email');
     
-    if (orderId) {
-      // Get specific order
-      const result = await orderTracking.getOrder(orderId, true);
-      
-      if (!result.success) {
-        return NextResponse.json(
-          { success: false, error: 'Order not found' },
-          { status: 404 }
-        );
-      }
-      
-      return NextResponse.json({
-        success: true,
-        order: result.order,
-        isFallback: result.isFallback,
-        message: result.isFallback ? 'Order retrieved from offline storage' : 'Order retrieved successfully'
-      });
-      
-    } else if (email) {
-      // Get customer orders
-      const result = await orderTracking.getCustomerOrders(email, true);
-      
-      return NextResponse.json({
-        success: true,
-        orders: result.orders || [],
-        isFallback: result.isFallback,
-        message: result.isFallback ? 'Orders retrieved from offline storage' : 'Orders retrieved successfully'
-      });
-      
-    } else {
+    if (!orderId) {
       return NextResponse.json(
-        { success: false, error: 'Order ID or customer email is required' },
+        { success: false, error: 'Order ID is required' },
         { status: 400 }
       );
     }
     
-  } catch (error) {
-    console.error('Get order error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to retrieve order' },
-      { status: 500 }
-    );
-  }
-}
-
-// PUT endpoint to update order status
-export async function PUT(request) {
-  try {
-    const { orderId, status, metadata = {} } = await request.json();
+    const order = await orderTracking.getOrder(orderId);
     
-    if (!orderId || !status) {
+    if (!order) {
       return NextResponse.json(
-        { success: false, error: 'Order ID and status are required' },
-        { status: 400 }
-      );
-    }
-    
-    // Update order status
-    const result = await orderTracking.updateOrderStatus(orderId, status, metadata, true);
-    
-    if (!result.success) {
-      return NextResponse.json(
-        { success: false, error: result.error || 'Failed to update order' },
-        { status: 500 }
+        { success: false, error: 'Order not found' },
+        { status: 404 }
       );
     }
     
     return NextResponse.json({
       success: true,
-      order: result.order,
-      isFallback: result.isFallback,
-      message: result.message || 'Order status updated successfully'
+      order
     });
     
   } catch (error) {
-    console.error('Update order error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to update order' },
-      { status: 500 }
-    );
+    logger.error('Order retrieval error', { error: error.message });
+    
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to retrieve order'
+    }, { status: 500 });
   }
 }

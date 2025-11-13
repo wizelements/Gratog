@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
       amountCents,
       currency = 'USD',
       orderId,
+      squareOrderId, // Square Order ID to link payment
       customer,
       lineItems,
       idempotencyKey,
@@ -48,7 +49,8 @@ export async function POST(request: NextRequest) {
       currency,
       locationId: SQUARE_LOCATION_ID,
       idempotencyKey: paymentIdempotencyKey,
-      orderId
+      orderId,
+      squareOrderId
     });
     
     // Get fresh Square client instance
@@ -87,7 +89,8 @@ export async function POST(request: NextRequest) {
       currency,
       locationId: SQUARE_LOCATION_ID,
       idempotencyKey: paymentIdempotencyKey,
-      note: truncatedNote
+      note: truncatedNote,
+      orderId: squareOrderId // Pass Square Order ID to link payment to order
     });
     
     if (!response.payment) {
@@ -146,18 +149,37 @@ export async function POST(request: NextRequest) {
       
       // Update order status if orderId provided
       if (orderId) {
+        // Map Square payment status to order status
+        const orderStatus = payment.status === 'COMPLETED' || payment.status === 'APPROVED' ? 'paid' : 'payment_processing';
+        
         await db.collection('orders').updateOne(
           { id: orderId },
           {
             $set: {
-              paymentStatus: payment.status,
+              status: orderStatus, // Update main order status
+              paymentStatus: payment.status, // Square payment status
               squarePaymentId: payment.id,
-              paidAt: payment.status === 'COMPLETED' ? new Date() : null,
+              'payment.status': payment.status === 'COMPLETED' || payment.status === 'APPROVED' ? 'completed' : 'processing', // Update nested payment object
+              'payment.squarePaymentId': payment.id,
+              'payment.receiptUrl': payment.receiptUrl,
+              'payment.receiptNumber': payment.receiptNumber,
+              'payment.cardBrand': payment.cardDetails?.card?.cardBrand,
+              'payment.cardLast4': payment.cardDetails?.card?.last4,
+              paidAt: payment.status === 'COMPLETED' || payment.status === 'APPROVED' ? new Date() : null,
               updatedAt: new Date()
+            },
+            $push: {
+              timeline: {
+                status: orderStatus,
+                timestamp: new Date(),
+                message: payment.status === 'COMPLETED' ? 'Payment completed successfully' : `Payment ${payment.status.toLowerCase()}`,
+                actor: 'square',
+                squarePaymentId: payment.id
+              }
             }
           }
         );
-        console.log('Order payment status updated:', orderId);
+        console.log('Order status updated:', { orderId, status: orderStatus, paymentStatus: payment.status });
       }
     } catch (dbError) {
       console.warn('Failed to save payment record (non-critical):', dbError);
@@ -271,7 +293,7 @@ export async function GET(request: NextRequest) {
     if (paymentId) {
       try {
         const square = getSquareClient();
-        const response = await square.payments.get(paymentId) as any;
+        const response = await square.paymentsApi.getPayment(paymentId) as any;
         squarePayment = response.result?.payment;
       } catch (squareError) {
         console.error('Failed to get payment from Square:', squareError);

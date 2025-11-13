@@ -52,7 +52,7 @@ Phase II implements a 3-email nurture sequence for quiz takers:
 **Test the email scheduler manually:**
 
 ```bash
-curl -X POST https://cart-rescue-1.preview.emergentagent.com/api/quiz/email-scheduler \
+curl -X POST https://taste-gratitude-pay.preview.emergentagent.com/api/quiz/email-scheduler \
   -H "Authorization: Bearer cron-secret-taste-of-gratitude-2024" \
   -H "Content-Type: application/json"
 ```
@@ -60,7 +60,7 @@ curl -X POST https://cart-rescue-1.preview.emergentagent.com/api/quiz/email-sche
 **Check queue status:**
 
 ```bash
-curl https://cart-rescue-1.preview.emergentagent.com/api/quiz/email-scheduler
+curl https://taste-gratitude-pay.preview.emergentagent.com/api/quiz/email-scheduler
 ```
 
 ### Option 2: Automated Cron Job (Recommended for Production)
@@ -71,7 +71,7 @@ curl https://cart-rescue-1.preview.emergentagent.com/api/quiz/email-scheduler
 2. Create account
 3. Add new cron job:
    - **Title**: "Taste of Gratitude - Email Scheduler"
-   - **URL**: `https://cart-rescue-1.preview.emergentagent.com/api/quiz/email-scheduler`
+   - **URL**: `https://taste-gratitude-pay.preview.emergentagent.com/api/quiz/email-scheduler`
    - **Method**: POST
    - **Headers**: 
      - `Authorization: Bearer cron-secret-taste-of-gratitude-2024`
@@ -169,7 +169,7 @@ db.email_queue.find({ quizId: "YOUR_QUIZ_ID_HERE" })
 
 **Check queue stats via API:**
 ```bash
-curl https://cart-rescue-1.preview.emergentagent.com/api/quiz/email-scheduler
+curl https://taste-gratitude-pay.preview.emergentagent.com/api/quiz/email-scheduler
 ```
 
 ---

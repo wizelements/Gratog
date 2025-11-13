@@ -6,7 +6,7 @@
  * Run with: npx ts-node scripts/syncCatalog.ts
  */
 
-import { square } from '@/lib/square';
+import { getSquareClient } from '@/lib/square';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { fromCents } from '@/lib/money';
 
@@ -58,6 +58,9 @@ class CatalogSync {
       let cursor: string | undefined;
       let page = 0;
 
+      // Initialize Square client
+      const square = getSquareClient();
+      
       // Paginate through all catalog objects
       do {
         page++;

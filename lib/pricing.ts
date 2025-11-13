@@ -1,6 +1,6 @@
 // Authoritative pricing resolver using Square Catalog API
 
-import { square } from './square';
+import { getSquareClient } from './square';
 import { fromCents } from './money';
 
 /**
@@ -10,7 +10,8 @@ import { fromCents } from './money';
  */
 export async function priceFromVariation(variationId: string) {
   try {
-    const response = await square.catalog.object.get(variationId, true) as any;
+    const square = getSquareClient();
+    const response = await square.catalogApi.retrieveCatalogObject(variationId, true) as any;
     
     return response.result?.object?.itemVariationData?.priceMoney || null;
   } catch (error) {
@@ -26,7 +27,8 @@ export async function priceFromVariation(variationId: string) {
  */
 export async function batchPriceFromVariations(variationIds: string[]) {
   try {
-    const response = await square.catalog.batchGet({
+    const square = getSquareClient();
+    const response = await square.catalogApi.batchRetrieveCatalogObjects({
       objectIds: variationIds,
       includeRelatedObjects: true
     }) as any;
@@ -56,7 +58,8 @@ export async function batchPriceFromVariations(variationIds: string[]) {
  */
 export async function getInventoryCount(variationId: string, locationId: string): Promise<number> {
   try {
-    const response = await (square.inventory as any).batchRetrieveInventoryCounts({
+    const square = getSquareClient();
+    const response = await (square.inventoryApi as any).batchRetrieveInventoryCounts({
       catalogObjectIds: [variationId],
       locationIds: [locationId]
     });
@@ -82,9 +85,10 @@ export async function getInventoryCount(variationId: string, locationId: string)
  */
 export async function calculateOrderTotals(lineItems: any[], locationId: string) {
   try {
+    const square = getSquareClient();
     // First, get the catalog objects to build proper line items
     const variationIds = lineItems.map(item => item.variationId);
-    const catalogResponse = await square.catalog.batchGet({
+    const catalogResponse = await square.catalogApi.batchRetrieveCatalogObjects({
       objectIds: variationIds,
       includeRelatedObjects: true
     }) as any;
@@ -110,7 +114,7 @@ export async function calculateOrderTotals(lineItems: any[], locationId: string)
     });
     
     // Calculate order using Square Orders API
-    const orderResponse = await square.orders.calculate({
+    const orderResponse = await square.ordersApi.calculateOrder({
       order: {
         locationId,
         lineItems: squareLineItems,

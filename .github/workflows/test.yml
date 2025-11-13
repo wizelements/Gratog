@@ -1,0 +1,43 @@
+name: CI - Verify
+on:
+  pull_request:
+    branches: [ main, release/* ]
+  push:
+    branches: [ feature/* ]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: http://localhost:3000
+      NODE_ENV: test
+      SQUARE_ENV: sandbox
+      SQUARE_APP_ID: ${{ secrets.SQUARE_APP_ID }}
+      SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
+      SQUARE_SECRET: ${{ secrets.SQUARE_SECRET }}
+      WEBHOOK_SIGNATURE_KEY: ${{ secrets.WEBHOOK_SIGNATURE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn install
+      - name: Start app server
+        run: |
+          yarn build
+          yarn start &
+          echo "Waiting for server..."
+          npx wait-on http://localhost:3000/api/health --timeout 60000
+      - name: Unit & API tests
+        run: yarn test:unit && yarn test:api
+      - name: Playwright install
+        run: npx playwright install --with-deps
+      - name: E2E (headless)
+        run: yarn test:e2e:headless
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report

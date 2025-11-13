@@ -2,6 +2,9 @@ import { SquareClient, SquareEnvironment } from 'square';
 
 const LOG_PREFIX = '[SQUARE]';
 
+// Re-export for use in other files
+export { SquareClient, SquareEnvironment };
+
 /**
  * Get Square client instance with fresh environment variables
  * Creates a new client on each call to avoid Next.js module caching issues

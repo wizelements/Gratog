@@ -91,8 +91,8 @@
 **Location:** All pages (metadata)
 **Issue:**
 ```html
-<link rel="canonical" href="https://cart-rescue-1.preview.emergentagent.com"/>
-<meta property="og:url" content="https://cart-rescue-1.preview.emergentagent.com"/>
+<link rel="canonical" href="https://taste-gratitude-pay.preview.emergentagent.com"/>
+<meta property="og:url" content="https://taste-gratitude-pay.preview.emergentagent.com"/>
 ```
 - Canonical URL points to preview domain, not production
 - Social media shares will use wrong URL

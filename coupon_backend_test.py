@@ -13,7 +13,7 @@ import os
 import sys
 
 # Configuration
-BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://cart-rescue-1.preview.emergentagent.com')
+BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://taste-gratitude-pay.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 class CouponSystemTester:

@@ -3,6 +3,9 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import { getUnifiedProducts } from '@/lib/product-sync-engine';
 import { getCategoriesWithCounts } from '@/lib/ingredient-taxonomy';
 import { getDemoProducts, getDemoCategories } from '@/lib/demo-products';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('ProductsAPI');
 
 /**
  * GET /api/products
@@ -15,9 +18,16 @@ import { getDemoProducts, getDemoCategories } from '@/lib/demo-products';
  *   - search: search query
  */
 export async function GET(request) {
+  const startTime = Date.now();
+  
   try {
     const { searchParams } = new URL(request.url);
     const useUnified = searchParams.get('unified') !== 'false'; // Default to unified
+    
+    logger.info('Products API request', { 
+      useUnified, 
+      params: Object.fromEntries(searchParams) 
+    });
     
     if (useUnified) {
       // Use intelligent unified collection with ingredient data
@@ -33,14 +43,28 @@ export async function GET(request) {
         if (!filters[key]) delete filters[key];
       });
       
-      const products = await getUnifiedProducts(filters);
+      logger.debug('Fetching unified products', { filters });
+      const rawProducts = await getUnifiedProducts(filters);
+      
+      // Transform products to expose variationId at top level for cart compatibility
+      const products = rawProducts.map(product => ({
+        ...product,
+        variationId: product.squareData?.variationId || product.variations?.[0]?.id || product.id,
+        catalogObjectId: product.squareData?.variationId || product.variations?.[0]?.id || product.id
+      }));
+      
       const categories = getCategoriesWithCounts(products);
       
       // If no products found, use demo products as fallback
       if (products.length === 0) {
-        console.log('⚠️ No products in unified collection, using demo products as fallback');
+        logger.warn('No products in unified collection, using demo fallback');
         const demoProducts = getDemoProducts(filters);
         const demoCategories = getDemoCategories();
+        
+        logger.api('GET', '/api/products', 200, Date.now() - startTime, { 
+          source: 'demo_fallback',
+          count: demoProducts.length 
+        });
         
         return NextResponse.json({
           success: true,
@@ -53,7 +77,11 @@ export async function GET(request) {
         });
       }
       
-      console.log(`✅ Products API: Returning ${products.length} products from unified collection (intelligent)`);
+      logger.info(`Returning ${products.length} products from unified collection`);
+      logger.api('GET', '/api/products', 200, Date.now() - startTime, { 
+        source: 'unified',
+        count: products.length 
+      });
       
       return NextResponse.json({
         success: true,
@@ -66,6 +94,7 @@ export async function GET(request) {
     }
     
     // Fallback to original Square catalog (legacy mode)
+    logger.debug('Using legacy Square catalog mode');
     const { db } = await connectToDatabase();
     
     // Fetch all synced catalog items from MongoDB
@@ -73,6 +102,8 @@ export async function GET(request) {
       .find({})
       .sort({ name: 1 })
       .toArray();
+    
+    logger.debug(`Found ${items.length} items in square_catalog_items`);
     
     // Transform Square catalog format to app format
     const products = items.map(item => {
@@ -114,7 +145,11 @@ export async function GET(request) {
       };
     });
     
-    console.log(`✅ Products API: Returning ${products.length} products from Square catalog (legacy)`);
+    logger.info(`Returning ${products.length} products from Square catalog (legacy)`);
+    logger.api('GET', '/api/products', 200, Date.now() - startTime, { 
+      source: 'square_catalog',
+      count: products.length 
+    });
     
     return NextResponse.json({
       success: true,
@@ -125,12 +160,19 @@ export async function GET(request) {
     });
     
   } catch (error) {
-    console.error('❌ Failed to fetch products:', error);
+    logger.error('Failed to fetch products', { 
+      error: error.message,
+      stack: error.stack 
+    });
     
     // Use demo products as ultimate fallback
-    console.log('🔄 Using demo products due to error');
     const demoProducts = getDemoProducts();
     const demoCategories = getDemoCategories();
+    
+    logger.api('GET', '/api/products', 200, Date.now() - startTime, { 
+      source: 'demo_error_fallback',
+      count: demoProducts.length 
+    });
     
     return NextResponse.json({
       success: true,

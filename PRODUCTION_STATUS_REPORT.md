@@ -2,7 +2,7 @@
 
 **Check Date:** November 5, 2025  
 **Time:** 23:51 UTC  
-**Environment:** https://cart-rescue-1.preview.emergentagent.com
+**Environment:** https://taste-gratitude-pay.preview.emergentagent.com
 
 ---
 
@@ -255,7 +255,7 @@ All code fixes are deployed and working:
 
 2. **Verify Square diagnostic** (2 minutes)
    ```bash
-   curl -X POST https://cart-rescue-1.preview.emergentagent.com/api/square/diagnose
+   curl -X POST https://taste-gratitude-pay.preview.emergentagent.com/api/square/diagnose
    # Should show: "overallStatus": "READY"
    ```
 

@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 from typing import Dict, List, Any
 
-BASE_URL = "https://cart-rescue-1.preview.emergentagent.com"
+BASE_URL = "https://taste-gratitude-pay.preview.emergentagent.com"
 
 class bcolors:
     HEADER = '\033[95m'

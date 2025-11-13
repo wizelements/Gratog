@@ -5,7 +5,7 @@
 
 set -e
 
-BASE_URL="${BASE_URL:-https://cart-rescue-1.preview.emergentagent.com}"
+BASE_URL="${BASE_URL:-https://taste-gratitude-pay.preview.emergentagent.com}"
 
 echo "🧪 Testing All Fixes Applied"
 echo "=============================="

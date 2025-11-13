@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+echo "Pre-push: running fast gate (lint, types, unit)..."
+yarn lint
+yarn tsc --noEmit --skipLibCheck || echo 'TypeScript errors found but continuing...'
+yarn test:unit

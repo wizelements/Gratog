@@ -6,8 +6,8 @@
  * Run this after setting up Square credentials and before deployment.
  */
 
-import { square, SQUARE_LOCATION_ID, validateSquareConfig } from '../lib/square';
-import { toMoney, fromMoney } from '../lib/money';
+import { getSquareClient } from '../lib/square';
+import { fromCents, toCents } from '../lib/money';
 
 async function testSquareIntegration() {
   console.log('🎡 Starting Square Integration Test Suite\n');
@@ -29,12 +29,17 @@ async function testSquareIntegration() {
   }
   
   try {
+    // Initialize Square client
+    const square = getSquareClient();
+    const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID || '';
+    
     // Test 1: Configuration Validation
     console.log('🔧 Testing Square Configuration...');
     try {
-      const config = validateSquareConfig();
-      testResult('Square Configuration', true, 
-        `Environment: ${config.environment}, Location: ${config.locationId.substring(0, 8)}...`);
+      const hasAccessToken = !!process.env.SQUARE_ACCESS_TOKEN;
+      const hasLocationId = !!SQUARE_LOCATION_ID;
+      testResult('Square Configuration', hasAccessToken && hasLocationId, 
+        `Environment: ${process.env.SQUARE_ENVIRONMENT}, Location: ${SQUARE_LOCATION_ID.substring(0, 8)}...`);
     } catch (error) {
       testResult('Square Configuration', false, 
         error instanceof Error ? error.message : 'Configuration validation failed');
@@ -45,7 +50,7 @@ async function testSquareIntegration() {
     console.log('\n🔌 Testing Square Client...');
     try {
       // Test with a simple API call that doesn't require special permissions
-      const response = await square.locations.listLocations();
+      const response = await square.locationsApi.listLocations();
       const locationFound = response.result.locations?.some(loc => loc.id === SQUARE_LOCATION_ID);
       testResult('Square Client Connection', response.statusCode === 200,
         `Status: ${response.statusCode}, Locations found: ${response.result.locations?.length || 0}`);
@@ -59,7 +64,7 @@ async function testSquareIntegration() {
     // Test 3: Catalog API Access
     console.log('\n📋 Testing Catalog API...');
     try {
-      const response = await square.catalog.list({ limit: 5 });
+      const response = await square.catalogApi.listCatalog({ limit: 5 });
       testResult('Catalog API Access', response.statusCode === 200,
         `Status: ${response.statusCode}, Objects found: ${response.result.objects?.length || 0}`);
     } catch (error) {
@@ -71,14 +76,14 @@ async function testSquareIntegration() {
     console.log('\n💰 Testing Money Utilities...');
     try {
       const dollarAmount = 12.34;
-      const moneyObject = toMoney(dollarAmount);
-      const convertedBack = fromMoney(moneyObject);
+      const cents = toCents(dollarAmount);
+      const convertedBack = fromCents({ amount: BigInt(cents) });
       
       testResult('Money Conversion', convertedBack === dollarAmount,
-        `$${dollarAmount} -> ${moneyObject.amount} cents -> $${convertedBack}`);
+        `$${dollarAmount} -> ${cents} cents -> $${convertedBack}`);
         
       // Test edge cases
-      const zeroMoney = fromMoney(undefined);
+      const zeroMoney = fromCents(undefined);
       testResult('Money Edge Cases', zeroMoney === 0,
         'Undefined money object returns 0');
         
@@ -97,19 +102,19 @@ async function testSquareIntegration() {
           lineItems: [{
             name: 'Test Item',
             quantity: '1',
-            basePriceMoney: toMoney(10.00)
-          }],
-          pricingOptions: {
-            autoApplyTaxes: true,
-            autoApplyDiscounts: true
-          }
+            basePriceMoney: {
+              amount: BigInt(1000), // $10.00
+              currency: 'USD'
+            }
+          }]
         }
       };
       
-      const response = await square.orders.calculate(testOrder);
+      const response = await square.ordersApi.calculateOrder(testOrder);
       const calculated = response.statusCode === 200 && response.result.order;
+      const totalAmount = response.result.order?.totalMoney ? fromCents(response.result.order.totalMoney) : 0;
       testResult('Orders API (Calculate)', !!calculated,
-        calculated ? `Total: $${fromMoney(response.result.order!.netAmounts?.totalMoney)}` : 'Calculation failed');
+        calculated ? `Total: $${totalAmount}` : 'Calculation failed');
         
     } catch (error) {
       testResult('Orders API (Calculate)', false,
@@ -125,7 +130,10 @@ async function testSquareIntegration() {
           lineItems: [{
             name: 'Test Product',
             quantity: '1',
-            basePriceMoney: toMoney(1.00) // Minimal test amount
+            basePriceMoney: {
+              amount: BigInt(100), // $1.00
+              currency: 'USD'
+            }
           }]
         },
         checkoutOptions: {
@@ -133,7 +141,7 @@ async function testSquareIntegration() {
         }
       };
       
-      const response = await square.checkout.paymentLinks.create(testCheckout);
+      const response = await square.checkoutApi.createPaymentLink(testCheckout);
       const linkCreated = response.statusCode === 200 && response.result.paymentLink;
       testResult('Checkout API (Payment Links)', !!linkCreated,
         linkCreated ? `Link ID: ${response.result.paymentLink!.id}` : 'Link creation failed');
