@@ -58,7 +58,9 @@ export function getSquareClient(): SquareClient {
   console.log(`${LOG_PREFIX} ✅ Creating Square client for ${squareEnvironment}`);
 
   return new SquareClient({
-    accessToken,
+    bearerAuthCredentials: {
+      accessToken,
+    },
     environment: squareEnvironment,
   });
 }
