@@ -252,7 +252,7 @@ export async function GET(request: NextRequest) {
     
     if (paymentLinkId) {
       // Get payment link status
-      const response = await square.checkoutApi.retrievePaymentLink(paymentLinkId) as any;
+      const response = await square.checkoutApi.retrievePaymentLink({ paymentLinkId }) as any;
       result = response.result;
     } else if (orderId) {
       // Get order status
