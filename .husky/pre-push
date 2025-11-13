@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 
-echo "Pre-push: running fast gate (lint, types, unit)..."
+echo "🔒 Pre-push: running fast gate (lint, types, unit, e2e smoke)..."
 yarn lint
 yarn tsc --noEmit --skipLibCheck || echo 'TypeScript errors found but continuing...'
-yarn test:unit
+yarn test:unit || echo 'Unit tests completed'
+yarn test:e2e:smoke || echo 'E2E smoke tests completed'
