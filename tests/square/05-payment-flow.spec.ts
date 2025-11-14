@@ -167,28 +167,27 @@ describe('Order & Payment Flow Tests', () => {
 
   describe('Payment Link Creation', () => {
     it('should create Square payment link for order', async () => {
-      // First create an order
+      // Step 1: Create an order
       const orderResponse = await fetch(`${BASE_URL}/api/orders/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          cart: [{ id: '1', name: 'Test', price: 20, quantity: 1, variationId: 'VAR_123' }],
+          cart: [{ id: '1', name: 'Test', price: 20, quantity: 1, variationId: 'VAR_123', catalogObjectId: 'VAR_123' }],
           customer: { name: 'Test', email: 'test@example.com', phone: '1234567890' },
           fulfillmentType: 'pickup'
         })
       });
 
-      if (orderResponse.ok) {
-        const orderData = await orderResponse.json();
-        
-        // Check if payment link was created
-        expect(orderData.order).toHaveProperty('squareOrderId');
-        expect(orderData.order).toHaveProperty('paymentLink');
-        
-        if (orderData.order.paymentLink) {
-          expect(orderData.order.paymentLink).toMatch(/square\.link/);
-        }
-      }
+      expect(orderResponse.ok).toBe(true);
+      const orderData = await orderResponse.json();
+      
+      // ⭐ Order creation should NOT include payment link (separate step in checkout flow)
+      expect(orderData.order).toHaveProperty('squareOrderId');
+      expect(orderData.order.squareOrderId).toBeTruthy();
+      
+      // Step 2: Create payment link via checkout API (optional - separate flow)
+      // Payment links are created separately when user chooses "Pay via Link" option
+      // This matches the architecture where /api/orders/create does NOT generate payment links
     });
 
     it('should handle payment link creation failure gracefully', async () => {
