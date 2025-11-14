@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { addToCart } from '@/lib/cartUtils';
+import { addToUnifiedCart } from '@/lib/unified-cart';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('ProductQuickView');
@@ -28,22 +28,10 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
       const productToAdd = {
         ...product,
         quantity,
-        variationId: product.variationId || product.catalogObjectId || product.id,
       };
 
-      for (let i = 0; i < quantity; i++) {
-        addToCart(productToAdd);
-      }
-
+      addToUnifiedCart(productToAdd);
       logger.info('Product added successfully', { productId: product.id, quantity });
-      
-      // Dispatch cart update event
-      if (typeof window !== 'undefined') {
-        const cart = JSON.parse(localStorage.getItem('tog_cart') || '{"items":[]}');
-        window.dispatchEvent(new CustomEvent('cartUpdated', {
-          detail: { cart: cart.items || [] }
-        }));
-      }
 
       toast.success(`${product.name} added to cart! 🎉`);
       onClose();

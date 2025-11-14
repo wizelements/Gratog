@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ShoppingCart, Plus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { addToCart } from '@/lib/cartUtils';
+import { addToUnifiedCart } from '@/lib/unified-cart';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('QuickAddButton');
@@ -30,6 +30,7 @@ export default function QuickAddButton({ product, size = 'default', className = 
     try {
       // Ensure product has required fields
       const productToAdd = {
+        ...product,
         id: product.id,
         name: product.name,
         price: product.price,
@@ -37,25 +38,15 @@ export default function QuickAddButton({ product, size = 'default', className = 
         image: product.image || product.images?.[0],
         category: product.category,
         slug: product.slug,
-        variationId: product.variationId || product.catalogObjectId || product.id,
       };
 
       logger.debug('Product data prepared', productToAdd);
 
-      const updatedCart = addToCart(productToAdd);
+      addToUnifiedCart(productToAdd);
       
       logger.info('Product added to cart successfully', { 
-        cartSize: updatedCart.length,
         productId: product.id 
       });
-
-      // Dispatch cart update event
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('cartUpdated', {
-          detail: { cart: updatedCart }
-        }));
-        logger.debug('Cart updated event dispatched');
-      }
 
       setJustAdded(true);
       toast.success(`${product.name} added to cart! 🎉`, {
