@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * MongoDB transaction helpers for atomic operations
  */

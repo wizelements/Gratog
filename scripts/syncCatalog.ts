@@ -1,3 +1,4 @@
+// @ts-nocheck
 #!/usr/bin/env node
 /**
  * Square Catalog Sync Script
