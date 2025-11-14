@@ -309,8 +309,8 @@
 ## 🚀 Live URLs
 
 **Production URLs:**
-- https://taste-gratitude-pay.preview.emergentagent.com/faq
-- https://taste-gratitude-pay.preview.emergentagent.com/community
+- https://typebug-hunter.preview.emergentagent.com/faq
+- https://typebug-hunter.preview.emergentagent.com/community
 - Footer visible on all pages
 
 **Footer Links to:**

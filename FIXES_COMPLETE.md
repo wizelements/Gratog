@@ -50,9 +50,9 @@
 
 **Before:**
 ```javascript
-metadataBase: 'https://taste-gratitude-pay.preview.emergentagent.com'
-canonical: 'https://taste-gratitude-pay.preview.emergentagent.com'
-og:url: 'https://taste-gratitude-pay.preview.emergentagent.com'
+metadataBase: 'https://typebug-hunter.preview.emergentagent.com'
+canonical: 'https://typebug-hunter.preview.emergentagent.com'
+og:url: 'https://typebug-hunter.preview.emergentagent.com'
 ```
 
 **After:**

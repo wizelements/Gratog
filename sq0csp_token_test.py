@@ -9,7 +9,7 @@ import json
 import time
 from datetime import datetime
 
-BASE_URL = "https://taste-gratitude-pay.preview.emergentagent.com"
+BASE_URL = "https://typebug-hunter.preview.emergentagent.com"
 
 def log_analysis(title, status, details=""):
     """Log analysis results"""

@@ -1,6 +1,6 @@
 {
   "timestamp": "2025-10-12T15:18:56.299242",
-  "base_url": "https://taste-gratitude-pay.preview.emergentagent.com",
+  "base_url": "https://typebug-hunter.preview.emergentagent.com",
   "test_summary": {
     "total_tests": 10,
     "successful_tests": 9,
@@ -13,7 +13,7 @@
   },
   "detailed_results": {
     "Health Check Endpoint": {
-      "url": "https://taste-gratitude-pay.preview.emergentagent.com/api/health",
+      "url": "https://typebug-hunter.preview.emergentagent.com/api/health",
       "method": "GET",
       "status_code": 200,
       "response_time_ms": 1351.38,
@@ -56,7 +56,7 @@
       }
     },
     "Square Credential Diagnostic": {
-      "url": "https://taste-gratitude-pay.preview.emergentagent.com/api/square-diagnose",
+      "url": "https://typebug-hunter.preview.emergentagent.com/api/square-diagnose",
       "method": "POST",
       "status_code": 200,
       "response_time_ms": 3450.92,
@@ -125,7 +125,7 @@
       }
     },
     "Square Payment Processing": {
-      "url": "https://taste-gratitude-pay.preview.emergentagent.com/api/square-payment",
+      "url": "https://typebug-hunter.preview.emergentagent.com/api/square-payment",
       "method": "POST",
       "status_code": 200,
       "response_time_ms": 3033.59,
@@ -158,7 +158,7 @@
       }
     },
     "Square Webhook Status": {
-      "url": "https://taste-gratitude-pay.preview.emergentagent.com/api/square-webhook",
+      "url": "https://typebug-hunter.preview.emergentagent.com/api/square-webhook",
       "method": "GET",
       "status_code": 200,
       "response_time_ms": 829.19,
@@ -184,7 +184,7 @@
       }
     },
     "Coupon Creation": {
-      "url": "https://taste-gratitude-pay.preview.emergentagent.com/api/coupons/create",
+      "url": "https://typebug-hunter.preview.emergentagent.com/api/coupons/create",
       "method": "POST",
       "status_code": 200,
       "response_time_ms": 922.09,
@@ -217,7 +217,7 @@
       }
     },
     "Coupon Validation": {
-      "url": "https://taste-gratitude-pay.preview.emergentagent.com/api/coupons/validate",
+      "url": "https://typebug-hunter.preview.emergentagent.com/api/coupons/validate",
       "method": "POST",
       "status_code": 200,
       "response_time_ms": 453.98,
@@ -254,7 +254,7 @@
       }
     },
     "Coupon Retrieval": {
-      "url": "https://taste-gratitude-pay.preview.emergentagent.com/api/coupons/create?email=backend_test@test.com",
+      "url": "https://typebug-hunter.preview.emergentagent.com/api/coupons/create?email=backend_test@test.com",
       "method": "GET",
       "status_code": 200,
       "response_time_ms": 198.54,
@@ -289,7 +289,7 @@
       }
     },
     "Admin Coupon Management": {
-      "url": "https://taste-gratitude-pay.preview.emergentagent.com/api/admin/coupons",
+      "url": "https://typebug-hunter.preview.emergentagent.com/api/admin/coupons",
       "method": "GET",
       "status_code": 200,
       "response_time_ms": 766.51,
@@ -595,7 +595,7 @@
       }
     },
     "Customer Creation": {
-      "url": "https://taste-gratitude-pay.preview.emergentagent.com/api/customers",
+      "url": "https://typebug-hunter.preview.emergentagent.com/api/customers",
       "method": "POST",
       "status_code": 200,
       "response_time_ms": 463.09,
@@ -620,7 +620,7 @@
       }
     },
     "Analytics Data": {
-      "url": "https://taste-gratitude-pay.preview.emergentagent.com/api/analytics",
+      "url": "https://typebug-hunter.preview.emergentagent.com/api/analytics",
       "method": "GET",
       "status_code": 401,
       "response_time_ms": 464.22,

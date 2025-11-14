@@ -17,7 +17,7 @@
     }
   },
   "env": {
-    "NEXT_PUBLIC_APP_URL": "https://taste-gratitude-pay.preview.emergentagent.com"
+    "NEXT_PUBLIC_APP_URL": "https://typebug-hunter.preview.emergentagent.com"
   },
   "headers": [
     {

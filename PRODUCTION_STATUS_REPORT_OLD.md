@@ -162,7 +162,7 @@ square_sync_queue: (ready)
 3. Configure webhook URL:
    ```
    Production: https://tasteofgratitude.shop/api/webhooks/square
-   Preview: https://taste-gratitude-pay.preview.emergentagent.com/api/webhooks/square
+   Preview: https://typebug-hunter.preview.emergentagent.com/api/webhooks/square
    ```
 4. Subscribe to events:
    - `inventory.count.updated`

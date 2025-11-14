@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Base URL from environment
-BASE_URL = "https://taste-gratitude-pay.preview.emergentagent.com"
+BASE_URL = "https://typebug-hunter.preview.emergentagent.com"
 
 # Real variation IDs from MongoDB (as specified in review request)
 REAL_VARIATION_IDS = {
