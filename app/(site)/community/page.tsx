@@ -16,7 +16,7 @@ import {
   Mail,
   Star,
 } from 'lucide-react';
-import * as AnalyticsSystem from '@/lib/analytics';
+import { AnalyticsSystem } from '@/lib/analytics';
 
 export default function CommunityPage() {
   useEffect(() => {
