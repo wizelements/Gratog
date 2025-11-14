@@ -1,92 +1,82 @@
 'use client';
 
 import { useState } from 'react';
-import { ShoppingCart, Plus, Check } from 'lucide-react';
+import { ShoppingCart, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { addToUnifiedCart } from '@/lib/unified-cart';
-import { createLogger } from '@/lib/logger';
+import { addToCart } from '@/lib/cart-engine';
+import { motion } from 'framer-motion';
 
-const logger = createLogger('QuickAddButton');
-
-export default function QuickAddButton({ product, size = 'default', className = '' }) {
+/**
+ * ⚡ Quick Add Button - Now using unified cart-engine
+ */
+export default function QuickAddButton({ product, variant = 'default', className = '' }) {
   const [isAdding, setIsAdding] = useState(false);
-  const [justAdded, setJustAdded] = useState(false);
+  const [added, setAdded] = useState(false);
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (isAdding || justAdded) return;
-
-    logger.info('Adding product to cart', { 
-      productId: product.id, 
-      productName: product.name,
-      price: product.price 
-    });
+    if (!product) {
+      toast.error('Product information missing');
+      return;
+    }
 
     setIsAdding(true);
 
     try {
-      // Ensure product has required fields
-      const productToAdd = {
-        ...product,
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        priceCents: product.priceCents,
-        image: product.image || product.images?.[0],
-        category: product.category,
-        slug: product.slug,
-      };
-
-      logger.debug('Product data prepared', productToAdd);
-
-      addToUnifiedCart(productToAdd);
+      addToCart(product, 1);
       
-      logger.info('Product added to cart successfully', { 
-        productId: product.id 
+      setAdded(true);
+      toast.success(`Added ${product.name} to cart`, {
+        description: 'View cart to checkout',
+        action: {
+          label: 'View Cart',
+          onClick: () => window.dispatchEvent(new Event('openCart')),
+        },
       });
 
-      setJustAdded(true);
-      toast.success(`${product.name} added to cart! 🎉`, {
-        duration: 2000,
-      });
-
-      // Reset after 2 seconds
+      // Reset button after 2 seconds
       setTimeout(() => {
-        setJustAdded(false);
+        setAdded(false);
       }, 2000);
-
     } catch (error) {
-      logger.error('Failed to add product to cart', { 
-        error: error.message,
-        productId: product.id 
-      });
-      toast.error('Failed to add to cart. Please try again.');
+      console.error('Add to cart error:', error);
+      toast.error('Failed to add item to cart');
     } finally {
       setIsAdding(false);
     }
   };
 
   return (
-    <Button
-      onClick={handleAddToCart}
-      disabled={isAdding || justAdded}
-      size={size}
-      className={`${justAdded ? 'bg-green-600 hover:bg-green-700' : 'bg-emerald-600 hover:bg-emerald-700'} transition-all ${className}`}
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
     >
-      {justAdded ? (
-        <>
-          <Check className="mr-2 h-4 w-4" />
-          Added!
-        </>
-      ) : (
-        <>
-          <Plus className="mr-2 h-4 w-4" />
-          Add to Cart
-        </>
-      )}
-    </Button>
+      <Button
+        onClick={handleAddToCart}
+        disabled={isAdding || added}
+        variant={variant}
+        className={`relative ${className}`}
+      >
+        {isAdding ? (
+          <>
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            Adding...
+          </>
+        ) : added ? (
+          <>
+            <Check className="h-4 w-4 mr-2" />
+            Added!
+          </>
+        ) : (
+          <>
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Add to Cart
+          </>
+        )}
+      </Button>
+    </motion.div>
   );
 }

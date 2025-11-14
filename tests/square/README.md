@@ -1,5 +1,15 @@
 # Square Payment Integration - Comprehensive Test Suite
 
+## ⚠️ Important: These are Integration Tests
+
+**These tests are EXCLUDED from the pre-push git hook** because they require:
+- Running Next.js server on port 3000
+- Square environment variables configured
+- MongoDB connection
+- Network access to Square APIs
+
+They will **NOT** run automatically on `git push`. Run them manually when needed.
+
 ## Overview
 
 This test suite provides **extremely detailed and scrutinous** testing coverage for the entire Square payment integration. It identifies all potential issues, edge cases, and security vulnerabilities.

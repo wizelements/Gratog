@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowRight, ShoppingBag, Trash2, Plus, Minus, MapPin, Home, Package, CreditCard, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { loadCart, updateQuantity, removeFromCart, clearCart, getCartTotal, formatPrice } from '@/lib/cartUtils';
+import { loadCart, updateQuantity, removeFromCart, clearCart, getCartTotal, formatPrice } from '@/lib/cart-engine';
 import SquarePaymentForm from '@/components/SquarePaymentForm';
 import { createLogger } from '@/lib/logger';
 

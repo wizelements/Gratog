@@ -5,6 +5,7 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
 import { createOrder, createPaymentLink } from '@/lib/square-ops';
 import { shouldAllowFallback, getAuthFailureResponse, logSquareOperation } from '@/lib/square-guard';
+import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
 
 /**
  * Square Checkout API - Payment Links Integration
@@ -51,9 +52,46 @@ export async function POST(request: NextRequest) {
     // Get fresh Square client instance
     const square = getSquareClient();
     
+    // STEP 1: Create or find Square Customer (if customer info provided)
+    let squareCustomerId = customerId; // Use provided ID if available
+    
+    if (customer && customer.email && customer.name && !squareCustomerId) {
+      console.log('Creating/finding Square customer for payment link...');
+      try {
+        const customerResult = await findOrCreateSquareCustomer({
+          email: customer.email,
+          name: customer.name,
+          phone: customer.phone,
+          address: fulfillmentType === 'delivery' && deliveryAddress ? {
+            street: deliveryAddress.street,
+            city: deliveryAddress.city,
+            state: deliveryAddress.state || 'GA',
+            zip: deliveryAddress.zip
+          } : undefined,
+          note: createCustomerNote({
+            orderNumber: orderId,
+            fulfillmentType,
+            source: 'payment_link'
+          })
+        });
+        
+        if (customerResult.success && customerResult.customer) {
+          squareCustomerId = customerResult.customer.id;
+          console.log('✅ Square customer ready for payment link', { customerId: squareCustomerId });
+        } else {
+          console.warn('Customer creation failed, continuing without customer link', { 
+            error: customerResult.error 
+          });
+        }
+      } catch (custError) {
+        console.warn('Customer lookup error, continuing', { error: custError });
+      }
+    }
+    
     // Prepare order for Square
     const orderRequest: any = {
       locationId: SQUARE_LOCATION_ID,
+      referenceId: orderId, // ⭐ Order reference for matching
       lineItems: lineItems.map((item: any) => ({
         catalogObjectId: item.catalogObjectId,
         quantity: String(item.quantity),
@@ -66,6 +104,7 @@ export async function POST(request: NextRequest) {
           size: item.size
         }
       })),
+      customerId: squareCustomerId || undefined, // ⭐ Link customer to order
       pricingOptions: {
         autoApplyTaxes: true,
         autoApplyDiscounts: true
@@ -80,11 +119,6 @@ export async function POST(request: NextRequest) {
         createdAt: new Date().toISOString()
       }
     };
-    
-    // Add customer ID if provided
-    if (customerId) {
-      orderRequest.customerId = customerId;
-    }
     
     // Prepare checkout options
     const checkoutOptions: any = {
@@ -241,11 +275,15 @@ export async function GET(request: NextRequest) {
     const paymentLinkId = searchParams.get('paymentLinkId');
     const orderId = searchParams.get('orderId');
     
+    // If no parameters, return service status
     if (!paymentLinkId && !orderId) {
-      return NextResponse.json(
-        { error: 'Payment Link ID or Order ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({
+        service: 'Square Checkout API',
+        status: 'active',
+        environment: process.env.SQUARE_ENVIRONMENT || 'sandbox',
+        locationId: SQUARE_LOCATION_ID,
+        timestamp: new Date().toISOString()
+      });
     }
     
     const square = getSquareClient();

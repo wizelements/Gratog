@@ -375,6 +375,7 @@ async function logWebhookEvent(event: any) {
 // GET endpoint for webhook verification
 export async function GET(request: NextRequest) {
   return NextResponse.json({
+    status: 'active',
     message: 'Square webhook endpoint active',
     timestamp: new Date().toISOString(),
     environment: process.env.SQUARE_ENVIRONMENT || 'sandbox',

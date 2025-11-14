@@ -17,6 +17,8 @@ export async function createPayment(input: {
   idempotencyKey: string;
   note?: string;
   orderId?: string; // Square Order ID to link payment to order
+  customerId?: string; // ⭐ Square Customer ID
+  buyerEmailAddress?: string; // ⭐ Buyer email
 }) {
   const paymentBody: any = {
     source_id: input.sourceId,
@@ -33,6 +35,16 @@ export async function createPayment(input: {
   // CRITICAL: Link payment to Square Order if provided
   if (input.orderId) {
     paymentBody.order_id = input.orderId;
+  }
+  
+  // ⭐ Link payment to Square Customer if provided
+  if (input.customerId) {
+    paymentBody.customer_id = input.customerId;
+  }
+  
+  // ⭐ Add buyer email if provided
+  if (input.buyerEmailAddress) {
+    paymentBody.buyer_email_address = input.buyerEmailAddress;
   }
   
   return sqFetch<any>(env, "/v2/payments", token, {

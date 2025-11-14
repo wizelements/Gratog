@@ -2,7 +2,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import FloatingCart from '@/components/FloatingCart';
+import FloatingCart from '@/components/cart/EnhancedFloatingCart';
+import CartNotification from '@/components/cart/CartNotification';
 import { Toaster } from '@/components/ui/sonner';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -75,6 +76,7 @@ export default function RootLayout({ children }) {
           <main className="flex-1">{children}</main>
           <Footer />
           <FloatingCart />
+          <CartNotification />
         </div>
         <Toaster />
       </body>

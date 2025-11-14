@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto';
 import { fromCents, toSquareMoney } from '@/lib/money';
 import { createPayment } from '@/lib/square-ops';
 import { shouldAllowFallback, getAuthFailureResponse, logSquareOperation } from '@/lib/square-guard';
+import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
 
 /**
  * Square Payments API - Web Payments SDK Integration
@@ -56,6 +57,35 @@ export async function POST(request: NextRequest) {
     // Get fresh Square client instance
     const square = getSquareClient();
     
+    // STEP 1: Create or find Square Customer (if customer info provided)
+    let squareCustomerId: string | undefined;
+    
+    if (customer && customer.email && customer.name) {
+      console.log('Creating/finding Square customer for payment...');
+      try {
+        const customerResult = await findOrCreateSquareCustomer({
+          email: customer.email,
+          name: customer.name,
+          phone: customer.phone,
+          note: createCustomerNote({
+            orderNumber: orderId,
+            source: 'web_payment_sdk'
+          })
+        });
+        
+        if (customerResult.success && customerResult.customer) {
+          squareCustomerId = customerResult.customer.id;
+          console.log('✅ Square customer ready for payment', { customerId: squareCustomerId });
+        } else {
+          console.warn('Customer creation failed, continuing without customer link', { 
+            error: customerResult.error 
+          });
+        }
+      } catch (custError) {
+        console.warn('Customer lookup error, continuing', { error: custError });
+      }
+    }
+    
     // Truncate note to Square's 45 character limit (must be defined before use)
     const noteText = `Payment for order ${orderId || 'unknown'}`;
     const truncatedNote = noteText.length > 45 ? noteText.substring(0, 45) : noteText;
@@ -72,6 +102,7 @@ export async function POST(request: NextRequest) {
       autocomplete: true, // Immediately complete the payment
       acceptPartialAuthorization: false,
       note: truncatedNote,
+      customerId: squareCustomerId, // ⭐ Link payment to customer
       ...(customer?.email && { buyerEmailAddress: customer.email })
     };
     
@@ -90,7 +121,9 @@ export async function POST(request: NextRequest) {
       locationId: SQUARE_LOCATION_ID,
       idempotencyKey: paymentIdempotencyKey,
       note: truncatedNote,
-      orderId: squareOrderId // Pass Square Order ID to link payment to order
+      orderId: squareOrderId, // Pass Square Order ID to link payment to order
+      customerId: squareCustomerId, // ⭐ Link payment to customer
+      buyerEmailAddress: customer?.email
     });
     
     if (!response.payment) {

@@ -122,31 +122,34 @@ describe('Square SDK Initialization Tests', () => {
 
     it('should have catalog API', () => {
       expect(client.catalog).toBeDefined();
-      expect(typeof client.catalog.listCatalog).toBe('function');
-      expect(typeof client.catalog.batchRetrieveCatalogObjects).toBe('function');
+      // SDK v43 uses .list() and .batchGet() instead of listCatalog and batchRetrieveCatalogObjects
+      expect(typeof client.catalog.list).toBe('function');
+      expect(typeof client.catalog.batchGet).toBe('function');
     });
 
     it('should have payments API', () => {
       expect(client.payments).toBeDefined();
-      expect(typeof client.payments.createPayment).toBe('function');
-      expect(typeof client.payments.getPayment).toBe('function');
+      expect(typeof client.payments.create).toBe('function');
+      expect(typeof client.payments.get).toBe('function');
     });
 
     it('should have orders API', () => {
       expect(client.orders).toBeDefined();
-      expect(typeof client.orders.createOrder).toBe('function');
-      expect(typeof client.orders.retrieveOrder).toBe('function');
+      expect(typeof client.orders.create).toBe('function');
+      expect(typeof client.orders.get).toBe('function');
     });
 
     it('should have checkout API', () => {
       expect(client.checkout).toBeDefined();
-      expect(typeof client.checkout.createPaymentLink).toBe('function');
-      expect(typeof client.checkout.retrievePaymentLink).toBe('function');
+      // SDK v43 uses checkout.paymentLinks
+      expect(client.checkout.paymentLinks).toBeDefined();
+      expect(typeof client.checkout.paymentLinks.create).toBe('function');
+      expect(typeof client.checkout.paymentLinks.get).toBe('function');
     });
 
     it('should have locations API', () => {
       expect(client.locations).toBeDefined();
-      expect(typeof client.locations.listLocations).toBe('function');
+      expect(typeof client.locations.list).toBe('function');
     });
   });
 });
