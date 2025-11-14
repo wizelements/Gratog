@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { hashPassword } from '@/lib/auth.js';
+// @ts-ignore - JavaScript module import
+import { hashPassword } from '@/lib/auth';
 
 /**
  * EMERGENCY ADMIN INITIALIZATION
