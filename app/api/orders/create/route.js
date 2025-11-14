@@ -292,6 +292,8 @@ export async function POST(request) {
         customer: order.customer,
         items: order.items,
         pricing: order.pricing,
+        fulfillment: order.fulfillment, // ⭐ Include fulfillment data for tests
+        paymentLink: order.paymentLink, // ⭐ Include payment link if exists
         squareOrderId,
         squareCustomerId // ⭐ Return customer ID for frontend use
       }
