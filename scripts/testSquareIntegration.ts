@@ -50,7 +50,7 @@ async function testSquareIntegration() {
     // Test 3: Locations API
     console.log('\n📍 Testing Locations API...');
     try {
-      const response = await square.locations.listLocations({});
+      const response = await square.locations.list({});
       testResult('Locations API Access', !!response.result,
         `Locations found: ${response.result.locations?.length || 0}`);
     } catch (error: any) {
@@ -61,7 +61,7 @@ async function testSquareIntegration() {
     // Test 4: Catalog API
     console.log('\n📋 Testing Catalog API...');
     try {
-      const response = await square.catalog.listCatalog({ limit: 5, types: 'ITEM' });
+      const response = await square.catalog.list({ limit: 5, types: 'ITEM' });
       testResult('Catalog API Access', !!response.result,
         `Objects found: ${response.result.objects?.length || 0}`);
     } catch (error: any) {
@@ -73,7 +73,7 @@ async function testSquareIntegration() {
     console.log('\n📦 Testing Orders API...');
     try {
       // Try to retrieve non-existent order to test API access
-      await square.orders.retrieveOrder({ orderId: 'test-order-does-not-exist' });
+      await square.orders.get({ orderId: 'test-order-does-not-exist' });
       testResult('Orders API Access', false, 'Should have thrown 404');
     } catch (error: any) {
       if (error.statusCode === 404) {
@@ -88,7 +88,7 @@ async function testSquareIntegration() {
     // Test 6: Payments API (test validation, not actual payment)
     console.log('\n💳 Testing Payments API...');
     try {
-      await square.payments.getPayment({ paymentId: 'test-payment-does-not-exist' });
+      await square.payments.get({ paymentId: 'test-payment-does-not-exist' });
       testResult('Payments API Access', false, 'Should have thrown 404');
     } catch (error: any) {
       if (error.statusCode === 404) {
@@ -103,7 +103,7 @@ async function testSquareIntegration() {
     // Test 7: Checkout API (test validation)
     console.log('\n🛒 Testing Checkout API...');
     try {
-      await square.checkout.retrievePaymentLink({ paymentLinkId: 'test-link-does-not-exist' });
+      await square.checkout.get({ paymentLinkId: 'test-link-does-not-exist' });
       testResult('Checkout API Access', false, 'Should have thrown 404');
     } catch (error: any) {
       if (error.statusCode === 404) {

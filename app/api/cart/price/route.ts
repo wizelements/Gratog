@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     // Fetch current prices from Square Catalog
     const variationIds = lines.map(line => line.variationId);
-    const catalogResponse = await square.catalog.batchRetrieveCatalogObjects({
+    const catalogResponse = await square.catalog.batchGet({
       objectIds: variationIds,
       includeRelatedObjects: false
     }) as any;

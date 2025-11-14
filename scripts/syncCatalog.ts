@@ -76,7 +76,7 @@ async function syncSquareCatalog() {
       console.log(`   Fetching batch ${fetchCount}${cursor ? ' (cursor: ' + cursor.substring(0, 10) + '...)' : ''}`);
       
       try {
-        const { result } = await square.catalog.listCatalog({
+        const { result } = await square.catalog.list({
           cursor,
           types: 'ITEM,CATEGORY',
           limit: 100
