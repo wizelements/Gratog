@@ -1,5 +1,5 @@
-// @ts-nocheck
 #!/usr/bin/env node
+// @ts-nocheck
 /**
  * Square Catalog Sync Script
  * 
