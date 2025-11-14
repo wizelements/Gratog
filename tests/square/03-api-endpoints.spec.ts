@@ -220,8 +220,16 @@ describe('Square API Endpoints Tests', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          cart: [{ id: '1', name: 'Test', price: 10, quantity: 1 }],
+          cart: [{ 
+            id: '1', 
+            name: 'Test', 
+            price: 10, 
+            quantity: 1,
+            catalogObjectId: 'TEST_CATALOG_ID', // ⭐ Valid cart item to bypass cart validation
+            variationId: 'TEST_VARIATION_ID'
+          }],
           fulfillmentType: 'pickup'
+          // ⭐ NO customer info - should trigger customer validation
         })
       });
       
