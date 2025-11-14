@@ -3,12 +3,12 @@
  * Square Catalog Sync Script
  * 
  * Syncs Square Catalog data to local database/cache
- * Run with: npx ts-node scripts/syncCatalog.ts
+ * Run with: node scripts/syncCatalog.ts
  */
 
-import { getSquareClient } from '@/lib/square';
-import { connectToDatabase } from '@/lib/db-optimized';
-import { fromCents } from '@/lib/money';
+import { getSquareClient } from '../lib/square';
+import { connectToDatabase } from '../lib/db-optimized';
+import { fromCents } from '../lib/money';
 
 interface SyncedCatalogItem {
   id: string;
@@ -28,270 +28,194 @@ interface SyncedVariation {
   name?: string;
   sku?: string;
   price: number; // USD dollars
-  priceCents: number; // cents for exact calculations
+  priceCents: number; // Cents
   currency: string;
-  trackQuantity: boolean;
-  inventoryAlertThreshold?: number;
 }
 
-class CatalogSync {
-  private db: any;
-  private stats = {
-    items: 0,
-    variations: 0,
-    images: 0,
-    errors: 0
-  };
+interface SyncedCategory {
+  id: string;
+  name: string;
+  type: string;
+}
 
-  async initialize() {
+interface SyncStats {
+  itemsCount: number;
+  variationsCount: number;
+  categoriesCount: number;
+  imagesCount: number;
+  syncedAt: Date;
+}
+
+async function syncSquareCatalog() {
+  console.log('🔄 Starting Square Catalog Sync...\n');
+  
+  try {
+    // Connect to database
+    console.log('📦 Connecting to database...');
     const { db } = await connectToDatabase();
-    this.db = db;
-  }
-
-  async sync() {
-    console.log('🔄 Starting Square Catalog sync...');
     
-    try {
-      await this.initialize();
+    // Get Square client
+    console.log('🔌 Initializing Square client...');
+    const square = getSquareClient();
+    
+    // Collections
+    const itemsCollection = db.collection('square_catalog_items');
+    const categoriesCollection = db.collection('square_catalog_categories');
+    const metadataCollection = db.collection('square_sync_metadata');
+    
+    // Fetch all catalog items from Square
+    console.log('📥 Fetching catalog from Square API...');
+    
+    const allItems: any[] = [];
+    const allCategories: any[] = [];
+    let cursor: string | undefined;
+    let fetchCount = 0;
+    
+    do {
+      fetchCount++;
+      console.log(`   Fetching batch ${fetchCount}${cursor ? ' (cursor: ' + cursor.substring(0, 10) + '...)' : ''}`);
       
-      const objects: any[] = [];
-      let cursor: string | undefined;
-      let page = 0;
-
-      // Initialize Square client
-      const square = getSquareClient();
-      
-      // Paginate through all catalog objects
-      do {
-        page++;
-        console.log(`📄 Fetching page ${page}${cursor ? ` (cursor: ${cursor.substring(0, 10)}...)` : ''}`);
-        
+      try {
         const { result } = await square.catalog.listCatalog({
           cursor,
-          types: ['ITEM', 'ITEM_VARIATION', 'CATEGORY', 'IMAGE']
-        });
+          types: 'ITEM,CATEGORY',
+          limit: 100
+        }) as any;
         
         if (result.objects) {
-          objects.push(...result.objects);
-          console.log(`   Found ${result.objects.length} objects`);
+          result.objects.forEach((obj: any) => {
+            if (obj.type === 'ITEM') {
+              allItems.push(obj);
+            } else if (obj.type === 'CATEGORY') {
+              allCategories.push(obj);
+            }
+          });
         }
         
         cursor = result.cursor;
-      } while (cursor);
-
-      console.log(`📦 Total objects retrieved: ${objects.length}`);
+        
+        console.log(`   ✓ Batch ${fetchCount}: ${result.objects?.length || 0} objects`);
+      } catch (error: any) {
+        console.error(`   ✗ Batch ${fetchCount} failed:`, error.message);
+        break;
+      }
+    } while (cursor);
+    
+    console.log(`\n✓ Fetched ${allItems.length} items and ${allCategories.length} categories\n`);
+    
+    // Process and sync items
+    console.log('💾 Syncing items to database...');
+    
+    const syncedItems: SyncedCatalogItem[] = [];
+    let variationsCount = 0;
+    let imagesCount = 0;
+    
+    for (const item of allItems) {
+      const variations: SyncedVariation[] = [];
       
-      // Group objects by type
-      const items = objects.filter(obj => obj.type === 'ITEM');
-      const variations = objects.filter(obj => obj.type === 'ITEM_VARIATION');
-      const categories = objects.filter(obj => obj.type === 'CATEGORY');
-      const images = objects.filter(obj => obj.type === 'IMAGE');
+      // Process variations
+      if (item.itemData?.variations) {
+        for (const variation of item.itemData.variations) {
+          const priceMoney = variation.itemVariationData?.priceMoney;
+          const priceAmount = priceMoney?.amount;
+          const priceCents = priceAmount ? Number(priceAmount) : 0;
+          const priceDollars = fromCents({ amount: BigInt(priceCents), currency: 'USD' });
+          
+          variations.push({
+            id: variation.id,
+            name: variation.itemVariationData?.name || '',
+            sku: variation.itemVariationData?.sku,
+            price: priceDollars,
+            priceCents,
+            currency: priceMoney?.currency || 'USD'
+          });
+          
+          variationsCount++;
+        }
+      }
       
-      console.log(`📊 Items: ${items.length}, Variations: ${variations.length}, Categories: ${categories.length}, Images: ${images.length}`);
+      // Process images
+      const images: string[] = [];
+      if (item.itemData?.imageIds) {
+        imagesCount += item.itemData.imageIds.length;
+      }
       
-      // Create variation lookup map
-      const variationMap = new Map();
-      variations.forEach(v => {
-        variationMap.set(v.id, v);
+      syncedItems.push({
+        id: item.id,
+        type: item.type,
+        name: item.itemData?.name || 'Unnamed Item',
+        description: item.itemData?.description,
+        categoryId: item.itemData?.categoryId,
+        variations,
+        images,
+        createdAt: new Date(item.createdAt || Date.now()),
+        updatedAt: new Date(item.updatedAt || Date.now()),
+        squareUpdatedAt: item.updatedAt
       });
-      
-      // Create image lookup map
-      const imageMap = new Map();
-      images.forEach(img => {
-        imageMap.set(img.id, img.imageData?.url);
-      });
-      
-      // Process items and their variations
-      const syncedItems: SyncedCatalogItem[] = [];
-      
-      for (const item of items) {
-        try {
-          const syncedItem = await this.processItem(item, variationMap, imageMap);
-          if (syncedItem) {
-            syncedItems.push(syncedItem);
-            this.stats.items++;
-          }
-        } catch (error) {
-          console.error(`❌ Failed to process item ${item.id}:`, error);
-          this.stats.errors++;
-        }
-      }
-      
-      // Save to database
-      await this.saveCatalogData(syncedItems, categories);
-      
-      console.log('✅ Catalog sync completed');
-      console.log(`📈 Stats: ${this.stats.items} items, ${this.stats.variations} variations, ${this.stats.images} images, ${this.stats.errors} errors`);
-      
-    } catch (error) {
-      console.error('💥 Catalog sync failed:', error);
-      throw error;
-    }
-  }
-
-  private async processItem(item: any, variationMap: Map<string, any>, imageMap: Map<string, string>): Promise<SyncedCatalogItem | null> {
-    const itemData = item.itemData;
-    if (!itemData) return null;
-
-    // Get variations for this item
-    const itemVariations: SyncedVariation[] = [];
-    
-    if (itemData.variations) {
-      for (const varRef of itemData.variations) {
-        const variation = variationMap.get(varRef.id);
-        if (variation) {
-          const syncedVar = this.processVariation(variation);
-          if (syncedVar) {
-            itemVariations.push(syncedVar);
-            this.stats.variations++;
-          }
-        }
-      }
     }
     
-    // Get images for this item
-    const itemImages: string[] = [];
-    if (itemData.imageIds) {
-      for (const imageId of itemData.imageIds) {
-        const imageUrl = imageMap.get(imageId);
-        if (imageUrl) {
-          itemImages.push(imageUrl);
-          this.stats.images++;
-        }
-      }
+    // Sync categories
+    console.log('📁 Syncing categories to database...');
+    
+    const syncedCategories: SyncedCategory[] = allCategories.map(cat => ({
+      id: cat.id,
+      name: cat.categoryData?.name || 'Unnamed Category',
+      type: cat.type
+    }));
+    
+    // Clear and insert
+    console.log('🗑️  Clearing old data...');
+    await itemsCollection.deleteMany({});
+    await categoriesCollection.deleteMany({});
+    
+    console.log('💾 Inserting new data...');
+    if (syncedItems.length > 0) {
+      await itemsCollection.insertMany(syncedItems as any);
     }
-
-    return {
-      id: item.id,
-      type: item.type,
-      name: itemData.name || 'Unnamed Item',
-      description: itemData.description,
-      categoryId: itemData.categoryId,
-      variations: itemVariations,
-      images: itemImages,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      squareUpdatedAt: item.updatedAt
+    if (syncedCategories.length > 0) {
+      await categoriesCollection.insertMany(syncedCategories as any);
+    }
+    
+    // Store sync metadata
+    const syncStats: SyncStats = {
+      itemsCount: syncedItems.length,
+      variationsCount,
+      categoriesCount: syncedCategories.length,
+      imagesCount,
+      syncedAt: new Date()
     };
-  }
-
-  private processVariation(variation: any): SyncedVariation | null {
-    const varData = variation.itemVariationData;
-    if (!varData) return null;
-
-    const priceMoney = varData.priceMoney;
-    const priceCents = priceMoney?.amount ? Number(priceMoney.amount) : 0;
     
-    return {
-      id: variation.id,
-      name: varData.name,
-      sku: varData.sku,
-      price: fromCents(priceMoney),
-      priceCents,
-      currency: priceMoney?.currency || 'USD',
-      trackQuantity: varData.trackQuantity || false,
-      inventoryAlertThreshold: varData.inventoryAlertThreshold
-    };
-  }
-
-  private async saveCatalogData(items: SyncedCatalogItem[], categories: any[]) {
-    console.log('💾 Saving catalog data to database...');
-    
-    try {
-      // Clear existing catalog data
-      await this.db.collection('square_catalog_items').deleteMany({});
-      await this.db.collection('square_catalog_categories').deleteMany({});
-      
-      // Insert items
-      if (items.length > 0) {
-        await this.db.collection('square_catalog_items').insertMany(items);
-        console.log(`✅ Saved ${items.length} items`);
-      }
-      
-      // Process and insert categories
-      const processedCategories = categories.map(cat => ({
-        id: cat.id,
-        type: cat.type,
-        name: cat.categoryData?.name || 'Unnamed Category',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        squareUpdatedAt: cat.updatedAt
-      }));
-      
-      if (processedCategories.length > 0) {
-        await this.db.collection('square_catalog_categories').insertMany(processedCategories);
-        console.log(`✅ Saved ${processedCategories.length} categories`);
-      }
-      
-      // Create indexes for fast lookups
-      await this.db.collection('square_catalog_items').createIndex({ id: 1 }, { unique: true });
-      await this.db.collection('square_catalog_items').createIndex({ 'variations.id': 1 });
-      await this.db.collection('square_catalog_categories').createIndex({ id: 1 }, { unique: true });
-      
-      // Save sync metadata
-      await this.db.collection('square_sync_metadata').replaceOne(
-        { type: 'catalog_sync' },
-        {
-          type: 'catalog_sync',
-          lastSyncAt: new Date(),
-          stats: this.stats,
-          itemCount: items.length,
-          categoryCount: processedCategories.length
-        },
-        { upsert: true }
-      );
-      
-    } catch (error) {
-      console.error('💥 Failed to save catalog data:', error);
-      throw error;
-    }
-  }
-
-  async getLocalCatalogItem(itemId: string) {
-    if (!this.db) await this.initialize();
-    return await this.db.collection('square_catalog_items').findOne({ id: itemId });
-  }
-
-  async getLocalCatalogVariation(variationId: string) {
-    if (!this.db) await this.initialize();
-    return await this.db.collection('square_catalog_items').findOne(
-      { 'variations.id': variationId },
-      { projection: { variations: { $elemMatch: { id: variationId } } } }
+    await metadataCollection.updateOne(
+      { _id: 'latest' },
+      { $set: syncStats },
+      { upsert: true }
     );
-  }
-
-  async searchLocalCatalog(query: string, limit = 20) {
-    if (!this.db) await this.initialize();
-    return await this.db.collection('square_catalog_items')
-      .find(
-        { 
-          $or: [
-            { name: { $regex: query, $options: 'i' } },
-            { description: { $regex: query, $options: 'i' } }
-          ]
-        },
-        { limit }
-      )
-      .toArray();
-  }
-}
-
-// Export for use in other modules
-export const catalogSync = new CatalogSync();
-
-// CLI execution
-async function main() {
-  if (require.main === module) {
-    try {
-      await catalogSync.sync();
-      process.exit(0);
-    } catch (error) {
-      console.error('💥 Sync failed:', error);
-      process.exit(1);
-    }
+    
+    // Create indexes for fast lookups
+    console.log('📑 Creating indexes...');
+    await itemsCollection.createIndex({ id: 1 }, { unique: true });
+    await itemsCollection.createIndex({ 'variations.id': 1 });
+    await categoriesCollection.createIndex({ id: 1 }, { unique: true });
+    
+    // Final summary
+    console.log('\n' + '═'.repeat(60));
+    console.log('✅ Sync Complete!');
+    console.log('═'.repeat(60));
+    console.log(`📊 Items synced: ${syncStats.itemsCount}`);
+    console.log(`📊 Variations synced: ${syncStats.variationsCount}`);
+    console.log(`📊 Categories synced: ${syncStats.categoriesCount}`);
+    console.log(`📊 Images found: ${syncStats.imagesCount}`);
+    console.log(`📊 Synced at: ${syncStats.syncedAt.toISOString()}`);
+    console.log('\n✨ Catalog is now up to date!\n');
+    
+    process.exit(0);
+    
+  } catch (error: any) {
+    console.error('\n❌ Sync Failed:', error.message);
+    console.error('Stack:', error.stack);
+    process.exit(1);
   }
 }
 
-if (require.main === module) {
-  main();
-}
+// Run sync
+syncSquareCatalog();
