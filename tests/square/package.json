@@ -1,0 +1,29 @@
+{
+  "name": "square-payment-integration-tests",
+  "version": "1.0.0",
+  "description": "Comprehensive test suite for Square payment integration",
+  "scripts": {
+    "test:square": "vitest run tests/square/",
+    "test:square:watch": "vitest tests/square/",
+    "test:square:coverage": "vitest run tests/square/ --coverage",
+    "test:square:verbose": "vitest run tests/square/ --reporter=verbose",
+    "test:square:env": "vitest run tests/square/01-environment-config.spec.ts",
+    "test:square:sdk": "vitest run tests/square/02-sdk-initialization.spec.ts",
+    "test:square:api": "vitest run tests/square/03-api-endpoints.spec.ts",
+    "test:square:frontend": "vitest run tests/square/04-frontend-integration.spec.ts",
+    "test:square:flow": "vitest run tests/square/05-payment-flow.spec.ts",
+    "test:square:security": "vitest run tests/square/06-edge-cases-security.spec.ts",
+    "test:square:ci": "bash scripts/test-square-integration.sh"
+  },
+  "testPatterns": {
+    "unit": "tests/square/*spec.ts",
+    "integration": "tests/square/{03,05}*.spec.ts",
+    "security": "tests/square/06*.spec.ts"
+  },
+  "coverage": {
+    "statements": 80,
+    "branches": 75,
+    "functions": 80,
+    "lines": 80
+  }
+}
