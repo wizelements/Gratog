@@ -75,6 +75,7 @@ export async function createOrderAtomic(orderData: any) {
         { productId: item.id },
         {
           $inc: { currentStock: -item.quantity },
+          // @ts-ignore - MongoDB $push typing issue
           $push: {
             stockHistory: {
               date: new Date(),
