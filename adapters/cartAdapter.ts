@@ -54,8 +54,13 @@ export const CartAPI = {
   saveCart: (cart: CartItem[]) => saveCart(cart),
   
   // Add item to cart
-  addItem: (product: any, quantity: number = 1, variantOrSize: any = null) => 
-    addToCart(product, quantity, variantOrSize),
+  addItem: (product: any, quantity: number = 1, variantOrSize: any = null) => {
+    // Add the product (cartUtils.addToCart only handles single qty increments)
+    for (let i = 0; i < quantity; i++) {
+      addToCart(product);
+    }
+    return loadCart();
+  },
   
   // Update item quantity
   updateQuantity: (itemId: string, quantity: number) => 
