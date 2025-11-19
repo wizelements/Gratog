@@ -249,22 +249,22 @@ curl -X POST https://connect.squareup.com/v2/orders/search \
 
 ### Generate OAuth URL
 ```bash
-curl "https://typebug-hunter.preview.emergentagent.com/api/square/oauth/authorize?environment=production"
+curl "https://gratog-payments.preview.emergentagent.com/api/square/oauth/authorize?environment=production"
 ```
 
 ### Validate Current Token (Quick)
 ```bash
-curl "https://typebug-hunter.preview.emergentagent.com/api/square/validate-token"
+curl "https://gratog-payments.preview.emergentagent.com/api/square/validate-token"
 ```
 
 ### Validate Current Token (Comprehensive with Scope Tests)
 ```bash
-curl "https://typebug-hunter.preview.emergentagent.com/api/square/validate-token?comprehensive=true"
+curl "https://gratog-payments.preview.emergentagent.com/api/square/validate-token?comprehensive=true"
 ```
 
 ### Test New Token Before Deploying
 ```bash
-curl -X POST https://typebug-hunter.preview.emergentagent.com/api/square/validate-token \
+curl -X POST https://gratog-payments.preview.emergentagent.com/api/square/validate-token \
   -H "Content-Type: application/json" \
   -d '{
     "accessToken": "YOUR_NEW_TOKEN",

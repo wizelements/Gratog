@@ -50,9 +50,9 @@
 
 **Before:**
 ```javascript
-metadataBase: 'https://typebug-hunter.preview.emergentagent.com'
-canonical: 'https://typebug-hunter.preview.emergentagent.com'
-og:url: 'https://typebug-hunter.preview.emergentagent.com'
+metadataBase: 'https://gratog-payments.preview.emergentagent.com'
+canonical: 'https://gratog-payments.preview.emergentagent.com'
+og:url: 'https://gratog-payments.preview.emergentagent.com'
 ```
 
 **After:**

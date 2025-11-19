@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://typebug-hunter.preview.emergentagent.com"
+BASE_URL = "https://gratog-payments.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 # Test Results Tracking
@@ -94,7 +94,7 @@ def test_1_square_checkout_api_flow():
                 "size": "16oz"
             }
         ],
-        "redirectUrl": "https://typebug-hunter.preview.emergentagent.com/checkout/success",
+        "redirectUrl": "https://gratog-payments.preview.emergentagent.com/checkout/success",
         "customer": {
             "email": "sarah.johnson@example.com",
             "name": "Sarah Johnson",
@@ -237,7 +237,7 @@ def test_2_idempotency_check():
                 "size": "16oz"
             }
         ],
-        "redirectUrl": "https://typebug-hunter.preview.emergentagent.com/checkout/success",
+        "redirectUrl": "https://gratog-payments.preview.emergentagent.com/checkout/success",
         "customer": {
             "email": "idempotency.test@example.com",
             "name": "Idempotency Test User",
@@ -339,7 +339,7 @@ def test_3_missing_fields_validation():
     
     # Test 3.1: Missing lineItems
     payload_missing_items = {
-        "redirectUrl": "https://typebug-hunter.preview.emergentagent.com/checkout/success",
+        "redirectUrl": "https://gratog-payments.preview.emergentagent.com/checkout/success",
         "customer": {"email": "test@example.com"}
     }
     
@@ -384,7 +384,7 @@ def test_3_missing_fields_validation():
     # Test 3.2: Empty lineItems array
     payload_empty_items = {
         "lineItems": [],
-        "redirectUrl": "https://typebug-hunter.preview.emergentagent.com/checkout/success",
+        "redirectUrl": "https://gratog-payments.preview.emergentagent.com/checkout/success",
         "customer": {"email": "test@example.com"}
     }
     
@@ -428,7 +428,7 @@ def test_3_missing_fields_validation():
                 }
             }
         ],
-        "redirectUrl": "https://typebug-hunter.preview.emergentagent.com/checkout/success",
+        "redirectUrl": "https://gratog-payments.preview.emergentagent.com/checkout/success",
         "customer": {"email": "test@example.com"}
     }
     

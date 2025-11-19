@@ -17,7 +17,7 @@
     }
   },
   "env": {
-    "NEXT_PUBLIC_APP_URL": "https://typebug-hunter.preview.emergentagent.com"
+    "NEXT_PUBLIC_APP_URL": "https://gratog-payments.preview.emergentagent.com"
   },
   "headers": [
     {

@@ -2,7 +2,7 @@
 # Quick Deployment Verification Script
 # Run this after deploying with updated Square credentials
 
-DEPLOY_URL="${1:-https://typebug-hunter.preview.emergentagent.com}"
+DEPLOY_URL="${1:-https://gratog-payments.preview.emergentagent.com}"
 
 echo "🔍 Verifying Deployment at: $DEPLOY_URL"
 echo "============================================"

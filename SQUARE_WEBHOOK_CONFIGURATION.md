@@ -13,7 +13,7 @@ This guide provides step-by-step instructions for configuring Square webhooks in
 
 **Webhook URL:**
 ```
-https://typebug-hunter.preview.emergentagent.com/api/webhooks/square
+https://gratog-payments.preview.emergentagent.com/api/webhooks/square
 ```
 
 **Webhook Signature Key (from .env):**
@@ -44,7 +44,7 @@ taste-of-gratitude-webhook-key-2024
 2. Click **+ Add Webhook**
 
 ### Step 3: Configure Webhook Endpoint
-1. **Webhook URL**: Enter `https://typebug-hunter.preview.emergentagent.com/api/webhooks/square`
+1. **Webhook URL**: Enter `https://gratog-payments.preview.emergentagent.com/api/webhooks/square`
 2. **Webhook Name**: Enter `Taste of Gratitude Production Webhooks`
 3. **Environment**: Select **Production**
 
@@ -79,7 +79,7 @@ Test the webhook endpoint manually:
 
 ```bash
 # Test GET endpoint
-curl https://typebug-hunter.preview.emergentagent.com/api/webhooks/square
+curl https://gratog-payments.preview.emergentagent.com/api/webhooks/square
 
 # Expected response:
 {

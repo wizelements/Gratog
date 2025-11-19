@@ -115,7 +115,7 @@ For production apps, using OAuth is more secure than personal access tokens:
 
 1. **Set up OAuth redirect:**
    - Add redirect URL in Square Dashboard
-   - URL: `https://typebug-hunter.preview.emergentagent.com/api/auth/square/callback`
+   - URL: `https://gratog-payments.preview.emergentagent.com/api/auth/square/callback`
 
 2. **Implement OAuth flow:**
    - User authorizes app
@@ -155,7 +155,7 @@ curl http://localhost:3000/api/square/diagnose | jq '.summary'
    ```
 
 2. **Configure Webhooks:**
-   - URL: `https://typebug-hunter.preview.emergentagent.com/api/webhooks/square`
+   - URL: `https://gratog-payments.preview.emergentagent.com/api/webhooks/square`
    - Events:
      - `payment.created`
      - `payment.updated`

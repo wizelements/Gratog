@@ -8,7 +8,7 @@ import requests
 import json
 from datetime import datetime
 
-BASE_URL = "https://typebug-hunter.preview.emergentagent.com"
+BASE_URL = "https://gratog-payments.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 def print_header(title):

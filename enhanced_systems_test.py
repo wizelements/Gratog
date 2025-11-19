@@ -36,7 +36,7 @@ import uuid
 from datetime import datetime, timedelta
 
 # Configuration
-BASE_URL = "https://typebug-hunter.preview.emergentagent.com"
+BASE_URL = "https://gratog-payments.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 class EnhancedSystemsTester:

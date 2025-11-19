@@ -6,7 +6,7 @@ Test payment API with Square Order ID
 import requests
 import json
 
-BASE_URL = "https://typebug-hunter.preview.emergentagent.com"
+BASE_URL = "https://gratog-payments.preview.emergentagent.com"
 
 print("="*80)
 print("TEST: Payment API with Square Order ID")

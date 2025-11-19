@@ -27,7 +27,7 @@ import os
 import sys
 
 # Configuration
-BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://typebug-hunter.preview.emergentagent.com')
+BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://gratog-payments.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 class ProductionPerformanceTest:

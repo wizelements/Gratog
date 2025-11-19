@@ -180,10 +180,10 @@ if (!ENABLE_FALLBACK && authError) {
 **Immediate Diagnostic:**
 ```bash
 # Test MongoDB connection
-curl -s https://typebug-hunter.preview.emergentagent.com/api/health | jq '.services.database'
+curl -s https://gratog-payments.preview.emergentagent.com/api/health | jq '.services.database'
 
 # Test order creation (database write)
-curl -X POST https://typebug-hunter.preview.emergentagent.com/api/orders/create \
+curl -X POST https://gratog-payments.preview.emergentagent.com/api/orders/create \
   -H "Content-Type: application/json" \
   -d '{
     "cart": [{"id": "test", "quantity": 1, "price": 10}],

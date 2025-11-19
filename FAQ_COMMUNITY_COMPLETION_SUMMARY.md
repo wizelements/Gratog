@@ -309,8 +309,8 @@
 ## 🚀 Live URLs
 
 **Production URLs:**
-- https://typebug-hunter.preview.emergentagent.com/faq
-- https://typebug-hunter.preview.emergentagent.com/community
+- https://gratog-payments.preview.emergentagent.com/faq
+- https://gratog-payments.preview.emergentagent.com/community
 - Footer visible on all pages
 
 **Footer Links to:**

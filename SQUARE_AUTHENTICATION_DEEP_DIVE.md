@@ -483,7 +483,7 @@ sudo supervisorctl restart nextjs
 
 **Test 1: Diagnostic Endpoint**
 ```bash
-curl https://typebug-hunter.preview.emergentagent.com/api/square/diagnose
+curl https://gratog-payments.preview.emergentagent.com/api/square/diagnose
 ```
 
 **Expected Output (SUCCESS):**

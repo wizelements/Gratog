@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Backend URL
-BASE_URL = "https://typebug-hunter.preview.emergentagent.com/api"
+BASE_URL = "https://gratog-payments.preview.emergentagent.com/api"
 
 # Test results tracking
 test_results = {

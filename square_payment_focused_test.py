@@ -11,7 +11,7 @@ import uuid
 import time
 
 # Configuration
-BASE_URL = "https://typebug-hunter.preview.emergentagent.com"
+BASE_URL = "https://gratog-payments.preview.emergentagent.com"
 SQUARE_API_URL = f"{BASE_URL}/api/square-payment"
 
 class SquarePaymentFocusedTester:

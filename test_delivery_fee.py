@@ -10,11 +10,11 @@ import sys
 from datetime import datetime
 
 # Backend URL
-BASE_URL = "https://typebug-hunter.preview.emergentagent.com/api"
+BASE_URL = "https://gratog-payments.preview.emergentagent.com/api"
 
 # Headers for CSRF protection
 HEADERS = {
-    "Origin": "https://typebug-hunter.preview.emergentagent.com",
+    "Origin": "https://gratog-payments.preview.emergentagent.com",
     "Content-Type": "application/json"
 }
 

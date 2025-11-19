@@ -8,7 +8,7 @@ Your Taste of Gratitude admin dashboard is now live and ready to use.
 
 ## 📍 Access the Dashboard
 
-**Admin Login URL:** `https://typebug-hunter.preview.emergentagent.com/admin/login`
+**Admin Login URL:** `https://gratog-payments.preview.emergentagent.com/admin/login`
 
 **Default Admin Credentials:**
 - Email: `admin@tasteofgratitude.com`
@@ -293,4 +293,4 @@ For issues or questions:
 
 Your admin dashboard is production-ready and fully functional. Login now and start managing your Taste of Gratitude inventory!
 
-**Login:** https://typebug-hunter.preview.emergentagent.com/admin/login
+**Login:** https://gratog-payments.preview.emergentagent.com/admin/login
