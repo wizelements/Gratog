@@ -17,6 +17,7 @@ export const metadata = {
   authors: [{ name: 'Taste of Gratitude' }],
   creator: 'Taste of Gratitude',
   publisher: 'Taste of Gratitude',
+  manifest: '/manifest.json',
   formatDetection: {
     email: false,
     address: false,
@@ -82,6 +83,28 @@ export default function RootLayout({ children }) {
           </div>
           <Toaster />
         </AuthProvider>
+        
+        {/* Service Worker Registration */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                  .then((registration) => {
+                    console.log('✅ PWA: Service Worker registered');
+                    
+                    // Check for updates every hour
+                    setInterval(() => {
+                      registration.update();
+                    }, 3600000);
+                  })
+                  .catch((error) => {
+                    console.error('❌ PWA: Service Worker registration failed:', error);
+                  });
+              });
+            }
+          `
+        }} />
       </body>
     </html>
   );
