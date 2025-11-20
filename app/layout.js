@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import FloatingCart from '@/components/cart/EnhancedFloatingCart';
 import CartNotification from '@/components/cart/CartNotification';
 import { Toaster } from '@/components/ui/sonner';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -71,14 +72,16 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className={inter.className}>
-        <div className="flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <FloatingCart />
-          <CartNotification />
-        </div>
-        <Toaster />
+        <AuthProvider>
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <FloatingCart />
+            <CartNotification />
+          </div>
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

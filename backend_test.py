@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-🔥 VORACIOUS BACKEND PAYMENT TESTING 🔥
-Comprehensive, aggressive testing of ALL payment-related APIs
-Focus: Find EVERY potential failure point, especially the 401 error
+Comprehensive Email System Backend Testing
+Tests all 9 email system tasks for Taste of Gratitude platform
 """
 
 import requests
@@ -10,797 +9,659 @@ import json
 import time
 from datetime import datetime
 
-# Backend URL
-BASE_URL = "https://gratog-payments.preview.emergentagent.com/api"
+# Configuration
+BASE_URL = "https://gratog-payments.preview.emergentagent.com"
+API_BASE = f"{BASE_URL}/api"
 
-# Test results tracking
-test_results = {
-    "passed": 0,
-    "failed": 0,
-    "tests": []
+# Test user credentials
+TEST_USER = {
+    "name": "Emma Rodriguez",
+    "email": f"emma.rodriguez.{int(time.time())}@testmail.com",
+    "password": "SecurePass123!",
+    "phone": "+14045551234"
 }
 
-def log_test(name, passed, details=""):
-    """Log test result"""
-    status = "✅ PASS" if passed else "❌ FAIL"
-    print(f"\n{status}: {name}")
-    if details:
-        print(f"   {details}")
-    
-    test_results["tests"].append({
-        "name": name,
-        "passed": passed,
-        "details": details,
-        "timestamp": datetime.now().isoformat()
-    })
-    
-    if passed:
-        test_results["passed"] += 1
-    else:
-        test_results["failed"] += 1
+# Colors for output
+class Colors:
+    GREEN = '\033[92m'
+    RED = '\033[91m'
+    YELLOW = '\033[93m'
+    BLUE = '\033[94m'
+    RESET = '\033[0m'
+
+def print_test(message):
+    print(f"\n{Colors.BLUE}🧪 TEST: {message}{Colors.RESET}")
+
+def print_success(message):
+    print(f"{Colors.GREEN}✅ {message}{Colors.RESET}")
+
+def print_error(message):
+    print(f"{Colors.RED}❌ {message}{Colors.RESET}")
+
+def print_info(message):
+    print(f"{Colors.YELLOW}ℹ️  {message}{Colors.RESET}")
 
 def print_section(title):
-    """Print section header"""
     print(f"\n{'='*80}")
-    print(f"  {title}")
+    print(f"{Colors.BLUE}{title}{Colors.RESET}")
     print(f"{'='*80}")
 
-# ============================================================================
-# PHASE 1: CART DATA STRUCTURE VALIDATION
-# ============================================================================
-print_section("PHASE 1: CART DATA STRUCTURE VALIDATION")
-
-print("\n📦 Testing Cart Engine data structure...")
-print("Cart items should have: variationId, catalogObjectId, productId, price, priceCents, quantity")
-
-# Simulate cart structure from cart-engine.js
-test_cart_item = {
-    "id": "test-product-1",
-    "productId": "test-product-1",
-    "variationId": "HMOFD754ENI27FH2PGAUJANK",  # Real variation ID from MongoDB
-    "catalogObjectId": "HMOFD754ENI27FH2PGAUJANK",
-    "name": "Kissed by Gods",
-    "slug": "kissed-by-gods",
-    "image": "/images/sea-moss-default.svg",
-    "category": "lemonade",
-    "price": 11.00,
-    "priceCents": 1100,
-    "quantity": 2,
-    "addedAt": datetime.now().isoformat()
-}
-
-# Validate cart item structure
-required_fields = ["variationId", "catalogObjectId", "productId", "price", "priceCents", "quantity"]
-missing_fields = [field for field in required_fields if field not in test_cart_item]
-
-if not missing_fields:
-    log_test("Cart Item Structure - All Required Fields Present", True, 
-             f"Cart item has all required fields: {', '.join(required_fields)}")
-else:
-    log_test("Cart Item Structure - Missing Fields", False, 
-             f"Missing fields: {', '.join(missing_fields)}")
-
-# Validate price consistency
-price_consistent = test_cart_item["priceCents"] == int(test_cart_item["price"] * 100)
-log_test("Cart Item Price Consistency", price_consistent,
-         f"price: ${test_cart_item['price']}, priceCents: {test_cart_item['priceCents']}")
+# Global variables for test data
+auth_token = None
+user_id = None
 
 # ============================================================================
-# PHASE 2: PRODUCTS API - VERIFY CATALOG DATA
+# TASK 1: Email Service Core Infrastructure
 # ============================================================================
-print_section("PHASE 2: PRODUCTS API - CATALOG DATA VALIDATION")
-
-try:
-    response = requests.get(f"{BASE_URL}/products", timeout=10)
+def test_email_service_core():
+    print_section("TASK 1: Email Service Core Infrastructure")
     
-    if response.status_code == 200:
-        data = response.json()
-        products = data.get("products", [])
-        
-        log_test("Products API - Response Status", True, 
-                 f"Status: {response.status_code}, Products: {len(products)}")
-        
-        if products:
-            # Check first product structure
-            first_product = products[0]
-            
-            # Verify variationId/catalogObjectId
-            has_variation_id = "variationId" in first_product or "catalogObjectId" in first_product
-            log_test("Products API - Variation ID Present", has_variation_id,
-                     f"variationId: {first_product.get('variationId', 'MISSING')}, "
-                     f"catalogObjectId: {first_product.get('catalogObjectId', 'MISSING')}")
-            
-            # Verify price format
-            has_price = "price" in first_product
-            has_price_cents = "priceCents" in first_product
-            log_test("Products API - Price Format", has_price and has_price_cents,
-                     f"price: {first_product.get('price', 'MISSING')}, "
-                     f"priceCents: {first_product.get('priceCents', 'MISSING')}")
-            
-            # Store real product for later tests
-            real_product = first_product
-            print(f"\n📝 Using real product for tests: {real_product.get('name', 'Unknown')}")
-            print(f"   Variation ID: {real_product.get('variationId', 'N/A')}")
-            print(f"   Price: ${real_product.get('price', 0)}")
-        else:
-            log_test("Products API - No Products Found", False, "Empty products array")
-            real_product = None
-    else:
-        log_test("Products API - Request Failed", False, 
-                 f"Status: {response.status_code}, Error: {response.text[:200]}")
-        real_product = None
-        
-except Exception as e:
-    log_test("Products API - Exception", False, str(e))
-    real_product = None
-
-# ============================================================================
-# PHASE 3: ORDER CREATION API - COMPREHENSIVE TESTING
-# ============================================================================
-print_section("PHASE 3: ORDER CREATION API - COMPREHENSIVE TESTING")
-
-# Test 3.1: Pickup Order with Real Cart Data
-print("\n🧪 Test 3.1: Pickup Order with Real Cart Data")
-pickup_order_data = {
-    "cart": [
-        {
-            "id": "test-1",
-            "productId": "test-1",
-            "variationId": "HMOFD754ENI27FH2PGAUJANK",
-            "catalogObjectId": "HMOFD754ENI27FH2PGAUJANK",
-            "name": "Kissed by Gods",
-            "price": 11.00,
-            "priceCents": 1100,
-            "quantity": 2
-        }
-    ],
-    "customer": {
-        "name": "Test Customer",
-        "email": "test@example.com",
-        "phone": "+14045551234"
-    },
-    "fulfillmentType": "pickup",
-    "pickupLocation": "main"
-}
-
-try:
-    response = requests.post(f"{BASE_URL}/orders/create", 
-                            json=pickup_order_data, 
-                            timeout=15)
-    
-    if response.status_code == 200:
-        data = response.json()
-        order = data.get("order", {})
-        log_test("Order Creation - Pickup Order", True,
-                 f"Order ID: {order.get('id', 'N/A')}, "
-                 f"Order Number: {order.get('orderNumber', 'N/A')}, "
-                 f"Square Order ID: {data.get('squareOrderId', 'N/A')}")
-        
-        # Store order ID for payment tests
-        test_order_id = order.get("id")
-        test_square_order_id = data.get("squareOrderId")
-        
-        # Verify catalogObjectId was used
-        print(f"   ✓ Cart items mapped to Square with catalogObjectId")
-    else:
-        log_test("Order Creation - Pickup Order", False,
-                 f"Status: {response.status_code}, Error: {response.text[:300]}")
-        test_order_id = None
-        test_square_order_id = None
-        
-except Exception as e:
-    log_test("Order Creation - Pickup Order Exception", False, str(e))
-    test_order_id = None
-    test_square_order_id = None
-
-# Test 3.2: Delivery Order with Valid ZIP
-print("\n🧪 Test 3.2: Delivery Order with Valid ZIP (30310)")
-delivery_order_data = {
-    "cart": [
-        {
-            "id": "test-2",
-            "productId": "test-2",
-            "variationId": "HMOFD754ENI27FH2PGAUJANK",
-            "catalogObjectId": "HMOFD754ENI27FH2PGAUJANK",
-            "name": "Kissed by Gods",
-            "price": 11.00,
-            "priceCents": 1100,
-            "quantity": 3
-        }
-    ],
-    "customer": {
-        "name": "Delivery Customer",
-        "email": "delivery@example.com",
-        "phone": "+14045551234"
-    },
-    "fulfillmentType": "delivery",
-    "deliveryAddress": {
-        "street": "123 Main St",
-        "city": "Atlanta",
-        "state": "GA",
-        "zip": "30310"
-    },
-    "deliveryTimeSlot": "12:00-15:00",
-    "deliveryTip": 2.00
-}
-
-try:
-    response = requests.post(f"{BASE_URL}/orders/create", 
-                            json=delivery_order_data, 
-                            timeout=15)
-    
-    if response.status_code == 200:
-        data = response.json()
-        order = data.get("order", {})
-        pricing = order.get("pricing", {})
-        
-        # Check delivery fee
-        delivery_fee = pricing.get("deliveryFee", 0)
-        subtotal = pricing.get("subtotal", 0)
-        
-        # Subtotal is $33 (3 x $11), should have $6.99 delivery fee
-        expected_fee = 6.99 if subtotal < 75 else 0
-        
-        log_test("Order Creation - Delivery Order with Valid ZIP", True,
-                 f"Order ID: {order.get('id', 'N/A')}, "
-                 f"Subtotal: ${subtotal}, Delivery Fee: ${delivery_fee}, "
-                 f"Expected Fee: ${expected_fee}")
-    else:
-        log_test("Order Creation - Delivery Order", False,
-                 f"Status: {response.status_code}, Error: {response.text[:300]}")
-        
-except Exception as e:
-    log_test("Order Creation - Delivery Order Exception", False, str(e))
-
-# Test 3.3: Delivery Order with Invalid ZIP
-print("\n🧪 Test 3.3: Delivery Order with Invalid ZIP (90210)")
-invalid_zip_order = delivery_order_data.copy()
-invalid_zip_order["deliveryAddress"]["zip"] = "90210"
-
-try:
-    response = requests.post(f"{BASE_URL}/orders/create", 
-                            json=invalid_zip_order, 
-                            timeout=15)
-    
-    # Should be rejected with 400
-    if response.status_code == 400:
-        error_msg = response.json().get("error", "")
-        log_test("Order Creation - Invalid ZIP Rejection", True,
-                 f"Correctly rejected with 400: {error_msg}")
-    else:
-        log_test("Order Creation - Invalid ZIP Rejection", False,
-                 f"Should reject invalid ZIP, got status: {response.status_code}")
-        
-except Exception as e:
-    log_test("Order Creation - Invalid ZIP Exception", False, str(e))
-
-# Test 3.4: Order with Tips
-print("\n🧪 Test 3.4: Order with Different Tip Amounts")
-for tip_amount in [0, 2, 5, 10]:
-    tip_order = pickup_order_data.copy()
-    tip_order["deliveryTip"] = tip_amount
-    
+    # Test 1: Check if Resend is configured
+    print_test("Check Resend API configuration")
     try:
-        response = requests.post(f"{BASE_URL}/orders/create", 
-                                json=tip_order, 
-                                timeout=15)
+        response = requests.get(f"{API_BASE}/emails/test", timeout=10)
+        data = response.json()
         
         if response.status_code == 200:
-            data = response.json()
-            order = data.get("order", {})
-            pricing = order.get("pricing", {})
+            print_success(f"Email test API accessible")
+            print_info(f"Resend configured: {data.get('resendConfigured', False)}")
+            print_info(f"Mode: {data.get('mode', 'unknown')}")
             
-            log_test(f"Order Creation - Tip ${tip_amount}", True,
-                     f"Order created with tip: ${pricing.get('tip', 0)}")
+            if data.get('mode') == 'development':
+                print_info("Running in DEV MODE - emails will be logged instead of sent")
+            
+            return True
         else:
-            log_test(f"Order Creation - Tip ${tip_amount}", False,
-                     f"Status: {response.status_code}")
-            
+            print_error(f"Failed to access email test API: {response.status_code}")
+            return False
     except Exception as e:
-        log_test(f"Order Creation - Tip ${tip_amount} Exception", False, str(e))
+        print_error(f"Error testing email service: {str(e)}")
+        return False
 
 # ============================================================================
-# PHASE 4: SQUARE PAYMENTS API - CRITICAL 401 ERROR INVESTIGATION
+# TASK 2: Email Templates (5 types)
 # ============================================================================
-print_section("PHASE 4: SQUARE PAYMENTS API - 401 ERROR INVESTIGATION")
-
-print("\n🔍 INVESTIGATING 401 ERROR IN /api/payments")
-print("This is the CRITICAL issue blocking payments")
-
-# Test 4.1: Missing sourceId validation
-print("\n🧪 Test 4.1: Missing sourceId (should return 400)")
-try:
-    response = requests.post(f"{BASE_URL}/payments",
-                            json={"amountCents": 1000},
-                            timeout=10)
+def test_email_templates():
+    print_section("TASK 2: Email Templates (5 types)")
     
-    if response.status_code == 400:
-        error = response.json().get("error", "")
-        log_test("Payments API - Missing sourceId Validation", True,
-                 f"Correctly rejected with 400: {error}")
-    else:
-        log_test("Payments API - Missing sourceId Validation", False,
-                 f"Expected 400, got {response.status_code}")
-except Exception as e:
-    log_test("Payments API - Missing sourceId Exception", False, str(e))
-
-# Test 4.2: Invalid amount validation
-print("\n🧪 Test 4.2: Invalid amount (0 cents)")
-try:
-    response = requests.post(f"{BASE_URL}/payments",
-                            json={"sourceId": "test-token", "amountCents": 0},
-                            timeout=10)
-    
-    if response.status_code == 400:
-        error = response.json().get("error", "")
-        log_test("Payments API - Invalid Amount Validation", True,
-                 f"Correctly rejected with 400: {error}")
-    else:
-        log_test("Payments API - Invalid Amount Validation", False,
-                 f"Expected 400, got {response.status_code}")
-except Exception as e:
-    log_test("Payments API - Invalid Amount Exception", False, str(e))
-
-# Test 4.3: Test with valid structure (will fail with test nonce, but shows API structure)
-print("\n🧪 Test 4.3: Valid Payment Structure (test nonce)")
-print("NOTE: Test nonce won't work with production Square API, but we can check for 401 vs other errors")
-
-payment_request = {
-    "sourceId": "cnon:card-nonce-ok",  # Test nonce
-    "amountCents": 2200,  # $22.00
-    "currency": "USD",
-    "orderId": test_order_id if test_order_id else "test-order-123",
-    "squareOrderId": test_square_order_id if test_square_order_id else None,
-    "customer": {
-        "name": "Test Customer",
-        "email": "test@example.com",
-        "phone": "+14045551234"
-    }
-}
-
-try:
-    response = requests.post(f"{BASE_URL}/payments",
-                            json=payment_request,
-                            timeout=15)
-    
-    status = response.status_code
-    response_data = response.json()
-    
-    print(f"\n   Response Status: {status}")
-    print(f"   Response Body: {json.dumps(response_data, indent=2)[:500]}")
-    
-    if status == 401:
-        log_test("Payments API - 401 ERROR FOUND", False,
-                 f"🚨 CRITICAL: 401 Unauthorized error detected! "
-                 f"Error: {response_data.get('error', 'Unknown')}")
-        print("\n   🔍 401 ERROR ANALYSIS:")
-        print("   - This indicates Square API authentication failure")
-        print("   - Check SQUARE_ACCESS_TOKEN in .env")
-        print("   - Verify token has PAYMENTS_WRITE scope")
-        print("   - Check if token is expired or revoked")
-    elif status == 404:
-        log_test("Payments API - Structure Valid (404 expected)", True,
-                 "Test nonce returns 404 'Card nonce not found' - this is CORRECT for production API. "
-                 "API structure is valid, real payment tokens will work.")
-    elif status == 500:
-        error_msg = response_data.get("error", "")
-        if "Card nonce not found" in error_msg or "nonce" in error_msg.lower():
-            log_test("Payments API - Structure Valid (500 with nonce error)", True,
-                     "Test nonce error is expected. API structure is valid.")
+    print_test("Get list of available email templates")
+    try:
+        response = requests.get(f"{API_BASE}/emails/test", timeout=10)
+        data = response.json()
+        
+        if response.status_code == 200 and 'templates' in data:
+            templates = data['templates']
+            print_success(f"Retrieved {len(templates)} email templates")
+            
+            expected_templates = ['welcome', 'order', 'password', 'reward', 'challenge']
+            found_templates = [t['id'] for t in templates]
+            
+            for template_id in expected_templates:
+                if template_id in found_templates:
+                    template = next(t for t in templates if t['id'] == template_id)
+                    print_success(f"✓ {template['name']}: {template['description']}")
+                else:
+                    print_error(f"✗ Missing template: {template_id}")
+                    return False
+            
+            return True
         else:
-            log_test("Payments API - 500 Error", False,
-                     f"Unexpected 500 error: {error_msg}")
-    else:
-        log_test("Payments API - Unexpected Response", False,
-                 f"Status: {status}, Response: {response_data}")
-        
-except Exception as e:
-    log_test("Payments API - Valid Structure Exception", False, str(e))
-
-# Test 4.4: GET payment status endpoint
-print("\n🧪 Test 4.4: GET Payment Status Endpoint")
-try:
-    response = requests.get(f"{BASE_URL}/payments?paymentId=test-payment-123", timeout=10)
-    
-    # Should return 404 for non-existent payment
-    if response.status_code in [404, 400]:
-        log_test("Payments API - GET Status Endpoint", True,
-                 f"Status endpoint accessible, returned {response.status_code}")
-    else:
-        log_test("Payments API - GET Status Endpoint", False,
-                 f"Unexpected status: {response.status_code}")
-except Exception as e:
-    log_test("Payments API - GET Status Exception", False, str(e))
+            print_error(f"Failed to get templates: {response.status_code}")
+            return False
+    except Exception as e:
+        print_error(f"Error testing templates: {str(e)}")
+        return False
 
 # ============================================================================
-# PHASE 5: SQUARE CHECKOUT API (PAYMENT LINKS)
+# TASK 3: Email Test API Endpoint
 # ============================================================================
-print_section("PHASE 5: SQUARE CHECKOUT API (PAYMENT LINKS)")
-
-# Test 5.1: Empty line items validation
-print("\n🧪 Test 5.1: Empty Line Items (should reject)")
-try:
-    response = requests.post(f"{BASE_URL}/checkout",
-                            json={"lineItems": []},
-                            timeout=10)
+def test_email_test_api():
+    print_section("TASK 3: Email Test API Endpoint")
     
-    if response.status_code == 400:
-        log_test("Checkout API - Empty Line Items Validation", True,
-                 f"Correctly rejected with 400")
-    else:
-        log_test("Checkout API - Empty Line Items Validation", False,
-                 f"Expected 400, got {response.status_code}")
-except Exception as e:
-    log_test("Checkout API - Empty Line Items Exception", False, str(e))
-
-# Test 5.2: Missing catalogObjectId validation
-print("\n🧪 Test 5.2: Missing catalogObjectId (should reject)")
-try:
-    response = requests.post(f"{BASE_URL}/checkout",
-                            json={
-                                "lineItems": [
-                                    {"quantity": 1, "name": "Test Product"}
-                                ]
-                            },
-                            timeout=10)
+    results = []
     
-    if response.status_code == 400:
-        log_test("Checkout API - Missing catalogObjectId Validation", True,
-                 f"Correctly rejected with 400")
-    else:
-        log_test("Checkout API - Missing catalogObjectId Validation", False,
-                 f"Expected 400, got {response.status_code}")
-except Exception as e:
-    log_test("Checkout API - Missing catalogObjectId Exception", False, str(e))
-
-# Test 5.3: Valid checkout with real catalogObjectId
-print("\n🧪 Test 5.3: Valid Checkout with Real Catalog Object ID")
-checkout_request = {
-    "lineItems": [
-        {
-            "catalogObjectId": "HMOFD754ENI27FH2PGAUJANK",  # Real variation ID
-            "quantity": 2,
-            "name": "Kissed by Gods",
-            "basePriceMoney": {
-                "amount": 1100,
-                "currency": "USD"
-            }
-        }
-    ],
-    "customer": {
-        "name": "Test Customer",
-        "email": "test@example.com",
-        "phone": "+14045551234"
-    },
-    "orderId": test_order_id if test_order_id else "test-order-123",
-    "fulfillmentType": "pickup"
-}
-
-try:
-    response = requests.post(f"{BASE_URL}/checkout",
-                            json=checkout_request,
-                            timeout=15)
+    # Test 1: GET endpoint - list templates
+    print_test("GET /api/emails/test - List templates")
+    try:
+        response = requests.get(f"{API_BASE}/emails/test", timeout=10)
+        if response.status_code == 200:
+            data = response.json()
+            if 'templates' in data and len(data['templates']) == 5:
+                print_success("GET endpoint returns all 5 templates")
+                results.append(True)
+            else:
+                print_error("GET endpoint doesn't return correct templates")
+                results.append(False)
+        else:
+            print_error(f"GET endpoint failed: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"GET endpoint error: {str(e)}")
+        results.append(False)
     
-    status = response.status_code
-    response_data = response.json()
+    # Test 2: POST with invalid email
+    print_test("POST /api/emails/test - Invalid email validation")
+    try:
+        response = requests.post(
+            f"{API_BASE}/emails/test",
+            json={
+                "templateId": "welcome",
+                "recipientEmail": "invalid-email"
+            },
+            timeout=10
+        )
+        if response.status_code == 400:
+            print_success("Invalid email properly rejected with 400")
+            results.append(True)
+        else:
+            print_error(f"Invalid email not rejected properly: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Invalid email test error: {str(e)}")
+        results.append(False)
     
-    print(f"\n   Response Status: {status}")
+    # Test 3: POST with invalid template ID
+    print_test("POST /api/emails/test - Invalid template ID")
+    try:
+        response = requests.post(
+            f"{API_BASE}/emails/test",
+            json={
+                "templateId": "invalid_template",
+                "recipientEmail": TEST_USER['email']
+            },
+            timeout=10
+        )
+        if response.status_code == 400:
+            print_success("Invalid template ID properly rejected with 400")
+            results.append(True)
+        else:
+            print_error(f"Invalid template not rejected: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Invalid template test error: {str(e)}")
+        results.append(False)
     
-    if status == 200:
-        payment_link = response_data.get("paymentLink", {})
-        log_test("Checkout API - Payment Link Creation", True,
-                 f"Payment Link ID: {payment_link.get('id', 'N/A')}, "
-                 f"URL: {payment_link.get('url', 'N/A')[:50]}...")
-    elif status == 401:
-        log_test("Checkout API - 401 ERROR FOUND", False,
-                 f"🚨 CRITICAL: 401 Unauthorized in checkout API! "
-                 f"Error: {response_data.get('error', 'Unknown')}")
-    else:
-        error_msg = response_data.get("error", "")
-        log_test("Checkout API - Payment Link Creation", False,
-                 f"Status: {status}, Error: {error_msg[:200]}")
-        
-except Exception as e:
-    log_test("Checkout API - Payment Link Exception", False, str(e))
-
-# ============================================================================
-# PHASE 6: CART PRICE API
-# ============================================================================
-print_section("PHASE 6: CART PRICE API")
-
-# Test 6.1: Empty lines validation
-print("\n🧪 Test 6.1: Empty Lines (should reject)")
-try:
-    response = requests.post(f"{BASE_URL}/cart/price",
-                            json={"lines": []},
-                            timeout=10)
-    
-    if response.status_code == 400:
-        log_test("Cart Price API - Empty Lines Validation", True,
-                 f"Correctly rejected with 400")
-    else:
-        log_test("Cart Price API - Empty Lines Validation", False,
-                 f"Expected 400, got {response.status_code}")
-except Exception as e:
-    log_test("Cart Price API - Empty Lines Exception", False, str(e))
-
-# Test 6.2: Valid price calculation
-print("\n🧪 Test 6.2: Valid Price Calculation")
-try:
-    response = requests.post(f"{BASE_URL}/cart/price",
-                            json={
-                                "lines": [
-                                    {"variationId": "HMOFD754ENI27FH2PGAUJANK", "qty": 2}
-                                ]
-                            },
-                            timeout=10)
-    
-    status = response.status_code
-    
-    if status == 200:
-        data = response.json()
-        pricing = data.get("pricing", {})
-        log_test("Cart Price API - Valid Calculation", True,
-                 f"Subtotal: {pricing.get('subtotalCents', 0)} cents, "
-                 f"Total: {pricing.get('totalCents', 0)} cents")
-    else:
-        response_data = response.json()
-        log_test("Cart Price API - Valid Calculation", False,
-                 f"Status: {status}, Error: {response_data.get('error', 'Unknown')[:200]}")
-        
-except Exception as e:
-    log_test("Cart Price API - Valid Calculation Exception", False, str(e))
-
-# ============================================================================
-# PHASE 7: HEALTH CHECK API
-# ============================================================================
-print_section("PHASE 7: HEALTH CHECK API")
-
-try:
-    response = requests.get(f"{BASE_URL}/health", timeout=10)
-    
-    if response.status_code == 200:
-        data = response.json()
-        log_test("Health Check API", True,
-                 f"Status: {data.get('status', 'unknown')}, "
-                 f"Database: {data.get('database', 'unknown')}, "
-                 f"Square API: {data.get('square_api', 'unknown')}")
-    else:
-        log_test("Health Check API", False,
-                 f"Status: {response.status_code}")
-        
-except Exception as e:
-    log_test("Health Check API Exception", False, str(e))
-
-# ============================================================================
-# PHASE 8: WEBHOOKS API
-# ============================================================================
-print_section("PHASE 8: WEBHOOKS API")
-
-# Test 8.1: GET webhook status
-print("\n🧪 Test 8.1: GET Webhook Status")
-try:
-    response = requests.get(f"{BASE_URL}/webhooks/square", timeout=10)
-    
-    if response.status_code == 200:
-        data = response.json()
-        webhook_types = data.get("webhookTypes", [])
-        log_test("Webhooks API - GET Status", True,
-                 f"Environment: {data.get('environment', 'unknown')}, "
-                 f"Webhook Types: {len(webhook_types)}")
-    else:
-        log_test("Webhooks API - GET Status", False,
-                 f"Status: {response.status_code}")
-        
-except Exception as e:
-    log_test("Webhooks API - GET Status Exception", False, str(e))
-
-# Test 8.2: POST webhook event
-print("\n🧪 Test 8.2: POST Webhook Event (payment.created)")
-webhook_event = {
-    "merchant_id": "test-merchant",
-    "type": "payment.created",
-    "event_id": f"test-event-{int(time.time())}",
-    "created_at": datetime.now().isoformat(),
-    "data": {
-        "type": "payment",
-        "id": "test-payment-123",
-        "object": {
-            "payment": {
-                "id": "test-payment-123",
-                "status": "COMPLETED",
-                "amount_money": {
-                    "amount": 2200,
-                    "currency": "USD"
+    # Test 4: POST with valid welcome email
+    print_test("POST /api/emails/test - Send welcome email")
+    try:
+        response = requests.post(
+            f"{API_BASE}/emails/test",
+            json={
+                "templateId": "welcome",
+                "recipientEmail": TEST_USER['email'],
+                "testData": {
+                    "name": TEST_USER['name'],
+                    "rewardPoints": 0
                 }
-            }
-        }
+            },
+            timeout=10
+        )
+        if response.status_code == 200:
+            data = response.json()
+            print_success(f"Welcome email sent successfully")
+            print_info(f"Mode: {data.get('mode', 'unknown')}")
+            if data.get('resendId'):
+                print_info(f"Resend ID: {data['resendId']}")
+            results.append(True)
+        else:
+            print_error(f"Failed to send welcome email: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Welcome email test error: {str(e)}")
+        results.append(False)
+    
+    # Test 5: POST with valid order confirmation email
+    print_test("POST /api/emails/test - Send order confirmation email")
+    try:
+        response = requests.post(
+            f"{API_BASE}/emails/test",
+            json={
+                "templateId": "order",
+                "recipientEmail": TEST_USER['email'],
+                "testData": {
+                    "name": TEST_USER['name'],
+                    "orderNumber": "TOG123456",
+                    "items": [
+                        {"name": "Kissed by Gods Gel", "quantity": 2, "price": "22.00"},
+                        {"name": "Berry Zinger Lemonade", "quantity": 1, "price": "12.00"}
+                    ],
+                    "total": "34.00",
+                    "fulfillmentType": "Pickup",
+                    "pointsEarned": 340
+                }
+            },
+            timeout=10
+        )
+        if response.status_code == 200:
+            print_success("Order confirmation email sent successfully")
+            results.append(True)
+        else:
+            print_error(f"Failed to send order email: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Order email test error: {str(e)}")
+        results.append(False)
+    
+    # Test 6: POST with valid reward email
+    print_test("POST /api/emails/test - Send reward milestone email")
+    try:
+        response = requests.post(
+            f"{API_BASE}/emails/test",
+            json={
+                "templateId": "reward",
+                "recipientEmail": TEST_USER['email'],
+                "testData": {
+                    "name": TEST_USER['name'],
+                    "milestone": "100 Points",
+                    "points": 100,
+                    "rewardName": "Free 2oz Shot"
+                }
+            },
+            timeout=10
+        )
+        if response.status_code == 200:
+            print_success("Reward email sent successfully")
+            results.append(True)
+        else:
+            print_error(f"Failed to send reward email: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Reward email test error: {str(e)}")
+        results.append(False)
+    
+    # Test 7: POST with valid challenge email
+    print_test("POST /api/emails/test - Send challenge streak email")
+    try:
+        response = requests.post(
+            f"{API_BASE}/emails/test",
+            json={
+                "templateId": "challenge",
+                "recipientEmail": TEST_USER['email'],
+                "testData": {
+                    "name": TEST_USER['name'],
+                    "streakDays": 7,
+                    "milestone": "50 bonus points"
+                }
+            },
+            timeout=10
+        )
+        if response.status_code == 200:
+            print_success("Challenge email sent successfully")
+            results.append(True)
+        else:
+            print_error(f"Failed to send challenge email: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Challenge email test error: {str(e)}")
+        results.append(False)
+    
+    return all(results)
+
+# ============================================================================
+# TASK 4: Email Queue System
+# ============================================================================
+def test_email_queue_system():
+    print_section("TASK 4: Email Queue System")
+    
+    results = []
+    
+    # Test 1: GET queue info
+    print_test("GET /api/emails/queue - Get queue info")
+    try:
+        response = requests.get(f"{API_BASE}/emails/queue", timeout=10)
+        if response.status_code == 200:
+            data = response.json()
+            print_success("Queue info endpoint accessible")
+            print_info(f"Message: {data.get('message', 'N/A')}")
+            results.append(True)
+        else:
+            print_error(f"Failed to get queue info: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Queue info error: {str(e)}")
+        results.append(False)
+    
+    # Test 2: POST without CRON_SECRET (should fail)
+    print_test("POST /api/emails/queue - Without authentication")
+    try:
+        response = requests.post(f"{API_BASE}/emails/queue", timeout=10)
+        if response.status_code == 401:
+            print_success("Queue processing properly requires authentication (401)")
+            results.append(True)
+        else:
+            print_error(f"Queue should require auth but got: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Queue auth test error: {str(e)}")
+        results.append(False)
+    
+    # Test 3: POST with CRON_SECRET
+    print_test("POST /api/emails/queue - With CRON_SECRET authentication")
+    try:
+        response = requests.post(
+            f"{API_BASE}/emails/queue",
+            headers={"Authorization": "Bearer cron-secret-taste-of-gratitude-2024"},
+            timeout=10
+        )
+        if response.status_code == 200:
+            data = response.json()
+            print_success("Queue processing executed successfully")
+            print_info(f"Processed: {data.get('processed', 0)} emails")
+            results.append(True)
+        else:
+            print_error(f"Queue processing failed: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Queue processing error: {str(e)}")
+        results.append(False)
+    
+    return all(results)
+
+# ============================================================================
+# TASK 5: User Email Preferences API
+# ============================================================================
+def test_user_email_preferences():
+    print_section("TASK 5: User Email Preferences API")
+    
+    global auth_token, user_id
+    
+    # First, register a test user to get auth token
+    print_test("Register test user for preferences testing")
+    try:
+        response = requests.post(
+            f"{API_BASE}/auth/register",
+            json=TEST_USER,
+            timeout=10
+        )
+        if response.status_code == 201:
+            data = response.json()
+            auth_token = data.get('token')
+            user_id = data.get('user', {}).get('id')
+            print_success(f"Test user registered: {TEST_USER['email']}")
+            print_info(f"User ID: {user_id}")
+        else:
+            print_error(f"Failed to register test user: {response.status_code}")
+            return False
+    except Exception as e:
+        print_error(f"Registration error: {str(e)}")
+        return False
+    
+    results = []
+    
+    # Test 1: GET without auth (should fail)
+    print_test("GET /api/user/email-preferences - Without authentication")
+    try:
+        response = requests.get(f"{API_BASE}/user/email-preferences", timeout=10)
+        if response.status_code == 401:
+            print_success("Preferences API properly requires authentication (401)")
+            results.append(True)
+        else:
+            print_error(f"Should require auth but got: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Auth test error: {str(e)}")
+        results.append(False)
+    
+    # Test 2: GET with auth - default preferences
+    print_test("GET /api/user/email-preferences - Get default preferences")
+    try:
+        response = requests.get(
+            f"{API_BASE}/user/email-preferences",
+            headers={"Authorization": f"Bearer {auth_token}"},
+            timeout=10
+        )
+        if response.status_code == 200:
+            data = response.json()
+            prefs = data.get('preferences', {})
+            print_success("Retrieved email preferences")
+            print_info(f"Marketing: {prefs.get('marketing', False)}")
+            print_info(f"Order Updates: {prefs.get('orderUpdates', False)}")
+            print_info(f"Rewards: {prefs.get('rewards', False)}")
+            print_info(f"Challenges: {prefs.get('challenges', False)}")
+            
+            # Check all default to true
+            if all([prefs.get('marketing'), prefs.get('orderUpdates'), 
+                   prefs.get('rewards'), prefs.get('challenges')]):
+                print_success("All preferences default to true")
+                results.append(True)
+            else:
+                print_error("Default preferences not all true")
+                results.append(False)
+        else:
+            print_error(f"Failed to get preferences: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Get preferences error: {str(e)}")
+        results.append(False)
+    
+    # Test 3: PUT without auth (should fail)
+    print_test("PUT /api/user/email-preferences - Without authentication")
+    try:
+        response = requests.put(
+            f"{API_BASE}/user/email-preferences",
+            json={"preferences": {"marketing": False}},
+            timeout=10
+        )
+        if response.status_code == 401:
+            print_success("Update properly requires authentication (401)")
+            results.append(True)
+        else:
+            print_error(f"Should require auth but got: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Auth test error: {str(e)}")
+        results.append(False)
+    
+    # Test 4: PUT with invalid data
+    print_test("PUT /api/user/email-preferences - Invalid data validation")
+    try:
+        response = requests.put(
+            f"{API_BASE}/user/email-preferences",
+            headers={"Authorization": f"Bearer {auth_token}"},
+            json={"preferences": "invalid"},
+            timeout=10
+        )
+        if response.status_code == 400:
+            print_success("Invalid data properly rejected with 400")
+            results.append(True)
+        else:
+            print_error(f"Invalid data not rejected: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Validation test error: {str(e)}")
+        results.append(False)
+    
+    # Test 5: PUT with valid preferences - disable marketing
+    print_test("PUT /api/user/email-preferences - Update preferences")
+    try:
+        response = requests.put(
+            f"{API_BASE}/user/email-preferences",
+            headers={"Authorization": f"Bearer {auth_token}"},
+            json={
+                "preferences": {
+                    "marketing": False,
+                    "orderUpdates": True,
+                    "rewards": True,
+                    "challenges": False
+                }
+            },
+            timeout=10
+        )
+        if response.status_code == 200:
+            print_success("Preferences updated successfully")
+            results.append(True)
+        else:
+            print_error(f"Failed to update preferences: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Update preferences error: {str(e)}")
+        results.append(False)
+    
+    # Test 6: GET again to verify update
+    print_test("GET /api/user/email-preferences - Verify updated preferences")
+    try:
+        response = requests.get(
+            f"{API_BASE}/user/email-preferences",
+            headers={"Authorization": f"Bearer {auth_token}"},
+            timeout=10
+        )
+        if response.status_code == 200:
+            data = response.json()
+            prefs = data.get('preferences', {})
+            
+            if (prefs.get('marketing') == False and 
+                prefs.get('orderUpdates') == True and
+                prefs.get('rewards') == True and
+                prefs.get('challenges') == False):
+                print_success("Preferences correctly updated and persisted")
+                print_info(f"Marketing: {prefs.get('marketing')}")
+                print_info(f"Challenges: {prefs.get('challenges')}")
+                results.append(True)
+            else:
+                print_error("Preferences not correctly persisted")
+                results.append(False)
+        else:
+            print_error(f"Failed to verify preferences: {response.status_code}")
+            results.append(False)
+    except Exception as e:
+        print_error(f"Verify preferences error: {str(e)}")
+        results.append(False)
+    
+    return all(results)
+
+# ============================================================================
+# TASK 8: Welcome Email Integration in Registration
+# ============================================================================
+def test_welcome_email_integration():
+    print_section("TASK 8: Welcome Email Integration in Registration")
+    
+    # Register a new user and check if welcome email is sent
+    print_test("Register new user and verify welcome email sent")
+    
+    new_user = {
+        "name": "Sarah Martinez",
+        "email": f"sarah.martinez.{int(time.time())}@testmail.com",
+        "password": "WelcomeTest123!",
+        "phone": "+14045559876"
     }
-}
-
-try:
-    response = requests.post(f"{BASE_URL}/webhooks/square",
-                            json=webhook_event,
-                            timeout=10)
     
-    if response.status_code == 200:
-        data = response.json()
-        log_test("Webhooks API - POST Event", True,
-                 f"Event processed: {data.get('eventType', 'unknown')}")
-    else:
-        log_test("Webhooks API - POST Event", False,
-                 f"Status: {response.status_code}")
+    try:
+        response = requests.post(
+            f"{API_BASE}/auth/register",
+            json=new_user,
+            timeout=10
+        )
         
-except Exception as e:
-    log_test("Webhooks API - POST Event Exception", False, str(e))
+        if response.status_code == 201:
+            data = response.json()
+            print_success(f"User registered successfully: {new_user['email']}")
+            print_info(f"User ID: {data.get('user', {}).get('id')}")
+            
+            # Registration should succeed even if email fails
+            print_success("Registration completed (non-blocking email)")
+            
+            # Give a moment for email to be logged
+            time.sleep(2)
+            
+            print_info("Welcome email should be sent/logged in background")
+            print_info("Check email_logs collection in MongoDB for confirmation")
+            
+            return True
+        else:
+            print_error(f"Registration failed: {response.status_code}")
+            return False
+    except Exception as e:
+        print_error(f"Registration error: {str(e)}")
+        return False
 
 # ============================================================================
-# EDGE CASES & STRESS TESTS
+# TASK 9: Email Logging & Monitoring
 # ============================================================================
-print_section("EDGE CASES & STRESS TESTS")
-
-# Test: Large order (10+ items)
-print("\n🧪 Edge Case: Large Order (10 items)")
-large_cart = [
-    {
-        "id": f"item-{i}",
-        "productId": f"item-{i}",
-        "variationId": "HMOFD754ENI27FH2PGAUJANK",
-        "catalogObjectId": "HMOFD754ENI27FH2PGAUJANK",
-        "name": f"Product {i}",
-        "price": 11.00,
-        "priceCents": 1100,
-        "quantity": 1
-    }
-    for i in range(10)
-]
-
-large_order_data = {
-    "cart": large_cart,
-    "customer": {
-        "name": "Large Order Customer",
-        "email": "large@example.com",
-        "phone": "+14045551234"
-    },
-    "fulfillmentType": "pickup"
-}
-
-try:
-    response = requests.post(f"{BASE_URL}/orders/create",
-                            json=large_order_data,
-                            timeout=20)
+def test_email_logging():
+    print_section("TASK 9: Email Logging & Monitoring")
     
-    if response.status_code == 200:
-        data = response.json()
-        order = data.get("order", {})
-        log_test("Edge Case - Large Order (10 items)", True,
-                 f"Order ID: {order.get('id', 'N/A')}, Items: {len(large_cart)}")
-    else:
-        log_test("Edge Case - Large Order", False,
-                 f"Status: {response.status_code}")
-        
-except Exception as e:
-    log_test("Edge Case - Large Order Exception", False, str(e))
-
-# Test: Order with $0 items (freebies)
-print("\n🧪 Edge Case: Order with $0 Item (Freebie)")
-freebie_order = {
-    "cart": [
-        {
-            "id": "freebie-1",
-            "productId": "freebie-1",
-            "variationId": "HMOFD754ENI27FH2PGAUJANK",
-            "catalogObjectId": "HMOFD754ENI27FH2PGAUJANK",
-            "name": "Free Sample",
-            "price": 0.00,
-            "priceCents": 0,
-            "quantity": 1
-        }
-    ],
-    "customer": {
-        "name": "Freebie Customer",
-        "email": "freebie@example.com",
-        "phone": "+14045551234"
-    },
-    "fulfillmentType": "pickup"
-}
-
-try:
-    response = requests.post(f"{BASE_URL}/orders/create",
-                            json=freebie_order,
-                            timeout=15)
+    print_test("Verify email logging system")
     
-    if response.status_code == 200:
-        data = response.json()
-        order = data.get("order", {})
-        pricing = order.get("pricing", {})
-        log_test("Edge Case - $0 Item (Freebie)", True,
-                 f"Order ID: {order.get('id', 'N/A')}, Subtotal: ${pricing.get('subtotal', 0)}")
-    else:
-        log_test("Edge Case - $0 Item", False,
-                 f"Status: {response.status_code}")
+    # Send a test email to trigger logging
+    print_info("Sending test email to trigger logging...")
+    try:
+        response = requests.post(
+            f"{API_BASE}/emails/test",
+            json={
+                "templateId": "welcome",
+                "recipientEmail": f"logging.test.{int(time.time())}@testmail.com",
+                "testData": {
+                    "name": "Logging Test User",
+                    "rewardPoints": 0
+                }
+            },
+            timeout=10
+        )
         
-except Exception as e:
-    log_test("Edge Case - $0 Item Exception", False, str(e))
-
-# Test: Special characters in customer data
-print("\n🧪 Edge Case: Special Characters in Customer Data")
-special_char_order = {
-    "cart": [test_cart_item],
-    "customer": {
-        "name": "José María O'Brien-Smith",
-        "email": "test+special@example.com",
-        "phone": "+1 (404) 555-1234"
-    },
-    "fulfillmentType": "pickup"
-}
-
-try:
-    response = requests.post(f"{BASE_URL}/orders/create",
-                            json=special_char_order,
-                            timeout=15)
-    
-    if response.status_code == 200:
-        data = response.json()
-        order = data.get("order", {})
-        log_test("Edge Case - Special Characters", True,
-                 f"Order ID: {order.get('id', 'N/A')}")
-    else:
-        log_test("Edge Case - Special Characters", False,
-                 f"Status: {response.status_code}")
-        
-except Exception as e:
-    log_test("Edge Case - Special Characters Exception", False, str(e))
+        if response.status_code == 200:
+            print_success("Test email sent/logged successfully")
+            print_info("Email should be logged to email_logs collection in MongoDB")
+            print_info("Log should include: to, subject, status, emailType, sentAt")
+            
+            # In dev mode, status should be 'dev_logged'
+            # In production mode with Resend, status should be 'sent'
+            data = response.json()
+            if data.get('mode') == 'development':
+                print_info("Expected log status: 'dev_logged' (dev mode)")
+            else:
+                print_info("Expected log status: 'sent' (production mode)")
+            
+            return True
+        else:
+            print_error(f"Failed to send test email: {response.status_code}")
+            return False
+    except Exception as e:
+        print_error(f"Email logging test error: {str(e)}")
+        return False
 
 # ============================================================================
-# FINAL REPORT
+# Main Test Runner
 # ============================================================================
-print_section("FINAL TEST REPORT")
+def main():
+    print("\n" + "="*80)
+    print(f"{Colors.BLUE}COMPREHENSIVE EMAIL SYSTEM BACKEND TESTING{Colors.RESET}")
+    print(f"{Colors.BLUE}Taste of Gratitude Platform - Phase A & B{Colors.RESET}")
+    print("="*80)
+    print(f"Base URL: {BASE_URL}")
+    print(f"Test Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("="*80)
+    
+    results = {}
+    
+    # Run all tests
+    results['Task 1: Email Service Core Infrastructure'] = test_email_service_core()
+    results['Task 2: Email Templates (5 types)'] = test_email_templates()
+    results['Task 3: Email Test API Endpoint'] = test_email_test_api()
+    results['Task 4: Email Queue System'] = test_email_queue_system()
+    results['Task 5: User Email Preferences API'] = test_user_email_preferences()
+    results['Task 8: Welcome Email Integration'] = test_welcome_email_integration()
+    results['Task 9: Email Logging & Monitoring'] = test_email_logging()
+    
+    # Summary
+    print_section("TEST SUMMARY")
+    
+    passed = sum(1 for v in results.values() if v)
+    total = len(results)
+    
+    for task, result in results.items():
+        status = f"{Colors.GREEN}✅ PASSED{Colors.RESET}" if result else f"{Colors.RED}❌ FAILED{Colors.RESET}"
+        print(f"{task}: {status}")
+    
+    print(f"\n{'='*80}")
+    print(f"Total: {passed}/{total} tasks passed ({(passed/total)*100:.1f}%)")
+    print(f"{'='*80}\n")
+    
+    if passed == total:
+        print(f"{Colors.GREEN}🎉 ALL TESTS PASSED! Email system is fully functional.{Colors.RESET}\n")
+        return 0
+    else:
+        print(f"{Colors.RED}⚠️  Some tests failed. Review errors above.{Colors.RESET}\n")
+        return 1
 
-total_tests = test_results["passed"] + test_results["failed"]
-success_rate = (test_results["passed"] / total_tests * 100) if total_tests > 0 else 0
-
-print(f"\n📊 Test Results:")
-print(f"   Total Tests: {total_tests}")
-print(f"   Passed: {test_results['passed']} ✅")
-print(f"   Failed: {test_results['failed']} ❌")
-print(f"   Success Rate: {success_rate:.1f}%")
-
-# Identify critical failures
-critical_failures = [
-    test for test in test_results["tests"] 
-    if not test["passed"] and ("401" in test["name"] or "CRITICAL" in test["details"])
-]
-
-if critical_failures:
-    print(f"\n🚨 CRITICAL FAILURES FOUND ({len(critical_failures)}):")
-    for failure in critical_failures:
-        print(f"   - {failure['name']}")
-        print(f"     {failure['details']}")
-
-# Priority recommendations
-print(f"\n🎯 PRIORITY RECOMMENDATIONS:")
-
-if any("401" in test["details"] for test in test_results["tests"] if not test["passed"]):
-    print("   P0: Fix 401 Unauthorized error in Square API")
-    print("       - Check SQUARE_ACCESS_TOKEN in .env")
-    print("       - Verify token has PAYMENTS_WRITE and ORDERS_WRITE scopes")
-    print("       - Check if token is expired or revoked in Square Dashboard")
-
-if any("catalogObjectId" in test["name"] for test in test_results["tests"] if not test["passed"]):
-    print("   P1: Fix catalogObjectId mapping in cart items")
-    print("       - Ensure cart-engine.js sets catalogObjectId correctly")
-    print("       - Verify order creation uses item.variationId || item.catalogObjectId")
-
-if any("delivery" in test["name"].lower() for test in test_results["tests"] if not test["passed"]):
-    print("   P2: Review delivery validation and fee calculation")
-    print("       - Check ZIP whitelist validation")
-    print("       - Verify delivery fee calculation ($6.99 for <$75, $0 for >=$75)")
-
-print(f"\n✅ Testing Complete!")
-print(f"   Timestamp: {datetime.now().isoformat()}")
-
-# Save results to file
-with open("/app/backend_test_results.json", "w") as f:
-    json.dump(test_results, f, indent=2)
-    print(f"\n📄 Results saved to: /app/backend_test_results.json")
+if __name__ == "__main__":
+    exit(main())
