@@ -33,14 +33,21 @@ export default function ProfileDashboard() {
     // Fetch user stats and favorites
     const fetchData = async () => {
       try {
-        // TODO: Implement real API calls
-        // For now, using mock data
-        setStats({
-          totalOrders: 0,
-          rewardPoints: 0,
-          streakDays: 0
-        });
-        setFavoriteProducts([]);
+        const [statsRes, favoritesRes] = await Promise.all([
+          fetch('/api/user/stats'),
+          fetch('/api/user/favorites')
+        ]);
+
+        const statsData = await statsRes.json();
+        const favoritesData = await favoritesRes.json();
+
+        if (statsData.success) {
+          setStats(statsData.stats);
+        }
+
+        if (favoritesData.success) {
+          setFavoriteProducts(favoritesData.favorites);
+        }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
       } finally {
