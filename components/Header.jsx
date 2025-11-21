@@ -2,14 +2,16 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu, X, ShoppingBag, Sparkles } from 'lucide-react';
+import { Menu, X, ShoppingBag, Sparkles, User, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import CartBadge from '@/components/CartBadge';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { user, isAuthenticated } = useAuth();
 
   const isActive = (path) => pathname === path;
 
@@ -108,6 +110,31 @@ export default function Header() {
           >
             <Link href="/ugc/spicy-bloom">Challenge 🌶️</Link>
           </Button>
+          {isAuthenticated ? (
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="border-emerald-500/50 text-emerald-600 hover:bg-emerald-600 hover:text-white"
+            >
+              <Link href="/profile">
+                <User className="h-4 w-4 mr-1" />
+                Profile
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="border-emerald-500/50 text-emerald-600 hover:bg-emerald-600 hover:text-white"
+            >
+              <Link href="/login">
+                <LogIn className="h-4 w-4 mr-1" />
+                Login
+              </Link>
+            </Button>
+          )}
           <Button
             asChild
             size="sm"
@@ -186,6 +213,30 @@ export default function Header() {
             >
               About
             </Link>
+            
+            {/* User Section */}
+            <div className="border-t pt-3 mt-3">
+              {isAuthenticated ? (
+                <Link
+                  href="/profile"
+                  className="flex items-center py-3 px-4 rounded-md transition-all hover:bg-emerald-50 hover:text-emerald-700 font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  My Profile
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  className="flex items-center py-3 px-4 rounded-md transition-all hover:bg-emerald-50 hover:text-emerald-700 font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Login / Sign Up
+                </Link>
+              )}
+            </div>
+            
             <div className="border-t pt-3 mt-3">
               <Link
                 href="/order"

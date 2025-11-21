@@ -17,12 +17,12 @@ export default function RewardsPage() {
   useEffect(() => {
     const fetchRewards = async () => {
       try {
-        // TODO: Implement API call to fetch user rewards
-        setRewards({
-          points: 0,
-          lifetimePoints: 0,
-          history: []
-        });
+        const response = await fetch('/api/user/rewards');
+        const data = await response.json();
+
+        if (data.success) {
+          setRewards(data.rewards);
+        }
       } catch (error) {
         console.error('Failed to fetch rewards:', error);
       } finally {

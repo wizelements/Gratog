@@ -50,9 +50,22 @@ export default function SettingsPage() {
     setLoading(true);
 
     try {
-      // TODO: Implement API call to update user profile
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
-      toast.success('Profile updated successfully!');
+      const response = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Profile updated successfully!');
+      } else {
+        toast.error(data.error || 'Failed to update profile');
+      }
     } catch (error) {
       console.error('Failed to update profile:', error);
       toast.error('Failed to update profile');
@@ -66,6 +79,36 @@ export default function SettingsPage() {
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handlePreferenceChange = async (key, value) => {
+    const newPreferences = {
+      ...emailPreferences,
+      [key]: value
+    };
+    
+    setEmailPreferences(newPreferences);
+
+    try {
+      const response = await fetch('/api/user/email-preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preferences: newPreferences })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Email preferences updated');
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Failed to update preferences:', error);
+      toast.error('Failed to update preferences');
+      // Revert on error
+      setEmailPreferences(emailPreferences);
+    }
   };
 
   return (
@@ -258,33 +301,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-  const handlePreferenceChange = async (key, value) => {
-    const newPreferences = {
-      ...emailPreferences,
-      [key]: value
-    };
-    
-    setEmailPreferences(newPreferences);
-
-    try {
-      const response = await fetch('/api/user/email-preferences', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ preferences: newPreferences })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success('Email preferences updated');
-      } else {
-        throw new Error(data.error);
-      }
-    } catch (error) {
-      console.error('Failed to update preferences:', error);
-      toast.error('Failed to update preferences');
-      // Revert on error
-      setEmailPreferences(emailPreferences);
-    }
-  };

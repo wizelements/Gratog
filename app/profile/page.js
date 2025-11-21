@@ -172,18 +172,23 @@ export default function ProfileDashboard() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {favoriteProducts.slice(0, 3).map((product) => (
-              <Card key={product.id} className="border-emerald-200 hover:shadow-lg transition-shadow">
+              <Card key={product.productId} className="border-emerald-200 hover:shadow-lg transition-shadow">
                 <CardContent className="p-4">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-40 object-cover rounded-lg mb-3"
-                  />
+                  {product.image && (
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-40 object-cover rounded-lg mb-3"
+                    />
+                  )}
                   <h3 className="font-semibold text-emerald-900 mb-1">{product.name}</h3>
                   <p className="text-emerald-600 font-bold">${product.price}</p>
-                  <Button className="w-full mt-3 bg-emerald-600 hover:bg-emerald-700">
-                    Add to Cart
-                  </Button>
+                  <p className="text-sm text-emerald-500 mb-2">Ordered {product.totalOrdered}x</p>
+                  <Link href={product.slug ? `/product/${product.slug}` : '/catalog'}>
+                    <Button className="w-full mt-3 bg-emerald-600 hover:bg-emerald-700">
+                      Order Again
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}
