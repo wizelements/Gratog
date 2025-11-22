@@ -60,15 +60,21 @@ export default function ProductDetailPage() {
         
         if (data.success && data.products) {
           const foundProduct = data.products.find(p => p.slug === params.slug);
+          
+          // Filter out variations with invalid prices
+          if (foundProduct?.variations?.length > 0) {
+            foundProduct.variations = foundProduct.variations.filter(v => v.price && v.price > 0);
+          }
+          
           setProduct(foundProduct || null);
           
-          // Set default variation
+          // Set default variation to first valid one
           if (foundProduct?.variations?.length > 0) {
             setSelectedVariation(foundProduct.variations[0]);
           }
         }
       } catch (error) {
-        console.error('Failed to fetch product:', error);
+        console.error('[GratOG] Failed to fetch product:', error);
         toast.error('Failed to load product');
       } finally {
         setIsLoading(false);
@@ -352,20 +358,25 @@ export default function ProductDetailPage() {
               <div className="mb-6">
                 <label className="block font-semibold mb-3">Select Size</label>
                 <div className="grid grid-cols-3 gap-3">
-                  {product.variations.map((variation) => (
-                    <button
-                      key={variation.id}
-                      onClick={() => setSelectedVariation(variation)}
-                      className={`p-3 border-2 rounded-lg transition-all ${
-                        selectedVariation?.id === variation.id
-                          ? 'border-emerald-600 bg-emerald-50'
-                          : 'border-gray-200 hover:border-emerald-300'
-                      }`}
-                    >
-                      <div className="font-semibold">{variation.name}</div>
-                      <div className="text-sm text-emerald-600">${variation.price.toFixed(2)}</div>
-                    </button>
-                  ))}
+                  {product.variations.map((variation) => {
+                    const price = variation.price || 0;
+                    if (price <= 0) return null; // Don't show variants with no price
+                    
+                    return (
+                      <button
+                        key={variation.id}
+                        onClick={() => setSelectedVariation(variation)}
+                        className={`p-3 border-2 rounded-lg transition-all ${
+                          selectedVariation?.id === variation.id
+                            ? 'border-emerald-600 bg-emerald-50'
+                            : 'border-gray-200 hover:border-emerald-300'
+                        }`}
+                      >
+                        <div className="font-semibold">{variation.name}</div>
+                        <div className="text-sm text-emerald-600">${price.toFixed(2)}</div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -630,12 +641,15 @@ export default function ProductDetailPage() {
                   Start Your Journey
                 </Button>
                 <Button 
+                  asChild
                   variant="outline"
                   size="lg"
                   className="border-white text-white hover:bg-white/10"
                 >
-                  View Recipes
-                  <ChevronRight className="ml-2 h-5 w-5" />
+                  <Link href="/about">
+                    Learn More
+                    <ChevronRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
               </div>
             </div>
