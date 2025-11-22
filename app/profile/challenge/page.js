@@ -197,53 +197,6 @@ export default function ChallengePage() {
         </CardContent>
       </Card>
 
-      {/* How it Works */}
-      <Card className="border-emerald-200 shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-emerald-900">How it Works</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold flex-shrink-0">
-                1
-              </div>
-              <div>
-                <p className="font-medium text-emerald-900">Check in daily</p>
-                <p className="text-sm text-emerald-600">
-                  Click the "Check In Today" button once per day
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold flex-shrink-0">
-                2
-              </div>
-              <div>
-                <p className="font-medium text-emerald-900">Build your streak</p>
-                <p className="text-sm text-emerald-600">
-                  Check in consecutive days to grow your streak
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold flex-shrink-0">
-                3
-              </div>
-              <div>
-                <p className="font-medium text-emerald-900">Earn rewards</p>
-                <p className="text-sm text-emerald-600">
-                  Unlock bonus points and exclusive rewards at milestones
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="border-emerald-200 shadow-md">

@@ -19,8 +19,8 @@ export default function RewardsPage() {
       try {
         const response = await fetch('/api/user/rewards');
         const data = await response.json();
-
-        if (data.success) {
+        
+        if (data.success && data.rewards) {
           setRewards(data.rewards);
         }
       } catch (error) {

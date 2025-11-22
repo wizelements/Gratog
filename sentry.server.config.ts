@@ -22,10 +22,10 @@ Sentry.init({
     
     // Remove sensitive query params
     if (event.request?.query_string) {
-      const filtered = event.request.query_string
-        .split('&')
-        .filter(param => !param.startsWith('token=') && !param.startsWith('key='))
-        .join('&');
+      const queryString = event.request.query_string;
+      const filtered = typeof queryString === 'string'
+        ? queryString.split('&').filter(param => !param.startsWith('token=') && !param.startsWith('key=')).join('&')
+        : queryString;
       event.request.query_string = filtered;
     }
     

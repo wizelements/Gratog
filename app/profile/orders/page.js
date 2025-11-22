@@ -16,8 +16,8 @@ export default function OrdersPage() {
       try {
         const response = await fetch('/api/user/orders');
         const data = await response.json();
-
-        if (data.success) {
+        
+        if (data.success && data.orders) {
           setOrders(data.orders);
         }
       } catch (error) {

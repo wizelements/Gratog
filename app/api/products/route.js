@@ -4,6 +4,7 @@ import { getUnifiedProducts } from '@/lib/product-sync-engine';
 import { getCategoriesWithCounts } from '@/lib/ingredient-taxonomy';
 import { getDemoProducts, getDemoCategories } from '@/lib/demo-products';
 import { createLogger } from '@/lib/logger';
+import { enhanceProductCatalog } from '@/lib/product-enhancements';
 
 const logger = createLogger('ProductsAPI');
 
@@ -53,10 +54,13 @@ export async function GET(request) {
         catalogObjectId: product.squareData?.variationId || product.variations?.[0]?.id || product.id
       }));
       
-      const categories = getCategoriesWithCounts(products);
+      // Enhance with beautiful placeholders and sort by image priority
+      const enhancedProducts = enhanceProductCatalog(products);
+      
+      const categories = getCategoriesWithCounts(enhancedProducts);
       
       // If no products found, use demo products as fallback
-      if (products.length === 0) {
+      if (enhancedProducts.length === 0) {
         logger.warn('No products in unified collection, using demo fallback');
         const demoProducts = getDemoProducts(filters);
         const demoCategories = getDemoCategories();
@@ -77,18 +81,25 @@ export async function GET(request) {
         });
       }
       
-      logger.info(`Returning ${products.length} products from unified collection`);
+      const imageStats = {
+        withImages: enhancedProducts.filter(p => !p.isPlaceholder).length,
+        withPlaceholders: enhancedProducts.filter(p => p.isPlaceholder).length
+      };
+      
+      logger.info(`Returning ${enhancedProducts.length} products (${imageStats.withImages} with images, ${imageStats.withPlaceholders} with placeholders)`);
       logger.api('GET', '/api/products', 200, Date.now() - startTime, { 
         source: 'unified',
-        count: products.length 
+        count: enhancedProducts.length,
+        ...imageStats
       });
       
       return NextResponse.json({
         success: true,
-        products,
+        products: enhancedProducts,
         categories,
-        count: products.length,
-        source: 'unified_intelligent',
+        count: enhancedProducts.length,
+        source: 'unified_intelligent_enhanced',
+        imageStats,
         filters
       });
     }

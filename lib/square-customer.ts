@@ -57,7 +57,7 @@ export async function findOrCreateSquareCustomer(
     
     // Step 1: Search for existing customer by email
     try {
-      const searchResponse = await square.customers.searchCustomers({
+      const searchResponse = await (square.customers as any).searchCustomers({
         query: {
           filter: {
             emailAddress: {
@@ -65,7 +65,7 @@ export async function findOrCreateSquareCustomer(
             }
           }
         }
-      }) as any;
+      });
       
       if (searchResponse.result?.customers && searchResponse.result.customers.length > 0) {
         const existingCustomer = searchResponse.result.customers[0];
@@ -96,7 +96,7 @@ export async function findOrCreateSquareCustomer(
             updatePayload.note = customerData.note.substring(0, 500); // Max 500 chars
           }
           
-          const updateResponse = await square.customers.updateCustomer({
+          const updateResponse = await (square.customers as any).updateCustomer({
             customerId: existingCustomer.id,
             ...updatePayload
           }) as any;
@@ -143,7 +143,7 @@ export async function findOrCreateSquareCustomer(
       createPayload.note = customerData.note.substring(0, 500); // Max 500 chars
     }
     
-    const createResponse = await square.customers.createCustomer(createPayload) as any;
+    const createResponse = await (square.customers as any).createCustomer(createPayload) as any;
     
     if (!createResponse.result?.customer) {
       throw new Error('Failed to create customer - no customer returned');
@@ -179,7 +179,7 @@ export async function findOrCreateSquareCustomer(
 export async function getSquareCustomer(customerId: string): Promise<SquareCustomer | null> {
   try {
     const square = getSquareClient();
-    const response = await square.customers.retrieveCustomer({ customerId }) as any;
+    const response = await (square.customers as any).retrieveCustomer({ customerId }) as any;
     return response.result?.customer || null;
   } catch (error) {
     logger.error('Failed to retrieve Square customer', { customerId, error });
