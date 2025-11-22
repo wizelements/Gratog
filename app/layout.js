@@ -84,8 +84,8 @@ export default function RootLayout({ children }) {
           <Toaster />
         </AuthProvider>
         
-        {/* Service Worker Registration */}
-        <script dangerouslySetInnerHTML={{
+        {/* Service Worker Registration - Disabled temporarily for debugging */}
+        {/* <script dangerouslySetInnerHTML={{
           __html: `
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', () => {
@@ -104,7 +104,7 @@ export default function RootLayout({ children }) {
               });
             }
           `
-        }} />
+        }} /> */}
       </body>
     </html>
   );

@@ -127,9 +127,6 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
       
       setRecommendations(validRecommendations);
       
-      // Show results immediately
-      setStep(4);
-      
       // Track analytics
       AnalyticsSystem.trackQuizCompleted(
         answers.goal, 
@@ -160,8 +157,14 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
         toast.success(`Found ${validRecommendations.length} perfect matches!`);
       }
       
+      // If parent wants to handle recommendations, pass them up
+      // Otherwise show internal results view
       if (onRecommendations) {
         onRecommendations(validRecommendations);
+        // Don't transition to step 4, let parent handle display
+      } else {
+        // Show internal results view
+        setStep(4);
       }
     } catch (error) {
       console.error('[GratOG Quiz] Quiz error:', error);
@@ -179,11 +182,22 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
   const handleAddToCart = (product) => {
     if (onAddToCart) {
       onAddToCart(product);
+      toast.success(`Added ${product.name} to cart!`);
     } else {
-      // Redirect to order page with product
-      window.location.href = `/order?add=${product.id}`;
+      // Use cart engine to add product
+      const { addToCart } = require('@/lib/cart-engine');
+      try {
+        addToCart(product, 1);
+        toast.success(`Added ${product.name} to cart!`);
+        // Dispatch cart update event for UI sync
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('cartUpdated'));
+        }
+      } catch (error) {
+        console.error('[GratOG Quiz] Failed to add to cart:', error);
+        toast.error(`Failed to add ${product.name} to cart`);
+      }
     }
-    toast.success(`Added ${product.name} to cart!`);
     AnalyticsSystem.trackPDPView(product.id || product.sku);
   };
 

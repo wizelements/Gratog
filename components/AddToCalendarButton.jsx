@@ -16,15 +16,15 @@ const CALENDAR_SERVICES = [
       const endDate = new Date(`${event.date}T${event.endTime}:00`);
       
       const params = new URLSearchParams({
-        action: 'TEMPLATE',
         text: `Taste of Gratitude at ${event.marketName}`,
         dates: `${formatGoogleDate(startDate)}/${formatGoogleDate(endDate)}`,
         details: `Visit us at ${event.marketName} for fresh sea moss products! Discover our wildcrafted wellness blends.`,
         location: event.address,
-        trp: 'false'
+        sf: 'true' // Show only free calendars
       });
       
-      return `https://calendar.google.com/calendar/render?${params.toString()}`;
+      // Use the modern event edit URL instead of render
+      return `https://calendar.google.com/calendar/u/0/r/eventedit?${params.toString()}`;
     }
   },
   {
