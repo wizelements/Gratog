@@ -50,9 +50,9 @@
 
 **Before:**
 ```javascript
-metadataBase: 'https://gratog-payments.preview.emergentagent.com'
-canonical: 'https://gratog-payments.preview.emergentagent.com'
-og:url: 'https://gratog-payments.preview.emergentagent.com'
+metadataBase: 'https://loading-fix-taste.preview.emergentagent.com'
+canonical: 'https://loading-fix-taste.preview.emergentagent.com'
+og:url: 'https://loading-fix-taste.preview.emergentagent.com'
 ```
 
 **After:**

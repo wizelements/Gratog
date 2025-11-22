@@ -309,8 +309,8 @@
 ## 🚀 Live URLs
 
 **Production URLs:**
-- https://gratog-payments.preview.emergentagent.com/faq
-- https://gratog-payments.preview.emergentagent.com/community
+- https://loading-fix-taste.preview.emergentagent.com/faq
+- https://loading-fix-taste.preview.emergentagent.com/community
 - Footer visible on all pages
 
 **Footer Links to:**

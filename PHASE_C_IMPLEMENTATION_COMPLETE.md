@@ -128,7 +128,7 @@ Follow prompts to create admin account with:
 - Password (minimum 8 characters)
 
 ### **Step 2: Login to Admin Dashboard**
-1. Navigate to: `https://gratog-payments.preview.emergentagent.com/admin/login`
+1. Navigate to: `https://loading-fix-taste.preview.emergentagent.com/admin/login`
 2. Enter admin credentials
 3. Access full admin dashboard
 

@@ -14,7 +14,7 @@ import uuid
 load_dotenv()
 
 # Get base URL from environment
-BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://gratog-payments.preview.emergentagent.com')
+BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://loading-fix-taste.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 class SquarePaymentComprehensiveTester:
