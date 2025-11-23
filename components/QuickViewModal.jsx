@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,9 +11,47 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 
 export default function QuickViewModal({ product, isOpen, onClose }) {
+  // Normalize variations from different possible product structures
+  const normalizedVariations = useMemo(() => {
+    if (!product) return [];
+    
+    // If product already has variations array, use it
+    if (product.variations && Array.isArray(product.variations) && product.variations.length > 0) {
+      return product.variations.filter(v => v.price && v.price > 0);
+    }
+    
+    // Otherwise, construct variations from priceMini/price and sizes
+    const variations = [];
+    
+    // If has priceMini and sizes, create variations
+    if (product.priceMini && product.sizes && Array.isArray(product.sizes)) {
+      variations.push({
+        id: `${product.id}-mini`,
+        name: product.sizes[0] || '4oz',
+        price: product.priceMini
+      });
+      if (product.price && product.price !== product.priceMini) {
+        variations.push({
+          id: `${product.id}-regular`,
+          name: product.sizes[1] || '16oz',
+          price: product.price
+        });
+      }
+    } else if (product.price) {
+      // Single variation
+      variations.push({
+        id: product.id,
+        name: product.size || 'Regular',
+        price: product.price
+      });
+    }
+    
+    return variations.filter(v => v.price > 0);
+  }, [product]);
+
   const [quantity, setQuantity] = useState(1);
   const [selectedVariation, setSelectedVariation] = useState(
-    product?.variations?.[0] || null
+    normalizedVariations[0] || null
   );
   const [isAdding, setIsAdding] = useState(false);
 
@@ -120,13 +158,11 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
               </div>
             )}
             
-            {product.variations && product.variations.length > 1 && (
+            {normalizedVariations && normalizedVariations.length > 1 && (
               <div className="mb-4">
                 <label className="block text-sm font-semibold mb-2">Select Size</label>
                 <div className="flex gap-2 flex-wrap">
-                  {product.variations
-                    .filter(v => v.price > 0) // Filter out $0 variants
-                    .map((variation) => (
+                  {normalizedVariations.map((variation) => (
                       <button
                         key={variation.id}
                         onClick={() => setSelectedVariation(variation)}

@@ -25,6 +25,28 @@ export default function EnhancedFloatingCart() {
 
   const { items, totalItems, subtotal, isEmpty, updateQuantity, removeItem, clearCart, isHydrated, addItem } = useCartEngine();
 
+  // Handle ESC key to close drawer
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when drawer is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   // Listen for open cart events
   useEffect(() => {
     const handleOpenCart = () => setIsOpen(true);
@@ -234,6 +256,11 @@ export default function EnhancedFloatingCart() {
                                   <h3 className="font-semibold text-gray-900 mb-1 truncate">
                                     {item.name}
                                   </h3>
+                                  {(item.variantLabel || item.size) && (
+                                    <p className="text-xs text-gray-500 mb-1">
+                                      Size: {item.variantLabel || item.size}
+                                    </p>
+                                  )}
                                   <p className="text-emerald-600 font-bold text-lg mb-3">
                                     ${item.price.toFixed(2)}
                                   </p>

@@ -17,6 +17,29 @@ export default function FloatingCart() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
+  // Handle ESC key to close drawer
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+        logger.info('Cart closed via ESC key');
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when drawer is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       logger.debug('FloatingCart mounting, loading cart');
@@ -87,11 +110,13 @@ export default function FloatingCart() {
 
   return (
     <>
+      {/* Cart Toggle Button */}
       <div className="fixed bottom-6 right-6 z-50">
         <Button
           onClick={() => setIsOpen(!isOpen)}
           className="h-16 w-16 rounded-full shadow-2xl bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 hover:scale-110"
           size="icon"
+          aria-label="Cart"
         >
           <div className="relative">
             <ShoppingCart className="h-7 w-7" />
@@ -104,10 +129,22 @@ export default function FloatingCart() {
         </Button>
       </div>
 
+      {/* Backdrop Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Cart Drawer */}
       <div
         className={`fixed inset-y-0 right-0 w-full sm:w-[480px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
+        role="dialog"
+        aria-label="Shopping cart"
       >
         <div className="h-full flex flex-col">
           <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6">
