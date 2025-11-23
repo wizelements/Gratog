@@ -100,6 +100,70 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleSkipLeadCapture = async () => {
+    // Skip email collection, fetch recommendations directly
+    setShowError(false);
+    setLoading(true);
+    
+    try {
+      // Import quiz utils
+      const { fetchRecommendations } = await import('@/lib/quiz-utils');
+      
+      // Fetch all products for heuristic fallback
+      const productsResponse = await fetch('/api/products');
+      const productsData = await productsResponse.json();
+      const allProducts = productsData.products || [];
+      
+      // Get recommendations (API or heuristic)
+      const result = await fetchRecommendations(answers, allProducts);
+      
+      // CRITICAL: Filter products to only show those with valid prices
+      const validRecommendations = filterValidProducts(result.recommendations);
+      
+      if (validRecommendations.length === 0) {
+        // If no valid recommendations, show fallback
+        throw new Error('No products with valid pricing found');
+      }
+      
+      setRecommendations(validRecommendations);
+      
+      // Track analytics
+      AnalyticsSystem.trackQuizCompleted(
+        answers.goal, 
+        answers.adventure === 'bold', 
+        validRecommendations
+      );
+      
+      // Show message based on source
+      if (result.source === 'heuristic') {
+        toast.info('Showing best matches for you', {
+          description: 'Our recommendations are based on your preferences'
+        });
+      } else {
+        toast.success(`Found ${validRecommendations.length} perfect matches!`);
+      }
+      
+      // If parent wants to handle recommendations, pass them up
+      // Otherwise show internal results view
+      if (onRecommendations) {
+        onRecommendations(validRecommendations);
+      } else {
+        // Show internal results view
+        setStep(4);
+      }
+    } catch (error) {
+      console.error('[GratOG Quiz] Quiz error:', error);
+      setShowError(true);
+      
+      // Show user-friendly error
+      toast.error('Unable to load recommendations', {
+        description: 'Please try again or browse our full catalog'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLeadCaptureSubmit = async () => {
     // Reset error state
     setShowError(false);
@@ -464,11 +528,7 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
             </Button>
             
             <Button
-              onClick={async () => {
-                // Skip email, show results immediately
-                setCustomer({ name: '', email: '' });
-                await handleLeadCaptureSubmit();
-              }}
+              onClick={handleSkipLeadCapture}
               disabled={loading}
               variant="outline"
               className="w-full h-12 text-base border-emerald-600 text-emerald-700 hover:bg-emerald-50"

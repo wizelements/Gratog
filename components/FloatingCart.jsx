@@ -213,8 +213,10 @@ export default function FloatingCart() {
                           <h3 className="font-semibold text-gray-900 mb-1 truncate">
                             {item.name}
                           </h3>
-                          {item.size && (
-                            <p className="text-xs text-gray-500 mb-1">{item.size}</p>
+                          {(item.variantLabel || item.size) && (
+                            <p className="text-sm text-gray-500 mb-1">
+                              Size: {item.variantLabel || item.size}
+                            </p>
                           )}
                           <p className="text-emerald-600 font-bold text-lg mb-3">
                             ${item.price.toFixed(2)}

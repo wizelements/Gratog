@@ -113,17 +113,11 @@ export default function ProductDetailPage() {
   const handleAddToCart = () => {
     setIsAdding(true);
     
-    const cartProduct = {
-      ...product,
-      price: selectedVariation?.price || product.price,
-      variationId: selectedVariation?.id,
-      variationName: selectedVariation?.name
-    };
-    
-    addToCart(cartProduct, quantity);
+    // Pass selectedVariation as third parameter to ensure correct variant is added
+    addToCart(product, quantity, selectedVariation);
     
     toast.success(`Added ${quantity}x ${product.name} to cart!`, {
-      description: selectedVariation ? `Variation: ${selectedVariation.name}` : undefined,
+      description: selectedVariation ? `Size: ${selectedVariation.name}` : undefined,
       action: {
         label: 'View Cart',
         onClick: () => window.dispatchEvent(new CustomEvent('openCart'))

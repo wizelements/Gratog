@@ -2,7 +2,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import FloatingCart from '@/components/cart/EnhancedFloatingCart';
+import FloatingCart from '@/components/FloatingCart';
 import CartNotification from '@/components/cart/CartNotification';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';

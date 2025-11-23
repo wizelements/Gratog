@@ -8,9 +8,9 @@ import { addToCart } from '@/lib/cart-engine';
 import { motion } from 'framer-motion';
 
 /**
- * ⚡ Quick Add Button - Now using unified cart-engine
+ * ⚡ Quick Add Button - Now using unified cart-engine with proper variant support
  */
-export default function QuickAddButton({ product, variant = 'default', className = '' }) {
+export default function QuickAddButton({ product, selectedVariant, variant = 'default', className = '' }) {
   const [isAdding, setIsAdding] = useState(false);
   const [added, setAdded] = useState(false);
 
@@ -26,10 +26,13 @@ export default function QuickAddButton({ product, variant = 'default', className
     setIsAdding(true);
 
     try {
-      addToCart(product, 1);
+      // Pass selectedVariant as third parameter to addToCart
+      addToCart(product, 1, selectedVariant);
       
       setAdded(true);
-      toast.success(`Added ${product.name} to cart`, {
+      
+      const variantText = selectedVariant ? ` (Size: ${selectedVariant.name})` : '';
+      toast.success(`Added ${product.name}${variantText} to cart`, {
         description: 'View cart to checkout',
         action: {
           label: 'View Cart',

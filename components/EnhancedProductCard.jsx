@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,12 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
   const [imageError, setImageError] = useState(false);
   const [showQuickView, setShowQuickView] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState(null);
+  const [isClient, setIsClient] = useState(false);
+  
+  // Ensure we're on client side for modal interactions
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   
   const fallbackImage = '/images/sea-moss-default.svg';
   const hasIngredientData = product.ingredients && product.ingredients.length > 0;
@@ -239,9 +245,14 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
           />
           
           <Button
-            onClick={() => setShowQuickView(true)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowQuickView(true);
+            }}
             variant="outline"
             className="flex-1 border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+            type="button"
           >
             <Eye className="mr-2 h-4 w-4" />
             Quick View
@@ -261,12 +272,14 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
         </Link>
       </CardFooter>
       
-      {/* Quick View Modal */}
-      <QuickViewModal 
-        product={product}
-        isOpen={showQuickView}
-        onClose={() => setShowQuickView(false)}
-      />
+      {/* Quick View Modal - only render on client */}
+      {isClient && (
+        <QuickViewModal 
+          product={product}
+          isOpen={showQuickView}
+          onClose={() => setShowQuickView(false)}
+        />
+      )}
     </Card>
   );
 }
