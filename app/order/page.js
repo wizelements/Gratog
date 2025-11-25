@@ -33,7 +33,7 @@ export default function OrderPage() {
     phone: '',
   });
   
-  const [fulfillmentType, setFulfillmentType] = useState('pickup');
+  const [fulfillmentType, setFulfillmentType] = useState('pickup_market');
   const [deliveryAddress, setDeliveryAddress] = useState({
     street: '',
     city: '',
