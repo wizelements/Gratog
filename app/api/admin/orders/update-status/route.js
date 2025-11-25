@@ -67,24 +67,21 @@ export async function POST(request) {
     
     logger.info('Order status updated', { orderId, oldStatus: order.status, newStatus: status });
     
-    const notificationStatuses = ['ready_for_pickup', 'out_for_delivery', 'delivered', 'picked_up'];
-    
-    if (notificationStatuses.includes(status)) {
-      logger.info('Sending customer notifications', { orderId, status });
+    // Send automated notifications using new system
+    try {
+      const { notifyOrderStatusChange } = await import('@/lib/order-status-notifier');
+      const { notifyStaffStatusChange } = await import('@/lib/staff-notifications');
       
-      try {
-        await sendOrderStatusEmail(updatedOrder, status);
-        logger.info('Email notification sent', { orderId, status });
-      } catch (emailError) {
-        logger.warn('Email notification failed', { error: emailError.message });
-      }
+      // Notify customer
+      await notifyOrderStatusChange(updatedOrder, order.status, status);
+      logger.info('Customer notifications sent', { orderId, status });
       
-      try {
-        await sendOrderUpdateSMS(updatedOrder, status);
-        logger.info('SMS notification sent', { orderId, status });
-      } catch (smsError) {
-        logger.warn('SMS notification failed', { error: smsError.message });
-      }
+      // Notify staff
+      await notifyStaffStatusChange(updatedOrder, order.status, status);
+      logger.info('Staff notifications sent', { orderId, status });
+      
+    } catch (notificationError) {
+      logger.warn('Notification error', { error: notificationError.message });
     }
     
     return NextResponse.json({
