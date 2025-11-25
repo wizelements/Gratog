@@ -483,7 +483,7 @@ sudo supervisorctl restart nextjs
 
 **Test 1: Diagnostic Endpoint**
 ```bash
-curl https://loading-fix-taste.preview.emergentagent.com/api/square/diagnose
+curl https://gratitude-platform.preview.emergentagent.com/api/square/diagnose
 ```
 
 **Expected Output (SUCCESS):**

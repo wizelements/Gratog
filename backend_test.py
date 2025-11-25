@@ -16,7 +16,7 @@ from datetime import datetime
 
 <<<<<<< HEAD
 # Base URL from environment
-BASE_URL = "https://cart-rescue-1.preview.emergentagent.com"
+BASE_URL = "https://gratitude-platform.preview.emergentagent.com"
 
 # Real variation IDs from MongoDB (as specified in review request)
 REAL_VARIATION_IDS = {
@@ -47,7 +47,7 @@ def test_order_creation_pickup():
     print_test_header("Order Creation - Pickup (No Delivery Fee)")
 =======
 # Configuration
-BASE_URL = "https://loading-fix-taste.preview.emergentagent.com"
+BASE_URL = "https://gratitude-platform.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 # Test user credentials

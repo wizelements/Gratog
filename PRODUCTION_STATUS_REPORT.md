@@ -2,7 +2,7 @@
 
 **Check Date:** November 5, 2025  
 **Time:** 23:51 UTC  
-**Environment:** https://loading-fix-taste.preview.emergentagent.com
+**Environment:** https://gratitude-platform.preview.emergentagent.com
 
 ---
 
@@ -255,7 +255,7 @@ All code fixes are deployed and working:
 
 2. **Verify Square diagnostic** (2 minutes)
    ```bash
-   curl -X POST https://loading-fix-taste.preview.emergentagent.com/api/square/diagnose
+   curl -X POST https://gratitude-platform.preview.emergentagent.com/api/square/diagnose
    # Should show: "overallStatus": "READY"
    ```
 

@@ -61,7 +61,7 @@ npm run build
 ## 🚀 DEPLOYMENT STATUS
 
 ### Emergent Preview:
-- **URL:** https://loading-fix-taste.preview.emergentagent.com
+- **URL:** https://gratitude-platform.preview.emergentagent.com
 - **Current Status:** 500 error (needs deployment/restart)
 - **Action Needed:** Push to trigger auto-deploy
 
@@ -99,7 +99,7 @@ git push solotog main
 
 This will:
 - Trigger Emergent preview deployment
-- Update https://loading-fix-taste.preview.emergentagent.com
+- Update https://gratitude-platform.preview.emergentagent.com
 - Make all enhancements live
 
 ### To Test After Deploy:

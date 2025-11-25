@@ -12,7 +12,7 @@
 | **Webhooks** | 🔧 Ready | Needs dashboard config |
 | **Mock Mode** | ✅ Active | Full functionality |
 
-**Live URL:** https://loading-fix-taste.preview.emergentagent.com
+**Live URL:** https://gratitude-platform.preview.emergentagent.com
 
 ---
 
@@ -122,7 +122,7 @@ MONGO_URL=mongodb://localhost:27017
 DB_NAME=taste_of_gratitude
 
 # App
-NEXT_PUBLIC_BASE_URL=https://loading-fix-taste.preview.emergentagent.com
+NEXT_PUBLIC_BASE_URL=https://gratitude-platform.preview.emergentagent.com
 
 # Security
 JWT_SECRET=[configured]
@@ -166,7 +166,7 @@ node scripts/syncCatalog.js
 cat /app/WEBHOOK_CONFIGURATION_GUIDE.md
 
 # Webhook URL to use:
-# https://loading-fix-taste.preview.emergentagent.com/api/webhooks/square
+# https://gratitude-platform.preview.emergentagent.com/api/webhooks/square
 ```
 
 ### Step 4: Disable Mock Mode
@@ -179,7 +179,7 @@ sudo supervisorctl restart nextjs
 ```
 
 ### Step 5: Test Complete Flow
-1. Visit: https://loading-fix-taste.preview.emergentagent.com
+1. Visit: https://gratitude-platform.preview.emergentagent.com
 2. Browse catalog
 3. Add items to cart
 4. Complete checkout
@@ -219,7 +219,7 @@ node scripts/syncCatalog.js
 
 ### Test Webhook Endpoint
 ```bash
-curl https://loading-fix-taste.preview.emergentagent.com/api/webhooks/square
+curl https://gratitude-platform.preview.emergentagent.com/api/webhooks/square
 ```
 
 **Expected Output:**
@@ -404,7 +404,7 @@ node scripts/syncCatalog.js
 sudo supervisorctl restart nextjs
 
 # 5. Visit site and test!
-# https://loading-fix-taste.preview.emergentagent.com
+# https://gratitude-platform.preview.emergentagent.com
 ```
 
 **You're ready to take payments!** 🎉

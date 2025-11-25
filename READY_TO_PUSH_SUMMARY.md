@@ -52,7 +52,7 @@ Trust Score: 2.8/10 → 8.5/10
 
 ## 🌐 PREVIEW SITE STATUS
 
-**URL:** https://loading-fix-taste.preview.emergentagent.com  
+**URL:** https://gratitude-platform.preview.emergentagent.com  
 **Status:** ✅ Loading (showing 0 products - likely database connection or Square sync needed)  
 **Health Check:** ✅ API responding (`/api/health` returns 200)
 
@@ -162,7 +162,7 @@ After pushing, verify these work on preview:
 
 ### Test 4: Admin Order Status
 ```bash
-curl -X POST https://loading-fix-taste.preview.emergentagent.com/api/admin/orders/update-status \
+curl -X POST https://gratitude-platform.preview.emergentagent.com/api/admin/orders/update-status \
   -H "Content-Type: application/json" \
   -d '{
     "orderId": "test-order-id",

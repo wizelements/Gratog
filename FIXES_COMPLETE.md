@@ -50,9 +50,9 @@
 
 **Before:**
 ```javascript
-metadataBase: 'https://loading-fix-taste.preview.emergentagent.com'
-canonical: 'https://loading-fix-taste.preview.emergentagent.com'
-og:url: 'https://loading-fix-taste.preview.emergentagent.com'
+metadataBase: 'https://gratitude-platform.preview.emergentagent.com'
+canonical: 'https://gratitude-platform.preview.emergentagent.com'
+og:url: 'https://gratitude-platform.preview.emergentagent.com'
 ```
 
 **After:**

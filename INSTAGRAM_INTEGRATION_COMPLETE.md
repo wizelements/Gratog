@@ -174,7 +174,7 @@ INSTAGRAM_WEBHOOK_VERIFY_TOKEN=your_webhook_verify_token
 
 ```bash
 # Sync Instagram posts manually
-curl https://loading-fix-taste.preview.emergentagent.com/api/instagram/sync
+curl https://gratitude-platform.preview.emergentagent.com/api/instagram/sync
 ```
 
 **Response**:

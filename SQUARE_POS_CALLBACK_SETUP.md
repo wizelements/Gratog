@@ -4,7 +4,7 @@
 
 **Primary Callback URL** (Add this in Square Dashboard):
 ```
-https://loading-fix-taste.preview.emergentagent.com/api/pos/callback
+https://gratitude-platform.preview.emergentagent.com/api/pos/callback
 ```
 
 ---
@@ -20,7 +20,7 @@ https://loading-fix-taste.preview.emergentagent.com/api/pos/callback
 1. Click on "Point of Sale API" in the left sidebar
 2. Scroll to **"Web callback URLs"** section
 3. Click **"Add callback URL"**
-4. Enter: `https://loading-fix-taste.preview.emergentagent.com/api/pos/callback`
+4. Enter: `https://gratitude-platform.preview.emergentagent.com/api/pos/callback`
 5. Click **"Save"**
 
 ### Step 3: Configure Additional Callbacks (Optional)
@@ -28,12 +28,12 @@ You can add multiple callback URLs for different purposes:
 
 **Success Callback** (for successful transactions only):
 ```
-https://loading-fix-taste.preview.emergentagent.com/api/pos/callback?type=success
+https://gratitude-platform.preview.emergentagent.com/api/pos/callback?type=success
 ```
 
 **Error Callback** (for failed/cancelled transactions):
 ```
-https://loading-fix-taste.preview.emergentagent.com/api/pos/callback?type=error
+https://gratitude-platform.preview.emergentagent.com/api/pos/callback?type=error
 ```
 
 ---
@@ -42,7 +42,7 @@ https://loading-fix-taste.preview.emergentagent.com/api/pos/callback?type=error
 
 ### 1. Point of Sale API (Mobile/Tablet Payments)
 ```
-https://loading-fix-taste.preview.emergentagent.com/api/pos/callback
+https://gratitude-platform.preview.emergentagent.com/api/pos/callback
 ```
 **Purpose**: Receive payment notifications when transactions are completed via Square POS app on iOS/Android  
 **Method**: GET (with query parameters)  
@@ -59,7 +59,7 @@ https://loading-fix-taste.preview.emergentagent.com/api/pos/callback
 
 ### 2. Square OAuth (API Authentication)
 ```
-https://loading-fix-taste.preview.emergentagent.com/api/oauth/square/callback
+https://gratitude-platform.preview.emergentagent.com/api/oauth/square/callback
 ```
 **Purpose**: OAuth flow callback for obtaining API access tokens  
 **Configure in**: Square Developer Dashboard → OAuth → Redirect URL  
@@ -70,7 +70,7 @@ https://loading-fix-taste.preview.emergentagent.com/api/oauth/square/callback
 
 ### 3. Square Webhooks (Order/Payment Events)
 ```
-https://loading-fix-taste.preview.emergentagent.com/api/webhooks/square
+https://gratitude-platform.preview.emergentagent.com/api/webhooks/square
 ```
 **Purpose**: Receive real-time notifications for payment.created, order.updated, etc.  
 **Configure in**: Square Developer Dashboard → Webhooks → Add Endpoint  
@@ -90,7 +90,7 @@ https://loading-fix-taste.preview.emergentagent.com/api/webhooks/square
 
 ### 4. Square Online Store Return URL
 ```
-https://loading-fix-taste.preview.emergentagent.com/checkout/success?orderId={order_id}&total={total}
+https://gratitude-platform.preview.emergentagent.com/checkout/success?orderId={order_id}&total={total}
 ```
 **Purpose**: Customer return URL after completing payment on Square Online store  
 **Configure in**: Square Online → Settings → Checkout Settings → Return URL  
@@ -193,15 +193,15 @@ Points awarded, confirmation shown
 ## ✅ Configuration Checklist
 
 ### In Square Developer Dashboard:
-- [ ] Add POS Web Callback URL: `https://loading-fix-taste.preview.emergentagent.com/api/pos/callback`
-- [ ] Add OAuth Redirect URL: `https://loading-fix-taste.preview.emergentagent.com/api/oauth/square/callback`
-- [ ] Configure Webhooks endpoint: `https://loading-fix-taste.preview.emergentagent.com/api/webhooks/square`
+- [ ] Add POS Web Callback URL: `https://gratitude-platform.preview.emergentagent.com/api/pos/callback`
+- [ ] Add OAuth Redirect URL: `https://gratitude-platform.preview.emergentagent.com/api/oauth/square/callback`
+- [ ] Configure Webhooks endpoint: `https://gratitude-platform.preview.emergentagent.com/api/webhooks/square`
 - [ ] Subscribe to events: payment.created, payment.updated, order.created, order.updated
 - [ ] Set webhook signature key: `jdpVqg2RUVe7XnNt_GGS2Q`
 
 ### In Square Online Dashboard:
 - [ ] Go to: Square Online → Settings → Checkout
-- [ ] Set Return URL: `https://loading-fix-taste.preview.emergentagent.com/checkout/success`
+- [ ] Set Return URL: `https://gratitude-platform.preview.emergentagent.com/checkout/success`
 - [ ] Enable "Pass order ID in return URL" (if available)
 
 ### On Your Site (Already Done):
@@ -219,14 +219,14 @@ Points awarded, confirmation shown
 ### Test POS Callback:
 ```bash
 # Simulate successful POS payment
-curl "https://loading-fix-taste.preview.emergentagent.com/api/pos/callback?status=ok&transaction_id=TEST123&amount=3600&orderId=ORDER-123&customerEmail=test@example.com"
+curl "https://gratitude-platform.preview.emergentagent.com/api/pos/callback?status=ok&transaction_id=TEST123&amount=3600&orderId=ORDER-123&customerEmail=test@example.com"
 
 # Should redirect to success page
 ```
 
 ### Test Success Page:
 ```
-https://loading-fix-taste.preview.emergentagent.com/checkout/success?orderId=ORDER-123&amount=3600&transactionId=TEST123
+https://gratitude-platform.preview.emergentagent.com/checkout/success?orderId=ORDER-123&amount=3600&transactionId=TEST123
 ```
 
 ### Test Square Online Flow:
@@ -241,7 +241,7 @@ https://loading-fix-taste.preview.emergentagent.com/checkout/success?orderId=ORD
 **If callbacks aren't working**:
 1. Check Square Dashboard for webhook delivery logs
 2. Check your server logs: `tail -f /var/log/supervisor/nextjs.out.log`
-3. Verify URL is accessible: `curl -I https://loading-fix-taste.preview.emergentagent.com/api/pos/callback`
+3. Verify URL is accessible: `curl -I https://gratitude-platform.preview.emergentagent.com/api/pos/callback`
 4. Ensure HTTPS is enabled (Square requires secure callbacks)
 
 **To enable automatic order sync**:
@@ -257,7 +257,7 @@ https://loading-fix-taste.preview.emergentagent.com/checkout/success?orderId=ORD
 
 **Add this URL to Square POS Web Callback URLs**:
 ```
-https://loading-fix-taste.preview.emergentagent.com/api/pos/callback
+https://gratitude-platform.preview.emergentagent.com/api/pos/callback
 ```
 
 **That's it!** Your system will now receive payment notifications from Square Point of Sale and automatically:

@@ -58,7 +58,7 @@ Your application needs these specific permissions to function properly:
 
 **Option B: OAuth Flow (For Third-Party Apps)**
 1. Go to **"OAuth"** section
-2. Set up your redirect URL: `https://loading-fix-taste.preview.emergentagent.com/api/oauth/callback`
+2. Set up your redirect URL: `https://gratitude-platform.preview.emergentagent.com/api/oauth/callback`
 3. Note your **Application ID** and **Application Secret**
 4. Implement OAuth flow (requires more setup)
 
@@ -105,7 +105,7 @@ SQUARE_WEBHOOK_SIGNATURE_KEY=your-webhook-signature-key
 
 ### **Method 1: Use Our Diagnostic Endpoint**
 ```bash
-curl https://loading-fix-taste.preview.emergentagent.com/api/square/diagnose
+curl https://gratitude-platform.preview.emergentagent.com/api/square/diagnose
 ```
 
 Expected output should show:
@@ -182,7 +182,7 @@ Should return your business locations without 401 error.
 
 1. **Test the diagnostic endpoint:**
    ```bash
-   curl https://loading-fix-taste.preview.emergentagent.com/api/square/diagnose
+   curl https://gratitude-platform.preview.emergentagent.com/api/square/diagnose
    ```
 
 2. **Restart the server:**
@@ -191,7 +191,7 @@ Should return your business locations without 401 error.
    ```
 
 3. **Test a payment flow:**
-   - Visit: https://loading-fix-taste.preview.emergentagent.com/order
+   - Visit: https://gratitude-platform.preview.emergentagent.com/order
    - Add products to cart
    - Complete checkout with Square test card: `4111 1111 1111 1111`
 

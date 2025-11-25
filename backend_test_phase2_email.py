@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from pymongo import MongoClient
 
 # Configuration
-BASE_URL = "https://loading-fix-taste.preview.emergentagent.com"
+BASE_URL = "https://gratitude-platform.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 MONGO_URL = "mongodb://localhost:27017"
 DB_NAME = "taste_of_gratitude"

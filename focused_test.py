@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://loading-fix-taste.preview.emergentagent.com"
+BASE_URL = "https://gratitude-platform.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 def test_endpoint(name, method, url, data=None, expected_status=200):

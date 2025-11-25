@@ -309,8 +309,8 @@
 ## 🚀 Live URLs
 
 **Production URLs:**
-- https://loading-fix-taste.preview.emergentagent.com/faq
-- https://loading-fix-taste.preview.emergentagent.com/community
+- https://gratitude-platform.preview.emergentagent.com/faq
+- https://gratitude-platform.preview.emergentagent.com/community
 - Footer visible on all pages
 
 **Footer Links to:**
