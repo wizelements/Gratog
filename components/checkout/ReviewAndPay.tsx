@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-=======
 // @ts-nocheck
->>>>>>> upstream/main
 'use client';
 
 import { motion } from 'framer-motion';

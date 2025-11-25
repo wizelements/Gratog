@@ -19,7 +19,8 @@ import {
   ShoppingBag,
   AlertCircle,
   Loader2,
-  ExternalLink
+  ExternalLink,
+  Calendar
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -182,10 +183,15 @@ export default function OrderSuccessPage() {
         <div className="container py-8">
           <div className="text-center">
             <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-            <h1 className="text-3xl font-bold text-green-700 mb-2">Order Confirmed!</h1>
-            <p className="text-lg text-muted-foreground">
-              Thank you for your order. We'll send you updates via SMS and email.
+            <h1 className="text-3xl font-bold text-green-700 mb-2">🎉 Order Confirmed!</h1>
+            <p className="text-lg text-muted-foreground mb-2">
+              Thank you for your order!
             </p>
+            {order?.customer && (
+              <p className="text-sm text-muted-foreground">
+                ✅ SMS sent to {order.customer.phone} • 📧 Email sent to {order.customer.email}
+              </p>
+            )}
             {order?.isFallback && (
               <Badge className="mt-3 bg-blue-100 text-blue-800">
                 Offline Order - Will sync when online
@@ -212,6 +218,48 @@ export default function OrderSuccessPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
+              
+              {/* Pickup Code Card */}
+              {(order?.fulfillment?.type === 'pickup_market' || order?.fulfillment?.type === 'pickup_browns_mill') && (
+                <div className="bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/5 border-2 border-[#D4AF37] rounded-lg p-6">
+                  <div className="text-center">
+                    <div className="text-sm text-muted-foreground mb-2">Your Pickup Code</div>
+                    <div className="text-4xl font-bold text-[#D4AF37] mb-3 tracking-wider">
+                      {order.orderNumber}
+                    </div>
+                    <div className="text-sm text-muted-foreground mb-4">
+                      💡 Show this at pickup or save this page
+                    </div>
+                    
+                    <div className="flex gap-3 justify-center flex-wrap">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          const mapUrl = order.fulfillment.type === 'pickup_browns_mill'
+                            ? 'https://maps.google.com/?q=Browns+Mill+Recreation+Center+Atlanta+GA'
+                            : 'https://maps.google.com/?q=10950+Hutcheson+Ferry+Rd+Palmetto+GA+30268';
+                          window.open(mapUrl, '_blank');
+                        }}
+                      >
+                        <MapPin className="h-4 w-4 mr-2" />
+                        Open in Maps
+                      </Button>
+                      
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          window.open(`/api/ics/market-route?market=${order.fulfillment.type === 'pickup_browns_mill' ? 'browns_mill' : 'serenbe'}`, '_blank');
+                        }}
+                      >
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Add to Calendar
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               {/* Customer Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

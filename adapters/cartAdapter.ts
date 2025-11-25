@@ -54,10 +54,6 @@ export const CartAPI = {
   saveCart: (cart: CartItem[]) => saveCart(cart),
   
   // Add item to cart
-<<<<<<< HEAD
-  addItem: (product: any, quantity: number = 1, variantOrSize: any = null) => 
-    addToCart(product, quantity, variantOrSize),
-=======
   addItem: (product: any, quantity: number = 1, variantOrSize: any = null) => {
     // Add the product (cartUtils.addToCart only handles single qty increments)
     for (let i = 0; i < quantity; i++) {
@@ -65,7 +61,6 @@ export const CartAPI = {
     }
     return loadCart();
   },
->>>>>>> upstream/main
   
   // Update item quantity
   updateQuantity: (itemId: string, quantity: number) => 
@@ -78,9 +73,6 @@ export const CartAPI = {
   clear: () => clearCart(),
   
   // Get cart totals
-<<<<<<< HEAD
-  getTotals: (cart: CartItem[]): CartTotals => getCartTotal(cart),
-=======
   getTotals: (cart?: CartItem[]): CartTotals => {
     const result = getCartTotal();
     return {
@@ -90,7 +82,6 @@ export const CartAPI = {
       total: result.subtotal
     };
   },
->>>>>>> upstream/main
   
   // Subscribe to cart changes
   subscribe: (callback: (cart: CartItem[]) => void) => {

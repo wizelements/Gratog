@@ -4,10 +4,7 @@ import { getUnifiedProducts } from '@/lib/product-sync-engine';
 import { getCategoriesWithCounts } from '@/lib/ingredient-taxonomy';
 import { getDemoProducts, getDemoCategories } from '@/lib/demo-products';
 import { createLogger } from '@/lib/logger';
-<<<<<<< HEAD
-=======
 import { enhanceProductCatalog } from '@/lib/product-enhancements';
->>>>>>> upstream/main
 
 const logger = createLogger('ProductsAPI');
 
@@ -57,12 +54,6 @@ export async function GET(request) {
         catalogObjectId: product.squareData?.variationId || product.variations?.[0]?.id || product.id
       }));
       
-<<<<<<< HEAD
-      const categories = getCategoriesWithCounts(products);
-      
-      // If no products found, use demo products as fallback
-      if (products.length === 0) {
-=======
       // Enhance with beautiful placeholders and sort by image priority
       const enhancedProducts = enhanceProductCatalog(products);
       
@@ -70,7 +61,6 @@ export async function GET(request) {
       
       // If no products found, use demo products as fallback
       if (enhancedProducts.length === 0) {
->>>>>>> upstream/main
         logger.warn('No products in unified collection, using demo fallback');
         const demoProducts = getDemoProducts(filters);
         const demoCategories = getDemoCategories();
@@ -91,12 +81,6 @@ export async function GET(request) {
         });
       }
       
-<<<<<<< HEAD
-      logger.info(`Returning ${products.length} products from unified collection`);
-      logger.api('GET', '/api/products', 200, Date.now() - startTime, { 
-        source: 'unified',
-        count: products.length 
-=======
       const imageStats = {
         withImages: enhancedProducts.filter(p => !p.isPlaceholder).length,
         withPlaceholders: enhancedProducts.filter(p => p.isPlaceholder).length
@@ -107,7 +91,6 @@ export async function GET(request) {
         source: 'unified',
         count: enhancedProducts.length,
         ...imageStats
->>>>>>> upstream/main
       });
       
       return NextResponse.json({

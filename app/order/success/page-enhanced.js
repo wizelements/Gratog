@@ -11,42 +11,11 @@ import { Separator } from '@/components/ui/separator';
 
 export default function OrderSuccessPage() {
   const searchParams = useSearchParams();
-<<<<<<< HEAD
-  const orderId = searchParams.get('orderId');
-  const squareOrderId = searchParams.get('squareOrderId');
-=======
   const orderRef = searchParams.get('orderRef') || searchParams.get('orderId'); // Support both for backward compatibility
->>>>>>> upstream/main
   
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-<<<<<<< HEAD
-
-  useEffect(() => {
-    if (orderId) {
-      fetchOrderDetails();
-    } else {
-      setError('No order ID provided');
-      setLoading(false);
-    }
-  }, [orderId]);
-
-  const fetchOrderDetails = async () => {
-    try {
-      const response = await fetch(`/api/orders/${orderId}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setOrder(data.order);
-      } else {
-        setError(data.error || 'Failed to load order');
-      }
-    } catch (err) {
-      setError('Failed to fetch order details');
-      console.error('Order fetch error:', err);
-    } finally {
-=======
   const [pollAttempts, setPollAttempts] = useState(0);
 
   useEffect(() => {
@@ -101,7 +70,6 @@ export default function OrderSuccessPage() {
       }
       
       setError(err.message || 'Failed to fetch order details');
->>>>>>> upstream/main
       setLoading(false);
     }
   };
@@ -111,9 +79,6 @@ export default function OrderSuccessPage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-emerald-50 to-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mx-auto mb-4" />
-<<<<<<< HEAD
-          <p className="text-gray-600">Loading your order details...</p>
-=======
           <p className="text-gray-600 text-lg mb-2">
             {pollAttempts > 0 ? 'Finalizing your order...' : 'Loading your order details...'}
           </p>
@@ -122,7 +87,6 @@ export default function OrderSuccessPage() {
               Processing payment confirmation ({pollAttempts}/20)
             </p>
           )}
->>>>>>> upstream/main
         </div>
       </div>
     );
@@ -137,14 +101,6 @@ export default function OrderSuccessPage() {
               <span className="text-3xl">❌</span>
             </div>
             <h2 className="text-2xl font-bold mb-2">Order Not Found</h2>
-<<<<<<< HEAD
-            <p className="text-gray-600 mb-6">{error}</p>
-            <Link href="/catalog">
-              <Button className="bg-emerald-600 hover:bg-emerald-700">
-                Continue Shopping
-              </Button>
-            </Link>
-=======
             <p className="text-gray-600 mb-2">{error}</p>
             {orderRef && (
               <p className="text-xs text-gray-400 mb-6 font-mono">
@@ -170,7 +126,6 @@ export default function OrderSuccessPage() {
                 </Button>
               </Link>
             </div>
->>>>>>> upstream/main
           </CardContent>
         </Card>
       </div>
@@ -210,17 +165,6 @@ export default function OrderSuccessPage() {
             </div>
           </CardHeader>
           <CardContent className="p-6">
-<<<<<<< HEAD
-            {/* Square Order ID */}
-            {(order.squareOrderId || squareOrderId) && (
-              <div className="mb-6 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <CreditCard className="w-5 h-5 text-emerald-600" />
-                  <span className="font-semibold text-emerald-900">Square Order ID</span>
-                </div>
-                <code className="text-sm text-emerald-700 font-mono">
-                  {order.squareOrderId || squareOrderId}
-=======
             {/* Payment Information */}
             {(order.paymentStatus === 'COMPLETED' || order.payment?.status === 'completed' || order.status === 'paid') && (
               <div className="mb-6 p-4 bg-green-50 rounded-lg border-2 border-green-200">
@@ -271,7 +215,6 @@ export default function OrderSuccessPage() {
                 </div>
                 <code className="text-sm text-emerald-700 font-mono">
                   {order.squareOrderId}
->>>>>>> upstream/main
                 </code>
               </div>
             )}

@@ -4,19 +4,23 @@ import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { sendOrderConfirmationSMS } from '@/lib/sms';
 import { calculateDeliveryFee } from '@/lib/delivery-fees';
 import { validateDeliveryFulfillment } from '@/lib/validation/fulfillment';
-<<<<<<< HEAD
-import { createLogger } from '@/lib/logger';
-import { randomUUID } from 'crypto';
-=======
 import { validateCustomerData } from '@/lib/validation/customer';
 import { validateCart } from '@/lib/validation/cart';
 import { sanitizeObject } from '@/lib/validation/sanitize';
 import { createLogger } from '@/lib/logger';
 import { randomUUID } from 'crypto';
 import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
->>>>>>> upstream/main
 
 const logger = createLogger('OrdersCreateAPI');
+
+function getNextSaturday(time = '09:00') {
+  const now = new Date();
+  const daysUntilSaturday = (6 - now.getDay() + 7) % 7 || 7;
+  const nextSat = new Date(now.getTime() + daysUntilSaturday * 24 * 60 * 60 * 1000);
+  const [hours, minutes] = time.split(':');
+  nextSat.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+  return nextSat.toISOString();
+}
 
 export async function POST(request) {
   const startTime = Date.now();
@@ -24,27 +28,19 @@ export async function POST(request) {
   try {
     let orderData = await request.json();
     
-<<<<<<< HEAD
-=======
     // SECURITY: Sanitize all input data to prevent XSS/SQL injection
     orderData = sanitizeObject(orderData, { preventSQL: true });
     
->>>>>>> upstream/main
     logger.info('Order creation request received', { 
       fulfillmentType: orderData.fulfillmentType,
       cartItemsCount: orderData.cart?.length,
       customerEmail: orderData.customer?.email 
     });
     
-<<<<<<< HEAD
-    // Validate required fields
-    if (!orderData.cart || !Array.isArray(orderData.cart) || orderData.cart.length === 0) {
-=======
     // VALIDATION 1: Validate cart data
     const cartValidation = validateCart(orderData.cart);
     if (!cartValidation.valid) {
       logger.warn('Cart validation failed', { error: cartValidation.error });
->>>>>>> upstream/main
       return NextResponse.json(
         { success: false, error: cartValidation.error },
         { status: 400 }
@@ -126,14 +122,9 @@ export async function POST(request) {
       }
     };
     
-<<<<<<< HEAD
-    // CRITICAL: Create Square Order FIRST
-    let squareOrderId = null;
-=======
     // CRITICAL: Create Square Customer FIRST, then Order
     let squareOrderId = null;
     let squareCustomerId = null;
->>>>>>> upstream/main
     const ALLOW_FALLBACK = process.env.SQUARE_FALLBACK_MODE === 'true';
     
     const SQUARE_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
@@ -155,11 +146,6 @@ export async function POST(request) {
       squareOrderId = `fallback_${orderId}`;
     } else {
       try {
-<<<<<<< HEAD
-        logger.info('Creating Square Order', { orderId });
-        
-        // Step 1: Create Square Order
-=======
         // STEP 1: Find or create Square Customer
         logger.info('Creating/finding Square customer', { email: orderData.customer.email });
         
@@ -193,43 +179,62 @@ export async function POST(request) {
         // STEP 2: Create Square Order with customer link
         logger.info('Creating Square Order', { orderId, customerId: squareCustomerId });
         
->>>>>>> upstream/main
         const orderPayload = {
           idempotency_key: `order_${orderId}_${Date.now()}`,
           order: {
             location_id: SQUARE_LOCATION_ID,
-<<<<<<< HEAD
-=======
             reference_id: orderNumber, // ⭐ THIS MAKES ORDER NUMBERS MATCH
->>>>>>> upstream/main
             line_items: orderData.cart.map(item => ({
               catalog_object_id: item.catalogObjectId || item.variationId || item.id,
               quantity: String(item.quantity),
               base_price_money: {
                 amount: Math.round((item.price || 0) * 100),
                 currency: 'USD'
-<<<<<<< HEAD
-              }
-            })),
-=======
               },
               note: item.name || '' // Product name visible in Square
             })),
             customer_id: squareCustomerId || undefined, // ⭐ LINKS CUSTOMER TO ORDER
->>>>>>> upstream/main
             metadata: {
               source: 'website',
               local_order_id: orderId,
               order_number: orderNumber,
               fulfillment_type: orderData.fulfillmentType,
-<<<<<<< HEAD
-              customer_email: orderData.customer.email
-=======
               customer_email: orderData.customer.email,
               customer_name: orderData.customer.name,
               customer_phone: orderData.customer.phone
->>>>>>> upstream/main
-            }
+            },
+            fulfillments: orderData.fulfillmentType.startsWith('pickup') ? [{
+              type: 'PICKUP',
+              state: 'PROPOSED',
+              pickup_details: {
+                recipient: {
+                  display_name: orderData.customer.name,
+                  phone_number: orderData.customer.phone
+                },
+                note: orderData.fulfillmentType === 'pickup_browns_mill'
+                  ? '📍 PICKUP: Browns Mill Community • Saturdays 3:00 PM - 6:00 PM • Show order number at pickup booth'
+                  : '📍 PICKUP: Serenbe Farmers Market (Booth #12) • 10950 Hutcheson Ferry Rd, Palmetto, GA 30268 • Saturdays 9:00 AM - 1:00 PM • Look for gold Taste of Gratitude banners',
+                schedule_type: 'SCHEDULED',
+                pickup_at: getNextSaturday(orderData.fulfillmentType === 'pickup_browns_mill' ? '15:00' : '09:00')
+              }
+            }] : orderData.fulfillmentType === 'delivery' ? [{
+              type: 'SHIPMENT',
+              state: 'PROPOSED',
+              shipment_details: {
+                recipient: {
+                  display_name: orderData.customer.name,
+                  phone_number: orderData.customer.phone,
+                  address: {
+                    address_line_1: orderData.deliveryAddress?.street || '',
+                    locality: orderData.deliveryAddress?.city || '',
+                    administrative_district_level_1: orderData.deliveryAddress?.state || 'GA',
+                    postal_code: orderData.deliveryAddress?.zip || ''
+                  }
+                },
+                shipping_note: orderData.deliveryInstructions || '',
+                expected_shipped_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+              }
+            }] : undefined
           }
         };
         
@@ -249,12 +254,8 @@ export async function POST(request) {
           const errorDetail = orderResponseData.errors?.[0]?.detail || 'Square API error';
           logger.error('Square Order creation failed', { 
             status: orderResponse.status,
-<<<<<<< HEAD
-            error: errorDetail
-=======
             error: errorDetail,
             errors: orderResponseData.errors
->>>>>>> upstream/main
           });
           
           if (!ALLOW_FALLBACK) {
@@ -265,15 +266,11 @@ export async function POST(request) {
           squareOrderId = `fallback_${orderId}`;
         } else {
           squareOrderId = orderResponseData.order.id;
-<<<<<<< HEAD
-          logger.info('✅ Square Order created', { squareOrderId });
-=======
           logger.info('✅ Square Order created', { 
             squareOrderId,
             referenceId: orderNumber,
             customerId: squareCustomerId 
           });
->>>>>>> upstream/main
         }
       } catch (squareError) {
         logger.error('Square integration error', { error: squareError.message });
@@ -336,14 +333,10 @@ export async function POST(request) {
         customer: order.customer,
         items: order.items,
         pricing: order.pricing,
-<<<<<<< HEAD
-        squareOrderId
-=======
         fulfillment: order.fulfillment, // ⭐ Include fulfillment data for tests
         paymentLink: order.paymentLink, // ⭐ Include payment link if exists
         squareOrderId,
         squareCustomerId // ⭐ Return customer ID for frontend use
->>>>>>> upstream/main
       }
     });
     
