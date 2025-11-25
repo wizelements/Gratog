@@ -357,28 +357,93 @@ export default function OrderPage() {
                 </CardHeader>
                 <CardContent>
                   <RadioGroup value={fulfillmentType} onValueChange={setFulfillmentType} disabled={isSubmitting}>
-                    <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:border-emerald-600 transition-colors">
-                      <RadioGroupItem value="pickup" id="pickup" />
-                      <Label htmlFor="pickup" className="flex-1 cursor-pointer">
-                        <div className="flex items-center gap-3">
-                          <Package className="h-5 w-5 text-emerald-600" />
-                          <div>
-                            <div className="font-semibold">Pickup</div>
-                            <div className="text-sm text-gray-600">Pick up at our location - Free</div>
+                    {/* Serenbe Farmers Market Pickup */}
+                    <div className="flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer hover:border-emerald-600 transition-all hover:shadow-md">
+                      <RadioGroupItem value="pickup_market" id="pickup_market" className="mt-1" />
+                      <Label htmlFor="pickup_market" className="flex-1 cursor-pointer">
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 bg-emerald-50 rounded-lg">
+                              <Package className="h-5 w-5 text-emerald-600" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-semibold text-lg">🏪 Serenbe Farmers Market</div>
+                              <div className="text-sm text-emerald-600 font-medium">FREE Pickup • Most Popular</div>
+                            </div>
+                          </div>
+                          
+                          <div className="pl-14 space-y-2 text-sm text-gray-600">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-gray-400" />
+                              <span>10950 Hutcheson Ferry Rd, Palmetto, GA 30268</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-gray-400" />
+                              <span className="font-medium text-gray-900">Saturdays: 9:00 AM - 1:00 PM</span>
+                            </div>
+                            <div className="bg-emerald-50 border border-emerald-200 rounded-md p-3 mt-2">
+                              <div className="text-xs font-semibold text-emerald-800 mb-1">✨ What to Expect:</div>
+                              <div className="text-xs text-emerald-700">Look for our <strong>gold "Taste of Gratitude" booth (#12)</strong>. Your order will be ready by <strong>9:30 AM Saturday</strong>. Just show your order number!</div>
+                            </div>
                           </div>
                         </div>
                       </Label>
                     </div>
                     
-                    <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:border-emerald-600 transition-colors">
-                      <RadioGroupItem value="delivery" id="delivery" />
+                    {/* Browns Mill Community Pickup */}
+                    <div className="flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer hover:border-emerald-600 transition-all hover:shadow-md mt-3">
+                      <RadioGroupItem value="pickup_browns_mill" id="pickup_browns_mill" className="mt-1" />
+                      <Label htmlFor="pickup_browns_mill" className="flex-1 cursor-pointer">
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 bg-blue-50 rounded-lg">
+                              <Package className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-semibold text-lg">🏘️ Browns Mill Community</div>
+                              <div className="text-sm text-blue-600 font-medium">FREE Pickup • Afternoon Hours</div>
+                            </div>
+                          </div>
+                          
+                          <div className="pl-14 space-y-2 text-sm text-gray-600">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-gray-400" />
+                              <span>Browns Mill Recreation Center, Atlanta, GA</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-gray-400" />
+                              <span className="font-medium text-gray-900">Saturdays: 3:00 PM - 6:00 PM</span>
+                            </div>
+                            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-2">
+                              <div className="text-xs font-semibold text-blue-800 mb-1">✨ What to Expect:</div>
+                              <div className="text-xs text-blue-700">Find us at the <strong>community event area</strong>. Your order will be ready by <strong>3:30 PM Saturday</strong>. Bring your order number!</div>
+                            </div>
+                          </div>
+                        </div>
+                      </Label>
+                    </div>
+                    
+                    {/* Home Delivery */}
+                    <div className="flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer hover:border-emerald-600 transition-all hover:shadow-md mt-3">
+                      <RadioGroupItem value="delivery" id="delivery" className="mt-1" />
                       <Label htmlFor="delivery" className="flex-1 cursor-pointer">
-                        <div className="flex items-center gap-3">
-                          <Home className="h-5 w-5 text-emerald-600" />
-                          <div>
-                            <div className="font-semibold">Delivery</div>
-                            <div className="text-sm text-gray-600">
-                              {subtotal >= 75 ? 'FREE delivery (over $75)' : '$6.99 delivery fee (under $75)'}
+                        <div className="space-y-2">
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 bg-orange-50 rounded-lg">
+                              <Home className="h-5 w-5 text-orange-600" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-semibold text-lg">🚚 Home Delivery</div>
+                              <div className="text-sm text-orange-600 font-medium">
+                                {subtotal >= 75 ? '✨ FREE delivery (over $75)' : `$6.99 delivery fee • FREE over $75`}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="pl-14 text-sm text-gray-600">
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-gray-400" />
+                              <span>Delivered within 2-3 business days</span>
                             </div>
                           </div>
                         </div>
