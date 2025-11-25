@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto';
 import { fromCents, toSquareMoney } from '@/lib/money';
 import { createPayment } from '@/lib/square-ops';
 import { shouldAllowFallback, getAuthFailureResponse, logSquareOperation } from '@/lib/square-guard';
+import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
 
 /**
  * Square Payments API - Web Payments SDK Integration
@@ -18,6 +19,7 @@ export async function POST(request: NextRequest) {
       amountCents,
       currency = 'USD',
       orderId,
+      squareOrderId, // Square Order ID to link payment
       customer,
       lineItems,
       idempotencyKey,
@@ -48,11 +50,41 @@ export async function POST(request: NextRequest) {
       currency,
       locationId: SQUARE_LOCATION_ID,
       idempotencyKey: paymentIdempotencyKey,
-      orderId
+      orderId,
+      squareOrderId
     });
     
     // Get fresh Square client instance
     const square = getSquareClient();
+    
+    // STEP 1: Create or find Square Customer (if customer info provided)
+    let squareCustomerId: string | undefined;
+    
+    if (customer && customer.email && customer.name) {
+      console.log('Creating/finding Square customer for payment...');
+      try {
+        const customerResult = await findOrCreateSquareCustomer({
+          email: customer.email,
+          name: customer.name,
+          phone: customer.phone,
+          note: createCustomerNote({
+            orderNumber: orderId,
+            source: 'web_payment_sdk'
+          })
+        });
+        
+        if (customerResult.success && customerResult.customer) {
+          squareCustomerId = customerResult.customer.id;
+          console.log('✅ Square customer ready for payment', { customerId: squareCustomerId });
+        } else {
+          console.warn('Customer creation failed, continuing without customer link', { 
+            error: customerResult.error 
+          });
+        }
+      } catch (custError) {
+        console.warn('Customer lookup error, continuing', { error: custError });
+      }
+    }
     
     // Truncate note to Square's 45 character limit (must be defined before use)
     const noteText = `Payment for order ${orderId || 'unknown'}`;
@@ -70,6 +102,7 @@ export async function POST(request: NextRequest) {
       autocomplete: true, // Immediately complete the payment
       acceptPartialAuthorization: false,
       note: truncatedNote,
+      customerId: squareCustomerId, // ⭐ Link payment to customer
       ...(customer?.email && { buyerEmailAddress: customer.email })
     };
     
@@ -87,7 +120,10 @@ export async function POST(request: NextRequest) {
       currency,
       locationId: SQUARE_LOCATION_ID,
       idempotencyKey: paymentIdempotencyKey,
-      note: truncatedNote
+      note: truncatedNote,
+      orderId: squareOrderId, // Pass Square Order ID to link payment to order
+      customerId: squareCustomerId, // ⭐ Link payment to customer
+      buyerEmailAddress: customer?.email
     });
     
     if (!response.payment) {
@@ -146,18 +182,37 @@ export async function POST(request: NextRequest) {
       
       // Update order status if orderId provided
       if (orderId) {
+        // Map Square payment status to order status
+        const orderStatus = payment.status === 'COMPLETED' || payment.status === 'APPROVED' ? 'paid' : 'payment_processing';
+        
         await db.collection('orders').updateOne(
           { id: orderId },
           {
             $set: {
-              paymentStatus: payment.status,
+              status: orderStatus, // Update main order status
+              paymentStatus: payment.status, // Square payment status
               squarePaymentId: payment.id,
-              paidAt: payment.status === 'COMPLETED' ? new Date() : null,
+              'payment.status': payment.status === 'COMPLETED' || payment.status === 'APPROVED' ? 'completed' : 'processing', // Update nested payment object
+              'payment.squarePaymentId': payment.id,
+              'payment.receiptUrl': payment.receiptUrl,
+              'payment.receiptNumber': payment.receiptNumber,
+              'payment.cardBrand': payment.cardDetails?.card?.cardBrand,
+              'payment.cardLast4': payment.cardDetails?.card?.last4,
+              paidAt: payment.status === 'COMPLETED' || payment.status === 'APPROVED' ? new Date() : null,
               updatedAt: new Date()
+            },
+            $push: {
+              timeline: {
+                status: orderStatus,
+                timestamp: new Date(),
+                message: payment.status === 'COMPLETED' ? 'Payment completed successfully' : `Payment ${payment.status.toLowerCase()}`,
+                actor: 'square',
+                squarePaymentId: payment.id
+              }
             }
           }
         );
-        console.log('Order payment status updated:', orderId);
+        console.log('Order status updated:', { orderId, status: orderStatus, paymentStatus: payment.status });
       }
     } catch (dbError) {
       console.warn('Failed to save payment record (non-critical):', dbError);
@@ -271,7 +326,7 @@ export async function GET(request: NextRequest) {
     if (paymentId) {
       try {
         const square = getSquareClient();
-        const response = await square.payments.get(paymentId) as any;
+        const response = await square.payments.get({ paymentId }) as any;
         squarePayment = response.result?.payment;
       } catch (squareError) {
         console.error('Failed to get payment from Square:', squareError);

@@ -146,7 +146,7 @@ if (error.message.includes('UNAUTHORIZED')) {
 
 **Test Command:**
 ```bash
-curl -X POST https://cart-rescue-1.preview.emergentagent.com/api/orders/create \
+curl -X POST https://loading-fix-taste.preview.emergentagent.com/api/orders/create \
   -H "Content-Type: application/json" \
   -d '{
     "cart": [{"id": "test", "quantity": 1, "price": 10}],

@@ -8,17 +8,21 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 
 export default function QuizPage() {
-  const [showQuiz, setShowQuiz] = useState(true);
-  const [recommendations, setRecommendations] = useState([]);
-
-  const handleQuizRecommendations = (recs) => {
-    setRecommendations(recs);
-    toast.success(`Found ${recs.length} perfect matches for you!`);
-  };
-
+  // Don't handle recommendations externally - let FitQuiz show its own results
   const handleAddToCart = (product) => {
-    // Redirect to order page with product
-    window.location.href = `/order?add=${product.id}`;
+    // Use cart engine
+    const { addToCart } = require('@/lib/cart-engine');
+    try {
+      addToCart(product, 1);
+      toast.success(`Added ${product.name} to cart!`);
+      // Dispatch cart update event
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cartUpdated'));
+      }
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      toast.error(`Failed to add ${product.name}`);
+    }
   };
 
   return (
@@ -44,50 +48,8 @@ export default function QuizPage() {
           </p>
         </div>
 
-        {showQuiz && (
-          <FitQuiz
-            onRecommendations={handleQuizRecommendations}
-            onAddToCart={handleAddToCart}
-          />
-        )}
-
-        {!showQuiz && recommendations.length > 0 && (
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-center mb-6">Your Personalized Recommendations</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {recommendations.map((product) => (
-                <div key={product.id} className="bg-white rounded-lg shadow-lg p-6">
-                  <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
-                  <p className="text-gray-600 mb-4">{product.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-emerald-600">${product.price}</span>
-                    <Button
-                      onClick={() => handleAddToCart(product)}
-                      className="bg-emerald-600 hover:bg-emerald-700"
-                    >
-                      Add to Cart
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="text-center mt-8">
-              <Button
-                variant="outline"
-                onClick={() => setShowQuiz(true)}
-                className="mr-4"
-              >
-                Retake Quiz
-              </Button>
-              <Link href="/catalog">
-                <Button className="bg-emerald-600 hover:bg-emerald-700">
-                  Browse All Products
-                </Button>
-              </Link>
-            </div>
-          </div>
-        )}
+        {/* Let FitQuiz handle its own display, just provide cart callback */}
+        <FitQuiz onAddToCart={handleAddToCart} />
       </div>
     </div>
   );

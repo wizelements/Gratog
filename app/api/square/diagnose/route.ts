@@ -134,10 +134,7 @@ export async function GET(request: NextRequest) {
     // Test 4: Test Catalog API (required for products)
     console.log('Testing Catalog API access...');
     try {
-      const response = await square.catalog.list({
-        types: 'ITEM',
-        limit: 1
-      }) as any;
+      const response = await square.catalog.list({ types: 'ITEM' }) as any;
       
       diagnostics.tests.catalogAccess = {
         status: 'PASS',
@@ -163,7 +160,7 @@ export async function GET(request: NextRequest) {
     console.log('Testing Payments API capability...');
     try {
       // Try to get a non-existent payment (should return 404, not 401)
-      await square.payments.get('test-payment-id-that-does-not-exist') as any;
+      await square.payments.get({ paymentId: 'test-payment-id-that-does-not-exist' }) as any;
       diagnostics.tests.paymentsApiCapability = {
         status: 'PASS',
         note: 'Payments API accessible (expected 404 for test ID)'

@@ -12,7 +12,11 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowRight, ShoppingBag, Trash2, Plus, Minus, MapPin, Home, Package, CreditCard, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
+<<<<<<< HEAD
 import { loadCart, updateQuantity, removeFromCart, clearCart, getCartTotal, formatPrice } from '@/lib/cartUtils';
+=======
+import { loadCart, updateQuantity, removeFromCart, clearCart, getCartTotal, formatPrice } from '@/lib/cart-engine';
+>>>>>>> upstream/main
 import SquarePaymentForm from '@/components/SquarePaymentForm';
 import { createLogger } from '@/lib/logger';
 
@@ -176,12 +180,27 @@ export default function OrderPage() {
         body: JSON.stringify(orderData),
       });
 
+<<<<<<< HEAD
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const result = await response.json();
 
+=======
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Extract detailed error message from API response
+        const errorMessage = result.error || result.details || response.statusText || 'Failed to create order';
+        logger.error('Order creation failed', { 
+          status: response.status, 
+          error: errorMessage 
+        });
+        throw new Error(errorMessage);
+      }
+
+>>>>>>> upstream/main
       if (result.success) {
         logger.info('Order created successfully', { 
           orderId: result.order.id,
@@ -217,10 +236,18 @@ export default function OrderPage() {
     clearCart();
     setCart([]);
     
+<<<<<<< HEAD
     // Redirect to success page
     toast.success('Payment successful! 🎉', { duration: 3000 });
     setTimeout(() => {
       router.push(`/order/success?orderId=${orderCreated.id}&squareOrderId=${orderCreated.squareOrderId}&paid=true`);
+=======
+    // Redirect to success page with orderRef (stateless pattern)
+    const orderRef = orderCreated?.id; // Our orderId IS the orderRef
+    toast.success('Payment successful! 🎉', { duration: 3000 });
+    setTimeout(() => {
+      router.push(`/order/success?orderRef=${orderRef}&paid=true`);
+>>>>>>> upstream/main
     }, 1500);
   };
 
@@ -520,9 +547,20 @@ export default function OrderPage() {
                         <span className="font-semibold">{formatPrice(deliveryFee)}</span>
                       </div>
                     )}
+<<<<<<< HEAD
                     {fulfillmentType === 'delivery' && subtotal < 75 && (
                       <div className="text-xs text-emerald-600 bg-emerald-50 p-2 rounded">
                         Add {formatPrice(75 - subtotal)} more for FREE delivery!
+=======
+                    {fulfillmentType === 'delivery' && subtotal < 30 && (
+                      <div className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200">
+                        ⚠️ Minimum ${formatPrice(30 - subtotal)} more required for delivery
+                      </div>
+                    )}
+                    {fulfillmentType === 'delivery' && subtotal >= 30 && subtotal < 75 && (
+                      <div className="text-xs text-emerald-600 bg-emerald-50 p-2 rounded">
+                        💡 Add {formatPrice(75 - subtotal)} more for FREE delivery!
+>>>>>>> upstream/main
                       </div>
                     )}
                     <Separator />
@@ -535,7 +573,11 @@ export default function OrderPage() {
                   <Button 
                     type="submit" 
                     className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 text-lg"
+<<<<<<< HEAD
                     disabled={isSubmitting}
+=======
+                    disabled={isSubmitting || (fulfillmentType === 'delivery' && subtotal < 30)}
+>>>>>>> upstream/main
                   >
                     {isSubmitting ? (
                       <span className="flex items-center gap-2">

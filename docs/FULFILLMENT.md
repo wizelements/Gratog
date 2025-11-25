@@ -104,7 +104,7 @@ cd /app && node scripts/syncCatalog.js
 
 **Configuration Required:**
 1. Add webhook in Square Dashboard
-2. URL: `https://cart-rescue-1.preview.emergentagent.com/api/webhooks/square`
+2. URL: `https://loading-fix-taste.preview.emergentagent.com/api/webhooks/square`
 3. Select events: inventory.count.updated, catalog.version.updated
 4. Copy signature key to `.env` as `SQUARE_WEBHOOK_SIGNATURE_KEY`
 
@@ -300,7 +300,7 @@ DELIVERY_ZIP_WHITELIST=30310,30311,30312  # Only keep working ZIPs
 
 ```bash
 # Check recent delivery orders
-curl https://cart-rescue-1.preview.emergentagent.com/api/admin/orders?fulfillmentType=delivery
+curl https://loading-fix-taste.preview.emergentagent.com/api/admin/orders?fulfillmentType=delivery
 
 # Monitor application logs
 tail -f /var/log/supervisor/nextjs.out.log | grep -i delivery

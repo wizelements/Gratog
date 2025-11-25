@@ -11,12 +11,17 @@ import { Separator } from '@/components/ui/separator';
 
 export default function OrderSuccessPage() {
   const searchParams = useSearchParams();
+<<<<<<< HEAD
   const orderId = searchParams.get('orderId');
   const squareOrderId = searchParams.get('squareOrderId');
+=======
+  const orderRef = searchParams.get('orderRef') || searchParams.get('orderId'); // Support both for backward compatibility
+>>>>>>> upstream/main
   
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+<<<<<<< HEAD
 
   useEffect(() => {
     if (orderId) {
@@ -41,6 +46,62 @@ export default function OrderSuccessPage() {
       setError('Failed to fetch order details');
       console.error('Order fetch error:', err);
     } finally {
+=======
+  const [pollAttempts, setPollAttempts] = useState(0);
+
+  useEffect(() => {
+    if (orderRef) {
+      fetchOrderDetails();
+    } else {
+      setError('No order reference provided');
+      setLoading(false);
+    }
+  }, [orderRef]);
+
+  const fetchOrderDetails = async (attempt = 0) => {
+    try {
+      // Use stateless orderRef endpoint (no cookies required)
+      const response = await fetch(`/api/orders/by-ref?orderRef=${orderRef}`, {
+        credentials: 'omit' // Explicitly no cookies
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404 && attempt < 10) {
+          // Webhook race condition - poll for order
+          console.log(`Order not found yet, polling... (attempt ${attempt + 1}/10)`);
+          setPollAttempts(attempt + 1);
+          setTimeout(() => fetchOrderDetails(attempt + 1), 1500);
+          return;
+        }
+        throw new Error(`HTTP ${response.status}: Order not found`);
+      }
+      
+      const data = await response.json();
+      
+      // If order is still DRAFT/PENDING, poll for completion (webhook race)
+      if (['DRAFT', 'PENDING', 'pending'].includes(data.status) && attempt < 20) {
+        console.log(`Order status: ${data.status}, polling for completion... (attempt ${attempt + 1}/20)`);
+        setPollAttempts(attempt + 1);
+        setOrder(data); // Show what we have so far
+        setTimeout(() => fetchOrderDetails(attempt + 1), 1500);
+        return;
+      }
+      
+      setOrder(data);
+      setLoading(false);
+      
+    } catch (err) {
+      console.error('Order fetch error:', err);
+      
+      // Retry on network errors
+      if (attempt < 5) {
+        console.log(`Network error, retrying... (attempt ${attempt + 1}/5)`);
+        setTimeout(() => fetchOrderDetails(attempt + 1), 2000);
+        return;
+      }
+      
+      setError(err.message || 'Failed to fetch order details');
+>>>>>>> upstream/main
       setLoading(false);
     }
   };
@@ -50,7 +111,18 @@ export default function OrderSuccessPage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-emerald-50 to-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mx-auto mb-4" />
+<<<<<<< HEAD
           <p className="text-gray-600">Loading your order details...</p>
+=======
+          <p className="text-gray-600 text-lg mb-2">
+            {pollAttempts > 0 ? 'Finalizing your order...' : 'Loading your order details...'}
+          </p>
+          {pollAttempts > 0 && (
+            <p className="text-sm text-gray-500">
+              Processing payment confirmation ({pollAttempts}/20)
+            </p>
+          )}
+>>>>>>> upstream/main
         </div>
       </div>
     );
@@ -65,12 +137,40 @@ export default function OrderSuccessPage() {
               <span className="text-3xl">❌</span>
             </div>
             <h2 className="text-2xl font-bold mb-2">Order Not Found</h2>
+<<<<<<< HEAD
             <p className="text-gray-600 mb-6">{error}</p>
             <Link href="/catalog">
               <Button className="bg-emerald-600 hover:bg-emerald-700">
                 Continue Shopping
               </Button>
             </Link>
+=======
+            <p className="text-gray-600 mb-2">{error}</p>
+            {orderRef && (
+              <p className="text-xs text-gray-400 mb-6 font-mono">
+                Ref: {orderRef}
+              </p>
+            )}
+            <div className="space-y-3">
+              <Button 
+                onClick={() => {
+                  setLoading(true);
+                  setError(null);
+                  setPollAttempts(0);
+                  fetchOrderDetails(0);
+                }}
+                variant="outline"
+                className="w-full"
+              >
+                🔄 Retry
+              </Button>
+              <Link href="/catalog">
+                <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
+                  Continue Shopping
+                </Button>
+              </Link>
+            </div>
+>>>>>>> upstream/main
           </CardContent>
         </Card>
       </div>
@@ -110,6 +210,7 @@ export default function OrderSuccessPage() {
             </div>
           </CardHeader>
           <CardContent className="p-6">
+<<<<<<< HEAD
             {/* Square Order ID */}
             {(order.squareOrderId || squareOrderId) && (
               <div className="mb-6 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
@@ -119,6 +220,58 @@ export default function OrderSuccessPage() {
                 </div>
                 <code className="text-sm text-emerald-700 font-mono">
                   {order.squareOrderId || squareOrderId}
+=======
+            {/* Payment Information */}
+            {(order.paymentStatus === 'COMPLETED' || order.payment?.status === 'completed' || order.status === 'paid') && (
+              <div className="mb-6 p-4 bg-green-50 rounded-lg border-2 border-green-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <span className="font-semibold text-green-900">Payment Confirmed</span>
+                </div>
+                <div className="space-y-2 text-sm">
+                  {order.payment?.cardBrand && order.payment?.cardLast4 && (
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 text-green-600" />
+                      <span className="text-green-800">{order.payment.cardBrand} ending in {order.payment.cardLast4}</span>
+                    </div>
+                  )}
+                  {order.payment?.receiptNumber && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-700">Receipt #: <code className="font-mono">{order.payment.receiptNumber}</code></span>
+                    </div>
+                  )}
+                  {order.squarePaymentId && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-700 text-xs">Payment ID: <code className="font-mono">{order.squarePaymentId}</code></span>
+                    </div>
+                  )}
+                  {order.payment?.receiptUrl && (
+                    <div className="mt-2">
+                      <a 
+                        href={order.payment.receiptUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:text-green-700 font-medium underline flex items-center gap-1"
+                      >
+                        View Square Receipt
+                        <ArrowRight className="w-3 h-3" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Square Order ID */}
+            {order.squareOrderId && (
+              <div className="mb-6 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Package className="w-5 h-5 text-emerald-600" />
+                  <span className="font-semibold text-emerald-900">Square Order ID</span>
+                </div>
+                <code className="text-sm text-emerald-700 font-mono">
+                  {order.squareOrderId}
+>>>>>>> upstream/main
                 </code>
               </div>
             )}

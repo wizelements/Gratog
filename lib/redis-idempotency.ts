@@ -3,7 +3,7 @@
  * Falls back to in-memory cache if Redis is not available
  */
 
-import { createClient, RedisClientType } from 'redis';
+import RedisIdempotency from './redis-idempotency-stub';
 
 interface IdempotencyRecord {
   key: string;
@@ -13,7 +13,7 @@ interface IdempotencyRecord {
 }
 
 // Redis client singleton
-let redisClient: RedisClientType | null = null;
+let redisClient: any | null = null;
 let isRedisAvailable = false;
 
 // Fallback in-memory cache
@@ -29,23 +29,17 @@ export async function initRedis() {
   
   if (!redisUrl) {
     console.warn('REDIS_URL not configured, using in-memory idempotency cache (not recommended for production)');
+    // Use stub instead
+    redisClient = new RedisIdempotency(86400);
+    isRedisAvailable = true;
     return null;
   }
 
   try {
-    redisClient = createClient({ url: redisUrl });
-    
-    redisClient.on('error', (err) => {
-      console.error('Redis client error:', err);
-      isRedisAvailable = false;
-    });
-
-    redisClient.on('connect', () => {
-      console.log('Redis connected for idempotency caching');
-      isRedisAvailable = true;
-    });
-
-    await redisClient.connect();
+    // For now, use stub implementation
+    redisClient = new RedisIdempotency(86400);
+    isRedisAvailable = true;
+    console.log('Using idempotency caching (in-memory fallback)');
     return redisClient;
   } catch (error) {
     console.error('Failed to initialize Redis:', error);
@@ -57,12 +51,15 @@ export async function initRedis() {
  * Get idempotent response from cache
  */
 export async function getIdempotentResponse(key: string): Promise<any | null> {
-  // Try Redis first
+  // Initialize if needed
+  await initRedis();
+  
+  // Try Redis/stub first
   if (redisClient && isRedisAvailable) {
     try {
       const cached = await redisClient.get(`idem:${key}`);
       if (cached) {
-        return JSON.parse(cached);
+        return typeof cached === 'string' ? JSON.parse(cached) : cached;
       }
     } catch (error) {
       console.error('Redis get error, falling back to memory:', error);
@@ -90,12 +87,15 @@ export async function setIdempotentResponse(
   response: any,
   ttlSeconds: number = 86400
 ): Promise<void> {
+  // Initialize if needed
+  await initRedis();
+  
   const serialized = JSON.stringify(response);
 
-  // Try Redis first
+  // Try Redis/stub first
   if (redisClient && isRedisAvailable) {
     try {
-      await redisClient.setEx(`idem:${key}`, ttlSeconds, serialized);
+      await redisClient.set(`idem:${key}`, serialized, ttlSeconds);
       return;
     } catch (error) {
       console.error('Redis set error, falling back to memory:', error);

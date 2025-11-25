@@ -11,7 +11,7 @@ import uuid
 import time
 
 # Configuration
-BASE_URL = "https://cart-rescue-1.preview.emergentagent.com"
+BASE_URL = "https://loading-fix-taste.preview.emergentagent.com"
 SQUARE_API_URL = f"{BASE_URL}/api/square-payment"
 
 class SquarePaymentFocusedTester:

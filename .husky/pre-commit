@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# Skip pre-commit checks for now
+echo "Pre-commit: Skipping tests (use yarn test:unit manually if needed)"

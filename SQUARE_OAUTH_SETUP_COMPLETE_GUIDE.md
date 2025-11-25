@@ -45,7 +45,7 @@ Your Square access tokens are **REJECTED** by Square API with:
 1. In the **Redirect URL** box, click **Update**
 2. Enter your callback URL:
    ```
-   https://cart-rescue-1.preview.emergentagent.com/api/oauth/square/callback
+   https://loading-fix-taste.preview.emergentagent.com/api/oauth/square/callback
    ```
 3. Click **Confirm**
 
@@ -276,7 +276,7 @@ Once authentication is working:
 
 ### 3. Configure Webhooks (Optional)
 ```
-Webhook URL: https://cart-rescue-1.preview.emergentagent.com/api/webhooks/square
+Webhook URL: https://loading-fix-taste.preview.emergentagent.com/api/webhooks/square
 Events: payment.created, payment.updated, order.created, inventory.count.updated
 ```
 

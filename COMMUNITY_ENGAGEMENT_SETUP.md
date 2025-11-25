@@ -113,9 +113,9 @@ If you don't want to deal with Instagram API, you can:
 2. Find **Instagram Basic Display** and click **Set Up**
 3. Click **Create New App** in Instagram Basic Display
 4. Fill in required fields:
-   - **Valid OAuth Redirect URIs**: `https://cart-rescue-1.preview.emergentagent.com/api/instagram/callback`
-   - **Deauthorize**: `https://cart-rescue-1.preview.emergentagent.com/api/instagram/deauthorize`
-   - **Data Deletion**: `https://cart-rescue-1.preview.emergentagent.com/api/instagram/delete`
+   - **Valid OAuth Redirect URIs**: `https://loading-fix-taste.preview.emergentagent.com/api/instagram/callback`
+   - **Deauthorize**: `https://loading-fix-taste.preview.emergentagent.com/api/instagram/deauthorize`
+   - **Data Deletion**: `https://loading-fix-taste.preview.emergentagent.com/api/instagram/delete`
 5. Save changes
 
 #### Step 5: Add Instagram Testers
@@ -208,7 +208,7 @@ Long-lived tokens expire after 60 days. To auto-refresh:
 To hide inappropriate reviews:
 
 ```bash
-curl -X PUT https://cart-rescue-1.preview.emergentagent.com/api/reviews/REVIEW_ID \
+curl -X PUT https://loading-fix-taste.preview.emergentagent.com/api/reviews/REVIEW_ID \
   -H "Content-Type: application/json" \
   -d '{
     "hidden": true,
@@ -219,7 +219,7 @@ curl -X PUT https://cart-rescue-1.preview.emergentagent.com/api/reviews/REVIEW_I
 To delete a review:
 
 ```bash
-curl -X DELETE "https://cart-rescue-1.preview.emergentagent.com/api/reviews/REVIEW_ID?adminKey=dev-admin-key-taste-of-gratitude-2024"
+curl -X DELETE "https://loading-fix-taste.preview.emergentagent.com/api/reviews/REVIEW_ID?adminKey=dev-admin-key-taste-of-gratitude-2024"
 ```
 
 ### Review Analytics
@@ -249,7 +249,7 @@ db.product_reviews.aggregate([
 
 ### 1. Test Newsletter Signup
 
-- Visit: `https://cart-rescue-1.preview.emergentagent.com`
+- Visit: `https://loading-fix-taste.preview.emergentagent.com`
 - Scroll to footer
 - Submit email
 - Check for welcome email
@@ -350,7 +350,7 @@ db.product_reviews.aggregate([
 3. Check server logs: `tail -f /var/log/supervisor/nextjs.out.log`
 4. Test API directly:
    ```bash
-   curl -X POST https://cart-rescue-1.preview.emergentagent.com/api/newsletter/subscribe \
+   curl -X POST https://loading-fix-taste.preview.emergentagent.com/api/newsletter/subscribe \
      -H "Content-Type: application/json" \
      -d '{"email": "test@example.com", "firstName": "Test"}'
    ```

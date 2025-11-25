@@ -309,8 +309,8 @@
 ## 🚀 Live URLs
 
 **Production URLs:**
-- https://cart-rescue-1.preview.emergentagent.com/faq
-- https://cart-rescue-1.preview.emergentagent.com/community
+- https://loading-fix-taste.preview.emergentagent.com/faq
+- https://loading-fix-taste.preview.emergentagent.com/community
 - Footer visible on all pages
 
 **Footer Links to:**

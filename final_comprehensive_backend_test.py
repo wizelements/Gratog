@@ -255,7 +255,7 @@ class FinalBackendTester:
 
 def main():
     import os
-    base_url = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://cart-rescue-1.preview.emergentagent.com')
+    base_url = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://loading-fix-taste.preview.emergentagent.com')
     
     print("🎯 TASTE OF GRATITUDE E-COMMERCE PLATFORM")
     print("🔬 FINAL COMPREHENSIVE BACKEND TESTING")

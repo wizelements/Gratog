@@ -12,12 +12,13 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  Users,
+  Clock,
+  Mail
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-
-import { Users, Clock } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Inventory', href: '/admin/inventory', icon: Warehouse },
+  { name: 'Campaigns', href: '/admin/campaigns', icon: Mail },
   { name: 'Waitlist', href: '/admin/waitlist', icon: Clock },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { name: 'Settings', href: '/admin/settings', icon: Settings },

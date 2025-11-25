@@ -7,7 +7,7 @@ import requests
 import json
 import time
 
-BASE_URL = "https://cart-rescue-1.preview.emergentagent.com"
+BASE_URL = "https://loading-fix-taste.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 def test_coupon_validation():

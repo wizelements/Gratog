@@ -50,6 +50,17 @@ const nextConfig = {
   },
   
   webpack(config, { dev, isServer }) {
+    // Exclude service worker from bundle
+    config.module = config.module || {};
+    config.module.rules = config.module.rules || [];
+    config.module.rules.push({
+      test: /sw\.js$/,
+      type: 'asset/resource',
+      generator: {
+        filename: 'static/[name][ext]',
+      },
+    });
+    
     // Development optimizations
     if (dev) {
       config.watchOptions = {

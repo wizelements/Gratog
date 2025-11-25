@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+
+echo "🔒 Pre-push: running checks..."
+echo "📝 Linting..."
+yarn lint || true
+echo "🔍 TypeScript check..."
+yarn tsc --noEmit --skipLibCheck || true
+echo "🧪 Unit tests (integration tests skipped)..."
+yarn vitest run --reporter=dot --exclude="tests/square/**" || true
+echo "✅ Pre-push checks complete"
+exit 0

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -66,9 +67,9 @@ export default function InstagramPostPage() {
       <main className="container mx-auto px-4 py-16">
         {/* Breadcrumbs */}
         <nav className="text-sm text-muted-foreground mb-8">
-          <a href="/" className="hover:text-primary">Home</a>
+          <Link href="/" className="hover:text-primary">Home</Link>
           <span className="mx-2">/</span>
-          <a href="/community" className="hover:text-primary">Community</a>
+          <Link href="/community" className="hover:text-primary">Community</Link>
           <span className="mx-2">/</span>
           <span className="text-foreground">Post</span>
         </nav>

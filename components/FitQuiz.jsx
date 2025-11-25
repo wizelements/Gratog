@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Target, Zap, Heart, Leaf, Sun } from 'lucide-react';
+import { Sparkles, Target, Zap, Heart, Leaf, Sun, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import AnalyticsSystem from '@/lib/analytics';
 
@@ -27,6 +27,28 @@ const ADVENTURE_LEVELS = [
   { id: 'bold', label: 'Bring the Heat! 🌶️', description: 'Ready for bold, adventurous tastes' }
 ];
 
+// Utility: Normalize price to dollars (handles both cent and dollar formats)
+function normalizePrice(product) {
+  // If priceCents exists and is > 100, it's likely in cents
+  if (product.priceCents && product.priceCents > 100) {
+    return product.priceCents / 100;
+  }
+  // If price exists and is > 0, use it
+  if (product.price && product.price > 0) {
+    return product.price;
+  }
+  // Default to 0
+  return 0;
+}
+
+// Utility: Filter products with valid prices
+function filterValidProducts(products) {
+  return products.filter(product => {
+    const price = normalizePrice(product);
+    return price > 0;
+  });
+}
+
 export default function FitQuiz({ onRecommendations, onAddToCart }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({
@@ -43,6 +65,7 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
   const [quizId, setQuizId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showError, setShowError] = useState(false);
 
   const handleStart = () => {
     AnalyticsSystem.trackQuizStarted();
@@ -77,8 +100,73 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleSkipLeadCapture = async () => {
+    // Skip email collection, fetch recommendations directly
+    setShowError(false);
+    setLoading(true);
+    
+    try {
+      // Import quiz utils
+      const { fetchRecommendations } = await import('@/lib/quiz-utils');
+      
+      // Fetch all products for heuristic fallback
+      const productsResponse = await fetch('/api/products');
+      const productsData = await productsResponse.json();
+      const allProducts = productsData.products || [];
+      
+      // Get recommendations (API or heuristic)
+      const result = await fetchRecommendations(answers, allProducts);
+      
+      // CRITICAL: Filter products to only show those with valid prices
+      const validRecommendations = filterValidProducts(result.recommendations);
+      
+      if (validRecommendations.length === 0) {
+        // If no valid recommendations, show fallback
+        throw new Error('No products with valid pricing found');
+      }
+      
+      setRecommendations(validRecommendations);
+      
+      // Track analytics
+      AnalyticsSystem.trackQuizCompleted(
+        answers.goal, 
+        answers.adventure === 'bold', 
+        validRecommendations
+      );
+      
+      // Show message based on source
+      if (result.source === 'heuristic') {
+        toast.info('Showing best matches for you', {
+          description: 'Our recommendations are based on your preferences'
+        });
+      } else {
+        toast.success(`Found ${validRecommendations.length} perfect matches!`);
+      }
+      
+      // If parent wants to handle recommendations, pass them up
+      // Otherwise show internal results view
+      if (onRecommendations) {
+        onRecommendations(validRecommendations);
+      } else {
+        // Show internal results view
+        setStep(4);
+      }
+    } catch (error) {
+      console.error('[GratOG Quiz] Quiz error:', error);
+      setShowError(true);
+      
+      // Show user-friendly error
+      toast.error('Unable to load recommendations', {
+        description: 'Please try again or browse our full catalog'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLeadCaptureSubmit = async () => {
-    // Skip validation - show results immediately, make email optional
+    // Reset error state
+    setShowError(false);
     setLoading(true);
     
     try {
@@ -93,21 +181,26 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
       // Get recommendations (API or heuristic)
       const result = await fetchRecommendations(answers, allProducts);
       
-      setRecommendations(result.recommendations);
+      // CRITICAL: Filter products to only show those with valid prices
+      const validRecommendations = filterValidProducts(result.recommendations);
       
-      // Show results immediately
-      setStep(4);
+      if (validRecommendations.length === 0) {
+        // If no valid recommendations, show fallback
+        throw new Error('No products with valid pricing found');
+      }
+      
+      setRecommendations(validRecommendations);
       
       // Track analytics
       AnalyticsSystem.trackQuizCompleted(
         answers.goal, 
         answers.adventure === 'bold', 
-        result.recommendations
+        validRecommendations
       );
       
       // If email provided, submit async (non-blocking)
       if (customer.email && validateLeadCapture()) {
-        submitQuizResults(customer, answers, result.recommendations).then(submitData => {
+        submitQuizResults(customer, answers, validRecommendations).then(submitData => {
           if (submitData.success) {
             setQuizId(submitData.quizId);
             if (submitData.emailSent) {
@@ -115,7 +208,7 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
             }
           }
         }).catch(err => {
-          console.warn('Quiz submission failed (non-blocking):', err);
+          console.warn('[GratOG Quiz] Email submission failed (non-blocking):', err);
         });
       }
       
@@ -125,15 +218,26 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
           description: 'Our recommendations are based on your preferences'
         });
       } else {
-        toast.success(`Found ${result.recommendations.length} perfect matches!`);
+        toast.success(`Found ${validRecommendations.length} perfect matches!`);
       }
       
+      // If parent wants to handle recommendations, pass them up
+      // Otherwise show internal results view
       if (onRecommendations) {
-        onRecommendations(result.recommendations);
+        onRecommendations(validRecommendations);
+        // Don't transition to step 4, let parent handle display
+      } else {
+        // Show internal results view
+        setStep(4);
       }
     } catch (error) {
-      console.error('Quiz error:', error);
-      toast.error('Unable to show results. Please try again.');
+      console.error('[GratOG Quiz] Quiz error:', error);
+      setShowError(true);
+      
+      // Show user-friendly error
+      toast.error('Unable to load recommendations', {
+        description: 'Please try again or browse our full catalog'
+      });
     } finally {
       setLoading(false);
     }
@@ -142,11 +246,22 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
   const handleAddToCart = (product) => {
     if (onAddToCart) {
       onAddToCart(product);
+      toast.success(`Added ${product.name} to cart!`);
     } else {
-      // Redirect to order page with product
-      window.location.href = `/order?add=${product.id}`;
+      // Use cart engine to add product
+      const { addToCart } = require('@/lib/cart-engine');
+      try {
+        addToCart(product, 1);
+        toast.success(`Added ${product.name} to cart!`);
+        // Dispatch cart update event for UI sync
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('cartUpdated'));
+        }
+      } catch (error) {
+        console.error('[GratOG Quiz] Failed to add to cart:', error);
+        toast.error(`Failed to add ${product.name} to cart`);
+      }
     }
-    toast.success(`Added ${product.name} to cart!`);
     AnalyticsSystem.trackPDPView(product.id || product.sku);
   };
 
@@ -158,7 +273,47 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
     setRecommendations([]);
     setQuizId(null);
     setErrors({});
+    setShowError(false);
   };
+
+  // Error State
+  if (showError) {
+    return (
+      <Card className="w-full max-w-2xl mx-auto border-red-200">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+              <AlertCircle className="w-8 h-8 text-red-600" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl text-red-700">Unable to Load Recommendations</CardTitle>
+          <CardDescription className="text-base">
+            We encountered an issue while creating your personalized blend.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-center">
+          <p className="text-muted-foreground mb-6">
+            Don't worry! You can still browse our full collection of premium wellness products.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button 
+              onClick={resetQuiz}
+              variant="outline"
+              className="border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+            >
+              🔄 Try Quiz Again
+            </Button>
+            <Button 
+              onClick={() => window.location.href = '/catalog'}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              📚 Browse All Products
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (step === 0) {
     return (
@@ -306,7 +461,7 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Your Name *
+                Your Name (Optional)
               </label>
               <input
                 id="name"
@@ -326,7 +481,7 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
             
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address *
+                Email Address (Optional)
               </label>
               <input
                 id="email"
@@ -373,11 +528,7 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
             </Button>
             
             <Button
-              onClick={async () => {
-                // Skip email, show results immediately
-                setCustomer({ name: '', email: '' });
-                await handleLeadCaptureSubmit();
-              }}
+              onClick={handleSkipLeadCapture}
               disabled={loading}
               variant="outline"
               className="w-full h-12 text-base border-emerald-600 text-emerald-700 hover:bg-emerald-50"
@@ -417,24 +568,27 @@ export default function FitQuiz({ onRecommendations, onAddToCart }) {
         <CardContent>
           {recommendations.length > 0 ? (
             <div className="space-y-4">
-              {recommendations.map((product, index) => (
-                <div key={product.sku} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-semibold">{product.name}</h4>
-                      {index === 0 && <Badge className="bg-emerald-100 text-emerald-700">Top Pick</Badge>}
+              {recommendations.map((product, index) => {
+                const displayPrice = normalizePrice(product);
+                return (
+                  <div key={product.sku || product.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-semibold">{product.name}</h4>
+                        {index === 0 && <Badge className="bg-emerald-100 text-emerald-700">Top Pick</Badge>}
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-2">{product.description}</p>
+                      <p className="font-medium text-emerald-600">${displayPrice.toFixed(2)}</p>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">{product.description}</p>
-                    <p className="font-medium text-emerald-600">${((product.price || product.priceCents) / 100).toFixed(2)}</p>
+                    <Button 
+                      onClick={() => handleAddToCart(product)}
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                    >
+                      Add to Cart
+                    </Button>
                   </div>
-                  <Button 
-                    onClick={() => handleAddToCart(product)}
-                    className="bg-emerald-600 hover:bg-emerald-700"
-                  >
-                    Add to Cart
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
               <div className="flex flex-col gap-3 pt-4">
                 {/* Action Buttons Row 1 */}
                 <div className="flex gap-3">

@@ -50,9 +50,9 @@
 
 **Before:**
 ```javascript
-metadataBase: 'https://cart-rescue-1.preview.emergentagent.com'
-canonical: 'https://cart-rescue-1.preview.emergentagent.com'
-og:url: 'https://cart-rescue-1.preview.emergentagent.com'
+metadataBase: 'https://loading-fix-taste.preview.emergentagent.com'
+canonical: 'https://loading-fix-taste.preview.emergentagent.com'
+og:url: 'https://loading-fix-taste.preview.emergentagent.com'
 ```
 
 **After:**

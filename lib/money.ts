@@ -13,6 +13,13 @@ export const fromCents = (cents?: { amount?: bigint | number; currency?: string 
   return amount / 100;
 };
 
+// Legacy alias for backwards compatibility
+export const fromSquareMoney = fromCents;
+
+// Legacy aliases for backwards compatibility
+export const toMoney = fromCents;
+export const fromMoney = toCents;
+
 // Create Square Money object from USD amount
 export const toSquareMoney = (usd: number, currency = 'USD') => ({
   amount: BigInt(toCents(usd)),

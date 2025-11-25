@@ -37,7 +37,7 @@ export async function POST(request) {
         return await getUserStats(db, userEmail);
         
       case 'use_spin':
-        return await useSpin(db, userEmail, data);
+        return await processUserSpin(db, userEmail, data);
         
       default:
         return NextResponse.json(
@@ -211,7 +211,7 @@ async function awardSpin(db, userEmail, data) {
 }
 
 // Use a spin (deduct from available count)
-async function useSpin(db, userEmail, data) {
+async function processUserSpin(db, userEmail, data) {
   try {
     const prizeWon = data.prize;
     const couponCode = data.couponCode;

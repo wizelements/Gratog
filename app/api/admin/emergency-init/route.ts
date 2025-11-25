@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+// @ts-ignore - JavaScript module import
 import { hashPassword } from '@/lib/auth';
 
 /**

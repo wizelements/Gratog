@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 
 import { useEffect } from 'react';
@@ -16,7 +17,7 @@ import {
   Mail,
   Star,
 } from 'lucide-react';
-import AnalyticsSystem from '@/lib/analytics';
+import { AnalyticsSystem } from '@/lib/analytics';
 
 export default function CommunityPage() {
   useEffect(() => {

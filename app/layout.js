@@ -3,7 +3,9 @@ import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import FloatingCart from '@/components/FloatingCart';
+import CartNotification from '@/components/cart/CartNotification';
 import { Toaster } from '@/components/ui/sonner';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -15,6 +17,7 @@ export const metadata = {
   authors: [{ name: 'Taste of Gratitude' }],
   creator: 'Taste of Gratitude',
   publisher: 'Taste of Gratitude',
+  manifest: '/manifest.json',
   formatDetection: {
     email: false,
     address: false,
@@ -70,13 +73,38 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className={inter.className}>
-        <div className="flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <FloatingCart />
-        </div>
-        <Toaster />
+        <AuthProvider>
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <FloatingCart />
+            <CartNotification />
+          </div>
+          <Toaster />
+        </AuthProvider>
+        
+        {/* Service Worker Registration - Disabled temporarily for debugging */}
+        {/* <script dangerouslySetInnerHTML={{
+          __html: `
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                  .then((registration) => {
+                    console.log('✅ PWA: Service Worker registered');
+                    
+                    // Check for updates every hour
+                    setInterval(() => {
+                      registration.update();
+                    }, 3600000);
+                  })
+                  .catch((error) => {
+                    console.error('❌ PWA: Service Worker registration failed:', error);
+                  });
+              });
+            }
+          `
+        }} /> */}
       </body>
     </html>
   );

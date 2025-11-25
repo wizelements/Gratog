@@ -4,8 +4,17 @@ import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { sendOrderConfirmationSMS } from '@/lib/sms';
 import { calculateDeliveryFee } from '@/lib/delivery-fees';
 import { validateDeliveryFulfillment } from '@/lib/validation/fulfillment';
+<<<<<<< HEAD
 import { createLogger } from '@/lib/logger';
 import { randomUUID } from 'crypto';
+=======
+import { validateCustomerData } from '@/lib/validation/customer';
+import { validateCart } from '@/lib/validation/cart';
+import { sanitizeObject } from '@/lib/validation/sanitize';
+import { createLogger } from '@/lib/logger';
+import { randomUUID } from 'crypto';
+import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
+>>>>>>> upstream/main
 
 const logger = createLogger('OrdersCreateAPI');
 
@@ -13,25 +22,41 @@ export async function POST(request) {
   const startTime = Date.now();
   
   try {
-    const orderData = await request.json();
+    let orderData = await request.json();
     
+<<<<<<< HEAD
+=======
+    // SECURITY: Sanitize all input data to prevent XSS/SQL injection
+    orderData = sanitizeObject(orderData, { preventSQL: true });
+    
+>>>>>>> upstream/main
     logger.info('Order creation request received', { 
       fulfillmentType: orderData.fulfillmentType,
       cartItemsCount: orderData.cart?.length,
       customerEmail: orderData.customer?.email 
     });
     
+<<<<<<< HEAD
     // Validate required fields
     if (!orderData.cart || !Array.isArray(orderData.cart) || orderData.cart.length === 0) {
+=======
+    // VALIDATION 1: Validate cart data
+    const cartValidation = validateCart(orderData.cart);
+    if (!cartValidation.valid) {
+      logger.warn('Cart validation failed', { error: cartValidation.error });
+>>>>>>> upstream/main
       return NextResponse.json(
-        { success: false, error: 'Cart items are required' },
+        { success: false, error: cartValidation.error },
         { status: 400 }
       );
     }
     
-    if (!orderData.customer?.email || !orderData.customer?.name || !orderData.customer?.phone) {
+    // VALIDATION 2: Validate customer data (email, phone, name)
+    const customerValidation = validateCustomerData(orderData.customer);
+    if (!customerValidation.valid) {
+      logger.warn('Customer validation failed', { error: customerValidation.error });
       return NextResponse.json(
-        { success: false, error: 'Customer information (email, name, phone) is required' },
+        { success: false, error: customerValidation.error },
         { status: 400 }
       );
     }
@@ -101,8 +126,14 @@ export async function POST(request) {
       }
     };
     
+<<<<<<< HEAD
     // CRITICAL: Create Square Order FIRST
     let squareOrderId = null;
+=======
+    // CRITICAL: Create Square Customer FIRST, then Order
+    let squareOrderId = null;
+    let squareCustomerId = null;
+>>>>>>> upstream/main
     const ALLOW_FALLBACK = process.env.SQUARE_FALLBACK_MODE === 'true';
     
     const SQUARE_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
@@ -124,27 +155,80 @@ export async function POST(request) {
       squareOrderId = `fallback_${orderId}`;
     } else {
       try {
+<<<<<<< HEAD
         logger.info('Creating Square Order', { orderId });
         
         // Step 1: Create Square Order
+=======
+        // STEP 1: Find or create Square Customer
+        logger.info('Creating/finding Square customer', { email: orderData.customer.email });
+        
+        const customerResult = await findOrCreateSquareCustomer({
+          email: orderData.customer.email,
+          name: orderData.customer.name,
+          phone: orderData.customer.phone,
+          address: orderData.fulfillmentType === 'delivery' ? {
+            street: orderData.deliveryAddress?.street,
+            city: orderData.deliveryAddress?.city,
+            state: orderData.deliveryAddress?.state || 'GA',
+            zip: orderData.deliveryAddress?.zip
+          } : undefined,
+          note: createCustomerNote({
+            orderNumber,
+            fulfillmentType: orderData.fulfillmentType,
+            source: 'website'
+          }),
+          referenceId: `web_${orderId}`
+        });
+        
+        if (customerResult.success && customerResult.customer) {
+          squareCustomerId = customerResult.customer.id;
+          logger.info('✅ Square customer ready', { customerId: squareCustomerId });
+        } else {
+          logger.warn('Square customer creation failed, continuing without customer link', { 
+            error: customerResult.error 
+          });
+        }
+        
+        // STEP 2: Create Square Order with customer link
+        logger.info('Creating Square Order', { orderId, customerId: squareCustomerId });
+        
+>>>>>>> upstream/main
         const orderPayload = {
           idempotency_key: `order_${orderId}_${Date.now()}`,
           order: {
             location_id: SQUARE_LOCATION_ID,
+<<<<<<< HEAD
+=======
+            reference_id: orderNumber, // ⭐ THIS MAKES ORDER NUMBERS MATCH
+>>>>>>> upstream/main
             line_items: orderData.cart.map(item => ({
               catalog_object_id: item.catalogObjectId || item.variationId || item.id,
               quantity: String(item.quantity),
               base_price_money: {
                 amount: Math.round((item.price || 0) * 100),
                 currency: 'USD'
+<<<<<<< HEAD
               }
             })),
+=======
+              },
+              note: item.name || '' // Product name visible in Square
+            })),
+            customer_id: squareCustomerId || undefined, // ⭐ LINKS CUSTOMER TO ORDER
+>>>>>>> upstream/main
             metadata: {
               source: 'website',
               local_order_id: orderId,
               order_number: orderNumber,
               fulfillment_type: orderData.fulfillmentType,
+<<<<<<< HEAD
               customer_email: orderData.customer.email
+=======
+              customer_email: orderData.customer.email,
+              customer_name: orderData.customer.name,
+              customer_phone: orderData.customer.phone
+>>>>>>> upstream/main
             }
           }
         };
@@ -165,7 +249,12 @@ export async function POST(request) {
           const errorDetail = orderResponseData.errors?.[0]?.detail || 'Square API error';
           logger.error('Square Order creation failed', { 
             status: orderResponse.status,
+<<<<<<< HEAD
             error: errorDetail
+=======
+            error: errorDetail,
+            errors: orderResponseData.errors
+>>>>>>> upstream/main
           });
           
           if (!ALLOW_FALLBACK) {
@@ -176,7 +265,15 @@ export async function POST(request) {
           squareOrderId = `fallback_${orderId}`;
         } else {
           squareOrderId = orderResponseData.order.id;
+<<<<<<< HEAD
           logger.info('✅ Square Order created', { squareOrderId });
+=======
+          logger.info('✅ Square Order created', { 
+            squareOrderId,
+            referenceId: orderNumber,
+            customerId: squareCustomerId 
+          });
+>>>>>>> upstream/main
         }
       } catch (squareError) {
         logger.error('Square integration error', { error: squareError.message });
@@ -239,7 +336,14 @@ export async function POST(request) {
         customer: order.customer,
         items: order.items,
         pricing: order.pricing,
+<<<<<<< HEAD
         squareOrderId
+=======
+        fulfillment: order.fulfillment, // ⭐ Include fulfillment data for tests
+        paymentLink: order.paymentLink, // ⭐ Include payment link if exists
+        squareOrderId,
+        squareCustomerId // ⭐ Return customer ID for frontend use
+>>>>>>> upstream/main
       }
     });
     

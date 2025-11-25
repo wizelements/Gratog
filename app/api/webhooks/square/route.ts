@@ -288,15 +288,23 @@ async function handlePaymentUpdated(payment: any) {
     };
     
     const orderStatus = statusMap[payment.status] || 'payment_processing';
+    const paymentInternalStatus = payment.status === 'COMPLETED' || payment.status === 'APPROVED' ? 'completed' : 
+                                   payment.status === 'PENDING' ? 'processing' : 'failed';
     
     if (payment.order_id) {
       await db.collection('orders').updateOne(
         { squareOrderId: payment.order_id },
         {
           $set: {
-            paymentStatus: payment.status,
-            status: orderStatus,
+            status: orderStatus, // Update main order status
+            paymentStatus: payment.status, // Square payment status
             squarePaymentId: payment.id,
+            'payment.status': paymentInternalStatus, // Update nested payment object
+            'payment.squarePaymentId': payment.id,
+            'payment.receiptUrl': payment.receipt_url,
+            'payment.receiptNumber': payment.receipt_number,
+            'payment.cardBrand': payment.card_details?.card?.card_brand,
+            'payment.cardLast4': payment.card_details?.card?.last_4,
             updatedAt: new Date(),
             ...(payment.status === 'COMPLETED' && { paidAt: new Date() })
           },
@@ -304,14 +312,15 @@ async function handlePaymentUpdated(payment: any) {
             timeline: {
               status: orderStatus,
               timestamp: new Date(),
-              message: `Payment ${payment.status.toLowerCase()}`,
+              message: `Payment ${payment.status.toLowerCase()} via webhook`,
+              actor: 'square_webhook',
               squarePaymentId: payment.id
             }
           }
         }
       );
       
-      console.log(`Order ${payment.order_id} status updated to ${orderStatus}`);
+      console.log(`Order ${payment.order_id} status updated to ${orderStatus} via webhook`);
     }
     
   } catch (error) {
@@ -366,6 +375,7 @@ async function logWebhookEvent(event: any) {
 // GET endpoint for webhook verification
 export async function GET(request: NextRequest) {
   return NextResponse.json({
+    status: 'active',
     message: 'Square webhook endpoint active',
     timestamp: new Date().toISOString(),
     environment: process.env.SQUARE_ENVIRONMENT || 'sandbox',

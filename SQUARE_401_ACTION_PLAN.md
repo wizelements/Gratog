@@ -88,7 +88,7 @@ FAILED:
    ```
 
 2. **Configure Square Webhooks**
-   - Webhook URL: `https://cart-rescue-1.preview.emergentagent.com/api/webhooks/square`
+   - Webhook URL: `https://loading-fix-taste.preview.emergentagent.com/api/webhooks/square`
    - Subscribe to events:
      - `payment.created`
      - `payment.updated`

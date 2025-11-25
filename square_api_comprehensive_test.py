@@ -20,7 +20,7 @@ from typing import Dict, Any, List, Optional
 
 class SquareAPITester:
     def __init__(self):
-        self.base_url = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://cart-rescue-1.preview.emergentagent.com')
+        self.base_url = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://loading-fix-taste.preview.emergentagent.com')
         self.api_base = f"{self.base_url}/api"
         self.test_results = []
         self.session = requests.Session()

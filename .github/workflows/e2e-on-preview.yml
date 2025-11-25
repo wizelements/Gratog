@@ -1,0 +1,30 @@
+name: E2E on Preview
+on:
+  deployment_status:
+
+jobs:
+  run-e2e:
+    if: ${{ github.event.deployment_status.state == 'success' && contains(github.event.deployment_status.environment, 'Preview') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn install
+      - run: npx playwright install --with-deps
+      - name: E2E against Preview
+        env:
+          BASE_URL: ${{ github.event.deployment_status.target_url }}
+          SQUARE_ENV: sandbox
+          SQUARE_APP_ID: ${{ secrets.SQUARE_APP_ID }}
+          SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
+          SQUARE_SECRET: ${{ secrets.SQUARE_SECRET }}
+          WEBHOOK_SIGNATURE_KEY: ${{ secrets.WEBHOOK_SIGNATURE_KEY }}
+        run: yarn test:e2e:headless
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-preview
+          path: playwright-report

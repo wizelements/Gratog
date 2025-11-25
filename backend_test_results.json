@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "total": 28,
   "passed": 20,
   "failed": 8,
@@ -170,6 +171,172 @@
       "passed": false,
       "details": "Status: 401",
       "timestamp": "2025-11-08T03:11:24.503618"
+=======
+  "passed": 20,
+  "failed": 7,
+  "tests": [
+    {
+      "name": "Cart Item Structure - All Required Fields Present",
+      "passed": true,
+      "details": "Cart item has all required fields: variationId, catalogObjectId, productId, price, priceCents, quantity",
+      "timestamp": "2025-11-14T12:57:40.767264"
+    },
+    {
+      "name": "Cart Item Price Consistency",
+      "passed": true,
+      "details": "price: $11.0, priceCents: 1100",
+      "timestamp": "2025-11-14T12:57:40.767282"
+    },
+    {
+      "name": "Products API - Response Status",
+      "passed": true,
+      "details": "Status: 200, Products: 33",
+      "timestamp": "2025-11-14T12:57:42.070900"
+    },
+    {
+      "name": "Products API - Variation ID Present",
+      "passed": true,
+      "details": "variationId: HMOFD754ENI27FH2PGAUJANK, catalogObjectId: HMOFD754ENI27FH2PGAUJANK",
+      "timestamp": "2025-11-14T12:57:42.070915"
+    },
+    {
+      "name": "Products API - Price Format",
+      "passed": true,
+      "details": "price: 11, priceCents: 1100",
+      "timestamp": "2025-11-14T12:57:42.070921"
+    },
+    {
+      "name": "Order Creation - Pickup Order",
+      "passed": true,
+      "details": "Order ID: 4f9ac96b-1f35-4053-98f4-b1a27105a126, Order Number: TOG066829, Square Order ID: N/A",
+      "timestamp": "2025-11-14T12:57:47.190432"
+    },
+    {
+      "name": "Order Creation - Delivery Order with Valid ZIP",
+      "passed": true,
+      "details": "Order ID: c2253911-4714-443b-a59c-c5716715a95e, Subtotal: $33, Delivery Fee: $6.99, Expected Fee: $6.99",
+      "timestamp": "2025-11-14T12:57:47.685265"
+    },
+    {
+      "name": "Order Creation - Invalid ZIP Rejection",
+      "passed": true,
+      "details": "Correctly rejected with 400: We're not in your area yet. Try Pickup or Shipping, or use a different address.",
+      "timestamp": "2025-11-14T12:57:47.753101"
+    },
+    {
+      "name": "Order Creation - Tip $0",
+      "passed": true,
+      "details": "Order created with tip: $0",
+      "timestamp": "2025-11-14T12:57:48.410020"
+    },
+    {
+      "name": "Order Creation - Tip $2",
+      "passed": true,
+      "details": "Order created with tip: $2",
+      "timestamp": "2025-11-14T12:57:48.923110"
+    },
+    {
+      "name": "Order Creation - Tip $5",
+      "passed": true,
+      "details": "Order created with tip: $5",
+      "timestamp": "2025-11-14T12:57:49.372831"
+    },
+    {
+      "name": "Order Creation - Tip $10",
+      "passed": true,
+      "details": "Order created with tip: $10",
+      "timestamp": "2025-11-14T12:57:49.825576"
+    },
+    {
+      "name": "Payments API - Missing sourceId Validation",
+      "passed": true,
+      "details": "Correctly rejected with 400: Payment source ID (token) is required",
+      "timestamp": "2025-11-14T12:57:52.819530"
+    },
+    {
+      "name": "Payments API - Invalid Amount Validation",
+      "passed": false,
+      "details": "Expected 400, got 502",
+      "timestamp": "2025-11-14T12:57:52.933440"
+    },
+    {
+      "name": "Payments API - Valid Structure Exception",
+      "passed": false,
+      "details": "Expecting value: line 1 column 1 (char 0)",
+      "timestamp": "2025-11-14T12:57:52.969093"
+    },
+    {
+      "name": "Payments API - GET Status Endpoint",
+      "passed": false,
+      "details": "Unexpected status: 502",
+      "timestamp": "2025-11-14T12:57:53.004740"
+    },
+    {
+      "name": "Checkout API - Empty Line Items Validation",
+      "passed": false,
+      "details": "Expected 400, got 502",
+      "timestamp": "2025-11-14T12:57:53.037645"
+    },
+    {
+      "name": "Checkout API - Missing catalogObjectId Validation",
+      "passed": false,
+      "details": "Expected 400, got 502",
+      "timestamp": "2025-11-14T12:57:53.078066"
+    },
+    {
+      "name": "Checkout API - Payment Link Exception",
+      "passed": false,
+      "details": "Expecting value: line 1 column 1 (char 0)",
+      "timestamp": "2025-11-14T12:57:53.116466"
+    },
+    {
+      "name": "Cart Price API - Empty Lines Validation",
+      "passed": true,
+      "details": "Correctly rejected with 400",
+      "timestamp": "2025-11-14T12:57:57.495744"
+    },
+    {
+      "name": "Cart Price API - Valid Calculation",
+      "passed": false,
+      "details": "Status: 500, Error: Failed to calculate cart pricing",
+      "timestamp": "2025-11-14T12:57:58.559163"
+    },
+    {
+      "name": "Health Check API",
+      "passed": true,
+      "details": "Status: ok, Database: unknown, Square API: unknown",
+      "timestamp": "2025-11-14T12:57:59.504852"
+    },
+    {
+      "name": "Webhooks API - GET Status",
+      "passed": true,
+      "details": "Environment: production, Webhook Types: 6",
+      "timestamp": "2025-11-14T12:58:01.604241"
+    },
+    {
+      "name": "Webhooks API - POST Event",
+      "passed": true,
+      "details": "Event processed: payment.created",
+      "timestamp": "2025-11-14T12:58:01.693675"
+    },
+    {
+      "name": "Edge Case - Large Order (10 items)",
+      "passed": true,
+      "details": "Order ID: 2cb4224f-d536-4540-80bc-da166e28fa67, Items: 10",
+      "timestamp": "2025-11-14T12:58:06.357471"
+    },
+    {
+      "name": "Edge Case - $0 Item (Freebie)",
+      "passed": true,
+      "details": "Order ID: f018fb47-531a-48b0-870c-acf574119ccc, Subtotal: $0",
+      "timestamp": "2025-11-14T12:58:09.104633"
+    },
+    {
+      "name": "Edge Case - Special Characters",
+      "passed": true,
+      "details": "Order ID: 058c2e80-a867-479b-9264-a5840419a570",
+      "timestamp": "2025-11-14T12:58:09.596030"
+>>>>>>> upstream/main
     }
   ]
 }
