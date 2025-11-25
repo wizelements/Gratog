@@ -13,6 +13,18 @@ import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-cus
 
 const logger = createLogger('OrdersCreateAPI');
 
+/**
+ * Helper: Calculate next Saturday at specified time for pickup
+ */
+function getNextSaturday(time = '09:00') {
+  const now = new Date();
+  const daysUntilSaturday = (6 - now.getDay() + 7) % 7 || 7;
+  const nextSat = new Date(now.getTime() + daysUntilSaturday * 24 * 60 * 60 * 1000);
+  const [hours, minutes] = time.split(':');
+  nextSat.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+  return nextSat.toISOString();
+}
+
 export async function POST(request) {
   const startTime = Date.now();
   
@@ -193,7 +205,40 @@ export async function POST(request) {
               customer_email: orderData.customer.email,
               customer_name: orderData.customer.name,
               customer_phone: orderData.customer.phone
-            }
+            },
+            // ⭐ ADD FULFILLMENTS for Square Dashboard alerts & workflow
+            fulfillments: orderData.fulfillmentType.startsWith('pickup') ? [{
+              type: 'PICKUP',
+              state: 'PROPOSED',
+              pickup_details: {
+                recipient: {
+                  display_name: orderData.customer.name,
+                  phone_number: orderData.customer.phone
+                },
+                note: orderData.fulfillmentType === 'pickup_browns_mill'
+                  ? '📍 PICKUP: Browns Mill Community • Saturdays 3:00 PM - 6:00 PM • Show order number at pickup booth'
+                  : '📍 PICKUP: Serenbe Farmers Market (Booth #12) • 10950 Hutcheson Ferry Rd, Palmetto, GA 30268 • Saturdays 9:00 AM - 1:00 PM • Look for gold Taste of Gratitude banners',
+                schedule_type: 'SCHEDULED',
+                pickup_at: getNextSaturday(orderData.fulfillmentType === 'pickup_browns_mill' ? '15:00' : '09:00')
+              }
+            }] : orderData.fulfillmentType === 'delivery' ? [{
+              type: 'SHIPMENT',
+              state: 'PROPOSED',
+              shipment_details: {
+                recipient: {
+                  display_name: orderData.customer.name,
+                  phone_number: orderData.customer.phone,
+                  address: {
+                    address_line_1: orderData.deliveryAddress?.street || '',
+                    locality: orderData.deliveryAddress?.city || '',
+                    administrative_district_level_1: orderData.deliveryAddress?.state || 'GA',
+                    postal_code: orderData.deliveryAddress?.zip || ''
+                  }
+                },
+                shipping_note: orderData.deliveryInstructions || '',
+                expected_shipped_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+              }
+            }] : undefined
           }
         };
         

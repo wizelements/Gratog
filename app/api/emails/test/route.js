@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import * as emailService from '@/lib/email/service';
-import * as templates from '@/lib/email/templates';
+import * as templates from '@/lib/email/templates-enhanced';
 
 /**
  * Email Testing API
