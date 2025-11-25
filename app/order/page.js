@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
-import { ArrowRight, ShoppingBag, Trash2, Plus, Minus, MapPin, Home, Package, CreditCard, AlertCircle } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Trash2, Plus, Minus, MapPin, Home, Package, CreditCard, AlertCircle, Clock } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { loadCart, updateQuantity, removeFromCart, clearCart, getCartTotal, formatPrice } from '@/lib/cart-engine';
