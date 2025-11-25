@@ -324,6 +324,17 @@ export async function POST(request) {
       logger.warn('SMS failed', { error: smsError.message });
     }
     
+    // Send staff notification for pickup orders
+    if (order.fulfillmentType === 'pickup_market' || order.fulfillmentType === 'pickup_browns_mill') {
+      try {
+        const { notifyStaffPickupOrder } = await import('@/lib/staff-notifications');
+        await notifyStaffPickupOrder(order);
+        logger.info('Staff notification sent', { orderId: order.id });
+      } catch (staffError) {
+        logger.warn('Staff notification failed', { error: staffError.message });
+      }
+    }
+    
     return NextResponse.json({
       success: true,
       order: {
