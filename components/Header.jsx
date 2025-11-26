@@ -65,6 +65,17 @@ export default function Header() {
             }`} />
           </Link>
           <Link 
+            href="/explore" 
+            className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
+              pathname?.startsWith('/explore') ? 'text-[#D4AF37]' : ''
+            }`}
+          >
+            Explore
+            <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
+              pathname?.startsWith('/explore') ? 'w-full' : ''
+            }`} />
+          </Link>
+          <Link 
             href="/community" 
             className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
               isActive('/community') ? 'text-[#D4AF37]' : ''
@@ -185,6 +196,15 @@ export default function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               Markets
+            </Link>
+            <Link
+              href="/explore"
+              className={`text-sm font-medium py-3 px-4 rounded-md transition-all hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] ${
+                pathname?.startsWith('/explore') ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : ''
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Explore 🌿
             </Link>
             <Link
               href="/rewards"
