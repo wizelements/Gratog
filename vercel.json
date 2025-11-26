@@ -17,7 +17,7 @@
     }
   },
   "env": {
-    "NEXT_PUBLIC_APP_URL": "https://gratitude-platform.preview.emergentagent.com"
+    "NEXT_PUBLIC_APP_URL": "https://taste-interactive.preview.emergentagent.com"
   },
   "headers": [
     {

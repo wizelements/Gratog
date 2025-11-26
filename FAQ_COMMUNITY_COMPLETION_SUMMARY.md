@@ -309,8 +309,8 @@
 ## 🚀 Live URLs
 
 **Production URLs:**
-- https://gratitude-platform.preview.emergentagent.com/faq
-- https://gratitude-platform.preview.emergentagent.com/community
+- https://taste-interactive.preview.emergentagent.com/faq
+- https://taste-interactive.preview.emergentagent.com/community
 - Footer visible on all pages
 
 **Footer Links to:**

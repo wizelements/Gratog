@@ -60,9 +60,9 @@ MONGO_URL=mongodb+srv://your-username:your-password@your-cluster.mongodb.net/tas
 DB_NAME=taste_of_gratitude
 
 # App URLs
-NEXT_PUBLIC_BASE_URL=https://gratitude-platform.preview.emergentagent.com
-NEXT_PUBLIC_SITE_URL=https://gratitude-platform.preview.emergentagent.com
-ROOT_DOMAIN=https://gratitude-platform.preview.emergentagent.com
+NEXT_PUBLIC_BASE_URL=https://taste-interactive.preview.emergentagent.com
+NEXT_PUBLIC_SITE_URL=https://taste-interactive.preview.emergentagent.com
+ROOT_DOMAIN=https://taste-interactive.preview.emergentagent.com
 
 # Authentication (CRITICAL)
 JWT_SECRET=your-secure-random-string-here-at-least-32-chars
@@ -114,11 +114,11 @@ After redeployment, verify:
 
 ### ✅ API Endpoints
 Test these URLs (replace with your preview domain):
-- [ ] https://gratitude-platform.preview.emergentagent.com/api/products
+- [ ] https://taste-interactive.preview.emergentagent.com/api/products
   - Should return: `{"success":true,"products":[...33 products...]}`
-- [ ] https://gratitude-platform.preview.emergentagent.com/api/health
+- [ ] https://taste-interactive.preview.emergentagent.com/api/health
   - Should return: Health status
-- [ ] https://gratitude-platform.preview.emergentagent.com/api/auth/session
+- [ ] https://taste-interactive.preview.emergentagent.com/api/auth/session
   - Should return: Session status (401 if not logged in is OK)
 
 ---
@@ -134,7 +134,7 @@ Test these URLs (replace with your preview domain):
 
 **Test API directly:**
 ```bash
-curl https://gratitude-platform.preview.emergentagent.com/api/products
+curl https://taste-interactive.preview.emergentagent.com/api/products
 ```
 
 Expected response:

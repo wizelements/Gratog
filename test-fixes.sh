@@ -5,7 +5,7 @@
 
 set -e
 
-BASE_URL="${BASE_URL:-https://gratitude-platform.preview.emergentagent.com}"
+BASE_URL="${BASE_URL:-https://taste-interactive.preview.emergentagent.com}"
 
 echo "🧪 Testing All Fixes Applied"
 echo "=============================="

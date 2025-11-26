@@ -2,7 +2,7 @@
 
 ## Webhook Endpoint Information
 
-**Webhook URL**: `https://gratitude-platform.preview.emergentagent.com/api/webhooks/square`
+**Webhook URL**: `https://taste-interactive.preview.emergentagent.com/api/webhooks/square`
 
 **Signature Key**: `taste-of-gratitude-webhook-key-2024` (already configured in .env)
 
@@ -18,7 +18,7 @@
 2. Click **"Add Endpoint"** or **"Create Subscription"**
 3. Enter the Webhook URL:
    ```
-   https://gratitude-platform.preview.emergentagent.com/api/webhooks/square
+   https://taste-interactive.preview.emergentagent.com/api/webhooks/square
    ```
 
 ### Step 3: Configure Signature Key
@@ -53,7 +53,7 @@ Select the following event types:
 
 ### Method 1: Check Endpoint Status
 ```bash
-curl https://gratitude-platform.preview.emergentagent.com/api/webhooks/square
+curl https://taste-interactive.preview.emergentagent.com/api/webhooks/square
 ```
 
 Expected response:

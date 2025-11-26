@@ -88,7 +88,7 @@ FAILED:
    ```
 
 2. **Configure Square Webhooks**
-   - Webhook URL: `https://gratitude-platform.preview.emergentagent.com/api/webhooks/square`
+   - Webhook URL: `https://taste-interactive.preview.emergentagent.com/api/webhooks/square`
    - Subscribe to events:
      - `payment.created`
      - `payment.updated`

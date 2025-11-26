@@ -9,7 +9,7 @@ import json
 import sys
 from datetime import datetime
 
-BASE_URL = "https://gratitude-platform.preview.emergentagent.com"
+BASE_URL = "https://taste-interactive.preview.emergentagent.com"
 
 class Colors:
     GREEN = '\033[92m'

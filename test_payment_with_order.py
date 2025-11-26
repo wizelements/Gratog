@@ -6,7 +6,7 @@ Test payment API with Square Order ID
 import requests
 import json
 
-BASE_URL = "https://gratitude-platform.preview.emergentagent.com"
+BASE_URL = "https://taste-interactive.preview.emergentagent.com"
 
 print("="*80)
 print("TEST: Payment API with Square Order ID")

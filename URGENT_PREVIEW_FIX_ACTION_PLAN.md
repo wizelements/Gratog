@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Preview URL:** https://gratitude-platform.preview.emergentagent.com  
+**Preview URL:** https://taste-interactive.preview.emergentagent.com  
 **Issue:** Site loads without CSS/JS, shows "0 of 0 products", APIs failing  
 **Root Cause:** MongoDB connection configured for localhost, not cloud  
 **Impact:** Cannot test Phase 4 bug fixes  
@@ -53,8 +53,8 @@ DB_NAME=taste_of_gratitude
 JWT_SECRET=your-secure-random-string-minimum-32-characters-long
 
 # IMPORTANT - URLs
-NEXT_PUBLIC_BASE_URL=https://gratitude-platform.preview.emergentagent.com
-NEXT_PUBLIC_SITE_URL=https://gratitude-platform.preview.emergentagent.com
+NEXT_PUBLIC_BASE_URL=https://taste-interactive.preview.emergentagent.com
+NEXT_PUBLIC_SITE_URL=https://taste-interactive.preview.emergentagent.com
 
 # OPTIONAL - Square Payments (if needed)
 SQUARE_ACCESS_TOKEN=your-square-token
@@ -115,17 +115,17 @@ The app will show 0 products if the database is empty. You can:
 **Test checklist:**
 
 1. **Load Homepage:**
-   - Visit: https://gratitude-platform.preview.emergentagent.com
+   - Visit: https://taste-interactive.preview.emergentagent.com
    - Should see: Full styling, header, navigation
    - Should NOT see: Raw HTML
 
 2. **Check Products API:**
-   - Visit: https://gratitude-platform.preview.emergentagent.com/api/products
+   - Visit: https://taste-interactive.preview.emergentagent.com/api/products
    - Should see: JSON response with products array
    - Should NOT see: Error message or empty array
 
 3. **Test Catalog:**
-   - Visit: https://gratitude-platform.preview.emergentagent.com/catalog
+   - Visit: https://taste-interactive.preview.emergentagent.com/catalog
    - Should see: Product grid with items
    - Should NOT see: "0 of 0 products"
 

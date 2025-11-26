@@ -78,7 +78,7 @@ catch (error) {
 
 3. **Set correct base URL**
    - Variable name: `NEXT_PUBLIC_BASE_URL`
-   - Value: `https://gratitude-platform.preview.emergentagent.com`
+   - Value: `https://taste-interactive.preview.emergentagent.com`
 
 4. **Configure MongoDB Atlas network access**
    - Allow access from: `0.0.0.0/0` (all IPs)
@@ -90,7 +90,7 @@ catch (error) {
 # In preview environment settings, add:
 MONGO_URL=mongodb+srv://username:password@cluster.mongodb.net/taste_of_gratitude?retryWrites=true&w=majority
 JWT_SECRET=$(openssl rand -base64 32)
-NEXT_PUBLIC_BASE_URL=https://gratitude-platform.preview.emergentagent.com
+NEXT_PUBLIC_BASE_URL=https://taste-interactive.preview.emergentagent.com
 DB_NAME=taste_of_gratitude
 ```
 
@@ -123,7 +123,7 @@ DB_NAME=taste_of_gratitude
 ## Verification Steps
 
 ### Step 1: Check Current Preview State
-Visit: https://gratitude-platform.preview.emergentagent.com
+Visit: https://taste-interactive.preview.emergentagent.com
 
 **You should now see:**
 - ✅ Full styling and CSS loaded

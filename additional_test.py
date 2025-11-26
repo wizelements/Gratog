@@ -7,7 +7,7 @@ import requests
 import json
 import time
 
-BASE_URL = "https://gratitude-platform.preview.emergentagent.com"
+BASE_URL = "https://taste-interactive.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 def test_coupon_validation():

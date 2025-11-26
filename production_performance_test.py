@@ -27,7 +27,7 @@ import os
 import sys
 
 # Configuration
-BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://gratitude-platform.preview.emergentagent.com')
+BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://taste-interactive.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 class ProductionPerformanceTest:

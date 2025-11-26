@@ -45,7 +45,7 @@ Your Square access tokens are **REJECTED** by Square API with:
 1. In the **Redirect URL** box, click **Update**
 2. Enter your callback URL:
    ```
-   https://gratitude-platform.preview.emergentagent.com/api/oauth/square/callback
+   https://taste-interactive.preview.emergentagent.com/api/oauth/square/callback
    ```
 3. Click **Confirm**
 
@@ -276,7 +276,7 @@ Once authentication is working:
 
 ### 3. Configure Webhooks (Optional)
 ```
-Webhook URL: https://gratitude-platform.preview.emergentagent.com/api/webhooks/square
+Webhook URL: https://taste-interactive.preview.emergentagent.com/api/webhooks/square
 Events: payment.created, payment.updated, order.created, inventory.count.updated
 ```
 

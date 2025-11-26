@@ -4,9 +4,9 @@
 This guide explains how to configure Square webhooks to enable real-time synchronization between Square and your application.
 
 ## Webhook Endpoint
-**Production URL:** `https://gratitude-platform.preview.emergentagent.com/api/webhooks/square`
+**Production URL:** `https://taste-interactive.preview.emergentagent.com/api/webhooks/square`
 
-**Test URL (for development):** `https://gratitude-platform.preview.emergentagent.com/api/webhooks/square`
+**Test URL (for development):** `https://taste-interactive.preview.emergentagent.com/api/webhooks/square`
 
 ## Supported Webhook Events
 
@@ -51,7 +51,7 @@ This guide explains how to configure Square webhooks to enable real-time synchro
 3. Click **Add Webhook Endpoint**
 
 ### Step 3: Configure Webhook Endpoint
-1. **Webhook URL:** Enter `https://gratitude-platform.preview.emergentagent.com/api/webhooks/square`
+1. **Webhook URL:** Enter `https://taste-interactive.preview.emergentagent.com/api/webhooks/square`
 2. **Webhook Version:** Select **2024-10-17** (latest version)
 3. **Event Types:** Select the following events:
    - ✅ `inventory.count.updated`
@@ -85,7 +85,7 @@ Test that webhooks are working:
 tail -f /var/log/supervisor/nextjs.out.log | grep -i webhook
 
 # Test webhook endpoint directly
-curl https://gratitude-platform.preview.emergentagent.com/api/webhooks/square
+curl https://taste-interactive.preview.emergentagent.com/api/webhooks/square
 ```
 
 Expected response:
@@ -240,7 +240,7 @@ db.square_sync_metadata.findOne({ type: 'catalog_sync' })
 ### Manual Testing
 ```bash
 # Test webhook endpoint
-curl -X POST https://gratitude-platform.preview.emergentagent.com/api/webhooks/square \
+curl -X POST https://taste-interactive.preview.emergentagent.com/api/webhooks/square \
   -H "Content-Type: application/json" \
   -H "Square-Signature: v=1,t=test_signature" \
   -d '{
