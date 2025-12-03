@@ -173,6 +173,12 @@ export default function OrderPage() {
         },
         fulfillmentType,
         ...(fulfillmentType === 'delivery' && { deliveryAddress }),
+        ...((fulfillmentType === 'meetup_serenbe' || fulfillmentType === 'meetup_scotch_bonnet') && { 
+          meetUpDetails: {
+            location: fulfillmentType === 'meetup_serenbe' ? 'Serenbe area' : 'Scotch Bonnet (Campbellton)',
+            notes: meetUpDetails.notes
+          }
+        }),
       };
 
       logger.debug('Order data prepared', { orderData });
