@@ -9,6 +9,7 @@ import QuickAddButton from '@/components/QuickAddButton';
 import { ArrowRight, Sparkles, Star, Shield, Zap, TrendingUp, Heart, Leaf, Droplets, Award, Users, CheckCircle, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import Script from 'next/script';
+import { getDemoProducts } from '@/lib/demo-products';
 
 export default function HomePage() {
     const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -19,16 +20,30 @@ export default function HomePage() {
 
     useEffect(() => {
         const fetchProducts = async () => {
+            // Set a 10 second timeout to prevent infinite loading
+            const timeoutId = setTimeout(() => {
+                console.warn('Products API timeout - using fallback');
+                setLoading(false);
+                const demoProducts = getDemoProducts();
+                setFeaturedProducts(demoProducts.slice(0, 6));
+            }, 10000);
+
             try {
-                const response = await fetch('/api/products');
+                const response = await fetch('/api/products', {
+                    signal: AbortSignal.timeout(8000) // 8 second fetch timeout
+                });
+                clearTimeout(timeoutId);
                 const data = await response.json();
 
                 if (data.success && data.products) {
                     setFeaturedProducts(data.products.slice(0, 6));
                 }
             } catch (error) {
+                clearTimeout(timeoutId);
                 console.error('Failed to fetch products:', error);
-                toast.error('Failed to load products');
+                // Use demo products as fallback instead of showing error
+                const demoProducts = getDemoProducts();
+                setFeaturedProducts(demoProducts.slice(0, 6));
             } finally {
                 setLoading(false);
             }

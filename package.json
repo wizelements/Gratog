@@ -25,6 +25,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@google/model-viewer": "^4.1.0",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
     "@radix-ui/react-aspect-ratio": "^1.1.1",
@@ -79,6 +80,7 @@
     "swr": "^2.3.6",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
+    "three": "^0.181.2",
     "twilio": "^5.3.5",
     "uuid": "^13.0.0",
     "zod": "^3.24.1",

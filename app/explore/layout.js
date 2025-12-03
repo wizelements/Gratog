@@ -4,19 +4,21 @@ import { useState, useEffect } from 'react';
 import { Volume2, VolumeX, Home, Maximize, Minimize } from 'lucide-react';
 import ParticleSystem from '@/components/explore/interactive/ParticleSystem';
 import audioManager from '@/lib/explore/audio-manager';
-import kioskMode from '@/lib/explore/kiosk-mode';
+import KioskProvider, { useKiosk } from '@/components/explore/kiosk/KioskProvider';
+import KioskLayout from '@/components/explore/kiosk/KioskLayout';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-export default function ExploreLayout({ children }) {
+function ExploreContent({ children }) {
   const [audioMuted, setAudioMuted] = useState(true);
   const [showParticles, setShowParticles] = useState(true);
-  const [isKioskMode, setIsKioskMode] = useState(false);
+  const { isKioskMode, enableKiosk, disableKiosk } = useKiosk();
 
   useEffect(() => {
-    // Check if kiosk mode is enabled
-    setIsKioskMode(kioskMode.isEnabled());
     setAudioMuted(audioManager.isMuted());
+    
+    // Preload sounds for games
+    audioManager.preload(['ui-success', 'ui-error', 'game-complete']);
   }, []);
 
   const toggleAudio = () => {
@@ -27,16 +29,14 @@ export default function ExploreLayout({ children }) {
 
   const toggleKiosk = async () => {
     if (isKioskMode) {
-      await kioskMode.disable();
-      setIsKioskMode(false);
+      disableKiosk();
     } else {
-      await kioskMode.enable();
-      setIsKioskMode(true);
+      await enableKiosk();
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 relative overflow-hidden">
+    <KioskLayout className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 relative overflow-hidden">
       {/* Particle Background */}
       {showParticles && <ParticleSystem type="ingredients" count={30} />}
 
@@ -73,7 +73,7 @@ export default function ExploreLayout({ children }) {
                 variant="ghost" 
                 size="sm"
                 onClick={toggleKiosk}
-                className="text-white hover:bg-white/10"
+                className={`text-white ${isKioskMode ? 'bg-emerald-600/30 hover:bg-emerald-600/40' : 'hover:bg-white/10'}`}
                 title="Toggle Kiosk Mode"
               >
                 {isKioskMode ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
@@ -95,6 +95,14 @@ export default function ExploreLayout({ children }) {
           <p className="text-xs mt-2">Built with ❤️ for wellness exploration</p>
         </div>
       </footer>
-    </div>
+    </KioskLayout>
+  );
+}
+
+export default function ExploreLayout({ children }) {
+  return (
+    <KioskProvider idleTimeout={180000} resetRoute="/explore">
+      <ExploreContent>{children}</ExploreContent>
+    </KioskProvider>
   );
 }

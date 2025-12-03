@@ -53,7 +53,8 @@ export default function IngredientDetailModal({ ingredient, isOpen, onClose }) {
                   <Badge className={`${rarityColors[ingredient.rarity]} text-white`}>
                     {ingredient.rarity === 'legendary' && <Sparkles className="h-3 w-3 mr-1" />}
                     {ingredient.rarity.toUpperCase()}
-                  </Badge>}
+                  </Badge>
+                )}
                 {ingredient.origin && (
                   <Badge variant="outline" className="border-emerald-500/50 text-emerald-300">
                     Origin: {ingredient.origin}

@@ -1,0 +1,23 @@
+{
+  "products": {
+    "sea-moss-gel": {
+      "glb": "/models/products/jar-placeholder.glb",
+      "usdz": "/models/products/jar-placeholder.usdz",
+      "poster": "/images/products/sea-moss-gel.jpg",
+      "name": "Sea Moss Gel",
+      "description": "Premium wildcrafted sea moss gel"
+    },
+    "elderberry-syrup": {
+      "glb": "/models/products/bottle-placeholder.glb",
+      "usdz": "/models/products/bottle-placeholder.usdz",
+      "poster": "/images/products/elderberry-syrup.jpg",
+      "name": "Elderberry Syrup",
+      "description": "Immune-boosting elderberry syrup"
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-26",
+    "notes": "Replace placeholder GLB/USDZ files with actual 3D models. Use Draco compression and KTX2 textures for optimal performance."
+  }
+}

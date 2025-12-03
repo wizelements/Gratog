@@ -26,8 +26,9 @@ export default function IngredientExplorer({ ingredients = [] }) {
   // Filter ingredients
   const filteredIngredients = useMemo(() => {
     return ingredients.filter(ingredient => {
+      if (!ingredient || !ingredient.name) return false;
       const matchesSearch = ingredient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           ingredient.benefits?.some(b => b.toLowerCase().includes(searchQuery.toLowerCase()));
+                           ingredient.benefits?.some(b => b?.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchesCategory = selectedCategory === 'all' || ingredient.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });

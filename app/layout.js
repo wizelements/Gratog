@@ -74,6 +74,14 @@ export default function RootLayout({ children }) {
       </head>
       <body className={inter.className}>
         <AuthProvider>
+          {/* Code-Server Build Indicator */}
+          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-center py-2 px-4 text-sm font-medium shadow-md z-50 sticky top-0">
+            <div className="container mx-auto flex items-center justify-center gap-2">
+              <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+              <span>Code-Server Build • Trust Enhancements Active • Commit: 2b1c08d</span>
+            </div>
+          </div>
+          
           <div className="flex min-h-screen flex-col">
             <Header />
             <main className="flex-1">{children}</main>
