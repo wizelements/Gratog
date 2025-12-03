@@ -101,6 +101,12 @@ export default function OrderPage() {
   };
 
   const validateForm = () => {
+    // Validate minimum order amount
+    if (subtotal < 25) {
+      toast.error('Minimum order amount is $25');
+      return false;
+    }
+    
     // Validate customer info
     if (!customer.name.trim()) {
       toast.error('Please enter your name');
@@ -538,7 +544,7 @@ export default function OrderPage() {
                     </div>
                   </RadioGroup>
 
-                  {(fulfillmentType === 'meetup_serenbe' || fulfillmentType === 'meetup_scotch_bonnet') && (
+                  {fulfillmentType === 'meetup_serenbe' && (
                     <div className="mt-6 p-4 bg-purple-50 rounded-lg space-y-4 animate-in slide-in-from-top duration-300">
                       <div className="flex items-center gap-2 text-purple-800 font-semibold mb-3">
                         <MapPin className="h-4 w-4" />
