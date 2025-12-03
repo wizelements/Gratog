@@ -414,7 +414,7 @@ export default function OrderPage() {
                             </div>
                             <div className="flex-1">
                               <div className="font-semibold text-lg">🏘️ Browns Mill Community</div>
-                              <div className="text-sm text-blue-600 font-medium">FREE Pickup • Afternoon Hours</div>
+                              <div className="text-sm text-blue-600 font-medium">FREE Pickup • Flexible Hours</div>
                             </div>
                           </div>
                           
@@ -425,11 +425,14 @@ export default function OrderPage() {
                             </div>
                             <div className="flex items-center gap-2">
                               <Clock className="h-4 w-4 text-gray-400" />
-                              <span className="font-medium text-gray-900">Saturdays: 3:00 PM - 6:00 PM</span>
+                              <div className="font-medium text-gray-900">
+                                <div>Wed-Fri: Before 12pm or 12pm-6pm</div>
+                                <div>Sun-Mon: After 10:30am</div>
+                              </div>
                             </div>
                             <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-2">
-                              <div className="text-xs font-semibold text-blue-800 mb-1">✨ What to Expect:</div>
-                              <div className="text-xs text-blue-700">Find us at the <strong>community event area</strong>. Your order will be ready by <strong>3:30 PM Saturday</strong>. Bring your order number!</div>
+                              <div className="text-xs font-semibold text-blue-800 mb-1">📞 Time Coordination:</div>
+                              <div className="text-xs text-blue-700">We'll <strong>confirm your pickup time</strong> via Square dashboard and contact you to finalize the exact time within the available windows.</div>
                             </div>
                           </div>
                         </div>
@@ -520,9 +523,14 @@ export default function OrderPage() {
                           </div>
                           
                           <div className="pl-14 text-sm text-gray-600">
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-4 w-4 text-gray-400" />
-                              <span>Within 5 miles of Serenbe or Scotch Bonnet • 2-3 business days</span>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4 text-gray-400" />
+                                <span>2-3 business days</span>
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                Distance-based pricing: $4.99 (0-5mi) • $7.99 (5-10mi) • $10.99 (10-15mi) • $13.99 (15-20mi) • $16.99 (20-25mi)
+                              </div>
                             </div>
                           </div>
                         </div>
