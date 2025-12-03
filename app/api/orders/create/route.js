@@ -325,7 +325,7 @@ export async function POST(request) {
     }
     
     // Send staff notification for pickup, meet-up, AND delivery orders
-    if (order.fulfillmentType === 'pickup_market' || order.fulfillmentType === 'pickup_browns_mill' || order.fulfillmentType === 'delivery' || order.fulfillmentType === 'meetup_serenbe' || order.fulfillmentType === 'meetup_scotch_bonnet') {
+    if (order.fulfillmentType === 'pickup_market' || order.fulfillmentType === 'pickup_browns_mill' || order.fulfillmentType === 'delivery' || order.fulfillmentType === 'meetup_serenbe') {
       try {
         const { notifyStaffPickupOrder } = await import('@/lib/staff-notifications');
         await notifyStaffPickupOrder(order);

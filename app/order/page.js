@@ -179,9 +179,9 @@ export default function OrderPage() {
         },
         fulfillmentType,
         ...(fulfillmentType === 'delivery' && { deliveryAddress }),
-        ...((fulfillmentType === 'meetup_serenbe' || fulfillmentType === 'meetup_scotch_bonnet') && { 
+        ...(fulfillmentType === 'meetup_serenbe' && { 
           meetUpDetails: {
-            location: fulfillmentType === 'meetup_serenbe' ? 'Serenbe area' : 'Scotch Bonnet (Campbellton)',
+            location: 'Serenbe area',
             notes: meetUpDetails.notes
           }
         }),
