@@ -63,7 +63,20 @@ export default function OrderPage() {
   }, []);
 
   const { subtotal, totalItems } = getCartTotal();
-  const deliveryFee = fulfillmentType === 'delivery' ? (subtotal >= 75 ? 0 : 4.99) : 0;
+  
+  // Calculate delivery fee with dynamic pricing
+  const getDeliveryFee = () => {
+    if (fulfillmentType !== 'delivery') return 0;
+    
+    // Default pricing (will be calculated based on distance when address is entered)
+    // For display purposes, show base pricing structure
+    if (subtotal >= 100) return 0; // FREE over $100
+    if (subtotal >= 85) return 3.99 * 0.9; // 10% off
+    if (subtotal >= 65) return 3.99 * 0.95; // 5% off
+    return 3.99; // Base fee for 5-10 miles (example)
+  };
+  
+  const deliveryFee = getDeliveryFee();
   const total = subtotal + deliveryFee;
 
   const handleQuantityChange = (productId, change) => {
@@ -490,7 +503,10 @@ export default function OrderPage() {
                             <div className="flex-1">
                               <div className="font-semibold text-lg">🚚 Home Delivery</div>
                               <div className="text-sm text-orange-600 font-medium">
-                                {subtotal >= 75 ? '✨ FREE delivery (over $75)' : `$4.99 delivery fee • FREE over $75`}
+                                {subtotal >= 100 ? '✨ FREE delivery (order over $100)' : 
+                                 subtotal >= 85 ? '✨ 10% off delivery (order over $85)' :
+                                 subtotal >= 65 ? '✨ 5% off delivery (order over $65)' :
+                                 'Distance-based • FREE 0-5 miles'}
                               </div>
                             </div>
                           </div>
@@ -501,8 +517,14 @@ export default function OrderPage() {
                                 <Clock className="h-4 w-4 text-gray-400" />
                                 <span>2-3 business days</span>
                               </div>
-                              <div className="text-xs text-gray-500">
-                                Distance-based pricing: $4.99 (0-5mi) • $7.99 (5-10mi) • $10.99 (10-15mi) • $13.99 (15-20mi) • $16.99 (20-25mi)
+                              <div className="text-xs text-gray-700 space-y-1 mt-2">
+                                <div className="font-medium">Distance-based pricing:</div>
+                                <div>• 0-5 miles: <span className="text-emerald-600 font-semibold">FREE</span></div>
+                                <div>• 5-10 miles: $3.99 • 10-15 miles: $7.99</div>
+                                <div>• 15-20 miles: $11.99 • 20-25 miles: $15.99</div>
+                              </div>
+                              <div className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded p-2 mt-2">
+                                💰 Order Discounts: $65+ (5% off) • $85+ (10% off) • $100+ (FREE delivery)
                               </div>
                             </div>
                           </div>
