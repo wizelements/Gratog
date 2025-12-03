@@ -10,6 +10,7 @@ export default defineConfig({
       'node_modules/**',
       '.next/**',
       'e2e/**',
+      'tests/e2e/**',
       'playwright-report/**',
       '**/*.config.*',
       '**/dist/**',
