@@ -40,6 +40,13 @@ export default function OrderPage() {
     state: 'GA',
     zip: '',
   });
+  const [deliveryValidation, setDeliveryValidation] = useState(null);
+  const [validatingAddress, setValidatingAddress] = useState(false);
+  const [meetUpDetails, setMeetUpDetails] = useState({
+    location: '',
+    phone: '',
+    notes: ''
+  });
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -56,7 +63,7 @@ export default function OrderPage() {
   }, []);
 
   const { subtotal, totalItems } = getCartTotal();
-  const deliveryFee = fulfillmentType === 'delivery' ? (subtotal >= 75 ? 0 : 6.99) : 0;
+  const deliveryFee = fulfillmentType === 'delivery' ? (subtotal >= 75 ? 0 : 4.99) : 0;
   const total = subtotal + deliveryFee;
 
   const handleQuantityChange = (productId, change) => {
