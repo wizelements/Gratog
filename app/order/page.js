@@ -721,7 +721,7 @@ export default function OrderPage() {
                         ⚠️ Minimum ${formatPrice(30 - subtotal)} more required for delivery
                       </div>
                     )}
-                    {fulfillmentType === 'delivery' && subtotal >= 30 && subtotal < 75 && (
+                    {fulfillmentType === 'delivery' && subtotal >= 25 && subtotal < 75 && (
                       <div className="text-xs text-emerald-600 bg-emerald-50 p-2 rounded">
                         💡 Add {formatPrice(75 - subtotal)} more for FREE delivery!
                       </div>
@@ -736,7 +736,7 @@ export default function OrderPage() {
                   <Button 
                     type="submit" 
                     className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 text-lg"
-                    disabled={isSubmitting || (fulfillmentType === 'delivery' && subtotal < 30)}
+                    disabled={isSubmitting || subtotal < 25}
                   >
                     {isSubmitting ? (
                       <span className="flex items-center gap-2">
