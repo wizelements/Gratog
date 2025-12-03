@@ -524,12 +524,43 @@ export default function OrderPage() {
                     </div>
                   </RadioGroup>
 
+                  {(fulfillmentType === 'meetup_serenbe' || fulfillmentType === 'meetup_scotch_bonnet') && (
+                    <div className="mt-6 p-4 bg-purple-50 rounded-lg space-y-4 animate-in slide-in-from-top duration-300">
+                      <div className="flex items-center gap-2 text-purple-800 font-semibold mb-3">
+                        <MapPin className="h-4 w-4" />
+                        Meet-Up Coordination Details
+                      </div>
+                      <Alert className="bg-purple-100 border-purple-300">
+                        <AlertCircle className="h-4 w-4 text-purple-600" />
+                        <AlertDescription className="text-purple-800 text-sm">
+                          We'll contact you at {customer.phone || 'your phone number'} to arrange the exact meet-up location and time.
+                        </AlertDescription>
+                      </Alert>
+                      <div>
+                        <Label htmlFor="meetup_notes">Preferred Time / Special Instructions (Optional)</Label>
+                        <Input
+                          id="meetup_notes"
+                          value={meetUpDetails.notes}
+                          onChange={(e) => setMeetUpDetails({ ...meetUpDetails, notes: e.target.value })}
+                          placeholder="e.g., After 2 PM works best, near XYZ landmark"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {fulfillmentType === 'delivery' && (
                     <div className="mt-6 p-4 bg-emerald-50 rounded-lg space-y-4 animate-in slide-in-from-top duration-300">
                       <div className="flex items-center gap-2 text-emerald-800 font-semibold mb-3">
                         <MapPin className="h-4 w-4" />
-                        Delivery Address
+                        Delivery Address (Within 5 miles)
                       </div>
+                      <Alert className="bg-blue-50 border-blue-200">
+                        <AlertCircle className="h-4 w-4 text-blue-600" />
+                        <AlertDescription className="text-blue-800 text-sm">
+                          Delivery available within 5 miles of Serenbe or Scotch Bonnet (Campbellton Rd area)
+                        </AlertDescription>
+                      </Alert>
                       <div>
                         <Label htmlFor="street">Street Address *</Label>
                         <Input
