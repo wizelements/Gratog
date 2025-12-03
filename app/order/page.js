@@ -430,6 +430,72 @@ export default function OrderPage() {
                       </Label>
                     </div>
                     
+                    {/* Meet Up After Market - Serenbe */}
+                    <div className="flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer hover:border-emerald-600 transition-all hover:shadow-md mt-3">
+                      <RadioGroupItem value="meetup_serenbe" id="meetup_serenbe" className="mt-1" />
+                      <Label htmlFor="meetup_serenbe" className="flex-1 cursor-pointer">
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 bg-purple-50 rounded-lg">
+                              <Package className="h-5 w-5 text-purple-600" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-semibold text-lg">🤝 Meet Up After Market - Serenbe</div>
+                              <div className="text-sm text-purple-600 font-medium">FREE • Flexible After-Hours</div>
+                            </div>
+                          </div>
+                          
+                          <div className="pl-14 space-y-2 text-sm text-gray-600">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-gray-400" />
+                              <span>Custom location near Serenbe</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-gray-400" />
+                              <span className="font-medium text-gray-900">After 1:00 PM Saturdays (by arrangement)</span>
+                            </div>
+                            <div className="bg-purple-50 border border-purple-200 rounded-md p-3 mt-2">
+                              <div className="text-xs font-semibold text-purple-800 mb-1">📞 Custom Coordination:</div>
+                              <div className="text-xs text-purple-700">We'll coordinate a convenient meet-up location near Serenbe after market hours. You'll receive a call to arrange details.</div>
+                            </div>
+                          </div>
+                        </div>
+                      </Label>
+                    </div>
+                    
+                    {/* Meet Up After Market - Scotch Bonnet */}
+                    <div className="flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer hover:border-emerald-600 transition-all hover:shadow-md mt-3">
+                      <RadioGroupItem value="meetup_scotch_bonnet" id="meetup_scotch_bonnet" className="mt-1" />
+                      <Label htmlFor="meetup_scotch_bonnet" className="flex-1 cursor-pointer">
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 bg-indigo-50 rounded-lg">
+                              <Package className="h-5 w-5 text-indigo-600" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-semibold text-lg">🤝 Meet Up - Scotch Bonnet Area</div>
+                              <div className="text-sm text-indigo-600 font-medium">FREE • Campbellton Rd Area</div>
+                            </div>
+                          </div>
+                          
+                          <div className="pl-14 space-y-2 text-sm text-gray-600">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-gray-400" />
+                              <span>Scotch Bonnet area, Campbellton Rd, Atlanta</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-gray-400" />
+                              <span className="font-medium text-gray-900">Flexible scheduling</span>
+                            </div>
+                            <div className="bg-indigo-50 border border-indigo-200 rounded-md p-3 mt-2">
+                              <div className="text-xs font-semibold text-indigo-800 mb-1">📞 Custom Coordination:</div>
+                              <div className="text-xs text-indigo-700">We'll arrange a convenient meet-up spot near Scotch Bonnet on Campbellton Rd. You'll receive a call to confirm location and time.</div>
+                            </div>
+                          </div>
+                        </div>
+                      </Label>
+                    </div>
+
                     {/* Home Delivery */}
                     <div className="flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer hover:border-emerald-600 transition-all hover:shadow-md mt-3">
                       <RadioGroupItem value="delivery" id="delivery" className="mt-1" />
@@ -442,7 +508,7 @@ export default function OrderPage() {
                             <div className="flex-1">
                               <div className="font-semibold text-lg">🚚 Home Delivery</div>
                               <div className="text-sm text-orange-600 font-medium">
-                                {subtotal >= 75 ? '✨ FREE delivery (over $75)' : `$6.99 delivery fee • FREE over $75`}
+                                {subtotal >= 75 ? '✨ FREE delivery (over $75)' : `$4.99 delivery fee • FREE over $75`}
                               </div>
                             </div>
                           </div>
@@ -450,7 +516,7 @@ export default function OrderPage() {
                           <div className="pl-14 text-sm text-gray-600">
                             <div className="flex items-center gap-2">
                               <Clock className="h-4 w-4 text-gray-400" />
-                              <span>Delivered within 2-3 business days</span>
+                              <span>Within 5 miles of Serenbe or Scotch Bonnet • 2-3 business days</span>
                             </div>
                           </div>
                         </div>
