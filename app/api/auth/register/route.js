@@ -2,33 +2,29 @@ import { NextResponse } from 'next/server';
 import { createUser, initializeUserRewards, initializeUserChallenge } from '@/lib/db/users';
 import { hashPassword, generateToken } from '@/lib/auth/jwt';
 import { sendWelcomeEmail } from '@/lib/email/service';
+import { validateRegistration } from '@/lib/auth/validation';
 
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { name, email, password, phone } = body;
+    const { name, email, password, confirmPassword, phone } = body;
 
-    // Validation
-    if (!name || !email || !password) {
-      return NextResponse.json(
-        { success: false, error: 'Name, email, and password are required' },
-        { status: 400 }
-      );
-    }
+    // Comprehensive validation
+    const validation = validateRegistration({
+      name,
+      email,
+      password,
+      confirmPassword,
+      phone
+    });
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!validation.valid) {
       return NextResponse.json(
-        { success: false, error: 'Invalid email format' },
-        { status: 400 }
-      );
-    }
-
-    // Password validation
-    if (password.length < 6) {
-      return NextResponse.json(
-        { success: false, error: 'Password must be at least 6 characters' },
+        { 
+          success: false, 
+          error: 'Validation failed',
+          errors: validation.errors 
+        },
         { status: 400 }
       );
     }
@@ -38,22 +34,28 @@ export async function POST(request) {
 
     // Create user
     const user = await createUser({
-      name,
-      email: email.toLowerCase(),
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
       passwordHash,
-      phone: phone || null
+      phone: phone ? phone.trim() : null
     });
 
-    // Initialize rewards and challenge
-    await Promise.all([
+    // Initialize user features in parallel
+    const initResults = await Promise.allSettled([
       initializeUserRewards(user.id),
       initializeUserChallenge(user.id)
     ]);
 
-    // Send welcome email (non-blocking)
+    // Log initialization results (non-blocking)
+    initResults.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        console.error(`Failed to initialize user feature ${index}:`, result.reason);
+      }
+    });
+
+    // Send welcome email (non-blocking, don't fail registration if it fails)
     sendWelcomeEmail(user).catch(err => {
       console.error('Failed to send welcome email:', err);
-      // Don't fail registration if email fails
     });
 
     // Generate JWT token
@@ -63,13 +65,20 @@ export async function POST(request) {
     const response = NextResponse.json(
       {
         success: true,
-        user,
-        token
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          joinedAt: user.joinedAt
+        },
+        token,
+        message: 'Account created successfully! Welcome to Taste of Gratitude.'
       },
       { status: 201 }
     );
 
-    // Set HTTP-only cookie
+    // Set HTTP-only cookie for security
     response.cookies.set('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -81,6 +90,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('Register error:', error);
     
+    // Handle specific errors
     if (error.message === 'Email already registered') {
       return NextResponse.json(
         { success: false, error: 'Email already registered' },
@@ -88,8 +98,19 @@ export async function POST(request) {
       );
     }
 
+    if (error.message.includes('duplicate')) {
+      return NextResponse.json(
+        { success: false, error: 'Email already registered' },
+        { status: 409 }
+      );
+    }
+
+    // Generic error response
     return NextResponse.json(
-      { success: false, error: 'Registration failed' },
+      { 
+        success: false, 
+        error: 'Registration failed. Please try again.' 
+      },
       { status: 500 }
     );
   }
