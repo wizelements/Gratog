@@ -145,6 +145,7 @@ export default function RegisterPage() {
       formData.name,
       formData.email,
       formData.password,
+      formData.confirmPassword,
       formData.phone
     );
 

@@ -9,6 +9,18 @@ export async function POST(request) {
     const body = await request.json();
     const { name, email, password, confirmPassword, phone } = body;
 
+    // Validate confirmPassword is present
+    if (!confirmPassword) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Validation failed',
+          errors: { confirmPassword: 'Confirm password is required' }
+        },
+        { status: 400 }
+      );
+    }
+
     // Comprehensive validation
     const validation = validateRegistration({
       name,
@@ -41,17 +53,30 @@ export async function POST(request) {
     });
 
     // Initialize user features in parallel
-    const initResults = await Promise.allSettled([
-      initializeUserRewards(user.id),
-      initializeUserChallenge(user.id)
-    ]);
+    try {
+      const initResults = await Promise.allSettled([
+        initializeUserRewards(user.id),
+        initializeUserChallenge(user.id)
+      ]);
 
-    // Log initialization results (non-blocking)
-    initResults.forEach((result, index) => {
-      if (result.status === 'rejected') {
-        console.error(`Failed to initialize user feature ${index}:`, result.reason);
+      // Check for failures and log them
+      let allSucceeded = true;
+      initResults.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.error(`Failed to initialize user feature ${index}:`, result.reason);
+          allSucceeded = false;
+        }
+      });
+
+      // If any initialization failed, still continue but log it
+      // User account is created but may need data sync
+      if (!allSucceeded) {
+        console.warn(`User ${user.id} created but some features failed to initialize`);
       }
-    });
+    } catch (initError) {
+      console.error('User feature initialization error:', initError);
+      // User account created; initialization will be retried on next login
+    }
 
     // Send welcome email (non-blocking, don't fail registration if it fails)
     sendWelcomeEmail(user).catch(err => {
