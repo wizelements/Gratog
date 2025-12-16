@@ -2,7 +2,9 @@
 
 /**
  * Create a test user for development/testing
- * Usage: node scripts/create-test-user.js
+ * Usage: 
+ *   npm run create:test-user
+ *   MONGODB_URI=mongodb://user:pass@host/db npm run create:test-user
  */
 
 require('dotenv').config();
@@ -13,10 +15,8 @@ const { v4: uuidv4 } = require('uuid');
 async function createTestUser() {
   let client;
   try {
-    const mongoUrl = process.env.MONGODB_URI || process.env.MONGO_URL;
-    if (!mongoUrl) {
-      throw new Error('MONGODB_URI or MONGO_URL environment variable is not set');
-    }
+    const mongoUrl = process.env.MONGODB_URI || process.env.MONGO_URL || 'mongodb://localhost:27017';
+    console.log(`Connecting to MongoDB: ${mongoUrl.replace(/mongodb:\/\/.*@/, 'mongodb://***:***@').substring(0, 50)}...`);
 
     client = new MongoClient(mongoUrl);
     await client.connect();
@@ -90,6 +90,18 @@ async function createTestUser() {
     process.exit(0);
   } catch (error) {
     console.error('\n❌ Error creating test user:', error.message);
+    
+    if (error.message.includes('ECONNREFUSED') || error.message.includes('connect')) {
+      console.log('\n⚠️  MongoDB is not running or not accessible.');
+      console.log('\nTo use this script, you need to:\n');
+      console.log('1. Set your MONGODB_URI environment variable:');
+      console.log('   export MONGODB_URI="mongodb+srv://user:password@cluster.mongodb.net/dbname"');
+      console.log('\n2. Then run:');
+      console.log('   npm run create:test-user\n');
+      console.log('Or in one command:');
+      console.log('   MONGODB_URI="your-connection-string" npm run create:test-user\n');
+    }
+    
     if (client) await client.close();
     process.exit(1);
   }
