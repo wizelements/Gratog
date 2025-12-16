@@ -46,61 +46,51 @@ export default function RegisterPage() {
 
   // Real-time validation
   useEffect(() => {
-    const validateField = (name, value) => {
-      let validation = {};
+    const validateAllFields = () => {
+      const newValidation = {};
 
-      switch (name) {
-        case 'name':
-          if (value) {
-            const result = validateName(value);
-            validation.name = result;
-          }
-          break;
-        case 'email':
-          if (value) {
-            const result = validateEmail(value);
-            validation.email = result;
-          }
-          break;
-        case 'password':
-          if (value) {
-            const result = validatePassword(value);
-            validation.password = result;
-            setPasswordStrength(getPasswordStrength(value));
-          } else {
-            setPasswordStrength(0);
-          }
-          break;
-        case 'confirmPassword':
-          if (value && formData.password) {
-            const result = validateConfirmPassword(formData.password, value);
-            validation.confirmPassword = result;
-          }
-          break;
-        case 'phone':
-          if (value) {
-            const result = validatePhone(value);
-            validation.phone = result;
-          }
-          break;
+      // Validate name if it has been touched
+      if (formData.name) {
+        const nameResult = validateName(formData.name);
+        newValidation.name = nameResult;
       }
 
-      setFieldValidation(prev => ({
-        ...prev,
-        ...validation
-      }));
+      // Validate email if it has been touched
+      if (formData.email) {
+        const emailResult = validateEmail(formData.email);
+        newValidation.email = emailResult;
+      }
+
+      // Validate password if it has been touched
+      if (formData.password) {
+        const passwordResult = validatePassword(formData.password);
+        newValidation.password = passwordResult;
+        setPasswordStrength(getPasswordStrength(formData.password));
+      } else {
+        setPasswordStrength(0);
+      }
+
+      // Validate confirm password if both password fields are filled
+      if (formData.password && formData.confirmPassword) {
+        const confirmResult = validateConfirmPassword(formData.password, formData.confirmPassword);
+        newValidation.confirmPassword = confirmResult;
+      }
+
+      // Validate phone if it has been touched
+      if (formData.phone) {
+        const phoneResult = validatePhone(formData.phone);
+        newValidation.phone = phoneResult;
+      }
+
+      setFieldValidation(newValidation);
     };
 
     const timer = setTimeout(() => {
-      validateField(Object.keys(formData).find(key => 
-        fieldErrors[key] && formData[key]
-      ) || '', formData[Object.keys(formData).find(key => 
-        fieldErrors[key] && formData[key]
-      ) || '']);
+      validateAllFields();
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [formData, fieldErrors]);
+  }, [formData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -197,8 +187,12 @@ export default function RegisterPage() {
     formData.email && 
     formData.password && 
     formData.confirmPassword && 
-    Object.keys(fieldErrors).length === 0 &&
-    agreedToTerms;
+    agreedToTerms &&
+    fieldValidation.name?.valid &&
+    fieldValidation.email?.valid &&
+    fieldValidation.password?.valid &&
+    fieldValidation.confirmPassword?.valid &&
+    (!formData.phone || fieldValidation.phone?.valid);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50 px-4 py-12">
