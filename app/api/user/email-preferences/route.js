@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth/middleware';
 import { MongoClient } from 'mongodb';
 
-const MONGO_URL = process.env.MONGO_URL;
+const MONGO_URL = process.env.MONGODB_URI || process.env.MONGO_URL;
 let cachedDb = null;
 
 async function connectToDatabase() {

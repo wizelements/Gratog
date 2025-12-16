@@ -3,7 +3,7 @@ import { verifyToken } from '@/lib/auth/jwt';
 import { MongoClient } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 
-const MONGO_URL = process.env.MONGO_URL;
+const MONGO_URL = process.env.MONGODB_URI || process.env.MONGO_URL;
 let cachedDb = null;
 
 async function connectToDatabase() {
