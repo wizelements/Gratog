@@ -39,10 +39,11 @@ export default function RegisterPage() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Redirect if already logged in
-  if (isAuthenticated) {
-    router.push('/profile');
-    return null;
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/profile');
+    }
+  }, [isAuthenticated, router]);
 
   // Real-time validation
   useEffect(() => {
