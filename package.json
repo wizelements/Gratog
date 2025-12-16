@@ -10,6 +10,7 @@
     "lint": "next lint",
     "fix:deployment": "node scripts/fix-deployment-issues.js",
     "postinstall": "node scripts/fix-deployment-issues.js || true",
+    "create:test-user": "node scripts/create-test-user.js",
     "typecheck": "tsc --noEmit --skipLibCheck || echo 'TypeScript errors found but continuing...'",
     "test:unit": "vitest run --coverage --reporter=dot",
     "test:api": "cross-env NODE_ENV=test vitest run tests/api --reporter=dot",
