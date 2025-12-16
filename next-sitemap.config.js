@@ -2,72 +2,48 @@
 module.exports = {
   siteUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://tasteofgratitude.shop',
   generateRobotsTxt: true,
-  generateIndexSitemap: false,
+  generateIndexSitemap: true,
   exclude: [
     '/admin/*',
     '/api/*',
-    '/login',
-    '/register',
-    '/profile/*',
-    '/checkout/*',
-    '/order/*',
     '/test-auth',
     '/diagnostic'
   ],
   robotsTxtOptions: {
+    additionalSitemaps: [
+      `${process.env.NEXT_PUBLIC_BASE_URL || 'https://tasteofgratitude.shop'}/sitemap-products.xml`,
+      `${process.env.NEXT_PUBLIC_BASE_URL || 'https://tasteofgratitude.shop'}/sitemap-blog.xml`,
+    ],
     policies: [
       {
         userAgent: '*',
         allow: '/',
+        disallow: ['/admin', '/api', '/test-auth', '/diagnostic'],
       },
       {
-        userAgent: '*',
-        disallow: ['/admin/', '/api/', '/login', '/register', '/profile/', '/checkout/', '/order/'],
+        userAgent: 'Googlebot',
+        allow: '/',
+        disallow: ['/admin', '/api'],
+        crawlDelay: 0,
       },
     ],
-    additionalSitemaps: [],
   },
   transform: async (config, path) => {
-    // Custom priority and changefreq logic
+    // Custom priority for key pages
     const priorities = {
       '/': 1.0,
       '/catalog': 0.9,
-      '/quiz': 0.8,
-      '/markets': 0.8,
+      '/order': 0.8,
       '/about': 0.7,
-      '/contact': 0.7,
-      '/faq': 0.7,
+      '/explore': 0.7,
+      '/rewards': 0.6,
+      '/markets': 0.6,
     };
-
-    const changefreqs = {
-      '/': 'daily',
-      '/catalog': 'daily',
-      '/quiz': 'weekly',
-      '/markets': 'weekly',
-    };
-
-    // Dynamic logic for product and content pages
-    let changefreq = 'monthly';
-    let priority = 0.6;
-
-    if (path.includes('/product/')) {
-      changefreq = 'weekly';
-      priority = 0.8;
-    } else if (path.includes('/learn/')) {
-      changefreq = 'monthly';
-      priority = 0.7;
-    } else if (path.includes('/blog/')) {
-      changefreq = 'weekly';
-      priority = 0.6;
-    } else if (priorities[path]) {
-      priority = priorities[path];
-      changefreq = changefreqs[path] || 'monthly';
-    }
 
     return {
       loc: path,
-      changefreq,
-      priority,
+      changefreq: path === '/' ? 'daily' : path.includes('/product/') ? 'weekly' : 'monthly',
+      priority: priorities[path] || 0.5,
       lastmod: new Date().toISOString(),
     };
   },

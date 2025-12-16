@@ -1,18 +1,21 @@
+# *
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /test-auth
+Disallow: /diagnostic
 
-# Important pages
-Allow: /catalog
-Allow: /about
-Allow: /contact
-Allow: /order
+# Googlebot
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /api
+
+# Host
+Host: https://tasteofgratitude.shop
 
 # Sitemaps
 Sitemap: https://tasteofgratitude.shop/sitemap.xml
-
-# Disallow admin and API routes
-Disallow: /admin/
-Disallow: /api/
-
-# SEO optimization
-Crawl-delay: 1
+Sitemap: https://tasteofgratitude.shop/sitemap-products.xml
+Sitemap: https://tasteofgratitude.shop/sitemap-blog.xml
