@@ -74,8 +74,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Calculate tax (example: 7% sales tax)
-    const taxRate = 0.07;
+    // Calculate tax (8% sales tax - consistent with rest of system)
+    const taxRate = 0.08;
     const taxCents = Math.round(subtotalCents * taxRate);
     const totalCents = subtotalCents + taxCents;
 
