@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getSquareClient, SQUARE_LOCATION_ID } from '@/lib/square';
 import { connectToDatabase } from '@/lib/db-optimized';
@@ -44,7 +47,7 @@ export async function POST(request: NextRequest) {
     // Generate idempotency key to prevent duplicate payments
     const paymentIdempotencyKey = idempotencyKey || randomUUID();
     
-    console.log('Processing Square Web Payment:', {
+    debug('Processing Square Web Payment:', {
       sourceId: sourceId.substring(0, 20) + '...',
       amountCents,
       currency,
@@ -61,7 +64,7 @@ export async function POST(request: NextRequest) {
     let squareCustomerId: string | undefined;
     
     if (customer && customer.email && customer.name) {
-      console.log('Creating/finding Square customer for payment...');
+      debug('Creating/finding Square customer for payment...');
       try {
         const customerResult = await findOrCreateSquareCustomer({
           email: customer.email,
@@ -75,7 +78,7 @@ export async function POST(request: NextRequest) {
         
         if (customerResult.success && customerResult.customer) {
           squareCustomerId = customerResult.customer.id;
-          console.log('✅ Square customer ready for payment', { customerId: squareCustomerId });
+          debug('✅ Square customer ready for payment', { customerId: squareCustomerId });
         } else {
           console.warn('Customer creation failed, continuing without customer link', { 
             error: customerResult.error 
@@ -111,7 +114,7 @@ export async function POST(request: NextRequest) {
       paymentRequest.orderId = orderId;
     }
     
-    console.log('Sending payment request to Square via REST...');
+    debug('Sending payment request to Square via REST...');
     
     // Use REST API instead of SDK
     const response = await createPayment({
@@ -136,7 +139,7 @@ export async function POST(request: NextRequest) {
     
     const payment = response.payment;
     
-    console.log('Square payment completed:', {
+    debug('Square payment completed:', {
       paymentId: payment.id,
       status: payment.status,
       amountMoney: payment.amountMoney,
@@ -178,7 +181,7 @@ export async function POST(request: NextRequest) {
       };
       
       await db.collection('payments').insertOne(paymentRecord);
-      console.log('Payment record saved:', paymentRecord.id);
+      debug('Payment record saved:', paymentRecord.id);
       
       // Update order status if orderId provided
       if (orderId) {
@@ -212,7 +215,7 @@ export async function POST(request: NextRequest) {
             }
           }
         );
-        console.log('Order status updated:', { orderId, status: orderStatus, paymentStatus: payment.status });
+        debug('Order status updated:', { orderId, status: orderStatus, paymentStatus: payment.status });
       }
     } catch (dbError) {
       console.warn('Failed to save payment record (non-critical):', dbError);
@@ -326,8 +329,8 @@ export async function GET(request: NextRequest) {
     if (paymentId) {
       try {
         const square = getSquareClient();
-        const response = await square.payments.get({ paymentId }) as any;
-        squarePayment = response.result?.payment;
+        const response = await square.payments.get({ paymentId });
+        squarePayment = response.payment;
       } catch (squareError) {
         console.error('Failed to get payment from Square:', squareError);
       }

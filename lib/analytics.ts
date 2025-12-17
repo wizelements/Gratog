@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 // Analytics helper for GA4 and Mixpanel
 
 declare global {
@@ -6,6 +9,32 @@ declare global {
     mixpanel?: {
       track?: (event: string, props?: Record<string, any>) => void;
     };
+    posthog?: any;
+  }
+}
+
+export class AnalyticsSystem {
+  static initPostHog() {
+    if (typeof window !== 'undefined' && !window.posthog) {
+      // Dynamic import for client-side only - graceful fallback if not available
+      import('posthog-js').then(({ default: posthog }) => {
+        posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY || 'mock_key', {
+          api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
+          person_profiles: 'identified_only'
+        });
+        window.posthog = posthog;
+      }).catch(() => {
+        debug('PostHog not available, using console logging only');
+        window.posthog = { capture: () => {} }; // Mock for graceful fallback
+      });
+    }
+  }
+
+  static trackEvent(eventName: string, properties: Record<string, any> = {}) {
+    // PostHog tracking (client-side only)
+    if (typeof window !== 'undefined' && window.posthog) {
+      window.posthog.capture(eventName, properties);
+    }
   }
 }
 

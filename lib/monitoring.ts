@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 /**
  * Monitoring and alerting utilities
  */
@@ -28,7 +31,7 @@ export function logSecurityEvent(
   };
 
   // Console logging (structured)
-  console.log(JSON.stringify({
+  debug(JSON.stringify({
     event: 'SECURITY_EVENT',
     ...event,
   }));
@@ -125,16 +128,18 @@ export function logRetryExhausted(
  */
 function sendToMonitoring(event: MonitoringEvent) {
   // PostHog tracking
-  if (typeof window !== 'undefined' && (window as any).posthog) {
-    (window as any).posthog.capture('security_event', {
+  if (typeof window !== 'undefined' && 'posthog' in window) {
+    const posthog = window.posthog as { capture: (event: string, properties: Record<string, unknown>) => void };
+    posthog.capture('security_event', {
       ...event,
       $set: { last_security_event: event.type },
     });
   }
 
   // Sentry (if configured)
-  if (process.env.SENTRY_DSN && typeof (global as any).Sentry !== 'undefined') {
-    (global as any).Sentry.captureMessage(event.message, {
+  const globalWithSentry = global as typeof globalThis & { Sentry?: { captureMessage: (message: string, options: Record<string, unknown>) => void } };
+  if (process.env.SENTRY_DSN && globalWithSentry.Sentry) {
+    globalWithSentry.Sentry.captureMessage(event.message, {
       level: event.severity === 'critical' ? 'error' : 'warning',
       tags: {
         event_type: event.type,
@@ -197,7 +202,7 @@ function alertCriticalIssue(event: MonitoringEvent) {
   const alertEmail = process.env.ALERT_EMAIL;
   if (alertEmail) {
     // Use your email service here
-    console.log(`Would send alert email to: ${alertEmail}`);
+    debug(`Would send alert email to: ${alertEmail}`);
   }
 }
 
@@ -210,7 +215,7 @@ export function trackPerformance(
   success: boolean,
   metadata?: any
 ) {
-  console.log(JSON.stringify({
+  debug(JSON.stringify({
     event: 'PERFORMANCE_METRIC',
     operation,
     durationMs,

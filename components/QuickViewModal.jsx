@@ -164,6 +164,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
                 <div className="flex gap-2 flex-wrap">
                   {normalizedVariations.map((variation) => (
                       <button
+                        type="button"
                         key={variation.id}
                         onClick={() => setSelectedVariation(variation)}
                         className={`px-4 py-2 border-2 rounded-lg transition-all text-sm ${

@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 /**
  * Redis-based idempotency key management for production multi-instance deployments
  * Falls back to in-memory cache if Redis is not available
@@ -39,7 +42,7 @@ export async function initRedis() {
     // For now, use stub implementation
     redisClient = new RedisIdempotency(86400);
     isRedisAvailable = true;
-    console.log('Using idempotency caching (in-memory fallback)');
+    debug('Using idempotency caching (in-memory fallback)');
     return redisClient;
   } catch (error) {
     console.error('Failed to initialize Redis:', error);
@@ -125,7 +128,7 @@ export async function withIdempotency<T>(
   // Check if we already have a response
   const cachedResponse = await getIdempotentResponse(key);
   if (cachedResponse !== null) {
-    console.log(`Idempotency cache hit for key: ${key}`);
+    debug(`Idempotency cache hit for key: ${key}`);
     return cachedResponse;
   }
 

@@ -18,6 +18,7 @@ export default function LoginPage() {
     email: '',
     password: ''
   });
+  const [error, setError] = useState('');
 
   // Redirect if already logged in
   if (isAuthenticated) {
@@ -28,6 +29,7 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     const result = await login(formData.email, formData.password);
 
@@ -35,6 +37,8 @@ export default function LoginPage() {
 
     if (result.success) {
       router.push('/profile');
+    } else {
+      setError(result.error || 'Login failed. Please check your credentials.');
     }
   };
 
@@ -66,6 +70,11 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                  {error}
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input

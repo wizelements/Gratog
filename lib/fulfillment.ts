@@ -6,7 +6,6 @@
 import {
   getShippingRates,
   validateAddress,
-  getShippingOptionsFromCart,
   type ShippingAddress,
   type ShippingRate,
   type PackageDimensions,
@@ -287,7 +286,10 @@ export async function getShippingOptions(
     country: 'US',
   };
 
-  const packageDimensions: PackageDimensions = getShippingOptionsFromCart(cartItems);
+  // Calculate package dimensions from cart items (default: 1lb per item)
+  const packageDimensions: PackageDimensions = {
+    weight: cartItems.length || 1, // 1 oz per item as default
+  };
   const rates = await getShippingRates(fromAddress, address, packageDimensions);
 
   return rates.map((rate: ShippingRate) => ({

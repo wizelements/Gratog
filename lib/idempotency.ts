@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 /**
  * Idempotency key management for payment operations
  */
@@ -83,7 +86,7 @@ export async function withIdempotency<T>(
   // Check if we already have a response
   const cachedResponse = getIdempotentResponse(key);
   if (cachedResponse !== null) {
-    console.log(`Idempotency cache hit for key: ${key}`);
+    debug(`Idempotency cache hit for key: ${key}`);
     return cachedResponse;
   }
 

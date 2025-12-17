@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 /**
  * Square Environment Validator - EMERGENT RUNBOOK Implementation
  * Validates Square configuration on startup per zero-defect standards
@@ -25,7 +28,7 @@ export function validateSquareEnvironment(): ValidationResult {
   const warnings: string[] = [];
   
   const config: Partial<SquareEnvConfig> = {
-    environment: (process.env.SQUARE_ENVIRONMENT as any) || 'production',
+    environment: (process.env.SQUARE_ENVIRONMENT === 'sandbox' ? 'sandbox' : 'production') as 'sandbox' | 'production',
     applicationId: process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || '',
     accessToken: process.env.SQUARE_ACCESS_TOKEN || '',
     locationId: process.env.SQUARE_LOCATION_ID || '',
@@ -84,35 +87,35 @@ export function validateSquareEnvironment(): ValidationResult {
 export function printSquareConfig(maskSecrets = true): void {
   const result = validateSquareEnvironment();
   
-  console.log('\n🔍 SQUARE CONFIGURATION VALIDATION');
-  console.log('=====================================');
+  debug('\n🔍 SQUARE CONFIGURATION VALIDATION');
+  debug('=====================================');
   
   if (result.valid) {
-    console.log('✅ Status: VALID');
+    debug('✅ Status: VALID');
   } else {
-    console.log('❌ Status: INVALID');
+    debug('❌ Status: INVALID');
   }
   
-  console.log('\n📋 Configuration:');
-  console.log(`  Environment: ${result.config.environment}`);
-  console.log(`  Application ID: ${maskSecrets ? maskString(result.config.applicationId || '') : result.config.applicationId}`);
-  console.log(`  Access Token: ${maskSecrets ? maskString(result.config.accessToken || '') : result.config.accessToken}`);
-  console.log(`  Location ID: ${result.config.locationId}`);
-  console.log(`  Site Base URL: ${result.config.siteBaseUrl}`);
-  console.log(`  Allowed Origins: ${result.config.allowedOrigins?.join(', ') || 'none'}`);
-  console.log(`  Webhook Key: ${result.config.webhookSignatureKey ? '✅ Set' : '⚠️  Not set'}`);
+  debug('\n📋 Configuration:');
+  debug(`  Environment: ${result.config.environment}`);
+  debug(`  Application ID: ${maskSecrets ? maskString(result.config.applicationId || '') : result.config.applicationId}`);
+  debug(`  Access Token: ${maskSecrets ? maskString(result.config.accessToken || '') : result.config.accessToken}`);
+  debug(`  Location ID: ${result.config.locationId}`);
+  debug(`  Site Base URL: ${result.config.siteBaseUrl}`);
+  debug(`  Allowed Origins: ${result.config.allowedOrigins?.join(', ') || 'none'}`);
+  debug(`  Webhook Key: ${result.config.webhookSignatureKey ? '✅ Set' : '⚠️  Not set'}`);
   
   if (result.errors.length > 0) {
-    console.log('\n❌ ERRORS:');
-    result.errors.forEach(err => console.log(`  - ${err}`));
+    debug('\n❌ ERRORS:');
+    result.errors.forEach(err => debug(`  - ${err}`));
   }
   
   if (result.warnings.length > 0) {
-    console.log('\n⚠️  WARNINGS:');
-    result.warnings.forEach(warn => console.log(`  - ${warn}`));
+    debug('\n⚠️  WARNINGS:');
+    result.warnings.forEach(warn => debug(`  - ${warn}`));
   }
   
-  console.log('=====================================\n');
+  debug('=====================================\n');
   
   if (!result.valid) {
     throw new Error('Square configuration validation failed. Fix errors before proceeding.');

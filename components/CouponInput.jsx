@@ -91,6 +91,7 @@ export default function CouponInput({
                   onKeyPress={handleKeyPress}
                   disabled={disabled || isValidating}
                   className="flex-1"
+                  aria-label="Enter coupon code"
                 />
                 <Button
                   onClick={validateCoupon}

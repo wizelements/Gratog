@@ -73,13 +73,13 @@ export async function GET(request: NextRequest) {
     // Test 3: Test Square API connectivity - Locations API (most basic)
     console.log('Testing Square API connectivity...');
     try {
-      const response = await square.locations.list() as any;
+      const response = await square.locations.list();
       
-      if (response.result?.locations) {
+      if (response.locations) {
         diagnostics.tests.apiConnectivity = {
           status: 'PASS',
-          locationsFound: response.result.locations.length,
-          locations: response.result.locations.map((loc: any) => ({
+          locationsFound: response.locations.length,
+          locations: response.locations.map((loc) => ({
             id: loc.id,
             name: loc.name,
             status: loc.status,

@@ -28,9 +28,9 @@ export async function POST(request: NextRequest) {
     const catalogResponse = await square.catalog.batchGet({
       objectIds: variationIds,
       includeRelatedObjects: false
-    }) as any;
+    });
 
-    if (!catalogResponse.result?.objects) {
+    if (!catalogResponse.objects) {
       return NextResponse.json(
         { error: 'Failed to retrieve catalog items from Square' },
         { status: 500 }
@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
     const lineDetails = [];
 
     for (const line of lines) {
-      const variation = catalogResponse.result.objects.find(
-        (obj: any) => obj.id === line.variationId
+      const variation = catalogResponse.objects.find(
+        (obj) => obj.id === line.variationId
       );
 
       if (!variation) {

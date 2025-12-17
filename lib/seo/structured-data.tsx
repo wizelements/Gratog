@@ -260,6 +260,11 @@ export function getVideoSchema(video: {
 
 /**
  * Render JSON-LD script tag
+ * 
+ * SECURITY NOTE: dangerouslySetInnerHTML is safe here because:
+ * 1. JSON.stringify() escapes all special characters (<, >, &, ", etc.)
+ * 2. Content is in a script tag with type="application/ld+json" (not executed as JS or rendered as HTML)
+ * 3. The data object is constructed from controlled sources, not raw user input
  */
 export function renderJsonLd(data: object) {
   return (

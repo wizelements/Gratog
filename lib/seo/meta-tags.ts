@@ -179,7 +179,7 @@ export function getProductMetadata(product: {
     url: `/product/${product.slug}`,
     type: 'product',
     price: product.price,
-    availability: product.availability as any,
+    availability: product.availability as 'in stock' | 'out of stock',
   }, baseUrl);
 }
 

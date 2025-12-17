@@ -122,6 +122,7 @@ export default function CartSummary({
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-2 py-1">
                         <button
+                          type="button"
                           onClick={() => handleQuantityChange(item.id, -1)}
                           className="text-gray-600 hover:text-emerald-600 transition-colors"
                           aria-label="Decrease quantity"
@@ -132,6 +133,7 @@ export default function CartSummary({
                           {item.quantity}
                         </span>
                         <button
+                          type="button"
                           onClick={() => handleQuantityChange(item.id, 1)}
                           className="text-gray-600 hover:text-emerald-600 transition-colors"
                           aria-label="Increase quantity"
@@ -141,6 +143,7 @@ export default function CartSummary({
                       </div>
                       
                       <button
+                        type="button"
                         onClick={() => {
                           onRemoveItem(item.id);
                           toast.success('Item removed from cart');

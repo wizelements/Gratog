@@ -60,6 +60,7 @@ export default function NewsletterSignup({ variant = 'default' }) {
           onChange={(e) => setEmail(e.target.value)}
           disabled={loading || subscribed}
           className="flex-1"
+          aria-label="Email address for newsletter"
         />
         <Button
           type="submit"
@@ -104,6 +105,7 @@ export default function NewsletterSignup({ variant = 'default' }) {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               disabled={loading}
+              aria-label="First name (optional)"
             />
             <Input
               type="email"
@@ -112,6 +114,7 @@ export default function NewsletterSignup({ variant = 'default' }) {
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
               required
+              aria-label="Email address"
             />
           </div>
           <Button

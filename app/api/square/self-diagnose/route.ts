@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
@@ -12,7 +15,7 @@ import { join } from 'path';
 export async function GET(request: Request) {
   const LOG_PREFIX = '[SELF-DIAGNOSE]';
   
-  console.log(`${LOG_PREFIX} 🔍 Starting Square self-diagnosis...`);
+  debug(`${LOG_PREFIX} 🔍 Starting Square self-diagnosis...`);
   
   const report = {
     timestamp: new Date().toISOString(),
@@ -33,7 +36,7 @@ export async function GET(request: Request) {
       : 'https://connect.squareupsandbox.com';
     
     // Test 1: Environment Configuration
-    console.log(`${LOG_PREFIX} Checking environment configuration...`);
+    debug(`${LOG_PREFIX} Checking environment configuration...`);
     report.tests.configuration = {
       status: 'PASS',
       environment,
@@ -50,7 +53,7 @@ export async function GET(request: Request) {
     }
     
     // Test 2: Merchant API
-    console.log(`${LOG_PREFIX} Testing Merchant API...`);
+    debug(`${LOG_PREFIX} Testing Merchant API...`);
     try {
       const merchantResponse = await fetch(`${baseUrl}/v2/merchants`, {
         headers: {
@@ -71,7 +74,7 @@ export async function GET(request: Request) {
           currency: merchant?.currency
         };
         
-        console.log(`${LOG_PREFIX} ✅ Merchant verified: ${merchant?.business_name}`);
+        debug(`${LOG_PREFIX} ✅ Merchant verified: ${merchant?.business_name}`);
       } else {
         const errorData = await merchantResponse.json();
         report.tests.merchant = {
@@ -90,7 +93,7 @@ export async function GET(request: Request) {
     }
     
     // Test 3: Locations API
-    console.log(`${LOG_PREFIX} Testing Locations API...`);
+    debug(`${LOG_PREFIX} Testing Locations API...`);
     try {
       const locationsResponse = await fetch(`${baseUrl}/v2/locations`, {
         headers: {
@@ -137,7 +140,7 @@ export async function GET(request: Request) {
     }
     
     // Test 4: Catalog API
-    console.log(`${LOG_PREFIX} Testing Catalog API...`);
+    debug(`${LOG_PREFIX} Testing Catalog API...`);
     try {
       const catalogResponse = await fetch(`${baseUrl}/v2/catalog/list?types=ITEM&limit=5`, {
         headers: {
@@ -186,13 +189,13 @@ export async function GET(request: Request) {
     
     if (failedTests.length === 0) {
       report.status = 'verified';
-      console.log(`${LOG_PREFIX} ✅ All tests passed`);
+      debug(`${LOG_PREFIX} ✅ All tests passed`);
     } else if (passedTests.length > 0) {
       report.status = 'partial';
-      console.log(`${LOG_PREFIX} ⚠️  Some tests failed`);
+      debug(`${LOG_PREFIX} ⚠️  Some tests failed`);
     } else {
       report.status = 'failed';
-      console.log(`${LOG_PREFIX} ❌ All tests failed`);
+      debug(`${LOG_PREFIX} ❌ All tests failed`);
     }
     
     // Save status to public file for monitoring
@@ -207,7 +210,7 @@ export async function GET(request: Request) {
       };
       
       await writeFile(statusFilePath, JSON.stringify(publicStatus, null, 2));
-      console.log(`${LOG_PREFIX} ✅ Status file written to /public/__square_status.json`);
+      debug(`${LOG_PREFIX} ✅ Status file written to /public/__square_status.json`);
     } catch (err) {
       console.error(`${LOG_PREFIX} ⚠️  Could not write status file:`, err);
     }

@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 /**
  * Square Production Safety Guard
  * Prevents fallback payments and provides clear error messages in production
@@ -110,7 +113,7 @@ export function logSquareOperation(
   const config = getSquareGuardConfig();
   const prefix = success ? '✅' : '❌';
   
-  console.log(`${prefix} [Square ${config.environment}] ${operation}`, {
+  debug(`${prefix} [Square ${config.environment}] ${operation}`, {
     success,
     mockMode: config.mockMode,
     allowFallback: config.allowFallback,

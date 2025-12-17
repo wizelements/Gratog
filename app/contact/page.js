@@ -17,17 +17,24 @@ export default function ContactPage() {
     message: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError('');
     
-    // Simulate form submission (add actual API endpoint later)
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast.success('Message sent successfully! We\'ll get back to you soon.');
-    setFormData({ name: '', email: '', subject: '', message: '' });
-    setIsSubmitting(false);
+    try {
+      // Simulate form submission (add actual API endpoint later)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success('Message sent successfully! We\'ll get back to you soon.');
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (err) {
+      setError(err.message || 'Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -103,6 +110,11 @@ export default function ContactPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                  {error}
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name *</Label>

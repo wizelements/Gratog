@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 
@@ -43,7 +46,7 @@ export async function GET(request) {
       receivedAt: new Date().toISOString()
     };
     
-    console.log('📱 Square POS Callback received:', data);
+    debug('📱 Square POS Callback received:', data);
     
     // Handle different statuses
     if (data.status === 'error') {
@@ -56,7 +59,7 @@ export async function GET(request) {
     }
     
     if (data.status === 'cancel') {
-      console.log('⚠️ Square POS transaction cancelled by user');
+      debug('⚠️ Square POS transaction cancelled by user');
       
       // Redirect to order page to try again
       return NextResponse.redirect(
@@ -65,7 +68,7 @@ export async function GET(request) {
     }
     
     if (data.status === 'ok' && data.transactionId) {
-      console.log('✅ Square POS transaction successful:', data.transactionId);
+      debug('✅ Square POS transaction successful:', data.transactionId);
       
       // Update order in database and track for spin eligibility
       if (data.orderId && data.customerEmail) {
@@ -106,7 +109,7 @@ export async function GET(request) {
             })
           });
           
-          console.log('✅ Order tracked with spin rewards');
+          debug('✅ Order tracked with spin rewards');
         } catch (dbError) {
           console.error('Failed to update order:', dbError);
           // Continue anyway - payment was successful
@@ -134,7 +137,7 @@ export async function GET(request) {
             })
           });
           
-          console.log(`✅ Awarded ${points} reward points`);
+          debug(`✅ Awarded ${points} reward points`);
         } catch (pointsError) {
           console.error('Failed to award points:', pointsError);
         }
@@ -169,7 +172,7 @@ export async function POST(request) {
   try {
     const body = await request.json();
     
-    console.log('📱 Square POS Callback (POST):', body);
+    debug('📱 Square POS Callback (POST):', body);
     
     // Convert POST data to GET-like handling
     const searchParams = new URLSearchParams();

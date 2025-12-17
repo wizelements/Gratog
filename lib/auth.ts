@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextRequest } from 'next/server';
 
 /**
@@ -123,7 +126,7 @@ export function logAdminAction(user: AuthUser, action: string, details: any) {
   };
   
   // In production, send to proper logging service
-  console.log('[ADMIN_ACTION]', JSON.stringify(logEntry));
+  debug('[ADMIN_ACTION]', JSON.stringify(logEntry));
   
   // Could also store in database for audit trail
   // await database.collection('audit_log').insertOne(logEntry);

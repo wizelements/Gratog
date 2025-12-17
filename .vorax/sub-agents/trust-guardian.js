@@ -189,19 +189,20 @@ class TrustGuardian {
           }
           
           // Check for discount calculation errors (common bugs)
-          if (content.includes('discount') && content.includes('%')) {
-            if (!content.includes('/ 100') && !content.includes('* 0.')) {
-              this.issues.push({
-                agent: this.name,
-                severity: 'high',
-                type: 'discount-calculation',
-                title: 'Potential discount calculation error',
-                file: fullPath.replace(process.cwd(), ''),
-                description: 'Percentage discount may not be calculated correctly',
-                estimatedLoss: 0.02,
-                fix: 'Verify discount is divided by 100 or multiplied by decimal'
-              });
-            }
+          // Only flag if there's actual price calculation (not just display strings)
+          const hasDiscountCalc = /discount\s*[*\/]\s*\d|price\s*[*-]\s*discount/i.test(content);
+          const hasBadCalc = hasDiscountCalc && !content.includes('/ 100') && !content.includes('* 0.');
+          if (hasBadCalc) {
+            this.issues.push({
+              agent: this.name,
+              severity: 'medium',
+              type: 'discount-calculation',
+              title: 'Potential discount calculation error',
+              file: fullPath.replace(process.cwd(), ''),
+              description: 'Percentage discount may not be calculated correctly',
+              estimatedLoss: 0.01,
+              fix: 'Verify discount is divided by 100 or multiplied by decimal'
+            });
           }
         }
       }

@@ -24,7 +24,11 @@ export default function SEOHead({
   
   return (
     <>
-      {/* Structured Data */}
+      {/* Structured Data
+          SECURITY NOTE: dangerouslySetInnerHTML is safe here because:
+          1. JSON.stringify() escapes all special characters (<, >, &, ", etc.)
+          2. Content is in a script tag with type="application/ld+json" (not executed as JS or rendered as HTML)
+          3. structuredData comes from schema generators, not raw user input */}
       {structuredData && (
         <Script
           id="structured-data"

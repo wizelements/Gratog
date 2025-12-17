@@ -184,10 +184,12 @@ export default function SearchEnhanced({
           onKeyDown={handleKeyDown}
           onFocus={() => query.length >= 2 && suggestions.length > 0 && setShowDropdown(true)}
           className={`pl-10 pr-10 ${variantClasses[variant]} transition-all`}
+          aria-label="Search products"
         />
         
         {query && (
           <button
+            type="button"
             onClick={() => {
               setQuery('');
               setSuggestions([]);

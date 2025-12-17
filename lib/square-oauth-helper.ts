@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 /**
  * Square OAuth Helper Utilities
  * Tools for OAuth flow, token validation, and scope testing
@@ -214,7 +217,7 @@ export async function runScopeSmokeTests(
   const scopeTests: ScopeTestResult[] = [];
 
   // Step 1: Validate token and get scopes
-  console.log('🔍 Validating token...');
+  debug('🔍 Validating token...');
   const tokenValidation = await validateToken(accessToken, environment);
 
   if (!tokenValidation.valid) {
@@ -231,8 +234,8 @@ export async function runScopeSmokeTests(
     };
   }
 
-  console.log('✅ Token is valid');
-  console.log('📋 Token scopes:', tokenValidation.status?.scopes);
+  debug('✅ Token is valid');
+  debug('📋 Token scopes:', tokenValidation.status?.scopes);
 
   // Check for missing scopes
   const tokenScopes = tokenValidation.status?.scopes || [];
@@ -247,7 +250,7 @@ export async function runScopeSmokeTests(
   }
 
   // Step 2: Test baseline - Locations API (requires MERCHANT_PROFILE_READ)
-  console.log('🧪 Testing baseline: Locations API...');
+  debug('🧪 Testing baseline: Locations API...');
   const locationsTest = await testScope(
     accessToken,
     { scope: 'MERCHANT_PROFILE_READ', endpoint: '/v2/locations' },
@@ -272,7 +275,7 @@ export async function runScopeSmokeTests(
   }
 
   // Step 3: Test Payments API (requires PAYMENTS_READ)
-  console.log('🧪 Testing: Payments API...');
+  debug('🧪 Testing: Payments API...');
   const paymentsTest = await testScope(
     accessToken,
     { scope: 'PAYMENTS_READ', endpoint: '/v2/payments?limit=1' },
@@ -281,7 +284,7 @@ export async function runScopeSmokeTests(
   scopeTests.push(paymentsTest);
 
   // Step 4: Test Catalog API (requires ITEMS_READ)
-  console.log('🧪 Testing: Catalog API...');
+  debug('🧪 Testing: Catalog API...');
   const catalogTest = await testScope(
     accessToken,
     { scope: 'ITEMS_READ', endpoint: '/v2/catalog/list?types=ITEM&limit=1' },
@@ -290,7 +293,7 @@ export async function runScopeSmokeTests(
   scopeTests.push(catalogTest);
 
   // Step 5: Test Orders API (requires ORDERS_READ)
-  console.log('🧪 Testing: Orders API...');
+  debug('🧪 Testing: Orders API...');
   const ordersTest = await testScope(
     accessToken,
     { scope: 'ORDERS_READ', endpoint: '/v2/orders/search' },

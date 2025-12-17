@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
@@ -56,7 +59,7 @@ function verifyWebhookSignature(signatureHeader: string, requestUrl: string, req
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Square webhook received');
+    debug('Square webhook received');
     
     // Get the raw request body and URL
     const requestBody = await request.text();
@@ -85,7 +88,7 @@ export async function POST(request: NextRequest) {
     
     // Parse the webhook event
     const webhookEvent = JSON.parse(requestBody);
-    console.log('Webhook event received:', {
+    debug('Webhook event received:', {
       type: webhookEvent.type,
       eventId: webhookEvent.event_id,
       timestamp: webhookEvent.created_at
@@ -130,7 +133,7 @@ export async function POST(request: NextRequest) {
         break;
         
       default:
-        console.log(`Unhandled webhook event type: ${eventType}`);
+        debug(`Unhandled webhook event type: ${eventType}`);
     }
     
     // Log webhook for debugging
@@ -154,7 +157,7 @@ export async function POST(request: NextRequest) {
 
 // Handle inventory count updates
 async function handleInventoryUpdate(inventoryChange: any) {
-  console.log('Processing inventory update:', {
+  debug('Processing inventory update:', {
     variationId: inventoryChange.catalog_object_id,
     locationId: inventoryChange.location_id,
     quantity: inventoryChange.quantity,
@@ -193,7 +196,7 @@ async function handleInventoryUpdate(inventoryChange: any) {
       }
     );
     
-    console.log('Inventory updated successfully');
+    debug('Inventory updated successfully');
     
   } catch (error) {
     console.error('Failed to update inventory:', error);
@@ -203,7 +206,7 @@ async function handleInventoryUpdate(inventoryChange: any) {
 
 // Handle catalog version updates - FIX: Proper object structure handling
 async function handleCatalogUpdate(catalogObject: any) {
-  console.log('Processing catalog update:', {
+  debug('Processing catalog update:', {
     objectType: catalogObject.type || 'unknown',
     objectId: catalogObject.id || 'unknown',
     version: catalogObject.version || 'unknown',
@@ -225,11 +228,11 @@ async function handleCatalogUpdate(catalogObject: any) {
       attempts: 0
     });
     
-    console.log('Catalog sync queued for object:', catalogObject.id);
+    debug('Catalog sync queued for object:', catalogObject.id);
     
     // Optionally process immediately for critical updates
     if (catalogObject.type === 'ITEM' || catalogObject.type === 'ITEM_VARIATION') {
-      console.log('High priority catalog update - consider immediate sync');
+      debug('High priority catalog update - consider immediate sync');
     }
     
   } catch (error) {
@@ -240,7 +243,7 @@ async function handleCatalogUpdate(catalogObject: any) {
 
 // Handle payment events
 async function handlePaymentCreated(payment: any) {
-  console.log('Payment created:', payment.id);
+  debug('Payment created:', payment.id);
   
   try {
     const { db } = await connectToDatabase();
@@ -273,7 +276,7 @@ async function handlePaymentCreated(payment: any) {
 }
 
 async function handlePaymentUpdated(payment: any) {
-  console.log('Payment updated:', payment.id, 'Status:', payment.status);
+  debug('Payment updated:', payment.id, 'Status:', payment.status);
   
   try {
     const { db } = await connectToDatabase();
@@ -320,7 +323,7 @@ async function handlePaymentUpdated(payment: any) {
         }
       );
       
-      console.log(`Order ${payment.order_id} status updated to ${orderStatus} via webhook`);
+      debug(`Order ${payment.order_id} status updated to ${orderStatus} via webhook`);
     }
     
   } catch (error) {
@@ -330,12 +333,12 @@ async function handlePaymentUpdated(payment: any) {
 
 // Handle order events
 async function handleOrderCreated(order: any) {
-  console.log('Order created in Square:', order.id);
+  debug('Order created in Square:', order.id);
   // Handle order creation if needed
 }
 
 async function handleOrderUpdated(order: any) {
-  console.log('Order updated in Square:', order.id);
+  debug('Order updated in Square:', order.id);
   // Handle order updates if needed
 }
 

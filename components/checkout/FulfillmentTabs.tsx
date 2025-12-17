@@ -29,6 +29,7 @@ export default function FulfillmentTabs({ selected, onChange }: FulfillmentTabsP
         
         return (
           <button
+            type="button"
             key={tab.value}
             onClick={() => onChange(tab.value)}
             className="relative py-4 px-3 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"

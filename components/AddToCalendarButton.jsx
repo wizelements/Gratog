@@ -144,6 +144,7 @@ export default function AddToCalendarButton({
           </div>
           {CALENDAR_SERVICES.map((service) => (
             <button
+              type="button"
               key={service.id}
               onClick={() => handleCalendarClick(service)}
               disabled={downloading && service.isDownload}

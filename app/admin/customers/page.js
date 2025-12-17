@@ -117,6 +117,7 @@ export default function CustomersPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
+            aria-label="Search customers by name, email, or phone"
           />
         </div>
       </div>

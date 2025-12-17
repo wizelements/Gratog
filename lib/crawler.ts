@@ -1,3 +1,7 @@
+
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) console.log(...args); };
+
 import { Product, ProductZ } from '@/types/product';
 import { upsertProduct } from './database';
 import { createHash } from 'crypto';
@@ -41,7 +45,7 @@ async function rateLimit(host: string): Promise<void> {
     if (timeSinceLastRequest > 300000) { // 5 minutes
       state.circuitOpen = false;
       state.failures = 0;
-      console.log(`Circuit breaker closed for ${host}`);
+      debug(`Circuit breaker closed for ${host}`);
     } else {
       throw new Error(`Circuit breaker open for ${host}`);
     }
@@ -104,14 +108,14 @@ async function fetchWithRetries(url: string, options: RequestInit = {}): Promise
       if (response.status === 429) {
         const retryAfter = response.headers.get('retry-after');
         const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000;
-        console.log(`Rate limited on ${url}, waiting ${waitTime}ms`);
+        debug(`Rate limited on ${url}, waiting ${waitTime}ms`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
         continue;
       }
       
       if (response.status >= 500 && attempt < CRAWL_CONFIG.maxRetries) {
         const backoffTime = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
-        console.log(`Server error ${response.status} on ${url}, retrying in ${backoffTime}ms`);
+        debug(`Server error ${response.status} on ${url}, retrying in ${backoffTime}ms`);
         await new Promise(resolve => setTimeout(resolve, backoffTime));
         continue;
       }
@@ -128,7 +132,7 @@ async function fetchWithRetries(url: string, options: RequestInit = {}): Promise
         
         if (state.failures >= CRAWL_CONFIG.circuitBreakerThreshold) {
           state.circuitOpen = true;
-          console.log(`Circuit breaker opened for ${host} after ${state.failures} failures`);
+          debug(`Circuit breaker opened for ${host} after ${state.failures} failures`);
         }
         
         crawlState.set(host, state);
@@ -245,7 +249,7 @@ class ProductParser {
           }
           return null;
         })
-        .filter(Boolean) as any[];
+        .filter((img): img is { url: string; alt: string; position: number } => img !== null);
     }
     
     // Description extraction
@@ -482,7 +486,7 @@ export async function discoverProductUrls(rootDomain: string): Promise<string[]>
     visited.add(currentUrl);
     
     try {
-      console.log(`Discovering URLs from: ${currentUrl}`);
+      debug(`Discovering URLs from: ${currentUrl}`);
       const response = await fetchWithRetries(currentUrl);
       const html = await response.text();
       
@@ -539,7 +543,7 @@ export async function crawlAndIngest(options: {
   urls?: string[];
   category?: string;
 }): Promise<{ success: number; failed: number; errors: string[] }> {
-  console.log('Starting crawl and ingest...', options);
+  debug('Starting crawl and ingest...', options);
   
   const rootDomain = process.env.ROOT_DOMAIN || 'https://tasteofgratitude.shop';
   let urlsToProcess: string[];
@@ -549,7 +553,7 @@ export async function crawlAndIngest(options: {
   } else if (options.full) {
     // Full discovery
     urlsToProcess = await discoverProductUrls(rootDomain);
-    console.log(`Discovered ${urlsToProcess.length} product URLs`);
+    debug(`Discovered ${urlsToProcess.length} product URLs`);
   } else {
     // Get existing URLs from database that need refresh
     const database = await require('./database').getDatabase();
@@ -566,7 +570,7 @@ export async function crawlAndIngest(options: {
       .toArray();
     
     urlsToProcess = staleLinks.map((link: any) => link.url);
-    console.log(`Processing ${urlsToProcess.length} stale URLs`);
+    debug(`Processing ${urlsToProcess.length} stale URLs`);
   }
   
   const results = { success: 0, failed: 0, errors: [] as string[] };
@@ -587,7 +591,7 @@ export async function crawlAndIngest(options: {
           if (product) {
             await upsertProduct(product);
             results.success++;
-            console.log(`✅ Ingested: ${product.title} (${url})`);
+            debug(`✅ Ingested: ${product.title} (${url})`);
           } else {
             results.failed++;
             results.errors.push(`Failed to parse product from ${url}`);
@@ -602,14 +606,14 @@ export async function crawlAndIngest(options: {
     );
   }
   
-  console.log(`Crawl complete. Success: ${results.success}, Failed: ${results.failed}`);
+  debug(`Crawl complete. Success: ${results.success}, Failed: ${results.failed}`);
   return results;
 }
 
 // Crawl single URL
 export async function crawlUrl(url: string): Promise<Product | null> {
   try {
-    console.log(`Crawling: ${url}`);
+    debug(`Crawling: ${url}`);
     const response = await fetchWithRetries(url);
     const html = await response.text();
     

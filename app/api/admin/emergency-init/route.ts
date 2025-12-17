@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
-// @ts-ignore - JavaScript module import
-import { hashPassword } from '@/lib/auth';
+import bcrypt from 'bcryptjs';
+
+async function hashPassword(password: string): Promise<string> {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
+}
 
 /**
  * EMERGENCY ADMIN INITIALIZATION

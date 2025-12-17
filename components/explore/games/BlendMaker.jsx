@@ -119,6 +119,7 @@ export default function BlendMaker({ ingredients = [] }) {
                   <span className="text-2xl">{ing.icon}</span>
                   <span className="text-white font-medium">{ing.name}</span>
                   <button
+                    type="button"
                     onClick={() => removeIngredient(ing)}
                     className="ml-2 text-white/60 hover:text-white"
                   >

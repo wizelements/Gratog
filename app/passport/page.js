@@ -16,6 +16,7 @@ function PassportContent() {
     name: searchParams?.get('name') || ''
   });
   const [showPassport, setShowPassport] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     // Auto-show passport if email is in URL
@@ -26,8 +27,11 @@ function PassportContent() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError('');
     if (customerData.email) {
       setShowPassport(true);
+    } else {
+      setError('Please enter a valid email address.');
     }
   };
 
@@ -81,6 +85,11 @@ function PassportContent() {
           
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                  {error}
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address *</Label>
                 <Input

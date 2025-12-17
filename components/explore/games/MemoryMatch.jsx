@@ -181,6 +181,7 @@ export default function MemoryMatch({ ingredients = [] }) {
           const isFlipped = flippedCards.includes(index) || matchedCards.includes(index);
           return (
             <button
+              type="button"
               key={index}
               onClick={() => flipCard(index)}
               disabled={isFlipped}

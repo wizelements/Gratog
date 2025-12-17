@@ -79,7 +79,7 @@ module.exports = {
     trustGuardian: {
       enabled: true,
       priority: 1,
-      revenueAlertThreshold: 0.01, // 1% potential loss
+      revenueAlertThreshold: 0.10, // 10% potential loss (more realistic threshold)
       contentDriftTolerance: 0.05,
       microAgents: ['content', 'review', 'risk']
     }

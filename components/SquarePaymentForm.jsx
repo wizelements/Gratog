@@ -77,8 +77,10 @@ export default function SquarePaymentForm({ orderId, orderTotal, squareOrderId, 
           throw new Error('Square not configured');
         }
 
-        // Clear container to prevent duplicates
-        container.innerHTML = '';
+        // Clear container to prevent duplicates (safe DOM method)
+        while (container.firstChild) {
+          container.removeChild(container.firstChild);
+        }
         
         logger.info('Initializing Square SDK', { appId: appId.substring(0, 10) + '...', locationId });
         const payments = window.Square.payments(appId, locationId);

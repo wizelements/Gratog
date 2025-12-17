@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { SquareClient, SquareEnvironment } from 'square';
 
 const LOG_PREFIX = '[SQUARE]';
@@ -15,7 +18,7 @@ export function getSquareClient(): SquareClient {
   const envRaw = process.env.SQUARE_ENVIRONMENT || 'sandbox';
   const environment = envRaw.trim().toLowerCase();
 
-  console.log(`${LOG_PREFIX} 🔍 Square client configuration:`, {
+  debug(`${LOG_PREFIX} 🔍 Square client configuration:`, {
     tokenPrefix: accessToken.substring(0, 10),
     tokenLength: accessToken.length,
     envRaw,
@@ -55,12 +58,12 @@ export function getSquareClient(): SquareClient {
     ? SquareEnvironment.Production 
     : SquareEnvironment.Sandbox;
 
-  console.log(`${LOG_PREFIX} ✅ Creating Square client for ${squareEnvironment}`);
+  debug(`${LOG_PREFIX} ✅ Creating Square client for ${squareEnvironment}`);
 
   return new SquareClient({
     accessToken,
     environment: squareEnvironment,
-  } as any);
+  });
 }
 
 // Lazy getters for Square configuration - only validate when accessed
@@ -148,7 +151,7 @@ export function validateSquareConfig() {
     }
   }
   
-  console.log('✅ Square configuration validated:', {
+  debug('✅ Square configuration validated:', {
     environment,
     tokenPrefix: accessToken.substring(0, 10) + '...',
     tokenLength: accessToken.length,

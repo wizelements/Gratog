@@ -2,7 +2,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Lock, CreditCard, Smartphone } from 'lucide-react';
+import { Lock, CreditCard, Smartphone, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CartItem } from '@/adapters/cartAdapter';
 import { OrderTotals, formatCurrency } from '@/adapters/totalsAdapter';
@@ -34,10 +34,13 @@ export default function ReviewAndPay({
   onBack
 }: ReviewAndPayProps) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   
   const handlePayment = async () => {
     setIsProcessing(true);
-    track('payment_initiated', { method: 'card', fulfillmentType: fulfillment.type });
+    setPaymentError(null);
+    track('payment_initiated', { method: 'card', fulfillmentType: fulfillment.type, retryCount });
     
     try {
       // Create order
@@ -61,10 +64,18 @@ export default function ReviewAndPay({
       window.location.href = checkoutResponse.checkoutUrl;
     } catch (error: any) {
       console.error('Payment error:', error);
-      toast.error(error.message || 'Payment failed. Please try again.');
-      track('payment_failed', { error: error.message });
+      const errorMessage = error.message || 'Payment failed. Please try again.';
+      setPaymentError(errorMessage);
+      toast.error(errorMessage);
+      track('payment_failed', { error: error.message, retryCount });
       setIsProcessing(false);
     }
+  };
+  
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    setPaymentError(null);
+    handlePayment();
   };
   
   return (
@@ -156,11 +167,37 @@ export default function ReviewAndPay({
             </>
           )}
         </p>
-        <button onClick={onBack} className="text-sm text-emerald-600 hover:underline mt-2">
+        <button type="button" onClick={onBack} className="text-sm text-emerald-600 hover:underline mt-2">
           Edit details
         </button>
       </div>
       
+      {/* Payment Error with Retry */}
+      {paymentError && (
+        <motion.div
+          className="bg-red-50 border border-red-200 rounded-xl p-4"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-medium text-red-800">Payment Failed</h4>
+              <p className="text-sm text-red-600 mt-1">{paymentError}</p>
+              <Button
+                onClick={handleRetry}
+                variant="outline"
+                size="sm"
+                className="mt-3 border-red-300 text-red-700 hover:bg-red-100"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Payment Button */}
       <div className="space-y-4">
         <Button
@@ -176,7 +213,7 @@ export default function ReviewAndPay({
           ) : (
             <div className="flex items-center gap-2">
               <CreditCard className="w-5 h-5" />
-              Complete Order • {formatCurrency(totals.total)}
+              {paymentError ? 'Retry Payment' : 'Complete Order'} • {formatCurrency(totals.total)}
             </div>
           )}
         </Button>

@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSquareClient, SQUARE_LOCATION_ID } from '@/lib/square';
@@ -42,7 +45,7 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    console.log('Creating Square Payment Link:', {
+    debug('Creating Square Payment Link:', {
       itemCount: lineItems.length,
       locationId: SQUARE_LOCATION_ID,
       customerEmail: customer?.email,
@@ -56,7 +59,7 @@ export async function POST(request: NextRequest) {
     let squareCustomerId = customerId; // Use provided ID if available
     
     if (customer && customer.email && customer.name && !squareCustomerId) {
-      console.log('Creating/finding Square customer for payment link...');
+      debug('Creating/finding Square customer for payment link...');
       try {
         const customerResult = await findOrCreateSquareCustomer({
           email: customer.email,
@@ -77,7 +80,7 @@ export async function POST(request: NextRequest) {
         
         if (customerResult.success && customerResult.customer) {
           squareCustomerId = customerResult.customer.id;
-          console.log('✅ Square customer ready for payment link', { customerId: squareCustomerId });
+          debug('✅ Square customer ready for payment link', { customerId: squareCustomerId });
         } else {
           console.warn('Customer creation failed, continuing without customer link', { 
             error: customerResult.error 
@@ -135,7 +138,7 @@ export async function POST(request: NextRequest) {
       prePopulatedData.buyerPhoneNumber = customer.phone;
     }
     
-    console.log('Creating payment link directly with line items (quick_pay approach)...');
+    debug('Creating payment link directly with line items (quick_pay approach)...');
     
     // Prepare line items for payment link (without pre-creating order)
     const paymentLinkLineItems = lineItems.map((item: any) => ({
@@ -172,7 +175,7 @@ export async function POST(request: NextRequest) {
     
     const paymentLink = paymentLinkResponse.payment_link;
     
-    console.log('Square Payment Link created successfully:', {
+    debug('Square Payment Link created successfully:', {
       paymentLinkId: paymentLink.id,
       orderId: paymentLink.order_id,
       url: paymentLink.url?.substring(0, 50) + '...'
@@ -197,7 +200,7 @@ export async function POST(request: NextRequest) {
       };
       
       await db.collection('pre_orders').insertOne(preOrder);
-      console.log('Pre-order record saved:', preOrder.id);
+      debug('Pre-order record saved:', preOrder.id);
     } catch (dbError) {
       console.warn('Failed to save pre-order record (non-critical):', dbError);
       // Don't fail the entire request if DB save fails
@@ -291,12 +294,12 @@ export async function GET(request: NextRequest) {
     
     if (paymentLinkId) {
       // Get payment link status
-      const response = await square.checkout.get({ paymentLinkId }) as any;
-      result = response.result;
+      const response = await square.checkout.get({ paymentLinkId });
+      result = response;
     } else if (orderId) {
       // Get order status
-      const response = await square.orders.get({ orderId }) as any;
-      result = response.result;
+      const response = await square.orders.get({ orderId });
+      result = response;
     }
     
     return NextResponse.json({

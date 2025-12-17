@@ -199,6 +199,7 @@ export default function IngredientQuiz({ ingredients = [] }) {
 
           return (
             <button
+              type="button"
               key={index}
               onClick={() => handleAnswer(option.name)}
               disabled={showResult}

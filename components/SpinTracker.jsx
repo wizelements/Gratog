@@ -223,6 +223,7 @@ export default function SpinTracker({ userEmail }) {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <button
+              type="button"
               onClick={() => setShowSpinWheel(false)}
               className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full z-10"
             >

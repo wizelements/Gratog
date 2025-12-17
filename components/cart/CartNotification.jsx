@@ -48,6 +48,7 @@ export default function CartNotification() {
             </p>
           </div>
           <button
+            type="button"
             onClick={() => setNotification(null)}
             className="hover:bg-white/20 rounded-full p-1 transition-colors"
           >

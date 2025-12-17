@@ -25,6 +25,8 @@ export default function SquareWebPaymentForm({
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
   
   const paymentsRef = useRef(null);
   const cardRef = useRef(null);
@@ -95,7 +97,7 @@ export default function SquareWebPaymentForm({
   }, [sdkLoaded, applicationId]);
   
   const handlePaymentSubmit = async (event) => {
-    event.preventDefault();
+    if (event) event.preventDefault();
     
     if (!cardRef.current) {
       toast.error('Payment form not ready');
@@ -103,6 +105,7 @@ export default function SquareWebPaymentForm({
     }
     
     setIsProcessing(true);
+    setPaymentError(null);
     if (onProcessingChange) onProcessingChange(true);
     
     try {
@@ -170,6 +173,7 @@ export default function SquareWebPaymentForm({
     } catch (error) {
       console.error('Payment error:', error);
       const errorMsg = error.message || 'Payment processing failed';
+      setPaymentError(errorMsg);
       toast.error(errorMsg);
       if (onPaymentError) {
         onPaymentError(error);
@@ -178,6 +182,12 @@ export default function SquareWebPaymentForm({
       setIsProcessing(false);
       if (onProcessingChange) onProcessingChange(false);
     }
+  };
+  
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    setPaymentError(null);
+    handlePaymentSubmit();
   };
   
   if (!applicationId) {
@@ -211,9 +221,35 @@ export default function SquareWebPaymentForm({
         {/* Square card container - SDK will inject payment form here */}
         <div id="square-card-container" className={isLoading ? 'hidden' : ''}></div>
         
+        {/* Payment Error with Retry */}
+        {paymentError && !isLoading && (
+          <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div className="flex-1">
+                <h4 className="font-medium text-red-800">Payment Failed</h4>
+                <p className="text-sm text-red-600 mt-1">{paymentError}</p>
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className="mt-3 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-lg hover:bg-red-100 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Try Again
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {!isLoading && (
           <div className="mt-6">
             <button
+              type="button"
               onClick={handlePaymentSubmit}
               disabled={isProcessing}
               className={`w-full py-3 px-6 rounded-lg font-semibold text-white transition-all
@@ -235,7 +271,7 @@ export default function SquareWebPaymentForm({
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
-                  Pay ${(amountCents / 100).toFixed(2)}
+                  {paymentError ? 'Retry Payment' : 'Pay'} ${(amountCents / 100).toFixed(2)}
                 </span>
               )}
             </button>

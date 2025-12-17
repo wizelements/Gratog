@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { updateOrderStatus } from '@/lib/db-customers';
@@ -10,7 +13,7 @@ const SQUARE_WEBHOOK_SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
 // Verify webhook signature for security
 function verifyWebhookSignature(signatureHeader, requestUrl, requestBody) {
   if (!signatureHeader || !SQUARE_WEBHOOK_SIGNATURE_KEY) {
-    console.log('Missing signature header or webhook key');
+    debug('Missing signature header or webhook key');
     return false;
   }
   
@@ -42,7 +45,7 @@ function verifyWebhookSignature(signatureHeader, requestUrl, requestBody) {
 
 export async function POST(request) {
   try {
-    console.log('Square webhook received');
+    debug('Square webhook received');
     
     // Get the raw request body for signature verification
     const requestBody = await request.text();
@@ -71,7 +74,7 @@ export async function POST(request) {
     
     // Parse the webhook event
     const webhookEvent = JSON.parse(requestBody);
-    console.log('Webhook event type:', webhookEvent.type);
+    debug('Webhook event type:', webhookEvent.type);
     
     // Process different event types
     const eventType = webhookEvent.type;
@@ -98,7 +101,7 @@ export async function POST(request) {
         break;
         
       default:
-        console.log(`Unhandled webhook event type: ${eventType}`);
+        debug(`Unhandled webhook event type: ${eventType}`);
     }
     
     // Return success response
@@ -131,7 +134,7 @@ export async function POST(request) {
 // Handler functions for different Square webhook events
 
 async function handlePaymentCreated(payment) {
-  console.log('Payment created:', payment?.id);
+  debug('Payment created:', payment?.id);
   
   try {
     // Validate payment data
@@ -147,9 +150,9 @@ async function handlePaymentCreated(payment) {
         status: payment.status,
         updatedAt: new Date().toISOString()
       });
-      console.log(`Order ${payment.order_id} status updated to payment_processing`);
+      debug(`Order ${payment.order_id} status updated to payment_processing`);
     } else {
-      console.log('Payment created without order_id:', payment.id);
+      debug('Payment created without order_id:', payment.id);
     }
   } catch (error) {
     console.error('❌ Error handling payment created:', error);
@@ -158,7 +161,7 @@ async function handlePaymentCreated(payment) {
 }
 
 async function handlePaymentUpdated(payment) {
-  console.log('Payment updated:', payment.id, 'Status:', payment.status);
+  debug('Payment updated:', payment.id, 'Status:', payment.status);
   
   try {
     if (payment.order_id) {
@@ -180,7 +183,7 @@ async function handlePaymentUpdated(payment) {
         updatedAt: new Date().toISOString()
       });
       
-      console.log(`Order ${payment.order_id} status updated to ${newOrderStatus}`);
+      debug(`Order ${payment.order_id} status updated to ${newOrderStatus}`);
     }
   } catch (error) {
     console.error('Error handling payment updated:', error);
@@ -188,7 +191,7 @@ async function handlePaymentUpdated(payment) {
 }
 
 async function handlePaymentCompleted(payment) {
-  console.log('Payment completed successfully:', payment.id);
+  debug('Payment completed successfully:', payment.id);
   
   try {
     if (payment.order_id) {
@@ -203,7 +206,7 @@ async function handlePaymentCompleted(payment) {
       
       // Send success notifications
       // Note: You would need order details to send notifications
-      console.log(`Payment completed for order ${payment.order_id}`);
+      debug(`Payment completed for order ${payment.order_id}`);
     }
   } catch (error) {
     console.error('Error handling payment completed:', error);
@@ -211,7 +214,7 @@ async function handlePaymentCompleted(payment) {
 }
 
 async function handlePaymentFailed(payment) {
-  console.log('Payment failed:', payment.id);
+  debug('Payment failed:', payment.id);
   
   try {
     if (payment.order_id) {
@@ -222,7 +225,7 @@ async function handlePaymentFailed(payment) {
         failedAt: new Date().toISOString()
       });
       
-      console.log(`Order ${payment.order_id} marked as payment failed`);
+      debug(`Order ${payment.order_id} marked as payment failed`);
     }
   } catch (error) {
     console.error('Error handling payment failed:', error);
@@ -230,12 +233,12 @@ async function handlePaymentFailed(payment) {
 }
 
 async function handleRefundCreated(refund) {
-  console.log('Refund created:', refund.id);
+  debug('Refund created:', refund.id);
   
   try {
     if (refund.payment_id) {
       // You could update order status to 'refunded' or handle partial refunds
-      console.log(`Refund created for payment ${refund.payment_id}`);
+      debug(`Refund created for payment ${refund.payment_id}`);
     }
   } catch (error) {
     console.error('Error handling refund created:', error);

@@ -267,6 +267,7 @@ export default function IngredientRush() {
               >
                 {ingredient && (
                   <button
+                    type="button"
                     onClick={() => handleTap(ingredient)}
                     className={`w-full h-full flex items-center justify-center text-6xl rounded-xl transition-all hover:scale-110 active:scale-95 ${
                       ingredient.benefit === targetBenefit

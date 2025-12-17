@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 /**
  * Production Startup Validator
  * Validates critical configuration before accepting requests
@@ -18,7 +21,7 @@ export function validateStartupConfig(): StartupValidationResult {
   const environment = process.env.NODE_ENV || 'development';
   const isProduction = environment === 'production';
   
-  console.log('🔍 Running startup validation...');
+  debug('🔍 Running startup validation...');
   
   // 1. Database Configuration
   const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URL;
@@ -36,7 +39,7 @@ export function validateStartupConfig(): StartupValidationResult {
   // 2. Square Configuration
   try {
     validateSquareConfig();
-    console.log('  ✅ Square configuration valid');
+    debug('  ✅ Square configuration valid');
   } catch (error) {
     if (isProduction) {
       errors.push(`Square config error: ${(error as Error).message}`);
@@ -83,10 +86,10 @@ export function validateStartupConfig(): StartupValidationResult {
   const valid = errors.length === 0;
   
   if (valid) {
-    console.log('  ✅ Startup validation passed');
+    debug('  ✅ Startup validation passed');
     if (warnings.length > 0) {
-      console.log(`  ⚠️  ${warnings.length} warnings:`);
-      warnings.forEach(w => console.log(`     - ${w}`));
+      debug(`  ⚠️  ${warnings.length} warnings:`);
+      warnings.forEach(w => debug(`     - ${w}`));
     }
   } else {
     console.error('  ❌ Startup validation failed:');

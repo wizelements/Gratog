@@ -65,6 +65,7 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
         >
           <div className="relative p-8">
             <button
+              type="button"
               onClick={onClose}
               className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
             >

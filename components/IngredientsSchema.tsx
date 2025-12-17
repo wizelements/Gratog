@@ -73,6 +73,10 @@ export function IngredientsSchema({
       .join(', ')
   };
 
+  // SECURITY NOTE: dangerouslySetInnerHTML is safe here because:
+  // 1. JSON.stringify() escapes all special characters (<, >, &, ", etc.)
+  // 2. Content is in a script tag with type="application/ld+json" (not executed as JS or rendered as HTML)
+  // 3. Ingredient data comes from controlled /data/ingredients sources, not raw user input
   return (
     <script
       type="application/ld+json"

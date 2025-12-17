@@ -57,7 +57,7 @@ export async function findOrCreateSquareCustomer(
     
     // Step 1: Search for existing customer by email
     try {
-      const searchResponse = await (square.customers as any).searchCustomers({
+      const searchResponse = await square.customers.search({
         query: {
           filter: {
             emailAddress: {

@@ -47,6 +47,7 @@ export default function IngredientExplorer({ ingredients = [] }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+              aria-label="Search ingredients or benefits"
             />
           </div>
 
