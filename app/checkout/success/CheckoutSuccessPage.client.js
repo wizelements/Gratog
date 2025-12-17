@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
@@ -82,7 +85,7 @@ function SuccessContent() {
         
         if (response.ok) {
           const data = await response.json();
-          console.log(`✅ Awarded ${spinsEarned} spins. Total available: ${data.totalAvailableSpins}`);
+          debug(`✅ Awarded ${spinsEarned} spins. Total available: ${data.totalAvailableSpins}`);
           
           // Show notification about earned spins
           setTimeout(() => {
@@ -161,7 +164,7 @@ function SuccessContent() {
       
       if (response.ok) {
         setPointsAwarded(true);
-        console.log(`✅ Awarded ${points} reward points for purchase`);
+        debug(`✅ Awarded ${points} reward points for purchase`);
       }
     } catch (error) {
       console.error('Failed to award points:', error);

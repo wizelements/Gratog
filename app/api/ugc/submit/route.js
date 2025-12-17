@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
@@ -54,7 +57,7 @@ export async function POST(request) {
         );
       }
     } catch (passportError) {
-      console.log('Passport XP update failed (non-critical):', passportError);
+      debug('Passport XP update failed (non-critical):', passportError);
     }
     
     return NextResponse.json({

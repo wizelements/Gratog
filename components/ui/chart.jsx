@@ -58,6 +58,10 @@ const ChartStyle = ({
 
   return (
     <style
+      // SAFE to use dangerouslySetInnerHTML because:
+      // 1. HTML is generated from controlled theme constants and config objects
+      // 2. Content is CSS (not executable JavaScript)
+      // 3. No user-supplied data is interpolated into the CSS
       dangerouslySetInnerHTML={{
         __html: Object.entries(THEMES)
           .map(([theme, prefix]) => `

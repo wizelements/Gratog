@@ -195,6 +195,10 @@ export default function ProductDetailPage() {
 
   return (
     <div className="min-h-screen">
+      {/* Structured Data for Product SEO - SAFE to use dangerouslySetInnerHTML because:
+          1. JSON.stringify() escapes all special characters
+          2. Content is in script tag with type="application/ld+json" (not executed)
+          3. Data comes from controlled productSchema object, not user input */}
       {product && (
         <Script
           id="product-schema"

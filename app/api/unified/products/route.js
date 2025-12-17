@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextResponse } from 'next/server';
 import { getUnifiedProducts } from '@/lib/product-sync-engine';
 import { getCategoriesWithCounts } from '@/lib/ingredient-taxonomy';
@@ -24,7 +27,7 @@ export async function GET(request) {
       if (!filters[key]) delete filters[key];
     });
     
-    console.log('🔍 Unified Products API - Filters:', filters);
+    debug('🔍 Unified Products API - Filters:', filters);
     
     // Get products with intelligent filtering
     const products = await getUnifiedProducts(filters);

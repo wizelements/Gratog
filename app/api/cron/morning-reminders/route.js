@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { sendSMS } from '@/lib/sms';
@@ -30,7 +33,7 @@ export async function POST(request) {
       );
     }
 
-    console.log('☀️ [CRON] Morning-of pickup reminders job started');
+    debug('☀️ [CRON] Morning-of pickup reminders job started');
 
     const { db } = await connectToDatabase();
     
@@ -40,7 +43,7 @@ export async function POST(request) {
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
     
-    console.log('📅 Looking for pickup orders for TODAY:', today.toDateString());
+    debug('📅 Looking for pickup orders for TODAY:', today.toDateString());
     
     // Find all pickup orders for today
     const pickupOrders = await db.collection('orders').find({
@@ -49,7 +52,7 @@ export async function POST(request) {
       createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } // Last 7 days
     }).toArray();
     
-    console.log(`📦 Found ${pickupOrders.length} pickup orders for today`);
+    debug(`📦 Found ${pickupOrders.length} pickup orders for today`);
     
     const results = {
       total: pickupOrders.length,
@@ -85,7 +88,7 @@ export async function POST(request) {
         });
         
         results.sent++;
-        console.log(`✅ Morning reminder sent: ${order.orderNumber} → ${order.customer.phone}`);
+        debug(`✅ Morning reminder sent: ${order.orderNumber} → ${order.customer.phone}`);
         
       } catch (smsError) {
         results.failed++;
@@ -97,7 +100,7 @@ export async function POST(request) {
       }
     }
     
-    console.log('📊 Morning reminders completed:', results);
+    debug('📊 Morning reminders completed:', results);
     
     return NextResponse.json({
       success: true,

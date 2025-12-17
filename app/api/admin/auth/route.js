@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextResponse } from 'next/server';
 import { loginAdmin } from '@/lib/admin-auth';
 import { getAdminFromRequest } from '@/lib/admin-auth';
@@ -21,7 +24,7 @@ export async function POST(request) {
     // Attempt login
     const result = await loginAdmin(email, password);
 
-    console.log(`✅ Admin login successful: ${email}`);
+    debug(`✅ Admin login successful: ${email}`);
 
     return NextResponse.json({
       success: true,

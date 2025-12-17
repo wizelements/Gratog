@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { verifyToken } from '@/lib/auth';
@@ -34,7 +37,7 @@ export async function GET(request) {
       ]).toArray();
       totalSales = salesData[0]?.total || 0;
     } catch (e) {
-      console.log('Orders collection not yet available');
+      debug('Orders collection not yet available');
     }
     
     // Get customers count (if customers collection exists)
@@ -42,7 +45,7 @@ export async function GET(request) {
     try {
       customersCount = await db.collection('customers').countDocuments();
     } catch (e) {
-      console.log('Customers collection not yet available');
+      debug('Customers collection not yet available');
     }
     
     // Low stock alerts (products with inventory tracking)
@@ -58,7 +61,7 @@ export async function GET(request) {
         );
       }).length;
     } catch (e) {
-      console.log('Inventory check skipped');
+      debug('Inventory check skipped');
     }
     
     // Recent activity (mock for now)

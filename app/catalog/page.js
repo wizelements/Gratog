@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -35,8 +38,8 @@ export default function CatalogPage() {
           setProducts(data.products);
           setFilteredProducts(data.products);
           setCategories(data.categories || []);
-          console.log(`✅ Loaded ${data.products.length} products from ${data.source}`);
-          console.log(`📊 Categories:`, data.categories?.map(c => `${c.name} (${c.count})`));
+          debug(`✅ Loaded ${data.products.length} products from ${data.source}`);
+          debug(`📊 Categories:`, data.categories?.map(c => `${c.name} (${c.count})`));
         }
       } catch (error) {
         console.error('Failed to fetch products:', error);

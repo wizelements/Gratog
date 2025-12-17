@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 import { connectToDatabase } from '@/lib/db-optimized';
@@ -25,7 +28,7 @@ export async function POST(request) {
   }
 
   try {
-    console.log('🔄 Starting admin-triggered Square catalog sync...');
+    debug('🔄 Starting admin-triggered Square catalog sync...');
 
     let catalogSyncResult = { items: 0, variations: 0, images: 0, errors: 0 };
     let unifiedSyncResult = { success: 0, failed: 0, total: 0 };
@@ -35,9 +38,9 @@ export async function POST(request) {
 
     // Step 1: Sync from Square to square_catalog_items
     try {
-      console.log('📥 Step 1: Syncing from Square Catalog API...');
+      debug('📥 Step 1: Syncing from Square Catalog API...');
       catalogSyncResult = await syncSquareCatalog(db);
-      console.log(`✅ Square catalog sync complete: ${catalogSyncResult.items} items`);
+      debug(`✅ Square catalog sync complete: ${catalogSyncResult.items} items`);
     } catch (error) {
       console.error('❌ Square catalog sync failed:', error);
       throw new Error(`Square catalog sync failed: ${error.message}`);
@@ -45,9 +48,9 @@ export async function POST(request) {
 
     // Step 2: Sync to unified_products with enrichment
     try {
-      console.log('🔄 Step 2: Syncing to unified products...');
+      debug('🔄 Step 2: Syncing to unified products...');
       unifiedSyncResult = await syncToUnified(true);
-      console.log(`✅ Unified sync complete: ${unifiedSyncResult.success}/${unifiedSyncResult.total} products`);
+      debug(`✅ Unified sync complete: ${unifiedSyncResult.success}/${unifiedSyncResult.total} products`);
     } catch (error) {
       console.error('❌ Unified sync failed:', error);
       console.warn('⚠️ Continuing despite unified sync error');

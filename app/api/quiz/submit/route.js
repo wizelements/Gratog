@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextResponse } from 'next/server';
 import { saveQuizResults, updateEmailSentStatus, initializeQuizCollection } from '@/lib/db-quiz';
 import { sendQuizResultsEmail } from '@/lib/quiz-emails';
@@ -96,7 +99,7 @@ export async function POST(request) {
         emailData: {}
       });
       
-      console.log('✅ Scheduled follow-up emails for quiz:', quizId);
+      debug('✅ Scheduled follow-up emails for quiz:', quizId);
     } catch (scheduleError) {
       console.error('Error scheduling follow-up emails:', scheduleError);
       // Continue even if scheduling fails
@@ -118,7 +121,7 @@ export async function POST(request) {
       if (emailSent) {
         // Update email sent status
         await updateEmailSentStatus(quizId, 'results');
-        console.log('✅ Quiz results email sent to:', customer.email);
+        debug('✅ Quiz results email sent to:', customer.email);
       } else {
         console.warn('⚠️ Quiz results email failed:', emailResult.error);
       }

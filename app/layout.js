@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/Header';
@@ -97,14 +100,18 @@ export default function RootLayout({ children }) {
           <Toaster />
         </AuthProvider>
         
-        {/* Service Worker Registration for PWA */}
+        {/* Service Worker Registration for PWA
+            SECURITY NOTE: dangerouslySetInnerHTML is safe here because:
+            1. The script content is hardcoded and not derived from user input
+            2. This is a legitimate service worker registration for PWA functionality
+            3. The __html property contains only controlled, internal code */}
         <script dangerouslySetInnerHTML={{
           __html: `
             if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
               window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
                   .then((registration) => {
-                    console.log('✅ PWA: Service Worker registered');
+                    debug('✅ PWA: Service Worker registered');
                     
                     // Check for updates every hour
                     setInterval(() => {

@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
@@ -49,7 +52,7 @@ export async function POST(request) {
 
     await db.collection('coupons').insertOne(couponData);
 
-    console.log('Coupon created:', {
+    debug('Coupon created:', {
       code: couponCode,
       email: customerEmail,
       amount: discountAmount,

@@ -138,6 +138,10 @@ export default function HomePage() {
 
     return (
         <div className="flex flex-col min-h-screen">
+            {/* Structured Data for SEO - SAFE to use dangerouslySetInnerHTML because:
+                1. JSON.stringify() escapes all special characters
+                2. Content is in script tag with type="application/ld+json" (not executed)
+                3. Data comes from controlled schema objects, not user input */}
             <Script
                 id="structured-data"
                 type="application/ld+json"

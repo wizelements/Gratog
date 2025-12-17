@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -90,7 +93,7 @@ export default function SquareWebPaymentForm({
         try {
           cardRef.current.destroy();
         } catch (e) {
-          console.log('Error destroying card:', e);
+          debug('Error destroying card:', e);
         }
       }
     };

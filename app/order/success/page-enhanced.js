@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -37,7 +40,7 @@ export default function OrderSuccessPage() {
       if (!response.ok) {
         if (response.status === 404 && attempt < 10) {
           // Webhook race condition - poll for order
-          console.log(`Order not found yet, polling... (attempt ${attempt + 1}/10)`);
+          debug(`Order not found yet, polling... (attempt ${attempt + 1}/10)`);
           setPollAttempts(attempt + 1);
           setTimeout(() => fetchOrderDetails(attempt + 1), 1500);
           return;
@@ -49,7 +52,7 @@ export default function OrderSuccessPage() {
       
       // If order is still DRAFT/PENDING, poll for completion (webhook race)
       if (['DRAFT', 'PENDING', 'pending'].includes(data.status) && attempt < 20) {
-        console.log(`Order status: ${data.status}, polling for completion... (attempt ${attempt + 1}/20)`);
+        debug(`Order status: ${data.status}, polling for completion... (attempt ${attempt + 1}/20)`);
         setPollAttempts(attempt + 1);
         setOrder(data); // Show what we have so far
         setTimeout(() => fetchOrderDetails(attempt + 1), 1500);
@@ -64,7 +67,7 @@ export default function OrderSuccessPage() {
       
       // Retry on network errors
       if (attempt < 5) {
-        console.log(`Network error, retrying... (attempt ${attempt + 1}/5)`);
+        debug(`Network error, retrying... (attempt ${attempt + 1}/5)`);
         setTimeout(() => fetchOrderDetails(attempt + 1), 2000);
         return;
       }

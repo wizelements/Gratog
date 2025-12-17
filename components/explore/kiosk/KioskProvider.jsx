@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -25,7 +28,7 @@ export default function KioskProvider({
     if (!isKioskMode) return;
 
     const handleIdle = () => {
-      console.log('[KioskProvider] Idle timeout - showing attract mode');
+      debug('[KioskProvider] Idle timeout - showing attract mode');
       
       // Stop any background audio
       audioManager.stopBackgroundMusic();

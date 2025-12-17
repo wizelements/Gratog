@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth/middleware';
 import { MongoClient } from 'mongodb';
@@ -86,7 +89,7 @@ export async function PUT(request) {
       }
     );
 
-    console.log(`✅ Email preferences updated for user ${user.userId}`);
+    debug(`✅ Email preferences updated for user ${user.userId}`);
 
     return NextResponse.json({
       success: true,

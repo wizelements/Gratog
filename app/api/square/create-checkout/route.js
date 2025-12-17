@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 
@@ -71,7 +74,7 @@ export async function POST(request) {
       merchant_support_email: process.env.SENDGRID_FROM_EMAIL || 'hello@tasteofgratitude.com'
     };
 
-    console.log('Creating Square checkout session:', {
+    debug('Creating Square checkout session:', {
       orderId,
       items: lineItems.length,
       total: total,
@@ -104,7 +107,7 @@ export async function POST(request) {
 
     const paymentLink = responseData.payment_link;
     
-    console.log('✅ Square checkout created:', {
+    debug('✅ Square checkout created:', {
       id: paymentLink.id,
       url: paymentLink.url,
       orderId: orderId

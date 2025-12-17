@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -15,7 +18,7 @@ export default function IngredientsPage() {
       // Load ingredients
       const allIngredients = getAllExtendedIngredients();
       const ingredientArray = Object.values(allIngredients);
-      console.log('Loaded ingredients:', ingredientArray.length);
+      debug('Loaded ingredients:', ingredientArray.length);
       setIngredients(ingredientArray);
       setLoading(false);
     } catch (err) {

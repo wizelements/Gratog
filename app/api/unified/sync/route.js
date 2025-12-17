@@ -1,3 +1,6 @@
+const DEBUG = process.env.DEBUG === "true";
+const debug = (...args) => { if (DEBUG) debug(...args); };
+
 import { NextResponse } from 'next/server';
 import { initializeUnifiedProducts, syncAllSquareProducts, getSyncStats } from '@/lib/product-sync-engine';
 
@@ -14,7 +17,7 @@ export async function POST(request) {
     let result;
     
     if (action === 'initialize') {
-      console.log('🚀 Initializing unified products collection...');
+      debug('🚀 Initializing unified products collection...');
       result = await initializeUnifiedProducts();
       
       return NextResponse.json({
@@ -25,7 +28,7 @@ export async function POST(request) {
     }
     
     if (action === 'sync') {
-      console.log('🔄 Syncing products from Square catalog...');
+      debug('🔄 Syncing products from Square catalog...');
       result = await syncAllSquareProducts();
       
       return NextResponse.json({

@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-12-17T15:44:51.575Z",
+  "timestamp": "2025-12-17T15:41:19.654Z",
   "scanNumber": 1,
   "mode": "NORMAL",
   "hungerLevel": 50,
   "agents": {
     "bug-hunter": {
       "agent": "bug-hunter",
-      "duration": 15469,
+      "duration": 26517,
       "issues": [
         {
           "agent": "bug-hunter",
@@ -393,6 +393,16 @@
           "severity": "low",
           "type": "console-log",
           "title": "Console.log in production code",
+          "file": "/lib/logger.js",
+          "line": 41,
+          "description": "Found: console.log(`${emoji} [${timestamp}] [${level}] [${this.context}] ${message}`, d",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
           "file": "/lib/monitoring.js",
           "line": 13,
           "description": "Found: console.log(`API Performance: ${endpoint} - ${duration}ms (${statusCode})`);",
@@ -536,7 +546,7 @@
     },
     "psycho-marketer": {
       "agent": "psycho-marketer",
-      "duration": 166,
+      "duration": 200,
       "issues": [
         {
           "agent": "psycho-marketer",
@@ -619,7 +629,7 @@
     },
     "uiux-predator": {
       "agent": "uiux-predator",
-      "duration": 118,
+      "duration": 144,
       "issues": [
         {
           "agent": "uiux-predator",
@@ -1276,7 +1286,7 @@
     },
     "log-devourer": {
       "agent": "log-devourer",
-      "duration": 83,
+      "duration": 104,
       "issues": [
         {
           "agent": "log-devourer",
@@ -2113,7 +2123,7 @@
           "severity": "medium",
           "type": "low-structured-logging",
           "title": "Low structured logging adoption",
-          "description": "Only 26.7% of logs use structured logger",
+          "description": "Only 26.6% of logs use structured logger",
           "fix": "Migrate console.log to createLogger pattern"
         },
         {
@@ -3117,14 +3127,14 @@
         }
       ],
       "stats": {
-        "filesWithLogging": 205,
-        "consoleLogCount": 552,
+        "filesWithLogging": 206,
+        "consoleLogCount": 553,
         "structuredLogCount": 201
       }
     },
     "opti-beast": {
       "agent": "opti-beast",
-      "duration": 57,
+      "duration": 79,
       "issues": [],
       "stats": {
         "assetCount": 2
@@ -3132,7 +3142,7 @@
     },
     "trust-guardian": {
       "agent": "trust-guardian",
-      "duration": 57,
+      "duration": 53,
       "issues": [
         {
           "agent": "trust-guardian",
@@ -3561,6 +3571,16 @@
       "file": "/lib/explore/kiosk-mode.js",
       "line": 45,
       "description": "Found: console.log('🖥️ Kiosk mode enabled');",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/logger.js",
+      "line": 41,
+      "description": "Found: console.log(`${emoji} [${timestamp}] [${level}] [${this.context}] ${message}`, d",
       "fix": "Remove or replace console-log"
     },
     {
@@ -5257,7 +5277,7 @@
       "severity": "medium",
       "type": "low-structured-logging",
       "title": "Low structured logging adoption",
-      "description": "Only 26.7% of logs use structured logger",
+      "description": "Only 26.6% of logs use structured logger",
       "fix": "Migrate console.log to createLogger pattern"
     },
     {
@@ -6304,6 +6324,6 @@
     "critical": 0,
     "high": 15,
     "medium": 241,
-    "low": 93
+    "low": 94
   }
 }

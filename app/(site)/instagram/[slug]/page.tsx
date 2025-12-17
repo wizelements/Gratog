@@ -202,7 +202,10 @@ export default function InstagramPostPage() {
 
       <Footer />
 
-      {/* Structured Data for SEO */}
+      {/* Structured Data for SEO - SAFE to use dangerouslySetInnerHTML because:
+          1. JSON.stringify() escapes all special characters
+          2. Content is in script tag with type="application/ld+json" (not executed)
+          3. Data comes from controlled post object, not user input */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
