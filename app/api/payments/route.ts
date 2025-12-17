@@ -1,6 +1,5 @@
-const DEBUG = process.env.DEBUG === "true";
-const debug = (...args) => { if (DEBUG) debug(...args); };
 
+import { logger } from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSquareClient, SQUARE_LOCATION_ID } from '@/lib/square';
 import { connectToDatabase } from '@/lib/db-optimized';
@@ -47,7 +46,7 @@ export async function POST(request: NextRequest) {
     // Generate idempotency key to prevent duplicate payments
     const paymentIdempotencyKey = idempotencyKey || randomUUID();
     
-    debug('Processing Square Web Payment:', {
+    logger.debug('API', 'Processing Square Web Payment:', {
       sourceId: sourceId.substring(0, 20) + '...',
       amountCents,
       currency,
@@ -64,7 +63,7 @@ export async function POST(request: NextRequest) {
     let squareCustomerId: string | undefined;
     
     if (customer && customer.email && customer.name) {
-      debug('Creating/finding Square customer for payment...');
+      logger.debug('API', 'Creating/finding Square customer for payment...');
       try {
         const customerResult = await findOrCreateSquareCustomer({
           email: customer.email,
@@ -78,7 +77,7 @@ export async function POST(request: NextRequest) {
         
         if (customerResult.success && customerResult.customer) {
           squareCustomerId = customerResult.customer.id;
-          debug('✅ Square customer ready for payment', { customerId: squareCustomerId });
+          logger.debug('API', '✅ Square customer ready for payment', { customerId: squareCustomerId });
         } else {
           console.warn('Customer creation failed, continuing without customer link', { 
             error: customerResult.error 
@@ -114,7 +113,7 @@ export async function POST(request: NextRequest) {
       paymentRequest.orderId = orderId;
     }
     
-    debug('Sending payment request to Square via REST...');
+    logger.debug('API', 'Sending payment request to Square via REST...');
     
     // Use REST API instead of SDK
     const response = await createPayment({
@@ -139,7 +138,7 @@ export async function POST(request: NextRequest) {
     
     const payment = response.payment;
     
-    debug('Square payment completed:', {
+    logger.debug('API', 'Square payment completed:', {
       paymentId: payment.id,
       status: payment.status,
       amountMoney: payment.amountMoney,
@@ -181,7 +180,7 @@ export async function POST(request: NextRequest) {
       };
       
       await db.collection('payments').insertOne(paymentRecord);
-      debug('Payment record saved:', paymentRecord.id);
+      logger.debug('API', 'Payment record saved:', paymentRecord.id);
       
       // Update order status if orderId provided
       if (orderId) {
@@ -215,7 +214,7 @@ export async function POST(request: NextRequest) {
             }
           }
         );
-        debug('Order status updated:', { orderId, status: orderStatus, paymentStatus: payment.status });
+        logger.debug('API', 'Order status updated:', { orderId, status: orderStatus, paymentStatus: payment.status });
       }
     } catch (dbError) {
       console.warn('Failed to save payment record (non-critical):', dbError);

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { verifyToken } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/admin/products
@@ -49,7 +50,7 @@ export async function GET(request) {
       count: adminProducts.length
     });
   } catch (error) {
-    console.error('Admin products fetch error:', error);
+    logger.error('API', 'Admin products fetch error', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch products' },
       { status: 500 }
@@ -108,7 +109,7 @@ export async function PUT(request) {
       message: 'Product updated successfully'
     });
   } catch (error) {
-    console.error('Admin product update error:', error);
+    logger.error('API', 'Admin product update error', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update product' },
       { status: 500 }

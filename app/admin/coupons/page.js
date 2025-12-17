@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,7 +37,7 @@ export default function AdminCouponsPage() {
         setCoupons(data.coupons);
       }
     } catch (error) {
-      console.error('Error fetching coupons:', error);
+      logger.error('Admin', 'Error fetching coupons', error);
       toast.error('Failed to load coupons');
     } finally {
       setLoading(false);
@@ -76,7 +77,7 @@ export default function AdminCouponsPage() {
         toast.error(data.error || 'Failed to create coupon');
       }
     } catch (error) {
-      console.error('Error creating coupon:', error);
+      logger.error('Admin', 'Error creating coupon', error);
       toast.error('Failed to create coupon');
     }
   };
@@ -96,7 +97,7 @@ export default function AdminCouponsPage() {
         toast.error('Failed to delete coupon');
       }
     } catch (error) {
-      console.error('Error deleting coupon:', error);
+      logger.error('Admin', 'Error deleting coupon', error);
       toast.error('Failed to delete coupon');
     }
   };

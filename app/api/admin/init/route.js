@@ -3,6 +3,7 @@ import { getAdminUsers, getInventory } from '@/lib/db-admin';
 import { hashPassword } from '@/lib/auth';
 import { PRODUCTS } from '@/lib/products';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '@/lib/logger';
 
 export async function POST(request) {
   try {
@@ -85,7 +86,7 @@ export async function POST(request) {
       }
     });
   } catch (error) {
-    console.error('Init error:', error);
+    logger.error('API', 'Admin init error', error);
     return NextResponse.json(
       { error: 'Initialization failed: ' + error.message },
       { status: 500 }

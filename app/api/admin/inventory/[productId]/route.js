@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getInventory } from '@/lib/db-admin';
 import { verifyToken } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 export async function PATCH(request, { params }) {
   try {
@@ -67,7 +68,7 @@ export async function PATCH(request, { params }) {
       adjustment
     });
   } catch (error) {
-    console.error('Update inventory error:', error);
+    logger.error('API', 'Update inventory error', error);
     return NextResponse.json(
       { error: 'Failed to update inventory' },
       { status: 500 }

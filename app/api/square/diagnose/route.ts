@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
         };
         
         // Verify configured location exists
-        const configuredLocation = response.result.locations.find((loc: any) => loc.id === SQUARE_LOCATION_ID);
+        const configuredLocation = response.locations?.find((loc) => loc.id === SQUARE_LOCATION_ID);
         if (configuredLocation) {
           diagnostics.tests.locationValidation = {
             status: 'PASS',
@@ -134,14 +134,19 @@ export async function GET(request: NextRequest) {
     // Test 4: Test Catalog API (required for products)
     console.log('Testing Catalog API access...');
     try {
-      const response = await square.catalog.list({ types: 'ITEM' }) as any;
+      const catalogPage = await square.catalog.list({ types: 'ITEM' });
+      const items = [];
+      for await (const item of catalogPage) {
+        items.push(item);
+        if (items.length >= 10) break; // Just check first 10 for diagnostic
+      }
       
       diagnostics.tests.catalogAccess = {
         status: 'PASS',
-        itemsFound: response.result?.objects?.length || 0
+        itemsFound: items.length
       };
       
-      if (!response.result?.objects || response.result.objects.length === 0) {
+      if (items.length === 0) {
         diagnostics.recommendations.push('No catalog items found - run syncCatalog.ts to import products');
       }
     } catch (catalogError: any) {
@@ -160,7 +165,7 @@ export async function GET(request: NextRequest) {
     console.log('Testing Payments API capability...');
     try {
       // Try to get a non-existent payment (should return 404, not 401)
-      await square.payments.get({ paymentId: 'test-payment-id-that-does-not-exist' }) as any;
+      await square.payments.get({ paymentId: 'test-payment-id-that-does-not-exist' });
       diagnostics.tests.paymentsApiCapability = {
         status: 'PASS',
         note: 'Payments API accessible (expected 404 for test ID)'

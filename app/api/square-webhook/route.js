@@ -1,6 +1,4 @@
-const DEBUG = process.env.DEBUG === "true";
-const debug = (...args) => { if (DEBUG) debug(...args); };
-
+import { logger } from '@/lib/logger';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { updateOrderStatus } from '@/lib/db-customers';
@@ -13,7 +11,7 @@ const SQUARE_WEBHOOK_SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
 // Verify webhook signature for security
 function verifyWebhookSignature(signatureHeader, requestUrl, requestBody) {
   if (!signatureHeader || !SQUARE_WEBHOOK_SIGNATURE_KEY) {
-    debug('Missing signature header or webhook key');
+    logger.debug('Webhook', 'Missing signature header or webhook key');
     return false;
   }
   
@@ -38,14 +36,14 @@ function verifyWebhookSignature(signatureHeader, requestUrl, requestBody) {
       Buffer.from(squareSignature)
     );
   } catch (error) {
-    console.error('Webhook signature verification error:', error);
+    logger.error('Webhook', 'Webhook signature verification error:', error);
     return false;
   }
 }
 
 export async function POST(request) {
   try {
-    debug('Square webhook received');
+    logger.debug('Webhook', 'Square webhook received');
     
     // Get the raw request body for signature verification
     const requestBody = await request.text();
@@ -64,7 +62,7 @@ export async function POST(request) {
       );
       
       if (!isSignatureValid) {
-        console.error('Invalid webhook signature');
+        logger.error('Webhook', 'Invalid webhook signature');
         return NextResponse.json(
           { error: 'Invalid signature' },
           { status: 401 }
@@ -74,7 +72,7 @@ export async function POST(request) {
     
     // Parse the webhook event
     const webhookEvent = JSON.parse(requestBody);
-    debug('Webhook event type:', webhookEvent.type);
+    logger.debug('Webhook', 'Webhook event type:', webhookEvent.type);
     
     // Process different event types
     const eventType = webhookEvent.type;
@@ -101,7 +99,7 @@ export async function POST(request) {
         break;
         
       default:
-        debug(`Unhandled webhook event type: ${eventType}`);
+        logger.debug('Webhook', `Unhandled webhook event type: ${eventType}`);
     }
     
     // Return success response
@@ -112,14 +110,7 @@ export async function POST(request) {
     });
     
   } catch (error) {
-    console.error('❌ Webhook processing error:', error);
-    console.error('Error details:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-      ...(error.cause && { cause: error.cause })
-    });
-    
+    logger.error('Webhook', '❌ Webhook processing error:', error);
     
     return NextResponse.json(
       { 
@@ -134,12 +125,12 @@ export async function POST(request) {
 // Handler functions for different Square webhook events
 
 async function handlePaymentCreated(payment) {
-  debug('Payment created:', payment?.id);
+  logger.debug('Webhook', 'Payment created:', payment?.id);
   
   try {
     // Validate payment data
     if (!payment || !payment.id) {
-      console.error('Invalid payment data received:', payment);
+      logger.error('Webhook', 'Invalid payment data received:', payment);
       return;
     }
     
@@ -150,18 +141,17 @@ async function handlePaymentCreated(payment) {
         status: payment.status,
         updatedAt: new Date().toISOString()
       });
-      debug(`Order ${payment.order_id} status updated to payment_processing`);
+      logger.debug('Webhook', `Order ${payment.order_id} status updated to payment_processing`);
     } else {
-      debug('Payment created without order_id:', payment.id);
+      logger.debug('Webhook', 'Payment created without order_id:', payment.id);
     }
   } catch (error) {
-    console.error('❌ Error handling payment created:', error);
-    console.error('Payment data:', payment);
+    logger.error('Webhook', '❌ Error handling payment created:', error);
   }
 }
 
 async function handlePaymentUpdated(payment) {
-  debug('Payment updated:', payment.id, 'Status:', payment.status);
+  logger.debug('Webhook', 'Payment updated:', payment.id, 'Status:', payment.status);
   
   try {
     if (payment.order_id) {
@@ -183,15 +173,15 @@ async function handlePaymentUpdated(payment) {
         updatedAt: new Date().toISOString()
       });
       
-      debug(`Order ${payment.order_id} status updated to ${newOrderStatus}`);
+      logger.debug('Webhook', `Order ${payment.order_id} status updated to ${newOrderStatus}`);
     }
   } catch (error) {
-    console.error('Error handling payment updated:', error);
+    logger.error('Webhook', 'Error handling payment updated:', error);
   }
 }
 
 async function handlePaymentCompleted(payment) {
-  debug('Payment completed successfully:', payment.id);
+  logger.debug('Webhook', 'Payment completed successfully:', payment.id);
   
   try {
     if (payment.order_id) {
@@ -206,15 +196,15 @@ async function handlePaymentCompleted(payment) {
       
       // Send success notifications
       // Note: You would need order details to send notifications
-      debug(`Payment completed for order ${payment.order_id}`);
+      logger.debug('Webhook', `Payment completed for order ${payment.order_id}`);
     }
   } catch (error) {
-    console.error('Error handling payment completed:', error);
+    logger.error('Webhook', 'Error handling payment completed:', error);
   }
 }
 
 async function handlePaymentFailed(payment) {
-  debug('Payment failed:', payment.id);
+  logger.debug('Webhook', 'Payment failed:', payment.id);
   
   try {
     if (payment.order_id) {
@@ -225,23 +215,23 @@ async function handlePaymentFailed(payment) {
         failedAt: new Date().toISOString()
       });
       
-      debug(`Order ${payment.order_id} marked as payment failed`);
+      logger.debug('Webhook', `Order ${payment.order_id} marked as payment failed`);
     }
   } catch (error) {
-    console.error('Error handling payment failed:', error);
+    logger.error('Webhook', 'Error handling payment failed:', error);
   }
 }
 
 async function handleRefundCreated(refund) {
-  debug('Refund created:', refund.id);
+  logger.debug('Webhook', 'Refund created:', refund.id);
   
   try {
     if (refund.payment_id) {
       // You could update order status to 'refunded' or handle partial refunds
-      debug(`Refund created for payment ${refund.payment_id}`);
+      logger.debug('Webhook', `Refund created for payment ${refund.payment_id}`);
     }
   } catch (error) {
-    console.error('Error handling refund created:', error);
+    logger.error('Webhook', 'Error handling refund created:', error);
   }
 }
 

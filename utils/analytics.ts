@@ -2,6 +2,8 @@
  * Analytics utility - Tracks checkout events
  */
 
+import { logger } from '@/lib/logger';
+
 export type AnalyticsEvent = 
   | 'checkout_started'
   | 'checkout_stage_change'

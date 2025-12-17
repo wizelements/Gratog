@@ -1,6 +1,5 @@
-const DEBUG = process.env.DEBUG === "true";
-const debug = (...args) => { if (DEBUG) debug(...args); };
 
+import { logger } from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import { z } from 'zod'
@@ -141,7 +140,7 @@ export async function POST(request: NextRequest) {
       merchant_support_email: process.env.SENDGRID_FROM_EMAIL || 'hello@tasteofgratitude.com'
     }
 
-    debug('Creating Square checkout session:', {
+    logger.debug('API', 'Creating Square checkout session:', {
       orderId,
       itemCount: lineItems.length,
       subtotal: subtotal.toFixed(2),
@@ -189,7 +188,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    debug('✅ Square checkout created successfully:', {
+    logger.debug('API', '✅ Square checkout created successfully:', {
       paymentLinkId: paymentLink.id,
       orderId,
       url: paymentLink.url

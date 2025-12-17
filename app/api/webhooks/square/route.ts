@@ -1,6 +1,4 @@
-const DEBUG = process.env.DEBUG === "true";
-const debug = (...args) => { if (DEBUG) debug(...args); };
-
+import { logger } from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
@@ -17,7 +15,7 @@ export const runtime = 'nodejs';
 // Verify webhook signature for security
 function verifyWebhookSignature(signatureHeader: string, requestUrl: string, requestBody: string): boolean {
   if (!signatureHeader || !SQUARE_WEBHOOK_SIGNATURE_KEY) {
-    console.warn('Missing signature header or webhook signature key');
+    logger.warn('Webhook', 'Missing signature header or webhook signature key');
     return false;
   }
   
@@ -25,7 +23,7 @@ function verifyWebhookSignature(signatureHeader: string, requestUrl: string, req
     // Parse Square signature format: "v1,signature"
     const parts = signatureHeader.split(',');
     if (parts.length !== 2) {
-      console.error('Invalid signature format');
+      logger.error('Webhook', 'Invalid signature format');
       return false;
     }
     
@@ -34,7 +32,7 @@ function verifyWebhookSignature(signatureHeader: string, requestUrl: string, req
     const [signatureKey, signatureValue] = signature.split('=');
     
     if (versionKey !== 'v' || signatureKey !== 't') {
-      console.error('Invalid signature header format');
+      logger.error('Webhook', 'Invalid signature header format');
       return false;
     }
     
@@ -52,14 +50,14 @@ function verifyWebhookSignature(signatureHeader: string, requestUrl: string, req
       Buffer.from(signatureValue)
     );
   } catch (error) {
-    console.error('Webhook signature verification error:', error);
+    logger.error('Webhook', 'Webhook signature verification error:', error);
     return false;
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    debug('Square webhook received');
+    logger.debug('Webhook', 'Square webhook received');
     
     // Get the raw request body and URL
     const requestBody = await request.text();
@@ -78,7 +76,7 @@ export async function POST(request: NextRequest) {
       );
       
       if (!isSignatureValid) {
-        console.error('Invalid webhook signature');
+        logger.error('Webhook', 'Invalid webhook signature');
         return NextResponse.json(
           { error: 'Invalid signature' },
           { status: 401 }
@@ -88,7 +86,7 @@ export async function POST(request: NextRequest) {
     
     // Parse the webhook event
     const webhookEvent = JSON.parse(requestBody);
-    debug('Webhook event received:', {
+    logger.debug('Webhook', 'Webhook event received:', {
       type: webhookEvent.type,
       eventId: webhookEvent.event_id,
       timestamp: webhookEvent.created_at
@@ -100,7 +98,7 @@ export async function POST(request: NextRequest) {
     
     // FIX: Proper event data structure handling
     if (!eventData || !eventData.object) {
-      console.error('Invalid webhook event structure - missing data.object');
+      logger.error('Webhook', 'Invalid webhook event structure - missing data.object');
       return NextResponse.json(
         { error: 'Invalid event structure' },
         { status: 400 }
@@ -133,7 +131,7 @@ export async function POST(request: NextRequest) {
         break;
         
       default:
-        debug(`Unhandled webhook event type: ${eventType}`);
+        logger.debug('Webhook', `Unhandled webhook event type: ${eventType}`);
     }
     
     // Log webhook for debugging
@@ -147,7 +145,7 @@ export async function POST(request: NextRequest) {
     });
     
   } catch (error) {
-    console.error('Webhook processing error:', error);
+    logger.error('Webhook', 'Webhook processing error:', error);
     return NextResponse.json(
       { error: 'Webhook processing failed' },
       { status: 500 }
@@ -157,7 +155,7 @@ export async function POST(request: NextRequest) {
 
 // Handle inventory count updates
 async function handleInventoryUpdate(inventoryChange: any) {
-  debug('Processing inventory update:', {
+  logger.debug('Webhook', 'Processing inventory update:', {
     variationId: inventoryChange.catalog_object_id,
     locationId: inventoryChange.location_id,
     quantity: inventoryChange.quantity,
@@ -196,17 +194,17 @@ async function handleInventoryUpdate(inventoryChange: any) {
       }
     );
     
-    debug('Inventory updated successfully');
+    logger.debug('Webhook', 'Inventory updated successfully');
     
   } catch (error) {
-    console.error('Failed to update inventory:', error);
+    logger.error('Webhook', 'Failed to update inventory:', error);
     throw error;
   }
 }
 
 // Handle catalog version updates - FIX: Proper object structure handling
 async function handleCatalogUpdate(catalogObject: any) {
-  debug('Processing catalog update:', {
+  logger.debug('Webhook', 'Processing catalog update:', {
     objectType: catalogObject.type || 'unknown',
     objectId: catalogObject.id || 'unknown',
     version: catalogObject.version || 'unknown',
@@ -228,22 +226,22 @@ async function handleCatalogUpdate(catalogObject: any) {
       attempts: 0
     });
     
-    debug('Catalog sync queued for object:', catalogObject.id);
+    logger.debug('Webhook', 'Catalog sync queued for object:', catalogObject.id);
     
     // Optionally process immediately for critical updates
     if (catalogObject.type === 'ITEM' || catalogObject.type === 'ITEM_VARIATION') {
-      debug('High priority catalog update - consider immediate sync');
+      logger.debug('Webhook', 'High priority catalog update - consider immediate sync');
     }
     
   } catch (error) {
-    console.error('Failed to handle catalog update:', error);
+    logger.error('Webhook', 'Failed to handle catalog update:', error);
     throw error;
   }
 }
 
 // Handle payment events
 async function handlePaymentCreated(payment: any) {
-  debug('Payment created:', payment.id);
+  logger.debug('Webhook', 'Payment created:', payment.id);
   
   try {
     const { db } = await connectToDatabase();
@@ -271,12 +269,12 @@ async function handlePaymentCreated(payment: any) {
     }
     
   } catch (error) {
-    console.error('Failed to handle payment created:', error);
+    logger.error('Webhook', 'Failed to handle payment created:', error);
   }
 }
 
 async function handlePaymentUpdated(payment: any) {
-  debug('Payment updated:', payment.id, 'Status:', payment.status);
+  logger.debug('Webhook', 'Payment updated:', payment.id, 'Status:', payment.status);
   
   try {
     const { db } = await connectToDatabase();
@@ -323,22 +321,22 @@ async function handlePaymentUpdated(payment: any) {
         }
       );
       
-      debug(`Order ${payment.order_id} status updated to ${orderStatus} via webhook`);
+      logger.debug('Webhook', `Order ${payment.order_id} status updated to ${orderStatus} via webhook`);
     }
     
   } catch (error) {
-    console.error('Failed to handle payment updated:', error);
+    logger.error('Webhook', 'Failed to handle payment updated:', error);
   }
 }
 
 // Handle order events
 async function handleOrderCreated(order: any) {
-  debug('Order created in Square:', order.id);
+  logger.debug('Webhook', 'Order created in Square:', order.id);
   // Handle order creation if needed
 }
 
 async function handleOrderUpdated(order: any) {
-  debug('Order updated in Square:', order.id);
+  logger.debug('Webhook', 'Order updated in Square:', order.id);
   // Handle order updates if needed
 }
 
@@ -370,7 +368,7 @@ async function logWebhookEvent(event: any) {
       });
       
   } catch (error) {
-    console.warn('Failed to log webhook event:', error);
+    logger.warn('Webhook', 'Failed to log webhook event:', error);
     // Don't fail the webhook processing if logging fails
   }
 }

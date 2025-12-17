@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { logger } from '@/lib/logger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,7 +55,7 @@ export default function EditProductPage() {
         toast.error('Failed to load product');
       }
     } catch (error) {
-      console.error('Failed to fetch product:', error);
+      logger.error('Admin', 'Failed to fetch product', error);
       toast.error('Error loading product');
     } finally {
       setLoading(false);
@@ -89,7 +90,7 @@ export default function EditProductPage() {
         toast.error(data.error || 'Failed to update product');
       }
     } catch (error) {
-      console.error('Save error:', error);
+      logger.error('Admin', 'Save error', error);
       toast.error('Error saving product');
     } finally {
       setSaving(false);
@@ -117,7 +118,7 @@ export default function EditProductPage() {
         toast.error(data.error || 'Failed to sync to Square');
       }
     } catch (error) {
-      console.error('Sync error:', error);
+      logger.error('Admin', 'Sync error', error);
       toast.error('Error syncing to Square');
     } finally {
       setSyncing(false);

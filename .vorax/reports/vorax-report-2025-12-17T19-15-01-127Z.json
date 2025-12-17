@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-12-17T20:06:26.556Z",
+  "timestamp": "2025-12-17T19:14:26.012Z",
   "scanNumber": 1,
   "mode": "NORMAL",
   "hungerLevel": 50,
   "agents": {
     "bug-hunter": {
       "agent": "bug-hunter",
-      "duration": 24030,
+      "duration": 35114,
       "issues": [
         {
           "agent": "bug-hunter",
@@ -16,7 +16,7 @@
           "title": "TypeScript Error",
           "file": ".next/types/app/api/reviews/route.ts",
           "line": 12,
-          "description": "Type 'OmitWithTag<typeof import(\"/workspaces/Gratog/app/api/reviews/route\"), \"POST\" | \"DELETE\" | \"PATCH\" | \"PUT\" | \"GET\" | \"HEAD\" | \"OPTIONS\" | \"config\" | \"generateStaticParams\" | \"revalidate\" | ... 5 more ... | \"maxDuration\", \"\">' does not satisfy the constraint '{ [x: string]: never; }'.",
+          "description": "Type 'OmitWithTag<typeof import(\"/workspaces/Gratog/app/api/reviews/route\"), \"POST\" | \"GET\" | \"HEAD\" | \"OPTIONS\" | \"PUT\" | \"DELETE\" | \"PATCH\" | \"config\" | \"generateStaticParams\" | \"revalidate\" | ... 5 more ... | \"maxDuration\", \"\">' does not satisfy the constraint '{ [x: string]: never; }'.",
           "fix": "Fix type annotation or add proper typing"
         },
         {
@@ -25,9 +25,9 @@
           "severity": "medium",
           "type": "typescript-error",
           "title": "TypeScript Error",
-          "file": "app/api/cart/price/route.ts",
-          "line": 56,
-          "description": "Property 'itemVariationData' does not exist on type 'CatalogObject'.",
+          "file": "app/(site)/community/page.tsx",
+          "line": 137,
+          "description": "Type '{ children: Element; asChild: true; variant: string; size: string; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.",
           "fix": "Fix type annotation or add proper typing"
         },
         {
@@ -36,9 +36,9 @@
           "severity": "medium",
           "type": "typescript-error",
           "title": "TypeScript Error",
-          "file": "app/api/cart/price/route.ts",
-          "line": 70,
-          "description": "Property 'itemVariationData' does not exist on type 'CatalogObject'.",
+          "file": "app/(site)/community/page.tsx",
+          "line": 184,
+          "description": "Type '{ children: Element; asChild: true; size: string; variant: string; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.",
           "fix": "Fix type annotation or add proper typing"
         },
         {
@@ -47,9 +47,9 @@
           "severity": "medium",
           "type": "typescript-error",
           "title": "TypeScript Error",
-          "file": "app/api/checkout/route.ts",
-          "line": 46,
-          "description": "Cannot find name 'debug'.",
+          "file": "app/(site)/community/page.tsx",
+          "line": 195,
+          "description": "Type '{ children: Element; asChild: true; size: string; variant: string; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.",
           "fix": "Fix type annotation or add proper typing"
         },
         {
@@ -58,9 +58,9 @@
           "severity": "medium",
           "type": "typescript-error",
           "title": "TypeScript Error",
-          "file": "app/api/checkout/route.ts",
-          "line": 60,
-          "description": "Cannot find name 'debug'.",
+          "file": "app/admin/square-oauth/page.tsx",
+          "line": 75,
+          "description": "Type '{ children: Element[]; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.",
           "fix": "Fix type annotation or add proper typing"
         },
         {
@@ -69,9 +69,9 @@
           "severity": "medium",
           "type": "typescript-error",
           "title": "TypeScript Error",
-          "file": "app/api/checkout/route.ts",
-          "line": 81,
-          "description": "Cannot find name 'debug'.",
+          "file": "app/admin/square-oauth/page.tsx",
+          "line": 77,
+          "description": "Type '{ children: (string | Element)[]; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.",
           "fix": "Fix type annotation or add proper typing"
         },
         {
@@ -80,9 +80,9 @@
           "severity": "medium",
           "type": "typescript-error",
           "title": "TypeScript Error",
-          "file": "app/api/checkout/route.ts",
-          "line": 139,
-          "description": "Cannot find name 'debug'.",
+          "file": "app/admin/square-oauth/page.tsx",
+          "line": 84,
+          "description": "Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<any>'.",
           "fix": "Fix type annotation or add proper typing"
         },
         {
@@ -91,9 +91,9 @@
           "severity": "medium",
           "type": "typescript-error",
           "title": "TypeScript Error",
-          "file": "app/api/checkout/route.ts",
-          "line": 176,
-          "description": "Cannot find name 'debug'.",
+          "file": "app/admin/square-oauth/page.tsx",
+          "line": 85,
+          "description": "Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<any>'.",
           "fix": "Fix type annotation or add proper typing"
         },
         {
@@ -102,9 +102,9 @@
           "severity": "medium",
           "type": "typescript-error",
           "title": "TypeScript Error",
-          "file": "app/api/checkout/route.ts",
-          "line": 201,
-          "description": "Cannot find name 'debug'.",
+          "file": "app/admin/square-oauth/page.tsx",
+          "line": 86,
+          "description": "Type '{ children: (string | Element)[]; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.",
           "fix": "Fix type annotation or add proper typing"
         },
         {
@@ -113,9 +113,9 @@
           "severity": "medium",
           "type": "typescript-error",
           "title": "TypeScript Error",
-          "file": "app/api/checkout/route.ts",
-          "line": 295,
-          "description": "Property 'get' does not exist on type 'Checkout'.",
+          "file": "app/admin/square-oauth/page.tsx",
+          "line": 90,
+          "description": "Type '{ children: string; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<any>'.",
           "fix": "Fix type annotation or add proper typing"
         },
         {
@@ -250,6 +250,16 @@
         },
         {
           "agent": "bug-hunter",
+          "severity": "medium",
+          "type": "as-any",
+          "title": "Unsafe any type assertion",
+          "file": "/app/api/square/diagnose/route.ts",
+          "line": 137,
+          "description": "Found: const response = await square.catalog.list({ types: 'ITEM' }) as any;",
+          "fix": "Remove or replace as-any"
+        },
+        {
+          "agent": "bug-hunter",
           "severity": "low",
           "type": "console-log",
           "title": "Console.log in production code",
@@ -274,6 +284,16 @@
           "type": "console-log",
           "title": "Console.log in production code",
           "file": "/lib/crawler.ts",
+          "line": 3,
+          "description": "Found: const debug = (...args) => { if (DEBUG) console.log(...args); };",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/db-admin.js",
           "line": 3,
           "description": "Found: const debug = (...args) => { if (DEBUG) console.log(...args); };",
           "fix": "Remove or replace console-log"
@@ -323,8 +343,18 @@
           "severity": "low",
           "type": "console-log",
           "title": "Console.log in production code",
+          "file": "/lib/email-queue.js",
+          "line": 21,
+          "description": "Found: console.log('✅ Email queue collection initialized with indexes');",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
           "file": "/lib/email.js",
-          "line": 11,
+          "line": 10,
           "description": "Found: console.log('✅ Using REAL SendGrid Email');",
           "fix": "Remove or replace console-log"
         },
@@ -333,8 +363,18 @@
           "severity": "low",
           "type": "console-log",
           "title": "Console.log in production code",
+          "file": "/lib/enhanced-order-tracking.js",
+          "line": 6,
+          "description": "Found: const debug = (...args) => { if (DEBUG) console.log(...args); };",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
           "file": "/lib/explore/game-engine.js",
-          "line": 24,
+          "line": 22,
           "description": "Found: console.log(`🎮 Game started: ${gameId}`);",
           "fix": "Remove or replace console-log"
         },
@@ -344,7 +384,7 @@
           "type": "console-log",
           "title": "Console.log in production code",
           "file": "/lib/explore/kiosk-mode.js",
-          "line": 47,
+          "line": 45,
           "description": "Found: console.log('🖥️ Kiosk mode enabled');",
           "fix": "Remove or replace console-log"
         },
@@ -353,20 +393,20 @@
           "severity": "low",
           "type": "console-log",
           "title": "Console.log in production code",
-          "file": "/lib/logger.js",
-          "line": 119,
-          "description": "Found: console.log(`ℹ️ [${category}] ${message}`, data);",
+          "file": "/lib/monitoring.js",
+          "line": 13,
+          "description": "Found: console.log(`API Performance: ${endpoint} - ${duration}ms (${statusCode})`);",
           "fix": "Remove or replace console-log"
         },
         {
           "agent": "bug-hunter",
-          "severity": "low",
-          "type": "console-log",
-          "title": "Console.log in production code",
-          "file": "/lib/monitoring.js",
-          "line": 14,
-          "description": "Found: console.log(`API Performance: ${endpoint} - ${duration}ms (${statusCode})`);",
-          "fix": "Remove or replace console-log"
+          "severity": "medium",
+          "type": "as-any",
+          "title": "Unsafe any type assertion",
+          "file": "/lib/monitoring.ts",
+          "line": 228,
+          "description": "Found: if (typeof window !== 'undefined' && (window as any).posthog) {",
+          "fix": "Remove or replace as-any"
         },
         {
           "agent": "bug-hunter",
@@ -374,7 +414,7 @@
           "type": "console-log",
           "title": "Console.log in production code",
           "file": "/lib/order-status-notifier.js",
-          "line": 14,
+          "line": 13,
           "description": "Found: console.log(`📊 Order status changed: ${order.orderNumber} (${oldStatus} → ${new",
           "fix": "Remove or replace console-log"
         },
@@ -384,7 +424,7 @@
           "type": "console-log",
           "title": "Console.log in production code",
           "file": "/lib/payment-orchestrator.js",
-          "line": 166,
+          "line": 165,
           "description": "Found: console.log('Processing Stripe payment:', { amount, currency, orderId: orderData",
           "fix": "Remove or replace console-log"
         },
@@ -393,8 +433,18 @@
           "severity": "low",
           "type": "console-log",
           "title": "Console.log in production code",
+          "file": "/lib/product-sync-engine.js",
+          "line": 120,
+          "description": "Found: console.log(`🔄 Syncing ${squareProducts.length} products to unified collection.",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
           "file": "/lib/resend-email.js",
-          "line": 13,
+          "line": 12,
           "description": "Found: console.log('✅ Resend Email Service Initialized');",
           "fix": "Remove or replace console-log"
         },
@@ -404,7 +454,7 @@
           "type": "console-log",
           "title": "Console.log in production code",
           "file": "/lib/resend.js",
-          "line": 117,
+          "line": 116,
           "description": "Found: console.log('📧 [RESEND] Email sent to:', to);",
           "fix": "Remove or replace console-log"
         },
@@ -414,7 +464,7 @@
           "type": "console-log",
           "title": "Console.log in production code",
           "file": "/lib/sms-mock.js",
-          "line": 10,
+          "line": 8,
           "description": "Found: console.log('📱 [MOCK SMS] Sending to:', to);",
           "fix": "Remove or replace console-log"
         },
@@ -424,7 +474,7 @@
           "type": "console-log",
           "title": "Console.log in production code",
           "file": "/lib/sms.js",
-          "line": 21,
+          "line": 19,
           "description": "Found: console.log('✅ Using REAL Twilio SMS');",
           "fix": "Remove or replace console-log"
         },
@@ -433,8 +483,28 @@
           "severity": "low",
           "type": "console-log",
           "title": "Console.log in production code",
+          "file": "/lib/square/syncToUnified.js",
+          "line": 56,
+          "description": "Found: console.log('🔄 Starting sync to unified collection...');",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "medium",
+          "type": "as-any",
+          "title": "Unsafe any type assertion",
+          "file": "/lib/square-customer.ts",
+          "line": 99,
+          "description": "Found: const updateResponse = await (square.customers as any).updateCustomer({",
+          "fix": "Remove or replace as-any"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
           "file": "/lib/staff-notifications.js",
-          "line": 264,
+          "line": 263,
           "description": "Found: console.log('📧 Staff notification sent:', { orderNumber: order.orderNumber, res",
           "fix": "Remove or replace console-log"
         },
@@ -454,19 +524,19 @@
           "type": "console-log",
           "title": "Console.log in production code",
           "file": "/utils/analytics.ts",
-          "line": 38,
+          "line": 36,
           "description": "Found: console.log('[Analytics]', event, props);",
           "fix": "Remove or replace console-log"
         }
       ],
       "stats": {
-        "filesScanned": 416,
+        "filesScanned": 415,
         "testsRun": 7
       }
     },
     "psycho-marketer": {
       "agent": "psycho-marketer",
-      "duration": 154,
+      "duration": 225,
       "issues": [
         {
           "agent": "psycho-marketer",
@@ -549,7 +619,7 @@
     },
     "uiux-predator": {
       "agent": "uiux-predator",
-      "duration": 106,
+      "duration": 169,
       "issues": [
         {
           "agent": "uiux-predator",
@@ -845,7 +915,7 @@
           "type": "button-no-type",
           "title": "Button without explicit type attribute",
           "file": "/components/SquareWebPaymentForm.jsx",
-          "line": 234,
+          "line": 237,
           "fix": "Review and fix: button-no-type"
         },
         {
@@ -854,7 +924,7 @@
           "type": "small-text",
           "title": "Very small text (text-xs) may be hard to read",
           "file": "/components/SquareWebPaymentForm.jsx",
-          "line": 291,
+          "line": 294,
           "fix": "Review and fix: small-text"
         },
         {
@@ -1115,7 +1185,7 @@
           "severity": "high",
           "type": "input-no-label",
           "title": "Input without associated label",
-          "file": "/components/ui/input.tsx",
+          "file": "/components/ui/input.jsx",
           "fix": "Add label element or aria-label attribute"
         },
         {
@@ -1206,8 +1276,48 @@
     },
     "log-devourer": {
       "agent": "log-devourer",
-      "duration": 77,
+      "duration": 135,
       "issues": [
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/lib/adaptive-recommendations.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/lib/admin-analytics.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/lib/admin-auth-middleware.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/lib/admin-auth.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/lib/catalog-api.js",
+          "fix": "Include error.stack or full error object"
+        },
         {
           "agent": "log-devourer",
           "severity": "medium",
@@ -1215,6 +1325,57 @@
           "title": "Error logged without stack trace",
           "file": "/lib/crawler.ts",
           "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "low",
+          "type": "excessive-console-log",
+          "title": "Excessive console.log usage",
+          "file": "/lib/db-admin.js",
+          "description": "13 console statements found",
+          "fix": "Replace with structured logger"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/lib/db-customers.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/lib/delivery-radius.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "low",
+          "type": "excessive-console-log",
+          "title": "Excessive console.log usage",
+          "file": "/lib/enhanced-order-tracking.js",
+          "description": "14 console statements found",
+          "fix": "Replace with structured logger"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/lib/enhanced-products.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "low",
+          "type": "excessive-console-log",
+          "title": "Excessive console.log usage",
+          "file": "/lib/product-sync-engine.js",
+          "description": "11 console statements found",
+          "fix": "Replace with structured logger"
         },
         {
           "agent": "log-devourer",
@@ -1229,7 +1390,32 @@
           "severity": "medium",
           "type": "error-no-stack",
           "title": "Error logged without stack trace",
+          "file": "/lib/response-optimizer.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "low",
+          "type": "excessive-console-log",
+          "title": "Excessive console.log usage",
+          "file": "/lib/square/syncToUnified.js",
+          "description": "11 console statements found",
+          "fix": "Replace with structured logger"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
           "file": "/lib/startup-validator.ts",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/lib/unified-analytics.js",
           "fix": "Include error.stack or full error object"
         },
         {
@@ -1245,7 +1431,183 @@
           "severity": "medium",
           "type": "error-no-stack",
           "title": "Error logged without stack trace",
+          "file": "/app/admin/campaigns/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/admin/coupons/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/admin/customers/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/admin/inventory/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/admin/layout.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/admin/login/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/admin/orders/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/admin/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/admin/products/[id]/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/admin/products/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/admin/settings/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/admin/setup/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
           "file": "/app/admin/square-oauth/page.tsx",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/admin/waitlist/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/[[...path]]/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/admin/audit-logs/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/admin/auth/me/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/admin/coupons/[id]/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/admin/coupons/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/admin/inventory/[productId]/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/admin/orders/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/admin/products/[id]/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/admin/products/route.js",
           "fix": "Include error.stack or full error object"
         },
         {
@@ -1469,6 +1831,14 @@
           "severity": "medium",
           "type": "error-no-stack",
           "title": "Error logged without stack trace",
+          "file": "/app/api/reviews/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
           "file": "/app/api/reviews/upload/route.js",
           "fix": "Include error.stack or full error object"
         },
@@ -1495,6 +1865,15 @@
           "title": "Error logged without stack trace",
           "file": "/app/api/rewards/passport/route.js",
           "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "low",
+          "type": "excessive-console-log",
+          "title": "Excessive console.log usage",
+          "file": "/app/api/square-webhook/route.js",
+          "description": "11 console statements found",
+          "fix": "Replace with structured logger"
         },
         {
           "agent": "log-devourer",
@@ -1582,6 +1961,23 @@
           "type": "error-no-stack",
           "title": "Error logged without stack trace",
           "file": "/app/api/waitlist/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "low",
+          "type": "excessive-console-log",
+          "title": "Excessive console.log usage",
+          "file": "/app/api/webhooks/square/route.ts",
+          "description": "12 console statements found",
+          "fix": "Replace with structured logger"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/webhooks/square/route.ts",
           "fix": "Include error.stack or full error object"
         },
         {
@@ -1717,7 +2113,7 @@
           "severity": "medium",
           "type": "low-structured-logging",
           "title": "Low structured logging adoption",
-          "description": "Only 48.0% of logs use structured logger",
+          "description": "Only 26.7% of logs use structured logger",
           "fix": "Migrate console.log to createLogger pattern"
         },
         {
@@ -1728,6 +2124,15 @@
           "title": "Logger missing JSON formatting",
           "file": "/lib/logger.js",
           "fix": "Add JSON formatting to logger"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/[[...path]]/route.js",
+          "fix": "Add request/response logging"
         },
         {
           "agent": "log-devourer",
@@ -1762,7 +2167,25 @@
           "severity": "medium",
           "type": "api-no-logging",
           "title": "API route without logging",
+          "file": "/app/api/admin/audit-logs/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
           "file": "/app/api/admin/auth/logout/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/auth/me/route.js",
           "fix": "Add request/response logging"
         },
         {
@@ -1807,6 +2230,24 @@
           "severity": "medium",
           "type": "api-no-logging",
           "title": "API route without logging",
+          "file": "/app/api/admin/coupons/[id]/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/coupons/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
           "file": "/app/api/admin/customers/route.js",
           "fix": "Add request/response logging"
         },
@@ -1816,7 +2257,43 @@
           "severity": "medium",
           "type": "api-no-logging",
           "title": "API route without logging",
+          "file": "/app/api/admin/dashboard/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
           "file": "/app/api/admin/email-preview/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/init/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/inventory/[productId]/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/orders/route.js",
           "fix": "Add request/response logging"
         },
         {
@@ -1843,7 +2320,25 @@
           "severity": "medium",
           "type": "api-no-logging",
           "title": "API route without logging",
+          "file": "/app/api/admin/products/[id]/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
           "file": "/app/api/admin/products/[id]/sync/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/products/route.js",
           "fix": "Add request/response logging"
         },
         {
@@ -2320,6 +2815,15 @@
           "severity": "medium",
           "type": "api-no-logging",
           "title": "API route without logging",
+          "file": "/app/api/reviews/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
           "file": "/app/api/reviews/upload/route.js",
           "fix": "Add request/response logging"
         },
@@ -2420,6 +2924,15 @@
           "type": "api-no-logging",
           "title": "API route without logging",
           "file": "/app/api/square/test-token/route.ts",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/square-webhook/route.js",
           "fix": "Add request/response logging"
         },
         {
@@ -2588,6 +3101,15 @@
           "agent": "log-devourer",
           "microAgent": "trace",
           "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/webhooks/square/route.ts",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
           "type": "no-request-id",
           "title": "No request ID generation in middleware",
           "file": "/middleware.ts",
@@ -2595,41 +3117,22 @@
         }
       ],
       "stats": {
-        "filesWithLogging": 208,
-        "consoleLogCount": 417,
-        "structuredLogCount": 386
+        "filesWithLogging": 205,
+        "consoleLogCount": 552,
+        "structuredLogCount": 201
       }
     },
     "opti-beast": {
       "agent": "opti-beast",
-      "duration": 52,
-      "issues": [
-        {
-          "agent": "opti-beast",
-          "severity": "high",
-          "type": "bundle-size",
-          "title": "Bundle size exceeds 2MB",
-          "description": "Total bundle: 2.37MB",
-          "fix": "Enable code splitting, lazy loading, and tree shaking"
-        },
-        {
-          "agent": "opti-beast",
-          "severity": "medium",
-          "type": "large-chunk",
-          "title": "Large JavaScript chunk",
-          "file": "/.next/static/chunks/vendors-b87af8a6-5bed8642b1dbc26c.js",
-          "description": "Size: 332.3KB",
-          "fix": "Split this chunk or lazy load components"
-        }
-      ],
+      "duration": 108,
+      "issues": [],
       "stats": {
-        "bundleSize": 2488238,
         "assetCount": 2
       }
     },
     "trust-guardian": {
       "agent": "trust-guardian",
-      "duration": 47,
+      "duration": 81,
       "issues": [
         {
           "agent": "trust-guardian",
@@ -2688,7 +3191,7 @@
       "title": "TypeScript Error",
       "file": ".next/types/app/api/reviews/route.ts",
       "line": 12,
-      "description": "Type 'OmitWithTag<typeof import(\"/workspaces/Gratog/app/api/reviews/route\"), \"POST\" | \"DELETE\" | \"PATCH\" | \"PUT\" | \"GET\" | \"HEAD\" | \"OPTIONS\" | \"config\" | \"generateStaticParams\" | \"revalidate\" | ... 5 more ... | \"maxDuration\", \"\">' does not satisfy the constraint '{ [x: string]: never; }'.",
+      "description": "Type 'OmitWithTag<typeof import(\"/workspaces/Gratog/app/api/reviews/route\"), \"POST\" | \"GET\" | \"HEAD\" | \"OPTIONS\" | \"PUT\" | \"DELETE\" | \"PATCH\" | \"config\" | \"generateStaticParams\" | \"revalidate\" | ... 5 more ... | \"maxDuration\", \"\">' does not satisfy the constraint '{ [x: string]: never; }'.",
       "fix": "Fix type annotation or add proper typing"
     },
     {
@@ -2697,9 +3200,9 @@
       "severity": "medium",
       "type": "typescript-error",
       "title": "TypeScript Error",
-      "file": "app/api/cart/price/route.ts",
-      "line": 56,
-      "description": "Property 'itemVariationData' does not exist on type 'CatalogObject'.",
+      "file": "app/(site)/community/page.tsx",
+      "line": 137,
+      "description": "Type '{ children: Element; asChild: true; variant: string; size: string; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.",
       "fix": "Fix type annotation or add proper typing"
     },
     {
@@ -2708,9 +3211,9 @@
       "severity": "medium",
       "type": "typescript-error",
       "title": "TypeScript Error",
-      "file": "app/api/cart/price/route.ts",
-      "line": 70,
-      "description": "Property 'itemVariationData' does not exist on type 'CatalogObject'.",
+      "file": "app/(site)/community/page.tsx",
+      "line": 184,
+      "description": "Type '{ children: Element; asChild: true; size: string; variant: string; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.",
       "fix": "Fix type annotation or add proper typing"
     },
     {
@@ -2719,9 +3222,9 @@
       "severity": "medium",
       "type": "typescript-error",
       "title": "TypeScript Error",
-      "file": "app/api/checkout/route.ts",
-      "line": 46,
-      "description": "Cannot find name 'debug'.",
+      "file": "app/(site)/community/page.tsx",
+      "line": 195,
+      "description": "Type '{ children: Element; asChild: true; size: string; variant: string; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.",
       "fix": "Fix type annotation or add proper typing"
     },
     {
@@ -2730,9 +3233,9 @@
       "severity": "medium",
       "type": "typescript-error",
       "title": "TypeScript Error",
-      "file": "app/api/checkout/route.ts",
-      "line": 60,
-      "description": "Cannot find name 'debug'.",
+      "file": "app/admin/square-oauth/page.tsx",
+      "line": 75,
+      "description": "Type '{ children: Element[]; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.",
       "fix": "Fix type annotation or add proper typing"
     },
     {
@@ -2741,9 +3244,9 @@
       "severity": "medium",
       "type": "typescript-error",
       "title": "TypeScript Error",
-      "file": "app/api/checkout/route.ts",
-      "line": 81,
-      "description": "Cannot find name 'debug'.",
+      "file": "app/admin/square-oauth/page.tsx",
+      "line": 77,
+      "description": "Type '{ children: (string | Element)[]; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.",
       "fix": "Fix type annotation or add proper typing"
     },
     {
@@ -2752,9 +3255,9 @@
       "severity": "medium",
       "type": "typescript-error",
       "title": "TypeScript Error",
-      "file": "app/api/checkout/route.ts",
-      "line": 139,
-      "description": "Cannot find name 'debug'.",
+      "file": "app/admin/square-oauth/page.tsx",
+      "line": 84,
+      "description": "Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<any>'.",
       "fix": "Fix type annotation or add proper typing"
     },
     {
@@ -2763,9 +3266,9 @@
       "severity": "medium",
       "type": "typescript-error",
       "title": "TypeScript Error",
-      "file": "app/api/checkout/route.ts",
-      "line": 176,
-      "description": "Cannot find name 'debug'.",
+      "file": "app/admin/square-oauth/page.tsx",
+      "line": 85,
+      "description": "Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<any>'.",
       "fix": "Fix type annotation or add proper typing"
     },
     {
@@ -2774,9 +3277,9 @@
       "severity": "medium",
       "type": "typescript-error",
       "title": "TypeScript Error",
-      "file": "app/api/checkout/route.ts",
-      "line": 201,
-      "description": "Cannot find name 'debug'.",
+      "file": "app/admin/square-oauth/page.tsx",
+      "line": 86,
+      "description": "Type '{ children: (string | Element)[]; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.",
       "fix": "Fix type annotation or add proper typing"
     },
     {
@@ -2785,9 +3288,9 @@
       "severity": "medium",
       "type": "typescript-error",
       "title": "TypeScript Error",
-      "file": "app/api/checkout/route.ts",
-      "line": 295,
-      "description": "Property 'get' does not exist on type 'Checkout'.",
+      "file": "app/admin/square-oauth/page.tsx",
+      "line": 90,
+      "description": "Type '{ children: string; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<any>'.",
       "fix": "Fix type annotation or add proper typing"
     },
     {
@@ -2922,6 +3425,16 @@
     },
     {
       "agent": "bug-hunter",
+      "severity": "medium",
+      "type": "as-any",
+      "title": "Unsafe any type assertion",
+      "file": "/app/api/square/diagnose/route.ts",
+      "line": 137,
+      "description": "Found: const response = await square.catalog.list({ types: 'ITEM' }) as any;",
+      "fix": "Remove or replace as-any"
+    },
+    {
+      "agent": "bug-hunter",
       "severity": "low",
       "type": "console-log",
       "title": "Console.log in production code",
@@ -2946,6 +3459,16 @@
       "type": "console-log",
       "title": "Console.log in production code",
       "file": "/lib/crawler.ts",
+      "line": 3,
+      "description": "Found: const debug = (...args) => { if (DEBUG) console.log(...args); };",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/db-admin.js",
       "line": 3,
       "description": "Found: const debug = (...args) => { if (DEBUG) console.log(...args); };",
       "fix": "Remove or replace console-log"
@@ -2995,8 +3518,18 @@
       "severity": "low",
       "type": "console-log",
       "title": "Console.log in production code",
+      "file": "/lib/email-queue.js",
+      "line": 21,
+      "description": "Found: console.log('✅ Email queue collection initialized with indexes');",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
       "file": "/lib/email.js",
-      "line": 11,
+      "line": 10,
       "description": "Found: console.log('✅ Using REAL SendGrid Email');",
       "fix": "Remove or replace console-log"
     },
@@ -3005,8 +3538,18 @@
       "severity": "low",
       "type": "console-log",
       "title": "Console.log in production code",
+      "file": "/lib/enhanced-order-tracking.js",
+      "line": 6,
+      "description": "Found: const debug = (...args) => { if (DEBUG) console.log(...args); };",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
       "file": "/lib/explore/game-engine.js",
-      "line": 24,
+      "line": 22,
       "description": "Found: console.log(`🎮 Game started: ${gameId}`);",
       "fix": "Remove or replace console-log"
     },
@@ -3016,7 +3559,7 @@
       "type": "console-log",
       "title": "Console.log in production code",
       "file": "/lib/explore/kiosk-mode.js",
-      "line": 47,
+      "line": 45,
       "description": "Found: console.log('🖥️ Kiosk mode enabled');",
       "fix": "Remove or replace console-log"
     },
@@ -3025,20 +3568,20 @@
       "severity": "low",
       "type": "console-log",
       "title": "Console.log in production code",
-      "file": "/lib/logger.js",
-      "line": 119,
-      "description": "Found: console.log(`ℹ️ [${category}] ${message}`, data);",
+      "file": "/lib/monitoring.js",
+      "line": 13,
+      "description": "Found: console.log(`API Performance: ${endpoint} - ${duration}ms (${statusCode})`);",
       "fix": "Remove or replace console-log"
     },
     {
       "agent": "bug-hunter",
-      "severity": "low",
-      "type": "console-log",
-      "title": "Console.log in production code",
-      "file": "/lib/monitoring.js",
-      "line": 14,
-      "description": "Found: console.log(`API Performance: ${endpoint} - ${duration}ms (${statusCode})`);",
-      "fix": "Remove or replace console-log"
+      "severity": "medium",
+      "type": "as-any",
+      "title": "Unsafe any type assertion",
+      "file": "/lib/monitoring.ts",
+      "line": 228,
+      "description": "Found: if (typeof window !== 'undefined' && (window as any).posthog) {",
+      "fix": "Remove or replace as-any"
     },
     {
       "agent": "bug-hunter",
@@ -3046,7 +3589,7 @@
       "type": "console-log",
       "title": "Console.log in production code",
       "file": "/lib/order-status-notifier.js",
-      "line": 14,
+      "line": 13,
       "description": "Found: console.log(`📊 Order status changed: ${order.orderNumber} (${oldStatus} → ${new",
       "fix": "Remove or replace console-log"
     },
@@ -3056,7 +3599,7 @@
       "type": "console-log",
       "title": "Console.log in production code",
       "file": "/lib/payment-orchestrator.js",
-      "line": 166,
+      "line": 165,
       "description": "Found: console.log('Processing Stripe payment:', { amount, currency, orderId: orderData",
       "fix": "Remove or replace console-log"
     },
@@ -3065,8 +3608,18 @@
       "severity": "low",
       "type": "console-log",
       "title": "Console.log in production code",
+      "file": "/lib/product-sync-engine.js",
+      "line": 120,
+      "description": "Found: console.log(`🔄 Syncing ${squareProducts.length} products to unified collection.",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
       "file": "/lib/resend-email.js",
-      "line": 13,
+      "line": 12,
       "description": "Found: console.log('✅ Resend Email Service Initialized');",
       "fix": "Remove or replace console-log"
     },
@@ -3076,7 +3629,7 @@
       "type": "console-log",
       "title": "Console.log in production code",
       "file": "/lib/resend.js",
-      "line": 117,
+      "line": 116,
       "description": "Found: console.log('📧 [RESEND] Email sent to:', to);",
       "fix": "Remove or replace console-log"
     },
@@ -3086,7 +3639,7 @@
       "type": "console-log",
       "title": "Console.log in production code",
       "file": "/lib/sms-mock.js",
-      "line": 10,
+      "line": 8,
       "description": "Found: console.log('📱 [MOCK SMS] Sending to:', to);",
       "fix": "Remove or replace console-log"
     },
@@ -3096,7 +3649,7 @@
       "type": "console-log",
       "title": "Console.log in production code",
       "file": "/lib/sms.js",
-      "line": 21,
+      "line": 19,
       "description": "Found: console.log('✅ Using REAL Twilio SMS');",
       "fix": "Remove or replace console-log"
     },
@@ -3105,8 +3658,28 @@
       "severity": "low",
       "type": "console-log",
       "title": "Console.log in production code",
+      "file": "/lib/square/syncToUnified.js",
+      "line": 56,
+      "description": "Found: console.log('🔄 Starting sync to unified collection...');",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "medium",
+      "type": "as-any",
+      "title": "Unsafe any type assertion",
+      "file": "/lib/square-customer.ts",
+      "line": 99,
+      "description": "Found: const updateResponse = await (square.customers as any).updateCustomer({",
+      "fix": "Remove or replace as-any"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
       "file": "/lib/staff-notifications.js",
-      "line": 264,
+      "line": 263,
       "description": "Found: console.log('📧 Staff notification sent:', { orderNumber: order.orderNumber, res",
       "fix": "Remove or replace console-log"
     },
@@ -3126,7 +3699,7 @@
       "type": "console-log",
       "title": "Console.log in production code",
       "file": "/utils/analytics.ts",
-      "line": 38,
+      "line": 36,
       "description": "Found: console.log('[Analytics]', event, props);",
       "fix": "Remove or replace console-log"
     },
@@ -3496,7 +4069,7 @@
       "type": "button-no-type",
       "title": "Button without explicit type attribute",
       "file": "/components/SquareWebPaymentForm.jsx",
-      "line": 234,
+      "line": 237,
       "fix": "Review and fix: button-no-type"
     },
     {
@@ -3505,7 +4078,7 @@
       "type": "small-text",
       "title": "Very small text (text-xs) may be hard to read",
       "file": "/components/SquareWebPaymentForm.jsx",
-      "line": 291,
+      "line": 294,
       "fix": "Review and fix: small-text"
     },
     {
@@ -3766,7 +4339,7 @@
       "severity": "high",
       "type": "input-no-label",
       "title": "Input without associated label",
-      "file": "/components/ui/input.tsx",
+      "file": "/components/ui/input.jsx",
       "fix": "Add label element or aria-label attribute"
     },
     {
@@ -3854,8 +4427,99 @@
       "severity": "medium",
       "type": "error-no-stack",
       "title": "Error logged without stack trace",
+      "file": "/lib/adaptive-recommendations.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/lib/admin-analytics.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/lib/admin-auth-middleware.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/lib/admin-auth.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/lib/catalog-api.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
       "file": "/lib/crawler.ts",
       "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "low",
+      "type": "excessive-console-log",
+      "title": "Excessive console.log usage",
+      "file": "/lib/db-admin.js",
+      "description": "13 console statements found",
+      "fix": "Replace with structured logger"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/lib/db-customers.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/lib/delivery-radius.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "low",
+      "type": "excessive-console-log",
+      "title": "Excessive console.log usage",
+      "file": "/lib/enhanced-order-tracking.js",
+      "description": "14 console statements found",
+      "fix": "Replace with structured logger"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/lib/enhanced-products.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "low",
+      "type": "excessive-console-log",
+      "title": "Excessive console.log usage",
+      "file": "/lib/product-sync-engine.js",
+      "description": "11 console statements found",
+      "fix": "Replace with structured logger"
     },
     {
       "agent": "log-devourer",
@@ -3870,7 +4534,32 @@
       "severity": "medium",
       "type": "error-no-stack",
       "title": "Error logged without stack trace",
+      "file": "/lib/response-optimizer.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "low",
+      "type": "excessive-console-log",
+      "title": "Excessive console.log usage",
+      "file": "/lib/square/syncToUnified.js",
+      "description": "11 console statements found",
+      "fix": "Replace with structured logger"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
       "file": "/lib/startup-validator.ts",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/lib/unified-analytics.js",
       "fix": "Include error.stack or full error object"
     },
     {
@@ -3886,7 +4575,183 @@
       "severity": "medium",
       "type": "error-no-stack",
       "title": "Error logged without stack trace",
+      "file": "/app/admin/campaigns/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/admin/coupons/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/admin/customers/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/admin/inventory/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/admin/layout.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/admin/login/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/admin/orders/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/admin/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/admin/products/[id]/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/admin/products/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/admin/settings/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/admin/setup/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
       "file": "/app/admin/square-oauth/page.tsx",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/admin/waitlist/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/[[...path]]/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/admin/audit-logs/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/admin/auth/me/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/admin/coupons/[id]/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/admin/coupons/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/admin/inventory/[productId]/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/admin/orders/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/admin/products/[id]/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/admin/products/route.js",
       "fix": "Include error.stack or full error object"
     },
     {
@@ -4110,6 +4975,14 @@
       "severity": "medium",
       "type": "error-no-stack",
       "title": "Error logged without stack trace",
+      "file": "/app/api/reviews/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
       "file": "/app/api/reviews/upload/route.js",
       "fix": "Include error.stack or full error object"
     },
@@ -4136,6 +5009,15 @@
       "title": "Error logged without stack trace",
       "file": "/app/api/rewards/passport/route.js",
       "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "low",
+      "type": "excessive-console-log",
+      "title": "Excessive console.log usage",
+      "file": "/app/api/square-webhook/route.js",
+      "description": "11 console statements found",
+      "fix": "Replace with structured logger"
     },
     {
       "agent": "log-devourer",
@@ -4223,6 +5105,23 @@
       "type": "error-no-stack",
       "title": "Error logged without stack trace",
       "file": "/app/api/waitlist/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "low",
+      "type": "excessive-console-log",
+      "title": "Excessive console.log usage",
+      "file": "/app/api/webhooks/square/route.ts",
+      "description": "12 console statements found",
+      "fix": "Replace with structured logger"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/webhooks/square/route.ts",
       "fix": "Include error.stack or full error object"
     },
     {
@@ -4358,7 +5257,7 @@
       "severity": "medium",
       "type": "low-structured-logging",
       "title": "Low structured logging adoption",
-      "description": "Only 48.0% of logs use structured logger",
+      "description": "Only 26.7% of logs use structured logger",
       "fix": "Migrate console.log to createLogger pattern"
     },
     {
@@ -4369,6 +5268,15 @@
       "title": "Logger missing JSON formatting",
       "file": "/lib/logger.js",
       "fix": "Add JSON formatting to logger"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/[[...path]]/route.js",
+      "fix": "Add request/response logging"
     },
     {
       "agent": "log-devourer",
@@ -4403,7 +5311,25 @@
       "severity": "medium",
       "type": "api-no-logging",
       "title": "API route without logging",
+      "file": "/app/api/admin/audit-logs/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
       "file": "/app/api/admin/auth/logout/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/auth/me/route.js",
       "fix": "Add request/response logging"
     },
     {
@@ -4448,6 +5374,24 @@
       "severity": "medium",
       "type": "api-no-logging",
       "title": "API route without logging",
+      "file": "/app/api/admin/coupons/[id]/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/coupons/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
       "file": "/app/api/admin/customers/route.js",
       "fix": "Add request/response logging"
     },
@@ -4457,7 +5401,43 @@
       "severity": "medium",
       "type": "api-no-logging",
       "title": "API route without logging",
+      "file": "/app/api/admin/dashboard/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
       "file": "/app/api/admin/email-preview/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/init/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/inventory/[productId]/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/orders/route.js",
       "fix": "Add request/response logging"
     },
     {
@@ -4484,7 +5464,25 @@
       "severity": "medium",
       "type": "api-no-logging",
       "title": "API route without logging",
+      "file": "/app/api/admin/products/[id]/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
       "file": "/app/api/admin/products/[id]/sync/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/products/route.js",
       "fix": "Add request/response logging"
     },
     {
@@ -4961,6 +5959,15 @@
       "severity": "medium",
       "type": "api-no-logging",
       "title": "API route without logging",
+      "file": "/app/api/reviews/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
       "file": "/app/api/reviews/upload/route.js",
       "fix": "Add request/response logging"
     },
@@ -5061,6 +6068,15 @@
       "type": "api-no-logging",
       "title": "API route without logging",
       "file": "/app/api/square/test-token/route.ts",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/square-webhook/route.js",
       "fix": "Add request/response logging"
     },
     {
@@ -5229,27 +6245,19 @@
       "agent": "log-devourer",
       "microAgent": "trace",
       "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/webhooks/square/route.ts",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
       "type": "no-request-id",
       "title": "No request ID generation in middleware",
       "file": "/middleware.ts",
       "fix": "Generate unique request ID for tracing"
-    },
-    {
-      "agent": "opti-beast",
-      "severity": "high",
-      "type": "bundle-size",
-      "title": "Bundle size exceeds 2MB",
-      "description": "Total bundle: 2.37MB",
-      "fix": "Enable code splitting, lazy loading, and tree shaking"
-    },
-    {
-      "agent": "opti-beast",
-      "severity": "medium",
-      "type": "large-chunk",
-      "title": "Large JavaScript chunk",
-      "file": "/.next/static/chunks/vendors-b87af8a6-5bed8642b1dbc26c.js",
-      "description": "Size: 332.3KB",
-      "fix": "Split this chunk or lazy load components"
     },
     {
       "agent": "trust-guardian",
@@ -5294,8 +6302,8 @@
   ],
   "summary": {
     "critical": 0,
-    "high": 16,
-    "medium": 191,
-    "low": 83
+    "high": 15,
+    "medium": 241,
+    "low": 93
   }
 }

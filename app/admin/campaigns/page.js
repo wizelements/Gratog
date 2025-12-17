@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,7 +43,7 @@ export default function CampaignsPage() {
       setStats(stats);
       
     } catch (error) {
-      console.error('Fetch campaigns error:', error);
+      logger.error('Admin', 'Fetch campaigns error', error);
       toast.error('Failed to load campaigns');
     } finally {
       setLoading(false);

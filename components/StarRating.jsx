@@ -36,7 +36,7 @@ export default function StarRating({ rating = 0, onRate, size = 24, readonly = f
             onMouseEnter={() => handleMouseEnter(star)}
             onMouseLeave={handleMouseLeave}
             disabled={readonly}
-            className={`transition-all ${readonly ? 'cursor-default' : 'cursor-pointer hover:scale-110'}`}
+            className={`min-w-[44px] min-h-[44px] flex items-center justify-center transition-all ${readonly ? 'cursor-default' : 'cursor-pointer hover:scale-110'}`}
           >
             <Star
               size={size}

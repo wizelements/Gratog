@@ -225,8 +225,9 @@ export function trackPerformance(
   }));
 
   // Send to PostHog
-  if (typeof window !== 'undefined' && (window as any).posthog) {
-    (window as any).posthog.capture('performance_metric', {
+  if (typeof window !== 'undefined' && 'posthog' in window) {
+    const posthog = window.posthog as { capture: (event: string, properties: Record<string, unknown>) => void };
+    posthog.capture('performance_metric', {
       operation,
       duration_ms: durationMs,
       success,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSquareClient, SQUARE_LOCATION_ID } from '@/lib/square';
 import { toSquareMoney, fromSquareMoney } from '@/lib/money';
+import { logger } from '@/lib/logger';
 
 /**
  * Cart Pricing API - Server-Side Authoritative Pricing
@@ -53,7 +54,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const priceMoney = variation.itemVariationData?.priceMoney;
+      // Cast to access itemVariationData - Square SDK types don't expose this directly
+      const variationData = (variation as { itemVariationData?: { priceMoney?: { amount?: bigint | number }; name?: string } }).itemVariationData;
+      const priceMoney = variationData?.priceMoney;
       if (!priceMoney) {
         return NextResponse.json(
           { error: `Price not set for variation ${line.variationId}` },
@@ -67,7 +70,7 @@ export async function POST(request: NextRequest) {
 
       lineDetails.push({
         variationId: line.variationId,
-        name: variation.itemVariationData?.name || 'Unknown',
+        name: variationData?.name || 'Unknown',
         qty: line.qty,
         pricePerItemCents,
         lineTotalCents: lineTotal

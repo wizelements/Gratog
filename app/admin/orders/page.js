@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ export default function OrdersPage() {
       const data = await response.json();
       setOrders(data.orders || []);
     } catch (error) {
-      console.error('Failed to fetch orders:', error);
+      logger.error('Admin', 'Failed to fetch orders', error);
     } finally {
       setLoading(false);
     }

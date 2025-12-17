@@ -1,5 +1,3 @@
-const DEBUG = process.env.DEBUG === "true";
-const debug = (...args) => { if (DEBUG) debug(...args); };
 
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { verifyToken } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/admin/products/[id]
@@ -37,7 +38,7 @@ export async function GET(request, { params }) {
       product
     });
   } catch (error) {
-    console.error('Failed to fetch product:', error);
+    logger.error('API', 'Failed to fetch product', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch product' },
       { status: 500 }
@@ -110,7 +111,7 @@ export async function PUT(request, { params }) {
       message: 'Product updated successfully'
     });
   } catch (error) {
-    console.error('Failed to update product:', error);
+    logger.error('API', 'Failed to update product', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update product' },
       { status: 500 }

@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import {
   LayoutDashboard,
   Package,
@@ -47,7 +48,7 @@ export default function AdminLayout({ children }) {
             setUser(data.user);
           }
         })
-        .catch(console.error);
+        .catch((error) => logger.error('Admin', 'Failed to fetch user', error));
     }
   }, [pathname]);
 

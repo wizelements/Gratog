@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdminAuth, getAuditLogs } from '@/lib/admin-auth-middleware';
+import { logger } from '@/lib/logger';
 
 async function handleGet(request) {
   try {
@@ -34,7 +35,7 @@ async function handleGet(request) {
     
     return NextResponse.json(result);
   } catch (error) {
-    console.error('❌ Error fetching audit logs:', error);
+    logger.error('API', 'Error fetching audit logs', error);
     return NextResponse.json(
       { error: 'Failed to fetch audit logs' },
       { status: 500 }

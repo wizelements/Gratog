@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-admin';
 import { verifyToken } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 export async function DELETE(request, { params }) {
   // Verify admin authentication
@@ -41,7 +42,7 @@ export async function DELETE(request, { params }) {
     });
 
   } catch (error) {
-    console.error('Error deleting coupon:', error);
+    logger.error('API', 'Error deleting coupon', error);
     return NextResponse.json(
       { error: 'Failed to delete coupon' },
       { status: 500 }
@@ -97,7 +98,7 @@ export async function PUT(request, { params }) {
     });
 
   } catch (error) {
-    console.error('Error updating coupon:', error);
+    logger.error('API', 'Error updating coupon', error);
     return NextResponse.json(
       { error: 'Failed to update coupon' },
       { status: 500 }

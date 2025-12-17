@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/admin/auth/me
@@ -24,7 +25,7 @@ export async function GET(request) {
       user: adminUser
     });
   } catch (error) {
-    console.error('Admin auth/me error:', error);
+    logger.error('API', 'Admin auth/me error', error);
     return NextResponse.json(
       { success: false, error: 'Authentication failed' },
       { status: 401 }

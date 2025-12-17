@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,7 @@ export default function WaitlistPage() {
       const data = await response.json();
       setWaitlist(data.waitlist || []);
     } catch (error) {
-      console.error('Failed to fetch waitlist:', error);
+      logger.error('Admin', 'Failed to fetch waitlist', error);
     } finally {
       setLoading(false);
     }

@@ -1,9 +1,7 @@
-const DEBUG = process.env.DEBUG === "true";
-const debug = (...args) => { if (DEBUG) debug(...args); };
-
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 import { useRouter, usePathname } from 'next/navigation';
 import kioskMode from '@/lib/explore/kiosk-mode';
 import audioManager from '@/lib/explore/audio-manager';

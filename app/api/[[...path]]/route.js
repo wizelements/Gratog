@@ -6,6 +6,7 @@ import {
   getProductByIdOptimized,
   getCachedQuery 
 } from '@/lib/db-optimized'
+import { logger } from '@/lib/logger'
 
 // Helper function to handle CORS
 function handleCORS(response) {
@@ -80,7 +81,7 @@ async function handleRoute(request, { params }) {
     ))
 
   } catch (error) {
-    console.error('API Error:', error)
+    logger.error('API', 'API Error', error)
     return handleCORS(NextResponse.json(
       { error: "Internal server error" }, 
       { status: 500 }

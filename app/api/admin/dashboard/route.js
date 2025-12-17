@@ -1,9 +1,7 @@
-const DEBUG = process.env.DEBUG === "true";
-const debug = (...args) => { if (DEBUG) debug(...args); };
-
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { verifyToken } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/admin/dashboard
@@ -37,7 +35,7 @@ export async function GET(request) {
       ]).toArray();
       totalSales = salesData[0]?.total || 0;
     } catch (e) {
-      debug('Orders collection not yet available');
+      logger.debug('API', 'Orders collection not yet available');
     }
     
     // Get customers count (if customers collection exists)
@@ -45,7 +43,7 @@ export async function GET(request) {
     try {
       customersCount = await db.collection('customers').countDocuments();
     } catch (e) {
-      debug('Customers collection not yet available');
+      logger.debug('API', 'Customers collection not yet available');
     }
     
     // Low stock alerts (products with inventory tracking)
@@ -61,7 +59,7 @@ export async function GET(request) {
         );
       }).length;
     } catch (e) {
-      debug('Inventory check skipped');
+      logger.debug('API', 'Inventory check skipped');
     }
     
     // Recent activity (mock for now)
@@ -101,7 +99,7 @@ export async function GET(request) {
       }
     });
   } catch (error) {
-    console.error('Dashboard data fetch error:', error);
+    logger.error('API', 'Dashboard data fetch error', error);
     return NextResponse.json(
       { 
         success: false, 

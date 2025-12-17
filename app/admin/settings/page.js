@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Shield, Settings as SettingsIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 
 export default function SettingsPage() {
   const [user, setUser] = useState(null);
@@ -16,7 +17,7 @@ export default function SettingsPage() {
           setUser(data.user);
         }
       })
-      .catch(console.error);
+      .catch((error) => logger.error('Admin', 'Failed to fetch user', error));
   }, []);
 
   return (

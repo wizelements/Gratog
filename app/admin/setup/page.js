@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +28,7 @@ export default function AdminSetupPage() {
       const data = await response.json();
       setAdminStatus(data);
     } catch (error) {
-      console.error('Failed to check admin status:', error);
+      logger.error('Admin', 'Failed to check admin status', error);
       toast.error('Failed to check admin status');
     } finally {
       setChecking(false);
@@ -55,7 +56,7 @@ export default function AdminSetupPage() {
         toast.error(data.message || 'Setup failed');
       }
     } catch (error) {
-      console.error('Setup error:', error);
+      logger.error('Admin', 'Setup error', error);
       toast.error('Setup failed. Please try again.');
     } finally {
       setLoading(false);

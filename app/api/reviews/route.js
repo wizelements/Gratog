@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { sendReviewConfirmation } from '@/lib/resend';
 import { verifyToken } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 const REVIEW_POINTS = 10;
 
@@ -41,7 +42,7 @@ export async function GET(request) {
       count: reviews.length,
     });
   } catch (error) {
-    console.error('Failed to fetch reviews:', error);
+    logger.error('API', 'Failed to fetch reviews', error);
     return NextResponse.json(
       { error: 'Failed to fetch reviews' },
       { status: 500 }
@@ -148,7 +149,7 @@ export async function POST(request) {
         });
       }
     } catch (passportError) {
-      console.error('Failed to award points:', passportError);
+      logger.error('API', 'Failed to award points', passportError);
     }
 
     await sendReviewConfirmation(email, productName, REVIEW_POINTS);
@@ -163,7 +164,7 @@ export async function POST(request) {
       },
     });
   } catch (error) {
-    console.error('Failed to submit review:', error);
+    logger.error('API', 'Failed to submit review', error);
     return NextResponse.json(
       { error: 'Failed to submit review' },
       { status: 500 }
@@ -180,7 +181,7 @@ async function checkVerifiedPurchase(db, email, productId) {
     });
     return !!order;
   } catch (error) {
-    console.error('Error checking verified purchase:', error);
+    logger.error('API', 'Error checking verified purchase', error);
     return false;
   }
 }
@@ -224,7 +225,7 @@ export async function getReviewAnalytics(db, productId = null) {
 
     return productId ? (analytics[0] || null) : analytics;
   } catch (error) {
-    console.error('Error getting review analytics:', error);
+    logger.error('API', 'Error getting review analytics', error);
     return null;
   }
 }

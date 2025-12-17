@@ -1,9 +1,7 @@
-const DEBUG = process.env.DEBUG === "true";
-const debug = (...args) => { if (DEBUG) debug(...args); };
-
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
+import { logger } from '@/lib/logger';
 import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

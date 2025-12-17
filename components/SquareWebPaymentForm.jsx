@@ -1,6 +1,3 @@
-const DEBUG = process.env.DEBUG === "true";
-const debug = (...args) => { if (DEBUG) debug(...args); };
-
 'use client';
 
 import { useEffect, useState, useRef } from 'react';

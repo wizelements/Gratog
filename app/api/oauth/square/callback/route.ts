@@ -1,6 +1,5 @@
-const DEBUG = process.env.DEBUG === "true";
-const debug = (...args) => { if (DEBUG) debug(...args); };
 
+import { logger } from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import { SquareClient, SquareEnvironment } from 'square';
 
@@ -30,7 +29,7 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    debug('Received authorization code:', code.substring(0, 20) + '...');
+    logger.debug('API', 'Received authorization code:', code.substring(0, 20) + '...');
     
     // Validate state (CSRF protection)
     // In production, validate against stored state
@@ -57,7 +56,7 @@ export async function GET(request: NextRequest) {
       environment: isProduction ? SquareEnvironment.Production : SquareEnvironment.Sandbox,
     });
     
-    debug('Exchanging code for access token...');
+    logger.debug('API', 'Exchanging code for access token...');
     
     const response = await square.oAuth.obtainToken({
       clientId,
@@ -67,7 +66,7 @@ export async function GET(request: NextRequest) {
       redirectUri: `${process.env.NEXT_PUBLIC_BASE_URL}/api/oauth/square/callback`
     });
     
-    debug('Token exchange response:', response);
+    logger.debug('API', 'Token exchange response:', response);
     
     // Square returns tokens directly in response, not nested in result
     const accessToken = response.accessToken || response.result?.accessToken;
@@ -82,9 +81,9 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    debug('✅ Access token obtained successfully!');
-    debug('Merchant ID:', merchantId);
-    debug('Token expires:', expiresAt);
+    logger.debug('API', '✅ Access token obtained successfully!');
+    logger.debug('API', 'Merchant ID:', merchantId);
+    logger.debug('API', 'Token expires:', expiresAt);
     
     // Display the token to the user so they can update .env
     const resultHtml = `

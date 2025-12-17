@@ -1,29 +1,44 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Flame } from 'lucide-react';
+import { Package } from 'lucide-react';
 
-export default function ScarcityBadge({ productId, initialStock = null }) {
-  const [stock, setStock] = useState(initialStock || Math.floor(Math.random() * 8) + 3);
-  const [isLowStock, setIsLowStock] = useState(false);
+/**
+ * ScarcityBadge - Displays actual inventory status
+ * 
+ * IMPORTANT: This component should ONLY display real inventory data.
+ * Never use random numbers or manufactured scarcity.
+ * 
+ * @param {number|null} stock - Actual inventory count from backend/Square
+ * @param {string} productId - Product identifier for inventory lookup
+ */
+export default function ScarcityBadge({ productId, stock = null }) {
+  // Only show badge if we have actual inventory data
+  // Do not manufacture fake scarcity - this builds customer trust
+  if (stock === null || stock === undefined) {
+    return null;
+  }
 
-  useEffect(() => {
-    setIsLowStock(stock <= 5);
-  }, [stock]);
+  // Only show for genuinely low stock (5 or fewer)
+  if (stock > 5) {
+    return null;
+  }
 
-  if (!stock || stock > 20) return null;
+  // Out of stock
+  if (stock <= 0) {
+    return (
+      <Badge className="bg-gray-100 text-gray-600 border-gray-300">
+        <Package className="h-3 w-3 mr-1" />
+        Out of stock
+      </Badge>
+    );
+  }
 
+  // Low stock (1-5 items) - professional messaging without FOMO tactics
   return (
-    <Badge 
-      className={
-        isLowStock 
-          ? "bg-red-100 text-red-700 border-red-300 animate-pulse"
-          : "bg-orange-100 text-orange-700 border-orange-300"
-      }
-    >
-      <Flame className="h-3 w-3 mr-1" />
-      Only {stock} left!
+    <Badge className="bg-amber-50 text-amber-700 border-amber-200">
+      <Package className="h-3 w-3 mr-1" />
+      {stock} in stock
     </Badge>
   );
 }

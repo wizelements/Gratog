@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingCart, Package, TrendingUp, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -36,7 +37,7 @@ export default function AdminDashboard() {
         }));
       }
     } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
+      logger.error('Admin', 'Failed to fetch dashboard data', error);
     }
   };
 

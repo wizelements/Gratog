@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +28,7 @@ export default function CustomersPage() {
       const data = await response.json();
       setCustomers(data.customers || []);
     } catch (error) {
-      console.error('Failed to fetch customers:', error);
+      logger.error('Admin', 'Failed to fetch customers', error);
     } finally {
       setLoading(false);
     }

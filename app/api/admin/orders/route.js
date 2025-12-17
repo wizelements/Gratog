@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getOrders } from '@/lib/db-admin';
 import { verifyToken } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 export async function GET(request) {
   try {
@@ -26,7 +27,7 @@ export async function GET(request) {
     
     return NextResponse.json({ orders: result.orders });
   } catch (error) {
-    console.error('Get orders error:', error);
+    logger.error('API', 'Get orders error', error);
     return NextResponse.json(
       { error: 'Failed to get orders' },
       { status: 500 }

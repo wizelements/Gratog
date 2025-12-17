@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,7 +27,7 @@ export default function ProductsPage() {
       const data = await response.json();
       setProducts(data.products || []);
     } catch (error) {
-      console.error('Failed to fetch products:', error);
+      logger.error('Admin', 'Failed to fetch products', error);
       toast.error('Failed to load products');
     } finally {
       setLoading(false);
@@ -48,7 +49,7 @@ export default function ProductsPage() {
         toast.error(data.error || 'Sync failed');
       }
     } catch (error) {
-      console.error('Sync error:', error);
+      logger.error('Admin', 'Sync error', error);
       toast.error('Failed to sync from Square');
     } finally {
       setSyncing(false);

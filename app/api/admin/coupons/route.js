@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-admin';
 import { verifyToken } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 export async function GET(request) {
   // Verify admin authentication
@@ -41,7 +42,7 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Error fetching admin coupons:', error);
+    logger.error('API', 'Error fetching admin coupons', error);
     return NextResponse.json(
       { error: 'Failed to fetch coupons' },
       { status: 500 }
@@ -152,7 +153,7 @@ export async function POST(request) {
     );
 
   } catch (error) {
-    console.error('Error getting coupon analytics:', error);
+    logger.error('API', 'Error getting coupon analytics', error);
     return NextResponse.json(
       { error: 'Failed to get analytics' },
       { status: 500 }
