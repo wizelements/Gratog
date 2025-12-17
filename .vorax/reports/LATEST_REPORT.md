@@ -1,0 +1,2457 @@
+# 🦖 VORAX PRIME REPORT
+
+**Scan #1** | Wed Dec 17 2025 13:20:46 GMT+0000 (Coordinated Universal Time)
+**Mode:** NORMAL | **Hunger Level:** 50/100
+
+---
+
+## 📊 Summary
+
+| Severity | Count |
+|----------|-------|
+| 🔴 Critical | 2 |
+| 🟠 High | 33 |
+| 🟡 Medium | 235 |
+| 🟢 Low | 147 |
+| **Total** | **417** |
+
+---
+
+## 🐺 Agent Reports
+
+### bug-hunter
+- Duration: 11250ms
+- Issues Found: 107
+
+### psycho-marketer
+- Duration: 156ms
+- Issues Found: 8
+
+### uiux-predator
+- Duration: 109ms
+- Issues Found: 81
+
+### log-devourer
+- Duration: 76ms
+- Issues Found: 203
+
+### opti-beast
+- Duration: 50ms
+- Issues Found: 3
+
+### trust-guardian
+- Duration: 48ms
+- Issues Found: 15
+
+---
+
+## 🐛 Issues
+
+### 🔴 CRITICAL (2)
+
+- **Hardcoded secret**
+  - Agent: bug-hunter
+  - File: `/lib/auth/jwt.js`
+  - Security issue: Hardcoded secret
+  - 💡 Fix: Review and fix security vulnerability
+
+- **Potential 20.0% revenue loss ($2000/month)**
+  - Agent: trust-guardian
+  - File: `N/A`
+  - Trust issues could reduce conversion by 20.0%
+  - 💡 Fix: Address all trust-related issues immediately
+
+### 🟠 HIGH (33)
+
+- **dangerouslySetInnerHTML usage**
+  - Agent: bug-hunter
+  - File: `/app/(site)/instagram/[slug]/page.tsx`
+  - Security issue: dangerouslySetInnerHTML usage
+  - 💡 Fix: Review and fix security vulnerability
+
+- **dangerouslySetInnerHTML usage**
+  - Agent: bug-hunter
+  - File: `/app/layout.js`
+  - Security issue: dangerouslySetInnerHTML usage
+  - 💡 Fix: Review and fix security vulnerability
+
+- **dangerouslySetInnerHTML usage**
+  - Agent: bug-hunter
+  - File: `/app/page.js`
+  - Security issue: dangerouslySetInnerHTML usage
+  - 💡 Fix: Review and fix security vulnerability
+
+- **dangerouslySetInnerHTML usage**
+  - Agent: bug-hunter
+  - File: `/app/product/[slug]/page.js`
+  - Security issue: dangerouslySetInnerHTML usage
+  - 💡 Fix: Review and fix security vulnerability
+
+- **dangerouslySetInnerHTML usage**
+  - Agent: bug-hunter
+  - File: `/lib/seo/structured-data.tsx`
+  - Security issue: dangerouslySetInnerHTML usage
+  - 💡 Fix: Review and fix security vulnerability
+
+- **dangerouslySetInnerHTML usage**
+  - Agent: bug-hunter
+  - File: `/components/IngredientsSchema.tsx`
+  - Security issue: dangerouslySetInnerHTML usage
+  - 💡 Fix: Review and fix security vulnerability
+
+- **dangerouslySetInnerHTML usage**
+  - Agent: bug-hunter
+  - File: `/components/SEOHead.tsx`
+  - Security issue: dangerouslySetInnerHTML usage
+  - 💡 Fix: Review and fix security vulnerability
+
+- **innerHTML assignment (XSS risk)**
+  - Agent: bug-hunter
+  - File: `/components/SquarePaymentForm.jsx`
+  - Security issue: innerHTML assignment (XSS risk)
+  - 💡 Fix: Review and fix security vulnerability
+
+- **dangerouslySetInnerHTML usage**
+  - Agent: bug-hunter
+  - File: `/components/ui/chart.jsx`
+  - Security issue: dangerouslySetInnerHTML usage
+  - 💡 Fix: Review and fix security vulnerability
+
+- **Image missing alt attribute**
+  - Agent: uiux-predator
+  - File: `/components/FloatingCart.jsx`
+  - Line: 200
+  - 💡 Fix: Review and fix: img-no-alt
+
+- **Image missing alt attribute**
+  - Agent: uiux-predator
+  - File: `/components/MarketPassport.jsx`
+  - Line: 191
+  - 💡 Fix: Review and fix: img-no-alt
+
+- **Image missing alt attribute**
+  - Agent: uiux-predator
+  - File: `/components/ProductQuickView.jsx`
+  - Line: 78
+  - 💡 Fix: Review and fix: img-no-alt
+
+- **Image missing alt attribute**
+  - Agent: uiux-predator
+  - File: `/components/SearchEnhanced.jsx`
+  - Line: 268
+  - 💡 Fix: Review and fix: img-no-alt
+
+- **Image missing alt attribute**
+  - Agent: uiux-predator
+  - File: `/components/cart/EnhancedFloatingCart.jsx`
+  - Line: 243
+  - 💡 Fix: Review and fix: img-no-alt
+
+- **Accessibility score: 0/100**
+  - Agent: uiux-predator
+  - File: `N/A`
+  - Multiple accessibility issues detected
+  - 💡 Fix: Add ARIA labels, semantic HTML, and focus indicators
+
+- **Input without associated label**
+  - Agent: uiux-predator
+  - File: `/app/admin/customers/page.js`
+  - 💡 Fix: Add label element or aria-label attribute
+
+- **Input without associated label**
+  - Agent: uiux-predator
+  - File: `/app/admin/products/page.js`
+  - 💡 Fix: Add label element or aria-label attribute
+
+- **Input without associated label**
+  - Agent: uiux-predator
+  - File: `/components/CouponInput.jsx`
+  - 💡 Fix: Add label element or aria-label attribute
+
+- **Input without associated label**
+  - Agent: uiux-predator
+  - File: `/components/NewsletterSignup.jsx`
+  - 💡 Fix: Add label element or aria-label attribute
+
+- **Input without associated label**
+  - Agent: uiux-predator
+  - File: `/components/SearchEnhanced.jsx`
+  - 💡 Fix: Add label element or aria-label attribute
+
+- **Input without associated label**
+  - Agent: uiux-predator
+  - File: `/components/explore/interactive/IngredientExplorer.jsx`
+  - 💡 Fix: Add label element or aria-label attribute
+
+- **Input without associated label**
+  - Agent: uiux-predator
+  - File: `/components/ui/input.jsx`
+  - 💡 Fix: Add label element or aria-label attribute
+
+- **Bundle size exceeds 2MB**
+  - Agent: opti-beast
+  - File: `N/A`
+  - Total bundle: 2.37MB
+  - 💡 Fix: Enable code splitting, lazy loading, and tree shaking
+
+- **Potential discount calculation error**
+  - Agent: trust-guardian
+  - File: `/app/admin/campaigns/new/page.js`
+  - Percentage discount may not be calculated correctly
+  - 💡 Fix: Verify discount is divided by 100 or multiplied by decimal
+
+- **Potential discount calculation error**
+  - Agent: trust-guardian
+  - File: `/app/api/admin/coupons/route.js`
+  - Percentage discount may not be calculated correctly
+  - 💡 Fix: Verify discount is divided by 100 or multiplied by decimal
+
+- **Potential discount calculation error**
+  - Agent: trust-guardian
+  - File: `/app/faq/page.js`
+  - Percentage discount may not be calculated correctly
+  - 💡 Fix: Verify discount is divided by 100 or multiplied by decimal
+
+- **Potential discount calculation error**
+  - Agent: trust-guardian
+  - File: `/app/rewards/page.js`
+  - Percentage discount may not be calculated correctly
+  - 💡 Fix: Verify discount is divided by 100 or multiplied by decimal
+
+- **Potential discount calculation error**
+  - Agent: trust-guardian
+  - File: `/lib/email/templates.js`
+  - Percentage discount may not be calculated correctly
+  - 💡 Fix: Verify discount is divided by 100 or multiplied by decimal
+
+- **Potential discount calculation error**
+  - Agent: trust-guardian
+  - File: `/lib/email-templates.js`
+  - Percentage discount may not be calculated correctly
+  - 💡 Fix: Verify discount is divided by 100 or multiplied by decimal
+
+- **Potential discount calculation error**
+  - Agent: trust-guardian
+  - File: `/lib/resend-email.js`
+  - Percentage discount may not be calculated correctly
+  - 💡 Fix: Verify discount is divided by 100 or multiplied by decimal
+
+- **Potential discount calculation error**
+  - Agent: trust-guardian
+  - File: `/lib/resend.js`
+  - Percentage discount may not be calculated correctly
+  - 💡 Fix: Verify discount is divided by 100 or multiplied by decimal
+
+- **Potential discount calculation error**
+  - Agent: trust-guardian
+  - File: `/lib/rewards.js`
+  - Percentage discount may not be calculated correctly
+  - 💡 Fix: Verify discount is divided by 100 or multiplied by decimal
+
+- **Payment errors may not have retry option**
+  - Agent: trust-guardian
+  - File: `N/A`
+  - Users with failed payments may abandon checkout
+  - 💡 Fix: Add retry mechanism for failed payments
+
+### 🟡 MEDIUM (235)
+
+- **TypeScript Error**
+  - Agent: bug-hunter
+  - File: `.next/types/app/api/reviews/route.ts`
+  - Line: 12
+  - Type 'OmitWithTag<typeof import("/workspaces/Gratog/app/api/reviews/route"), "config" | "generateStaticParams" | "revalidate" | "dynamic" | "dynamicParams" | "fetchCache" | "preferredRegion" | ... 8 more ... | "HEAD", "">' does not satisfy the constraint '{ [x: string]: never; }'.
+  - 💡 Fix: Fix type annotation or add proper typing
+
+- **TypeScript Error**
+  - Agent: bug-hunter
+  - File: `app/(site)/community/page.tsx`
+  - Line: 20
+  - Module '"@/lib/analytics"' has no exported member 'AnalyticsSystem'.
+  - 💡 Fix: Fix type annotation or add proper typing
+
+- **TypeScript Error**
+  - Agent: bug-hunter
+  - File: `app/(site)/community/page.tsx`
+  - Line: 137
+  - Type '{ children: Element; asChild: true; variant: string; size: string; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.
+  - 💡 Fix: Fix type annotation or add proper typing
+
+- **TypeScript Error**
+  - Agent: bug-hunter
+  - File: `app/(site)/community/page.tsx`
+  - Line: 184
+  - Type '{ children: Element; asChild: true; size: string; variant: string; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.
+  - 💡 Fix: Fix type annotation or add proper typing
+
+- **TypeScript Error**
+  - Agent: bug-hunter
+  - File: `app/(site)/community/page.tsx`
+  - Line: 195
+  - Type '{ children: Element; asChild: true; size: string; variant: string; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.
+  - 💡 Fix: Fix type annotation or add proper typing
+
+- **TypeScript Error**
+  - Agent: bug-hunter
+  - File: `app/admin/square-oauth/page.tsx`
+  - Line: 75
+  - Type '{ children: Element[]; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.
+  - 💡 Fix: Fix type annotation or add proper typing
+
+- **TypeScript Error**
+  - Agent: bug-hunter
+  - File: `app/admin/square-oauth/page.tsx`
+  - Line: 77
+  - Type '{ children: (string | Element)[]; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.
+  - 💡 Fix: Fix type annotation or add proper typing
+
+- **TypeScript Error**
+  - Agent: bug-hunter
+  - File: `app/admin/square-oauth/page.tsx`
+  - Line: 84
+  - Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<any>'.
+  - 💡 Fix: Fix type annotation or add proper typing
+
+- **TypeScript Error**
+  - Agent: bug-hunter
+  - File: `app/admin/square-oauth/page.tsx`
+  - Line: 85
+  - Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<any>'.
+  - 💡 Fix: Fix type annotation or add proper typing
+
+- **TypeScript Error**
+  - Agent: bug-hunter
+  - File: `app/admin/square-oauth/page.tsx`
+  - Line: 86
+  - Type '{ children: (string | Element)[]; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.
+  - 💡 Fix: Fix type annotation or add proper typing
+
+- **TypeScript ignore directive**
+  - Agent: bug-hunter
+  - File: `/app/api/admin/emergency-init/route.ts`
+  - Line: 2
+  - Found: // @ts-ignore - JavaScript module import
+  - 💡 Fix: Remove or replace ts-ignore
+
+- **Unsafe any type assertion**
+  - Agent: bug-hunter
+  - File: `/app/api/cart/price/route.ts`
+  - Line: 31
+  - Found: }) as any;
+  - 💡 Fix: Remove or replace as-any
+
+- **Unsafe any type assertion**
+  - Agent: bug-hunter
+  - File: `/app/api/checkout/route.ts`
+  - Line: 294
+  - Found: const response = await square.checkout.get({ paymentLinkId }) as any;
+  - 💡 Fix: Remove or replace as-any
+
+- **Unsafe any type assertion**
+  - Agent: bug-hunter
+  - File: `/app/api/oauth/square/callback/route.ts`
+  - Line: 65
+  - Found: }) as any;
+  - 💡 Fix: Remove or replace as-any
+
+- **Unsafe any type assertion**
+  - Agent: bug-hunter
+  - File: `/app/api/payments/route.ts`
+  - Line: 329
+  - Found: const response = await square.payments.get({ paymentId }) as any;
+  - 💡 Fix: Remove or replace as-any
+
+- **Unsafe any type assertion**
+  - Agent: bug-hunter
+  - File: `/app/api/square/diagnose/route.ts`
+  - Line: 76
+  - Found: const response = await square.locations.list() as any;
+  - 💡 Fix: Remove or replace as-any
+
+- **Unsafe any type assertion**
+  - Agent: bug-hunter
+  - File: `/lib/crawler.ts`
+  - Line: 248
+  - Found: .filter(Boolean) as any[];
+  - 💡 Fix: Remove or replace as-any
+
+- **Unsafe any type assertion**
+  - Agent: bug-hunter
+  - File: `/lib/monitoring.ts`
+  - Line: 128
+  - Found: if (typeof window !== 'undefined' && (window as any).posthog) {
+  - 💡 Fix: Remove or replace as-any
+
+- **Unsafe any type assertion**
+  - Agent: bug-hunter
+  - File: `/lib/seo/meta-tags.ts`
+  - Line: 182
+  - Found: availability: product.availability as any,
+  - 💡 Fix: Remove or replace as-any
+
+- **Unsafe any type assertion**
+  - Agent: bug-hunter
+  - File: `/lib/square-customer.ts`
+  - Line: 60
+  - Found: const searchResponse = await (square.customers as any).searchCustomers({
+  - 💡 Fix: Remove or replace as-any
+
+- **Unsafe any type assertion**
+  - Agent: bug-hunter
+  - File: `/lib/square-env-validator.ts`
+  - Line: 28
+  - Found: environment: (process.env.SQUARE_ENVIRONMENT as any) || 'production',
+  - 💡 Fix: Remove or replace as-any
+
+- **Unsafe any type assertion**
+  - Agent: bug-hunter
+  - File: `/lib/square.ts`
+  - Line: 63
+  - Found: } as any);
+  - 💡 Fix: Remove or replace as-any
+
+- **TypeScript ignore directive**
+  - Agent: bug-hunter
+  - File: `/lib/transactions.ts`
+  - Line: 79
+  - Found: // @ts-ignore - MongoDB $push typing issue
+  - 💡 Fix: Remove or replace ts-ignore
+
+- **Unsafe any type assertion**
+  - Agent: bug-hunter
+  - File: `/components/checkout/CheckoutRoot.tsx`
+  - Line: 181
+  - Found: onChange={(data) => setFulfillment({ pickup: { ...fulfillment.pickup, ...data } 
+  - 💡 Fix: Remove or replace as-any
+
+- **Urgency overload**
+  - Agent: psycho-marketer
+  - File: `/components/EnhancedProductCard.jsx`
+  - 13 instances found (threshold: 5)
+  - 💡 Fix: Reduce intensity or add substantive value propositions
+
+- **Urgency overload**
+  - Agent: psycho-marketer
+  - File: `/components/SimulatedPaymentForm.jsx`
+  - 10 instances found (threshold: 5)
+  - 💡 Fix: Reduce intensity or add substantive value propositions
+
+- **False scarcity**
+  - Agent: psycho-marketer
+  - File: `/app/admin/inventory/page.js`
+  - 💡 Fix: Ensure scarcity claims are accurate
+
+- **False scarcity**
+  - Agent: psycho-marketer
+  - File: `/app/admin/page.js`
+  - 💡 Fix: Ensure scarcity claims are accurate
+
+- **False scarcity**
+  - Agent: psycho-marketer
+  - File: `/app/api/admin/dashboard/route.js`
+  - 💡 Fix: Ensure scarcity claims are accurate
+
+- **False scarcity**
+  - Agent: psycho-marketer
+  - File: `/app/api/admin/init/route.js`
+  - 💡 Fix: Ensure scarcity claims are accurate
+
+- **False scarcity**
+  - Agent: psycho-marketer
+  - File: `/app/api/webhooks/inventory/route.js`
+  - 💡 Fix: Ensure scarcity claims are accurate
+
+- **False scarcity**
+  - Agent: psycho-marketer
+  - File: `/components/psychology/ScarcityBadge.jsx`
+  - 💡 Fix: Ensure scarcity claims are accurate
+
+- **Form without error display**
+  - Agent: uiux-predator
+  - File: `/app/contact/page.js`
+  - 💡 Fix: Add error handling and display to form
+
+- **Form without error display**
+  - Agent: uiux-predator
+  - File: `/app/login/page.js`
+  - 💡 Fix: Add error handling and display to form
+
+- **Form without error display**
+  - Agent: uiux-predator
+  - File: `/app/passport/page.js`
+  - 💡 Fix: Add error handling and display to form
+
+- **Potentially small tap target**
+  - Agent: uiux-predator
+  - File: `/components/AnimatedButton.jsx`
+  - Found w-4 with click handler - may be < 44x44px
+  - 💡 Fix: Ensure tap targets are at least 44x44px
+
+- **Potentially small tap target**
+  - Agent: uiux-predator
+  - File: `/components/Header.jsx`
+  - Found w-4 with click handler - may be < 44x44px
+  - 💡 Fix: Ensure tap targets are at least 44x44px
+
+- **Potentially small tap target**
+  - Agent: uiux-predator
+  - File: `/components/QuickAddButton.jsx`
+  - Found w-4 with click handler - may be < 44x44px
+  - 💡 Fix: Ensure tap targets are at least 44x44px
+
+- **Potentially small tap target**
+  - Agent: uiux-predator
+  - File: `/components/SquareProductButton.jsx`
+  - Found w-4 with click handler - may be < 44x44px
+  - 💡 Fix: Ensure tap targets are at least 44x44px
+
+- **Potentially small tap target**
+  - Agent: uiux-predator
+  - File: `/components/StarRating.jsx`
+  - Found w-4 with click handler - may be < 44x44px
+  - 💡 Fix: Ensure tap targets are at least 44x44px
+
+- **Potentially small tap target**
+  - Agent: uiux-predator
+  - File: `/components/explore/interactive/IngredientCard.jsx`
+  - Found w-4 with click handler - may be < 44x44px
+  - 💡 Fix: Ensure tap targets are at least 44x44px
+
+- **Potentially small tap target**
+  - Agent: uiux-predator
+  - File: `/components/ui/carousel.jsx`
+  - Found w-4 with click handler - may be < 44x44px
+  - 💡 Fix: Ensure tap targets are at least 44x44px
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/lib/adaptive-recommendations.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/lib/admin-analytics.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/lib/admin-auth-middleware.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/lib/admin-auth.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/lib/catalog-api.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/lib/crawler.ts`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/lib/db-customers.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/lib/delivery-radius.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/lib/enhanced-products.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/lib/redis-idempotency.ts`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/lib/response-optimizer.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/lib/startup-validator.ts`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/lib/unified-analytics.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/(site)/instagram/[slug]/page.tsx`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/admin/campaigns/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/admin/coupons/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/admin/customers/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/admin/inventory/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/admin/layout.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/admin/login/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/admin/orders/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/admin/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/admin/products/[id]/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/admin/products/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/admin/settings/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/admin/setup/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/admin/square-oauth/page.tsx`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/admin/waitlist/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/[[...path]]/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/admin/audit-logs/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/admin/auth/me/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/admin/coupons/[id]/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/admin/coupons/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/admin/inventory/[productId]/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/admin/orders/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/admin/products/[id]/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/admin/products/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/auth/login/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/auth/logout/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/coupons/validate/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/csp-report/route.ts`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/customers/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/email/send-coupon/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/email/send-newsletter-confirmation/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/email/send-order-confirmation/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/email/send-order-status/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/email/send-welcome/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/email/test/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/ics/market-route/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/ingredients/[slug]/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/ingredients/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/instagram/post/[slug]/route.ts`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/instagram/posts/route.ts`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/newsletter/subscribe/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/oauth/square/authorize/route.ts`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/oauth/square/status/route.ts`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/pos/callback/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/quiz/analytics/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/quiz/conversion-webhook/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/quiz/recommendations/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/quiz/results/[id]/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/quiz/submit/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/reviews/[id]/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/reviews/analytics/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/reviews/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/reviews/upload/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/rewards/add-points/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/rewards/leaderboard/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/rewards/passport/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/startup/route.ts`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/tracking/user/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/ugc/submit/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/user/challenge/checkin/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/user/challenge/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/user/favorites/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/user/orders/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/user/profile/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/user/rewards/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/user/stats/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/waitlist/route.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/api/webhooks/square/route.ts`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/catalog/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/checkout/square/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/checkout/success/CheckoutSuccessPage.client.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/explore/ingredients/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/layout.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/order/success/page-enhanced.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/product/[slug]/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/profile/challenge/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/profile/orders/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/profile/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/profile/rewards/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/profile/settings/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/quiz/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/quiz/results/[id]/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Error logged without stack trace**
+  - Agent: log-devourer
+  - File: `/app/rewards/page.js`
+  - 💡 Fix: Include error.stack or full error object
+
+- **Low structured logging adoption**
+  - Agent: log-devourer
+  - File: `N/A`
+  - Only 21.1% of logs use structured logger
+  - 💡 Fix: Migrate console.log to createLogger pattern
+
+- **Logger missing JSON formatting**
+  - Agent: log-devourer
+  - File: `/lib/logger.js`
+  - 💡 Fix: Add JSON formatting to logger
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/[[...path]]/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/analytics/campaigns/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/analytics/customers/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/analytics/sales/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/audit-logs/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/auth/logout/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/auth/me/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/campaigns/generate/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/campaigns/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/campaigns/send/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/coupons/[id]/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/coupons/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/customers/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/email-preview/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/init/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/inventory/[productId]/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/orders/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **Missing orderId in logs**
+  - Agent: log-devourer
+  - File: `/app/api/admin/orders/route.js`
+  - 💡 Fix: Include orderId in log context
+
+- **Missing userId in logs**
+  - Agent: log-devourer
+  - File: `/app/api/admin/orders/update-status/route.js`
+  - 💡 Fix: Include userId in log context
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/products/[id]/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/products/[id]/sync/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/products/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/admin/setup/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/analytics/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/auth/login/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/auth/logout/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/auth/register/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/auth/session/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **Missing userId in logs**
+  - Agent: log-devourer
+  - File: `/app/api/checkout/route.ts`
+  - 💡 Fix: Include userId in log context
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/coupons/validate/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **Missing userId in logs**
+  - Agent: log-devourer
+  - File: `/app/api/create-checkout/route.ts`
+  - 💡 Fix: Include userId in log context
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/csp-report/route.ts`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/customers/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/debug/logs/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/email/send-coupon/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/email/send-newsletter-confirmation/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/email/send-order-confirmation/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **Missing orderId in logs**
+  - Agent: log-devourer
+  - File: `/app/api/email/send-order-confirmation/route.js`
+  - 💡 Fix: Include orderId in log context
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/email/send-order-status/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **Missing orderId in logs**
+  - Agent: log-devourer
+  - File: `/app/api/email/send-order-status/route.js`
+  - 💡 Fix: Include orderId in log context
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/email/send-welcome/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/email/test/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/emails/queue/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/emails/test/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/health/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/ics/market-route/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/ingredients/[slug]/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/ingredients/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/instagram/post/[slug]/route.ts`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/instagram/posts/route.ts`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/newsletter/subscribe/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/oauth/square/status/route.ts`
+  - 💡 Fix: Add request/response logging
+
+- **Missing userId in logs**
+  - Agent: log-devourer
+  - File: `/app/api/orders/[id]/route.js`
+  - 💡 Fix: Include userId in log context
+
+- **Missing userId in logs**
+  - Agent: log-devourer
+  - File: `/app/api/orders/by-ref/route.js`
+  - 💡 Fix: Include userId in log context
+
+- **Missing userId in logs**
+  - Agent: log-devourer
+  - File: `/app/api/orders/create/route.js`
+  - 💡 Fix: Include userId in log context
+
+- **Missing userId in logs**
+  - Agent: log-devourer
+  - File: `/app/api/payments/route.ts`
+  - 💡 Fix: Include userId in log context
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/quiz/analytics/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/quiz/conversion-webhook/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/quiz/email-scheduler/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/quiz/recommendations/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/quiz/results/[id]/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/recommendations/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/reviews/[id]/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/reviews/analytics/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/reviews/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/reviews/upload/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/rewards/add-points/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/rewards/leaderboard/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/rewards/passport/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/rewards/redeem/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/rewards/stamp/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/search/enhanced/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/seo/analyze/route.ts`
+  - 💡 Fix: Add request/response logging
+
+- **Missing userId in logs**
+  - Agent: log-devourer
+  - File: `/app/api/square/create-checkout/route.js`
+  - 💡 Fix: Include userId in log context
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/square/test-token/route.ts`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/startup/route.ts`
+  - 💡 Fix: Add request/response logging
+
+- **Missing userId in logs**
+  - Agent: log-devourer
+  - File: `/app/api/stripe/create-checkout/route.js`
+  - 💡 Fix: Include userId in log context
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/tracking/user/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/transactions/log/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/transactions/stats/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/user/challenge/checkin/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/user/challenge/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/user/favorites/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/user/orders/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **Missing orderId in logs**
+  - Agent: log-devourer
+  - File: `/app/api/user/orders/route.js`
+  - 💡 Fix: Include orderId in log context
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/user/profile/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/user/rewards/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/user/stats/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **API route without logging**
+  - Agent: log-devourer
+  - File: `/app/api/waitlist/route.js`
+  - 💡 Fix: Add request/response logging
+
+- **No request ID generation in middleware**
+  - Agent: log-devourer
+  - File: `/middleware.ts`
+  - 💡 Fix: Generate unique request ID for tracing
+
+- **Large JavaScript chunk**
+  - Agent: opti-beast
+  - File: `/.next/static/chunks/vendors-b87af8a6-5bed8642b1dbc26c.js`
+  - Size: 332.3KB
+  - 💡 Fix: Split this chunk or lazy load components
+
+- **Pricing scattered across files**
+  - Agent: trust-guardian
+  - File: `N/A`
+  - 8 files with hardcoded prices
+  - 💡 Fix: Centralize pricing in a constants file or API
+
+- **Brand name variations detected**
+  - Agent: trust-guardian
+  - File: `N/A`
+  - Found variations: taste of gratitude, tasteofgratitude
+  - 💡 Fix: Standardize brand name across all content
+
+- **Content inconsistency: price-variation**
+  - Agent: trust-guardian
+  - File: `/components/SpinWheel.jsx`
+  - 4 different prices shown
+  - 💡 Fix: Review and align content messaging
+
+### 🟢 LOW (147)
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/admin/auth/route.js`
+  - Line: 24
+  - Found: console.log(`✅ Admin login successful: ${email}`);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/admin/dashboard/route.js`
+  - Line: 37
+  - Found: console.log('Orders collection not yet available');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/admin/emergency-init/route.ts`
+  - Line: 59
+  - Found: console.log('[EMERGENCY-INIT] Admin already exists:', email);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/admin/products/sync/route.js`
+  - Line: 28
+  - Found: console.log('🔄 Starting admin-triggered Square catalog sync...');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/cart/price/route.ts`
+  - Line: 21
+  - Found: console.log('Calculating cart price for:', lines);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/checkout/route.ts`
+  - Line: 45
+  - Found: console.log('Creating Square Payment Link:', {
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/coupons/create/route.js`
+  - Line: 52
+  - Found: console.log('Coupon created:', {
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/create-checkout/route.ts`
+  - Line: 141
+  - Found: console.log('Creating Square checkout session:', {
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/cron/morning-reminders/route.js`
+  - Line: 33
+  - Found: console.log('☀️ [CRON] Morning-of pickup reminders job started');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/cron/pickup-reminders/route.js`
+  - Line: 33
+  - Found: console.log('📅 [CRON] Day-before pickup reminders job started');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/instagram/sync/route.ts`
+  - Line: 42
+  - Found: console.log('Fetching Instagram posts...');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/oauth/square/authorize/route.ts`
+  - Line: 61
+  - Found: console.log('Redirecting to Square OAuth:', {
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/oauth/square/callback/route.ts`
+  - Line: 30
+  - Found: console.log('Received authorization code:', code.substring(0, 20) + '...');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/payments/route.ts`
+  - Line: 47
+  - Found: console.log('Processing Square Web Payment:', {
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/pos/callback/route.js`
+  - Line: 46
+  - Found: console.log('📱 Square POS Callback received:', data);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/quiz/submit/route.js`
+  - Line: 99
+  - Found: console.log('✅ Scheduled follow-up emails for quiz:', quizId);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/square/create-checkout/route.js`
+  - Line: 74
+  - Found: console.log('Creating Square checkout session:', {
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/square/diagnose/route.ts`
+  - Line: 23
+  - Found: console.log('Testing Square configuration...');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/square/self-diagnose/route.ts`
+  - Line: 15
+  - Found: console.log(`${LOG_PREFIX} 🔍 Starting Square self-diagnosis...`);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/square/test-rest/route.ts`
+  - Line: 9
+  - Found: console.log('Testing Square REST API...');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/square/validate-token/route.ts`
+  - Line: 31
+  - Found: console.log('Running comprehensive scope tests...');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/square-webhook/route.js`
+  - Line: 13
+  - Found: console.log('Missing signature header or webhook key');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/ugc/submit/route.js`
+  - Line: 57
+  - Found: console.log('Passport XP update failed (non-critical):', passportError);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/unified/products/route.js`
+  - Line: 27
+  - Found: console.log('🔍 Unified Products API - Filters:', filters);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/unified/sync/route.js`
+  - Line: 17
+  - Found: console.log('🚀 Initializing unified products collection...');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/user/email-preferences/route.js`
+  - Line: 89
+  - Found: console.log(`✅ Email preferences updated for user ${user.userId}`);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/api/webhooks/square/route.ts`
+  - Line: 59
+  - Found: console.log('Square webhook received');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/catalog/page.js`
+  - Line: 38
+  - Found: console.log(`✅ Loaded ${data.products.length} products from ${data.source}`);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/checkout/success/CheckoutSuccessPage.client.js`
+  - Line: 85
+  - Found: console.log(`✅ Awarded ${spinsEarned} spins. Total available: ${data.totalAvaila
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/explore/ingredients/page.js`
+  - Line: 18
+  - Found: console.log('Loaded ingredients:', ingredientArray.length);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/layout.js`
+  - Line: 104
+  - Found: console.log('✅ PWA: Service Worker registered');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/app/order/success/page-enhanced.js`
+  - Line: 40
+  - Found: console.log(`Order not found yet, polling... (attempt ${attempt + 1}/10)`);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/admin-auth-middleware.js`
+  - Line: 74
+  - Found: console.log('[ADMIN_AUDIT]', JSON.stringify(logEntry));
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/analytics.js`
+  - Line: 14
+  - Found: console.log('PostHog not available, using console logging only');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/auth.ts`
+  - Line: 126
+  - Found: console.log('[ADMIN_ACTION]', JSON.stringify(logEntry));
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/campaign-manager.js`
+  - Line: 62
+  - Found: console.log(`✅ Campaign created: ${campaign.id} by ${createdBy}`);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/catalog-api.js`
+  - Line: 47
+  - Found: console.log('Using static products fallback');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/crawler.ts`
+  - Line: 44
+  - Found: console.log(`Circuit breaker closed for ${host}`);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/db-admin.js`
+  - Line: 6
+  - Found: console.log(`${LOG_PREFIX} 🔍 Checking MongoDB connection configuration`);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/db-customers.js`
+  - Line: 167
+  - Found: console.log(`Order ${orderId} status updated to ${status}`);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/db-optimized.js`
+  - Line: 43
+  - Found: console.log('🔌 Connecting to database...', {
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/db-quiz.js`
+  - Line: 27
+  - Found: console.log('✅ Quiz results collection initialized with indexes');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/email/service.js`
+  - Line: 98
+  - Found: console.log(`📧 Email queued: ${email.id} to ${to}`);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/email-mock.js`
+  - Line: 8
+  - Found: console.log('📧 [MOCK EMAIL] Sending to:', to);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/email-queue.js`
+  - Line: 21
+  - Found: console.log('✅ Email queue collection initialized with indexes');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/email.js`
+  - Line: 10
+  - Found: console.log('✅ Using REAL SendGrid Email');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/explore/game-engine.js`
+  - Line: 22
+  - Found: console.log(`🎮 Game started: ${gameId}`);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/explore/kiosk-mode.js`
+  - Line: 45
+  - Found: console.log('🖥️ Kiosk mode enabled');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/idempotency.ts`
+  - Line: 86
+  - Found: console.log(`Idempotency cache hit for key: ${key}`);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/logger.js`
+  - Line: 41
+  - Found: console.log(`${emoji} [${timestamp}] [${level}] [${this.context}] ${message}`, d
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/monitoring.js`
+  - Line: 13
+  - Found: console.log(`API Performance: ${endpoint} - ${duration}ms (${statusCode})`);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/monitoring.ts`
+  - Line: 31
+  - Found: console.log(JSON.stringify({
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/order-status-notifier.js`
+  - Line: 13
+  - Found: console.log(`📊 Order status changed: ${order.orderNumber} (${oldStatus} → ${new
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/payment-orchestrator.js`
+  - Line: 165
+  - Found: console.log('Processing Stripe payment:', { amount, currency, orderId: orderData
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/product-sync-engine.js`
+  - Line: 120
+  - Found: console.log(`🔄 Syncing ${squareProducts.length} products to unified collection.
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/redis-idempotency.ts`
+  - Line: 42
+  - Found: console.log('Using idempotency caching (in-memory fallback)');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/resend-email.js`
+  - Line: 12
+  - Found: console.log('✅ Resend Email Service Initialized');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/resend.js`
+  - Line: 116
+  - Found: console.log('📧 [RESEND] Email sent to:', to);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/response-optimizer.js`
+  - Line: 206
+  - Found: console.log('Forced garbage collection');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/sms-mock.js`
+  - Line: 8
+  - Found: console.log('📱 [MOCK SMS] Sending to:', to);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/sms.js`
+  - Line: 19
+  - Found: console.log('✅ Using REAL Twilio SMS');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/square/catalogSync.js`
+  - Line: 54
+  - Found: console.log('🔄 Starting Square Catalog sync...');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/square/syncToUnified.js`
+  - Line: 56
+  - Found: console.log('🔄 Starting sync to unified collection...');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/square-env-validator.ts`
+  - Line: 87
+  - Found: console.log('\n🔍 SQUARE CONFIGURATION VALIDATION');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/square-guard.ts`
+  - Line: 113
+  - Found: console.log(`${prefix} [Square ${config.environment}] ${operation}`, {
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/square-oauth-helper.ts`
+  - Line: 217
+  - Found: console.log('🔍 Validating token...');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/square.ts`
+  - Line: 18
+  - Found: console.log(`${LOG_PREFIX} 🔍 Square client configuration:`, {
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/staff-notifications.js`
+  - Line: 263
+  - Found: console.log('📧 Staff notification sent:', { orderNumber: order.orderNumber, res
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/startup-validator.ts`
+  - Line: 21
+  - Found: console.log('🔍 Running startup validation...');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/lib/unified-analytics.js`
+  - Line: 326
+  - Found: console.log('✅ Analytics collections initialized');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/components/SquareWebPaymentForm.jsx`
+  - Line: 91
+  - Found: console.log('Error destroying card:', e);
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/components/explore/kiosk/KioskProvider.jsx`
+  - Line: 28
+  - Found: console.log('[KioskProvider] Idle timeout - showing attract mode');
+  - 💡 Fix: Remove or replace console-log
+
+- **Console.log in production code**
+  - Agent: bug-hunter
+  - File: `/utils/analytics.ts`
+  - Line: 36
+  - Found: console.log('[Analytics]', event, props);
+  - 💡 Fix: Remove or replace console-log
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/AddToCalendarButton.jsx`
+  - Line: 146
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/CartBadge.tsx`
+  - Line: 80
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/CouponInput.jsx`
+  - Line: 145
+  - 💡 Fix: Review and fix: small-text
+
+- **Disabled state without visual cursor feedback**
+  - Agent: uiux-predator
+  - File: `/components/CouponInput.jsx`
+  - Line: 130
+  - 💡 Fix: Review and fix: disabled-no-cursor
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/EnhancedFulfillmentSelector.jsx`
+  - Line: 106
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/EnhancedMarketCard.jsx`
+  - Line: 171
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/EnhancedProductCard.jsx`
+  - Line: 101
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/FitQuiz.jsx`
+  - Line: 539
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/FloatingCart.jsx`
+  - Line: 308
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/Footer.jsx`
+  - Line: 29
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/IngredientDeepDiveModal.jsx`
+  - Line: 210
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/InstagramFeed.jsx`
+  - Line: 100
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/MarketPassport.jsx`
+  - Line: 225
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/NewsletterSignup.jsx`
+  - Line: 135
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/ProductCard.jsx`
+  - Line: 89
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/ProductImage.jsx`
+  - Line: 67
+  - 💡 Fix: Review and fix: small-text
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/ProductQuickView.jsx`
+  - Line: 67
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/ProductReviews.jsx`
+  - Line: 124
+  - 💡 Fix: Review and fix: small-text
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/QuickViewModal.jsx`
+  - Line: 166
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/QuickViewModal.jsx`
+  - Line: 176
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/RecommendationsWidget.jsx`
+  - Line: 153
+  - 💡 Fix: Review and fix: small-text
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/SearchEnhanced.jsx`
+  - Line: 190
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/SearchEnhanced.jsx`
+  - Line: 254
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/SimulatedPaymentForm.jsx`
+  - Line: 334
+  - 💡 Fix: Review and fix: small-text
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/SpinTracker.jsx`
+  - Line: 225
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/SpinTracker.jsx`
+  - Line: 135
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/SpinWheel.jsx`
+  - Line: 472
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/SquarePaymentForm.jsx`
+  - Line: 269
+  - 💡 Fix: Review and fix: small-text
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/SquareWebPaymentForm.jsx`
+  - Line: 216
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/SquareWebPaymentForm.jsx`
+  - Line: 255
+  - 💡 Fix: Review and fix: small-text
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/StarRating.jsx`
+  - Line: 32
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/UGCChallenge.jsx`
+  - Line: 301
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/VariantSelector.jsx`
+  - Line: 66
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/WhatsNewModal.jsx`
+  - Line: 108
+  - 💡 Fix: Review and fix: small-text
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/cart/CartNotification.jsx`
+  - Line: 50
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/cart/EnhancedFloatingCart.jsx`
+  - Line: 148
+  - 💡 Fix: Review and fix: small-text
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/checkout/CartSummary.tsx`
+  - Line: 124
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/checkout/CartSummary.tsx`
+  - Line: 115
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/checkout/ContactForm.tsx`
+  - Line: 74
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/checkout/DeliveryForm.tsx`
+  - Line: 78
+  - 💡 Fix: Review and fix: small-text
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/checkout/FulfillmentTabs.tsx`
+  - Line: 31
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/checkout/PickupForm.tsx`
+  - Line: 79
+  - 💡 Fix: Review and fix: small-text
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/checkout/ReviewAndPay.tsx`
+  - Line: 159
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/checkout/ReviewAndPay.tsx`
+  - Line: 93
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/checkout/ShippingForm.tsx`
+  - Line: 118
+  - 💡 Fix: Review and fix: small-text
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/explore/games/BlendMaker.jsx`
+  - Line: 121
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/explore/games/BlendMaker.jsx`
+  - Line: 222
+  - 💡 Fix: Review and fix: small-text
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/explore/games/IngredientQuiz.jsx`
+  - Line: 201
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/explore/games/IngredientRush.jsx`
+  - Line: 269
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/explore/games/MemoryMatch.jsx`
+  - Line: 183
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/explore/games/MemoryMatch.jsx`
+  - Line: 120
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/ingredients/CitationTooltip.tsx`
+  - Line: 28
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/ingredients/FootnotesList.tsx`
+  - Line: 68
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/ingredients/IngredientCard.tsx`
+  - Line: 64
+  - 💡 Fix: Review and fix: small-text
+
+- **Very small text (text-xs) may be hard to read**
+  - Agent: uiux-predator
+  - File: `/components/psychology/SocialProof.jsx`
+  - Line: 89
+  - 💡 Fix: Review and fix: small-text
+
+- **Button without explicit type attribute**
+  - Agent: uiux-predator
+  - File: `/components/ui/sidebar.jsx`
+  - Line: 256
+  - 💡 Fix: Review and fix: button-no-type
+
+- **Deeply nested route**
+  - Agent: uiux-predator
+  - File: `/api/admin/products/[id]/sync`
+  - Route depth: 6 levels
+  - 💡 Fix: Consider flattening navigation structure
+
+- **No skip navigation link**
+  - Agent: uiux-predator
+  - File: `/app/layout.js`
+  - 💡 Fix: Add skip to main content link for keyboard users
+
+- **Excessive console.log usage**
+  - Agent: log-devourer
+  - File: `/lib/crawler.ts`
+  - 20 console statements found
+  - 💡 Fix: Replace with structured logger
+
+- **Excessive console.log usage**
+  - Agent: log-devourer
+  - File: `/lib/db-admin.js`
+  - 25 console statements found
+  - 💡 Fix: Replace with structured logger
+
+- **Excessive console.log usage**
+  - Agent: log-devourer
+  - File: `/lib/enhanced-order-tracking.js`
+  - 13 console statements found
+  - 💡 Fix: Replace with structured logger
+
+- **Excessive console.log usage**
+  - Agent: log-devourer
+  - File: `/lib/product-sync-engine.js`
+  - 11 console statements found
+  - 💡 Fix: Replace with structured logger
+
+- **Excessive console.log usage**
+  - Agent: log-devourer
+  - File: `/lib/square/catalogSync.js`
+  - 24 console statements found
+  - 💡 Fix: Replace with structured logger
+
+- **Excessive console.log usage**
+  - Agent: log-devourer
+  - File: `/lib/square/syncToUnified.js`
+  - 11 console statements found
+  - 💡 Fix: Replace with structured logger
+
+- **Excessive console.log usage**
+  - Agent: log-devourer
+  - File: `/lib/square-env-validator.ts`
+  - 17 console statements found
+  - 💡 Fix: Replace with structured logger
+
+- **Excessive console.log usage**
+  - Agent: log-devourer
+  - File: `/app/api/checkout/route.ts`
+  - 13 console statements found
+  - 💡 Fix: Replace with structured logger
+
+- **Excessive console.log usage**
+  - Agent: log-devourer
+  - File: `/app/api/oauth/square/callback/route.ts`
+  - 11 console statements found
+  - 💡 Fix: Replace with structured logger
+
+- **Excessive console.log usage**
+  - Agent: log-devourer
+  - File: `/app/api/payments/route.ts`
+  - 15 console statements found
+  - 💡 Fix: Replace with structured logger
+
+- **Excessive console.log usage**
+  - Agent: log-devourer
+  - File: `/app/api/pos/callback/route.js`
+  - 12 console statements found
+  - 💡 Fix: Replace with structured logger
+
+- **Excessive console.log usage**
+  - Agent: log-devourer
+  - File: `/app/api/square/self-diagnose/route.ts`
+  - 12 console statements found
+  - 💡 Fix: Replace with structured logger
+
+- **Excessive console.log usage**
+  - Agent: log-devourer
+  - File: `/app/api/square-webhook/route.js`
+  - 26 console statements found
+  - 💡 Fix: Replace with structured logger
+
+- **Excessive console.log usage**
+  - Agent: log-devourer
+  - File: `/app/api/webhooks/square/route.ts`
+  - 25 console statements found
+  - 💡 Fix: Replace with structured logger
+
+- **Cache-Control headers not configured**
+  - Agent: opti-beast
+  - File: `/vercel.json`
+  - 💡 Fix: Add Cache-Control headers for static assets
+
+- **Superlative claim (may need substantiation)**
+  - Agent: trust-guardian
+  - File: `/app/(site)/instagram/[slug]/page.tsx`
+  - 💡 Fix: Review claim for compliance and accuracy
+
+---
+
+## 📈 Metrics
+
+- Total Issues Found (All Time): 417
+- Auto-Fixed: 0
+- Escalated: 1
+- Scans Run: 1

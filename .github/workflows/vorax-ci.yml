@@ -1,0 +1,196 @@
+# VORAX CI Integration
+# Runs quality scans on every push and PR
+
+name: 🦖 Vorax Quality Hunt
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run daily at 6 AM UTC
+    - cron: '0 6 * * *'
+
+concurrency:
+  group: vorax-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quick-scan:
+    name: ⚡ Quick Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run quick scan
+        run: node .vorax/vorax-cli.js quick
+        continue-on-error: true
+      
+      - name: Upload quick scan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quick-scan-results
+          path: .vorax/reports/
+          retention-days: 7
+
+  full-hunt:
+    name: 🦖 Full Hunt
+    runs-on: ubuntu-latest
+    needs: quick-scan
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build application
+        run: npm run build
+        env:
+          SKIP_ENV_VALIDATION: true
+      
+      - name: Run Vorax full hunt
+        id: vorax
+        run: |
+          node .vorax/vorax-cli.js hunt 2>&1 | tee vorax-output.txt
+          echo "status=$?" >> $GITHUB_OUTPUT
+        continue-on-error: true
+      
+      - name: Parse results
+        id: parse
+        run: |
+          if [ -f .vorax/reports/latest.json ]; then
+            CRITICAL=$(cat .vorax/reports/latest.json | jq '.summary.critical')
+            HIGH=$(cat .vorax/reports/latest.json | jq '.summary.high')
+            MEDIUM=$(cat .vorax/reports/latest.json | jq '.summary.medium')
+            LOW=$(cat .vorax/reports/latest.json | jq '.summary.low')
+            TOTAL=$(cat .vorax/reports/latest.json | jq '.issues | length')
+            echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+            echo "high=$HIGH" >> $GITHUB_OUTPUT
+            echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
+            echo "low=$LOW" >> $GITHUB_OUTPUT
+            echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Upload full report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vorax-full-report
+          path: |
+            .vorax/reports/LATEST_REPORT.md
+            .vorax/reports/latest.json
+          retention-days: 30
+      
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let reportContent = '';
+            
+            if (fs.existsSync('.vorax/reports/LATEST_REPORT.md')) {
+              reportContent = fs.readFileSync('.vorax/reports/LATEST_REPORT.md', 'utf-8');
+              // Truncate if too long
+              if (reportContent.length > 60000) {
+                reportContent = reportContent.substring(0, 60000) + '\n\n... (truncated)';
+              }
+            }
+            
+            const critical = '${{ steps.parse.outputs.critical }}' || '0';
+            const high = '${{ steps.parse.outputs.high }}' || '0';
+            const medium = '${{ steps.parse.outputs.medium }}' || '0';
+            const low = '${{ steps.parse.outputs.low }}' || '0';
+            
+            const summary = `
+            ## 🦖 Vorax Quality Hunt Results
+            
+            | Severity | Count |
+            |----------|-------|
+            | 🔴 Critical | ${critical} |
+            | 🟠 High | ${high} |
+            | 🟡 Medium | ${medium} |
+            | 🟢 Low | ${low} |
+            
+            <details>
+            <summary>📋 Full Report</summary>
+            
+            ${reportContent}
+            
+            </details>
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+      
+      - name: Check for blocking issues
+        if: steps.parse.outputs.critical > 0
+        run: |
+          echo "::error::Critical issues found! Blocking deployment."
+          exit 1
+
+  nano-scan:
+    name: 🔬 Nano Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run nano agents
+        run: node .vorax/vorax-cli.js nano
+        continue-on-error: true
+
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+      
+      - name: Check for secrets
+        run: |
+          # Simple secret detection
+          grep -rn "password\s*=\s*['\"][^'\"]\+['\"]" --include="*.js" --include="*.ts" app/ lib/ || true
+          grep -rn "api[_-]?key\s*=\s*['\"][^'\"]\+['\"]" --include="*.js" --include="*.ts" app/ lib/ || true

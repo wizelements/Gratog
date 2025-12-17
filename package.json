@@ -24,7 +24,13 @@
     "verify:ci": "npm run preverify && npm run verify",
     "verify:full": "npm run lint && npm run typecheck && npm run test:unit && npm run test:e2e:headless && npm run test:k6",
     "postverify": "echo '✅ All tests passed'",
-    "prepare": "husky"
+    "prepare": "husky",
+    "vorax": "node .vorax/vorax-cli.js hunt",
+    "vorax:quick": "node .vorax/vorax-cli.js quick",
+    "vorax:nano": "node .vorax/vorax-cli.js nano",
+    "vorax:watch": "node .vorax/vorax-cli.js watch",
+    "vorax:status": "node .vorax/vorax-cli.js status",
+    "vorax:report": "node .vorax/vorax-cli.js report"
   },
   "dependencies": {
     "@google/model-viewer": "^4.1.0",

@@ -1,0 +1,14 @@
+{
+  "timestamp": "2025-12-17T13:20:57.281Z",
+  "type": "REVENUE",
+  "message": "Potential revenue loss: 44.5%",
+  "data": {
+    "issueCount": 417,
+    "summary": {
+      "critical": 2,
+      "high": 33,
+      "medium": 235,
+      "low": 147
+    }
+  }
+}
