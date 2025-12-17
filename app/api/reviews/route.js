@@ -186,7 +186,7 @@ async function checkVerifiedPurchase(db, email, productId) {
   }
 }
 
-export async function getReviewAnalytics(db, productId = null) {
+async function getReviewAnalytics(db, productId = null) {
   try {
     const matchStage = { approved: true, hidden: false };
     if (productId) matchStage.productId = productId;

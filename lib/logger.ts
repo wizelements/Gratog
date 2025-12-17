@@ -144,3 +144,7 @@ export const logger = {
 
 export type Logger = typeof logger;
 export type CategoryLogger = ReturnType<typeof logger.withCategory>;
+
+export function createLogger(category: string) {
+  return logger.withCategory(category);
+}

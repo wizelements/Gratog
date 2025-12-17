@@ -29,7 +29,7 @@ export function IngredientCard({ ingredient, index, globalCitationIndex }: Ingre
       transition: {
         duration: 0.5,
         delay: index * 0.1,
-        ease: 'easeOut'
+        ease: 'easeOut' as const
       }
     }
   };

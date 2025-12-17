@@ -68,11 +68,11 @@ export async function GET(request: NextRequest) {
     
     logger.debug('API', 'Token exchange response:', response);
     
-    // Square returns tokens directly in response, not nested in result
-    const accessToken = response.accessToken || response.result?.accessToken;
-    const refreshToken = response.refreshToken || response.result?.refreshToken;
-    const expiresAt = response.expiresAt || response.result?.expiresAt;
-    const merchantId = response.merchantId || response.result?.merchantId;
+    // Square returns tokens directly in response
+    const accessToken = response.accessToken;
+    const refreshToken = response.refreshToken;
+    const expiresAt = response.expiresAt;
+    const merchantId = response.merchantId;
     
     if (!accessToken) {
       console.error('No access token in response:', response);

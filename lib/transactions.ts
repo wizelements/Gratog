@@ -84,7 +84,7 @@ export async function createOrderAtomic(orderData: any) {
               adjustedBy: 'system',
             },
           },
-        },
+        } as any,
         { session }
       );
 
@@ -117,7 +117,7 @@ export async function createOrderAtomic(orderData: any) {
               discountAmount: orderData.couponDiscount || 0,
             },
           },
-        },
+        } as any,
         { session }
       );
     }

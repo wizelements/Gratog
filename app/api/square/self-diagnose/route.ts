@@ -3,6 +3,10 @@ import { NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 
+function debug(message: string) {
+  console.log(message);
+}
+
 /**
  * GRATOG SQUARE AUTH RESOLVER - Runtime Self-Diagnosis
  * 
