@@ -94,10 +94,10 @@ export default function RootLayout({ children }) {
           <Toaster />
         </AuthProvider>
         
-        {/* Service Worker Registration - Disabled temporarily for debugging */}
-        {/* <script dangerouslySetInnerHTML={{
+        {/* Service Worker Registration for PWA */}
+        <script dangerouslySetInnerHTML={{
           __html: `
-            if ('serviceWorker' in navigator) {
+            if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
               window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
                   .then((registration) => {
@@ -114,7 +114,7 @@ export default function RootLayout({ children }) {
               });
             }
           `
-        }} /> */}
+        }} />
       </body>
     </html>
   );

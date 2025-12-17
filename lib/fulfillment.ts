@@ -3,6 +3,15 @@
  * Handles delivery zone validation, time windows, and fee calculations
  */
 
+import {
+  getShippingRates,
+  validateAddress,
+  getShippingOptionsFromCart,
+  type ShippingAddress,
+  type ShippingRate,
+  type PackageDimensions,
+} from './shipping-service';
+
 // Parse delivery windows from environment variable
 export function getDeliveryWindows(): string[] {
   const windows = process.env.DELIVERY_WINDOWS || process.env.NEXT_PUBLIC_DELIVERY_WINDOWS || '09:00-12:00|12:00-15:00|15:00-18:00';
@@ -225,3 +234,70 @@ export function validateShippingData(data: {
     errors
   };
 }
+
+// Validate shipping address using shipping service API (async version)
+export async function validateShippingAddressAsync(data: {
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+}): Promise<FulfillmentValidationResult> {
+  if (!isFulfillmentEnabled('shipping')) {
+    return { valid: false, errors: ['Shipping is temporarily unavailable.'] };
+  }
+
+  const address: ShippingAddress = {
+    street: data.street,
+    city: data.city,
+    state: data.state,
+    zip: data.zip,
+    country: 'US',
+  };
+
+  const validationResult = await validateAddress(address);
+  
+  if (!validationResult.valid) {
+    return {
+      valid: false,
+      errors: validationResult.errors || ['Address could not be validated.'],
+    };
+  }
+
+  return { valid: true, errors: [] };
+}
+
+// Get shipping options for cart items
+export interface ShippingOption {
+  carrier: string;
+  service: string;
+  rate: number;
+  estimatedDays: number;
+  deliveryDate?: string;
+}
+
+export async function getShippingOptions(
+  address: ShippingAddress,
+  cartItems: Array<{ quantity: number; weight?: number }>
+): Promise<ShippingOption[]> {
+  const fromAddress: ShippingAddress = {
+    street: process.env.SHIPPING_FROM_STREET || '123 Bakery Lane',
+    city: process.env.SHIPPING_FROM_CITY || 'Los Angeles',
+    state: process.env.SHIPPING_FROM_STATE || 'CA',
+    zip: process.env.SHIPPING_FROM_ZIP || '90001',
+    country: 'US',
+  };
+
+  const packageDimensions: PackageDimensions = getShippingOptionsFromCart(cartItems);
+  const rates = await getShippingRates(fromAddress, address, packageDimensions);
+
+  return rates.map((rate: ShippingRate) => ({
+    carrier: rate.carrier,
+    service: rate.service,
+    rate: rate.rate,
+    estimatedDays: rate.estimatedDays,
+    deliveryDate: rate.deliveryDate,
+  }));
+}
+
+// Re-export shipping service types for convenience
+export type { ShippingAddress, ShippingRate, PackageDimensions };

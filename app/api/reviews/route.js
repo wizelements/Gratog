@@ -1,18 +1,32 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { sendReviewConfirmation } from '@/lib/resend';
+import { verifyToken } from '@/lib/auth';
 
-const REVIEW_POINTS = 10; // Points awarded per review
+const REVIEW_POINTS = 10;
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('productId');
     const limit = parseInt(searchParams.get('limit') || '50');
+    const includeUnapproved = searchParams.get('includeUnapproved') === 'true';
 
     const { db } = await connectToDatabase();
 
-    const query = productId ? { productId, hidden: false } : { hidden: false };
+    // Check if admin requesting all reviews
+    let showAll = false;
+    if (includeUnapproved) {
+      const token = request.cookies.get('admin_token')?.value;
+      const decoded = verifyToken(token);
+      if (decoded && (decoded.role === 'admin' || decoded.role === 'superadmin')) {
+        showAll = true;
+      }
+    }
+
+    const query = { hidden: false };
+    if (productId) query.productId = productId;
+    if (!showAll) query.approved = true;
 
     const reviews = await db
       .collection('product_reviews')
@@ -37,9 +51,8 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const { productId, productName, name, email, rating, title, comment } = await request.json();
+    const { productId, productName, name, email, rating, title, comment, images } = await request.json();
 
-    // Validation
     if (!productId || !productName || !name || !email || !rating || !title || !comment) {
       return NextResponse.json(
         { error: 'All fields are required' },
@@ -53,6 +66,9 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+
+    // Validate images array
+    const reviewImages = Array.isArray(images) ? images.slice(0, 3) : [];
 
     const { db } = await connectToDatabase();
 
@@ -69,7 +85,9 @@ export async function POST(request) {
       );
     }
 
-    // Create review
+    // Check if user has purchased this product (verified purchase)
+    const verifiedPurchase = await checkVerifiedPurchase(db, email.toLowerCase(), productId);
+
     const review = {
       productId,
       productName,
@@ -78,7 +96,9 @@ export async function POST(request) {
       rating,
       title,
       comment,
-      verified: false, // Can be set to true if order verification is implemented
+      images: reviewImages,
+      verifiedPurchase,
+      approved: false, // Pending moderation
       hidden: false,
       helpful: 0,
       createdAt: new Date(),
@@ -92,7 +112,6 @@ export async function POST(request) {
       const passport = await db.collection('passports').findOne({ email: email.toLowerCase() });
 
       if (passport) {
-        // Add points to existing passport
         await db.collection('passports').updateOne(
           { email: email.toLowerCase() },
           {
@@ -109,7 +128,6 @@ export async function POST(request) {
           }
         );
       } else {
-        // Create new passport with points
         await db.collection('passports').insertOne({
           email: email.toLowerCase(),
           name,
@@ -131,15 +149,13 @@ export async function POST(request) {
       }
     } catch (passportError) {
       console.error('Failed to award points:', passportError);
-      // Continue even if points award fails
     }
 
-    // Send confirmation email
     await sendReviewConfirmation(email, productName, REVIEW_POINTS);
 
     return NextResponse.json({
       success: true,
-      message: 'Review submitted successfully',
+      message: 'Review submitted successfully. It will be visible after approval.',
       pointsEarned: REVIEW_POINTS,
       review: {
         ...review,
@@ -152,5 +168,63 @@ export async function POST(request) {
       { error: 'Failed to submit review' },
       { status: 500 }
     );
+  }
+}
+
+async function checkVerifiedPurchase(db, email, productId) {
+  try {
+    const order = await db.collection('orders').findOne({
+      'customer.email': email,
+      'items.productId': productId,
+      status: { $in: ['completed', 'delivered', 'fulfilled'] }
+    });
+    return !!order;
+  } catch (error) {
+    console.error('Error checking verified purchase:', error);
+    return false;
+  }
+}
+
+export async function getReviewAnalytics(db, productId = null) {
+  try {
+    const matchStage = { approved: true, hidden: false };
+    if (productId) matchStage.productId = productId;
+
+    const analytics = await db.collection('product_reviews').aggregate([
+      { $match: matchStage },
+      {
+        $group: {
+          _id: productId ? null : '$productId',
+          averageRating: { $avg: '$rating' },
+          totalReviews: { $sum: 1 },
+          rating1: { $sum: { $cond: [{ $eq: ['$rating', 1] }, 1, 0] } },
+          rating2: { $sum: { $cond: [{ $eq: ['$rating', 2] }, 1, 0] } },
+          rating3: { $sum: { $cond: [{ $eq: ['$rating', 3] }, 1, 0] } },
+          rating4: { $sum: { $cond: [{ $eq: ['$rating', 4] }, 1, 0] } },
+          rating5: { $sum: { $cond: [{ $eq: ['$rating', 5] }, 1, 0] } },
+          verifiedCount: { $sum: { $cond: ['$verifiedPurchase', 1, 0] } },
+        }
+      },
+      {
+        $project: {
+          productId: '$_id',
+          averageRating: { $round: ['$averageRating', 1] },
+          totalReviews: 1,
+          ratingDistribution: {
+            1: '$rating1',
+            2: '$rating2',
+            3: '$rating3',
+            4: '$rating4',
+            5: '$rating5'
+          },
+          verifiedCount: 1
+        }
+      }
+    ]).toArray();
+
+    return productId ? (analytics[0] || null) : analytics;
+  } catch (error) {
+    console.error('Error getting review analytics:', error);
+    return null;
   }
 }

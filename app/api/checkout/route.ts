@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getSquareClient, SQUARE_LOCATION_ID } from '@/lib/square';
 import { connectToDatabase } from '@/lib/db-optimized';
