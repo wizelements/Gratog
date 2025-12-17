@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
     });
     
   } catch (error) {
-    logger.error('Webhook', 'Webhook processing error:', error);
+    logger.error('Webhook', 'Webhook processing error:', { error: (error as Error).message, stack: (error as Error).stack });
     return NextResponse.json(
       { error: 'Webhook processing failed' },
       { status: 500 }

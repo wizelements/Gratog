@@ -71,7 +71,7 @@ END:VCALENDAR`;
     });
     
   } catch (error) {
-    console.error('ICS generation error:', error);
+    console.error('ICS generation error:', error.message, { stack: error.stack });
     return NextResponse.json(
       { error: 'Failed to generate calendar event' },
       { status: 500 }

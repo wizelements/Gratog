@@ -52,7 +52,7 @@ export async function GET() {
     }
   });
   } catch (error) {
-    console.error('❌ OAuth status error:', error);
+    console.error('❌ OAuth status error:', { error: (error as Error).message, stack: (error as Error).stack });
     return NextResponse.json(
       { 
         error: 'Failed to get OAuth status',

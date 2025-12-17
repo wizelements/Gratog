@@ -19,7 +19,7 @@ export async function GET() {
       status: validation.valid ? 200 : 500
     });
   } catch (error) {
-    console.error('❌ Startup validation error:', error);
+    console.error('❌ Startup validation error:', { error: (error as Error).message, stack: (error as Error).stack });
     return NextResponse.json(
       {
         valid: false,

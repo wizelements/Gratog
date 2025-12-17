@@ -20,7 +20,7 @@ export default function InstagramPostPage() {
           setPost(data.post);
         }
       } catch (error) {
-        console.error('Error fetching post:', error);
+        console.error('Error fetching post:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
       } finally {
         setLoading(false);
       }

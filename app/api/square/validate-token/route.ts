@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateToken, runScopeSmokeTests } from '@/lib/square-oauth-helper';
+import { logger } from '@/lib/logger';
 
 /**
  * Square Token Validation Endpoint
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
   try {
     if (comprehensive) {
       // Run full scope smoke tests
-      console.log('Running comprehensive scope tests...');
+      logger.info('SQUARE-TOKEN', 'Running comprehensive scope tests...');
       const results = await runScopeSmokeTests(accessToken, environment);
       
       return NextResponse.json({
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
       });
     } else {
       // Quick token validation only
-      console.log('Running quick token validation...');
+      logger.info('SQUARE-TOKEN', 'Running quick token validation...');
       const result = await validateToken(accessToken, environment);
       
       if (!result.valid) {
@@ -83,7 +84,7 @@ export async function GET(request: NextRequest) {
     }
 
   } catch (error) {
-    console.error('Token validation error:', error);
+    logger.error('SQUARE-TOKEN', 'Token validation error', error);
     return NextResponse.json(
       {
         success: false,
@@ -124,7 +125,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Token validation error:', error);
+    logger.error('SQUARE-TOKEN', 'Token validation error', error);
     return NextResponse.json(
       {
         success: false,

@@ -35,7 +35,7 @@ export function track(event: AnalyticsEvent, props: AnalyticsProps = {}) {
   
   // Also log to console in development
   if (process.env.NODE_ENV === 'development') {
-    console.log('[Analytics]', event, props);
+    logger.info('Analytics', event, props);
   }
 }
 

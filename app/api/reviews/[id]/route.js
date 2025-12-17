@@ -39,7 +39,7 @@ export async function PUT(request, { params }) {
       message: hidden ? 'Review hidden' : 'Review visible',
     });
   } catch (error) {
-    console.error('Failed to update review:', error);
+    console.error('Failed to update review:', { error: error.message, stack: error.stack });
     return NextResponse.json(
       { error: 'Failed to update review' },
       { status: 500 }
@@ -78,7 +78,7 @@ export async function DELETE(request, { params }) {
       message: 'Review deleted',
     });
   } catch (error) {
-    console.error('Failed to delete review:', error);
+    console.error('Failed to delete review:', { error: error.message, stack: error.stack });
     return NextResponse.json(
       { error: 'Failed to delete review' },
       { status: 500 }

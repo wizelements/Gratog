@@ -139,7 +139,7 @@ export async function POST(request) {
     });
     
   } catch (error) {
-    console.error('Quiz submit error:', error);
+    console.error('Quiz submit error:', { error: error.message, stack: error.stack });
     return NextResponse.json(
       { success: false, error: 'An error occurred while processing your quiz' },
       { status: 500 }

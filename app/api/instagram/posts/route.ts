@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('Error fetching Instagram posts:', error);
+    console.error('Error fetching Instagram posts:', { error: error.message, stack: error.stack });
     return NextResponse.json(
       { error: 'Failed to fetch posts', posts: [] },
       { status: 500 }

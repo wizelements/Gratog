@@ -12,7 +12,7 @@ export async function POST(request) {
 
     return response;
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error('Logout error:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
     return NextResponse.json(
       { success: false, error: 'Logout failed' },
       { status: 500 }

@@ -102,7 +102,7 @@ export async function GET(request) {
       byProduct: analytics
     });
   } catch (error) {
-    console.error('Failed to fetch review analytics:', error);
+    console.error('Failed to fetch review analytics:', { error: error.message, stack: error.stack });
     return NextResponse.json(
       { error: 'Failed to fetch analytics' },
       { status: 500 }

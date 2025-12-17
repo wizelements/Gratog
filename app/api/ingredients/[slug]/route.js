@@ -23,7 +23,7 @@ export async function GET(request, { params }) {
       relatedProducts
     });
   } catch (error) {
-    console.error('Ingredient detail API error:', error);
+    console.error('Ingredient detail API error:', error.message, { stack: error.stack });
     return NextResponse.json(
       { success: false, error: 'Failed to fetch ingredient' },
       { status: 500 }

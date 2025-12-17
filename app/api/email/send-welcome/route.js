@@ -27,7 +27,7 @@ export async function POST(request) {
       );
     }
   } catch (error) {
-    console.error('Send welcome email error:', error);
+    console.error('Send welcome email error:', error.message, { stack: error.stack });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

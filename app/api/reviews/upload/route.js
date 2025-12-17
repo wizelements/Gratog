@@ -67,7 +67,7 @@ export async function POST(request) {
 
         uploadedUrls.push(`/uploads/reviews/${filename}`);
       } catch (fileError) {
-        console.error(`Error uploading ${file.name}:`, fileError);
+        console.error(`Error uploading ${file.name}:`, { error: fileError.message, stack: fileError.stack });
         errors.push(`${file.name}: Upload failed`);
       }
     }
@@ -86,7 +86,7 @@ export async function POST(request) {
       errors: errors.length > 0 ? errors : undefined
     });
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('Upload error:', { error: error.message, stack: error.stack });
     return NextResponse.json(
       { error: 'Failed to upload images' },
       { status: 500 }

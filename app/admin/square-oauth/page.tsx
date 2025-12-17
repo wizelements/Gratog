@@ -33,7 +33,7 @@ export default function SquareOAuthPage() {
       const data = await response.json();
       setConfig(data);
     } catch (error) {
-      console.error('Failed to fetch config:', error);
+      console.error('Failed to fetch config:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
       toast.error('Failed to load OAuth configuration');
     } finally {
       setLoading(false);

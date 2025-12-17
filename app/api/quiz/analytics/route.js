@@ -27,7 +27,7 @@ export async function GET(request) {
     });
     
   } catch (error) {
-    console.error('Quiz analytics error:', error);
+    console.error('Quiz analytics error:', { error: error.message, stack: error.stack });
     return NextResponse.json(
       { success: false, error: 'Failed to retrieve analytics' },
       { status: 500 }

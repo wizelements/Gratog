@@ -45,7 +45,7 @@ export async function initRedis() {
     debug('Using idempotency caching (in-memory fallback)');
     return redisClient;
   } catch (error) {
-    console.error('Failed to initialize Redis:', error);
+    console.error('Failed to initialize Redis:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
     return null;
   }
 }
@@ -65,7 +65,7 @@ export async function getIdempotentResponse(key: string): Promise<any | null> {
         return typeof cached === 'string' ? JSON.parse(cached) : cached;
       }
     } catch (error) {
-      console.error('Redis get error, falling back to memory:', error);
+      console.error('Redis get error, falling back to memory:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
     }
   }
 
@@ -101,7 +101,7 @@ export async function setIdempotentResponse(
       await redisClient.set(`idem:${key}`, serialized, ttlSeconds);
       return;
     } catch (error) {
-      console.error('Redis set error, falling back to memory:', error);
+      console.error('Redis set error, falling back to memory:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
     }
   }
 

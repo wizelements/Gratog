@@ -59,7 +59,7 @@ export async function POST(request) {
 
     return response;
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
     return NextResponse.json(
       { success: false, error: 'Login failed' },
       { status: 500 }

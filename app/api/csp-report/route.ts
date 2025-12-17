@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ received: true }, { status: 204 });
   } catch (error) {
-    console.error('CSP report parsing error:', error);
+    console.error('CSP report parsing error:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
     return NextResponse.json({ error: 'Invalid report' }, { status: 400 });
   }
 }

@@ -82,9 +82,9 @@ export async function createOrderAtomic(orderData: any) {
               adjustment: -item.quantity,
               reason: `Order ${orderData.id}`,
               adjustedBy: 'system',
-            },
+            } as { date: Date; adjustment: number; reason: string; adjustedBy: string },
           },
-        } as any,
+        },
         { session }
       );
 

@@ -22,7 +22,7 @@ export async function POST(request) {
     });
     
   } catch (error) {
-    console.error('Passport creation error:', error);
+    console.error('Passport creation error:', { error: error.message, stack: error.stack });
     
     // Create emergency fallback passport
     const fallbackPassport = {
@@ -83,7 +83,7 @@ export async function GET(request) {
     });
     
   } catch (error) {
-    console.error('Get passport error:', error);
+    console.error('Get passport error:', { error: error.message, stack: error.stack });
     return NextResponse.json(
       { success: false, error: 'Failed to retrieve passport' },
       { status: 500 }

@@ -2,9 +2,10 @@
 import { NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
+import { logger } from '@/lib/logger';
 
 function debug(message: string) {
-  console.log(message);
+  logger.info('SELF-DIAGNOSE', message);
 }
 
 /**
@@ -214,7 +215,7 @@ export async function GET(request: Request) {
       await writeFile(statusFilePath, JSON.stringify(publicStatus, null, 2));
       debug(`${LOG_PREFIX} ✅ Status file written to /public/__square_status.json`);
     } catch (err) {
-      console.error(`${LOG_PREFIX} ⚠️  Could not write status file:`, err);
+      logger.error('SELF-DIAGNOSE', 'Could not write status file', err);
     }
     
     return NextResponse.json(report, {
@@ -223,7 +224,7 @@ export async function GET(request: Request) {
     });
     
   } catch (error: any) {
-    console.error(`${LOG_PREFIX} ❌ Self-diagnosis failed:`, error);
+    logger.error('SELF-DIAGNOSE', 'Self-diagnosis failed', error);
     
     report.status = 'error';
     report.errors.push(`Self-diagnosis error: ${error.message}`);

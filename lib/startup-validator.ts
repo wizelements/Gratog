@@ -126,6 +126,6 @@ if (process.env.NODE_ENV !== 'test' && typeof window === 'undefined' && process.
   try {
     validateStartupConfig();
   } catch (error) {
-    console.error('Startup validation error:', error);
+    console.error('Startup validation error:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
   }
 }

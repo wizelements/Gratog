@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
     // Redirect to Square authorization page
     return NextResponse.redirect(authUrl.toString());
   } catch (error) {
-    console.error('❌ OAuth authorize error:', error);
+    console.error('❌ OAuth authorize error:', { error: (error as Error).message, stack: (error as Error).stack });
     return NextResponse.json(
       { 
         error: 'Failed to initiate OAuth flow',

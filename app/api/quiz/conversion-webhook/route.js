@@ -56,7 +56,7 @@ export async function POST(request) {
     }, { status: 400 });
     
   } catch (error) {
-    console.error('Conversion webhook error:', error);
+    console.error('Conversion webhook error:', { error: error.message, stack: error.stack });
     return NextResponse.json(
       { success: false, error: 'Failed to process conversion webhook' },
       { status: 500 }

@@ -57,7 +57,7 @@ export async function POST(request) {
       );
     }
   } catch (error) {
-    console.error('Test email error:', error);
+    console.error('Test email error:', error.message, { stack: error.stack });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

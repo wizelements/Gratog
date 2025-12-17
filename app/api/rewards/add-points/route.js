@@ -43,7 +43,7 @@ export async function POST(request) {
     });
     
   } catch (error) {
-    console.error('Add points error:', error);
+    console.error('Add points error:', { error: error.message, stack: error.stack });
     
     // Attempt to store in localStorage as emergency fallback
     try {
@@ -59,7 +59,7 @@ export async function POST(request) {
         warning: 'System temporarily offline - points will sync when restored'
       });
     } catch (fallbackError) {
-      console.error('Emergency fallback failed:', fallbackError);
+      console.error('Emergency fallback failed:', { error: fallbackError.message, stack: fallbackError.stack });
       return NextResponse.json(
         { success: false, error: 'Failed to add points' },
         { status: 500 }
@@ -91,7 +91,7 @@ export async function GET(request) {
     );
     
   } catch (error) {
-    console.error('Sync error:', error);
+    console.error('Sync error:', { error: error.message, stack: error.stack });
     return NextResponse.json(
       { success: false, error: 'Failed to sync activities' },
       { status: 500 }

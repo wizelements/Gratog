@@ -21,7 +21,7 @@ export async function POST(request) {
       customerId
     });
   } catch (error) {
-    console.error('Create customer error:', error);
+    console.error('Create customer error:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
     return NextResponse.json(
       { error: 'Failed to create customer' },
       { status: 500 }
@@ -68,7 +68,7 @@ export async function GET(request) {
     
     return NextResponse.json({ customers: customerList });
   } catch (error) {
-    console.error('Get customers error:', error);
+    console.error('Get customers error:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
     return NextResponse.json(
       { error: 'Failed to get customers' },
       { status: 500 }

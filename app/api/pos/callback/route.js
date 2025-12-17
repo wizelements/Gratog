@@ -156,7 +156,7 @@ export async function GET(request) {
     return NextResponse.redirect(new URL('/', request.url));
     
   } catch (error) {
-    console.error('💥 Square POS callback error:', error);
+    console.error('💥 Square POS callback error:', { error: error.message, stack: error.stack });
     
     // Redirect to error page
     return NextResponse.redirect(
@@ -190,7 +190,7 @@ export async function POST(request) {
     return await GET(getRequest);
     
   } catch (error) {
-    console.error('💥 Square POS POST callback error:', error);
+    console.error('💥 Square POS POST callback error:', { error: error.message, stack: error.stack });
     
     return NextResponse.json(
       { 

@@ -115,7 +115,7 @@ export async function POST(request) {
     });
     
   } catch (error) {
-    console.error('Quiz recommendations error:', error);
+    console.error('Quiz recommendations error:', { error: error.message, stack: error.stack });
     return NextResponse.json(
       { success: false, error: 'Failed to generate recommendations' },
       { status: 500 }

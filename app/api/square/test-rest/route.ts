@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { listLocations, listPayments, listCatalog } from '@/lib/square-ops';
+import { logger } from '@/lib/logger';
 
 /**
  * Test REST API connectivity
  */
 export async function GET() {
   try {
-    console.log('Testing Square REST API...');
+    logger.info('SQUARE-REST', 'Testing Square REST API...');
     
     const results: any = {
       timestamp: new Date().toISOString(),
@@ -77,7 +78,7 @@ export async function GET() {
     });
     
   } catch (error) {
-    console.error('Square REST test error:', error);
+    logger.error('SQUARE-REST', 'Square REST test error', error);
     return NextResponse.json(
       {
         overall: 'ERROR',

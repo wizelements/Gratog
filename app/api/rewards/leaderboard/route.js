@@ -19,7 +19,7 @@ export async function GET(request) {
     });
     
   } catch (error) {
-    console.error('Leaderboard error:', error);
+    console.error('Leaderboard error:', { error: error.message, stack: error.stack });
     
     // Return fallback leaderboard
     const fallbackLeaderboard = [

@@ -123,7 +123,7 @@ async function fetchWithRetries(url: string, options: RequestInit = {}): Promise
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       
     } catch (error) {
-      console.error(`Attempt ${attempt} failed for ${url}:`, error);
+      console.error(`Attempt ${attempt} failed for ${url}:`, { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
       
       if (attempt === CRAWL_CONFIG.maxRetries) {
         // Circuit breaker logic
@@ -306,7 +306,7 @@ class ProductParser {
       return null;
       
     } catch (error) {
-      console.error(`Parse error for ${this.url}:`, error);
+      console.error(`Parse error for ${this.url}:`, { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
       return null;
     }
   }
@@ -373,7 +373,7 @@ class ProductParser {
       };
       
     } catch (error) {
-      console.error('JSON-LD parse error:', error);
+      console.error('JSON-LD parse error:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
       return null;
     }
   }
@@ -414,7 +414,7 @@ class ProductParser {
       return null;
       
     } catch (error) {
-      console.error('Embedded product parse error:', error);
+      console.error('Embedded product parse error:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
       return null;
     }
   }
@@ -514,7 +514,7 @@ export async function discoverProductUrls(rootDomain: string): Promise<string[]>
       }
       
     } catch (error) {
-      console.error(`Discovery error for ${currentUrl}:`, error);
+      console.error(`Discovery error for ${currentUrl}:`, { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
     }
   }
   
@@ -629,7 +629,7 @@ export async function crawlUrl(url: string): Promise<Product | null> {
     return null;
     
   } catch (error) {
-    console.error(`Crawl error for ${url}:`, error);
+    console.error(`Crawl error for ${url}:`, { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
     throw error;
   }
 }

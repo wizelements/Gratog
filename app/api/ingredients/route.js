@@ -35,7 +35,7 @@ export async function GET(request) {
       categories
     });
   } catch (error) {
-    console.error('Ingredients API error:', error);
+    console.error('Ingredients API error:', error.message, { stack: error.stack });
     return NextResponse.json(
       { success: false, error: 'Failed to fetch ingredients' },
       { status: 500 }

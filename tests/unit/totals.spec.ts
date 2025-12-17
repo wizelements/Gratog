@@ -11,8 +11,8 @@ describe('Totals Adapter', () => {
       
       const result = computeTotals({
         cart: [
-          { id: '1', name: 'Product 1', price: 25, quantity: 2, image: '' },
-          { id: '2', name: 'Product 2', price: 15, quantity: 1, image: '' }
+          { id: '1', productId: '1', variationId: 'v1', slug: 'product-1', name: 'Product 1', price: 25, size: 'regular', quantity: 2, image: '', category: 'wellness' },
+          { id: '2', productId: '2', variationId: 'v2', slug: 'product-2', name: 'Product 2', price: 15, size: 'regular', quantity: 1, image: '', category: 'wellness' }
         ],
         fulfillmentType: 'pickup'
       });
@@ -25,7 +25,7 @@ describe('Totals Adapter', () => {
       
       const result = computeTotals({
         cart: [
-          { id: '1', name: 'Product 1', price: 50, quantity: 1, image: '' }
+          { id: '1', productId: '1', variationId: 'v1', slug: 'product-1', name: 'Product 1', price: 50, size: 'regular', quantity: 1, image: '', category: 'wellness' }
         ],
         fulfillmentType: 'delivery'
       });
@@ -38,7 +38,7 @@ describe('Totals Adapter', () => {
       
       const result = computeTotals({
         cart: [
-          { id: '1', name: 'Product 1', price: 80, quantity: 1, image: '' }
+          { id: '1', productId: '1', variationId: 'v1', slug: 'product-1', name: 'Product 1', price: 80, size: 'regular', quantity: 1, image: '', category: 'wellness' }
         ],
         fulfillmentType: 'delivery'
       });
@@ -51,7 +51,7 @@ describe('Totals Adapter', () => {
       
       const result = computeTotals({
         cart: [
-          { id: '1', name: 'Product 1', price: 50, quantity: 1, image: '' }
+          { id: '1', productId: '1', variationId: 'v1', slug: 'product-1', name: 'Product 1', price: 50, size: 'regular', quantity: 1, image: '', category: 'wellness' }
         ],
         fulfillmentType: 'pickup'
       });
@@ -64,7 +64,7 @@ describe('Totals Adapter', () => {
       
       const result = computeTotals({
         cart: [
-          { id: '1', name: 'Product 1', price: 50, quantity: 1, image: '' }
+          { id: '1', productId: '1', variationId: 'v1', slug: 'product-1', name: 'Product 1', price: 50, size: 'regular', quantity: 1, image: '', category: 'wellness' }
         ],
         fulfillmentType: 'delivery',
         tip: 5
@@ -79,7 +79,7 @@ describe('Totals Adapter', () => {
       
       const result = computeTotals({
         cart: [
-          { id: '1', name: 'Product 1', price: 50, quantity: 1, image: '' }
+          { id: '1', productId: '1', variationId: 'v1', slug: 'product-1', name: 'Product 1', price: 50, size: 'regular', quantity: 1, image: '', category: 'wellness' }
         ],
         fulfillmentType: 'pickup',
         couponDiscount: 10
@@ -95,7 +95,7 @@ describe('Totals Adapter', () => {
       
       const result = computeTotals({
         cart: [
-          { id: '1', name: 'Product 1', price: 50, quantity: 1, image: '' }
+          { id: '1', productId: '1', variationId: 'v1', slug: 'product-1', name: 'Product 1', price: 50, size: 'regular', quantity: 1, image: '', category: 'wellness' }
         ],
         fulfillmentType: 'shipping',
         shippingFee: 12.99
@@ -124,8 +124,8 @@ describe('Totals Adapter', () => {
       
       const result = computeTotals({
         cart: [
-          { id: '1', name: 'Product 1', price: 25, quantity: 2, image: '' },
-          { id: '2', name: 'Product 2', price: 15, quantity: 3, image: '' }
+          { id: '1', productId: '1', variationId: 'v1', slug: 'product-1', name: 'Product 1', price: 25, size: 'regular', quantity: 2, image: '', category: 'wellness' },
+          { id: '2', productId: '2', variationId: 'v2', slug: 'product-2', name: 'Product 2', price: 15, size: 'regular', quantity: 3, image: '', category: 'wellness' }
         ],
         fulfillmentType: 'pickup'
       });
@@ -138,7 +138,7 @@ describe('Totals Adapter', () => {
       
       const result = computeTotals({
         cart: [
-          { id: '1', name: 'Product 1', price: 20, quantity: 1, image: '' }
+          { id: '1', productId: '1', variationId: 'v1', slug: 'product-1', name: 'Product 1', price: 20, size: 'regular', quantity: 1, image: '', category: 'wellness' }
         ],
         fulfillmentType: 'pickup',
         couponDiscount: 50

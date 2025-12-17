@@ -178,14 +178,14 @@ export default function CheckoutRoot() {
                           {fulfillment.type === 'pickup' && (
                             <PickupForm
                               data={fulfillment.pickup || { locationId: '', date: null }}
-                              onChange={(data) => setFulfillment({ pickup: { ...fulfillment.pickup, ...data } as any })}
+                              onChange={(data) => setFulfillment({ pickup: { ...fulfillment.pickup, ...data } })}
                               errors={validation.fulfillment}
                             />
                           )}
                           {fulfillment.type === 'delivery' && (
                             <DeliveryForm
                               data={fulfillment.delivery || { address: { street: '', city: '', state: 'GA', zip: '' }, window: '12-15' }}
-                              onChange={(data) => setFulfillment({ delivery: { ...fulfillment.delivery, ...data } as any })}
+                              onChange={(data) => setFulfillment({ delivery: { ...fulfillment.delivery, ...data } })}
                               tip={tip}
                               onTipChange={setTip}
                               errors={validation.fulfillment}
@@ -194,7 +194,7 @@ export default function CheckoutRoot() {
                           {fulfillment.type === 'shipping' && (
                             <ShippingForm
                               data={fulfillment.shipping || { address: { street: '', city: '', state: '', zip: '' }, methodId: 'standard' }}
-                              onChange={(data) => setFulfillment({ shipping: { ...fulfillment.shipping, ...data } as any })}
+                              onChange={(data) => setFulfillment({ shipping: { ...fulfillment.shipping, ...data } })}
                               errors={validation.fulfillment}
                             />
                           )}

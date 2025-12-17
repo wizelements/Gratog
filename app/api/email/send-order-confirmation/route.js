@@ -27,7 +27,7 @@ export async function POST(request) {
       );
     }
   } catch (error) {
-    console.error('Send order confirmation email error:', error);
+    console.error('Send order confirmation email error:', error.message, { stack: error.stack });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

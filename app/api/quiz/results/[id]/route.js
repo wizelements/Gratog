@@ -35,7 +35,7 @@ export async function GET(request, { params }) {
     });
     
   } catch (error) {
-    console.error('Get quiz results error:', error);
+    console.error('Get quiz results error:', { error: error.message, stack: error.stack });
     return NextResponse.json(
       { success: false, error: 'Failed to retrieve quiz results' },
       { status: 500 }

@@ -65,7 +65,7 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('Coupon validation error:', error);
+    console.error('Coupon validation error:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
     return NextResponse.json(
       { error: 'Failed to validate coupon' },
       { status: 500 }
@@ -115,7 +115,7 @@ export async function PUT(request) {
     });
 
   } catch (error) {
-    console.error('Error marking coupon as used:', error);
+    console.error('Error marking coupon as used:', { error: error instanceof Error ? error.message : error, stack: error instanceof Error ? error.stack : undefined });
     return NextResponse.json(
       { error: 'Failed to update coupon' },
       { status: 500 }
