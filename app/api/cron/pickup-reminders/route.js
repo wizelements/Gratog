@@ -50,11 +50,19 @@ export async function POST(request) {
     
     debug('📅 Looking for pickup orders for:', nextSaturday.toDateString());
     
-    // Find all pickup orders scheduled for next Saturday
+    // Find all pickup orders scheduled for next Saturday (using pickupDate, not createdAt)
     const pickupOrders = await db.collection('orders').find({
       'fulfillment.type': { $in: ['pickup_market', 'pickup_browns_mill'] },
       status: { $in: ['pending', 'confirmed', 'preparing'] }, // Not completed yet
-      createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } // Last 7 days
+      $or: [
+        // New orders with pickupDate field
+        { 'fulfillment.pickupDate': { $gte: nextSaturday.toISOString(), $lt: dayAfterSaturday.toISOString() } },
+        // Legacy orders: fallback to createdAt within last 7 days (assumes next Saturday)
+        { 
+          'fulfillment.pickupDate': { $exists: false },
+          createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+        }
+      ]
     }).toArray();
     
     debug(`📦 Found ${pickupOrders.length} pickup orders to remind`);

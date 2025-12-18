@@ -7,14 +7,14 @@ import { SMS_TEMPLATES } from '@/lib/message-templates';
 const CRON_SECRET = process.env.CRON_SECRET || 'cron-secret-taste-of-gratitude-2024';
 
 /**
- * Morning-Of Pickup Reminder Cron Job
+ * Missed Pickup Follow-up Cron Job
  * 
- * Schedule: Saturdays at 8:30 AM
- * Purpose: Send "order ready!" SMS to all customers with today's pickup orders
+ * Schedule: Saturdays at 7:00 PM (after market closes)
+ * Purpose: Send follow-up SMS to customers who didn't pick up their orders
  * 
  * Setup in cron service (e.g., cron-job.org or Vercel Cron):
- * - URL: https://your-domain.com/api/cron/morning-reminders
- * - Schedule: 30 8 * * 6 (Saturdays at 8:30 AM)
+ * - URL: https://your-domain.com/api/cron/missed-pickup
+ * - Schedule: 0 19 * * 6 (Saturdays at 7 PM)
  * - Method: POST
  * - Header: Authorization: Bearer YOUR_CRON_SECRET
  */
@@ -31,26 +31,27 @@ export async function POST(request) {
       );
     }
 
-    debug('☀️ [CRON] Morning-of pickup reminders job started');
+    console.log('🔔 [CRON] Missed pickup follow-up job started');
 
     const { db } = await connectToDatabase();
     
-    // Get today's date
+    // Get today's date range
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
     
-    debug('📅 Looking for pickup orders for TODAY:', today.toDateString());
+    console.log('📅 Looking for missed pickup orders for TODAY:', today.toDateString());
     
-    // Find all pickup orders scheduled for TODAY (using pickupDate, not createdAt)
-    const pickupOrders = await db.collection('orders').find({
+    // Find all pickup orders that were scheduled for today but NOT picked up
+    const missedOrders = await db.collection('orders').find({
       'fulfillment.type': { $in: ['pickup_market', 'pickup_browns_mill'] },
-      status: { $in: ['pending', 'confirmed', 'preparing', 'ready'] }, // Not picked up yet
+      // Orders that should have been picked up today but weren't
+      status: { $in: ['pending', 'confirmed', 'preparing', 'ready'] },
       $or: [
         // New orders with pickupDate field
         { 'fulfillment.pickupDate': { $gte: today.toISOString(), $lt: tomorrow.toISOString() } },
-        // Legacy orders: fallback to createdAt within last 7 days (assumes next Saturday)
+        // Legacy orders: fallback to createdAt within last 7 days
         { 
           'fulfillment.pickupDate': { $exists: false },
           createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
@@ -58,46 +59,51 @@ export async function POST(request) {
       ]
     }).toArray();
     
-    debug(`📦 Found ${pickupOrders.length} pickup orders for today`);
+    console.log(`📦 Found ${missedOrders.length} missed pickup orders`);
     
     const results = {
-      total: pickupOrders.length,
+      total: missedOrders.length,
       sent: 0,
       failed: 0,
       errors: []
     };
     
-    // Send morning reminders
-    for (const order of pickupOrders) {
+    // Send missed pickup follow-up
+    for (const order of missedOrders) {
       try {
-        const isSerenbe = order.fulfillment.type === 'pickup_market';
-        const location = isSerenbe ? 'Serenbe Farmers Market (Booth #12)' : 'Browns Mill Community';
-        const hours = isSerenbe ? '9:00 AM - 1:00 PM' : '3:00 PM - 6:00 PM';
+        const firstName = order.customer.name.split(' ')[0];
         
-        const readyBy = isSerenbe ? '9:30 AM' : '3:30 PM';
-        
-        const message = SMS_TEMPLATES.PICKUP_MORNING_REMINDER({
-          customerName: order.customer.name.split(' ')[0], // First name only
-          orderNumber: order.orderNumber,
-          location,
-          hours,
-          readyBy
+        const message = SMS_TEMPLATES.MISSED_PICKUP({
+          customerName: firstName,
+          orderNumber: order.orderNumber
         });
         
         await sendSMS(order.customer.phone, message);
         
-        // Log reminder sent
+        // Update order status to missed_pickup
+        await db.collection('orders').updateOne(
+          { _id: order._id },
+          { 
+            $set: { 
+              status: 'missed_pickup',
+              missedPickupAt: new Date(),
+              updatedAt: new Date()
+            }
+          }
+        );
+        
+        // Log notification sent
         await db.collection('sms_logs').insertOne({
           orderId: order.id,
           orderNumber: order.orderNumber,
           phone: order.customer.phone,
-          type: 'pickup_morning_reminder',
+          type: 'missed_pickup_followup',
           sentAt: new Date(),
           message
         });
         
         results.sent++;
-        debug(`✅ Morning reminder sent: ${order.orderNumber} → ${order.customer.phone}`);
+        console.log(`✅ Missed pickup SMS sent: ${order.orderNumber} → ${order.customer.phone}`);
         
       } catch (smsError) {
         results.failed++;
@@ -105,25 +111,25 @@ export async function POST(request) {
           orderId: order.id,
           error: smsError.message
         });
-        console.error(`❌ Failed to send morning reminder for ${order.orderNumber}:`, smsError.message);
+        console.error(`❌ Failed to send missed pickup notification for ${order.orderNumber}:`, smsError.message);
       }
     }
     
-    debug('📊 Morning reminders completed:', results);
+    console.log('📊 Missed pickup follow-up completed:', results);
     
     return NextResponse.json({
       success: true,
-      message: 'Morning pickup reminders processed',
+      message: 'Missed pickup follow-up processed',
       results,
       timestamp: new Date().toISOString()
     });
     
   } catch (error) {
-    console.error('❌ Morning reminders cron job error:', error);
+    console.error('❌ Missed pickup cron job error:', error);
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to process morning reminders',
+        error: 'Failed to process missed pickup follow-up',
         details: error.message
       },
       { status: 500 }
@@ -134,11 +140,11 @@ export async function POST(request) {
 // GET endpoint to check cron job status
 export async function GET(request) {
   return NextResponse.json({
-    service: 'Pickup Morning Reminders Cron',
+    service: 'Missed Pickup Follow-up Cron',
     status: 'active',
-    schedule: 'Saturdays at 8:30 AM',
-    description: 'Sends "order ready!" SMS to customers with today\'s pickup orders',
-    endpoint: '/api/cron/morning-reminders',
+    schedule: 'Saturdays at 7:00 PM',
+    description: 'Sends follow-up SMS to customers who missed their pickup and updates order status',
+    endpoint: '/api/cron/missed-pickup',
     method: 'POST',
     authentication: 'Bearer token required',
     timestamp: new Date().toISOString()
