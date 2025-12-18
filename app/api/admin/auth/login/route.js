@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminUsers } from '@/lib/db-admin';
-import { verifyPassword, generateToken } from '@/lib/auth';
+import { verifyPassword } from '@/lib/auth';
+import { generateAdminToken, setAdminCookie } from '@/lib/admin-session';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('ADMIN_LOGIN');
@@ -51,6 +52,18 @@ export async function POST(request) {
       );
     }
 
+    // SECURITY: Verify role is admin
+    if (user.role !== 'admin') {
+      logger.warn('Non-admin login attempt', { 
+        userEmail: user.email,
+        role: user.role
+      });
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
+
     logger.info('Verifying password');
     const isValid = await verifyPassword(password, user.passwordHash);
     
@@ -64,20 +77,25 @@ export async function POST(request) {
       );
     }
 
-    logger.info('Generating JWT token', {
+    logger.info('Generating JWT token with standardized format', {
       userId: user._id.toString(),
       userEmail: user.email,
       role: user.role
     });
     
-    const token = generateToken(user._id.toString(), user.email, user.role);
+    // Use the new standardized token format
+    const token = await generateAdminToken({
+      id: user._id.toString(),
+      email: user.email,
+      name: user.name
+    });
     
     logger.debug('Token generated', {
       tokenLength: token?.length,
       hasToken: !!token
     });
 
-    const response = NextResponse.json({
+    let response = NextResponse.json({
       success: true,
       user: {
         id: user._id.toString(),
@@ -87,21 +105,8 @@ export async function POST(request) {
       }
     });
 
-    logger.info('Setting authentication cookie', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7
-    });
-    
-    response.cookies.set('admin_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7 // 7 days
-    });
+    // Set the admin cookie using the unified helper
+    response = setAdminCookie(response, token);
 
     logger.info('Login successful', {
       userEmail: user.email,
