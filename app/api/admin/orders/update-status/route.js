@@ -3,21 +3,13 @@ import { orderTracking } from '@/lib/enhanced-order-tracking';
 import { sendOrderStatusEmail } from '@/lib/resend-email';
 import { sendOrderUpdateSMS } from '@/lib/sms';
 import { createLogger } from '@/lib/logger';
-import { verifyToken } from '@/lib/auth';
+import { requireAdmin } from '@/lib/admin-session';
 
 const logger = createLogger('OrderStatusUpdateAPI');
 
 export async function POST(request) {
   try {
-    const token = request.cookies.get('admin_token')?.value;
-    const decoded = verifyToken(token);
-    
-    if (!decoded) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    const admin = await requireAdmin(request);
     
     const { orderId, status } = await request.json();
     
@@ -28,7 +20,7 @@ export async function POST(request) {
       );
     }
     
-    logger.info('Updating order status', { orderId, status });
+    logger.info('Updating order status', { orderId, status, adminEmail: admin.email });
     
     const validStatuses = [
       'pending',
@@ -96,6 +88,12 @@ export async function POST(request) {
     });
     
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('Update status error', { error: error.message, stack: error.stack });
     
     return NextResponse.json({

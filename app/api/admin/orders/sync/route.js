@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { syncSquareOrders, getOrdersSyncStatus } from '@/lib/square-orders-sync';
-import { verifyToken } from '@/lib/auth';
+import { requireAdmin } from '@/lib/admin-session';
 import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
@@ -13,15 +13,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request) {
   try {
-    const token = request.cookies.get('admin_token')?.value;
-    const decoded = verifyToken(token);
-    
-    if (!decoded) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    const admin = await requireAdmin(request);
 
     const body = await request.json().catch(() => ({}));
     const { since, limit } = body;
@@ -30,7 +22,7 @@ export async function POST(request) {
     
     const sinceDate = since ? new Date(since) : null;
     
-    logger.info('AdminOrdersSync', `Starting orders sync${sinceDate ? ` since ${sinceDate.toISOString()}` : ''}`);
+    logger.info('AdminOrdersSync', `Starting orders sync by ${admin.email}${sinceDate ? ` since ${sinceDate.toISOString()}` : ''}`);
     
     const result = await syncSquareOrders(db, { 
       since: sinceDate,
@@ -44,6 +36,12 @@ export async function POST(request) {
     });
 
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('AdminOrdersSync', 'Orders sync failed:', error);
     
     return NextResponse.json(
@@ -63,15 +61,7 @@ export async function POST(request) {
  */
 export async function GET(request) {
   try {
-    const token = request.cookies.get('admin_token')?.value;
-    const decoded = verifyToken(token);
-    
-    if (!decoded) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    const admin = await requireAdmin(request);
 
     const { db } = await connectToDatabase();
     const status = await getOrdersSyncStatus(db);
@@ -82,6 +72,12 @@ export async function GET(request) {
     });
 
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('AdminOrdersSync', 'Failed to get sync status:', error);
     return NextResponse.json(
       { error: 'Failed to get sync status' },
