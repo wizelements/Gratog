@@ -6,7 +6,7 @@ import NewsletterSignup from '@/components/NewsletterSignup';
 
 export default function Footer() {
   return (
-    <footer className="border-t bg-gradient-to-b from-muted/30 to-muted/60" role="contentinfo" aria-label="Site footer">
+    <footer id="footer" className="border-t bg-gradient-to-b from-muted/30 to-muted/60" role="contentinfo" aria-label="Site footer">
       {/* Newsletter Section */}
       <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-b">
         <div className="container py-12">
@@ -32,7 +32,7 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <nav aria-label="Quick links">
             <h4 className="font-semibold mb-4 text-lg">Quick Links</h4>
             <ul className="space-y-3 text-sm">
               <li>
@@ -81,10 +81,10 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Support & Legal */}
-          <div>
+          <nav aria-label="Support and legal">
             <h4 className="font-semibold mb-4 text-lg">Support & Legal</h4>
             <ul className="space-y-3 text-sm">
               <li>
@@ -124,15 +124,15 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Connect */}
           <div>
-            <h4 className="font-semibold mb-4 text-lg">Connect With Us</h4>
+            <h4 id="social-heading" className="font-semibold mb-4 text-lg">Connect With Us</h4>
             <p className="text-sm text-muted-foreground mb-4">
               Follow us for wellness tips, recipes, and special offers!
             </p>
-            <div className="flex space-x-3">
+            <div className="flex space-x-3" role="list" aria-labelledby="social-heading">
               <a
                 href="https://www.facebook.com/tasteofgratitude"
                 target="_blank"
