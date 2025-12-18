@@ -131,7 +131,7 @@ export default function RootLayout({ children }) {
               window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
                   .then((registration) => {
-                    debug('✅ PWA: Service Worker registered');
+                    console.log('✅ PWA: Service Worker registered');
                     
                     // Check for updates every hour
                     setInterval(() => {
