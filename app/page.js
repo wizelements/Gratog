@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import Script from 'next/script';
 import { getDemoProducts } from '@/lib/demo-products';
 import { ProductImage } from '@/components/OptimizedImage';
+import ProductBundles from '@/components/ProductBundles';
 
 export default function HomePage() {
     const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -350,6 +351,11 @@ export default function HomePage() {
                             View All {!loading ? '29' : ''} Products
                             <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
+                    </div>
+
+                    {/* Product Bundles Section */}
+                    <div className="mt-16">
+                        <ProductBundles limit={3} />
                     </div>
                 </div>
             </section>
