@@ -4,6 +4,9 @@ import { initializeUnifiedProducts, syncAllSquareProducts, getSyncStats } from '
 
 export const dynamic = 'force-dynamic';
 
+const DEBUG = process.env.DEBUG === 'true' || process.env.VERBOSE === 'true';
+const debug = (...args) => { if (DEBUG) console.log('[UNIFIED-SYNC]', ...args); };
+
 /**
  * POST /api/unified/sync
  * Initialize or sync unified products collection
