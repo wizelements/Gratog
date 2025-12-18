@@ -1,24 +1,17 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
-import { verifyToken } from '@/lib/auth';
+import { requireAdmin } from '@/lib/admin-session';
 import { Client, Environment } from 'square';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/admin/products/[id]/sync
  * Sync product changes to/from Square
  */
 export async function POST(request, { params }) {
-  const token = request.cookies.get('admin_token')?.value;
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
-
   try {
+    const admin = await requireAdmin(request);
+
     const { db } = await connectToDatabase();
     const productId = params.id;
     const { updates, direction } = await request.json();
@@ -31,12 +24,12 @@ export async function POST(request, { params }) {
         : Environment.Sandbox,
     });
 
+    logger.info('API', `Product sync initiated by ${admin.email}: ${productId} ${direction}`);
+
     if (direction === 'to_square') {
-      // Push changes TO Square
-      return await syncToSquare(db, client, productId, updates);
+      return await syncToSquare(db, client, productId, updates, admin);
     } else if (direction === 'from_square') {
-      // Pull latest FROM Square
-      return await syncFromSquare(db, client, productId);
+      return await syncFromSquare(db, client, productId, admin);
     }
 
     return NextResponse.json(
@@ -44,7 +37,13 @@ export async function POST(request, { params }) {
       { status: 400 }
     );
   } catch (error) {
-    console.error('Sync error:', error);
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
+    logger.error('API', 'Sync error:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Sync failed' },
       { status: 500 }
@@ -55,7 +54,7 @@ export async function POST(request, { params }) {
 /**
  * Sync changes TO Square Catalog API
  */
-async function syncToSquare(db, client, productId, updates) {
+async function syncToSquare(db, client, productId, updates, admin) {
   try {
     // Get current product from Square
     const { result: catalogObject } = await client.catalogApi.retrieveCatalogObject(productId);
@@ -91,6 +90,7 @@ async function syncToSquare(db, client, productId, updates) {
         $set: {
           ...updates,
           syncedAt: new Date(),
+          syncedBy: admin.email,
           source: 'admin_to_square',
           squareVersion: result.catalogObject.version
         }
@@ -115,7 +115,7 @@ async function syncToSquare(db, client, productId, updates) {
       squareVersion: result.catalogObject.version
     });
   } catch (error) {
-    console.error('Square sync error:', error);
+    logger.error('API', 'Square sync error:', error);
     throw error;
   }
 }
@@ -123,7 +123,7 @@ async function syncToSquare(db, client, productId, updates) {
 /**
  * Sync latest data FROM Square Catalog API
  */
-async function syncFromSquare(db, client, productId) {
+async function syncFromSquare(db, client, productId, admin) {
   try {
     // Get latest from Square
     const { result } = await client.catalogApi.retrieveCatalogObject(productId);
@@ -158,6 +158,7 @@ async function syncFromSquare(db, client, productId) {
           name: itemData.name,
           description: itemData.description,
           syncedAt: new Date(),
+          syncedBy: admin.email,
           source: 'square_pull',
           squareVersion: squareProduct.version
         }
@@ -173,7 +174,7 @@ async function syncFromSquare(db, client, productId) {
       }
     });
   } catch (error) {
-    console.error('Square pull error:', error);
+    logger.error('API', 'Square pull error:', error);
     throw error;
   }
 }

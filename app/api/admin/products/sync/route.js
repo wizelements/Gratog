@@ -1,16 +1,13 @@
-
 import { NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth';
+import { requireAdmin } from '@/lib/admin-session';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { syncSquareCatalog } from '@/lib/square/catalogSync';
 import { syncToUnified } from '@/lib/square/syncToUnified';
+import { logger } from '@/lib/logger';
 
 // Force Node.js runtime (required for MongoDB)
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-const DEBUG = process.env.DEBUG === 'true' || process.env.NODE_ENV === 'development';
-const debug = (...args) => { if (DEBUG) console.log('[ProductSync]', ...args); };
 
 /**
  * POST /api/admin/products/sync
@@ -18,18 +15,10 @@ const debug = (...args) => { if (DEBUG) console.log('[ProductSync]', ...args); }
  * Serverless-compatible version (no exec, no require of scripts/)
  */
 export async function POST(request) {
-  const token = request.cookies.get('admin_token')?.value;
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
-
   try {
-    debug('🔄 Starting admin-triggered Square catalog sync...');
+    const admin = await requireAdmin(request);
+
+    logger.info('ProductSync', `Starting admin-triggered Square catalog sync by ${admin.email}`);
 
     let catalogSyncResult = { items: 0, variations: 0, images: 0, errors: 0 };
     let unifiedSyncResult = { success: 0, failed: 0, total: 0 };
@@ -39,22 +28,22 @@ export async function POST(request) {
 
     // Step 1: Sync from Square to square_catalog_items
     try {
-      debug('📥 Step 1: Syncing from Square Catalog API...');
+      logger.debug('ProductSync', 'Step 1: Syncing from Square Catalog API...');
       catalogSyncResult = await syncSquareCatalog(db);
-      debug(`✅ Square catalog sync complete: ${catalogSyncResult.items} items`);
+      logger.info('ProductSync', `Square catalog sync complete: ${catalogSyncResult.items} items`);
     } catch (error) {
-      console.error('❌ Square catalog sync failed:', error);
+      logger.error('ProductSync', 'Square catalog sync failed:', error);
       throw new Error(`Square catalog sync failed: ${error.message}`);
     }
 
     // Step 2: Sync to unified_products with enrichment
     try {
-      debug('🔄 Step 2: Syncing to unified products...');
+      logger.debug('ProductSync', 'Step 2: Syncing to unified products...');
       unifiedSyncResult = await syncToUnified(true);
-      debug(`✅ Unified sync complete: ${unifiedSyncResult.success}/${unifiedSyncResult.total} products`);
+      logger.info('ProductSync', `Unified sync complete: ${unifiedSyncResult.success}/${unifiedSyncResult.total} products`);
     } catch (error) {
-      console.error('❌ Unified sync failed:', error);
-      console.warn('⚠️ Continuing despite unified sync error');
+      logger.error('ProductSync', 'Unified sync failed:', error);
+      logger.warn('ProductSync', 'Continuing despite unified sync error');
       unifiedSyncResult = { success: 0, failed: 0, total: 0, error: error.message };
     }
 
@@ -74,7 +63,13 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('💥 Sync failed:', error);
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
+    logger.error('ProductSync', 'Sync failed:', error);
     
     return NextResponse.json(
       { 
@@ -93,17 +88,9 @@ export async function POST(request) {
  * Get sync status
  */
 export async function GET(request) {
-  const token = request.cookies.get('admin_token')?.value;
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
-
   try {
+    const admin = await requireAdmin(request);
+
     const { db } = await connectToDatabase();
     
     const syncMeta = await db.collection('square_sync_metadata').findOne({ 
@@ -127,7 +114,13 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Failed to get sync status:', error);
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
+    logger.error('ProductSync', 'Failed to get sync status:', error);
     return NextResponse.json(
       { error: 'Failed to get sync status' },
       { status: 500 }

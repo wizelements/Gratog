@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
-import { verifyToken } from '@/lib/auth';
+import { requireAdmin } from '@/lib/admin-session';
 import { logger } from '@/lib/logger';
 
 /**
@@ -8,17 +8,9 @@ import { logger } from '@/lib/logger';
  * Fetch all products for admin dashboard
  */
 export async function GET(request) {
-  // Verify admin authentication
-  const token = request.cookies.get('admin_token')?.value;
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
   try {
+    const admin = await requireAdmin(request);
+    
     const { db } = await connectToDatabase();
     
     // Fetch products from unified collection (has enriched data)
@@ -60,6 +52,12 @@ export async function GET(request) {
       count: adminProducts.length
     });
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('API', 'Admin products fetch error', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch products' },
@@ -73,17 +71,9 @@ export async function GET(request) {
  * Update product data
  */
 export async function PUT(request) {
-  // Verify admin authentication
-  const token = request.cookies.get('admin_token')?.value;
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
   try {
+    const admin = await requireAdmin(request);
+    
     const body = await request.json();
     const { productId, updates } = body;
     
@@ -114,11 +104,19 @@ export async function PUT(request) {
       );
     }
     
+    logger.info('API', `Product ${productId} updated by admin ${admin.email}`);
+    
     return NextResponse.json({
       success: true,
       message: 'Product updated successfully'
     });
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('API', 'Admin product update error', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update product' },

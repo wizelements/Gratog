@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
-import { verifyToken } from '@/lib/auth';
+import { requireAdmin } from '@/lib/admin-session';
 import { logger } from '@/lib/logger';
 
 /**
@@ -8,17 +8,9 @@ import { logger } from '@/lib/logger';
  * Get single product for editing
  */
 export async function GET(request, { params }) {
-  const token = request.cookies.get('admin_token')?.value;
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
-
   try {
+    const admin = await requireAdmin(request);
+
     const { db } = await connectToDatabase();
     const productId = params.id;
 
@@ -38,6 +30,12 @@ export async function GET(request, { params }) {
       product
     });
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('API', 'Failed to fetch product', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch product' },
@@ -51,17 +49,9 @@ export async function GET(request, { params }) {
  * Update product in database
  */
 export async function PUT(request, { params }) {
-  const token = request.cookies.get('admin_token')?.value;
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
-
   try {
+    const admin = await requireAdmin(request);
+
     const { db } = await connectToDatabase();
     const productId = params.id;
     const { updates } = await request.json();
@@ -70,13 +60,14 @@ export async function PUT(request, { params }) {
     const updateData = {
       ...updates,
       updatedAt: new Date(),
+      updatedBy: admin.email,
       source: 'admin_update'
     };
 
     // If category is being manually set, mark it as a manual override
     if (updates.category) {
       updateData.intelligentCategory = updates.category;
-      updateData.manualCategoryOverride = true; // Flag to prevent auto-categorization
+      updateData.manualCategoryOverride = true;
     }
 
     // Update unified_products collection
@@ -106,11 +97,19 @@ export async function PUT(request, { params }) {
       }
     );
 
+    logger.info('API', `Product ${productId} updated by ${admin.email}`);
+
     return NextResponse.json({
       success: true,
       message: 'Product updated successfully'
     });
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('API', 'Failed to update product', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update product' },
