@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-12-18T02:45:22.340Z",
+  "timestamp": "2025-12-18T02:27:03.803Z",
   "scanNumber": 1,
   "mode": "NORMAL",
   "hungerLevel": 50,
   "agents": {
     "bug-hunter": {
       "agent": "bug-hunter",
-      "duration": 12245,
+      "duration": 15331,
       "issues": [
         {
           "agent": "bug-hunter",
@@ -329,7 +329,7 @@
     },
     "psycho-marketer": {
       "agent": "psycho-marketer",
-      "duration": 172,
+      "duration": 238,
       "issues": [
         {
           "agent": "psycho-marketer",
@@ -412,7 +412,7 @@
     },
     "uiux-predator": {
       "agent": "uiux-predator",
-      "duration": 123,
+      "duration": 179,
       "issues": [
         {
           "agent": "uiux-predator",
@@ -1069,7 +1069,7 @@
     },
     "log-devourer": {
       "agent": "log-devourer",
-      "duration": 89,
+      "duration": 146,
       "issues": [
         {
           "agent": "log-devourer",
@@ -2116,7 +2116,7 @@
     },
     "opti-beast": {
       "agent": "opti-beast",
-      "duration": 63,
+      "duration": 122,
       "issues": [
         {
           "agent": "opti-beast",
@@ -2143,7 +2143,7 @@
     },
     "trust-guardian": {
       "agent": "trust-guardian",
-      "duration": 61,
+      "duration": 77,
       "issues": [
         {
           "agent": "trust-guardian",

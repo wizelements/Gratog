@@ -84,6 +84,8 @@ export async function POST(request) {
       logger.warn('Notification error', { error: notificationError.message });
     }
     
+    const notificationStatuses = ['confirmed', 'preparing', 'ready_for_pickup', 'out_for_delivery', 'delivered', 'picked_up'];
+    
     return NextResponse.json({
       success: true,
       order: updatedOrder,

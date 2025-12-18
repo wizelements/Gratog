@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sparkles, Send, Eye, Save, Users, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -17,6 +19,7 @@ export default function NewCampaignPage() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [estimatedRecipients, setEstimatedRecipients] = useState(0);
+  const [showPreview, setShowPreview] = useState(false);
   
   // Campaign data
   const [campaignData, setCampaignData] = useState({
@@ -70,7 +73,7 @@ export default function NewCampaignPage() {
         setEstimatedRecipients(data.count || 0);
       }
     } catch (error) {
-      console.error('Failed to fetch recipients:', error);
+      logger.error('Admin', 'Failed to fetch recipients', error);
     }
   };
 
@@ -106,7 +109,7 @@ export default function NewCampaignPage() {
         throw new Error(data.error || 'Generation failed');
       }
     } catch (error) {
-      console.error('AI generation error:', error);
+      logger.error('Admin', 'AI generation error', error);
       toast.error(error.message || 'Failed to generate newsletter');
     } finally {
       setGenerating(false);
@@ -144,7 +147,7 @@ export default function NewCampaignPage() {
         router.push('/admin/campaigns');
       }
     } catch (error) {
-      console.error('Save campaign error:', error);
+      logger.error('Admin', 'Save campaign error', error);
       toast.error('Failed to save campaign');
     } finally {
       setLoading(false);
@@ -414,10 +417,47 @@ export default function NewCampaignPage() {
                 <Send className="h-4 w-4 mr-2" />
                 Create & Review
               </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => setShowPreview(true)}
+                disabled={!campaignData.body}
+                className="w-full"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                Preview Email
+              </Button>
             </div>
           </Card>
         </div>
       </div>
+
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Email Preview</DialogTitle>
+          </DialogHeader>
+          <div className="border rounded-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-[#059669] to-[#14b8a6] p-8 text-center">
+              <h1 className="text-2xl font-bold text-white">Taste of Gratitude</h1>
+              {campaignData.preheader && (
+                <p className="text-white/80 mt-2 text-sm">{campaignData.preheader}</p>
+              )}
+            </div>
+            <div className="p-6 bg-white">
+              <p className="text-sm text-gray-500 mb-4">Subject: <strong>{campaignData.subject || '(No subject)'}</strong></p>
+              <div 
+                className="prose max-w-none"
+                dangerouslySetInnerHTML={{ __html: campaignData.body || '<p>No content yet</p>' }}
+              />
+            </div>
+            <div className="bg-gray-100 p-4 text-center text-sm text-gray-500 border-t">
+              <p>© {new Date().getFullYear()} Taste of Gratitude. All rights reserved.</p>
+              <p className="text-xs mt-1 text-gray-400">Unsubscribe from marketing emails</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
