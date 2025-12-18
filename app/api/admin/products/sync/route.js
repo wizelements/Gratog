@@ -9,6 +9,9 @@ import { syncToUnified } from '@/lib/square/syncToUnified';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+const DEBUG = process.env.DEBUG === 'true' || process.env.NODE_ENV === 'development';
+const debug = (...args) => { if (DEBUG) console.log('[ProductSync]', ...args); };
+
 /**
  * POST /api/admin/products/sync
  * Trigger full sync from Square catalog
