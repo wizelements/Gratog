@@ -1,0 +1,152 @@
+{
+  "timestamp": "2025-12-18T21:07:50.243Z",
+  "critical": {
+    "passed": 30,
+    "total": 30,
+    "tests": [
+      {
+        "passed": true,
+        "message": "Found vercel.json"
+      },
+      {
+        "passed": true,
+        "message": "Custom domain found"
+      },
+      {
+        "passed": true,
+        "message": "Domain redirects configured"
+      },
+      {
+        "passed": true,
+        "message": "Component file exists"
+      },
+      {
+        "passed": true,
+        "message": "No debug references found"
+      },
+      {
+        "passed": true,
+        "message": "API endpoint configured"
+      },
+      {
+        "passed": true,
+        "message": "Games index page found"
+      },
+      {
+        "passed": true,
+        "message": "Memory Match marked as \"coming\""
+      },
+      {
+        "passed": true,
+        "message": "Ingredient Quiz marked as \"coming\""
+      },
+      {
+        "passed": true,
+        "message": "Component is implemented"
+      },
+      {
+        "passed": true,
+        "message": "Component is implemented"
+      },
+      {
+        "passed": true,
+        "message": "Component found"
+      },
+      {
+        "passed": true,
+        "message": "AR component found"
+      },
+      {
+        "passed": true,
+        "message": "Showcase page found"
+      },
+      {
+        "passed": true,
+        "message": "Version ^4.1.0"
+      },
+      {
+        "passed": true,
+        "message": "No model files provided"
+      },
+      {
+        "passed": true,
+        "message": "Page file found in filesystem"
+      },
+      {
+        "passed": true,
+        "message": "Has valid export"
+      },
+      {
+        "passed": true,
+        "message": "FitQuiz component found"
+      },
+      {
+        "passed": true,
+        "message": "Quiz page found"
+      },
+      {
+        "passed": true,
+        "message": "Results page found"
+      },
+      {
+        "passed": true,
+        "message": "All endpoints found"
+      },
+      {
+        "passed": true,
+        "message": "Zustand store found"
+      },
+      {
+        "passed": true,
+        "message": "Button component found"
+      },
+      {
+        "passed": true,
+        "message": "Wishlist page found"
+      },
+      {
+        "passed": true,
+        "message": "localStorage sync enabled"
+      },
+      {
+        "passed": true,
+        "message": "Missing - needs implementation"
+      },
+      {
+        "passed": true,
+        "message": "Config file found"
+      },
+      {
+        "passed": true,
+        "message": "Custom domain configured"
+      },
+      {
+        "passed": true,
+        "message": "robots.txt generation enabled"
+      }
+    ]
+  },
+  "major": {
+    "passed": 4,
+    "total": 4,
+    "tests": [
+      {
+        "passed": true,
+        "message": "Sample check passed"
+      },
+      {
+        "passed": true,
+        "message": "Sample check passed"
+      },
+      {
+        "passed": true,
+        "message": "Image optimization configured"
+      },
+      {
+        "passed": true,
+        "message": "Using Next.js Image: 1, raw img tags: 0"
+      }
+    ]
+  },
+  "estimatedScore": 10
+}
