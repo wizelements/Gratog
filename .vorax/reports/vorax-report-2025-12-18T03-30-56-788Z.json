@@ -1,0 +1,72 @@
+{
+  "timestamp": "2025-12-18T03:30:45.457Z",
+  "scanNumber": 1,
+  "mode": "NORMAL",
+  "hungerLevel": 50,
+  "agents": {
+    "bug-hunter": {
+      "agent": "bug-hunter",
+      "duration": 11331,
+      "issues": [],
+      "stats": {
+        "filesScanned": 415,
+        "testsRun": 7
+      }
+    },
+    "psycho-marketer": {
+      "agent": "psycho-marketer",
+      "duration": 129,
+      "issues": [],
+      "stats": {
+        "messagingScore": 100,
+        "ctaCount": 143,
+        "toneConsistency": 100
+      }
+    },
+    "uiux-predator": {
+      "agent": "uiux-predator",
+      "duration": 100,
+      "issues": [],
+      "stats": {
+        "componentsScanned": 123,
+        "accessibilityScore": 100
+      }
+    },
+    "log-devourer": {
+      "agent": "log-devourer",
+      "duration": 68,
+      "issues": [],
+      "stats": {
+        "filesWithLogging": 278,
+        "consoleLogCount": 110,
+        "structuredLogCount": 452
+      }
+    },
+    "opti-beast": {
+      "agent": "opti-beast",
+      "duration": 20,
+      "issues": [],
+      "stats": {
+        "bundleSize": 2480159,
+        "assetCount": 1
+      }
+    },
+    "trust-guardian": {
+      "agent": "trust-guardian",
+      "duration": 19,
+      "issues": [],
+      "stats": {
+        "trustScore": 100,
+        "estimatedRevenueLoss": 0,
+        "contentDrift": 0
+      }
+    }
+  },
+  "issues": [],
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  }
+}

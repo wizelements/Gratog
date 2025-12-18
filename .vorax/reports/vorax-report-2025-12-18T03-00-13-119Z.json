@@ -1,0 +1,4369 @@
+{
+  "timestamp": "2025-12-18T02:59:51.310Z",
+  "scanNumber": 1,
+  "mode": "NORMAL",
+  "hungerLevel": 50,
+  "agents": {
+    "bug-hunter": {
+      "agent": "bug-hunter",
+      "duration": 21808,
+      "issues": [
+        {
+          "agent": "bug-hunter",
+          "microAgent": "type-checker",
+          "severity": "medium",
+          "type": "typescript-error",
+          "title": "TypeScript Error",
+          "file": "lib/fulfillment.ts",
+          "line": 293,
+          "description": "Expected 1-2 arguments, but got 3.",
+          "fix": "Fix type annotation or add proper typing"
+        },
+        {
+          "agent": "bug-hunter",
+          "microAgent": "type-checker",
+          "severity": "medium",
+          "type": "typescript-error",
+          "title": "TypeScript Error",
+          "file": "lib/square.ts",
+          "line": 64,
+          "description": "Object literal may only specify known properties, and 'accessToken' does not exist in type 'Options'.",
+          "fix": "Fix type annotation or add proper typing"
+        },
+        {
+          "agent": "bug-hunter",
+          "microAgent": "type-checker",
+          "severity": "medium",
+          "type": "typescript-error",
+          "title": "TypeScript Error",
+          "file": "lib/transactions.ts",
+          "line": 80,
+          "description": "No overload matches this call.",
+          "fix": "Fix type annotation or add proper typing"
+        },
+        {
+          "agent": "bug-hunter",
+          "microAgent": "security",
+          "severity": "high",
+          "type": "security-vulnerability",
+          "title": "dangerouslySetInnerHTML usage",
+          "file": "/app/(site)/instagram/[slug]/page.tsx",
+          "description": "Security issue: dangerouslySetInnerHTML usage",
+          "fix": "Review and fix security vulnerability"
+        },
+        {
+          "agent": "bug-hunter",
+          "microAgent": "security",
+          "severity": "high",
+          "type": "security-vulnerability",
+          "title": "dangerouslySetInnerHTML usage",
+          "file": "/app/admin/campaigns/new/page.js",
+          "description": "Security issue: dangerouslySetInnerHTML usage",
+          "fix": "Review and fix security vulnerability"
+        },
+        {
+          "agent": "bug-hunter",
+          "microAgent": "security",
+          "severity": "high",
+          "type": "security-vulnerability",
+          "title": "dangerouslySetInnerHTML usage",
+          "file": "/app/layout.js",
+          "description": "Security issue: dangerouslySetInnerHTML usage",
+          "fix": "Review and fix security vulnerability"
+        },
+        {
+          "agent": "bug-hunter",
+          "microAgent": "security",
+          "severity": "high",
+          "type": "security-vulnerability",
+          "title": "dangerouslySetInnerHTML usage",
+          "file": "/app/page.js",
+          "description": "Security issue: dangerouslySetInnerHTML usage",
+          "fix": "Review and fix security vulnerability"
+        },
+        {
+          "agent": "bug-hunter",
+          "microAgent": "security",
+          "severity": "high",
+          "type": "security-vulnerability",
+          "title": "dangerouslySetInnerHTML usage",
+          "file": "/app/product/[slug]/page.js",
+          "description": "Security issue: dangerouslySetInnerHTML usage",
+          "fix": "Review and fix security vulnerability"
+        },
+        {
+          "agent": "bug-hunter",
+          "microAgent": "security",
+          "severity": "high",
+          "type": "security-vulnerability",
+          "title": "dangerouslySetInnerHTML usage",
+          "file": "/lib/seo/structured-data.tsx",
+          "description": "Security issue: dangerouslySetInnerHTML usage",
+          "fix": "Review and fix security vulnerability"
+        },
+        {
+          "agent": "bug-hunter",
+          "microAgent": "security",
+          "severity": "high",
+          "type": "security-vulnerability",
+          "title": "dangerouslySetInnerHTML usage",
+          "file": "/components/IngredientsSchema.tsx",
+          "description": "Security issue: dangerouslySetInnerHTML usage",
+          "fix": "Review and fix security vulnerability"
+        },
+        {
+          "agent": "bug-hunter",
+          "microAgent": "security",
+          "severity": "high",
+          "type": "security-vulnerability",
+          "title": "dangerouslySetInnerHTML usage",
+          "file": "/components/SEOHead.tsx",
+          "description": "Security issue: dangerouslySetInnerHTML usage",
+          "fix": "Review and fix security vulnerability"
+        },
+        {
+          "agent": "bug-hunter",
+          "microAgent": "security",
+          "severity": "high",
+          "type": "security-vulnerability",
+          "title": "dangerouslySetInnerHTML usage",
+          "file": "/components/ui/chart.jsx",
+          "description": "Security issue: dangerouslySetInnerHTML usage",
+          "fix": "Review and fix security vulnerability"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/app/api/admin/emergency-init/route.ts",
+          "line": 63,
+          "description": "Found: console.log('[EMERGENCY-INIT] Admin already exists:', email);",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/app/api/cart/price/route.ts",
+          "line": 22,
+          "description": "Found: console.log('Calculating cart price for:', lines);",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/app/api/instagram/sync/route.ts",
+          "line": 42,
+          "description": "Found: console.log('Fetching Instagram posts...');",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/app/api/oauth/square/authorize/route.ts",
+          "line": 61,
+          "description": "Found: console.log('Redirecting to Square OAuth:', {",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/app/api/square/diagnose/route.ts",
+          "line": 23,
+          "description": "Found: console.log('Testing Square configuration...');",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/campaign-manager.js",
+          "line": 2,
+          "description": "Found: const debug = (...args) => { if (DEBUG) console.log('[CampaignManager]', ...args",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/crawler.ts",
+          "line": 3,
+          "description": "Found: const debug = (...args) => { if (DEBUG) console.log(...args); };",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/db-optimized.js",
+          "line": 62,
+          "description": "Found: console.log('✅ Database connected with connection pooling');",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/db-quiz.js",
+          "line": 91,
+          "description": "Found: console.log('✅ Quiz results saved:', quizId);",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/email/service.js",
+          "line": 124,
+          "description": "Found: console.log(`⛔ Email not sent - user preferences disabled: ${emailType} to ${to}",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/email.js",
+          "line": 29,
+          "description": "Found: console.log('📧 [REAL EMAIL] Sent to:', to);",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/explore/game-engine.js",
+          "line": 77,
+          "description": "Found: console.log(`🏁 Game ended: ${gameId}`, result);",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/explore/kiosk-mode.js",
+          "line": 73,
+          "description": "Found: console.log('🖥️ Kiosk mode disabled');",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/logger.js",
+          "line": 119,
+          "description": "Found: console.log(`ℹ️ [${category}] ${message}`, data);",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/monitoring.js",
+          "line": 46,
+          "description": "Found: console.log(`Payment Metric: ${success ? '✅' : '❌'} ${paymentData.amount} (${dur",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/order-status-notifier.js",
+          "line": 20,
+          "description": "Found: console.log(`ℹ️ No notification needed for ${oldStatus} → ${newStatus}`);",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/payment-orchestrator.js",
+          "line": 217,
+          "description": "Found: console.log(`Stripe checkout attempt ${attempt}/${maxRetries}`);",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/resend-email.js",
+          "line": 34,
+          "description": "Found: console.log('📧 [RESEND] Email sent to:', to);",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/sms.js",
+          "line": 39,
+          "description": "Found: console.log('📱 [REAL SMS] Sent:', result.sid);",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "low",
+          "type": "console-log",
+          "title": "Console.log in production code",
+          "file": "/lib/staff-notifications.js",
+          "line": 328,
+          "description": "Found: console.log('📧 Status change notification sent:', { orderNumber: order.orderNum",
+          "fix": "Remove or replace console-log"
+        },
+        {
+          "agent": "bug-hunter",
+          "severity": "medium",
+          "type": "as-any",
+          "title": "Unsafe any type assertion",
+          "file": "/lib/transactions.ts",
+          "line": 120,
+          "description": "Found: } as any,",
+          "fix": "Remove or replace as-any"
+        }
+      ],
+      "stats": {
+        "filesScanned": 415,
+        "testsRun": 7
+      }
+    },
+    "psycho-marketer": {
+      "agent": "psycho-marketer",
+      "duration": 173,
+      "issues": [
+        {
+          "agent": "psycho-marketer",
+          "severity": "medium",
+          "type": "messaging-issue",
+          "title": "Urgency overload",
+          "file": "/components/EnhancedProductCard.jsx",
+          "description": "13 instances found (threshold: 5)",
+          "fix": "Reduce intensity or add substantive value propositions"
+        },
+        {
+          "agent": "psycho-marketer",
+          "severity": "medium",
+          "type": "messaging-issue",
+          "title": "Urgency overload",
+          "file": "/components/SimulatedPaymentForm.jsx",
+          "description": "10 instances found (threshold: 5)",
+          "fix": "Reduce intensity or add substantive value propositions"
+        },
+        {
+          "agent": "psycho-marketer",
+          "microAgent": "bias",
+          "severity": "medium",
+          "type": "manipulative-pattern",
+          "title": "False scarcity",
+          "file": "/app/admin/inventory/page.js",
+          "fix": "Ensure scarcity claims are accurate"
+        },
+        {
+          "agent": "psycho-marketer",
+          "microAgent": "bias",
+          "severity": "medium",
+          "type": "manipulative-pattern",
+          "title": "False scarcity",
+          "file": "/app/admin/page.js",
+          "fix": "Ensure scarcity claims are accurate"
+        },
+        {
+          "agent": "psycho-marketer",
+          "microAgent": "bias",
+          "severity": "medium",
+          "type": "manipulative-pattern",
+          "title": "False scarcity",
+          "file": "/app/api/admin/dashboard/route.js",
+          "fix": "Ensure scarcity claims are accurate"
+        },
+        {
+          "agent": "psycho-marketer",
+          "microAgent": "bias",
+          "severity": "medium",
+          "type": "manipulative-pattern",
+          "title": "False scarcity",
+          "file": "/app/api/admin/init/route.js",
+          "fix": "Ensure scarcity claims are accurate"
+        },
+        {
+          "agent": "psycho-marketer",
+          "microAgent": "bias",
+          "severity": "medium",
+          "type": "manipulative-pattern",
+          "title": "False scarcity",
+          "file": "/app/api/webhooks/inventory/route.js",
+          "fix": "Ensure scarcity claims are accurate"
+        },
+        {
+          "agent": "psycho-marketer",
+          "microAgent": "bias",
+          "severity": "medium",
+          "type": "manipulative-pattern",
+          "title": "False scarcity",
+          "file": "/components/psychology/ScarcityBadge.jsx",
+          "fix": "Ensure scarcity claims are accurate"
+        }
+      ],
+      "stats": {
+        "messagingScore": 80,
+        "ctaCount": 329,
+        "toneConsistency": 54
+      }
+    },
+    "uiux-predator": {
+      "agent": "uiux-predator",
+      "duration": 119,
+      "issues": [
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/AddToCalendarButton.jsx",
+          "line": 146,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/CartBadge.tsx",
+          "line": 80,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/CouponInput.jsx",
+          "line": 146,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "disabled-no-cursor",
+          "title": "Disabled state without visual cursor feedback",
+          "file": "/components/CouponInput.jsx",
+          "line": 131,
+          "fix": "Review and fix: disabled-no-cursor"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/EnhancedFulfillmentSelector.jsx",
+          "line": 106,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/EnhancedMarketCard.jsx",
+          "line": 171,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/EnhancedProductCard.jsx",
+          "line": 101,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/FitQuiz.jsx",
+          "line": 539,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "high",
+          "type": "img-no-alt",
+          "title": "Image missing alt attribute",
+          "file": "/components/FloatingCart.jsx",
+          "line": 200,
+          "fix": "Review and fix: img-no-alt"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/FloatingCart.jsx",
+          "line": 308,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/Footer.jsx",
+          "line": 29,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/IngredientDeepDiveModal.jsx",
+          "line": 210,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/InstagramFeed.jsx",
+          "line": 100,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "high",
+          "type": "img-no-alt",
+          "title": "Image missing alt attribute",
+          "file": "/components/MarketPassport.jsx",
+          "line": 191,
+          "fix": "Review and fix: img-no-alt"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/MarketPassport.jsx",
+          "line": 225,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/NewsletterSignup.jsx",
+          "line": 138,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/ProductCard.jsx",
+          "line": 89,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/ProductImage.jsx",
+          "line": 67,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/ProductQuickView.jsx",
+          "line": 67,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "high",
+          "type": "img-no-alt",
+          "title": "Image missing alt attribute",
+          "file": "/components/ProductQuickView.jsx",
+          "line": 79,
+          "fix": "Review and fix: img-no-alt"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/ProductReviews.jsx",
+          "line": 124,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/QuickViewModal.jsx",
+          "line": 166,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/QuickViewModal.jsx",
+          "line": 177,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/RecommendationsWidget.jsx",
+          "line": 153,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/SearchEnhanced.jsx",
+          "line": 191,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "high",
+          "type": "img-no-alt",
+          "title": "Image missing alt attribute",
+          "file": "/components/SearchEnhanced.jsx",
+          "line": 270,
+          "fix": "Review and fix: img-no-alt"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/SearchEnhanced.jsx",
+          "line": 256,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/SimulatedPaymentForm.jsx",
+          "line": 334,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/SpinTracker.jsx",
+          "line": 225,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/SpinTracker.jsx",
+          "line": 135,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/SpinWheel.jsx",
+          "line": 472,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/SquarePaymentForm.jsx",
+          "line": 271,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/SquareWebPaymentForm.jsx",
+          "line": 234,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/SquareWebPaymentForm.jsx",
+          "line": 291,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/StarRating.jsx",
+          "line": 32,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/UGCChallenge.jsx",
+          "line": 301,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/VariantSelector.jsx",
+          "line": 66,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/WhatsNewModal.jsx",
+          "line": 108,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/cart/CartNotification.jsx",
+          "line": 50,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "high",
+          "type": "img-no-alt",
+          "title": "Image missing alt attribute",
+          "file": "/components/cart/EnhancedFloatingCart.jsx",
+          "line": 243,
+          "fix": "Review and fix: img-no-alt"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/cart/EnhancedFloatingCart.jsx",
+          "line": 148,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/checkout/CartSummary.tsx",
+          "line": 124,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/checkout/CartSummary.tsx",
+          "line": 115,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/checkout/ContactForm.tsx",
+          "line": 74,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/checkout/DeliveryForm.tsx",
+          "line": 78,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/checkout/FulfillmentTabs.tsx",
+          "line": 31,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/checkout/PickupForm.tsx",
+          "line": 79,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/checkout/ReviewAndPay.tsx",
+          "line": 170,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/checkout/ReviewAndPay.tsx",
+          "line": 104,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/checkout/ShippingForm.tsx",
+          "line": 118,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/explore/games/BlendMaker.jsx",
+          "line": 121,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/explore/games/BlendMaker.jsx",
+          "line": 223,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/explore/games/IngredientQuiz.jsx",
+          "line": 201,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/explore/games/IngredientRush.jsx",
+          "line": 269,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/explore/games/MemoryMatch.jsx",
+          "line": 183,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/explore/games/MemoryMatch.jsx",
+          "line": 120,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/ingredients/CitationTooltip.tsx",
+          "line": 28,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/ingredients/FootnotesList.tsx",
+          "line": 68,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/ingredients/IngredientCard.tsx",
+          "line": 64,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "small-text",
+          "title": "Very small text (text-xs) may be hard to read",
+          "file": "/components/psychology/SocialProof.jsx",
+          "line": 89,
+          "fix": "Review and fix: small-text"
+        },
+        {
+          "agent": "uiux-predator",
+          "severity": "low",
+          "type": "button-no-type",
+          "title": "Button without explicit type attribute",
+          "file": "/components/ui/sidebar.jsx",
+          "line": 256,
+          "fix": "Review and fix: button-no-type"
+        },
+        {
+          "agent": "uiux-predator",
+          "microAgent": "access",
+          "severity": "high",
+          "type": "low-a11y-score",
+          "title": "Accessibility score: 0/100",
+          "description": "Multiple accessibility issues detected",
+          "fix": "Add ARIA labels, semantic HTML, and focus indicators"
+        },
+        {
+          "agent": "uiux-predator",
+          "microAgent": "access",
+          "severity": "high",
+          "type": "input-no-label",
+          "title": "Input without associated label",
+          "file": "/components/ui/input.tsx",
+          "fix": "Add label element or aria-label attribute"
+        },
+        {
+          "agent": "uiux-predator",
+          "microAgent": "flow",
+          "severity": "low",
+          "type": "deep-route",
+          "title": "Deeply nested route",
+          "file": "/api/admin/products/[id]/sync",
+          "description": "Route depth: 6 levels",
+          "fix": "Consider flattening navigation structure"
+        },
+        {
+          "agent": "uiux-predator",
+          "microAgent": "mobile",
+          "severity": "medium",
+          "type": "small-tap-target",
+          "title": "Potentially small tap target",
+          "file": "/components/AnimatedButton.jsx",
+          "description": "Found w-4 with click handler - may be < 44x44px",
+          "fix": "Ensure tap targets are at least 44x44px"
+        },
+        {
+          "agent": "uiux-predator",
+          "microAgent": "mobile",
+          "severity": "medium",
+          "type": "small-tap-target",
+          "title": "Potentially small tap target",
+          "file": "/components/Header.jsx",
+          "description": "Found w-4 with click handler - may be < 44x44px",
+          "fix": "Ensure tap targets are at least 44x44px"
+        },
+        {
+          "agent": "uiux-predator",
+          "microAgent": "mobile",
+          "severity": "medium",
+          "type": "small-tap-target",
+          "title": "Potentially small tap target",
+          "file": "/components/QuickAddButton.jsx",
+          "description": "Found w-4 with click handler - may be < 44x44px",
+          "fix": "Ensure tap targets are at least 44x44px"
+        },
+        {
+          "agent": "uiux-predator",
+          "microAgent": "mobile",
+          "severity": "medium",
+          "type": "small-tap-target",
+          "title": "Potentially small tap target",
+          "file": "/components/SquareProductButton.jsx",
+          "description": "Found w-4 with click handler - may be < 44x44px",
+          "fix": "Ensure tap targets are at least 44x44px"
+        },
+        {
+          "agent": "uiux-predator",
+          "microAgent": "mobile",
+          "severity": "medium",
+          "type": "small-tap-target",
+          "title": "Potentially small tap target",
+          "file": "/components/StarRating.jsx",
+          "description": "Found w-4 with click handler - may be < 44x44px",
+          "fix": "Ensure tap targets are at least 44x44px"
+        },
+        {
+          "agent": "uiux-predator",
+          "microAgent": "mobile",
+          "severity": "medium",
+          "type": "small-tap-target",
+          "title": "Potentially small tap target",
+          "file": "/components/explore/interactive/IngredientCard.jsx",
+          "description": "Found w-4 with click handler - may be < 44x44px",
+          "fix": "Ensure tap targets are at least 44x44px"
+        },
+        {
+          "agent": "uiux-predator",
+          "microAgent": "mobile",
+          "severity": "medium",
+          "type": "small-tap-target",
+          "title": "Potentially small tap target",
+          "file": "/components/ui/carousel.jsx",
+          "description": "Found w-4 with click handler - may be < 44x44px",
+          "fix": "Ensure tap targets are at least 44x44px"
+        }
+      ],
+      "stats": {
+        "componentsScanned": 123,
+        "accessibilityScore": 0
+      }
+    },
+    "log-devourer": {
+      "agent": "log-devourer",
+      "duration": 86,
+      "issues": [
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/tracking/user/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/ugc/submit/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/user/challenge/checkin/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/user/challenge/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/user/favorites/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/user/orders/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/user/profile/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/user/rewards/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/user/stats/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/api/waitlist/route.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/catalog/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/checkout/square/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/checkout/success/CheckoutSuccessPage.client.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/explore/ingredients/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/layout.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/order/success/page-enhanced.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/product/[slug]/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/profile/challenge/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/profile/orders/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/profile/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/profile/rewards/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/profile/settings/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/quiz/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/quiz/results/[id]/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "severity": "medium",
+          "type": "error-no-stack",
+          "title": "Error logged without stack trace",
+          "file": "/app/rewards/page.js",
+          "fix": "Include error.stack or full error object"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "missing-JSON-formatting",
+          "title": "Logger missing JSON formatting",
+          "file": "/lib/logger.js",
+          "fix": "Add JSON formatting to logger"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/analytics/campaigns/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/analytics/customers/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/analytics/sales/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/auth/logout/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/auth/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/campaigns/generate/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/campaigns/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/campaigns/send/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/customers/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/email-preview/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "missing-trace-context",
+          "title": "Missing orderId in logs",
+          "file": "/app/api/admin/orders/route.js",
+          "fix": "Include orderId in log context"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "missing-trace-context",
+          "title": "Missing userId in logs",
+          "file": "/app/api/admin/orders/update-status/route.js",
+          "fix": "Include userId in log context"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/products/[id]/sync/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/products/sync/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/admin/setup/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/analytics/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/auth/login/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/auth/logout/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/auth/register/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/auth/session/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "missing-trace-context",
+          "title": "Missing userId in logs",
+          "file": "/app/api/checkout/route.ts",
+          "fix": "Include userId in log context"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/coupons/create/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/coupons/validate/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "missing-trace-context",
+          "title": "Missing userId in logs",
+          "file": "/app/api/create-checkout/route.ts",
+          "fix": "Include userId in log context"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/cron/morning-reminders/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/cron/pickup-reminders/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/csp-report/route.ts",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/customers/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/debug/logs/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/email/send-coupon/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/email/send-newsletter-confirmation/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/email/send-order-confirmation/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "missing-trace-context",
+          "title": "Missing orderId in logs",
+          "file": "/app/api/email/send-order-confirmation/route.js",
+          "fix": "Include orderId in log context"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/email/send-order-status/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "missing-trace-context",
+          "title": "Missing orderId in logs",
+          "file": "/app/api/email/send-order-status/route.js",
+          "fix": "Include orderId in log context"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/email/send-welcome/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/email/test/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/emails/queue/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/emails/test/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/health/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/ics/market-route/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/ingredients/[slug]/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/ingredients/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/instagram/post/[slug]/route.ts",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/instagram/posts/route.ts",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/newsletter/subscribe/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/oauth/square/status/route.ts",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "missing-trace-context",
+          "title": "Missing userId in logs",
+          "file": "/app/api/orders/[id]/route.js",
+          "fix": "Include userId in log context"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "missing-trace-context",
+          "title": "Missing userId in logs",
+          "file": "/app/api/orders/by-ref/route.js",
+          "fix": "Include userId in log context"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "missing-trace-context",
+          "title": "Missing userId in logs",
+          "file": "/app/api/orders/create/route.js",
+          "fix": "Include userId in log context"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "missing-trace-context",
+          "title": "Missing userId in logs",
+          "file": "/app/api/payments/route.ts",
+          "fix": "Include userId in log context"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/pos/callback/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/quiz/analytics/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/quiz/conversion-webhook/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/quiz/email-scheduler/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/quiz/recommendations/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/quiz/results/[id]/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/quiz/submit/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/recommendations/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/reviews/[id]/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/reviews/analytics/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/reviews/upload/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/rewards/add-points/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/rewards/leaderboard/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/rewards/passport/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/rewards/redeem/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/rewards/stamp/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/search/enhanced/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/seo/analyze/route.ts",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/square/create-checkout/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "missing-trace-context",
+          "title": "Missing userId in logs",
+          "file": "/app/api/square/create-checkout/route.js",
+          "fix": "Include userId in log context"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/square/test-token/route.ts",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/startup/route.ts",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "missing-trace-context",
+          "title": "Missing userId in logs",
+          "file": "/app/api/stripe/create-checkout/route.js",
+          "fix": "Include userId in log context"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/tracking/user/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/transactions/log/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/transactions/stats/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/ugc/submit/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/unified/products/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/unified/sync/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/user/challenge/checkin/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/user/challenge/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/user/email-preferences/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/user/favorites/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/user/orders/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "missing-trace-context",
+          "title": "Missing orderId in logs",
+          "file": "/app/api/user/orders/route.js",
+          "fix": "Include orderId in log context"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/user/profile/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/user/rewards/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/user/stats/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "api-no-logging",
+          "title": "API route without logging",
+          "file": "/app/api/waitlist/route.js",
+          "fix": "Add request/response logging"
+        },
+        {
+          "agent": "log-devourer",
+          "microAgent": "trace",
+          "severity": "medium",
+          "type": "no-request-id",
+          "title": "No request ID generation in middleware",
+          "file": "/middleware.ts",
+          "fix": "Generate unique request ID for tracing"
+        }
+      ],
+      "stats": {
+        "filesWithLogging": 208,
+        "consoleLogCount": 380,
+        "structuredLogCount": 443
+      }
+    },
+    "opti-beast": {
+      "agent": "opti-beast",
+      "duration": 62,
+      "issues": [
+        {
+          "agent": "opti-beast",
+          "severity": "high",
+          "type": "bundle-size",
+          "title": "Bundle size exceeds 2MB",
+          "description": "Total bundle: 2.37MB",
+          "fix": "Enable code splitting, lazy loading, and tree shaking"
+        },
+        {
+          "agent": "opti-beast",
+          "severity": "medium",
+          "type": "large-chunk",
+          "title": "Large JavaScript chunk",
+          "file": "/.next/static/chunks/vendors-b87af8a6-5bed8642b1dbc26c.js",
+          "description": "Size: 332.3KB",
+          "fix": "Split this chunk or lazy load components"
+        }
+      ],
+      "stats": {
+        "bundleSize": 2488289,
+        "assetCount": 2
+      }
+    },
+    "trust-guardian": {
+      "agent": "trust-guardian",
+      "duration": 57,
+      "issues": [
+        {
+          "agent": "trust-guardian",
+          "severity": "medium",
+          "type": "scattered-pricing",
+          "title": "Pricing scattered across files",
+          "description": "8 files with hardcoded prices",
+          "estimatedLoss": 0.005,
+          "fix": "Centralize pricing in a constants file or API"
+        },
+        {
+          "agent": "trust-guardian",
+          "microAgent": "review",
+          "severity": "low",
+          "type": "risky-claim",
+          "title": "Superlative claim (may need substantiation)",
+          "file": "/app/(site)/instagram/[slug]/page.tsx",
+          "estimatedLoss": 0.01,
+          "fix": "Review claim for compliance and accuracy"
+        },
+        {
+          "agent": "trust-guardian",
+          "microAgent": "content",
+          "severity": "medium",
+          "type": "brand-inconsistency",
+          "title": "Brand name variations detected",
+          "description": "Found variations: taste of gratitude, tasteofgratitude",
+          "estimatedLoss": 0.01,
+          "fix": "Standardize brand name across all content"
+        },
+        {
+          "agent": "trust-guardian",
+          "microAgent": "content",
+          "severity": "medium",
+          "type": "content-inconsistency",
+          "title": "Content inconsistency: price-variation",
+          "file": "/components/SpinWheel.jsx",
+          "description": "4 different prices shown",
+          "estimatedLoss": 0.01,
+          "fix": "Review and align content messaging"
+        }
+      ],
+      "stats": {
+        "trustScore": 95,
+        "estimatedRevenueLoss": 0.035,
+        "contentDrift": 0
+      }
+    }
+  },
+  "issues": [
+    {
+      "agent": "bug-hunter",
+      "microAgent": "type-checker",
+      "severity": "medium",
+      "type": "typescript-error",
+      "title": "TypeScript Error",
+      "file": "lib/fulfillment.ts",
+      "line": 293,
+      "description": "Expected 1-2 arguments, but got 3.",
+      "fix": "Fix type annotation or add proper typing"
+    },
+    {
+      "agent": "bug-hunter",
+      "microAgent": "type-checker",
+      "severity": "medium",
+      "type": "typescript-error",
+      "title": "TypeScript Error",
+      "file": "lib/square.ts",
+      "line": 64,
+      "description": "Object literal may only specify known properties, and 'accessToken' does not exist in type 'Options'.",
+      "fix": "Fix type annotation or add proper typing"
+    },
+    {
+      "agent": "bug-hunter",
+      "microAgent": "type-checker",
+      "severity": "medium",
+      "type": "typescript-error",
+      "title": "TypeScript Error",
+      "file": "lib/transactions.ts",
+      "line": 80,
+      "description": "No overload matches this call.",
+      "fix": "Fix type annotation or add proper typing"
+    },
+    {
+      "agent": "bug-hunter",
+      "microAgent": "security",
+      "severity": "high",
+      "type": "security-vulnerability",
+      "title": "dangerouslySetInnerHTML usage",
+      "file": "/app/(site)/instagram/[slug]/page.tsx",
+      "description": "Security issue: dangerouslySetInnerHTML usage",
+      "fix": "Review and fix security vulnerability"
+    },
+    {
+      "agent": "bug-hunter",
+      "microAgent": "security",
+      "severity": "high",
+      "type": "security-vulnerability",
+      "title": "dangerouslySetInnerHTML usage",
+      "file": "/app/admin/campaigns/new/page.js",
+      "description": "Security issue: dangerouslySetInnerHTML usage",
+      "fix": "Review and fix security vulnerability"
+    },
+    {
+      "agent": "bug-hunter",
+      "microAgent": "security",
+      "severity": "high",
+      "type": "security-vulnerability",
+      "title": "dangerouslySetInnerHTML usage",
+      "file": "/app/layout.js",
+      "description": "Security issue: dangerouslySetInnerHTML usage",
+      "fix": "Review and fix security vulnerability"
+    },
+    {
+      "agent": "bug-hunter",
+      "microAgent": "security",
+      "severity": "high",
+      "type": "security-vulnerability",
+      "title": "dangerouslySetInnerHTML usage",
+      "file": "/app/page.js",
+      "description": "Security issue: dangerouslySetInnerHTML usage",
+      "fix": "Review and fix security vulnerability"
+    },
+    {
+      "agent": "bug-hunter",
+      "microAgent": "security",
+      "severity": "high",
+      "type": "security-vulnerability",
+      "title": "dangerouslySetInnerHTML usage",
+      "file": "/app/product/[slug]/page.js",
+      "description": "Security issue: dangerouslySetInnerHTML usage",
+      "fix": "Review and fix security vulnerability"
+    },
+    {
+      "agent": "bug-hunter",
+      "microAgent": "security",
+      "severity": "high",
+      "type": "security-vulnerability",
+      "title": "dangerouslySetInnerHTML usage",
+      "file": "/lib/seo/structured-data.tsx",
+      "description": "Security issue: dangerouslySetInnerHTML usage",
+      "fix": "Review and fix security vulnerability"
+    },
+    {
+      "agent": "bug-hunter",
+      "microAgent": "security",
+      "severity": "high",
+      "type": "security-vulnerability",
+      "title": "dangerouslySetInnerHTML usage",
+      "file": "/components/IngredientsSchema.tsx",
+      "description": "Security issue: dangerouslySetInnerHTML usage",
+      "fix": "Review and fix security vulnerability"
+    },
+    {
+      "agent": "bug-hunter",
+      "microAgent": "security",
+      "severity": "high",
+      "type": "security-vulnerability",
+      "title": "dangerouslySetInnerHTML usage",
+      "file": "/components/SEOHead.tsx",
+      "description": "Security issue: dangerouslySetInnerHTML usage",
+      "fix": "Review and fix security vulnerability"
+    },
+    {
+      "agent": "bug-hunter",
+      "microAgent": "security",
+      "severity": "high",
+      "type": "security-vulnerability",
+      "title": "dangerouslySetInnerHTML usage",
+      "file": "/components/ui/chart.jsx",
+      "description": "Security issue: dangerouslySetInnerHTML usage",
+      "fix": "Review and fix security vulnerability"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/app/api/admin/emergency-init/route.ts",
+      "line": 63,
+      "description": "Found: console.log('[EMERGENCY-INIT] Admin already exists:', email);",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/app/api/cart/price/route.ts",
+      "line": 22,
+      "description": "Found: console.log('Calculating cart price for:', lines);",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/app/api/instagram/sync/route.ts",
+      "line": 42,
+      "description": "Found: console.log('Fetching Instagram posts...');",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/app/api/oauth/square/authorize/route.ts",
+      "line": 61,
+      "description": "Found: console.log('Redirecting to Square OAuth:', {",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/app/api/square/diagnose/route.ts",
+      "line": 23,
+      "description": "Found: console.log('Testing Square configuration...');",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/campaign-manager.js",
+      "line": 2,
+      "description": "Found: const debug = (...args) => { if (DEBUG) console.log('[CampaignManager]', ...args",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/crawler.ts",
+      "line": 3,
+      "description": "Found: const debug = (...args) => { if (DEBUG) console.log(...args); };",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/db-optimized.js",
+      "line": 62,
+      "description": "Found: console.log('✅ Database connected with connection pooling');",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/db-quiz.js",
+      "line": 91,
+      "description": "Found: console.log('✅ Quiz results saved:', quizId);",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/email/service.js",
+      "line": 124,
+      "description": "Found: console.log(`⛔ Email not sent - user preferences disabled: ${emailType} to ${to}",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/email.js",
+      "line": 29,
+      "description": "Found: console.log('📧 [REAL EMAIL] Sent to:', to);",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/explore/game-engine.js",
+      "line": 77,
+      "description": "Found: console.log(`🏁 Game ended: ${gameId}`, result);",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/explore/kiosk-mode.js",
+      "line": 73,
+      "description": "Found: console.log('🖥️ Kiosk mode disabled');",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/logger.js",
+      "line": 119,
+      "description": "Found: console.log(`ℹ️ [${category}] ${message}`, data);",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/monitoring.js",
+      "line": 46,
+      "description": "Found: console.log(`Payment Metric: ${success ? '✅' : '❌'} ${paymentData.amount} (${dur",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/order-status-notifier.js",
+      "line": 20,
+      "description": "Found: console.log(`ℹ️ No notification needed for ${oldStatus} → ${newStatus}`);",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/payment-orchestrator.js",
+      "line": 217,
+      "description": "Found: console.log(`Stripe checkout attempt ${attempt}/${maxRetries}`);",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/resend-email.js",
+      "line": 34,
+      "description": "Found: console.log('📧 [RESEND] Email sent to:', to);",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/sms.js",
+      "line": 39,
+      "description": "Found: console.log('📱 [REAL SMS] Sent:', result.sid);",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "low",
+      "type": "console-log",
+      "title": "Console.log in production code",
+      "file": "/lib/staff-notifications.js",
+      "line": 328,
+      "description": "Found: console.log('📧 Status change notification sent:', { orderNumber: order.orderNum",
+      "fix": "Remove or replace console-log"
+    },
+    {
+      "agent": "bug-hunter",
+      "severity": "medium",
+      "type": "as-any",
+      "title": "Unsafe any type assertion",
+      "file": "/lib/transactions.ts",
+      "line": 120,
+      "description": "Found: } as any,",
+      "fix": "Remove or replace as-any"
+    },
+    {
+      "agent": "psycho-marketer",
+      "severity": "medium",
+      "type": "messaging-issue",
+      "title": "Urgency overload",
+      "file": "/components/EnhancedProductCard.jsx",
+      "description": "13 instances found (threshold: 5)",
+      "fix": "Reduce intensity or add substantive value propositions"
+    },
+    {
+      "agent": "psycho-marketer",
+      "severity": "medium",
+      "type": "messaging-issue",
+      "title": "Urgency overload",
+      "file": "/components/SimulatedPaymentForm.jsx",
+      "description": "10 instances found (threshold: 5)",
+      "fix": "Reduce intensity or add substantive value propositions"
+    },
+    {
+      "agent": "psycho-marketer",
+      "microAgent": "bias",
+      "severity": "medium",
+      "type": "manipulative-pattern",
+      "title": "False scarcity",
+      "file": "/app/admin/inventory/page.js",
+      "fix": "Ensure scarcity claims are accurate"
+    },
+    {
+      "agent": "psycho-marketer",
+      "microAgent": "bias",
+      "severity": "medium",
+      "type": "manipulative-pattern",
+      "title": "False scarcity",
+      "file": "/app/admin/page.js",
+      "fix": "Ensure scarcity claims are accurate"
+    },
+    {
+      "agent": "psycho-marketer",
+      "microAgent": "bias",
+      "severity": "medium",
+      "type": "manipulative-pattern",
+      "title": "False scarcity",
+      "file": "/app/api/admin/dashboard/route.js",
+      "fix": "Ensure scarcity claims are accurate"
+    },
+    {
+      "agent": "psycho-marketer",
+      "microAgent": "bias",
+      "severity": "medium",
+      "type": "manipulative-pattern",
+      "title": "False scarcity",
+      "file": "/app/api/admin/init/route.js",
+      "fix": "Ensure scarcity claims are accurate"
+    },
+    {
+      "agent": "psycho-marketer",
+      "microAgent": "bias",
+      "severity": "medium",
+      "type": "manipulative-pattern",
+      "title": "False scarcity",
+      "file": "/app/api/webhooks/inventory/route.js",
+      "fix": "Ensure scarcity claims are accurate"
+    },
+    {
+      "agent": "psycho-marketer",
+      "microAgent": "bias",
+      "severity": "medium",
+      "type": "manipulative-pattern",
+      "title": "False scarcity",
+      "file": "/components/psychology/ScarcityBadge.jsx",
+      "fix": "Ensure scarcity claims are accurate"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/AddToCalendarButton.jsx",
+      "line": 146,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/CartBadge.tsx",
+      "line": 80,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/CouponInput.jsx",
+      "line": 146,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "disabled-no-cursor",
+      "title": "Disabled state without visual cursor feedback",
+      "file": "/components/CouponInput.jsx",
+      "line": 131,
+      "fix": "Review and fix: disabled-no-cursor"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/EnhancedFulfillmentSelector.jsx",
+      "line": 106,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/EnhancedMarketCard.jsx",
+      "line": 171,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/EnhancedProductCard.jsx",
+      "line": 101,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/FitQuiz.jsx",
+      "line": 539,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "high",
+      "type": "img-no-alt",
+      "title": "Image missing alt attribute",
+      "file": "/components/FloatingCart.jsx",
+      "line": 200,
+      "fix": "Review and fix: img-no-alt"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/FloatingCart.jsx",
+      "line": 308,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/Footer.jsx",
+      "line": 29,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/IngredientDeepDiveModal.jsx",
+      "line": 210,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/InstagramFeed.jsx",
+      "line": 100,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "high",
+      "type": "img-no-alt",
+      "title": "Image missing alt attribute",
+      "file": "/components/MarketPassport.jsx",
+      "line": 191,
+      "fix": "Review and fix: img-no-alt"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/MarketPassport.jsx",
+      "line": 225,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/NewsletterSignup.jsx",
+      "line": 138,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/ProductCard.jsx",
+      "line": 89,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/ProductImage.jsx",
+      "line": 67,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/ProductQuickView.jsx",
+      "line": 67,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "high",
+      "type": "img-no-alt",
+      "title": "Image missing alt attribute",
+      "file": "/components/ProductQuickView.jsx",
+      "line": 79,
+      "fix": "Review and fix: img-no-alt"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/ProductReviews.jsx",
+      "line": 124,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/QuickViewModal.jsx",
+      "line": 166,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/QuickViewModal.jsx",
+      "line": 177,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/RecommendationsWidget.jsx",
+      "line": 153,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/SearchEnhanced.jsx",
+      "line": 191,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "high",
+      "type": "img-no-alt",
+      "title": "Image missing alt attribute",
+      "file": "/components/SearchEnhanced.jsx",
+      "line": 270,
+      "fix": "Review and fix: img-no-alt"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/SearchEnhanced.jsx",
+      "line": 256,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/SimulatedPaymentForm.jsx",
+      "line": 334,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/SpinTracker.jsx",
+      "line": 225,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/SpinTracker.jsx",
+      "line": 135,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/SpinWheel.jsx",
+      "line": 472,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/SquarePaymentForm.jsx",
+      "line": 271,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/SquareWebPaymentForm.jsx",
+      "line": 234,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/SquareWebPaymentForm.jsx",
+      "line": 291,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/StarRating.jsx",
+      "line": 32,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/UGCChallenge.jsx",
+      "line": 301,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/VariantSelector.jsx",
+      "line": 66,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/WhatsNewModal.jsx",
+      "line": 108,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/cart/CartNotification.jsx",
+      "line": 50,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "high",
+      "type": "img-no-alt",
+      "title": "Image missing alt attribute",
+      "file": "/components/cart/EnhancedFloatingCart.jsx",
+      "line": 243,
+      "fix": "Review and fix: img-no-alt"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/cart/EnhancedFloatingCart.jsx",
+      "line": 148,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/checkout/CartSummary.tsx",
+      "line": 124,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/checkout/CartSummary.tsx",
+      "line": 115,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/checkout/ContactForm.tsx",
+      "line": 74,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/checkout/DeliveryForm.tsx",
+      "line": 78,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/checkout/FulfillmentTabs.tsx",
+      "line": 31,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/checkout/PickupForm.tsx",
+      "line": 79,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/checkout/ReviewAndPay.tsx",
+      "line": 170,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/checkout/ReviewAndPay.tsx",
+      "line": 104,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/checkout/ShippingForm.tsx",
+      "line": 118,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/explore/games/BlendMaker.jsx",
+      "line": 121,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/explore/games/BlendMaker.jsx",
+      "line": 223,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/explore/games/IngredientQuiz.jsx",
+      "line": 201,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/explore/games/IngredientRush.jsx",
+      "line": 269,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/explore/games/MemoryMatch.jsx",
+      "line": 183,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/explore/games/MemoryMatch.jsx",
+      "line": 120,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/ingredients/CitationTooltip.tsx",
+      "line": 28,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/ingredients/FootnotesList.tsx",
+      "line": 68,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/ingredients/IngredientCard.tsx",
+      "line": 64,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "small-text",
+      "title": "Very small text (text-xs) may be hard to read",
+      "file": "/components/psychology/SocialProof.jsx",
+      "line": 89,
+      "fix": "Review and fix: small-text"
+    },
+    {
+      "agent": "uiux-predator",
+      "severity": "low",
+      "type": "button-no-type",
+      "title": "Button without explicit type attribute",
+      "file": "/components/ui/sidebar.jsx",
+      "line": 256,
+      "fix": "Review and fix: button-no-type"
+    },
+    {
+      "agent": "uiux-predator",
+      "microAgent": "access",
+      "severity": "high",
+      "type": "low-a11y-score",
+      "title": "Accessibility score: 0/100",
+      "description": "Multiple accessibility issues detected",
+      "fix": "Add ARIA labels, semantic HTML, and focus indicators"
+    },
+    {
+      "agent": "uiux-predator",
+      "microAgent": "access",
+      "severity": "high",
+      "type": "input-no-label",
+      "title": "Input without associated label",
+      "file": "/components/ui/input.tsx",
+      "fix": "Add label element or aria-label attribute"
+    },
+    {
+      "agent": "uiux-predator",
+      "microAgent": "flow",
+      "severity": "low",
+      "type": "deep-route",
+      "title": "Deeply nested route",
+      "file": "/api/admin/products/[id]/sync",
+      "description": "Route depth: 6 levels",
+      "fix": "Consider flattening navigation structure"
+    },
+    {
+      "agent": "uiux-predator",
+      "microAgent": "mobile",
+      "severity": "medium",
+      "type": "small-tap-target",
+      "title": "Potentially small tap target",
+      "file": "/components/AnimatedButton.jsx",
+      "description": "Found w-4 with click handler - may be < 44x44px",
+      "fix": "Ensure tap targets are at least 44x44px"
+    },
+    {
+      "agent": "uiux-predator",
+      "microAgent": "mobile",
+      "severity": "medium",
+      "type": "small-tap-target",
+      "title": "Potentially small tap target",
+      "file": "/components/Header.jsx",
+      "description": "Found w-4 with click handler - may be < 44x44px",
+      "fix": "Ensure tap targets are at least 44x44px"
+    },
+    {
+      "agent": "uiux-predator",
+      "microAgent": "mobile",
+      "severity": "medium",
+      "type": "small-tap-target",
+      "title": "Potentially small tap target",
+      "file": "/components/QuickAddButton.jsx",
+      "description": "Found w-4 with click handler - may be < 44x44px",
+      "fix": "Ensure tap targets are at least 44x44px"
+    },
+    {
+      "agent": "uiux-predator",
+      "microAgent": "mobile",
+      "severity": "medium",
+      "type": "small-tap-target",
+      "title": "Potentially small tap target",
+      "file": "/components/SquareProductButton.jsx",
+      "description": "Found w-4 with click handler - may be < 44x44px",
+      "fix": "Ensure tap targets are at least 44x44px"
+    },
+    {
+      "agent": "uiux-predator",
+      "microAgent": "mobile",
+      "severity": "medium",
+      "type": "small-tap-target",
+      "title": "Potentially small tap target",
+      "file": "/components/StarRating.jsx",
+      "description": "Found w-4 with click handler - may be < 44x44px",
+      "fix": "Ensure tap targets are at least 44x44px"
+    },
+    {
+      "agent": "uiux-predator",
+      "microAgent": "mobile",
+      "severity": "medium",
+      "type": "small-tap-target",
+      "title": "Potentially small tap target",
+      "file": "/components/explore/interactive/IngredientCard.jsx",
+      "description": "Found w-4 with click handler - may be < 44x44px",
+      "fix": "Ensure tap targets are at least 44x44px"
+    },
+    {
+      "agent": "uiux-predator",
+      "microAgent": "mobile",
+      "severity": "medium",
+      "type": "small-tap-target",
+      "title": "Potentially small tap target",
+      "file": "/components/ui/carousel.jsx",
+      "description": "Found w-4 with click handler - may be < 44x44px",
+      "fix": "Ensure tap targets are at least 44x44px"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/tracking/user/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/ugc/submit/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/user/challenge/checkin/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/user/challenge/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/user/favorites/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/user/orders/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/user/profile/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/user/rewards/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/user/stats/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/api/waitlist/route.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/catalog/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/checkout/square/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/checkout/success/CheckoutSuccessPage.client.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/explore/ingredients/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/layout.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/order/success/page-enhanced.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/product/[slug]/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/profile/challenge/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/profile/orders/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/profile/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/profile/rewards/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/profile/settings/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/quiz/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/quiz/results/[id]/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "severity": "medium",
+      "type": "error-no-stack",
+      "title": "Error logged without stack trace",
+      "file": "/app/rewards/page.js",
+      "fix": "Include error.stack or full error object"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "missing-JSON-formatting",
+      "title": "Logger missing JSON formatting",
+      "file": "/lib/logger.js",
+      "fix": "Add JSON formatting to logger"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/analytics/campaigns/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/analytics/customers/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/analytics/sales/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/auth/logout/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/auth/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/campaigns/generate/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/campaigns/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/campaigns/send/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/customers/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/email-preview/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "missing-trace-context",
+      "title": "Missing orderId in logs",
+      "file": "/app/api/admin/orders/route.js",
+      "fix": "Include orderId in log context"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "missing-trace-context",
+      "title": "Missing userId in logs",
+      "file": "/app/api/admin/orders/update-status/route.js",
+      "fix": "Include userId in log context"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/products/[id]/sync/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/products/sync/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/admin/setup/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/analytics/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/auth/login/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/auth/logout/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/auth/register/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/auth/session/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "missing-trace-context",
+      "title": "Missing userId in logs",
+      "file": "/app/api/checkout/route.ts",
+      "fix": "Include userId in log context"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/coupons/create/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/coupons/validate/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "missing-trace-context",
+      "title": "Missing userId in logs",
+      "file": "/app/api/create-checkout/route.ts",
+      "fix": "Include userId in log context"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/cron/morning-reminders/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/cron/pickup-reminders/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/csp-report/route.ts",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/customers/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/debug/logs/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/email/send-coupon/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/email/send-newsletter-confirmation/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/email/send-order-confirmation/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "missing-trace-context",
+      "title": "Missing orderId in logs",
+      "file": "/app/api/email/send-order-confirmation/route.js",
+      "fix": "Include orderId in log context"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/email/send-order-status/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "missing-trace-context",
+      "title": "Missing orderId in logs",
+      "file": "/app/api/email/send-order-status/route.js",
+      "fix": "Include orderId in log context"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/email/send-welcome/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/email/test/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/emails/queue/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/emails/test/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/health/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/ics/market-route/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/ingredients/[slug]/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/ingredients/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/instagram/post/[slug]/route.ts",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/instagram/posts/route.ts",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/newsletter/subscribe/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/oauth/square/status/route.ts",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "missing-trace-context",
+      "title": "Missing userId in logs",
+      "file": "/app/api/orders/[id]/route.js",
+      "fix": "Include userId in log context"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "missing-trace-context",
+      "title": "Missing userId in logs",
+      "file": "/app/api/orders/by-ref/route.js",
+      "fix": "Include userId in log context"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "missing-trace-context",
+      "title": "Missing userId in logs",
+      "file": "/app/api/orders/create/route.js",
+      "fix": "Include userId in log context"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "missing-trace-context",
+      "title": "Missing userId in logs",
+      "file": "/app/api/payments/route.ts",
+      "fix": "Include userId in log context"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/pos/callback/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/quiz/analytics/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/quiz/conversion-webhook/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/quiz/email-scheduler/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/quiz/recommendations/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/quiz/results/[id]/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/quiz/submit/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/recommendations/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/reviews/[id]/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/reviews/analytics/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/reviews/upload/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/rewards/add-points/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/rewards/leaderboard/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/rewards/passport/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/rewards/redeem/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/rewards/stamp/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/search/enhanced/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/seo/analyze/route.ts",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/square/create-checkout/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "missing-trace-context",
+      "title": "Missing userId in logs",
+      "file": "/app/api/square/create-checkout/route.js",
+      "fix": "Include userId in log context"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/square/test-token/route.ts",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/startup/route.ts",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "missing-trace-context",
+      "title": "Missing userId in logs",
+      "file": "/app/api/stripe/create-checkout/route.js",
+      "fix": "Include userId in log context"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/tracking/user/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/transactions/log/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/transactions/stats/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/ugc/submit/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/unified/products/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/unified/sync/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/user/challenge/checkin/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/user/challenge/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/user/email-preferences/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/user/favorites/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/user/orders/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "missing-trace-context",
+      "title": "Missing orderId in logs",
+      "file": "/app/api/user/orders/route.js",
+      "fix": "Include orderId in log context"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/user/profile/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/user/rewards/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/user/stats/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "api-no-logging",
+      "title": "API route without logging",
+      "file": "/app/api/waitlist/route.js",
+      "fix": "Add request/response logging"
+    },
+    {
+      "agent": "log-devourer",
+      "microAgent": "trace",
+      "severity": "medium",
+      "type": "no-request-id",
+      "title": "No request ID generation in middleware",
+      "file": "/middleware.ts",
+      "fix": "Generate unique request ID for tracing"
+    },
+    {
+      "agent": "opti-beast",
+      "severity": "high",
+      "type": "bundle-size",
+      "title": "Bundle size exceeds 2MB",
+      "description": "Total bundle: 2.37MB",
+      "fix": "Enable code splitting, lazy loading, and tree shaking"
+    },
+    {
+      "agent": "opti-beast",
+      "severity": "medium",
+      "type": "large-chunk",
+      "title": "Large JavaScript chunk",
+      "file": "/.next/static/chunks/vendors-b87af8a6-5bed8642b1dbc26c.js",
+      "description": "Size: 332.3KB",
+      "fix": "Split this chunk or lazy load components"
+    },
+    {
+      "agent": "trust-guardian",
+      "severity": "medium",
+      "type": "scattered-pricing",
+      "title": "Pricing scattered across files",
+      "description": "8 files with hardcoded prices",
+      "estimatedLoss": 0.005,
+      "fix": "Centralize pricing in a constants file or API"
+    },
+    {
+      "agent": "trust-guardian",
+      "microAgent": "review",
+      "severity": "low",
+      "type": "risky-claim",
+      "title": "Superlative claim (may need substantiation)",
+      "file": "/app/(site)/instagram/[slug]/page.tsx",
+      "estimatedLoss": 0.01,
+      "fix": "Review claim for compliance and accuracy"
+    },
+    {
+      "agent": "trust-guardian",
+      "microAgent": "content",
+      "severity": "medium",
+      "type": "brand-inconsistency",
+      "title": "Brand name variations detected",
+      "description": "Found variations: taste of gratitude, tasteofgratitude",
+      "estimatedLoss": 0.01,
+      "fix": "Standardize brand name across all content"
+    },
+    {
+      "agent": "trust-guardian",
+      "microAgent": "content",
+      "severity": "medium",
+      "type": "content-inconsistency",
+      "title": "Content inconsistency: price-variation",
+      "file": "/components/SpinWheel.jsx",
+      "description": "4 different prices shown",
+      "estimatedLoss": 0.01,
+      "fix": "Review and align content messaging"
+    }
+  ],
+  "summary": {
+    "critical": 0,
+    "high": 17,
+    "medium": 141,
+    "low": 78
+  }
+}

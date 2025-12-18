@@ -1,0 +1,92 @@
+{
+  "timestamp": "2025-12-18T03:21:28.252Z",
+  "scanNumber": 1,
+  "mode": "NORMAL",
+  "hungerLevel": 50,
+  "agents": {
+    "bug-hunter": {
+      "agent": "bug-hunter",
+      "duration": 12988,
+      "issues": [],
+      "stats": {
+        "filesScanned": 415,
+        "testsRun": 7
+      }
+    },
+    "psycho-marketer": {
+      "agent": "psycho-marketer",
+      "duration": 112,
+      "issues": [],
+      "stats": {
+        "messagingScore": 100,
+        "ctaCount": 143,
+        "toneConsistency": 100
+      }
+    },
+    "uiux-predator": {
+      "agent": "uiux-predator",
+      "duration": 85,
+      "issues": [
+        {
+          "agent": "uiux-predator",
+          "microAgent": "access",
+          "severity": "medium",
+          "type": "moderate-a11y-score",
+          "title": "Accessibility score: 55/100",
+          "description": "Some accessibility improvements recommended",
+          "fix": "Add more ARIA labels and focus indicators"
+        }
+      ],
+      "stats": {
+        "componentsScanned": 123,
+        "accessibilityScore": 55
+      }
+    },
+    "log-devourer": {
+      "agent": "log-devourer",
+      "duration": 63,
+      "issues": [],
+      "stats": {
+        "filesWithLogging": 278,
+        "consoleLogCount": 110,
+        "structuredLogCount": 452
+      }
+    },
+    "opti-beast": {
+      "agent": "opti-beast",
+      "duration": 14,
+      "issues": [],
+      "stats": {
+        "bundleSize": 2480159,
+        "assetCount": 1
+      }
+    },
+    "trust-guardian": {
+      "agent": "trust-guardian",
+      "duration": 12,
+      "issues": [],
+      "stats": {
+        "trustScore": 100,
+        "estimatedRevenueLoss": 0,
+        "contentDrift": 0
+      }
+    }
+  },
+  "issues": [
+    {
+      "agent": "uiux-predator",
+      "microAgent": "access",
+      "severity": "medium",
+      "type": "moderate-a11y-score",
+      "title": "Accessibility score: 55/100",
+      "description": "Some accessibility improvements recommended",
+      "fix": "Add more ARIA labels and focus indicators"
+    }
+  ],
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 1,
+    "low": 0
+  }
+}

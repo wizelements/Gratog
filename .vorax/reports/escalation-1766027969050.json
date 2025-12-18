@@ -1,0 +1,14 @@
+{
+  "timestamp": "2025-12-18T03:19:29.050Z",
+  "type": "CRITICAL",
+  "message": "Critical issues found - deployment halted",
+  "data": {
+    "issueCount": 7,
+    "summary": {
+      "critical": 4,
+      "high": 2,
+      "medium": 1,
+      "low": 0
+    }
+  }
+}
