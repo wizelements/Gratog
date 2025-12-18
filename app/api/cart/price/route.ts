@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Calculating cart price for:', lines);
+    logger.debug('Cart', 'Calculating cart price', { lines });
 
     // Get fresh Square client instance
     const square = getSquareClient();

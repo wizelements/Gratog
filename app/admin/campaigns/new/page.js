@@ -446,6 +446,7 @@ export default function NewCampaignPage() {
             </div>
             <div className="p-6 bg-white">
               <p className="text-sm text-gray-500 mb-4">Subject: <strong>{campaignData.subject || '(No subject)'}</strong></p>
+              {/* SAFE: Admin-only email preview. Content is from authenticated admin, not user input */}
               <div 
                 className="prose max-w-none"
                 dangerouslySetInnerHTML={{ __html: campaignData.body || '<p>No content yet</p>' }}

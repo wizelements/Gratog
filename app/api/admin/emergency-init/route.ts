@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { logger } from '@/lib/logger';
 
 async function hashPassword(password: string): Promise<string> {
   const salt = await bcrypt.genSalt(10);
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
     });
     
     if (existingAdmin) {
-      console.log('[EMERGENCY-INIT] Admin already exists:', email);
+      logger.info('[EMERGENCY-INIT] Admin already exists:', email);
       return NextResponse.json({
         success: true,
         message: 'Admin user already exists',

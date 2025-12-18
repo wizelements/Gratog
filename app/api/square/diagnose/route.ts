@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSquareClient, SQUARE_LOCATION_ID, SQUARE_APPLICATION_ID, validateSquareConfig } from '@/lib/square';
+import { logger } from '@/lib/logger';
 
 /**
  * Square Authentication Diagnostic Endpoint
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
     const square = getSquareClient();
 
     // Test 1: Configuration validation
-    console.log('Testing Square configuration...');
+    logger.debug('Square', 'Testing Square configuration', {});
     try {
       const config = validateSquareConfig();
       diagnostics.tests.configuration = {
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Test 2: Verify access token format
-    console.log('Validating access token format...');
+    logger.debug('Square', 'Validating access token format', {});
     const accessToken = process.env.SQUARE_ACCESS_TOKEN || '';
     const tokenPrefix = accessToken.substring(0, 10);
     

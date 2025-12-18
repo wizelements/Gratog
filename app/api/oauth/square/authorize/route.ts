@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
+import { logger } from '@/lib/logger';
 
 /**
  * Square OAuth Authorization Initiator
@@ -58,11 +59,11 @@ export async function GET(request: NextRequest) {
     authUrl.searchParams.set('state', state);
     authUrl.searchParams.set('redirect_uri', redirectUri);
     
-    console.log('Redirecting to Square OAuth:', {
+    logger.info('OAuth', 'Redirecting to Square OAuth', {
       environment: env,
       clientId,
       redirectUri,
-      scopes: scopes.split(' ').length + ' scopes'
+      scopeCount: scopes.split(' ').length
     });
     
     // Redirect to Square authorization page

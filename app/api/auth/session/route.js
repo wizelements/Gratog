@@ -23,6 +23,7 @@ export async function GET(request) {
       { status: 200 }
     );
   } catch (error) {
+    // Expected error when user is not authenticated - no need to log
     return NextResponse.json(
       {
         success: false,

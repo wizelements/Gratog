@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
+import { logger } from '@/lib/logger';
 
 /**
  * Instagram Graph API Integration
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
     const fields = 'id,caption,media_type,media_url,permalink,timestamp,like_count,comments_count';
     const instagramApiUrl = `https://graph.instagram.com/${instagramBusinessAccountId}/media?fields=${fields}&access_token=${accessToken}&limit=25`;
 
-    console.log('Fetching Instagram posts...');
+    logger.info('Instagram', 'Fetching Instagram posts', {});
     const response = await fetch(instagramApiUrl);
 
     if (!response.ok) {
