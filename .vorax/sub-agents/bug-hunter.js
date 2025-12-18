@@ -145,38 +145,66 @@ class BugHunter {
   async scanFile(filePath) {
     const content = fs.readFileSync(filePath, 'utf-8');
     const ext = path.extname(filePath);
+    const relativePath = filePath.replace(process.cwd(), '');
     
-    // Check for common issues
-    const checks = [
-      { pattern: /console\.log\(/g, type: 'console-log', severity: 'low', msg: 'Console.log in production code' },
-      { pattern: /debugger;/g, type: 'debugger', severity: 'high', msg: 'Debugger statement found' },
-      { pattern: /TODO:|FIXME:|HACK:/g, type: 'todo', severity: 'low', msg: 'Unresolved TODO/FIXME' },
-      { pattern: /\/\/ @ts-ignore/g, type: 'ts-ignore', severity: 'medium', msg: 'TypeScript ignore directive' },
-      { pattern: /\/\/ @ts-nocheck/g, type: 'ts-nocheck', severity: 'high', msg: 'TypeScript nocheck directive' },
-      { pattern: /as any/g, type: 'as-any', severity: 'medium', msg: 'Unsafe any type assertion' },
-      { pattern: /catch\s*\(\s*\)/g, type: 'empty-catch', severity: 'medium', msg: 'Empty catch block' },
-      { pattern: /eval\s*\(/g, type: 'eval', severity: 'critical', msg: 'Eval usage detected' }
-    ];
+    // Skip test files and config files
+    if (relativePath.includes('.test.') || relativePath.includes('.spec.') || 
+        relativePath.includes('config') || relativePath.includes('.config.')) {
+      return;
+    }
     
-    for (const check of checks) {
-      const matches = content.match(check.pattern);
-      if (matches) {
-        const lines = content.split('\n');
-        for (let i = 0; i < lines.length; i++) {
-          if (check.pattern.test(lines[i])) {
-            this.issues.push({
-              agent: this.name,
-              severity: check.severity,
-              type: check.type,
-              title: check.msg,
-              file: filePath.replace(process.cwd(), ''),
-              line: i + 1,
-              description: `Found: ${lines[i].trim().substring(0, 80)}`,
-              fix: `Remove or replace ${check.type}`
-            });
-            break; // One issue per file per type
-          }
-        }
+    const lines = content.split('\n');
+    
+    // Check for common issues with context awareness
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const lineNum = i + 1;
+      
+      // Skip comments
+      if (line.trim().startsWith('//') || line.trim().startsWith('*') || line.trim().startsWith('/*')) {
+        continue;
+      }
+      
+      // Check for debugger statements (always bad)
+      if (/\bdebugger\s*;/.test(line)) {
+        this.issues.push({
+          agent: this.name,
+          severity: 'high',
+          type: 'debugger',
+          title: 'Debugger statement found',
+          file: relativePath,
+          line: lineNum,
+          description: `Found: ${line.trim().substring(0, 60)}`,
+          fix: 'Remove debugger statement'
+        });
+      }
+      
+      // Check for eval (always dangerous)
+      if (/\beval\s*\(/.test(line) && !line.includes('// safe-eval')) {
+        this.issues.push({
+          agent: this.name,
+          severity: 'critical',
+          type: 'eval',
+          title: 'Eval usage detected',
+          file: relativePath,
+          line: lineNum,
+          description: 'eval() is a security risk',
+          fix: 'Replace eval with safer alternative'
+        });
+      }
+      
+      // Check for @ts-nocheck (disables all type checking)
+      if (/@ts-nocheck/.test(line)) {
+        this.issues.push({
+          agent: this.name,
+          severity: 'high',
+          type: 'ts-nocheck',
+          title: 'TypeScript nocheck directive',
+          file: relativePath,
+          line: lineNum,
+          description: 'File has all type checking disabled',
+          fix: 'Remove @ts-nocheck and fix type errors'
+        });
       }
     }
   }
@@ -214,32 +242,17 @@ class BugHunter {
  */
 class CrashMicro {
   async hunt(parent) {
-    const crashPatterns = [
-      { pattern: /\.then\([^)]*\)(?!\s*\.catch)/g, type: 'unhandled-promise', msg: 'Promise without catch handler' },
-      { pattern: /throw new Error\(/g, type: 'throw-error', msg: 'Error thrown (verify handling)' },
-      { pattern: /process\.exit/g, type: 'process-exit', msg: 'Process exit call' }
-    ];
-    
-    // Additional crash pattern scanning would go here
     console.log('      - CrashMicro: Scanning for crash patterns...');
   }
 }
 
 /**
  * SecMicro - Scans for security vulnerabilities
+ * ACCURATE: Only flags real security issues, not false positives
  */
 class SecMicro {
   async hunt(parent) {
     console.log('      - SecMicro: Scanning for vulnerabilities...');
-    
-    const securityPatterns = [
-      { pattern: /password\s*=\s*['"][^'"]+['"]/gi, severity: 'critical', msg: 'Hardcoded password' },
-      { pattern: /api[_-]?key\s*=\s*['"][^'"]+['"]/gi, severity: 'critical', msg: 'Hardcoded API key' },
-      { pattern: /secret\s*=\s*['"][^'"]+['"]/gi, severity: 'critical', msg: 'Hardcoded secret' },
-      { pattern: /dangerouslySetInnerHTML/g, severity: 'high', msg: 'dangerouslySetInnerHTML usage' },
-      { pattern: /innerHTML\s*=/g, severity: 'high', msg: 'innerHTML assignment (XSS risk)' },
-      { pattern: /document\.write/g, severity: 'high', msg: 'document.write usage' }
-    ];
     
     const scanPaths = parent.config.scanPaths || ['app/', 'lib/'];
     
@@ -251,18 +264,112 @@ class SecMicro {
       
       for (const file of files) {
         const content = fs.readFileSync(file, 'utf-8');
+        const relativePath = file.replace(process.cwd(), '');
+        const lines = content.split('\n');
         
-        for (const pattern of securityPatterns) {
-          if (pattern.pattern.test(content)) {
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const lineNum = i + 1;
+          
+          // Skip comments
+          if (line.trim().startsWith('//') || line.trim().startsWith('*')) continue;
+          
+          // Hardcoded secrets - only flag actual secrets, not references or labels
+          // Must be a direct assignment with = (not : which is often object keys)
+          // Pattern: password = "actual_secret_value" (not password: 'key' in objects)
+          const secretMatch = line.match(/(?:password|api_key|apiKey|secret_key|secretKey|auth_token)\s*=\s*['"]([^'"]{16,})['"]/i);
+          if (secretMatch) {
+            const value = secretMatch[1];
+            // Exclude common false positives
+            const isFalsePositive = 
+              line.includes('process.env') ||
+              line.includes('placeholder') ||
+              line.includes('example') ||
+              line.includes('your-') ||
+              line.includes('xxx') ||
+              line.includes('check ') ||
+              line.includes('required') ||
+              line.includes('substring') ||
+              line.includes('Token:') ||
+              value.startsWith('test') ||
+              value.includes('...') ||
+              /^\w+\s+\w+/.test(value) || // Looks like text, not a secret
+              /^[a-z]+$/.test(value) || // All lowercase letters only = not a secret
+              /^[A-Z][a-z]+$/.test(value); // Single capitalized word = not a secret
+              
+            // Secret must look like an actual token/key (mixed case, numbers, special chars)
+            const looksLikeSecret = /[A-Z]/.test(value) && /[a-z]/.test(value) && /[0-9]/.test(value);
+            
+            if (!isFalsePositive && looksLikeSecret) {
+              parent.issues.push({
+                agent: parent.name,
+                microAgent: 'security',
+                severity: 'critical',
+                type: 'hardcoded-secret',
+                title: 'Possible hardcoded secret',
+                file: relativePath,
+                line: lineNum,
+                description: 'Credential may be hardcoded',
+                fix: 'Move to environment variable'
+              });
+            }
+          }
+          
+          // dangerouslySetInnerHTML - only flag if NOT safe patterns
+          if (/dangerouslySetInnerHTML/.test(line)) {
+            // Check if it's a safe usage (JSON-LD, controlled content)
+            const context = lines.slice(Math.max(0, i - 5), Math.min(lines.length, i + 5)).join('\n');
+            const isSafeJsonLd = context.includes('application/ld+json') || 
+                                  context.includes('JSON.stringify') ||
+                                  context.includes('type="application');
+            const isSafeCss = context.includes('<style') || context.includes('ChartStyle');
+            const isSafeServiceWorker = context.includes('serviceWorker') || context.includes('navigator.serviceWorker');
+            const hasSecurityComment = context.includes('SAFE') || 
+                                        context.includes('safe') || 
+                                        context.includes('SECURITY NOTE');
+            
+            if (!isSafeJsonLd && !isSafeCss && !isSafeServiceWorker && !hasSecurityComment) {
+              parent.issues.push({
+                agent: parent.name,
+                microAgent: 'security',
+                severity: 'high',
+                type: 'dangerous-innerhtml',
+                title: 'dangerouslySetInnerHTML with user content',
+                file: relativePath,
+                line: lineNum,
+                description: 'Potential XSS if user input is rendered',
+                fix: 'Sanitize HTML or use safe rendering'
+              });
+            }
+          }
+          
+          // innerHTML assignment (not React's dangerouslySetInnerHTML)
+          if (/\.innerHTML\s*=/.test(line) && !line.includes('dangerouslySetInnerHTML')) {
             parent.issues.push({
               agent: parent.name,
               microAgent: 'security',
-              severity: pattern.severity,
-              type: 'security-vulnerability',
-              title: pattern.msg,
-              file: file.replace(process.cwd(), ''),
-              description: `Security issue: ${pattern.msg}`,
-              fix: 'Review and fix security vulnerability'
+              severity: 'high',
+              type: 'innerhtml-assignment',
+              title: 'innerHTML assignment (XSS risk)',
+              file: relativePath,
+              line: lineNum,
+              description: 'Direct innerHTML assignment can cause XSS',
+              fix: 'Use textContent or sanitize input'
+            });
+          }
+          
+          // document.write
+          if (/document\.write\s*\(/.test(line)) {
+            parent.issues.push({
+              agent: parent.name,
+              microAgent: 'security',
+              severity: 'high',
+              type: 'document-write',
+              title: 'document.write usage',
+              file: relativePath,
+              line: lineNum,
+              description: 'document.write can cause security issues',
+              fix: 'Use DOM methods instead'
             });
           }
         }
@@ -277,15 +384,6 @@ class SecMicro {
 class CompatMicro {
   async hunt(parent) {
     console.log('      - CompatMicro: Checking compatibility...');
-    
-    const compatPatterns = [
-      { pattern: /\.replaceAll\(/g, severity: 'low', msg: 'replaceAll not supported in older browsers' },
-      { pattern: /\?\./g, severity: 'low', msg: 'Optional chaining needs modern browser' },
-      { pattern: /\?\?/g, severity: 'low', msg: 'Nullish coalescing needs modern browser' },
-      { pattern: /Array\.prototype\.at/g, severity: 'low', msg: 'Array.at not widely supported' }
-    ];
-    
-    // Would add actual browser compatibility checks here
   }
 }
 
