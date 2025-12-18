@@ -39,6 +39,10 @@ const ADMIN_PUBLIC_ROUTES = [
 export async function middleware(req: NextRequest) {
   const url = new URL(req.url);
   const pathname = url.pathname;
+  
+  // Pass pathname to layout for conditional rendering
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set('x-pathname', pathname);
 
   // Redirect old /delivery route to /order with tab param
   if (pathname === '/delivery') {
@@ -95,15 +99,23 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  const response = NextResponse.next();
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
   return addSecurityHeaders(response);
 }
 
 export const config = {
   matcher: [
-    '/delivery',
-    '/',
-    '/admin/:path*',
-    '/api/admin/:path*',
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder files
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 };

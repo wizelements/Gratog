@@ -1,6 +1,6 @@
-
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { headers } from 'next/headers';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import FloatingCart from '@/components/FloatingCart';
@@ -71,12 +71,17 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  // Check if we're on an admin route to skip customer UI elements
+  const headersList = await headers();
+  const pathname = headersList.get('x-pathname') || '';
+  const isAdminRoute = pathname.startsWith('/admin');
+
   return (
     <html lang="en">
       <head>
-        {/* Google Analytics 4 */}
-        <GoogleAnalytics />
+        {/* Google Analytics 4 - only on customer pages */}
+        {!isAdminRoute && <GoogleAnalytics />}
         
         {/* Preconnect hints for external resources - improves LCP */}
         <link rel="preconnect" href="https://web.squarecdn.com" crossOrigin="anonymous" />
@@ -87,64 +92,66 @@ export default function RootLayout({ children }) {
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         
-        {/* Square Web Payments SDK */}
-        <script 
-          type="text/javascript" 
-          src="https://web.squarecdn.com/v1/square.js"
-          async
-        />
+        {/* Square Web Payments SDK - only needed on customer checkout pages */}
+        {!isAdminRoute && (
+          <script 
+            type="text/javascript" 
+            src="https://web.squarecdn.com/v1/square.js"
+            async
+          />
+        )}
       </head>
       <body className={inter.className}>
-        <SkipLinks />
-        <AuthProvider>
-          <A11yAnnouncerProvider>
-          {/* Dev Build Indicator - Only in Development */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-center py-2 px-4 text-sm font-medium shadow-md z-50 sticky top-0">
-              <div className="container mx-auto flex items-center justify-center gap-2">
-                <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                <span>Development Build • Trust Enhancements Active</span>
-              </div>
-            </div>
-          )}
-          
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main id="main-content" className="flex-1">{children}</main>
-            <Footer />
-            <FloatingCart />
-            <LiveChatWidget />
-            <CartNotification />
-          </div>
-          <Toaster />
-          </A11yAnnouncerProvider>
-        </AuthProvider>
-        
-        {/* Service Worker Registration for PWA
-            SECURITY NOTE: dangerouslySetInnerHTML is safe here because:
-            1. The script content is hardcoded and not derived from user input
-            2. This is a legitimate service worker registration for PWA functionality
-            3. The __html property contains only controlled, internal code */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
-              window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                  .then((registration) => {
-                    console.log('✅ PWA: Service Worker registered');
-                    
-                    // Check for updates every hour
-                    setInterval(() => {
-                      registration.update();
-                    }, 3600000);
-                  })
-                  .catch((error) => {
-                    console.error('❌ PWA: Service Worker registration failed:', error);
+        {isAdminRoute ? (
+          // Admin routes: minimal wrapper, admin layout handles everything
+          <>{children}</>
+        ) : (
+          // Customer routes: full storefront UI
+          <>
+            <SkipLinks />
+            <AuthProvider>
+              <A11yAnnouncerProvider>
+                {/* Dev Build Indicator - Only in Development */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-center py-2 px-4 text-sm font-medium shadow-md z-50 sticky top-0">
+                    <div className="container mx-auto flex items-center justify-center gap-2">
+                      <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                      <span>Development Build • Trust Enhancements Active</span>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex min-h-screen flex-col">
+                  <Header />
+                  <main id="main-content" className="flex-1">{children}</main>
+                  <Footer />
+                  <FloatingCart />
+                  <LiveChatWidget />
+                  <CartNotification />
+                </div>
+                <Toaster />
+              </A11yAnnouncerProvider>
+            </AuthProvider>
+            
+            {/* Service Worker Registration for PWA */}
+            <script dangerouslySetInnerHTML={{
+              __html: `
+                if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
+                  window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                      .then((registration) => {
+                        console.log('✅ PWA: Service Worker registered');
+                        setInterval(() => { registration.update(); }, 3600000);
+                      })
+                      .catch((error) => {
+                        console.error('❌ PWA: Service Worker registration failed:', error);
+                      });
                   });
-              });
-            }
-          `
-        }} />
+                }
+              `
+            }} />
+          </>
+        )}
       </body>
     </html>
   );
