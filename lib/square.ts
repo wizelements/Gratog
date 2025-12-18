@@ -91,9 +91,13 @@ export function getSquareWebhookSignatureKey(): string {
   return key;
 }
 
-// Export for backwards compatibility
+// DEPRECATED: Use getter functions instead to ensure proper validation
+// These exports can cause silent failures in production with empty strings
+/** @deprecated Use getSquareLocationId() instead - this export can be empty string */
 export const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID || '';
+/** @deprecated Use getSquareApplicationId() instead - this export can be empty string */
 export const SQUARE_APPLICATION_ID = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || '';
+/** @deprecated Use getSquareWebhookSignatureKey() instead - this export can be empty string */
 export const SQUARE_WEBHOOK_SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || '';
 
 // Helper to validate Square environment configuration
