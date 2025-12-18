@@ -36,7 +36,6 @@ const GAMES = [
     color: 'from-blue-500 to-cyan-600',
     route: '/explore/games/memory-match',
     difficulty: 'Easy',
-    coming: true
   },
   {
     id: 'ingredient-quiz',
@@ -46,7 +45,6 @@ const GAMES = [
     color: 'from-purple-500 to-pink-600',
     route: '/explore/games/ingredient-quiz',
     difficulty: 'Medium',
-    coming: true
   },
   {
     id: 'blend-maker',

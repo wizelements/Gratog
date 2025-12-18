@@ -1,17 +1,22 @@
 /**
  * Wishlist Store - Zustand store for wishlist/favorites state management
+ * Supports both guest (localStorage) and authenticated (API) users
  */
 
 import { create } from 'zustand';
 
 export interface WishlistState {
   items: string[];
-  addToWishlist: (productId: string) => void;
-  removeFromWishlist: (productId: string) => void;
-  toggleWishlist: (productId: string) => void;
+  isAuthenticated: boolean;
+  isSyncing: boolean;
+  addToWishlist: (productId: string, isAuth?: boolean) => Promise<void>;
+  removeFromWishlist: (productId: string, isAuth?: boolean) => Promise<void>;
+  toggleWishlist: (productId: string, isAuth?: boolean) => Promise<void>;
   isInWishlist: (productId: string) => boolean;
-  clearWishlist: () => void;
+  clearWishlist: (isAuth?: boolean) => Promise<void>;
   getCount: () => number;
+  syncWithServer: () => Promise<void>;
+  setAuthStatus: (isAuth: boolean) => void;
 }
 
 const STORAGE_KEY = 'wishlist_v1';
@@ -61,14 +66,72 @@ export const useWishlistStore = create<WishlistState>((set, get) => {
   
   return {
     items: initialItems,
+    isAuthenticated: false,
+    isSyncing: false,
     
-    addToWishlist: (productId: string) => {
+    /**
+     * Sync wishlist from server for authenticated users
+     */
+    syncWithServer: async () => {
+      try {
+        set({ isSyncing: true });
+        const response = await fetch('/api/user/wishlist');
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            set({ isAuthenticated: false });
+            return;
+          }
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        set({ items: data.items || [], isAuthenticated: true });
+      } catch (error) {
+        console.error('Failed to sync wishlist with server:', error);
+      } finally {
+        set({ isSyncing: false });
+      }
+    },
+    
+    /**
+     * Set authentication status
+     */
+    setAuthStatus: (isAuth: boolean) => {
+      set({ isAuthenticated: isAuth });
+    },
+    
+    /**
+     * Add product to wishlist
+     */
+    addToWishlist: async (productId: string, isAuth = false) => {
       const currentItems = get().items;
       if (currentItems.includes(productId)) return;
       
       const newItems = [...currentItems, productId];
+      
+      // For authenticated users, sync with API
+      if (isAuth) {
+        try {
+          const response = await fetch('/api/user/wishlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+        } catch (error) {
+          console.error('Failed to add item to server wishlist:', error);
+          return;
+        }
+      } else {
+        // For guests, use localStorage
+        persistState(newItems);
+      }
+      
       set({ items: newItems });
-      persistState(newItems);
       
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('wishlistUpdate', {
@@ -77,11 +140,35 @@ export const useWishlistStore = create<WishlistState>((set, get) => {
       }
     },
     
-    removeFromWishlist: (productId: string) => {
+    /**
+     * Remove product from wishlist
+     */
+    removeFromWishlist: async (productId: string, isAuth = false) => {
       const currentItems = get().items;
       const newItems = currentItems.filter(id => id !== productId);
+      
+      // For authenticated users, sync with API
+      if (isAuth) {
+        try {
+          const response = await fetch('/api/user/wishlist', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+        } catch (error) {
+          console.error('Failed to remove item from server wishlist:', error);
+          return;
+        }
+      } else {
+        // For guests, use localStorage
+        persistState(newItems);
+      }
+      
       set({ items: newItems });
-      persistState(newItems);
       
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('wishlistUpdate', {
@@ -90,22 +177,50 @@ export const useWishlistStore = create<WishlistState>((set, get) => {
       }
     },
     
-    toggleWishlist: (productId: string) => {
+    /**
+     * Toggle product in/out of wishlist
+     */
+    toggleWishlist: async (productId: string, isAuth = false) => {
       const currentItems = get().items;
       if (currentItems.includes(productId)) {
-        get().removeFromWishlist(productId);
+        await get().removeFromWishlist(productId, isAuth);
       } else {
-        get().addToWishlist(productId);
+        await get().addToWishlist(productId, isAuth);
       }
     },
     
+    /**
+     * Check if product is in wishlist
+     */
     isInWishlist: (productId: string) => {
       return get().items.includes(productId);
     },
     
-    clearWishlist: () => {
+    /**
+     * Clear entire wishlist
+     */
+    clearWishlist: async (isAuth = false) => {
+      // For authenticated users, sync with API
+      if (isAuth) {
+        try {
+          const response = await fetch('/api/user/wishlist', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+        } catch (error) {
+          console.error('Failed to clear server wishlist:', error);
+          return;
+        }
+      } else {
+        // For guests, use localStorage
+        persistState([]);
+      }
+      
       set({ items: [] });
-      persistState([]);
       
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('wishlistUpdate', {
@@ -114,6 +229,9 @@ export const useWishlistStore = create<WishlistState>((set, get) => {
       }
     },
     
+    /**
+     * Get wishlist item count
+     */
     getCount: () => {
       return get().items.length;
     }

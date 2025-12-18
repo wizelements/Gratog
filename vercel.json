@@ -127,6 +127,17 @@
       "source": "/health",
       "destination": "/api/v1/health",
       "permanent": false
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "gratog.vercel.app"
+        }
+      ],
+      "destination": "https://tasteofgratitude.shop/:path*",
+      "permanent": true
     }
   ]
 }
