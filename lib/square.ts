@@ -1,5 +1,5 @@
 const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
-const debug = (...args) => { if (DEBUG) debug(...args); };
+const debug = (...args: unknown[]) => { if (DEBUG) console.log(...args); };
 
 import { SquareClient, SquareEnvironment } from 'square';
 
@@ -61,7 +61,7 @@ export function getSquareClient(): SquareClient {
   debug(`${LOG_PREFIX} ✅ Creating Square client for ${squareEnvironment}`);
 
   return new SquareClient({
-    accessToken,
+    token: accessToken,
     environment: squareEnvironment,
   });
 }

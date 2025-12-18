@@ -72,19 +72,20 @@ export async function createOrderAtomic(orderData: any) {
 
     // 3. Decrement inventory for each item
     for (const item of orderData.items) {
-      const inventoryResult = await db.collection('inventory').findOneAndUpdate(
-        { productId: item.id },
-        {
-          $inc: { currentStock: -item.quantity },
-          $push: {
-            stockHistory: {
-              date: new Date(),
-              adjustment: -item.quantity,
-              reason: `Order ${orderData.id}`,
-              adjustedBy: 'system',
-            } as { date: Date; adjustment: number; reason: string; adjustedBy: string },
+      const updateDoc = {
+        $inc: { currentStock: -item.quantity },
+        $push: {
+          stockHistory: {
+            date: new Date(),
+            adjustment: -item.quantity,
+            reason: `Order ${orderData.id}`,
+            adjustedBy: 'system',
           },
         },
+      };
+      const inventoryResult = await db.collection('inventory').findOneAndUpdate(
+        { productId: item.id },
+        updateDoc as any,
         { session }
       );
 

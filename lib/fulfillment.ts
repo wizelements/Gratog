@@ -290,7 +290,7 @@ export async function getShippingOptions(
   const packageDimensions: PackageDimensions = {
     weight: cartItems.length || 1, // 1 oz per item as default
   };
-  const rates = await getShippingRates(fromAddress, address, packageDimensions);
+  const rates = await getShippingRates(address, packageDimensions);
 
   return rates.map((rate: ShippingRate) => ({
     carrier: rate.carrier,
