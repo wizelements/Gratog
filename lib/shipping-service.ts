@@ -485,7 +485,7 @@ export function calculatePackageDimensions(items: { weight?: number; quantity: n
   };
 }
 
-export default {
+const shippingService = {
   isShippingApiConfigured,
   getShippingRates,
   validateAddress,
@@ -493,3 +493,5 @@ export default {
   getTrackingInfo,
   calculatePackageDimensions
 };
+
+export default shippingService;
