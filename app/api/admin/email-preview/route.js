@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth';
+import { requireAdmin } from '@/lib/admin-session';
 import { connectToDatabase } from '@/lib/db-optimized';
 import {
   orderConfirmationTemplate,
@@ -52,50 +52,42 @@ const sampleTracking = {
  * - orderId: (optional) real order ID to use
  */
 export async function GET(request) {
-  const token = request.cookies.get('admin_token')?.value;
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
-
-  const { searchParams } = new URL(request.url);
-  const template = searchParams.get('template') || 'orderConfirmation';
-  const orderId = searchParams.get('orderId');
-
-  let order = sampleOrder;
-
-  // If orderId provided, fetch real order data
-  if (orderId) {
-    try {
-      const { db } = await connectToDatabase();
-      const realOrder = await db.collection('orders').findOne({ 
-        $or: [
-          { _id: orderId },
-          { orderId: orderId },
-          { orderNumber: orderId }
-        ]
-      });
-      
-      if (realOrder) {
-        order = {
-          ...realOrder,
-          id: realOrder._id?.toString() || realOrder.orderId,
-          orderNumber: realOrder.orderNumber || realOrder.orderId?.slice(-8).toUpperCase(),
-        };
-      }
-    } catch (error) {
-      console.error('Failed to fetch order for preview:', error);
-    }
-  }
-
-  let html = '';
-  let templateName = '';
-
   try {
+    const admin = await requireAdmin(request);
+
+    const { searchParams } = new URL(request.url);
+    const template = searchParams.get('template') || 'orderConfirmation';
+    const orderId = searchParams.get('orderId');
+
+    let order = sampleOrder;
+
+    // If orderId provided, fetch real order data
+    if (orderId) {
+      try {
+        const { db } = await connectToDatabase();
+        const realOrder = await db.collection('orders').findOne({ 
+          $or: [
+            { _id: orderId },
+            { orderId: orderId },
+            { orderNumber: orderId }
+          ]
+        });
+        
+        if (realOrder) {
+          order = {
+            ...realOrder,
+            id: realOrder._id?.toString() || realOrder.orderId,
+            orderNumber: realOrder.orderNumber || realOrder.orderId?.slice(-8).toUpperCase(),
+          };
+        }
+      } catch (error) {
+        console.error('Failed to fetch order for preview:', error);
+      }
+    }
+
+    let html = '';
+    let templateName = '';
+
     switch (template) {
       case 'orderConfirmation':
         templateName = 'Order Confirmation';
@@ -168,6 +160,12 @@ export async function GET(request) {
     });
 
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     console.error('Email template rendering error:', error);
     return NextResponse.json(
       { error: 'Failed to render template', details: error.message },
@@ -177,30 +175,35 @@ export async function GET(request) {
 }
 
 /**
- * GET /api/admin/email-preview/list
+ * POST /api/admin/email-preview
  * List available templates
  */
 export async function POST(request) {
-  const token = request.cookies.get('admin_token')?.value;
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
+  try {
+    const admin = await requireAdmin(request);
+
+    return NextResponse.json({
+      templates: [
+        { id: 'orderConfirmation', name: 'Order Confirmation', description: 'Sent when order is placed' },
+        { id: 'shipping', name: 'Shipping Notification', description: 'Sent when order ships' },
+        { id: 'pickup', name: 'Pickup Reminder', description: 'Reminder before market pickup' },
+        { id: 'delivery', name: 'Delivery Notification', description: 'Sent when out for delivery' },
+        { id: 'passwordReset', name: 'Password Reset', description: 'Password reset request' },
+        { id: 'welcome', name: 'Welcome Email', description: 'Sent to new members' },
+        { id: 'reviewRequest', name: 'Review Request', description: 'Request product reviews' },
+      ],
+      previewUrl: '/api/admin/email-preview?template={templateId}',
+    });
+  } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
+      { error: 'Failed to list templates' },
+      { status: 500 }
     );
   }
-
-  return NextResponse.json({
-    templates: [
-      { id: 'orderConfirmation', name: 'Order Confirmation', description: 'Sent when order is placed' },
-      { id: 'shipping', name: 'Shipping Notification', description: 'Sent when order ships' },
-      { id: 'pickup', name: 'Pickup Reminder', description: 'Reminder before market pickup' },
-      { id: 'delivery', name: 'Delivery Notification', description: 'Sent when out for delivery' },
-      { id: 'passwordReset', name: 'Password Reset', description: 'Password reset request' },
-      { id: 'welcome', name: 'Welcome Email', description: 'Sent to new members' },
-      { id: 'reviewRequest', name: 'Review Request', description: 'Request product reviews' },
-    ],
-    previewUrl: '/api/admin/email-preview?template={templateId}',
-  });
 }

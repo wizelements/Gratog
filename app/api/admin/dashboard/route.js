@@ -1,111 +1,67 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
-import { verifyToken } from '@/lib/auth';
+import { requireAdmin } from '@/lib/admin-session';
 import { logger } from '@/lib/logger';
 
 /**
  * GET /api/admin/dashboard
- * Fetch dashboard metrics and data
+ * Get dashboard statistics for admin
  */
 export async function GET(request) {
-  // Verify admin authentication
-  const token = request.cookies.get('admin_token')?.value;
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
   try {
+    const admin = await requireAdmin(request);
+    
     const { db } = await connectToDatabase();
     
-    // Get products count
-    const productsCount = await db.collection('square_catalog_items').countDocuments();
+    // Get counts from various collections
+    const [
+      productsCount,
+      ordersCount,
+      customersCount,
+      recentOrders
+    ] = await Promise.all([
+      db.collection('unified_products').countDocuments(),
+      db.collection('orders').countDocuments(),
+      db.collection('customers').countDocuments(),
+      db.collection('orders')
+        .find({})
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .toArray()
+    ]);
     
-    // Get orders count (if orders collection exists)
-    let ordersCount = 0;
-    let totalSales = 0;
-    try {
-      ordersCount = await db.collection('orders').countDocuments();
-      const salesData = await db.collection('orders').aggregate([
-        { $match: { status: 'completed' } },
-        { $group: { _id: null, total: { $sum: '$total' } } }
-      ]).toArray();
-      totalSales = salesData[0]?.total || 0;
-    } catch (e) {
-      logger.debug('API', 'Orders collection not yet available');
-    }
-    
-    // Get customers count (if customers collection exists)
-    let customersCount = 0;
-    try {
-      customersCount = await db.collection('customers').countDocuments();
-    } catch (e) {
-      logger.debug('API', 'Customers collection not yet available');
-    }
-    
-    // Low stock alerts (products with inventory tracking)
-    let lowStockCount = 0;
-    try {
-      const productsWithInventory = await db.collection('square_catalog_items').find({
-        'variations.trackQuantity': true
-      }).toArray();
-      
-      lowStockCount = productsWithInventory.filter(p => {
-        return p.variations.some(v => 
-          v.trackQuantity && (v.inventoryAlertThreshold || 0) > 0
-        );
-      }).length;
-    } catch (e) {
-      logger.debug('API', 'Inventory check skipped');
-    }
-    
-    // Recent activity (mock for now)
-    const recentActivity = [
-      {
-        id: '1',
-        type: 'product_sync',
-        message: 'Square catalog synced successfully',
-        timestamp: new Date(Date.now() - 1000 * 60 * 30)
-      },
-      {
-        id: '2',
-        type: 'order',
-        message: 'New order received',
-        timestamp: new Date(Date.now() - 1000 * 60 * 120)
-      }
-    ];
+    // Calculate revenue from orders
+    const orders = await db.collection('orders').find({}).toArray();
+    const totalRevenue = orders.reduce((sum, order) => {
+      return sum + (order.total || order.totalAmount || 0);
+    }, 0);
     
     return NextResponse.json({
       success: true,
-      data: {
-        sales: {
-          today: totalSales,
-          change: '+0%'
-        },
-        orders: {
-          pending: ordersCount,
-          total: ordersCount
-        },
-        products: {
-          active: productsCount,
-          total: productsCount
-        },
-        lowStock: lowStockCount,
+      stats: {
+        products: productsCount,
+        orders: ordersCount,
         customers: customersCount,
-        recentActivity
-      }
+        revenue: totalRevenue
+      },
+      recentOrders: recentOrders.map(order => ({
+        id: order.id || order._id?.toString(),
+        customerName: order.customerName || order.customer?.name || 'Guest',
+        total: order.total || order.totalAmount || 0,
+        status: order.status || 'pending',
+        createdAt: order.createdAt
+      }))
     });
   } catch (error) {
-    logger.error('API', 'Dashboard data fetch error', error);
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
+    logger.error('API', 'Dashboard fetch error', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to fetch dashboard data',
-        details: error.message 
-      },
+      { success: false, error: 'Failed to fetch dashboard data' },
       { status: 500 }
     );
   }

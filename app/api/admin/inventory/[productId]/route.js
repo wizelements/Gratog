@@ -1,19 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getInventory } from '@/lib/db-admin';
-import { verifyToken } from '@/lib/auth';
+import { requireAdmin } from '@/lib/admin-session';
 import { logger } from '@/lib/logger';
 
 export async function PATCH(request, { params }) {
   try {
-    const token = request.cookies.get('admin_token')?.value;
-    const decoded = verifyToken(token);
-    
-    if (!decoded) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const admin = await requireAdmin(request);
 
     const { productId } = params;
     const { adjustment, reason } = await request.json();
@@ -48,7 +40,7 @@ export async function PATCH(request, { params }) {
       date: new Date(),
       adjustment,
       reason: reason || 'Manual adjustment',
-      adjustedBy: decoded.email
+      adjustedBy: admin.email
     };
 
     await inventory.updateOne(
@@ -62,12 +54,20 @@ export async function PATCH(request, { params }) {
       }
     );
 
+    logger.info('API', `Inventory updated for ${productId} by ${admin.email}: ${adjustment}`);
+
     return NextResponse.json({
       success: true,
       newStock,
       adjustment
     });
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('API', 'Update inventory error', error);
     return NextResponse.json(
       { error: 'Failed to update inventory' },
