@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import CartBadge from '@/components/CartBadge';
+import WishlistBadge from '@/components/WishlistBadge';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,7 +17,7 @@ export default function Header() {
   const isActive = (path) => pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
+    <header id="navigation" className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm" role="banner">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2 group">
@@ -112,6 +113,7 @@ export default function Header() {
 
         {/* Action Buttons */}
         <div className="hidden md:flex items-center space-x-3">
+          <WishlistBadge />
           <CartBadge />
           <Button
             asChild

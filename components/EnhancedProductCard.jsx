@@ -10,6 +10,7 @@ import Link from 'next/link';
 import QuickAddButton from './QuickAddButton';
 import QuickViewModal from './QuickViewModal';
 import VariantSelector from './VariantSelector';
+import WishlistButton from './WishlistButton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function EnhancedProductCard({ product, onCheckout, variant = 'default' }) {
@@ -105,10 +106,15 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
             </div>
           )}
           
+          {/* Wishlist Button */}
+          <div className="absolute top-3 right-3 z-10">
+            <WishlistButton productId={product.id || product.slug} size="small" />
+          </div>
+          
           {/* Category Badge */}
           {product.intelligentCategory && (
             <Badge 
-              className={`absolute top-3 right-3 ${getCategoryColor()} border`}
+              className={`absolute top-12 right-3 ${getCategoryColor()} border`}
             >
               {product.categoryData?.icon} {product.intelligentCategory}
             </Badge>
