@@ -3,8 +3,9 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { sendSMS } from '@/lib/sms';
 import { SMS_TEMPLATES } from '@/lib/message-templates';
+import { CRON_SECRET } from '@/lib/auth-config';
 
-const CRON_SECRET = process.env.CRON_SECRET || 'cron-secret-taste-of-gratitude-2024';
+// SECURITY FIX: CRON_SECRET is now imported from centralized auth-config.ts
 
 /**
  * Day-Before Pickup Reminder Cron Job

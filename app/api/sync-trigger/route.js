@@ -3,8 +3,12 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import { syncSquareCatalog } from '@/lib/square/catalogSync';
 import { syncToUnified } from '@/lib/square/syncToUnified';
 import { createLogger } from '@/lib/logger';
+import { SYNC_SECRET } from '@/lib/auth-config';
 
 const logger = createLogger('SyncTrigger');
+
+// SECURITY FIX: SYNC_SECRET is now imported from centralized auth-config.ts
+// which enforces proper configuration in production
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -21,9 +25,9 @@ export async function POST(request) {
   try {
     const { searchParams } = new URL(request.url);
     const key = searchParams.get('key');
-    const syncSecret = process.env.SYNC_SECRET || process.env.ADMIN_SECRET || 'gratitude-sync-2024';
     
-    if (key !== syncSecret) {
+    // SECURITY FIX: No more hardcoded fallback
+    if (key !== SYNC_SECRET) {
       return NextResponse.json({ error: 'Invalid key' }, { status: 401 });
     }
     

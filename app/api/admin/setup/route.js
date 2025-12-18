@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import bcrypt from 'bcrypt';
+import { ADMIN_SETUP_SECRET } from '@/lib/auth-config';
 
 /**
  * POST /api/admin/setup
@@ -13,9 +14,8 @@ export async function POST(request) {
     const { secret } = await request.json();
     
     // Require a setup secret to prevent unauthorized access
-    const setupSecret = process.env.ADMIN_SETUP_SECRET || 'setup-admin-2025';
-    
-    if (secret !== setupSecret) {
+    // SECURITY FIX: No more hardcoded fallback - uses auth-config.ts
+    if (secret !== ADMIN_SETUP_SECRET) {
       return NextResponse.json(
         { error: 'Unauthorized - invalid setup secret' },
         { status: 401 }
@@ -24,13 +24,28 @@ export async function POST(request) {
 
     const { db } = await connectToDatabase();
     
-    // Get credentials from environment or use defaults
-    const adminEmail = process.env.ADMIN_DEFAULT_EMAIL || 'admin@tasteofgratitude.com';
-    const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'TasteOfGratitude2025!';
+    // Get credentials from environment - SECURITY FIX: Require env vars in production
+    const adminEmail = process.env.ADMIN_DEFAULT_EMAIL;
+    const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD;
+    
+    if (!adminEmail || !adminPassword) {
+      const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+      if (isProd) {
+        return NextResponse.json(
+          { error: 'ADMIN_DEFAULT_EMAIL and ADMIN_DEFAULT_PASSWORD must be set in production' },
+          { status: 500 }
+        );
+      }
+      // Development fallback with warning
+      console.warn('⚠️ Using development admin credentials - NOT FOR PRODUCTION');
+    }
+    
+    const finalEmail = adminEmail || 'admin@dev.local';
+    const finalPassword = adminPassword || 'dev-password-change-me';
 
     // Check if admin already exists
     const existingAdmin = await db.collection('users').findOne({ 
-      email: adminEmail.toLowerCase() 
+      email: finalEmail.toLowerCase() 
     });
 
     if (existingAdmin) {
@@ -45,11 +60,11 @@ export async function POST(request) {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(adminPassword, 12);
+    const hashedPassword = await bcrypt.hash(finalPassword, 12);
 
     // Create admin user
     const result = await db.collection('users').insertOne({
-      email: adminEmail.toLowerCase(),
+      email: finalEmail.toLowerCase(),
       passwordHash: hashedPassword,
       password: hashedPassword, // Compatibility field
       name: 'Admin User',
@@ -64,10 +79,10 @@ export async function POST(request) {
       message: 'Admin user created successfully',
       admin: {
         id: result.insertedId.toString(),
-        email: adminEmail,
+        email: finalEmail,
         loginUrl: '/admin/login',
         credentials: {
-          email: adminEmail,
+          email: finalEmail,
           password: '(check environment variables)'
         }
       }
