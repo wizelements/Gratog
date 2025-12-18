@@ -4,9 +4,13 @@ import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import FloatingCart from '@/components/FloatingCart';
+import LiveChatWidget from '@/components/LiveChatWidget';
 import CartNotification from '@/components/cart/CartNotification';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
+import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
+import SkipLinks from '@/components/SkipLinks';
+import { A11yAnnouncerProvider } from '@/components/ui/a11y-announcer';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -71,12 +75,17 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        {/* Google Analytics 4 */}
+        <GoogleAnalytics />
+        
         {/* Preconnect hints for external resources - improves LCP */}
         <link rel="preconnect" href="https://web.squarecdn.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://items-images-production.s3.us-west-2.amazonaws.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://web.squarecdn.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         
         {/* Square Web Payments SDK */}
         <script 
@@ -86,10 +95,9 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className={inter.className}>
-        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:text-black focus:rounded">
-          Skip to main content
-        </a>
+        <SkipLinks />
         <AuthProvider>
+          <A11yAnnouncerProvider>
           {/* Dev Build Indicator - Only in Development */}
           {process.env.NODE_ENV === 'development' && (
             <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-center py-2 px-4 text-sm font-medium shadow-md z-50 sticky top-0">
@@ -105,9 +113,11 @@ export default function RootLayout({ children }) {
             <main id="main-content" className="flex-1">{children}</main>
             <Footer />
             <FloatingCart />
+            <LiveChatWidget />
             <CartNotification />
           </div>
           <Toaster />
+          </A11yAnnouncerProvider>
         </AuthProvider>
         
         {/* Service Worker Registration for PWA
