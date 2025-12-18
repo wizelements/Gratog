@@ -114,9 +114,9 @@ export default function OrderPage() {
   };
 
   const validateForm = () => {
-    // Validate minimum order amount
-    if (subtotal < 25) {
-      toast.error('Minimum order amount is $25');
+    // Validate minimum order amount - only for delivery, NOT pickup
+    if (fulfillmentType === 'delivery' && subtotal < 30) {
+      toast.error('Minimum order amount for delivery is $30');
       return false;
     }
     
@@ -744,7 +744,7 @@ export default function OrderPage() {
                   <Button 
                     type="submit" 
                     className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 text-lg"
-                    disabled={isSubmitting || subtotal < 25}
+                    disabled={isSubmitting || (fulfillmentType === 'delivery' && subtotal < 30)}
                   >
                     {isSubmitting ? (
                       <span className="flex items-center gap-2">
