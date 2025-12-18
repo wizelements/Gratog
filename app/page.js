@@ -13,6 +13,7 @@ import Script from 'next/script';
 import { getDemoProducts } from '@/lib/demo-products';
 import { ProductImage } from '@/components/OptimizedImage';
 import ProductBundles from '@/components/ProductBundles';
+import WhyUsComparison from '@/components/WhyUsComparison';
 
 export default function HomePage() {
     const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -581,6 +582,9 @@ export default function HomePage() {
                     </div>
                 </div>
             </section>
+
+            {/* Why Us Comparison Section */}
+            <WhyUsComparison />
 
             <section className="py-20 bg-gradient-to-b from-white to-emerald-50 fade-in-section opacity-0 transition-all duration-1000">
                 <div className="container max-w-4xl">

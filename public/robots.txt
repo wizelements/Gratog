@@ -17,5 +17,3 @@ Host: https://tasteofgratitude.shop
 
 # Sitemaps
 Sitemap: https://tasteofgratitude.shop/sitemap.xml
-Sitemap: https://tasteofgratitude.shop/sitemap-products.xml
-Sitemap: https://tasteofgratitude.shop/sitemap-blog.xml

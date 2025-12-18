@@ -15,7 +15,7 @@ export default function IngredientsPage() {
       // Load ingredients
       const allIngredients = getAllExtendedIngredients();
       const ingredientArray = Object.values(allIngredients);
-      debug('Loaded ingredients:', ingredientArray.length);
+      console.log('Loaded ingredients:', ingredientArray.length);
       setIngredients(ingredientArray);
       setLoading(false);
     } catch (err) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import AnalyticsSystem from '@/lib/analytics';
 import Link from 'next/link';
 import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CatalogPage() {
   const [showQuiz, setShowQuiz] = useState(false);
@@ -23,6 +24,10 @@ export default function CatalogPage() {
   const [viewMode, setViewMode] = useState('grid');
   const [loading, setLoading] = useState(true);
   const [useEnhanced, setUseEnhanced] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  
+  // Keep stable reference to previous categories during loading
+  const prevCategoriesRef = useRef([]);
 
   // Fetch products from Unified Intelligent API
   useEffect(() => {
@@ -36,6 +41,8 @@ export default function CatalogPage() {
           setProducts(data.products);
           setFilteredProducts(data.products);
           setCategories(data.categories || []);
+          // Store categories for stable reference during future loads
+          prevCategoriesRef.current = data.categories || [];
           logger.debug(`✅ Loaded ${data.products.length} products from ${data.source}`);
           logger.debug(`📊 Categories:`, data.categories?.map(c => `${c.name} (${c.count})`));
         }
@@ -44,6 +51,7 @@ export default function CatalogPage() {
         toast.error('Failed to load products. Please refresh the page.');
       } finally {
         setLoading(false);
+        setIsInitialLoad(false);
       }
     };
     
@@ -80,6 +88,9 @@ export default function CatalogPage() {
   const filterProducts = (filter) => {
     setSelectedFilter(filter);
     
+    // Prevent filtering during loading to avoid empty flashes
+    if (loading || products.length === 0) return;
+    
     if (filter === 'all') {
       setFilteredProducts(products);
     } else {
@@ -89,22 +100,45 @@ export default function CatalogPage() {
   };
 
   // Use intelligent categories from API or fallback to static
-  const productCategories = categories.length > 0 
-    ? [
-        { id: 'all', label: 'All Products', count: products.length, icon: '✨' },
-        ...categories.map(cat => ({
+  // Use stable reference during loading to prevent count flicker
+  const productCategories = useMemo(() => {
+    // During initial load, return skeleton placeholder
+    if (isInitialLoad) {
+      return [
+        { id: 'all', label: 'All Products', count: null, icon: '✨', isLoading: true },
+        { id: 'skeleton-1', label: 'Category', count: null, isLoading: true },
+        { id: 'skeleton-2', label: 'Category', count: null, isLoading: true },
+      ];
+    }
+    
+    // Use previous categories during refresh to prevent flicker
+    const stableCategories = loading && prevCategoriesRef.current.length > 0 
+      ? prevCategoriesRef.current 
+      : categories;
+    
+    const stableProducts = loading && products.length === 0 
+      ? [] 
+      : products;
+    
+    if (stableCategories.length > 0) {
+      return [
+        { id: 'all', label: 'All Products', count: stableProducts.length, icon: '✨' },
+        ...stableCategories.map(cat => ({
           id: cat.name,
           label: cat.name,
           count: cat.count,
           icon: cat.icon
         }))
-      ]
-    : [
-        { id: 'all', label: 'All Products', count: products.length },
-        { id: 'gels', label: 'Sea Moss Gels', count: products.filter(p => p.category === 'gel').length },
-        { id: 'lemonades', label: 'Lemonades', count: products.filter(p => p.category === 'lemonade').length },
-        { id: 'shots', label: 'Wellness Shots', count: products.filter(p => p.category === 'shot').length },
       ];
+    }
+    
+    return [
+      { id: 'all', label: 'All Products', count: stableProducts.length },
+      { id: 'gels', label: 'Sea Moss Gels', count: stableProducts.filter(p => p.category === 'gel').length },
+      { id: 'lemonades', label: 'Lemonades', count: stableProducts.filter(p => p.category === 'lemonade').length },
+      { id: 'shots', label: 'Wellness Shots', count: stableProducts.filter(p => p.category === 'shot').length },
+    ];
+  }, [categories, products, loading, isInitialLoad]);
 
   return (
     <div className="min-h-screen">
@@ -182,14 +216,20 @@ export default function CatalogPage() {
                   key={category.id}
                   variant={selectedFilter === category.id ? "default" : "outline"}
                   onClick={() => filterProducts(category.id)}
-                  className={`${
+                  disabled={category.isLoading}
+                  className={`transition-all duration-200 ${
                     selectedFilter === category.id 
                       ? "bg-emerald-600 hover:bg-emerald-700" 
                       : "border-emerald-300 text-emerald-700 hover:bg-emerald-50"
-                  }`}
+                  } ${category.isLoading ? "opacity-70" : ""}`}
                 >
                   {category.icon && <span className="mr-2">{category.icon}</span>}
-                  {category.label} ({category.count})
+                  {category.label}{' '}
+                  {category.isLoading ? (
+                    <Skeleton className="inline-block h-4 w-6 ml-1 rounded bg-emerald-200/50" />
+                  ) : (
+                    <span className="transition-opacity duration-200">({category.count})</span>
+                  )}
                 </Button>
               ))}
               {selectedFilter === 'recommended' && (

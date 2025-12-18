@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useState, useMemo, useRef, useCallback } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -54,6 +54,32 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
     normalizedVariations[0] || null
   );
   const [isAdding, setIsAdding] = useState(false);
+  const sizeButtonsRef = useRef([]);
+
+  const handleSizeKeyDown = useCallback((e, index) => {
+    const buttons = sizeButtonsRef.current.filter(Boolean);
+    if (!buttons.length) return;
+
+    let nextIndex = index;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      nextIndex = (index + 1) % buttons.length;
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      nextIndex = (index - 1 + buttons.length) % buttons.length;
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      nextIndex = 0;
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      nextIndex = buttons.length - 1;
+    } else {
+      return;
+    }
+
+    buttons[nextIndex]?.focus();
+    setSelectedVariation(normalizedVariations[nextIndex]);
+  }, [normalizedVariations]);
 
   if (!product) return null;
 
@@ -99,6 +125,9 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="sr-only">{product.name}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Quick view for {product.name}. Price: ${currentPrice.toFixed(2)}. Use arrow keys to navigate size options.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -171,14 +200,23 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
             
             {normalizedVariations && normalizedVariations.length > 1 && (
               <div className="mb-4">
-                <label className="block text-sm font-semibold mb-2">Select Size</label>
-                <div className="flex gap-2 flex-wrap">
-                  {normalizedVariations.map((variation) => (
+                <label id="size-label" className="block text-sm font-semibold mb-2">Select Size</label>
+                <div 
+                  className="flex gap-2 flex-wrap" 
+                  role="radiogroup" 
+                  aria-labelledby="size-label"
+                >
+                  {normalizedVariations.map((variation, index) => (
                       <button
                         type="button"
                         key={variation.id}
+                        ref={(el) => (sizeButtonsRef.current[index] = el)}
                         onClick={() => setSelectedVariation(variation)}
-                        className={`px-4 py-2 border-2 rounded-lg transition-all text-sm ${
+                        onKeyDown={(e) => handleSizeKeyDown(e, index)}
+                        role="radio"
+                        aria-checked={selectedVariation?.id === variation.id}
+                        tabIndex={selectedVariation?.id === variation.id ? 0 : -1}
+                        className={`px-4 py-2 border-2 rounded-lg transition-all text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
                           selectedVariation?.id === variation.id
                             ? 'border-emerald-600 bg-emerald-50 font-semibold'
                             : 'border-gray-200 hover:border-emerald-300'
@@ -193,19 +231,23 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
             )}
             
             <div className="mb-6">
-              <label className="block text-sm font-semibold mb-2">Quantity</label>
+              <label id="quantity-label" className="block text-sm font-semibold mb-2">Quantity</label>
               <div className="flex items-center gap-4">
                 <div className="flex items-center border-2 border-gray-200 rounded-lg">
                   <button
+                    type="button"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3 py-2 hover:bg-gray-100"
+                    aria-label="Decrease quantity"
+                    className="px-3 py-2 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-inset rounded-l-md"
                   >
                     -
                   </button>
-                  <span className="px-4 font-semibold">{quantity}</span>
+                  <span className="px-4 font-semibold" aria-live="polite" aria-labelledby="quantity-label">{quantity}</span>
                   <button
+                    type="button"
                     onClick={() => setQuantity(quantity + 1)}
-                    className="px-3 py-2 hover:bg-gray-100"
+                    aria-label="Increase quantity"
+                    className="px-3 py-2 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-inset rounded-r-md"
                   >
                     +
                   </button>
@@ -220,7 +262,8 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
               <Button
                 onClick={handleAddToCart}
                 disabled={isAdding}
-                className="w-full h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+                autoFocus
+                className="w-full h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
               >
                 {isAdding ? (
                   <>
@@ -236,7 +279,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
               </Button>
               
               <Link href={`/product/${product.slug || product.id}`} className="block">
-                <Button variant="outline" className="w-full" onClick={onClose}>
+                <Button variant="outline" className="w-full focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2" onClick={onClose}>
                   View Full Details
                 </Button>
               </Link>

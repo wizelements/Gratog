@@ -10,10 +10,6 @@ module.exports = {
     '/diagnostic'
   ],
   robotsTxtOptions: {
-    additionalSitemaps: [
-      `${process.env.NEXT_PUBLIC_BASE_URL || 'https://tasteofgratitude.shop'}/sitemap-products.xml`,
-      `${process.env.NEXT_PUBLIC_BASE_URL || 'https://tasteofgratitude.shop'}/sitemap-blog.xml`,
-    ],
     policies: [
       {
         userAgent: '*',

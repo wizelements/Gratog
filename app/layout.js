@@ -20,7 +20,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://gratog.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://tasteofgratitude.shop'),
   title: 'Taste of Gratitude | Wildcrafted Sea Moss Gel - 92 Essential Minerals | Premium Irish Sea Moss',
   description: 'Premium wildcrafted sea moss gel packed with 92 essential minerals. Hand-crafted Irish sea moss products for immune support, thyroid health, and wellness. 100% natural, non-GMO, vegan superfood. Free shipping on orders over $50.',
   keywords: 'sea moss gel, wildcrafted sea moss, Irish sea moss, sea moss benefits, sea moss gel organic, sea moss 92 minerals, sea moss immune support, sea moss thyroid health, purple sea moss, gold sea moss, sea moss lemonade, elderberry sea moss, natural supplements, vegan superfood, holistic wellness',
@@ -36,7 +36,7 @@ export const metadata = {
   openGraph: {
     title: 'Taste of Gratitude | Wildcrafted Sea Moss Gel - 92 Essential Minerals',
     description: 'Premium wildcrafted sea moss gel packed with 92 essential minerals for optimal wellness. Hand-crafted with care from pristine ocean waters.',
-    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://gratog.vercel.app',
+    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://tasteofgratitude.shop',
     siteName: 'Taste of Gratitude',
     locale: 'en_US',
     type: 'website',
@@ -67,7 +67,7 @@ export const metadata = {
     },
   },
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_BASE_URL || 'https://gratog.vercel.app',
+    canonical: process.env.NEXT_PUBLIC_BASE_URL || 'https://tasteofgratitude.shop',
   },
 };
 

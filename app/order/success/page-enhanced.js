@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle, Package, Mail, Phone, MapPin, Clock, CreditCard, ArrowRight } from 'lucide-react';
+import { CheckCircle, Package, Mail, Phone, MapPin, Clock, CreditCard, ArrowRight, Sparkles, Heart, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,7 +37,7 @@ export default function OrderSuccessPage() {
       if (!response.ok) {
         if (response.status === 404 && attempt < 10) {
           // Webhook race condition - poll for order
-          debug(`Order not found yet, polling... (attempt ${attempt + 1}/10)`);
+          console.log(`Order not found yet, polling... (attempt ${attempt + 1}/10)`);
           setPollAttempts(attempt + 1);
           setTimeout(() => fetchOrderDetails(attempt + 1), 1500);
           return;
@@ -49,7 +49,7 @@ export default function OrderSuccessPage() {
       
       // If order is still DRAFT/PENDING, poll for completion (webhook race)
       if (['DRAFT', 'PENDING', 'pending'].includes(data.status) && attempt < 20) {
-        debug(`Order status: ${data.status}, polling for completion... (attempt ${attempt + 1}/20)`);
+        console.log(`Order status: ${data.status}, polling for completion... (attempt ${attempt + 1}/20)`);
         setPollAttempts(attempt + 1);
         setOrder(data); // Show what we have so far
         setTimeout(() => fetchOrderDetails(attempt + 1), 1500);
@@ -64,7 +64,7 @@ export default function OrderSuccessPage() {
       
       // Retry on network errors
       if (attempt < 5) {
-        debug(`Network error, retrying... (attempt ${attempt + 1}/5)`);
+        console.log(`Network error, retrying... (attempt ${attempt + 1}/5)`);
         setTimeout(() => fetchOrderDetails(attempt + 1), 2000);
         return;
       }
@@ -364,6 +364,64 @@ export default function OrderSuccessPage() {
                   Back to Home
                 </Button>
               </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Post-Purchase Reinforcement */}
+        <Card className="mt-6 border-emerald-200">
+          <CardContent className="p-6">
+            <h3 className="font-bold text-xl text-gray-900 mb-6 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-emerald-600" />
+              What's Next?
+            </h3>
+            
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Step 1: Fulfillment */}
+              <div className="text-center p-4 bg-emerald-50 rounded-lg">
+                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  {order.fulfillmentType === 'delivery' ? (
+                    <MapPin className="w-6 h-6 text-emerald-600" />
+                  ) : (
+                    <Package className="w-6 h-6 text-emerald-600" />
+                  )}
+                </div>
+                <h4 className="font-semibold text-emerald-900 mb-2">
+                  {order.fulfillmentType === 'delivery' ? 'Delivery Coming' : 'Ready for Pickup'}
+                </h4>
+                <p className="text-sm text-emerald-700">
+                  {order.fulfillmentType === 'delivery' 
+                    ? 'Your order will arrive within 2-3 business days' 
+                    : 'Bring your order confirmation email or ID'}
+                </p>
+              </div>
+
+              {/* Step 2: Usage Tips */}
+              <div className="text-center p-4 bg-teal-50 rounded-lg">
+                <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Heart className="w-6 h-6 text-teal-600" />
+                </div>
+                <h4 className="font-semibold text-teal-900 mb-2">How to Use</h4>
+                <p className="text-sm text-teal-700">
+                  Take 1-2 tablespoons daily, preferably in the morning. Refrigerate after opening & shake before use.
+                </p>
+              </div>
+
+              {/* Step 3: Community */}
+              <div className="text-center p-4 bg-amber-50 rounded-lg">
+                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Star className="w-6 h-6 text-amber-600" />
+                </div>
+                <h4 className="font-semibold text-amber-900 mb-2">Join the Challenge</h4>
+                <p className="text-sm text-amber-700 mb-3">
+                  Track your wellness journey with our 14-Day Sea Moss Challenge
+                </p>
+                <Link href="/challenge">
+                  <Button size="sm" variant="outline" className="border-amber-500 text-amber-700 hover:bg-amber-100">
+                    Start Challenge
+                  </Button>
+                </Link>
+              </div>
             </div>
           </CardContent>
         </Card>

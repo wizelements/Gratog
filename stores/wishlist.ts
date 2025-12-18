@@ -40,7 +40,24 @@ function persistState(items: string[]) {
 }
 
 export const useWishlistStore = create<WishlistState>((set, get) => {
-  const initialItems = loadPersistedState();
+  // Don't load persisted state during SSR - start with empty array
+  // Client-side hydration will happen in useEffect
+  const initialItems: string[] = [];
+  
+  // Hydrate from localStorage on client-side only
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          initialItems.push(...parsed);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to hydrate wishlist state:', e);
+    }
+  }
   
   return {
     items: initialItems,

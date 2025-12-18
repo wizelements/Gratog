@@ -16,16 +16,32 @@ export default function WishlistPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { items, removeFromWishlist, clearWishlist } = useWishlistStore();
+  const [hydratedItems, setHydratedItems] = useState([]);
 
   useEffect(() => {
     setMounted(true);
+    // Re-read from localStorage on mount to ensure we have the latest data
+    try {
+      const saved = localStorage.getItem('wishlist_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setHydratedItems(parsed);
+        }
+      }
+    } catch (e) {
+      console.error('Error hydrating wishlist:', e);
+    }
   }, []);
 
   useEffect(() => {
     if (!mounted) return;
 
+    // Use hydrated items if store is empty but localStorage has data
+    const activeItems = items.length > 0 ? items : hydratedItems;
+
     const fetchProducts = async () => {
-      if (items.length === 0) {
+      if (activeItems.length === 0) {
         setProducts([]);
         setLoading(false);
         return;
@@ -39,7 +55,7 @@ export default function WishlistPage() {
         const allProducts = data.products || [];
         
         const wishlistProducts = allProducts.filter(p => 
-          items.includes(p.id) || items.includes(p.slug)
+          activeItems.includes(p.id) || activeItems.includes(p.slug)
         );
         
         setProducts(wishlistProducts);
@@ -52,7 +68,7 @@ export default function WishlistPage() {
     };
 
     fetchProducts();
-  }, [mounted, items]);
+  }, [mounted, items, hydratedItems]);
 
   const handleMoveToCart = (product) => {
     const variant = product.variations?.[0];
