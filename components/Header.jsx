@@ -30,7 +30,7 @@ export default function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center space-x-6">
+        <nav className="hidden lg:flex items-center space-x-6" aria-label="Main navigation">
           <Link 
             href="/" 
             className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
@@ -161,15 +161,18 @@ export default function Header() {
           size="icon"
           className="md:hidden hover:bg-[#D4AF37]/10"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-menu"
         >
-          {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {isMenuOpen ? <X className="h-6 w-6" aria-hidden="true" /> : <Menu className="h-6 w-6" aria-hidden="true" />}
         </Button>
       </div>
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="lg:hidden border-t bg-background/98 backdrop-blur animate-slide-up">
-          <nav className="container flex flex-col space-y-1 py-4">
+        <div id="mobile-menu" className="lg:hidden border-t bg-background/98 backdrop-blur animate-slide-up">
+          <nav className="container flex flex-col space-y-1 py-4" aria-label="Mobile navigation">
             <Link
               href="/"
               className={`text-sm font-medium py-3 px-4 rounded-md transition-all hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] ${

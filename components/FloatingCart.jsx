@@ -160,8 +160,9 @@ export default function FloatingCart() {
                 variant="ghost"
                 size="icon"
                 className="text-white hover:bg-white/20"
+                aria-label="Close cart"
               >
-                <X className="h-6 w-6" />
+                <X className="h-6 w-6" aria-hidden="true" />
               </Button>
             </div>
 

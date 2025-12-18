@@ -6,7 +6,7 @@ import NewsletterSignup from '@/components/NewsletterSignup';
 
 export default function Footer() {
   return (
-    <footer className="border-t bg-gradient-to-b from-muted/30 to-muted/60">
+    <footer className="border-t bg-gradient-to-b from-muted/30 to-muted/60" role="contentinfo" aria-label="Site footer">
       {/* Newsletter Section */}
       <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-b">
         <div className="container py-12">

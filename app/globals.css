@@ -28,6 +28,22 @@ html {
   html {
     scroll-behavior: smooth;
   }
+  
+  /* Accessibility: Focus indicators for all interactive elements */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role="button"]:focus-visible,
+  [tabindex]:focus-visible {
+    @apply outline-2 outline-offset-2 outline-[#D4AF37] ring-2 ring-[#D4AF37]/30;
+  }
+  
+  /* Skip to content link styling */
+  .sr-only:focus {
+    @apply not-sr-only absolute top-4 left-4 z-50 bg-white px-4 py-2 text-black rounded shadow-lg;
+  }
 }
 
 @layer utilities {
