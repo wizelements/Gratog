@@ -2,10 +2,48 @@
   "context": {
     "issues": [],
     "hasCheckout": true,
-    "hasTrustBadges": false,
+    "hasTrustBadges": true,
     "hasCartRecovery": false,
-    "hasSkeletonLoaders": false,
-    "missingSecurityHeaders": true,
+    "hasSkeletonLoaders": true,
+    "hasExitIntent": true,
+    "hasSearchAutocomplete": true,
+    "hasOptimizedImages": true,
+    "hasStructuredData": true,
+    "hasMetaTags": true,
+    "hasTestimonials": true,
+    "hasAboutPage": true,
+    "hasPoliciesPage": false,
+    "hasEmailCapture": true,
+    "hasReviewSystem": true,
+    "hasWishlist": false,
+    "hasProductBundles": false,
+    "hasLoyaltyProgram": false,
+    "hasLiveChat": false,
+    "hasEnhancedAnalytics": false,
+    "hasI18n": false,
+    "hasPWA": true,
+    "missingSecurityHeaders": false,
+    "implementedRecommendations": [
+      "payment-trust",
+      "cart-abandonment",
+      "search-experience",
+      "loading-states",
+      "security-headers",
+      "structured-data",
+      "meta-optimization",
+      "content-trust",
+      "core-web-vitals",
+      "product-reviews",
+      "email-marketing",
+      "pwa-features",
+      "product-bundles",
+      "loyalty-program",
+      "a11y-audit",
+      "live-chat",
+      "wishlist",
+      "analytics-enhanced",
+      "internationalization"
+    ],
     "summary": {
       "critical": 0,
       "high": 0,
@@ -14,6 +52,148 @@
     }
   },
   "recommendations": [
+    {
+      "id": "product-bundles",
+      "category": "REVENUE",
+      "title": "Product Bundles & Upsells",
+      "description": "Increase average order value with bundles",
+      "effort": "medium",
+      "impact": "high",
+      "steps": [
+        "Create popular product bundles",
+        "Add \"Frequently bought together\" section",
+        "Implement upsell/cross-sell recommendations",
+        "Offer bundle discounts"
+      ],
+      "categoryInfo": {
+        "icon": "💰",
+        "priority": 1,
+        "label": "Revenue Impact"
+      },
+      "score": 140
+    },
+    {
+      "id": "loyalty-program",
+      "category": "REVENUE",
+      "title": "Loyalty/Rewards Program",
+      "description": "Encourage repeat purchases with rewards",
+      "effort": "high",
+      "impact": "high",
+      "steps": [
+        "Design points-based reward system",
+        "Create rewards dashboard for customers",
+        "Implement referral bonuses",
+        "Add VIP tiers with exclusive benefits"
+      ],
+      "categoryInfo": {
+        "icon": "💰",
+        "priority": 1,
+        "label": "Revenue Impact"
+      },
+      "score": 135
+    },
+    {
+      "id": "a11y-audit",
+      "category": "ACCESSIBILITY",
+      "title": "Accessibility Audit",
+      "description": "Ensure WCAG 2.1 AA compliance",
+      "effort": "medium",
+      "impact": "medium",
+      "steps": [
+        "Run automated accessibility tests",
+        "Test with screen readers (NVDA, VoiceOver)",
+        "Ensure keyboard navigation works",
+        "Add skip links and ARIA landmarks"
+      ],
+      "categoryInfo": {
+        "icon": "♿",
+        "priority": 4,
+        "label": "Accessibility"
+      },
+      "score": 100
+    },
+    {
+      "id": "live-chat",
+      "category": "UX",
+      "title": "Live Chat Support",
+      "description": "Provide real-time customer assistance",
+      "effort": "low",
+      "impact": "medium",
+      "steps": [
+        "Integrate chat widget (Crisp, Intercom, etc.)",
+        "Set up chatbot for common questions",
+        "Define chat business hours",
+        "Train support team on product knowledge"
+      ],
+      "categoryInfo": {
+        "icon": "🎨",
+        "priority": 6,
+        "label": "User Experience"
+      },
+      "score": 90
+    },
+    {
+      "id": "wishlist",
+      "category": "UX",
+      "title": "Wishlist/Favorites Feature",
+      "description": "Allow customers to save products for later",
+      "effort": "medium",
+      "impact": "medium",
+      "steps": [
+        "Add heart/save button to product cards",
+        "Create wishlist page for logged-in users",
+        "Sync wishlist across devices",
+        "Send wishlist reminder emails"
+      ],
+      "categoryInfo": {
+        "icon": "🎨",
+        "priority": 6,
+        "label": "User Experience"
+      },
+      "score": 80
+    },
+    {
+      "id": "analytics-enhanced",
+      "category": "TECH_DEBT",
+      "title": "Enhanced Analytics",
+      "description": "Track user behavior and conversion funnels",
+      "effort": "medium",
+      "impact": "medium",
+      "steps": [
+        "Set up GA4 e-commerce tracking",
+        "Implement conversion funnel analysis",
+        "Add heatmap tracking (Hotjar/FullStory)",
+        "Create custom dashboards for KPIs"
+      ],
+      "categoryInfo": {
+        "icon": "🔧",
+        "priority": 10,
+        "label": "Technical Debt"
+      },
+      "score": 40
+    },
+    {
+      "id": "internationalization",
+      "category": "TECH_DEBT",
+      "title": "Internationalization (i18n)",
+      "description": "Prepare for multi-language support",
+      "effort": "high",
+      "impact": "medium",
+      "steps": [
+        "Extract hardcoded strings to translation files",
+        "Set up next-intl or similar i18n library",
+        "Add language switcher",
+        "Consider currency localization"
+      ],
+      "categoryInfo": {
+        "icon": "🔧",
+        "priority": 10,
+        "label": "Technical Debt"
+      },
+      "score": 35
+    }
+  ],
+  "implemented": [
     {
       "id": "payment-trust",
       "category": "REVENUE",
@@ -32,27 +212,7 @@
         "priority": 1,
         "label": "Revenue Impact"
       },
-      "score": 150
-    },
-    {
-      "id": "security-headers",
-      "category": "SECURITY",
-      "title": "Security Headers",
-      "description": "Implement proper security headers",
-      "effort": "low",
-      "impact": "high",
-      "steps": [
-        "Add Content-Security-Policy header",
-        "Enable Strict-Transport-Security",
-        "Add X-Frame-Options header",
-        "Configure X-Content-Type-Options"
-      ],
-      "categoryInfo": {
-        "icon": "🔒",
-        "priority": 2,
-        "label": "Security"
-      },
-      "score": 140
+      "status": "implemented"
     },
     {
       "id": "cart-abandonment",
@@ -72,7 +232,27 @@
         "priority": 3,
         "label": "Conversion"
       },
-      "score": 120
+      "status": "implemented"
+    },
+    {
+      "id": "security-headers",
+      "category": "SECURITY",
+      "title": "Security Headers",
+      "description": "Implement proper security headers",
+      "effort": "low",
+      "impact": "high",
+      "steps": [
+        "Add Content-Security-Policy header",
+        "Enable Strict-Transport-Security",
+        "Add X-Frame-Options header",
+        "Configure X-Content-Type-Options"
+      ],
+      "categoryInfo": {
+        "icon": "🔒",
+        "priority": 2,
+        "label": "Security"
+      },
+      "status": "implemented"
     },
     {
       "id": "core-web-vitals",
@@ -93,7 +273,7 @@
         "priority": 5,
         "label": "Performance"
       },
-      "score": 100
+      "status": "implemented"
     },
     {
       "id": "search-experience",
@@ -113,7 +293,7 @@
         "priority": 6,
         "label": "User Experience"
       },
-      "score": 90
+      "status": "implemented"
     },
     {
       "id": "loading-states",
@@ -133,7 +313,7 @@
         "priority": 6,
         "label": "User Experience"
       },
-      "score": 90
+      "status": "implemented"
     },
     {
       "id": "structured-data",
@@ -153,7 +333,7 @@
         "priority": 7,
         "label": "SEO"
       },
-      "score": 80
+      "status": "implemented"
     },
     {
       "id": "meta-optimization",
@@ -173,7 +353,7 @@
         "priority": 7,
         "label": "SEO"
       },
-      "score": 80
+      "status": "implemented"
     },
     {
       "id": "content-trust",
@@ -193,305 +373,297 @@
         "priority": 9,
         "label": "Content"
       },
-      "score": 60
-    }
-  ],
-  "summary": {
-    "total": 9,
-    "byCategory": {
-      "REVENUE": [
-        {
-          "id": "payment-trust",
-          "category": "REVENUE",
-          "title": "Payment Trust Signals",
-          "description": "Add security badges and trust indicators",
-          "effort": "low",
-          "impact": "high",
-          "steps": [
-            "Add SSL/secure payment badges",
-            "Display accepted payment methods",
-            "Add money-back guarantee badge",
-            "Show customer testimonials near checkout"
-          ],
-          "categoryInfo": {
-            "icon": "💰",
-            "priority": 1,
-            "label": "Revenue Impact"
-          },
-          "score": 150
-        }
-      ],
-      "SECURITY": [
-        {
-          "id": "security-headers",
-          "category": "SECURITY",
-          "title": "Security Headers",
-          "description": "Implement proper security headers",
-          "effort": "low",
-          "impact": "high",
-          "steps": [
-            "Add Content-Security-Policy header",
-            "Enable Strict-Transport-Security",
-            "Add X-Frame-Options header",
-            "Configure X-Content-Type-Options"
-          ],
-          "categoryInfo": {
-            "icon": "🔒",
-            "priority": 2,
-            "label": "Security"
-          },
-          "score": 140
-        }
-      ],
-      "CONVERSION": [
-        {
-          "id": "cart-abandonment",
-          "category": "CONVERSION",
-          "title": "Cart Abandonment Recovery",
-          "description": "Implement cart recovery strategies",
-          "effort": "medium",
-          "impact": "high",
-          "steps": [
-            "Add exit-intent popup with discount",
-            "Implement email cart reminders",
-            "Add \"save for later\" functionality",
-            "Show recently viewed items"
-          ],
-          "categoryInfo": {
-            "icon": "📈",
-            "priority": 3,
-            "label": "Conversion"
-          },
-          "score": 120
-        }
-      ],
-      "PERFORMANCE": [
-        {
-          "id": "core-web-vitals",
-          "category": "PERFORMANCE",
-          "title": "Core Web Vitals",
-          "description": "Improve LCP, FID, and CLS scores",
-          "effort": "medium",
-          "impact": "high",
-          "steps": [
-            "Optimize Largest Contentful Paint (LCP < 2.5s)",
-            "Reduce First Input Delay (FID < 100ms)",
-            "Minimize Cumulative Layout Shift (CLS < 0.1)",
-            "Add size attributes to images/iframes",
-            "Preload critical fonts"
-          ],
-          "categoryInfo": {
-            "icon": "⚡",
-            "priority": 5,
-            "label": "Performance"
-          },
-          "score": 100
-        }
-      ],
-      "UX": [
-        {
-          "id": "search-experience",
-          "category": "UX",
-          "title": "Search & Filter",
-          "description": "Improve product discovery",
-          "effort": "medium",
-          "impact": "high",
-          "steps": [
-            "Add autocomplete to search",
-            "Implement search suggestions",
-            "Add filtering by price/category",
-            "Show \"no results\" helpful suggestions"
-          ],
-          "categoryInfo": {
-            "icon": "🎨",
-            "priority": 6,
-            "label": "User Experience"
-          },
-          "score": 90
-        },
-        {
-          "id": "loading-states",
-          "category": "UX",
-          "title": "Loading States",
-          "description": "Add skeleton loaders and transitions",
-          "effort": "low",
-          "impact": "medium",
-          "steps": [
-            "Add skeleton loaders for product grids",
-            "Implement smooth page transitions",
-            "Add loading spinners for actions",
-            "Show optimistic UI updates"
-          ],
-          "categoryInfo": {
-            "icon": "🎨",
-            "priority": 6,
-            "label": "User Experience"
-          },
-          "score": 90
-        }
-      ],
-      "SEO": [
-        {
-          "id": "structured-data",
-          "category": "SEO",
-          "title": "Structured Data Enhancement",
-          "description": "Add rich snippets for better search visibility",
-          "effort": "low",
-          "impact": "medium",
-          "steps": [
-            "Add Product schema to all products",
-            "Implement BreadcrumbList schema",
-            "Add Review/Rating schema",
-            "Add FAQ schema to relevant pages"
-          ],
-          "categoryInfo": {
-            "icon": "🔍",
-            "priority": 7,
-            "label": "SEO"
-          },
-          "score": 80
-        },
-        {
-          "id": "meta-optimization",
-          "category": "SEO",
-          "title": "Meta Tag Optimization",
-          "description": "Optimize meta titles and descriptions",
-          "effort": "low",
-          "impact": "medium",
-          "steps": [
-            "Add unique meta titles (50-60 chars)",
-            "Write compelling meta descriptions (150-160 chars)",
-            "Add Open Graph tags for social sharing",
-            "Implement canonical URLs"
-          ],
-          "categoryInfo": {
-            "icon": "🔍",
-            "priority": 7,
-            "label": "SEO"
-          },
-          "score": 80
-        }
-      ],
-      "CONTENT": [
-        {
-          "id": "content-trust",
-          "category": "CONTENT",
-          "title": "Trust-Building Content",
-          "description": "Add content that builds customer trust",
-          "effort": "medium",
-          "impact": "high",
-          "steps": [
-            "Add customer reviews/testimonials",
-            "Create About Us story page",
-            "Add shipping/returns policy page",
-            "Display contact information prominently"
-          ],
-          "categoryInfo": {
-            "icon": "📝",
-            "priority": 9,
-            "label": "Content"
-          },
-          "score": 60
-        }
-      ]
-    },
-    "highImpact": 6,
-    "quickWins": 2
-  },
-  "topPicks": [
-    {
-      "id": "payment-trust",
-      "category": "REVENUE",
-      "title": "Payment Trust Signals",
-      "description": "Add security badges and trust indicators",
-      "effort": "low",
-      "impact": "high",
-      "steps": [
-        "Add SSL/secure payment badges",
-        "Display accepted payment methods",
-        "Add money-back guarantee badge",
-        "Show customer testimonials near checkout"
-      ],
-      "categoryInfo": {
-        "icon": "💰",
-        "priority": 1,
-        "label": "Revenue Impact"
-      },
-      "score": 150
+      "status": "implemented"
     },
     {
-      "id": "security-headers",
-      "category": "SECURITY",
-      "title": "Security Headers",
-      "description": "Implement proper security headers",
-      "effort": "low",
-      "impact": "high",
-      "steps": [
-        "Add Content-Security-Policy header",
-        "Enable Strict-Transport-Security",
-        "Add X-Frame-Options header",
-        "Configure X-Content-Type-Options"
-      ],
-      "categoryInfo": {
-        "icon": "🔒",
-        "priority": 2,
-        "label": "Security"
-      },
-      "score": 140
-    },
-    {
-      "id": "cart-abandonment",
+      "id": "email-marketing",
       "category": "CONVERSION",
-      "title": "Cart Abandonment Recovery",
-      "description": "Implement cart recovery strategies",
+      "title": "Email Marketing Integration",
+      "description": "Build email list and automated sequences",
       "effort": "medium",
       "impact": "high",
       "steps": [
-        "Add exit-intent popup with discount",
-        "Implement email cart reminders",
-        "Add \"save for later\" functionality",
-        "Show recently viewed items"
+        "Add newsletter signup popup/form",
+        "Create welcome email sequence",
+        "Set up abandoned cart email reminder",
+        "Implement post-purchase follow-up emails"
       ],
       "categoryInfo": {
         "icon": "📈",
         "priority": 3,
         "label": "Conversion"
       },
-      "score": 120
+      "status": "implemented"
     },
     {
-      "id": "core-web-vitals",
-      "category": "PERFORMANCE",
-      "title": "Core Web Vitals",
-      "description": "Improve LCP, FID, and CLS scores",
+      "id": "product-reviews",
+      "category": "CONVERSION",
+      "title": "Customer Reviews System",
+      "description": "Collect and display product reviews",
       "effort": "medium",
       "impact": "high",
       "steps": [
-        "Optimize Largest Contentful Paint (LCP < 2.5s)",
-        "Reduce First Input Delay (FID < 100ms)",
-        "Minimize Cumulative Layout Shift (CLS < 0.1)",
-        "Add size attributes to images/iframes",
-        "Preload critical fonts"
+        "Add review submission form to product pages",
+        "Display star ratings and reviews",
+        "Send review request emails after purchase",
+        "Add review moderation dashboard"
+      ],
+      "categoryInfo": {
+        "icon": "📈",
+        "priority": 3,
+        "label": "Conversion"
+      },
+      "status": "implemented"
+    },
+    {
+      "id": "pwa-features",
+      "category": "PERFORMANCE",
+      "title": "Progressive Web App Features",
+      "description": "Improve mobile experience with PWA",
+      "effort": "medium",
+      "impact": "medium",
+      "steps": [
+        "Add app manifest for home screen install",
+        "Implement offline support with service worker",
+        "Add push notifications for orders",
+        "Optimize for mobile-first experience"
       ],
       "categoryInfo": {
         "icon": "⚡",
         "priority": 5,
         "label": "Performance"
       },
-      "score": 100
+      "status": "implemented"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "byCategory": {
+      "REVENUE": [
+        {
+          "id": "product-bundles",
+          "category": "REVENUE",
+          "title": "Product Bundles & Upsells",
+          "description": "Increase average order value with bundles",
+          "effort": "medium",
+          "impact": "high",
+          "steps": [
+            "Create popular product bundles",
+            "Add \"Frequently bought together\" section",
+            "Implement upsell/cross-sell recommendations",
+            "Offer bundle discounts"
+          ],
+          "categoryInfo": {
+            "icon": "💰",
+            "priority": 1,
+            "label": "Revenue Impact"
+          },
+          "score": 140
+        },
+        {
+          "id": "loyalty-program",
+          "category": "REVENUE",
+          "title": "Loyalty/Rewards Program",
+          "description": "Encourage repeat purchases with rewards",
+          "effort": "high",
+          "impact": "high",
+          "steps": [
+            "Design points-based reward system",
+            "Create rewards dashboard for customers",
+            "Implement referral bonuses",
+            "Add VIP tiers with exclusive benefits"
+          ],
+          "categoryInfo": {
+            "icon": "💰",
+            "priority": 1,
+            "label": "Revenue Impact"
+          },
+          "score": 135
+        }
+      ],
+      "ACCESSIBILITY": [
+        {
+          "id": "a11y-audit",
+          "category": "ACCESSIBILITY",
+          "title": "Accessibility Audit",
+          "description": "Ensure WCAG 2.1 AA compliance",
+          "effort": "medium",
+          "impact": "medium",
+          "steps": [
+            "Run automated accessibility tests",
+            "Test with screen readers (NVDA, VoiceOver)",
+            "Ensure keyboard navigation works",
+            "Add skip links and ARIA landmarks"
+          ],
+          "categoryInfo": {
+            "icon": "♿",
+            "priority": 4,
+            "label": "Accessibility"
+          },
+          "score": 100
+        }
+      ],
+      "UX": [
+        {
+          "id": "live-chat",
+          "category": "UX",
+          "title": "Live Chat Support",
+          "description": "Provide real-time customer assistance",
+          "effort": "low",
+          "impact": "medium",
+          "steps": [
+            "Integrate chat widget (Crisp, Intercom, etc.)",
+            "Set up chatbot for common questions",
+            "Define chat business hours",
+            "Train support team on product knowledge"
+          ],
+          "categoryInfo": {
+            "icon": "🎨",
+            "priority": 6,
+            "label": "User Experience"
+          },
+          "score": 90
+        },
+        {
+          "id": "wishlist",
+          "category": "UX",
+          "title": "Wishlist/Favorites Feature",
+          "description": "Allow customers to save products for later",
+          "effort": "medium",
+          "impact": "medium",
+          "steps": [
+            "Add heart/save button to product cards",
+            "Create wishlist page for logged-in users",
+            "Sync wishlist across devices",
+            "Send wishlist reminder emails"
+          ],
+          "categoryInfo": {
+            "icon": "🎨",
+            "priority": 6,
+            "label": "User Experience"
+          },
+          "score": 80
+        }
+      ],
+      "TECH_DEBT": [
+        {
+          "id": "analytics-enhanced",
+          "category": "TECH_DEBT",
+          "title": "Enhanced Analytics",
+          "description": "Track user behavior and conversion funnels",
+          "effort": "medium",
+          "impact": "medium",
+          "steps": [
+            "Set up GA4 e-commerce tracking",
+            "Implement conversion funnel analysis",
+            "Add heatmap tracking (Hotjar/FullStory)",
+            "Create custom dashboards for KPIs"
+          ],
+          "categoryInfo": {
+            "icon": "🔧",
+            "priority": 10,
+            "label": "Technical Debt"
+          },
+          "score": 40
+        },
+        {
+          "id": "internationalization",
+          "category": "TECH_DEBT",
+          "title": "Internationalization (i18n)",
+          "description": "Prepare for multi-language support",
+          "effort": "high",
+          "impact": "medium",
+          "steps": [
+            "Extract hardcoded strings to translation files",
+            "Set up next-intl or similar i18n library",
+            "Add language switcher",
+            "Consider currency localization"
+          ],
+          "categoryInfo": {
+            "icon": "🔧",
+            "priority": 10,
+            "label": "Technical Debt"
+          },
+          "score": 35
+        }
+      ]
     },
+    "highImpact": 2,
+    "quickWins": 0
+  },
+  "topPicks": [
     {
-      "id": "search-experience",
-      "category": "UX",
-      "title": "Search & Filter",
-      "description": "Improve product discovery",
+      "id": "product-bundles",
+      "category": "REVENUE",
+      "title": "Product Bundles & Upsells",
+      "description": "Increase average order value with bundles",
       "effort": "medium",
       "impact": "high",
       "steps": [
-        "Add autocomplete to search",
-        "Implement search suggestions",
-        "Add filtering by price/category",
-        "Show \"no results\" helpful suggestions"
+        "Create popular product bundles",
+        "Add \"Frequently bought together\" section",
+        "Implement upsell/cross-sell recommendations",
+        "Offer bundle discounts"
+      ],
+      "categoryInfo": {
+        "icon": "💰",
+        "priority": 1,
+        "label": "Revenue Impact"
+      },
+      "score": 140
+    },
+    {
+      "id": "loyalty-program",
+      "category": "REVENUE",
+      "title": "Loyalty/Rewards Program",
+      "description": "Encourage repeat purchases with rewards",
+      "effort": "high",
+      "impact": "high",
+      "steps": [
+        "Design points-based reward system",
+        "Create rewards dashboard for customers",
+        "Implement referral bonuses",
+        "Add VIP tiers with exclusive benefits"
+      ],
+      "categoryInfo": {
+        "icon": "💰",
+        "priority": 1,
+        "label": "Revenue Impact"
+      },
+      "score": 135
+    },
+    {
+      "id": "a11y-audit",
+      "category": "ACCESSIBILITY",
+      "title": "Accessibility Audit",
+      "description": "Ensure WCAG 2.1 AA compliance",
+      "effort": "medium",
+      "impact": "medium",
+      "steps": [
+        "Run automated accessibility tests",
+        "Test with screen readers (NVDA, VoiceOver)",
+        "Ensure keyboard navigation works",
+        "Add skip links and ARIA landmarks"
+      ],
+      "categoryInfo": {
+        "icon": "♿",
+        "priority": 4,
+        "label": "Accessibility"
+      },
+      "score": 100
+    },
+    {
+      "id": "live-chat",
+      "category": "UX",
+      "title": "Live Chat Support",
+      "description": "Provide real-time customer assistance",
+      "effort": "low",
+      "impact": "medium",
+      "steps": [
+        "Integrate chat widget (Crisp, Intercom, etc.)",
+        "Set up chatbot for common questions",
+        "Define chat business hours",
+        "Train support team on product knowledge"
       ],
       "categoryInfo": {
         "icon": "🎨",
@@ -499,6 +671,32 @@
         "label": "User Experience"
       },
       "score": 90
+    },
+    {
+      "id": "wishlist",
+      "category": "UX",
+      "title": "Wishlist/Favorites Feature",
+      "description": "Allow customers to save products for later",
+      "effort": "medium",
+      "impact": "medium",
+      "steps": [
+        "Add heart/save button to product cards",
+        "Create wishlist page for logged-in users",
+        "Sync wishlist across devices",
+        "Send wishlist reminder emails"
+      ],
+      "categoryInfo": {
+        "icon": "🎨",
+        "priority": 6,
+        "label": "User Experience"
+      },
+      "score": 80
     }
-  ]
+  ],
+  "progress": {
+    "implemented": 12,
+    "remaining": 7,
+    "total": 19,
+    "percentComplete": 63
+  }
 }

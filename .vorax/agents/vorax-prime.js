@@ -22,6 +22,8 @@ class VoraxPrime extends EventEmitter {
     this.lastScan = null;
     this.isRunning = false;
     this.subAgents = new Map();
+    this.previousScanIssues = [];
+    this.fixedSinceLastScan = [];
     this.metrics = {
       totalIssuesFound: 0,
       criticalIssues: 0,
@@ -29,7 +31,9 @@ class VoraxPrime extends EventEmitter {
       mediumIssues: 0,
       lowIssues: 0,
       autoFixed: 0,
-      escalated: 0
+      escalated: 0,
+      recommendationsOffered: 0,
+      recommendationsImplemented: 0
     };
   }
 
@@ -177,6 +181,9 @@ class VoraxPrime extends EventEmitter {
     // Check for escalations
     await this.checkEscalations(scanResults);
 
+    // Track fixes since last scan
+    await this.trackFixes(scanResults);
+
     // Generate report
     await this.generateReport(scanResults);
 
@@ -187,8 +194,102 @@ class VoraxPrime extends EventEmitter {
     console.log(`   Low: ${scanResults.summary.low}`);
     console.log(`   Total: ${scanResults.issues.length}`);
 
+    // Show fixes since last scan
+    if (this.fixedSinceLastScan.length > 0) {
+      console.log(`\n✅ FIXED SINCE LAST SCAN: ${this.fixedSinceLastScan.length} issues`);
+      for (const fix of this.fixedSinceLastScan.slice(0, 5)) {
+        console.log(`   • ${fix.type}: ${fix.file || 'N/A'}`);
+      }
+      if (this.fixedSinceLastScan.length > 5) {
+        console.log(`   ... and ${this.fixedSinceLastScan.length - 5} more`);
+      }
+    }
+
+    // Run NextSteps Advisor and show recommendations
+    await this.showNextSteps(scanResults);
+
     this.emit('huntComplete', scanResults);
     return scanResults;
+  }
+
+  /**
+   * Track issues that were fixed since last scan
+   */
+  async trackFixes(scanResults) {
+    if (this.previousScanIssues.length === 0) {
+      // Load previous scan from file
+      const previousPath = path.join(process.cwd(), '.vorax/reports/previous.json');
+      if (fs.existsSync(previousPath)) {
+        try {
+          const previous = JSON.parse(fs.readFileSync(previousPath, 'utf-8'));
+          this.previousScanIssues = previous.issues || [];
+        } catch (err) {
+          // No previous scan available
+        }
+      }
+    }
+
+    // Find issues that existed before but don't exist now
+    this.fixedSinceLastScan = this.previousScanIssues.filter(prevIssue => {
+      return !scanResults.issues.some(curIssue => 
+        curIssue.type === prevIssue.type && 
+        curIssue.file === prevIssue.file &&
+        curIssue.line === prevIssue.line
+      );
+    });
+
+    // Update metrics
+    this.metrics.autoFixed += this.fixedSinceLastScan.length;
+
+    // Save current scan as previous for next comparison
+    const previousPath = path.join(process.cwd(), '.vorax/reports/previous.json');
+    fs.writeFileSync(previousPath, JSON.stringify(scanResults, null, 2));
+
+    // Store current issues for in-memory comparison
+    this.previousScanIssues = scanResults.issues;
+  }
+
+  /**
+   * Show NextSteps recommendations after hunt
+   */
+  async showNextSteps(scanResults) {
+    try {
+      const NextStepsAdvisor = require('./next-steps-advisor.js');
+      const advisor = new NextStepsAdvisor();
+      const analysis = await advisor.analyze();
+
+      console.log('\n' + '─'.repeat(60));
+      console.log('🎯 NEXT BEST ENHANCEMENTS:');
+      console.log('─'.repeat(60));
+
+      // Show top 3 recommendations
+      for (let i = 0; i < Math.min(3, analysis.topPicks.length); i++) {
+        const rec = analysis.topPicks[i];
+        const cat = advisor.categories[rec.category];
+        console.log(`\n${i + 1}. ${cat.icon} ${rec.title}`);
+        console.log(`   Impact: ${rec.impact.toUpperCase()} | Effort: ${rec.effort}`);
+        console.log(`   ${rec.description}`);
+      }
+
+      // Show quick wins count
+      const quickWins = analysis.recommendations.filter(r => r.effort === 'low' && r.impact === 'high');
+      if (quickWins.length > 0) {
+        console.log(`\n⚡ ${quickWins.length} quick win${quickWins.length > 1 ? 's' : ''} available (high impact, low effort)`);
+      }
+
+      console.log('\n💡 Run `npm run vorax next` for full recommendations');
+      console.log('');
+
+      // Update metrics
+      this.metrics.recommendationsOffered = analysis.recommendations.length;
+
+      // Save next-steps for reference
+      const outputPath = path.join(process.cwd(), '.vorax/reports/next-steps.json');
+      fs.writeFileSync(outputPath, JSON.stringify(analysis, null, 2));
+
+    } catch (err) {
+      console.log('\n⚠️  NextSteps Advisor unavailable:', err.message);
+    }
   }
 
   /**

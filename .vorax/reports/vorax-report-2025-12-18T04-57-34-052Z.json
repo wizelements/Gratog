@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-12-18T05:00:45.537Z",
+  "timestamp": "2025-12-18T04:57:19.694Z",
   "scanNumber": 1,
   "mode": "NORMAL",
   "hungerLevel": 50,
   "agents": {
     "bug-hunter": {
       "agent": "bug-hunter",
-      "duration": 17038,
+      "duration": 14357,
       "issues": [],
       "stats": {
         "filesScanned": 425,
@@ -15,7 +15,7 @@
     },
     "psycho-marketer": {
       "agent": "psycho-marketer",
-      "duration": 95,
+      "duration": 92,
       "issues": [],
       "stats": {
         "messagingScore": 100,
@@ -25,7 +25,7 @@
     },
     "uiux-predator": {
       "agent": "uiux-predator",
-      "duration": 72,
+      "duration": 69,
       "issues": [],
       "stats": {
         "componentsScanned": 131,
@@ -34,7 +34,7 @@
     },
     "log-devourer": {
       "agent": "log-devourer",
-      "duration": 47,
+      "duration": 46,
       "issues": [],
       "stats": {
         "filesWithLogging": 280,
@@ -44,7 +44,7 @@
     },
     "opti-beast": {
       "agent": "opti-beast",
-      "duration": 14,
+      "duration": 12,
       "issues": [],
       "stats": {
         "bundleSize": 2480434,
@@ -53,7 +53,7 @@
     },
     "trust-guardian": {
       "agent": "trust-guardian",
-      "duration": 13,
+      "duration": 11,
       "issues": [],
       "stats": {
         "trustScore": 100,

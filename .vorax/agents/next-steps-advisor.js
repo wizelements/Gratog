@@ -352,6 +352,158 @@ class NextStepsAdvisor {
           'Use social proof instead of pressure',
           'A/B test messaging approaches'
         ]
+      },
+
+      // Phase 2: Advanced Enhancements
+      {
+        id: 'email-marketing',
+        category: 'CONVERSION',
+        title: 'Email Marketing Integration',
+        description: 'Build email list and automated sequences',
+        effort: 'medium',
+        impact: 'high',
+        detectFn: (ctx) => !ctx.hasEmailCapture,
+        steps: [
+          'Add newsletter signup popup/form',
+          'Create welcome email sequence',
+          'Set up abandoned cart email reminder',
+          'Implement post-purchase follow-up emails'
+        ]
+      },
+      {
+        id: 'product-reviews',
+        category: 'CONVERSION',
+        title: 'Customer Reviews System',
+        description: 'Collect and display product reviews',
+        effort: 'medium',
+        impact: 'high',
+        detectFn: (ctx) => !ctx.hasReviewSystem,
+        steps: [
+          'Add review submission form to product pages',
+          'Display star ratings and reviews',
+          'Send review request emails after purchase',
+          'Add review moderation dashboard'
+        ]
+      },
+      {
+        id: 'wishlist',
+        category: 'UX',
+        title: 'Wishlist/Favorites Feature',
+        description: 'Allow customers to save products for later',
+        effort: 'medium',
+        impact: 'medium',
+        detectFn: (ctx) => !ctx.hasWishlist,
+        steps: [
+          'Add heart/save button to product cards',
+          'Create wishlist page for logged-in users',
+          'Sync wishlist across devices',
+          'Send wishlist reminder emails'
+        ]
+      },
+      {
+        id: 'product-bundles',
+        category: 'REVENUE',
+        title: 'Product Bundles & Upsells',
+        description: 'Increase average order value with bundles',
+        effort: 'medium',
+        impact: 'high',
+        detectFn: (ctx) => !ctx.hasProductBundles,
+        steps: [
+          'Create popular product bundles',
+          'Add "Frequently bought together" section',
+          'Implement upsell/cross-sell recommendations',
+          'Offer bundle discounts'
+        ]
+      },
+      {
+        id: 'loyalty-program',
+        category: 'REVENUE',
+        title: 'Loyalty/Rewards Program',
+        description: 'Encourage repeat purchases with rewards',
+        effort: 'high',
+        impact: 'high',
+        detectFn: (ctx) => !ctx.hasLoyaltyProgram,
+        steps: [
+          'Design points-based reward system',
+          'Create rewards dashboard for customers',
+          'Implement referral bonuses',
+          'Add VIP tiers with exclusive benefits'
+        ]
+      },
+      {
+        id: 'live-chat',
+        category: 'UX',
+        title: 'Live Chat Support',
+        description: 'Provide real-time customer assistance',
+        effort: 'low',
+        impact: 'medium',
+        detectFn: (ctx) => !ctx.hasLiveChat,
+        steps: [
+          'Integrate chat widget (Crisp, Intercom, etc.)',
+          'Set up chatbot for common questions',
+          'Define chat business hours',
+          'Train support team on product knowledge'
+        ]
+      },
+      {
+        id: 'analytics-enhanced',
+        category: 'TECH_DEBT',
+        title: 'Enhanced Analytics',
+        description: 'Track user behavior and conversion funnels',
+        effort: 'medium',
+        impact: 'medium',
+        detectFn: (ctx) => !ctx.hasEnhancedAnalytics,
+        steps: [
+          'Set up GA4 e-commerce tracking',
+          'Implement conversion funnel analysis',
+          'Add heatmap tracking (Hotjar/FullStory)',
+          'Create custom dashboards for KPIs'
+        ]
+      },
+      {
+        id: 'a11y-audit',
+        category: 'ACCESSIBILITY',
+        title: 'Accessibility Audit',
+        description: 'Ensure WCAG 2.1 AA compliance',
+        effort: 'medium',
+        impact: 'medium',
+        detectFn: (ctx) => true, // Always relevant
+        steps: [
+          'Run automated accessibility tests',
+          'Test with screen readers (NVDA, VoiceOver)',
+          'Ensure keyboard navigation works',
+          'Add skip links and ARIA landmarks'
+        ]
+      },
+      {
+        id: 'internationalization',
+        category: 'TECH_DEBT',
+        title: 'Internationalization (i18n)',
+        description: 'Prepare for multi-language support',
+        effort: 'high',
+        impact: 'medium',
+        detectFn: (ctx) => !ctx.hasI18n,
+        steps: [
+          'Extract hardcoded strings to translation files',
+          'Set up next-intl or similar i18n library',
+          'Add language switcher',
+          'Consider currency localization'
+        ]
+      },
+      {
+        id: 'pwa-features',
+        category: 'PERFORMANCE',
+        title: 'Progressive Web App Features',
+        description: 'Improve mobile experience with PWA',
+        effort: 'medium',
+        impact: 'medium',
+        detectFn: (ctx) => !ctx.hasPWA,
+        steps: [
+          'Add app manifest for home screen install',
+          'Implement offline support with service worker',
+          'Add push notifications for orders',
+          'Optimize for mobile-first experience'
+        ]
       }
     ];
   }
@@ -364,9 +516,20 @@ class NextStepsAdvisor {
     
     const context = await this.gatherContext();
     const recommendations = [];
+    const implemented = [];
 
     for (const rule of this.enhancementRules) {
       try {
+        // Check if already implemented
+        if (context.implementedRecommendations.includes(rule.id)) {
+          implemented.push({
+            ...rule,
+            categoryInfo: this.categories[rule.category],
+            status: 'implemented'
+          });
+          continue;
+        }
+
         const isRelevant = typeof rule.detectFn === 'function' 
           ? rule.detectFn(context) 
           : true;
@@ -386,11 +549,27 @@ class NextStepsAdvisor {
     // Sort by score (higher = more important)
     recommendations.sort((a, b) => b.score - a.score);
 
+    // Show progress on implemented recommendations
+    if (implemented.length > 0) {
+      console.log(`✅ ${implemented.length} recommendation(s) already implemented:`);
+      for (const impl of implemented) {
+        console.log(`   • ${impl.categoryInfo.icon} ${impl.title}`);
+      }
+      console.log('');
+    }
+
     return {
       context,
       recommendations,
+      implemented,
       summary: this.generateSummary(recommendations),
-      topPicks: recommendations.slice(0, 5)
+      topPicks: recommendations.slice(0, 5),
+      progress: {
+        implemented: implemented.length,
+        remaining: recommendations.length,
+        total: implemented.length + recommendations.length,
+        percentComplete: Math.round((implemented.length / (implemented.length + recommendations.length)) * 100)
+      }
     };
   }
 
@@ -404,7 +583,25 @@ class NextStepsAdvisor {
       hasTrustBadges: false,
       hasCartRecovery: false,
       hasSkeletonLoaders: false,
-      missingSecurityHeaders: false
+      hasExitIntent: false,
+      hasSearchAutocomplete: false,
+      hasOptimizedImages: false,
+      hasStructuredData: false,
+      hasMetaTags: false,
+      hasTestimonials: false,
+      hasAboutPage: false,
+      hasPoliciesPage: false,
+      hasEmailCapture: false,
+      hasReviewSystem: false,
+      hasWishlist: false,
+      hasProductBundles: false,
+      hasLoyaltyProgram: false,
+      hasLiveChat: false,
+      hasEnhancedAnalytics: false,
+      hasI18n: false,
+      hasPWA: false,
+      missingSecurityHeaders: false,
+      implementedRecommendations: []
     };
 
     // Load latest VORAX report
@@ -419,18 +616,56 @@ class NextStepsAdvisor {
       }
     }
 
-    // Check for key files/features
+    // Check for key files/features - expanded detection
     const checks = [
       { file: 'app/checkout', key: 'hasCheckout' },
       { file: 'components/ui/skeleton', key: 'hasSkeletonLoaders' },
       { file: 'components/TrustBadge', key: 'hasTrustBadges' },
-      { file: 'components/trust', key: 'hasTrustBadges' }
+      { file: 'components/trust', key: 'hasTrustBadges' },
+      { file: 'components/PaymentTrustBadges', key: 'hasTrustBadges' },
+      { file: 'components/ExitIntentPopup', key: 'hasExitIntent' },
+      { file: 'components/cart/ExitIntentPopup', key: 'hasExitIntent' },
+      { file: 'components/SearchAutocomplete', key: 'hasSearchAutocomplete' },
+      { file: 'components/search/SearchAutocomplete', key: 'hasSearchAutocomplete' },
+      { file: 'components/OptimizedImage', key: 'hasOptimizedImages' },
+      { file: 'components/ui/OptimizedImage', key: 'hasOptimizedImages' },
+      { file: 'lib/seo/structured-data', key: 'hasStructuredData' },
+      { file: 'lib/seo/metadata', key: 'hasMetaTags' },
+      { file: 'lib/seo/meta-tags', key: 'hasMetaTags' },
+      { file: 'components/Testimonials', key: 'hasTestimonials' },
+      { file: 'components/trust/Testimonials', key: 'hasTestimonials' },
+      { file: 'components/TestimonialCarousel', key: 'hasTestimonials' },
+      { file: 'app/about/page', key: 'hasAboutPage' },
+      { file: 'app/(site)/about/page', key: 'hasAboutPage' },
+      { file: 'app/(site)/policies', key: 'hasPoliciesPage' },
+      { file: 'app/policies', key: 'hasPoliciesPage' },
+      // Phase 2 feature detection
+      { file: 'components/NewsletterSignup', key: 'hasEmailCapture' },
+      { file: 'components/EmailCapture', key: 'hasEmailCapture' },
+      { file: 'components/ReviewForm', key: 'hasReviewSystem' },
+      { file: 'components/ProductReviews', key: 'hasReviewSystem' },
+      { file: 'app/api/reviews', key: 'hasReviewSystem' },
+      { file: 'components/Wishlist', key: 'hasWishlist' },
+      { file: 'app/(site)/wishlist', key: 'hasWishlist' },
+      { file: 'components/ProductBundle', key: 'hasProductBundles' },
+      { file: 'app/(site)/rewards', key: 'hasLoyaltyProgram' },
+      { file: 'components/LoyaltyPoints', key: 'hasLoyaltyProgram' },
+      { file: 'components/ChatWidget', key: 'hasLiveChat' },
+      { file: 'lib/analytics/enhanced', key: 'hasEnhancedAnalytics' },
+      { file: 'lib/i18n', key: 'hasI18n' },
+      { file: 'messages', key: 'hasI18n' },
+      { file: 'public/manifest.json', key: 'hasPWA' },
+      { file: 'public/sw.js', key: 'hasPWA' }
     ];
 
     for (const check of checks) {
       const fullPath = path.join(process.cwd(), check.file);
-      if (fs.existsSync(fullPath) || fs.existsSync(fullPath + '.js') || fs.existsSync(fullPath + '.tsx')) {
-        context[check.key] = true;
+      const extensions = ['', '.js', '.jsx', '.ts', '.tsx'];
+      for (const ext of extensions) {
+        if (fs.existsSync(fullPath + ext)) {
+          context[check.key] = true;
+          break;
+        }
       }
     }
 
@@ -440,6 +675,27 @@ class NextStepsAdvisor {
       const content = fs.readFileSync(middlewarePath, 'utf-8');
       context.missingSecurityHeaders = !content.includes('Content-Security-Policy');
     }
+
+    // Track which recommendations have been implemented
+    if (context.hasTrustBadges) context.implementedRecommendations.push('payment-trust');
+    if (context.hasExitIntent) context.implementedRecommendations.push('cart-abandonment');
+    if (context.hasSearchAutocomplete) context.implementedRecommendations.push('search-experience');
+    if (context.hasSkeletonLoaders) context.implementedRecommendations.push('loading-states');
+    if (!context.missingSecurityHeaders) context.implementedRecommendations.push('security-headers');
+    if (context.hasStructuredData) context.implementedRecommendations.push('structured-data');
+    if (context.hasMetaTags) context.implementedRecommendations.push('meta-optimization');
+    if (context.hasTestimonials && context.hasAboutPage) context.implementedRecommendations.push('content-trust');
+    if (context.hasOptimizedImages) context.implementedRecommendations.push('core-web-vitals');
+    // Phase 2 implementations
+    if (context.hasReviewSystem) context.implementedRecommendations.push('product-reviews');
+    if (context.hasWishlist) context.implementedRecommendations.push('wishlist');
+    if (context.hasProductBundles) context.implementedRecommendations.push('product-bundles');
+    if (context.hasLoyaltyProgram) context.implementedRecommendations.push('loyalty-program');
+    if (context.hasEmailCapture) context.implementedRecommendations.push('email-marketing');
+    if (context.hasLiveChat) context.implementedRecommendations.push('live-chat');
+    if (context.hasEnhancedAnalytics) context.implementedRecommendations.push('analytics-enhanced');
+    if (context.hasI18n) context.implementedRecommendations.push('internationalization');
+    if (context.hasPWA) context.implementedRecommendations.push('pwa-features');
 
     return context;
   }
@@ -496,11 +752,20 @@ class NextStepsAdvisor {
    * Format recommendations for CLI output
    */
   formatForCLI(analysis) {
-    const { recommendations, summary, topPicks, context } = analysis;
+    const { recommendations, summary, topPicks, context, implemented, progress } = analysis;
     
     let output = '\n' + '═'.repeat(60) + '\n';
     output += '🎯 VORAX NextSteps - Best Enhancement Recommendations\n';
     output += '═'.repeat(60) + '\n\n';
+
+    // Progress bar
+    if (progress && progress.total > 0) {
+      const barLength = 30;
+      const filledLength = Math.round(barLength * progress.percentComplete / 100);
+      const bar = '█'.repeat(filledLength) + '░'.repeat(barLength - filledLength);
+      output += `📈 PROGRESS: [${bar}] ${progress.percentComplete}%\n`;
+      output += `   ✅ Implemented: ${progress.implemented} | 📋 Remaining: ${progress.remaining}\n\n`;
+    }
 
     // Summary stats
     output += `📊 Analysis Summary:\n`;
@@ -511,6 +776,16 @@ class NextStepsAdvisor {
       output += `   Open issues: ${context.issues.length} (${context.summary.high || 0} high priority)\n`;
     }
     output += '\n';
+
+    // Show implemented items
+    if (implemented && implemented.length > 0) {
+      output += '✅ ALREADY IMPLEMENTED:\n';
+      output += '─'.repeat(60) + '\n';
+      for (const impl of implemented) {
+        output += `   ${impl.categoryInfo.icon} ${impl.title}\n`;
+      }
+      output += '\n';
+    }
 
     // Top 5 Picks
     output += '🏆 TOP 5 NEXT STEPS:\n';

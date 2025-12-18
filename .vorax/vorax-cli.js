@@ -129,6 +129,40 @@ async function showStatus() {
   console.log(`  🟡 Medium:   ${report.summary.medium}`);
   console.log(`  🟢 Low:      ${report.summary.low}`);
   console.log(`  Total:       ${report.issues.length}`);
+
+  // Show progress since previous scan
+  const previousPath = path.join(process.cwd(), '.vorax/reports/previous.json');
+  if (fs.existsSync(previousPath)) {
+    try {
+      const previous = JSON.parse(fs.readFileSync(previousPath, 'utf-8'));
+      const fixedCount = previous.issues.length - report.issues.length;
+      if (fixedCount > 0) {
+        console.log(`\n✅ Progress: ${fixedCount} issues fixed since scan #${previous.scanNumber}`);
+      } else if (fixedCount < 0) {
+        console.log(`\n⚠️  ${Math.abs(fixedCount)} new issues since scan #${previous.scanNumber}`);
+      }
+    } catch (err) {
+      // Ignore errors
+    }
+  }
+
+  // Show top recommendations
+  const nextStepsPath = path.join(process.cwd(), '.vorax/reports/next-steps.json');
+  if (fs.existsSync(nextStepsPath)) {
+    try {
+      const nextSteps = JSON.parse(fs.readFileSync(nextStepsPath, 'utf-8'));
+      if (nextSteps.topPicks && nextSteps.topPicks.length > 0) {
+        console.log('\n🎯 TOP RECOMMENDED NEXT STEPS:');
+        for (let i = 0; i < Math.min(3, nextSteps.topPicks.length); i++) {
+          const rec = nextSteps.topPicks[i];
+          console.log(`  ${i + 1}. ${rec.categoryInfo?.icon || '📌'} ${rec.title} (${rec.impact} impact, ${rec.effort} effort)`);
+        }
+        console.log('\n💡 Run `npm run vorax next` for full details');
+      }
+    } catch (err) {
+      // Ignore errors
+    }
+  }
 }
 
 async function showReport() {
