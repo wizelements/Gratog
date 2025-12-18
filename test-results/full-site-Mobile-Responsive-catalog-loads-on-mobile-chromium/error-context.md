@@ -1,0 +1,199 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - link "Skip to navigation" [ref=e4] [cursor=pointer]:
+      - /url: "#navigation"
+    - link "Skip to footer" [ref=e5] [cursor=pointer]:
+      - /url: "#footer"
+  - generic [ref=e7]: Development Build • Trust Enhancements Active
+  - generic [ref=e8]:
+    - banner [ref=e9]:
+      - generic [ref=e10]:
+        - link "Taste of Gratitude" [ref=e11] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e12]:
+            - img [ref=e13]
+            - img [ref=e16]
+          - text: Taste of Gratitude
+        - navigation "Main navigation" [ref=e18]:
+          - link "Home" [ref=e19] [cursor=pointer]:
+            - /url: /
+            - text: Home
+          - link "Catalog" [ref=e20] [cursor=pointer]:
+            - /url: /catalog
+            - text: Catalog
+          - link "Markets" [ref=e21] [cursor=pointer]:
+            - /url: /markets
+            - text: Markets
+          - link "Explore" [ref=e22] [cursor=pointer]:
+            - /url: /explore
+            - text: Explore
+          - link "Community" [ref=e23] [cursor=pointer]:
+            - /url: /community
+            - text: Community
+          - link "Rewards" [ref=e24] [cursor=pointer]:
+            - /url: /rewards
+            - text: Rewards
+          - link "About" [ref=e25] [cursor=pointer]:
+            - /url: /about
+            - text: About
+        - generic [ref=e26]:
+          - link "Wishlist" [ref=e27] [cursor=pointer]:
+            - /url: /wishlist
+            - img [ref=e28]
+          - link "Shopping cart" [ref=e30] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e31]
+          - link "Challenge 🌶️" [ref=e35] [cursor=pointer]:
+            - /url: /ugc/spicy-bloom
+          - link "Login" [ref=e36] [cursor=pointer]:
+            - /url: /login
+            - img [ref=e37]
+            - text: Login
+          - link "Order Now" [ref=e40] [cursor=pointer]:
+            - /url: /order
+        - button "Open menu" [ref=e41]:
+          - img [ref=e42]
+    - main [ref=e43]:
+      - generic [ref=e44]:
+        - generic [ref=e46]:
+          - generic [ref=e48]:
+            - img [ref=e49]
+            - text: Loading... Available with Square Checkout
+          - generic [ref=e51]:
+            - heading "Discover Your Wellness" [level=1] [ref=e52]
+            - paragraph [ref=e53]: Premium Wildcrafted Sea Moss Products
+            - paragraph [ref=e54]: Each product is hand-crafted with 92 essential minerals from the ocean, designed to support your unique wellness journey
+            - generic [ref=e56]:
+              - generic [ref=e57]:
+                - img [ref=e58]
+                - heading "Not sure where to start?" [level=3] [ref=e60]
+              - paragraph [ref=e61]: Take our 60-second wellness quiz for personalized product recommendations
+              - button "Take the Quiz" [ref=e62]:
+                - img [ref=e63]
+                - text: Take the Quiz
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - generic [ref=e68]:
+              - button "All Products (0)" [ref=e69]
+              - button "Sea Moss Gels (0)" [ref=e70]
+              - button "Lemonades (0)" [ref=e71]
+              - button "Wellness Shots (0)" [ref=e72]
+            - generic [ref=e73]:
+              - button [ref=e74]:
+                - img [ref=e75]
+              - button [ref=e77]:
+                - img [ref=e78]
+          - paragraph [ref=e80]: Showing 0 of 0 products
+    - contentinfo "Site footer" [ref=e81]:
+      - generic [ref=e85]:
+        - generic [ref=e86]:
+          - img [ref=e88]
+          - generic [ref=e91]:
+            - heading "Join Our Wellness Community" [level=3] [ref=e92]
+            - paragraph [ref=e93]: Get exclusive tips, recipes & early access to new products
+        - generic [ref=e94]:
+          - generic [ref=e95]:
+            - textbox "First name (optional)" [ref=e96]
+            - textbox "Email address" [ref=e97]:
+              - /placeholder: Email address *
+          - button "Subscribe to Newsletter" [ref=e98]:
+            - img [ref=e99]
+            - text: Subscribe to Newsletter
+          - paragraph [ref=e102]: We respect your privacy. Unsubscribe anytime.
+      - generic [ref=e103]:
+        - generic [ref=e104]:
+          - generic [ref=e105]:
+            - heading "Taste of Gratitude" [level=3] [ref=e106]
+            - paragraph [ref=e107]: Nourishing your wellness journey with nature's finest sea moss creations.
+            - generic [ref=e108]: 🌿 100% Natural & Organic
+          - navigation "Quick links" [ref=e109]:
+            - heading "Quick Links" [level=4] [ref=e110]
+            - list [ref=e111]:
+              - listitem [ref=e112]:
+                - link "Shop Products" [ref=e113] [cursor=pointer]:
+                  - /url: /catalog
+                  - text: Shop Products
+              - listitem [ref=e114]:
+                - link "Find Us at Markets" [ref=e115] [cursor=pointer]:
+                  - /url: /markets
+                  - text: Find Us at Markets
+              - listitem [ref=e116]:
+                - link "Community" [ref=e117] [cursor=pointer]:
+                  - /url: /community
+                  - text: Community
+              - listitem [ref=e118]:
+                - link "Our Story" [ref=e119] [cursor=pointer]:
+                  - /url: /about
+                  - text: Our Story
+              - listitem [ref=e120]:
+                - link "Contact Us" [ref=e121] [cursor=pointer]:
+                  - /url: /contact
+                  - text: Contact Us
+          - navigation "Support and legal" [ref=e122]:
+            - heading "Support & Legal" [level=4] [ref=e123]
+            - list [ref=e124]:
+              - listitem [ref=e125]:
+                - link "FAQ" [ref=e126] [cursor=pointer]:
+                  - /url: /faq
+                  - text: FAQ
+              - listitem [ref=e127]:
+                - link "Terms of Service" [ref=e128] [cursor=pointer]:
+                  - /url: /terms
+                  - text: Terms of Service
+              - listitem [ref=e129]:
+                - link "Privacy Policy" [ref=e130] [cursor=pointer]:
+                  - /url: /privacy
+                  - text: Privacy Policy
+              - listitem [ref=e131]:
+                - link "Rewards Program" [ref=e132] [cursor=pointer]:
+                  - /url: /rewards
+                  - text: Rewards Program
+          - generic [ref=e133]:
+            - heading "Connect With Us" [level=4] [ref=e134]
+            - paragraph [ref=e135]: Follow us for wellness tips, recipes, and special offers!
+            - list "Connect With Us" [ref=e136]:
+              - link "Facebook" [ref=e137] [cursor=pointer]:
+                - /url: https://www.facebook.com/tasteofgratitude
+                - img [ref=e138]
+              - link "Instagram" [ref=e140] [cursor=pointer]:
+                - /url: https://www.instagram.com/tasteofgratitude
+                - img [ref=e141]
+              - link "Email" [ref=e144] [cursor=pointer]:
+                - /url: mailto:hello@tasteofgratitude.com
+                - img [ref=e145]
+        - paragraph [ref=e149]: © 2025 Taste of Gratitude. Crafted with ❤️ for your wellness journey.
+    - button "Open chat support" [ref=e151]:
+      - img [ref=e152]
+    - generic [ref=e155]:
+      - generic [ref=e157]:
+        - generic [ref=e158]:
+          - img [ref=e160]
+          - generic [ref=e163]:
+            - heading "Chat Support" [level=3] [ref=e164]
+            - paragraph [ref=e165]: We typically reply instantly
+        - button "Close chat" [ref=e166]:
+          - img [ref=e167]
+      - generic [ref=e171]:
+        - img [ref=e173]
+        - paragraph [ref=e177]: Hi there! 👋 Welcome to Taste of Gratitude. I'm here to help answer your questions about our sea moss products. Choose a topic below or type your question!
+      - generic [ref=e178]:
+        - paragraph [ref=e179]: "Quick questions:"
+        - generic [ref=e180]:
+          - button "What is sea moss?" [ref=e181]
+          - button "How to use it?" [ref=e182]
+          - button "Shipping times?" [ref=e183]
+          - button "Refund policy?" [ref=e184]
+          - button "Your location?" [ref=e185]
+      - generic [ref=e187]:
+        - textbox "Type your message..." [ref=e188]
+        - button [disabled] [ref=e189]:
+          - img [ref=e190]
+  - region "Notifications alt+T"
+  - status
+  - alert
+```
