@@ -1,20 +1,12 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-admin';
-import { verifyToken } from '@/lib/auth';
+import { requireAdmin } from '@/lib/admin-session';
 import { logger } from '@/lib/logger';
 
 export async function GET(request) {
-  // Verify admin authentication
-  const token = request.cookies.get('admin_token')?.value;
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
   try {
+    const admin = await requireAdmin(request);
+    
     const { db } = await connectToDatabase();
     
     // Get all coupons, sorted by creation date
@@ -42,6 +34,12 @@ export async function GET(request) {
     });
 
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('API', 'Error fetching admin coupons', error);
     return NextResponse.json(
       { error: 'Failed to fetch coupons' },
@@ -52,17 +50,9 @@ export async function GET(request) {
 
 // Analytics endpoint for coupon statistics
 export async function POST(request) {
-  // Verify admin authentication
-  const token = request.cookies.get('admin_token')?.value;
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
   try {
+    const admin = await requireAdmin(request);
+    
     const { action } = await request.json();
     
     if (action === 'analytics') {
@@ -153,6 +143,12 @@ export async function POST(request) {
     );
 
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('API', 'Error getting coupon analytics', error);
     return NextResponse.json(
       { error: 'Failed to get analytics' },

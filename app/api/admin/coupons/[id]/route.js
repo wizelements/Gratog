@@ -1,20 +1,12 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-admin';
-import { verifyToken } from '@/lib/auth';
+import { requireAdmin } from '@/lib/admin-session';
 import { logger } from '@/lib/logger';
 
 export async function DELETE(request, { params }) {
-  // Verify admin authentication
-  const token = request.cookies.get('admin_token')?.value;
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
   try {
+    const admin = await requireAdmin(request);
+    
     const { id } = params;
     
     if (!id) {
@@ -36,12 +28,20 @@ export async function DELETE(request, { params }) {
       );
     }
 
+    logger.info('API', `Coupon ${id} deleted by ${admin.email}`);
+
     return NextResponse.json({
       success: true,
       message: 'Coupon deleted successfully'
     });
 
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('API', 'Error deleting coupon', error);
     return NextResponse.json(
       { error: 'Failed to delete coupon' },
@@ -51,17 +51,9 @@ export async function DELETE(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
-  // Verify admin authentication
-  const token = request.cookies.get('admin_token')?.value;
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
   try {
+    const admin = await requireAdmin(request);
+    
     const { id } = params;
     const updates = await request.json();
     
@@ -80,7 +72,8 @@ export async function PUT(request, { params }) {
       { 
         $set: {
           ...updates,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
+          updatedBy: admin.email
         }
       }
     );
@@ -92,12 +85,20 @@ export async function PUT(request, { params }) {
       );
     }
 
+    logger.info('API', `Coupon ${id} updated by ${admin.email}`);
+
     return NextResponse.json({
       success: true,
       message: 'Coupon updated successfully'
     });
 
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('API', 'Error updating coupon', error);
     return NextResponse.json(
       { error: 'Failed to update coupon' },
