@@ -7,14 +7,6 @@ import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/adapters/totalsAdapter';
 import { track } from '@/utils/analytics';
 
-declare global {
-  interface Window {
-    Square?: {
-      payments: (appId: string, locationId: string) => Promise<Payments>;
-    };
-  }
-}
-
 interface Payments {
   card: (options?: CardOptions) => Promise<Card>;
   applePay: (request: ApplePayRequest) => Promise<ApplePay | null>;
@@ -23,14 +15,14 @@ interface Payments {
 
 interface CardOptions {
   style?: {
-    '.input-container': { borderColor?: string; borderRadius?: string };
-    '.input-container.is-focus': { borderColor?: string };
-    '.input-container.is-error': { borderColor?: string };
-    input: { fontSize?: string; fontFamily?: string; color?: string };
-    'input::placeholder': { color?: string };
-    '.message-text': { color?: string };
-    '.message-icon': { color?: string };
-    '.message-text.is-error': { color?: string };
+    '.input-container'?: { borderColor?: string; borderRadius?: string };
+    '.input-container.is-focus'?: { borderColor?: string };
+    '.input-container.is-error'?: { borderColor?: string };
+    input?: { fontSize?: string; fontFamily?: string; color?: string };
+    'input::placeholder'?: { color?: string };
+    '.message-text'?: { color?: string };
+    '.message-icon'?: { color?: string };
+    '.message-text.is-error'?: { color?: string };
   };
 }
 

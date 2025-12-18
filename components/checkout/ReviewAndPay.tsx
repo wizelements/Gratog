@@ -246,7 +246,7 @@ export default function ReviewAndPay({
             <div className="bg-gray-50 rounded-lg p-4">
               <h4 className="font-medium text-gray-900 mb-2">Contact Information</h4>
               <div className="text-sm text-gray-600">
-                <p>{contact.name}</p>
+                <p>{contact.firstName} {contact.lastName}</p>
                 <p>{contact.email}</p>
                 {contact.phone && <p>{contact.phone}</p>}
               </div>
@@ -334,7 +334,7 @@ export default function ReviewAndPay({
               squareOrderId={squareOrderId || undefined}
               customer={{
                 email: contact.email,
-                name: contact.name,
+                name: `${contact.firstName} ${contact.lastName}`,
                 phone: contact.phone
               }}
               onSuccess={handlePaymentSuccess}

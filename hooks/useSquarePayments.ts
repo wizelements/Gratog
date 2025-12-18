@@ -2,14 +2,6 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 
-declare global {
-  interface Window {
-    Square?: {
-      payments: (appId: string, locationId: string) => Promise<Payments>;
-    };
-  }
-}
-
 interface Payments {
   card: () => Promise<Card>;
   applePay: (request: ApplePayRequest) => Promise<ApplePay | null>;

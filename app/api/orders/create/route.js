@@ -26,8 +26,15 @@ function buildFulfillment(orderData) {
   const { fulfillmentType, customer, deliveryAddress, shippingAddress, deliveryInstructions, pickup } = orderData;
   
   // Pickup orders (Serenbe or Browns Mill)
-  if (fulfillmentType === 'pickup' || fulfillmentType === 'pickup_serenbe' || fulfillmentType === 'pickup_browns_mill') {
+  // NORMALIZED: pickup_market = Serenbe, pickup_browns_mill = Browns Mill
+  const isPickupOrder = fulfillmentType === 'pickup' || fulfillmentType === 'pickup_serenbe' || 
+                        fulfillmentType === 'pickup_market' || fulfillmentType === 'pickup_browns_mill';
+  if (isPickupOrder) {
     const isBrownsMill = fulfillmentType === 'pickup_browns_mill' || pickup?.locationId === 'browns_mill';
+    // Normalize fulfillment type for consistency across all systems
+    const normalizedType = isBrownsMill ? 'pickup_browns_mill' : 'pickup_market';
+    const pickupDate = getNextSaturday(isBrownsMill ? '15:00' : '09:00');
+    
     return [{
       type: 'PICKUP',
       state: 'PROPOSED',
@@ -40,8 +47,11 @@ function buildFulfillment(orderData) {
           ? '📍 PICKUP: Browns Mill Community • Saturdays 3:00 PM - 6:00 PM • Show order number at pickup booth'
           : '📍 PICKUP: Serenbe Farmers Market (Booth #12) • 10950 Hutcheson Ferry Rd, Palmetto, GA 30268 • Saturdays 9:00 AM - 1:00 PM',
         schedule_type: 'SCHEDULED',
-        pickup_at: getNextSaturday(isBrownsMill ? '15:00' : '09:00')
-      }
+        pickup_at: pickupDate
+      },
+      // Store normalized type and pickup date for cron jobs
+      normalizedType,
+      pickupDate
     }];
   }
   
@@ -180,10 +190,26 @@ export async function POST(request) {
     
     logger.info('Generated order identifiers', { orderId, orderNumber });
     
+    // Calculate pickup date for pickup orders (for cron job filtering)
+    let pickupDate = null;
+    const isPickup = orderData.fulfillmentType === 'pickup' || 
+                     orderData.fulfillmentType === 'pickup_serenbe' || 
+                     orderData.fulfillmentType === 'pickup_market' || 
+                     orderData.fulfillmentType === 'pickup_browns_mill';
+    if (isPickup) {
+      const isBrownsMill = orderData.fulfillmentType === 'pickup_browns_mill' || 
+                           orderData.pickup?.locationId === 'browns_mill';
+      pickupDate = getNextSaturday(isBrownsMill ? '15:00' : '09:00');
+      
+      // Normalize fulfillment type for consistency
+      orderData.fulfillmentType = isBrownsMill ? 'pickup_browns_mill' : 'pickup_market';
+    }
+    
     // Add metadata
     const enhancedOrderData = {
       ...orderData,
       deliveryFee,
+      pickupDate, // Store pickup date for cron jobs
       metadata: {
         ...orderData.metadata,
         ip: request.headers.get('x-forwarded-for') || 'unknown',

@@ -51,6 +51,7 @@ export interface OrderResponse {
     id: string;
     orderNumber: string;
     status: string;
+    squareOrderId?: string;
     pricing: {
       subtotal: number;
       deliveryFee: number;
