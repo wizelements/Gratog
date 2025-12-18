@@ -19,6 +19,8 @@ const ORDER_STATUSES = [
   { value: 'out_for_delivery', label: 'Out for Delivery', color: 'bg-blue-600' },
   { value: 'delivered', label: 'Delivered', color: 'bg-green-600' },
   { value: 'picked_up', label: 'Picked Up', color: 'bg-green-600' },
+  { value: 'missed_pickup', label: 'Missed Pickup', color: 'bg-amber-600' },
+  { value: 'rescheduled', label: 'Rescheduled', color: 'bg-purple-600' },
   { value: 'cancelled', label: 'Cancelled', color: 'bg-red-600' }
 ];
 
