@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifyAdminCookieToken } from '@/lib/admin-token';
 
 function addSecurityHeaders(response: NextResponse): NextResponse {
   const csp = [
@@ -25,7 +26,7 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   return response;
 }
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const url = new URL(req.url);
 
   // Redirect old /delivery route to /order with tab param
@@ -41,7 +42,7 @@ export function middleware(req: NextRequest) {
     const res = NextResponse.next();
     res.cookies.set('notice', 'delivery_off', { 
       path: '/', 
-      httpOnly: false,
+      httpOnly: true, // SECURITY FIX: Set httpOnly to prevent XSS access
       maxAge: 60 // 1 minute
     });
     return addSecurityHeaders(res);
@@ -51,7 +52,11 @@ export function middleware(req: NextRequest) {
   if (url.pathname.startsWith('/admin') && url.pathname !== '/admin/login') {
     const token = req.cookies.get('admin_token')?.value;
     
-    if (!token) {
+    // Verify token validity, not just presence (SECURITY FIX)
+    // Using jose for Edge Runtime compatibility
+    const decoded = token ? await verifyAdminCookieToken(token) : null;
+    
+    if (!decoded) {
       const loginUrl = new URL('/admin/login', req.url);
       loginUrl.searchParams.set('redirect', url.pathname);
       const redirectResponse = NextResponse.redirect(loginUrl);
