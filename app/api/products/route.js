@@ -45,7 +45,22 @@ export async function GET(request) {
       });
       
       logger.debug('Fetching unified products', { filters });
-      const rawProducts = await getUnifiedProducts(filters);
+      
+      let rawProducts;
+      let dbError = null;
+      
+      try {
+        rawProducts = await getUnifiedProducts(filters);
+      } catch (error) {
+        // Database error - log it and use fallback
+        logger.error('Database error fetching products', {
+          error: error.message,
+          isDbError: error.isDbError,
+          stack: error.stack
+        });
+        dbError = error;
+        rawProducts = [];
+      }
       
       // Transform products to expose variationId at top level for cart compatibility
       const products = rawProducts.map(product => ({
@@ -61,23 +76,40 @@ export async function GET(request) {
       
       // If no products found, use demo products as fallback
       if (enhancedProducts.length === 0) {
-        logger.warn('No products in unified collection, using demo fallback');
+        const fallbackReason = dbError 
+          ? 'db_error' 
+          : 'empty_collection';
+        
+        logger.warn(`No products available (reason: ${fallbackReason}), using demo fallback`, {
+          dbError: dbError?.message,
+          filters
+        });
+        
         const demoProducts = getDemoProducts(filters);
         const demoCategories = getDemoCategories();
         
-        logger.api('GET', '/api/products', 200, Date.now() - startTime, { 
-          source: 'demo_fallback',
-          count: demoProducts.length 
+        const statusCode = dbError ? 200 : 200; // Still 200 to not break frontend
+        
+        logger.api('GET', '/api/products', statusCode, Date.now() - startTime, { 
+          source: dbError ? 'demo_db_error_fallback' : 'demo_fallback',
+          count: demoProducts.length,
+          dbError: dbError?.message
         });
         
         return NextResponse.json({
-          success: true,
+          success: !dbError, // false if DB error occurred
           products: demoProducts,
           categories: demoCategories,
           count: demoProducts.length,
-          source: 'demo_fallback',
+          source: dbError ? 'demo_db_error_fallback' : 'demo_fallback',
           filters,
-          message: 'Using demo products - Square catalog sync may be pending'
+          dbError: dbError ? {
+            message: dbError.message,
+            hint: 'Check /api/db-health for diagnostics'
+          } : undefined,
+          message: dbError 
+            ? 'Database connection issue - showing demo products. Check /api/db-health for details.'
+            : 'Using demo products - Square catalog sync may be pending. Run sync via admin panel.'
         });
       }
       
