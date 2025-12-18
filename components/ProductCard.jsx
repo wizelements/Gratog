@@ -16,6 +16,22 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
   
   const fallbackImage = '/images/sea-moss-default.svg';
   
+  // Get the best available image - prefer images array over placeholder SVGs
+  const getProductImage = () => {
+    // Check images array first (real Square images)
+    if (product.images?.length > 0 && product.images[0] && !product.images[0].startsWith('data:')) {
+      return product.images[0];
+    }
+    // Check main image if it's not a placeholder SVG
+    if (product.image && !product.image.startsWith('data:image/svg')) {
+      return product.image;
+    }
+    // Return null to show fallback UI
+    return null;
+  };
+  
+  const productImage = getProductImage();
+  
   // Determine if product has multiple variants
   const hasMultipleVariants = product.variations && product.variations.length > 1;
   
@@ -39,9 +55,9 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
     >
       <Link href={`/product/${product.slug || product.id}`}>
         <div className="relative h-64 overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100">
-          {product.image || product.images?.[0] ? (
+          {productImage ? (
             <Image
-              src={imageError ? fallbackImage : (product.image || product.images[0])}
+              src={imageError ? fallbackImage : productImage}
               alt={`${product.name} - Premium wildcrafted sea moss product`}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-110"

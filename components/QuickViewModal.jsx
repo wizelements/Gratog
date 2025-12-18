@@ -83,6 +83,17 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
     }, 1500);
   };
 
+  // Get best available image
+  const getProductImage = () => {
+    if (product.images?.length > 0 && product.images[0] && !product.images[0].startsWith('data:')) {
+      return product.images[0];
+    }
+    if (product.image && !product.image.startsWith('data:image/svg')) {
+      return product.image;
+    }
+    return '/images/sea-moss-default.svg';
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -95,7 +106,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
           <div>
             <div className="relative aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50 group">
               <Image
-                src={product.image || product.images?.[0] || '/images/sea-moss-default.svg'}
+                src={getProductImage()}
                 alt={product.name}
                 fill
                 className="object-cover group-hover:scale-110 transition-transform duration-500"
