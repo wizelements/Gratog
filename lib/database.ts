@@ -1,16 +1,12 @@
 import { createHash } from 'crypto';
 import { Product, DBProduct, DBVariant, DBImage, DBInventoryLevel, DBLink } from '@/types/product';
+import { connectToDatabase } from './db-optimized';
 
-// Database connection (using existing MongoDB for now, will add Postgres option)
-let db: any = null;
+// CONSOLIDATED: Now uses the centralized db-optimized.js connection
+// This avoids creating multiple MongoDB clients with different pool settings
 
 export async function getDatabase() {
-  if (db) return db;
-  
-  const { MongoClient } = require('mongodb');
-  const client = new MongoClient(process.env.MONGO_URL);
-  await client.connect();
-  db = client.db(process.env.DB_NAME || 'taste_of_gratitude');
+  const { db } = await connectToDatabase();
   return db;
 }
 
