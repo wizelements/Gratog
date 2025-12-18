@@ -9,51 +9,54 @@ import gameEngine from '@/lib/explore/game-engine';
 
 const GAMES = [
   {
-    id: 'memory-match',
-    title: 'Memory Match',
-    description: 'Match ingredient pairs to sharpen your memory',
-    icon: Brain,
-    color: 'from-blue-500 to-cyan-600',
-    route: '/explore',
-    difficulty: 'Easy'
-  },
-  {
-    id: 'ingredient-quiz',
-    title: 'Ingredient Quiz',
-    description: 'Test your knowledge of health benefits',
-    icon: Star,
-    color: 'from-purple-500 to-pink-600',
-    route: '/explore',
-    difficulty: 'Medium'
-  },
-  {
-    id: 'blend-maker',
-    title: 'Blend Maker',
-    description: 'Create your perfect wellness blend',
-    icon: Droplet,
-    color: 'from-green-500 to-emerald-600',
-    route: '/explore',
-    difficulty: 'Easy'
-  },
-  {
     id: 'benefit-sort',
     title: 'Benefit Sort',
-    description: 'Drag ingredients to matching benefits',
+    description: 'Drag ingredients to matching benefits and test your knowledge',
     icon: Target,
     color: 'from-emerald-500 to-teal-600',
     route: '/explore/games/benefit-sort',
     difficulty: 'Medium',
-    isNew: true
+    isNew: false
   },
   {
     id: 'ingredient-rush',
     title: 'Ingredient Rush',
-    description: 'Tap ingredients matching the target benefit',
+    description: 'Tap ingredients matching the target benefit - race against time!',
     icon: Zap,
     color: 'from-yellow-500 to-orange-600',
     route: '/explore/games/ingredient-rush',
     difficulty: 'Hard',
-    isNew: true
+    isNew: false
+  },
+  {
+    id: 'memory-match',
+    title: 'Memory Match',
+    description: 'Match ingredient pairs to sharpen your memory and learn benefits',
+    icon: Brain,
+    color: 'from-blue-500 to-cyan-600',
+    route: '/explore/games/memory-match',
+    difficulty: 'Easy',
+    coming: true
+  },
+  {
+    id: 'ingredient-quiz',
+    title: 'Ingredient Quiz',
+    description: 'Test your knowledge of health benefits and ingredients',
+    icon: Star,
+    color: 'from-purple-500 to-pink-600',
+    route: '/explore/games/ingredient-quiz',
+    difficulty: 'Medium',
+    coming: true
+  },
+  {
+    id: 'blend-maker',
+    title: 'Blend Maker',
+    description: 'Create your perfect wellness blend with interactive feedback',
+    icon: Droplet,
+    color: 'from-green-500 to-emerald-600',
+    route: '/explore/games/blend-maker',
+    difficulty: 'Easy',
+    coming: true
   }
 ];
 
@@ -91,7 +94,12 @@ export default function GamesIndexPage() {
                       <Icon className="w-8 h-8 text-white" />
                     </div>
                     <div className="flex flex-col items-end gap-2">
-                      {game.isNew && (
+                      {game.coming && (
+                        <Badge className="bg-gradient-to-r from-orange-500 to-yellow-600">
+                          COMING SOON
+                        </Badge>
+                      )}
+                      {!game.coming && game.isNew && (
                         <Badge className="bg-gradient-to-r from-pink-500 to-rose-600">
                           NEW
                         </Badge>
@@ -115,13 +123,22 @@ export default function GamesIndexPage() {
                     </div>
                   )}
 
-                  <Link href={game.route}>
+                  {game.coming ? (
                     <Button 
-                      className={`w-full bg-gradient-to-r ${game.color} hover:opacity-90 transition-opacity`}
+                      disabled
+                      className={`w-full bg-gradient-to-r ${game.color} hover:opacity-90 transition-opacity opacity-50 cursor-not-allowed`}
                     >
-                      Play Now
+                      Coming Soon
                     </Button>
-                  </Link>
+                  ) : (
+                    <Link href={game.route}>
+                      <Button 
+                        className={`w-full bg-gradient-to-r ${game.color} hover:opacity-90 transition-opacity`}
+                      >
+                        Play Now
+                      </Button>
+                    </Link>
+                  )}
                 </CardContent>
               </Card>
             );

@@ -41,7 +41,7 @@ export default function ExploreHomepage() {
       id: 'learn',
       icon: <BookOpen className="h-8 w-8" />,
       title: 'Learning Center',
-      description: 'Deep-dive into ingredient stories and science',
+      description: 'Deep-dive into ingredient stories and wellness science',
       color: 'from-amber-500 to-orange-600',
       href: '/explore/learn',
       emoji: '📚'

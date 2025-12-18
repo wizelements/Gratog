@@ -44,6 +44,25 @@ export async function middleware(req: NextRequest) {
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set('x-pathname', pathname);
 
+  // CRITICAL FIX 1: Enforce HTTPS and correct canonical domain
+  const host = req.headers.get('host') || '';
+  const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
+  const isProd = !isLocalhost && !host.includes('preview') && !host.includes('vercel');
+  
+  if (!isLocalhost && isProd) {
+    // Force HTTPS
+    if (req.nextUrl.protocol === 'http:') {
+      url.protocol = 'https:';
+      return NextResponse.redirect(url, 301);
+    }
+    
+    // Redirect non-canonical domains to primary domain
+    if (!host.includes('tasteofgratitude.shop')) {
+      const canonicalUrl = new URL(pathname + url.search, 'https://tasteofgratitude.shop');
+      return NextResponse.redirect(canonicalUrl, 301);
+    }
+  }
+
   // Redirect old /delivery route to /order with tab param
   if (pathname === '/delivery') {
     url.pathname = '/order';

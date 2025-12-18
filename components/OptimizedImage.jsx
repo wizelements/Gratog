@@ -82,9 +82,12 @@ export default function OptimizedImage({
     );
   }
 
+  // Ensure alt text is always present for accessibility
+  const finalAlt = alt || 'Product image';
+  
   const imageProps = {
     src,
-    alt: alt || '',
+    alt: finalAlt,
     quality,
     priority,
     onLoad: handleLoad,
@@ -107,7 +110,7 @@ export default function OptimizedImage({
     return (
       <Image
         {...imageProps}
-        alt={alt || ''}
+        alt={finalAlt}
         fill
         style={{
           objectFit,
@@ -122,7 +125,7 @@ export default function OptimizedImage({
   return (
     <Image
       {...imageProps}
-      alt={alt || ''}
+      alt={finalAlt}
       width={width}
       height={height}
       style={{
