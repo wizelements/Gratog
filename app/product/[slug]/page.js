@@ -12,7 +12,10 @@ import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cartUtils';
 import RecommendationsWidget from '@/components/RecommendationsWidget';
+import Breadcrumbs, { getProductBreadcrumbs } from '@/components/Breadcrumbs';
 import Script from 'next/script';
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -144,27 +147,59 @@ export default function ProductDetailPage() {
   const currentPrice = selectedVariation?.price || product.price || 0;
   const images = product.images?.length > 0 ? product.images : [product.image || '/images/sea-moss-default.svg'];
 
-  // Structured data for SEO
+  // Enhanced structured data for SEO with rich snippets
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product?.name,
     description: product?.description || product?.benefitStory,
-    image: images,
+    image: images.map(img => img.startsWith('http') ? img : `${BASE_URL}${img}`),
+    url: `${BASE_URL}/product/${product?.slug}`,
+    sku: product?.id || product?.slug,
+    mpn: product?.id || product?.slug,
     brand: {
       '@type': 'Brand',
       name: 'Taste of Gratitude'
     },
-    offers: {
-      '@type': 'Offer',
-      price: currentPrice,
+    category: product?.intelligentCategory || product?.category || 'Wellness Products',
+    offers: product?.variations?.length > 1 ? {
+      '@type': 'AggregateOffer',
+      lowPrice: Math.min(...product.variations.filter(v => v.price > 0).map(v => v.price)).toFixed(2),
+      highPrice: Math.max(...product.variations.filter(v => v.price > 0).map(v => v.price)).toFixed(2),
       priceCurrency: 'USD',
-      availability: 'https://schema.org/InStock'
+      availability: 'https://schema.org/InStock',
+      offerCount: product.variations.filter(v => v.price > 0).length,
+      offers: product.variations.filter(v => v.price > 0).map(variation => ({
+        '@type': 'Offer',
+        name: variation.name,
+        price: variation.price.toFixed(2),
+        priceCurrency: 'USD',
+        availability: 'https://schema.org/InStock',
+        url: `${BASE_URL}/product/${product?.slug}`,
+        seller: {
+          '@type': 'Organization',
+          name: 'Taste of Gratitude'
+        },
+        priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      }))
+    } : {
+      '@type': 'Offer',
+      price: currentPrice.toFixed(2),
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+      url: `${BASE_URL}/product/${product?.slug}`,
+      seller: {
+        '@type': 'Organization',
+        name: 'Taste of Gratitude'
+      },
+      priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     },
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: '4.8',
-      reviewCount: '124'
+      reviewCount: '124',
+      bestRating: '5',
+      worstRating: '1'
     }
   };
 
@@ -206,18 +241,8 @@ export default function ProductDetailPage() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
         />
       )}
-      {/* Breadcrumb */}
-      <div className="bg-gray-50 py-4">
-        <div className="container">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-emerald-600">Home</Link>
-            <span>/</span>
-            <Link href="/catalog" className="hover:text-emerald-600">Catalog</Link>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">{product.name}</span>
-          </div>
-        </div>
-      </div>
+      {/* Breadcrumb with JSON-LD schema */}
+      <Breadcrumbs items={getProductBreadcrumbs(product)} />
 
       <div className="container py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
