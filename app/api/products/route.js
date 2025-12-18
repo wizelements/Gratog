@@ -97,7 +97,8 @@ export async function GET(request) {
         });
         
         return NextResponse.json({
-          success: !dbError, // false if DB error occurred
+          success: true, // API request succeeded - returning usable demo data
+          hadDbError: !!dbError, // Signal DB issue for admin diagnostics
           products: demoProducts,
           categories: demoCategories,
           count: demoProducts.length,

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ShoppingCart, Package, Truck, DollarSign, Phone, Mail, RefreshCw, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { ShoppingCart, Package, Truck, DollarSign, Phone, Mail, RefreshCw, ChevronDown, CheckCircle2, CloudDownload } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ORDER_STATUSES = [
@@ -32,6 +32,8 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [lastSync, setLastSync] = useState(null);
 
   const fetchOrders = useCallback(async (showRefresh = false) => {
     if (showRefresh) setRefreshing(true);
@@ -50,9 +52,48 @@ export default function OrdersPage() {
 
   useEffect(() => {
     fetchOrders();
+    fetchSyncStatus();
     const interval = setInterval(() => fetchOrders(false), 30000);
     return () => clearInterval(interval);
   }, [fetchOrders]);
+
+  const fetchSyncStatus = async () => {
+    try {
+      const response = await fetch('/api/admin/orders/sync', { credentials: 'include' });
+      const data = await response.json();
+      if (data.lastSync) {
+        setLastSync(new Date(data.lastSync));
+      }
+    } catch (error) {
+      logger.debug('Admin', 'Could not fetch sync status');
+    }
+  };
+
+  const syncFromSquare = async () => {
+    setSyncing(true);
+    try {
+      const response = await fetch('/api/admin/orders/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({})
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success(`Synced ${data.synced} orders from Square`);
+        setLastSync(new Date());
+        fetchOrders(true);
+      } else {
+        toast.error(data.error || 'Failed to sync orders');
+      }
+    } catch (error) {
+      logger.error('Admin', 'Failed to sync from Square', error);
+      toast.error('Failed to sync orders from Square');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const updateOrderStatus = async (orderId, newStatus) => {
     setUpdatingStatus(true);
@@ -62,10 +103,10 @@ export default function OrdersPage() {
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({
           orderId,
-          status: newStatus,
-          adminKey: process.env.NEXT_PUBLIC_ADMIN_SECRET || 'dev-admin-key-taste-of-gratitude-2024'
+          status: newStatus
         })
       });
 
@@ -136,16 +177,32 @@ export default function OrdersPage() {
           <h1 className="text-3xl font-bold">Orders</h1>
           <p className="text-muted-foreground mt-1">
             View and manage customer orders
+            {lastSync && (
+              <span className="ml-2 text-xs text-blue-600">
+                Last Square sync: {lastSync.toLocaleString()}
+              </span>
+            )}
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => fetchOrders(true)}
-          disabled={refreshing}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={syncFromSquare}
+            disabled={syncing}
+            className="bg-blue-50 hover:bg-blue-100 border-blue-200"
+          >
+            <CloudDownload className={`h-4 w-4 mr-2 ${syncing ? 'animate-pulse' : ''}`} />
+            {syncing ? 'Syncing...' : 'Sync from Square'}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => fetchOrders(true)}
+            disabled={refreshing}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">

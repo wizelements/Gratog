@@ -3,20 +3,23 @@ import { orderTracking } from '@/lib/enhanced-order-tracking';
 import { sendOrderStatusEmail } from '@/lib/resend-email';
 import { sendOrderUpdateSMS } from '@/lib/sms';
 import { createLogger } from '@/lib/logger';
+import { verifyToken } from '@/lib/auth';
 
 const logger = createLogger('OrderStatusUpdateAPI');
 
 export async function POST(request) {
   try {
-    const { orderId, status, adminKey } = await request.json();
+    const token = request.cookies.get('admin_token')?.value;
+    const decoded = verifyToken(token);
     
-    const ADMIN_SECRET = process.env.ADMIN_SECRET || 'dev-admin-key-taste-of-gratitude-2024';
-    if (adminKey !== ADMIN_SECRET) {
+    if (!decoded) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: 'Authentication required' },
         { status: 401 }
       );
     }
+    
+    const { orderId, status } = await request.json();
     
     if (!orderId || !status) {
       return NextResponse.json(
