@@ -137,6 +137,14 @@ export default function RegisterPage() {
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      // Scroll to first error field
+      setTimeout(() => {
+        const firstErrorField = document.querySelector('[aria-invalid="true"], .border-red-500');
+        if (firstErrorField) {
+          firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstErrorField.focus?.();
+        }
+      }, 100);
       return;
     }
 

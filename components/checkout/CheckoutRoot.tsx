@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, ArrowLeft, ShoppingBag } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useCheckoutStore } from '@/stores/checkout';
 import { CartAPI } from '@/adapters/cartAdapter';
 import { Button } from '@/components/ui/button';
@@ -35,9 +35,26 @@ export default function CheckoutRoot() {
     clearValidation,
   } = useCheckoutStore();
 
+  const formContainerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to top when stage changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [stage]);
+
   useEffect(() => {
     track('checkout_started', { itemCount: cart.length, total: totals.total });
   }, []);
+
+  const scrollToFirstError = () => {
+    setTimeout(() => {
+      const firstError = document.querySelector('[aria-invalid="true"], .border-red-500');
+      if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (firstError as HTMLElement).focus?.();
+      }
+    }, 100);
+  };
 
   const validateContact = (): boolean => {
     const errors: Record<string, string> = {};
@@ -52,6 +69,7 @@ export default function CheckoutRoot() {
     
     if (Object.keys(errors).length > 0) {
       setValidation({ contact: errors });
+      scrollToFirstError();
       return false;
     }
     
@@ -72,6 +90,7 @@ export default function CheckoutRoot() {
     
     if (Object.keys(errors).length > 0) {
       setValidation({ fulfillment: errors });
+      scrollToFirstError();
       return false;
     }
     

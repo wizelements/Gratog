@@ -120,19 +120,33 @@ export default function OrderPage() {
       return false;
     }
     
+    // Helper to scroll to first error field
+    const scrollToField = (fieldId) => {
+      setTimeout(() => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+          field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          field.focus();
+        }
+      }, 100);
+    };
+
     // Validate customer info
     if (!customer.name.trim()) {
       toast.error('Please enter your name');
+      scrollToField('name');
       return false;
     }
     
     if (!customer.email.trim() || !customer.email.includes('@')) {
       toast.error('Please enter a valid email address');
+      scrollToField('email');
       return false;
     }
     
     if (!customer.phone.trim()) {
       toast.error('Please enter your phone number');
+      scrollToField('phone');
       return false;
     }
 
@@ -140,14 +154,17 @@ export default function OrderPage() {
     if (fulfillmentType === 'delivery') {
       if (!deliveryAddress.street.trim()) {
         toast.error('Please enter your street address');
+        scrollToField('street');
         return false;
       }
       if (!deliveryAddress.city.trim()) {
         toast.error('Please enter your city');
+        scrollToField('city');
         return false;
       }
       if (!deliveryAddress.zip.trim() || deliveryAddress.zip.length < 5) {
         toast.error('Please enter a valid ZIP code');
+        scrollToField('zip');
         return false;
       }
     }
@@ -230,7 +247,9 @@ export default function OrderPage() {
         setOrderCreated(result.order);
         toast.success('Order created! Please complete payment.');
         logger.info('Order created, showing payment form', { orderId: result.order.id });
-        // The payment form will be shown via orderCreated state
+        
+        // Scroll to top for payment form
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         throw new Error(result.error || 'Failed to create order');
       }
