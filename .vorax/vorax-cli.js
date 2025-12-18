@@ -51,6 +51,9 @@ async function main() {
     case 'quick':
       await runQuickScan();
       break;
+    case 'next':
+      await runNextSteps(args.slice(1));
+      break;
     case 'help':
     default:
       showHelp();
@@ -192,6 +195,72 @@ async function runNanoOnly() {
   }
 }
 
+async function runNextSteps(args) {
+  console.log('🎯 VORAX NextSteps Advisor\n');
+  
+  try {
+    const NextStepsAdvisor = require('./agents/next-steps-advisor.js');
+    const advisor = new NextStepsAdvisor();
+    
+    const analysis = await advisor.analyze();
+    
+    const subCommand = args[0];
+    
+    if (subCommand === 'detail' || subCommand === 'details') {
+      // Show detailed view of all recommendations
+      console.log(advisor.formatForCLI(analysis));
+      console.log('\n📋 DETAILED RECOMMENDATIONS:\n');
+      for (const rec of analysis.recommendations) {
+        console.log(advisor.formatDetailedRecommendation(rec));
+      }
+    } else if (subCommand === 'category' && args[1]) {
+      // Filter by category
+      const category = args[1].toUpperCase().replace('-', '_');
+      const filtered = analysis.recommendations.filter(r => r.category === category);
+      if (filtered.length === 0) {
+        console.log(`No recommendations found for category: ${args[1]}`);
+        console.log('Available categories: REVENUE, SECURITY, CONVERSION, ACCESSIBILITY, PERFORMANCE, UX, SEO, CODE_QUALITY, CONTENT, TECH_DEBT');
+      } else {
+        console.log(`\n📂 ${category} Recommendations:\n`);
+        for (const rec of filtered) {
+          console.log(advisor.formatDetailedRecommendation(rec));
+        }
+      }
+    } else if (subCommand === 'json') {
+      // Output as JSON for integrations
+      console.log(JSON.stringify(analysis, null, 2));
+    } else if (subCommand === 'quick') {
+      // Quick wins only
+      const quickWins = analysis.recommendations.filter(r => r.effort === 'low' && r.impact === 'high');
+      console.log('\n⚡ QUICK WINS (High Impact, Low Effort):\n');
+      for (const win of quickWins) {
+        console.log(advisor.formatDetailedRecommendation(win));
+      }
+    } else if (subCommand === 'top' && args[1]) {
+      // Top N recommendations
+      const n = parseInt(args[1]) || 5;
+      console.log(`\n🏆 TOP ${n} RECOMMENDATIONS:\n`);
+      for (const rec of analysis.topPicks.slice(0, n)) {
+        console.log(advisor.formatDetailedRecommendation(rec));
+      }
+    } else {
+      // Default: show summary with top picks
+      console.log(advisor.formatForCLI(analysis));
+    }
+    
+    // Save recommendations to file
+    const fs = require('fs');
+    const path = require('path');
+    const outputPath = path.join(process.cwd(), '.vorax/reports/next-steps.json');
+    fs.writeFileSync(outputPath, JSON.stringify(analysis, null, 2));
+    console.log(`\n📁 Full analysis saved to: .vorax/reports/next-steps.json`);
+    
+  } catch (err) {
+    console.error('NextSteps analysis failed:', err.message);
+    process.exit(1);
+  }
+}
+
 async function runQuickScan() {
   console.log('⚡ Running quick scan...\n');
   
@@ -278,12 +347,24 @@ COMMANDS:
   report   Display the latest full report
   nano     Run only nano-agents (fast atomic checks)
   quick    Quick scan (TypeScript, ESLint, tests)
+  next     🆕 Get best next enhancement steps for full site
   help     Show this help message
+
+NEXT STEPS SUBCOMMANDS:
+  next                       # Show top 5 recommendations
+  next detail                # Show all recommendations with full details
+  next quick                 # Show quick wins (high impact, low effort)
+  next category <name>       # Filter by category (REVENUE, SEO, UX, etc.)
+  next top <n>               # Show top N recommendations
+  next json                  # Output as JSON for integrations
 
 EXAMPLES:
   npm run vorax              # Run full hunt
   npm run vorax:quick        # Fast pre-commit check
   npm run vorax:watch        # Continuous monitoring
+  node .vorax/vorax-cli.js next           # Get enhancement recommendations
+  node .vorax/vorax-cli.js next quick     # Show quick wins only
+  node .vorax/vorax-cli.js next category REVENUE  # Revenue-focused improvements
 
 CONFIGURATION:
   Edit .vorax/configs/vorax.config.js to customize behavior.
@@ -291,6 +372,7 @@ CONFIGURATION:
 REPORTS:
   Reports are saved to .vorax/reports/
   Latest report: .vorax/reports/LATEST_REPORT.md
+  Enhancement recommendations: .vorax/reports/next-steps.json
 `);
 }
 
