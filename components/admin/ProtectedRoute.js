@@ -5,7 +5,14 @@ import { useRouter } from 'next/navigation';
 
 /**
  * Client-side route protection for admin pages
- * Redirects to login if not authenticated
+ * 
+ * IMPORTANT: This is a UX enhancement only, NOT a security boundary.
+ * All actual security is enforced server-side via:
+ * 1. Middleware (middleware.ts) - blocks unauthenticated requests to /admin/*
+ * 2. API routes - each validates admin token via requireAdmin()
+ * 
+ * This component provides a smooth loading experience and
+ * redirects users who somehow reach admin pages without auth.
  */
 export default function ProtectedRoute({ children }) {
   const router = useRouter();
@@ -18,12 +25,23 @@ export default function ProtectedRoute({ children }) {
 
   async function checkAuth() {
     try {
-      const response = await fetch('/api/admin/auth/me');
+      const response = await fetch('/api/admin/auth/me', {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        // Not authenticated - redirect to login
+        const currentPath = window.location.pathname;
+        router.push(`/admin/login?redirect=${encodeURIComponent(currentPath)}`);
+        return;
+      }
+      
       const data = await response.json();
       
-      if (data.user) {
+      if (data.success && data.user && data.user.role === 'admin') {
         setIsAuthenticated(true);
       } else {
+        // Invalid response - redirect to login
         router.push('/admin/login');
       }
     } catch (error) {
@@ -46,7 +64,8 @@ export default function ProtectedRoute({ children }) {
   }
 
   if (!isAuthenticated) {
-    return null; // Will redirect
+    // Will redirect, show nothing
+    return null;
   }
 
   return children;
