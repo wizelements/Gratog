@@ -5,11 +5,11 @@ import { verifyAdminCookieToken } from '@/lib/admin-token';
 function addSecurityHeaders(response: NextResponse): NextResponse {
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.squareup.com https://*.squareupsandbox.com https://vercel.live https://*.vercel.app https://www.googletagmanager.com https://www.google-analytics.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.squareup.com https://*.squareupsandbox.com https://*.squarecdn.com https://web.squarecdn.com https://vercel.live https://*.vercel.app https://www.googletagmanager.com https://www.google-analytics.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https://*.squarecdn.com https://*.googleusercontent.com https://www.google-analytics.com",
-    "connect-src 'self' https://*.squareup.com https://*.squareupsandbox.com https://www.google-analytics.com https://vercel.live wss://vercel.live",
+    "img-src 'self' data: blob: https://*.squarecdn.com https://*.squareup.com https://*.googleusercontent.com https://www.google-analytics.com https://*.amazonaws.com https://items-images-production.s3.us-west-2.amazonaws.com",
+    "connect-src 'self' https://*.squareup.com https://*.squareupsandbox.com https://*.squarecdn.com https://www.google-analytics.com https://vercel.live wss://vercel.live https://pci-connect.squareup.com",
     "frame-src 'self' https://*.squareup.com https://*.squareupsandbox.com",
     "object-src 'none'",
     "base-uri 'self'",
