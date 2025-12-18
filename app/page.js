@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,6 +11,7 @@ import { ArrowRight, Sparkles, Star, Shield, Zap, TrendingUp, Heart, Leaf, Dropl
 import { toast } from 'sonner';
 import Script from 'next/script';
 import { getDemoProducts } from '@/lib/demo-products';
+import { ProductImage } from '@/components/OptimizedImage';
 
 export default function HomePage() {
     const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -155,10 +157,14 @@ export default function HomePage() {
 
             <section ref={heroRef} className="relative h-[600px] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
-                    <img
+                    <Image
                         src="https://images.unsplash.com/photo-1505944270255-72b8c68c6a70?w=1920&h=600&fit=crop"
                         alt="Wildcrafted Sea Moss from Pristine Ocean Waters"
-                        className="w-full h-full object-cover"
+                        fill
+                        priority
+                        quality={85}
+                        sizes="100vw"
+                        className="object-cover"
                         style={{ transform: `translateY(${scrollY * 0.5}px)` }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/90 via-emerald-800/80 to-teal-900/90" />
@@ -251,10 +257,13 @@ export default function HomePage() {
                                         <Link href={`/product/${product.slug || product.id}`} className="block">
                                             <div className="relative h-64 bg-gradient-to-br from-emerald-100 to-teal-100 overflow-hidden">
                                                 {product.image || product.images?.[0] ? (
-                                                    <img
+                                                    <ProductImage
                                                         src={product.image || product.images[0]}
                                                         alt={product.name}
-                                                        className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-2 transition-all duration-500"
+                                                        fill
+                                                        priority={featuredProducts.indexOf(product) < 3}
+                                                        className="group-hover:scale-110 group-hover:rotate-2 transition-all duration-500"
+                                                        objectFit="cover"
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center">

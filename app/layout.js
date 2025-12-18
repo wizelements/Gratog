@@ -8,7 +8,12 @@ import CartNotification from '@/components/cart/CartNotification';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'arial'],
+});
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://gratog.vercel.app'),
@@ -66,6 +71,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        {/* Preconnect hints for external resources - improves LCP */}
+        <link rel="preconnect" href="https://web.squarecdn.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://items-images-production.s3.us-west-2.amazonaws.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://web.squarecdn.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        
         {/* Square Web Payments SDK */}
         <script 
           type="text/javascript" 

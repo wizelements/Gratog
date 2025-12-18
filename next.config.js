@@ -133,7 +133,7 @@ const nextConfig = {
     pagesBufferLength: 1, // Reduced from 2
   },
   
-  // Performance optimizations
+  // Performance optimizations - SWC minification is default in Next.js 13+
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? {
       exclude: ['error', 'warn']
