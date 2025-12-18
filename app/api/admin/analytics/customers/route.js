@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin-auth';
+import { requireAdmin } from '@/lib/admin-session';
 import { getCustomerAnalytics } from '@/lib/admin-analytics';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/admin/analytics/customers - Customer analytics
  */
 export async function GET(request) {
   try {
-    await requireAdmin(request);
+    const admin = await requireAdmin(request);
     
     const analytics = await getCustomerAnalytics();
 
@@ -17,15 +18,13 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Customer analytics error:', error);
-    
-    if (error.message.includes('Unauthorized')) {
+    if (error.name === 'AdminAuthError') {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
       );
     }
-
+    logger.error('API', 'Customer analytics error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch customer analytics' },
       { status: 500 }
