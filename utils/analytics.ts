@@ -7,13 +7,20 @@ import { logger } from '@/lib/logger';
 export type AnalyticsEvent = 
   | 'checkout_started'
   | 'checkout_stage_change'
+  | 'checkout_proceed_to_payment'
   | 'fulfillment_type_selected'
   | 'contact_completed'
   | 'payment_initiated'
   | 'payment_completed'
   | 'payment_failed'
+  | 'payment_success'
+  | 'payment_error'
+  | 'payment_form_loaded'
+  | 'payment_tokenize_failed'
   | 'checkout_abandoned'
-  | 'field_completion_time';
+  | 'field_completion_time'
+  | 'order_created'
+  | 'order_creation_failed';
 
 export interface AnalyticsProps {
   [key: string]: any;
