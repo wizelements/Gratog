@@ -36,8 +36,8 @@ export default function CatalogPage() {
           setProducts(data.products);
           setFilteredProducts(data.products);
           setCategories(data.categories || []);
-          debug(`✅ Loaded ${data.products.length} products from ${data.source}`);
-          debug(`📊 Categories:`, data.categories?.map(c => `${c.name} (${c.count})`));
+          logger.debug(`✅ Loaded ${data.products.length} products from ${data.source}`);
+          logger.debug(`📊 Categories:`, data.categories?.map(c => `${c.name} (${c.count})`));
         }
       } catch (error) {
         console.error('Failed to fetch products:', error);
