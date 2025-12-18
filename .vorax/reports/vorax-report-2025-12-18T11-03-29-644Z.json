@@ -1,13 +1,25 @@
 {
-  "timestamp": "2025-12-18T11:07:08.021Z",
+  "timestamp": "2025-12-18T11:03:18.262Z",
   "scanNumber": 1,
   "mode": "NORMAL",
   "hungerLevel": 50,
   "agents": {
     "bug-hunter": {
       "agent": "bug-hunter",
-      "duration": 11449,
-      "issues": [],
+      "duration": 11381,
+      "issues": [
+        {
+          "agent": "bug-hunter",
+          "microAgent": "security",
+          "severity": "high",
+          "type": "dangerous-innerhtml",
+          "title": "dangerouslySetInnerHTML with user content",
+          "file": "/components/analytics/GoogleAnalytics.jsx",
+          "line": 34,
+          "description": "Potential XSS if user input is rendered",
+          "fix": "Sanitize HTML or use safe rendering"
+        }
+      ],
       "stats": {
         "filesScanned": 443,
         "testsRun": 7
@@ -15,7 +27,7 @@
     },
     "psycho-marketer": {
       "agent": "psycho-marketer",
-      "duration": 123,
+      "duration": 114,
       "issues": [],
       "stats": {
         "messagingScore": 100,
@@ -25,7 +37,7 @@
     },
     "uiux-predator": {
       "agent": "uiux-predator",
-      "duration": 98,
+      "duration": 92,
       "issues": [],
       "stats": {
         "componentsScanned": 143,
@@ -34,7 +46,7 @@
     },
     "log-devourer": {
       "agent": "log-devourer",
-      "duration": 69,
+      "duration": 63,
       "issues": [],
       "stats": {
         "filesWithLogging": 284,
@@ -44,7 +56,7 @@
     },
     "opti-beast": {
       "agent": "opti-beast",
-      "duration": 19,
+      "duration": 15,
       "issues": [],
       "stats": {
         "bundleSize": 2484137,
@@ -53,7 +65,7 @@
     },
     "trust-guardian": {
       "agent": "trust-guardian",
-      "duration": 18,
+      "duration": 14,
       "issues": [],
       "stats": {
         "trustScore": 100,
@@ -62,10 +74,22 @@
       }
     }
   },
-  "issues": [],
+  "issues": [
+    {
+      "agent": "bug-hunter",
+      "microAgent": "security",
+      "severity": "high",
+      "type": "dangerous-innerhtml",
+      "title": "dangerouslySetInnerHTML with user content",
+      "file": "/components/analytics/GoogleAnalytics.jsx",
+      "line": 34,
+      "description": "Potential XSS if user input is rendered",
+      "fix": "Sanitize HTML or use safe rendering"
+    }
+  ],
   "summary": {
     "critical": 0,
-    "high": 0,
+    "high": 1,
     "medium": 0,
     "low": 0
   }

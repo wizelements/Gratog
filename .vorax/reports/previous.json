@@ -1,59 +1,59 @@
 {
-  "timestamp": "2025-12-18T05:00:45.537Z",
+  "timestamp": "2025-12-18T11:07:08.021Z",
   "scanNumber": 1,
   "mode": "NORMAL",
   "hungerLevel": 50,
   "agents": {
     "bug-hunter": {
       "agent": "bug-hunter",
-      "duration": 17038,
+      "duration": 11449,
       "issues": [],
       "stats": {
-        "filesScanned": 425,
+        "filesScanned": 443,
         "testsRun": 7
       }
     },
     "psycho-marketer": {
       "agent": "psycho-marketer",
-      "duration": 95,
+      "duration": 123,
       "issues": [],
       "stats": {
         "messagingScore": 100,
-        "ctaCount": 143,
+        "ctaCount": 147,
         "toneConsistency": 100
       }
     },
     "uiux-predator": {
       "agent": "uiux-predator",
-      "duration": 72,
+      "duration": 98,
       "issues": [],
       "stats": {
-        "componentsScanned": 131,
+        "componentsScanned": 143,
         "accessibilityScore": 100
       }
     },
     "log-devourer": {
       "agent": "log-devourer",
-      "duration": 47,
+      "duration": 69,
       "issues": [],
       "stats": {
-        "filesWithLogging": 280,
-        "consoleLogCount": 110,
+        "filesWithLogging": 284,
+        "consoleLogCount": 112,
         "structuredLogCount": 452
       }
     },
     "opti-beast": {
       "agent": "opti-beast",
-      "duration": 14,
+      "duration": 19,
       "issues": [],
       "stats": {
-        "bundleSize": 2480434,
+        "bundleSize": 2484137,
         "assetCount": 1
       }
     },
     "trust-guardian": {
       "agent": "trust-guardian",
-      "duration": 13,
+      "duration": 18,
       "issues": [],
       "stats": {
         "trustScore": 100,
