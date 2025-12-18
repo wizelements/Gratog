@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyAdminCookieToken } from '@/lib/admin-token';
+import { verifyAdminToken } from '@/lib/admin-session';
 
 function addSecurityHeaders(response: NextResponse): NextResponse {
   const csp = [
@@ -26,11 +26,22 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   return response;
 }
 
+// Routes that don't require admin auth (within admin paths)
+const ADMIN_PUBLIC_ROUTES = [
+  '/admin/login',
+  '/api/admin/auth/login',
+  '/api/admin/auth/logout',
+  '/api/admin/setup', // Protected by secret, not token
+  '/api/admin/init',  // Protected by secret, not token
+  '/api/admin/emergency-init', // Protected by secret, not token
+];
+
 export async function middleware(req: NextRequest) {
   const url = new URL(req.url);
+  const pathname = url.pathname;
 
   // Redirect old /delivery route to /order with tab param
-  if (url.pathname === '/delivery') {
+  if (pathname === '/delivery') {
     url.pathname = '/order';
     url.searchParams.set('tab', 'delivery');
     const redirectResponse = NextResponse.redirect(url, 301);
@@ -42,25 +53,45 @@ export async function middleware(req: NextRequest) {
     const res = NextResponse.next();
     res.cookies.set('notice', 'delivery_off', { 
       path: '/', 
-      httpOnly: true, // SECURITY FIX: Set httpOnly to prevent XSS access
-      maxAge: 60 // 1 minute
+      httpOnly: true,
+      maxAge: 60
     });
     return addSecurityHeaders(res);
   }
 
-  // Protect admin pages (except login)
-  if (url.pathname.startsWith('/admin') && url.pathname !== '/admin/login') {
+  // Check if this is an admin route (page or API)
+  const isAdminPage = pathname.startsWith('/admin');
+  const isAdminApi = pathname.startsWith('/api/admin');
+  
+  // Check if route is in the public list
+  const isPublicAdminRoute = ADMIN_PUBLIC_ROUTES.some(route => pathname === route);
+
+  // Protect admin pages (except public routes like login)
+  if (isAdminPage && !isPublicAdminRoute) {
     const token = req.cookies.get('admin_token')?.value;
-    
-    // Verify token validity, not just presence (SECURITY FIX)
-    // Using jose for Edge Runtime compatibility
-    const decoded = token ? await verifyAdminCookieToken(token) : null;
+    const decoded = token ? await verifyAdminToken(token) : null;
     
     if (!decoded) {
       const loginUrl = new URL('/admin/login', req.url);
-      loginUrl.searchParams.set('redirect', url.pathname);
+      loginUrl.searchParams.set('redirect', pathname);
       const redirectResponse = NextResponse.redirect(loginUrl);
       return addSecurityHeaders(redirectResponse);
+    }
+  }
+
+  // Protect admin API routes (except public routes)
+  // This is a defense-in-depth measure - individual routes should also validate
+  if (isAdminApi && !isPublicAdminRoute) {
+    const token = req.cookies.get('admin_token')?.value;
+    const decoded = token ? await verifyAdminToken(token) : null;
+    
+    if (!decoded) {
+      return addSecurityHeaders(
+        NextResponse.json(
+          { success: false, error: 'Unauthorized - Admin access required' },
+          { status: 401 }
+        )
+      );
     }
   }
 
@@ -69,5 +100,10 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/delivery', '/', '/admin/:path*'],
+  matcher: [
+    '/delivery',
+    '/',
+    '/admin/:path*',
+    '/api/admin/:path*',
+  ],
 };
