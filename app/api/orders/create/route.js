@@ -22,6 +22,77 @@ function getNextSaturday(time = '09:00') {
   return nextSat.toISOString();
 }
 
+function buildFulfillment(orderData) {
+  const { fulfillmentType, customer, deliveryAddress, shippingAddress, deliveryInstructions, pickup } = orderData;
+  
+  // Pickup orders (Serenbe or Browns Mill)
+  if (fulfillmentType === 'pickup' || fulfillmentType === 'pickup_serenbe' || fulfillmentType === 'pickup_browns_mill') {
+    const isBrownsMill = fulfillmentType === 'pickup_browns_mill' || pickup?.locationId === 'browns_mill';
+    return [{
+      type: 'PICKUP',
+      state: 'PROPOSED',
+      pickup_details: {
+        recipient: {
+          display_name: customer.name,
+          phone_number: customer.phone
+        },
+        note: isBrownsMill
+          ? '📍 PICKUP: Browns Mill Community • Saturdays 3:00 PM - 6:00 PM • Show order number at pickup booth'
+          : '📍 PICKUP: Serenbe Farmers Market (Booth #12) • 10950 Hutcheson Ferry Rd, Palmetto, GA 30268 • Saturdays 9:00 AM - 1:00 PM',
+        schedule_type: 'SCHEDULED',
+        pickup_at: getNextSaturday(isBrownsMill ? '15:00' : '09:00')
+      }
+    }];
+  }
+  
+  // Delivery orders (local delivery)
+  if (fulfillmentType === 'delivery') {
+    return [{
+      type: 'SHIPMENT',
+      state: 'PROPOSED',
+      shipment_details: {
+        recipient: {
+          display_name: customer.name,
+          phone_number: customer.phone,
+          address: {
+            address_line_1: deliveryAddress?.street || '',
+            locality: deliveryAddress?.city || '',
+            administrative_district_level_1: deliveryAddress?.state || 'GA',
+            postal_code: deliveryAddress?.zip || ''
+          }
+        },
+        shipping_note: `🚚 LOCAL DELIVERY${deliveryInstructions ? ' - ' + deliveryInstructions : ''}`,
+        expected_shipped_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      }
+    }];
+  }
+  
+  // Shipping orders (nationwide shipping)
+  if (fulfillmentType === 'shipping') {
+    const addr = shippingAddress || deliveryAddress;
+    return [{
+      type: 'SHIPMENT',
+      state: 'PROPOSED',
+      shipment_details: {
+        recipient: {
+          display_name: customer.name,
+          phone_number: customer.phone,
+          address: {
+            address_line_1: addr?.street || '',
+            locality: addr?.city || '',
+            administrative_district_level_1: addr?.state || '',
+            postal_code: addr?.zip || ''
+          }
+        },
+        shipping_note: '📦 USPS PRIORITY SHIPPING',
+        expected_shipped_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    }];
+  }
+  
+  return undefined;
+}
+
 export async function POST(request) {
   const startTime = Date.now();
   
@@ -203,38 +274,7 @@ export async function POST(request) {
               customer_name: orderData.customer.name,
               customer_phone: orderData.customer.phone
             },
-            fulfillments: orderData.fulfillmentType.startsWith('pickup') ? [{
-              type: 'PICKUP',
-              state: 'PROPOSED',
-              pickup_details: {
-                recipient: {
-                  display_name: orderData.customer.name,
-                  phone_number: orderData.customer.phone
-                },
-                note: orderData.fulfillmentType === 'pickup_browns_mill'
-                  ? '📍 PICKUP: Browns Mill Community • Saturdays 3:00 PM - 6:00 PM • Show order number at pickup booth'
-                  : '📍 PICKUP: Serenbe Farmers Market (Booth #12) • 10950 Hutcheson Ferry Rd, Palmetto, GA 30268 • Saturdays 9:00 AM - 1:00 PM • Look for gold Taste of Gratitude banners',
-                schedule_type: 'SCHEDULED',
-                pickup_at: getNextSaturday(orderData.fulfillmentType === 'pickup_browns_mill' ? '15:00' : '09:00')
-              }
-            }] : orderData.fulfillmentType === 'delivery' ? [{
-              type: 'SHIPMENT',
-              state: 'PROPOSED',
-              shipment_details: {
-                recipient: {
-                  display_name: orderData.customer.name,
-                  phone_number: orderData.customer.phone,
-                  address: {
-                    address_line_1: orderData.deliveryAddress?.street || '',
-                    locality: orderData.deliveryAddress?.city || '',
-                    administrative_district_level_1: orderData.deliveryAddress?.state || 'GA',
-                    postal_code: orderData.deliveryAddress?.zip || ''
-                  }
-                },
-                shipping_note: orderData.deliveryInstructions || '',
-                expected_shipped_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-              }
-            }] : undefined
+            fulfillments: buildFulfillment(orderData)
           }
         };
         
