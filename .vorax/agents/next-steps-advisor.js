@@ -467,7 +467,7 @@ class NextStepsAdvisor {
         description: 'Ensure WCAG 2.1 AA compliance',
         effort: 'medium',
         impact: 'medium',
-        detectFn: (ctx) => true, // Always relevant
+        detectFn: (ctx) => !ctx.hasA11yEnhancements,
         steps: [
           'Run automated accessibility tests',
           'Test with screen readers (NVDA, VoiceOver)',
@@ -600,6 +600,7 @@ class NextStepsAdvisor {
       hasEnhancedAnalytics: false,
       hasI18n: false,
       hasPWA: false,
+      hasA11yEnhancements: false,
       missingSecurityHeaders: false,
       implementedRecommendations: []
     };
@@ -645,15 +646,42 @@ class NextStepsAdvisor {
       { file: 'components/ReviewForm', key: 'hasReviewSystem' },
       { file: 'components/ProductReviews', key: 'hasReviewSystem' },
       { file: 'app/api/reviews', key: 'hasReviewSystem' },
+      // Wishlist detection
       { file: 'components/Wishlist', key: 'hasWishlist' },
+      { file: 'components/WishlistButton', key: 'hasWishlist' },
+      { file: 'stores/wishlist', key: 'hasWishlist' },
+      { file: 'app/wishlist', key: 'hasWishlist' },
       { file: 'app/(site)/wishlist', key: 'hasWishlist' },
+      // Product bundles detection
       { file: 'components/ProductBundle', key: 'hasProductBundles' },
+      { file: 'components/ProductBundles', key: 'hasProductBundles' },
+      { file: 'components/FrequentlyBoughtTogether', key: 'hasProductBundles' },
+      { file: 'lib/bundles', key: 'hasProductBundles' },
+      // Loyalty/Rewards detection
       { file: 'app/(site)/rewards', key: 'hasLoyaltyProgram' },
+      { file: 'app/rewards', key: 'hasLoyaltyProgram' },
+      { file: 'stores/rewards', key: 'hasLoyaltyProgram' },
       { file: 'components/LoyaltyPoints', key: 'hasLoyaltyProgram' },
+      { file: 'components/RewardsBadge', key: 'hasLoyaltyProgram' },
+      { file: 'components/ReferralWidget', key: 'hasLoyaltyProgram' },
+      // Live chat detection
       { file: 'components/ChatWidget', key: 'hasLiveChat' },
+      { file: 'components/LiveChatWidget', key: 'hasLiveChat' },
+      // Analytics detection
       { file: 'lib/analytics/enhanced', key: 'hasEnhancedAnalytics' },
+      { file: 'lib/ga4-analytics', key: 'hasEnhancedAnalytics' },
+      { file: 'hooks/useAnalytics', key: 'hasEnhancedAnalytics' },
+      { file: 'components/analytics/GoogleAnalytics', key: 'hasEnhancedAnalytics' },
+      // i18n detection
       { file: 'lib/i18n', key: 'hasI18n' },
+      { file: 'lib/i18n/index', key: 'hasI18n' },
+      { file: 'contexts/LocaleContext', key: 'hasI18n' },
+      { file: 'components/LanguageSwitcher', key: 'hasI18n' },
       { file: 'messages', key: 'hasI18n' },
+      // Accessibility detection
+      { file: 'components/SkipLinks', key: 'hasA11yEnhancements' },
+      { file: 'components/ui/a11y-announcer', key: 'hasA11yEnhancements' },
+      // PWA detection
       { file: 'public/manifest.json', key: 'hasPWA' },
       { file: 'public/sw.js', key: 'hasPWA' }
     ];
@@ -696,6 +724,7 @@ class NextStepsAdvisor {
     if (context.hasEnhancedAnalytics) context.implementedRecommendations.push('analytics-enhanced');
     if (context.hasI18n) context.implementedRecommendations.push('internationalization');
     if (context.hasPWA) context.implementedRecommendations.push('pwa-features');
+    if (context.hasA11yEnhancements) context.implementedRecommendations.push('a11y-audit');
 
     return context;
   }
