@@ -1,28 +1,33 @@
 import { NextResponse } from 'next/server';
+import { getAdminSession } from '@/lib/admin-session';
 import { logger } from '@/lib/logger';
 
 /**
  * GET /api/admin/auth/me
- * Get current admin user info (mock for now)
+ * Get current admin user info
+ * 
+ * SECURITY: This endpoint now properly validates the admin token.
+ * It will return 401 if not authenticated.
  */
 export async function GET(request) {
   try {
-    // For now, return mock admin user
-    // In production, validate JWT token from headers
-    const authHeader = request.headers.get('authorization');
+    const admin = await getAdminSession(request);
     
-    // Mock admin user
-    const adminUser = {
-      id: 'admin_001',
-      name: 'Admin User',
-      email: 'admin@tasteofgratitude.com',
-      role: 'admin',
-      permissions: ['products', 'orders', 'customers', 'analytics', 'settings']
-    };
+    if (!admin) {
+      return NextResponse.json(
+        { success: false, error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      user: adminUser
+      user: {
+        id: admin.id,
+        name: admin.name || 'Admin User',
+        email: admin.email,
+        role: admin.role,
+      }
     });
   } catch (error) {
     logger.error('API', 'Admin auth/me error', error);
