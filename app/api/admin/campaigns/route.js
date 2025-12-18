@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin-auth';
-import clientPromise from '@/lib/db-optimized';
+import { requireAdmin } from '@/lib/admin-session';
 import { getCampaigns, createCampaign } from '@/lib/campaign-manager';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/admin/campaigns - List all campaigns
@@ -27,15 +27,13 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Get campaigns error:', error);
-    
-    if (error.message.includes('Unauthorized')) {
+    if (error.name === 'AdminAuthError') {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
       );
     }
-
+    logger.error('API', 'Get campaigns error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch campaigns' },
       { status: 500 }
@@ -71,21 +69,21 @@ export async function POST(request) {
       createdBy: admin.id
     });
 
+    logger.info('API', `Campaign created by ${admin.email}: ${name}`);
+
     return NextResponse.json({
       success: true,
       campaign
     }, { status: 201 });
 
   } catch (error) {
-    console.error('Create campaign error:', error);
-    
-    if (error.message.includes('Unauthorized')) {
+    if (error.name === 'AdminAuthError') {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
       );
     }
-
+    logger.error('API', 'Create campaign error:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to create campaign' },
       { status: 500 }

@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin-auth';
+import { requireAdmin } from '@/lib/admin-session';
 import { sendCampaign } from '@/lib/campaign-manager';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/admin/campaigns/send - Send campaign to recipients
  */
 export async function POST(request) {
   try {
-    await requireAdmin(request);
+    const admin = await requireAdmin(request);
     
     const body = await request.json();
     const { campaignId } = body;
@@ -19,6 +20,8 @@ export async function POST(request) {
       );
     }
 
+    logger.info('API', `Campaign ${campaignId} send initiated by ${admin.email}`);
+
     const result = await sendCampaign(campaignId);
 
     return NextResponse.json({
@@ -27,15 +30,13 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('Send campaign error:', error);
-    
-    if (error.message.includes('Unauthorized')) {
+    if (error.name === 'AdminAuthError') {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
       );
     }
-
+    logger.error('API', 'Send campaign error:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to send campaign' },
       { status: 500 }

@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin-auth';
+import { requireAdmin } from '@/lib/admin-session';
 import { generateNewsletterContent } from '@/lib/ai-newsletter';
 import clientPromise from '@/lib/db-optimized';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/admin/campaigns/generate - AI-powered newsletter generation
  */
 export async function POST(request) {
   try {
-    await requireAdmin(request);
+    const admin = await requireAdmin(request);
     
     const body = await request.json();
     const { type, products, customPrompt, tone, length } = body;
@@ -32,6 +33,8 @@ export async function POST(request) {
       }).toArray();
     }
 
+    logger.info('API', `Newsletter generation started by ${admin.email}: type=${type}`);
+
     // Generate newsletter content using AI
     const result = await generateNewsletterContent({
       type,
@@ -54,15 +57,13 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('Newsletter generation error:', error);
-    
-    if (error.message.includes('Unauthorized')) {
+    if (error.name === 'AdminAuthError') {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
       );
     }
-
+    logger.error('API', 'Newsletter generation error:', error);
     return NextResponse.json(
       { error: 'Failed to generate newsletter' },
       { status: 500 }
