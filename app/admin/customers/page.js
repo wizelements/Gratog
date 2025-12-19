@@ -25,6 +25,7 @@ export default function CustomersPage() {
       if (segment !== 'all') params.append('segment', segment);
       
       const response = await fetch(`/api/customers?${params}`);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setCustomers(data.customers || []);
     } catch (error) {

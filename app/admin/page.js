@@ -31,6 +31,7 @@ export default function AdminDashboard() {
   const fetchDashboardData = async () => {
     try {
       const response = await fetch('/api/admin/products');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       
       if (data.products) {
@@ -52,6 +53,7 @@ export default function AdminDashboard() {
   const fetchOrders = async () => {
     try {
       const response = await fetch('/api/admin/orders');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       
       if (data.orders) {
@@ -79,6 +81,7 @@ export default function AdminDashboard() {
   const fetchSyncStatus = async () => {
     try {
       const response = await fetch('/api/admin/orders/sync');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       if (data.lastSync) {
         setLastSync(new Date(data.lastSync));
@@ -97,6 +100,7 @@ export default function AdminDashboard() {
         credentials: 'include',
         body: JSON.stringify({})
       });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       
       if (data.success) {

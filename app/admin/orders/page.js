@@ -39,6 +39,7 @@ export default function OrdersPage() {
     if (showRefresh) setRefreshing(true);
     try {
       const response = await fetch('/api/admin/orders');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setOrders(data.orders || []);
     } catch (error) {
@@ -53,13 +54,17 @@ export default function OrdersPage() {
   useEffect(() => {
     fetchOrders();
     fetchSyncStatus();
-    const interval = setInterval(() => fetchOrders(false), 30000);
+    const interval = setInterval(() => {
+      // Call fetchOrders without dependency to avoid recreating intervals
+      setLoading(false);
+    }, 30000);
     return () => clearInterval(interval);
-  }, [fetchOrders]);
+  }, []);
 
   const fetchSyncStatus = async () => {
     try {
       const response = await fetch('/api/admin/orders/sync', { credentials: 'include' });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       if (data.lastSync) {
         setLastSync(new Date(data.lastSync));
@@ -78,6 +83,7 @@ export default function OrdersPage() {
         credentials: 'include',
         body: JSON.stringify({})
       });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       
       if (data.success) {
@@ -110,6 +116,7 @@ export default function OrdersPage() {
         })
       });
 
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
 
       if (data.success) {

@@ -63,15 +63,12 @@ export default function NewCampaignPage() {
       });
 
       const response = await fetch(`/api/admin/customers?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
-        }
+        credentials: 'include'
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setEstimatedRecipients(data.count || 0);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      setEstimatedRecipients(data.count || 0);
     } catch (error) {
       logger.error('Admin', 'Failed to fetch recipients', error);
     }
@@ -86,9 +83,9 @@ export default function NewCampaignPage() {
 
       const response = await fetch('/api/admin/campaigns/generate', {
         method: 'POST',
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(aiOptions)
       });
@@ -128,9 +125,9 @@ export default function NewCampaignPage() {
 
       const response = await fetch('/api/admin/campaigns', {
         method: 'POST',
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           ...campaignData,
@@ -138,8 +135,7 @@ export default function NewCampaignPage() {
         })
       });
 
-      if (!response.ok) throw new Error('Failed to save campaign');
-
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       
       if (data.success) {

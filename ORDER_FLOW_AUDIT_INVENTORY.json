@@ -1,0 +1,189 @@
+{
+  "timestamp": "2025-12-19T04:46:15.381293",
+  "audit_type": "FULL_ORDER_FLOW_AUDIT",
+  "stages": {
+    "Stage_1_Catalog_Cart": {
+      "name": "Product Selection & Cart Management",
+      "files": [
+        {
+          "name": "page.js",
+          "path": "app/catalog/page.js",
+          "lines": 524
+        }
+      ],
+      "components": []
+    },
+    "Stage_2_Checkout_Forms": {
+      "name": "Contact Info & Fulfillment Selection",
+      "components": [],
+      "forms": [
+        {
+          "name": "CheckoutRoot.tsx",
+          "path": "components/checkout/CheckoutRoot.tsx",
+          "lines": 292,
+          "purpose": "Main orchestrator"
+        },
+        {
+          "name": "ContactForm.tsx",
+          "path": "components/checkout/ContactForm.tsx",
+          "lines": 208,
+          "purpose": "Name, email, phone"
+        },
+        {
+          "name": "FulfillmentTabs.tsx",
+          "path": "components/checkout/FulfillmentTabs.tsx",
+          "lines": 71,
+          "purpose": "Fulfillment type"
+        },
+        {
+          "name": "PickupForm.tsx",
+          "path": "components/checkout/PickupForm.tsx",
+          "lines": 163,
+          "purpose": "Pickup location"
+        },
+        {
+          "name": "DeliveryForm.tsx",
+          "path": "components/checkout/DeliveryForm.tsx",
+          "lines": 274,
+          "purpose": "Delivery address & window"
+        },
+        {
+          "name": "ShippingForm.tsx",
+          "path": "components/checkout/ShippingForm.tsx",
+          "lines": 126,
+          "purpose": "Shipping address"
+        },
+        {
+          "name": "CartSummary.tsx",
+          "path": "components/checkout/CartSummary.tsx",
+          "lines": 224,
+          "purpose": "Order summary"
+        }
+      ]
+    },
+    "Stage_3_Review_Submit": {
+      "name": "Order Review & Order Creation",
+      "components": [
+        {
+          "name": "ReviewAndPay.tsx",
+          "lines": 349
+        },
+        {
+          "name": "order.ts service",
+          "lines": 122
+        }
+      ],
+      "endpoints": [
+        {
+          "endpoint": "POST /api/orders/create",
+          "file": "app/api/orders/create/route.js",
+          "lines": 469
+        }
+      ]
+    },
+    "Stage_4_Payment": {
+      "name": "Payment Processing with Square",
+      "payment_methods": [
+        {
+          "name": "SquarePaymentForm.tsx",
+          "method": "Web Payments SDK",
+          "lines": 546
+        },
+        {
+          "name": "route.ts",
+          "method": "Web Payments processor",
+          "lines": 375
+        },
+        {
+          "name": "route.ts",
+          "method": "Payment Links",
+          "lines": 321
+        },
+        {
+          "name": "square-ops.ts",
+          "method": "Square operations",
+          "lines": 122
+        },
+        {
+          "name": "square-customer.ts",
+          "method": "Customer linking",
+          "lines": 193
+        }
+      ],
+      "endpoints": []
+    },
+    "Stage_5_Fulfillment_Tracking": {
+      "name": "Fulfillment Setup & Order Status Tracking",
+      "fulfillment": [
+        {
+          "file": "fulfillment.ts",
+          "purpose": "Delivery windows, fees, validation",
+          "lines": 305
+        },
+        {
+          "file": "fulfillment.ts",
+          "purpose": "Fulfillment validation",
+          "lines": 260
+        },
+        {
+          "file": "route.js",
+          "purpose": "Status updates",
+          "lines": 105
+        },
+        {
+          "file": "order-status-notifier.js",
+          "purpose": "SMS/Email notifications",
+          "lines": 222
+        },
+        {
+          "file": "enhanced-order-tracking.js",
+          "purpose": "Order tracking & lifecycle",
+          "lines": 594
+        }
+      ],
+      "status_management": []
+    },
+    "Stage_6_Webhooks_Sync": {
+      "name": "Square Webhook Integration & Order Sync",
+      "webhooks": [
+        {
+          "file": "route.ts",
+          "purpose": "Webhook handler",
+          "lines": 392
+        },
+        {
+          "file": "square-orders-sync.js",
+          "purpose": "Order sync logic",
+          "lines": 271
+        },
+        {
+          "file": "route.js",
+          "purpose": "Manual sync endpoint",
+          "lines": 87
+        }
+      ],
+      "sync": []
+    },
+    "Stage_7_Confirmation_Tracking": {
+      "name": "Order Confirmation & Customer Tracking",
+      "pages": [
+        {
+          "file": "OrderSuccessPage.client.js",
+          "route": "/order/success",
+          "lines": 549
+        },
+        {
+          "file": "CheckoutSuccessPage.client.js",
+          "route": "/checkout/success",
+          "lines": 480
+        },
+        {
+          "file": "page.js",
+          "route": "/profile/orders",
+          "lines": 150
+        }
+      ],
+      "endpoints": []
+    }
+  }
+}

@@ -32,6 +32,7 @@ export default function AdminCouponsPage() {
   const fetchCoupons = async () => {
     try {
       const response = await fetch('/api/admin/coupons');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       if (data.success) {
         setCoupons(data.coupons);
@@ -60,6 +61,7 @@ export default function AdminCouponsPage() {
         })
       });
 
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       
       if (data.success) {

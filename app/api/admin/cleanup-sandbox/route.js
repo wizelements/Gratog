@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { createLogger } from '@/lib/logger';
+import { requireAdmin } from '@/lib/admin-session';
 
 const logger = createLogger('CleanupSandbox');
 
@@ -10,8 +11,18 @@ export const dynamic = 'force-dynamic';
 /**
  * POST /api/admin/cleanup-sandbox
  * Remove sandbox products and trigger fresh production sync
+ * REQUIRES ADMIN AUTHENTICATION
  */
 export async function POST(request) {
+  try {
+    await requireAdmin(request);
+  } catch (error) {
+    logger.warn('Unauthorized cleanup attempt', { error: error.message });
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
   const startTime = Date.now();
   
   try {
@@ -90,8 +101,19 @@ export async function POST(request) {
 /**
  * GET /api/admin/cleanup-sandbox
  * Preview what would be cleaned up (dry run)
+ * REQUIRES ADMIN AUTHENTICATION
  */
 export async function GET(request) {
+  try {
+    await requireAdmin(request);
+  } catch (error) {
+    logger.warn('Unauthorized preview attempt', { error: error.message });
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+  
   try {
     const { db } = await connectToDatabase();
     

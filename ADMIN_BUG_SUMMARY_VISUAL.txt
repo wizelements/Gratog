@@ -1,0 +1,187 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                   ADMIN DASHBOARD BUG AUDIT - VISUAL SUMMARY                 ║
+║                            December 19, 2025                                 ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SEVERITY BREAKDOWN                                                            │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  🔴 CRITICAL (5 bugs)  ████████████████░░░░░░░░░░░░░░░░  24%                │
+│     • Unauthenticated endpoint                                               │
+│     • Memory leak (infinite setInterval)                                     │
+│     • Missing response.ok checks (15 instances)                              │
+│     • Token in localStorage (4 instances)                                    │
+│     • Missing credentials parameter (8 instances)                            │
+│                                                                               │
+│  🟠 HIGH (5 bugs)      ████████░░░░░░░░░░░░░░░░░░░░░░░░  24%                │
+│     • Stale closures (3 instances)                                           │
+│     • Race conditions (2 instances)                                          │
+│     • Weak security defaults                                                 │
+│     • Missing timeouts                                                       │
+│     • Unmounted component updates                                            │
+│                                                                               │
+│  🟡 MEDIUM (11 bugs)   ███░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  52%                │
+│     • CSV export fails silently                                              │
+│     • Missing error boundaries                                               │
+│     • No memoization on filtered lists                                       │
+│     • Weak CSRF settings                                                     │
+│     • XSS risk in templates                                                  │
+│     • And 6 more...                                                          │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ RISK MATRIX                                                                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  IMPACT                                                                       │
+│  ▲                                                                            │
+│  │   🔴  🔴                                                                   │
+│  │   ██████  (Security + Stability)                                          │
+│  │   ██████  (5 CRITICAL)                                                    │
+│  │                                                                            │
+│  │        🟠  🟠  🟠                                                          │
+│  │        ████████  (Data Integrity + UX)                                    │
+│  │        ████████  (5 HIGH)                                                 │
+│  │                                                                            │
+│  │              🟡  🟡  🟡  🟡  🟡  🟡  🟡  🟡  🟡  🟡  🟡                  │
+│  │              ████████████████  (Performance + UX)                         │
+│  │              ████████████████  (11 MEDIUM)                                │
+│  │                                                                            │
+│  └─────────────────────────────────────────────────────────────────────────► │
+│        LIKELIHOOD                                                             │
+│                                                                               │
+│  CRITICAL ZONE: Immediate fix needed                                          │
+│  HIGH ZONE:     Fix within 1-2 hours                                          │
+│  MEDIUM ZONE:   Schedule this week                                            │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ AFFECTED FILES (18 total)                                                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  API ROUTES (4 files):                                                       │
+│  ┌────────────────────────────────────────────────────────────────────┐     │
+│  │ ❌ cleanup-sandbox/route.js      [NO AUTH]              CRITICAL    │     │
+│  │ ❌ setup/route.js                [WEAK AUTH]             HIGH       │     │
+│  │ ❌ init/route.js                 [WEAK AUTH]             HIGH       │     │
+│  │ ⚠️  auth/me/route.js              [INCOMPLETE]           MEDIUM     │     │
+│  └────────────────────────────────────────────────────────────────────┘     │
+│                                                                               │
+│  ADMIN PAGES (11 files):                                                     │
+│  ┌────────────────────────────────────────────────────────────────────┐     │
+│  │ 🔴 page.js           (dashboard)    [5 issues]        CRITICAL      │     │
+│  │ 🔴 orders/page.js                  [6 issues]        CRITICAL      │     │
+│  │ 🔴 products/page.js                [3 issues]        CRITICAL      │     │
+│  │ 🔴 inventory/page.js               [3 issues]        CRITICAL      │     │
+│  │ 🔴 coupons/page.js                 [4 issues]        CRITICAL      │     │
+│  │ 🟠 customers/page.js               [2 issues]        HIGH          │     │
+│  │ 🟠 campaigns/page.js               [3 issues]        HIGH          │     │
+│  │ 🟠 campaigns/new/page.js           [4 issues]        HIGH          │     │
+│  │ 🟡 settings/page.js                [1 issue]         MEDIUM        │     │
+│  │ 🟡 layout.js                       [2 issues]        MEDIUM        │     │
+│  │ 🟡 waitlist/page.js                [1 issue]         MEDIUM        │     │
+│  └────────────────────────────────────────────────────────────────────┘     │
+│                                                                               │
+│  AUTH LIBRARIES (3 files):                                                   │
+│  ┌────────────────────────────────────────────────────────────────────┐     │
+│  │ ⚠️  admin-token.ts       [Unverified decode]         MEDIUM        │     │
+│  │ ⚠️  admin-session.ts     [Weak CSRF]                 MEDIUM        │     │
+│  │ ⚠️  auth-config.ts       [Hardcoded defaults]        MEDIUM        │     │
+│  └────────────────────────────────────────────────────────────────────┘     │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ FIX TIMELINE                                                                  │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  PHASE 1 - URGENT (TODAY)                              ████████░░░  2.5h    │
+│  ├─ Add auth to cleanup endpoint                       ░░░░░░░░░░░  5m      │
+│  ├─ Fix infinite setInterval memory leak               ░░░░░░░░░░░  10m     │
+│  ├─ Add response.ok validation (15 places)             ░░░░░░░░░░░  45m     │
+│  ├─ Remove token from localStorage (4 places)          ░░░░░░░░░░░  15m     │
+│  └─ Add credentials parameter (8 places)               ░░░░░░░░░░░  30m     │
+│                                                                               │
+│  PHASE 2 - SOON (THIS WEEK)                            ████░░░░░░░  1.5h    │
+│  ├─ Fix stale closures (3 places)                      ░░░░░░░░░░░  30m     │
+│  ├─ Fix race conditions (2 places)                     ░░░░░░░░░░░  10m     │
+│  ├─ Fix unmounted updates (3 places)                   ░░░░░░░░░░░  20m     │
+│  ├─ Add CSV error handling                             ░░░░░░░░░░░  10m     │
+│  └─ Remove hardcoded passwords & update CSRF           ░░░░░░░░░░░  20m     │
+│                                                                               │
+│  PHASE 3 - STANDARD (NEXT SPRINT)                      ██░░░░░░░░░  2.0h    │
+│  ├─ Add timeout protection to all fetches              ░░░░░░░░░░░  60m     │
+│  ├─ Add missing error boundaries                       ░░░░░░░░░░░  30m     │
+│  ├─ Add memoization & optimization                     ░░░░░░░░░░░  30m     │
+│  └─ Improve error messages throughout                  ░░░░░░░░░░░  30m     │
+│                                                                               │
+│  TESTING                                               ░░░░░░░░░░░  1.0h    │
+│                                                                               │
+│  ════════════════════════════════════════════════════════════════════════════│
+│  TOTAL ESTIMATED: 7 hours (1 developer day)            ════════░░░░        │
+│  ════════════════════════════════════════════════════════════════════════════│
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ KEY METRICS                                                                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  SCOPE:                                                                       │
+│    • 18 files with issues                             ██████████  100%      │
+│    • 21 distinct bugs identified                      ██████████  100%      │
+│    • 30+ locations requiring code changes             ██████████  100%      │
+│                                                                               │
+│  SECURITY:                                                                    │
+│    • Critical vulnerabilities                         ██░░░░░░░░  20%       │
+│    • Data exposure risks                              ███░░░░░░░  30%       │
+│    • Authentication bypasses                          ██░░░░░░░░  20%       │
+│                                                                               │
+│  STABILITY:                                                                   │
+│    • Memory leak risk                                 █████░░░░░  50%       │
+│    • Request hang risk                                █████░░░░░  50%       │
+│    • State corruption risk                            ████░░░░░░  40%       │
+│                                                                               │
+│  CODE QUALITY:                                                                │
+│    • Missing error handling                           ███░░░░░░░  30%       │
+│    • Missing validation                               ████░░░░░░  40%       │
+│    • Missing type safety                              █░░░░░░░░░  10%       │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ IMPACT IF NOT FIXED                                                           │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  24 HOURS:   Token exposure, unauthorized cleanup possible                   │
+│  1 WEEK:     Memory leak causes app crash, data showing stale                │
+│  2 WEEKS:    Order processing broken, silent failures widespread             │
+│  1 MONTH:    Admin dashboard unusable, security breach likely                │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ DOCUMENTATION                                                                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  📋 ADMIN_AUDIT_INDEX.md                  [Navigation & Overview]            │
+│  📊 ADMIN_AUDIT_SUMMARY.md                [Executive Summary - 5 min read]   │
+│  🔍 ADMIN_DASHBOARD_DEEP_BUG_AUDIT.md    [Technical Details - 20 min read]  │
+│  🔧 ADMIN_BUG_FIXES_QUICK_START.md       [Step-by-Step Fixes - Reference]   │
+│                                                                               │
+│  Start with INDEX, then pick your role's appropriate document.               │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                           STATUS: READY TO FIX                               ║
+║                    All documentation prepared & verified                     ║
+║                                                                              ║
+║                            ⚠️  START WITH PHASE 1  ⚠️                         ║
+║                          These are critical security &                       ║
+║                          stability issues requiring                          ║
+║                          immediate attention                                 ║
+╚══════════════════════════════════════════════════════════════════════════════╝

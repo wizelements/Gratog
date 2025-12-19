@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import EnhancedProductCard from '@/components/EnhancedProductCard';
 import ProductCard from '@/components/ProductCard';
 import FitQuiz from '@/components/FitQuiz';
-import { Sparkles, Filter, Grid, List, Loader2, Droplets, Heart, Award } from 'lucide-react';
+import { Sparkles, Filter, Grid, List, Loader2, Droplets, Heart, Award, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 import AnalyticsSystem from '@/lib/analytics';
 import Link from 'next/link';
@@ -25,6 +26,11 @@ export default function CatalogPage() {
   const [loading, setLoading] = useState(true);
   const [useEnhanced, setUseEnhanced] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState(null);
+  const searchInputRef = useRef(null);
   
   // Keep stable reference to previous categories during loading
   const prevCategoriesRef = useRef([]);
@@ -85,8 +91,81 @@ export default function CatalogPage() {
     toast.success(`Found ${recommendations.length} perfect matches for you!`);
   };
 
+  // Search functionality
+  const performSearch = useCallback((query) => {
+    if (!query || query.trim().length < 2) {
+      setSearchResults(null);
+      return;
+    }
+    
+    const searchTerm = query.toLowerCase().trim();
+    const results = products.filter(product => {
+      const name = (product.name || '').toLowerCase();
+      const description = (product.description || '').toLowerCase();
+      const category = (product.intelligentCategory || product.category || '').toLowerCase();
+      const ingredients = (product.ingredients || []).map(i => 
+        typeof i === 'string' ? i.toLowerCase() : (i.name || '').toLowerCase()
+      ).join(' ');
+      const benefits = (product.benefits || []).join(' ').toLowerCase();
+      
+      return (
+        name.includes(searchTerm) ||
+        description.includes(searchTerm) ||
+        category.includes(searchTerm) ||
+        ingredients.includes(searchTerm) ||
+        benefits.includes(searchTerm)
+      );
+    });
+    
+    // Sort results: exact name matches first, then starts with, then contains
+    results.sort((a, b) => {
+      const aName = (a.name || '').toLowerCase();
+      const bName = (b.name || '').toLowerCase();
+      const aExact = aName === searchTerm;
+      const bExact = bName === searchTerm;
+      const aStarts = aName.startsWith(searchTerm);
+      const bStarts = bName.startsWith(searchTerm);
+      
+      if (aExact && !bExact) return -1;
+      if (!aExact && bExact) return 1;
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+      
+      // Prioritize products with images
+      const aHasImage = a.image && !a.image.startsWith('data:');
+      const bHasImage = b.image && !b.image.startsWith('data:');
+      if (aHasImage && !bHasImage) return -1;
+      if (!aHasImage && bHasImage) return 1;
+      
+      return aName.localeCompare(bName);
+    });
+    
+    setSearchResults(results);
+  }, [products]);
+  
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    performSearch(query);
+    
+    // Reset category filter when searching
+    if (query.trim().length >= 2) {
+      setSelectedFilter('all');
+    }
+  };
+  
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults(null);
+    searchInputRef.current?.focus();
+  };
+
   const filterProducts = (filter) => {
     setSelectedFilter(filter);
+    
+    // Clear search when changing category
+    setSearchQuery('');
+    setSearchResults(null);
     
     // Prevent filtering during loading to avoid empty flashes
     if (loading || products.length === 0) return;
@@ -207,10 +286,48 @@ export default function CatalogPage() {
       {/* Product Catalog */}
       <section className="py-16">
         <div className="container">
+          {/* Search Bar */}
+          <div className="mb-8">
+            <div className="max-w-xl mx-auto">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search products, ingredients, or benefits..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="pl-12 pr-12 py-3 text-base rounded-full border-emerald-200 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm"
+                  aria-label="Search products"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={clearSearch}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
+              {searchResults !== null && (
+                <div className="mt-2 text-center">
+                  <span className="text-sm text-emerald-600">
+                    {searchResults.length === 0 
+                      ? `No products found for "${searchQuery}"` 
+                      : `Found ${searchResults.length} product${searchResults.length === 1 ? '' : 's'} for "${searchQuery}"`
+                    }
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+          
           {/* Filters and View Options */}
           <div className="flex flex-col lg:flex-row justify-between items-center mb-8 gap-4">
             {/* Category Filters */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
               {productCategories.map((category) => (
                 <Button
                   key={category.id}
@@ -260,7 +377,7 @@ export default function CatalogPage() {
 
           {/* Results Header */}
           <div className="mb-6 h-6">
-            {!isInitialLoad && (
+            {!isInitialLoad && searchResults === null && (
               <p className="text-muted-foreground text-sm">
                 {selectedFilter === 'recommended' ? (
                   <span className="text-emerald-600 font-medium">✨ Personalized recommendations for you</span>
@@ -278,39 +395,57 @@ export default function CatalogPage() {
 
           {/* Products Grid */}
           {!loading && (
-            <>
-              <div className={`grid gap-8 ${
-                viewMode === 'grid' 
-                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                  : 'grid-cols-1 lg:grid-cols-2'
-              }`}>
-                {filteredProducts.map((product) => {
-                  // Use EnhancedProductCard if product has ingredient data
-                  const CardComponent = product.ingredients && useEnhanced 
-                    ? EnhancedProductCard 
-                    : ProductCard;
-                  
-                  return (
-                    <CardComponent
-                      key={product.id}
-                      product={product}
-                      onCheckout={handleCheckout}
-                      viewMode={viewMode}
-                      isRecommended={selectedFilter === 'recommended'}
-                    />
-                  );
-                })}
-              </div>
+            (() => {
+              // Determine which products to display
+              const displayProducts = searchResults !== null ? searchResults : filteredProducts;
+              
+              return (
+                <>
+                  <div className={`grid gap-8 ${
+                    viewMode === 'grid' 
+                      ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
+                      : 'grid-cols-1 lg:grid-cols-2'
+                  }`}>
+                    {displayProducts.map((product) => {
+                      // Use EnhancedProductCard if product has ingredient data
+                      const CardComponent = product.ingredients && useEnhanced 
+                        ? EnhancedProductCard 
+                        : ProductCard;
+                      
+                      return (
+                        <CardComponent
+                          key={product.id}
+                          product={product}
+                          onCheckout={handleCheckout}
+                          viewMode={viewMode}
+                          isRecommended={selectedFilter === 'recommended'}
+                        />
+                      );
+                    })}
+                  </div>
 
-              {filteredProducts.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground text-lg mb-4">No products found for this category.</p>
-                  <Button onClick={() => filterProducts('all')} variant="outline">
-                    Show All Products
-                  </Button>
-                </div>
-              )}
-            </>
+                  {displayProducts.length === 0 && (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground text-lg mb-4">
+                        {searchResults !== null 
+                          ? `No products found for "${searchQuery}". Try a different search term.`
+                          : 'No products found for this category.'
+                        }
+                      </p>
+                      <Button 
+                        onClick={() => {
+                          clearSearch();
+                          filterProducts('all');
+                        }} 
+                        variant="outline"
+                      >
+                        Show All Products
+                      </Button>
+                    </div>
+                  )}
+                </>
+              );
+            })()
           )}
         </div>
       </section>

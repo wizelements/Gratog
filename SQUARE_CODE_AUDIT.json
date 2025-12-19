@@ -1,0 +1,59 @@
+{
+  "payment_endpoints": {
+    "payments/route.ts": {
+      "Has POST handler": true,
+      "Has signature verification": true,
+      "Handles Square errors": true,
+      "Logs operations": true,
+      "Links customer to payment": true
+    }
+  },
+  "webhook_handlers": {
+    "webhooks/square/route.ts": {
+      "Has signature verification": true,
+      "Validates HMAC": true,
+      "Handles inventory events": true,
+      "Handles payment events": true,
+      "Handles order events": true,
+      "Logs webhook events": true,
+      "Error handling": true
+    }
+  },
+  "oauth_flow": {
+    "route.ts": {
+      "Has GET handler": true,
+      "Redirects to Square": true,
+      "Exchanges code for token": true,
+      "Validates state": true,
+      "Handles errors": true
+    },
+    "square-oauth-helper.ts": {
+      "Has GET handler": true,
+      "Redirects to Square": true,
+      "Exchanges code for token": false,
+      "Validates state": true,
+      "Handles errors": true
+    }
+  },
+  "error_handling": {
+    "lib/square.ts": {
+      "Error Handler Function": true,
+      "Try/Catch Blocks": false,
+      "Validation Logic": true,
+      "Logging": true
+    },
+    "lib/square-guard.ts": {
+      "Error Handler Function": false,
+      "Try/Catch Blocks": false,
+      "Validation Logic": true,
+      "Logging": true
+    }
+  },
+  "security_checks": {
+    "Token validation": true,
+    "Scope verification": true,
+    "Signature verification": true,
+    "Environment validation": true,
+    "Rate limiting": false
+  }
+}

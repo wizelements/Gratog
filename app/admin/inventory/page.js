@@ -33,6 +33,7 @@ export default function InventoryPage() {
   const fetchProducts = async () => {
     try {
       const response = await fetch('/api/admin/products');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setProducts(data.products || []);
     } catch (error) {

@@ -24,6 +24,7 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     try {
       const response = await fetch('/api/admin/products');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setProducts(data.products || []);
     } catch (error) {
@@ -40,6 +41,7 @@ export default function ProductsPage() {
       const response = await fetch('/api/admin/products/sync', {
         method: 'POST'
       });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       
       if (data.success) {

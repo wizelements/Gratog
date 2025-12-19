@@ -23,9 +23,7 @@ export default function CampaignsPage() {
     try {
       setLoading(true);
       const response = await fetch('/api/admin/campaigns', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
-        }
+        credentials: 'include'
       });
       
       if (!response.ok) throw new Error('Failed to fetch campaigns');
