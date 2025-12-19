@@ -23,10 +23,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/terms',
   ];
 
-  const staticEntries = staticPages.map((path) => ({
+  const staticEntries: MetadataRoute.Sitemap = staticPages.map((path) => ({
     url: `${baseUrl}${path}`,
     lastModified: new Date(),
-    changeFrequency: path === '' ? 'daily' : 'weekly' as const,
+    changeFrequency: (path === '' ? 'daily' : 'weekly') as 'daily' | 'weekly',
     priority: path === '' ? 1 : path === '/catalog' ? 0.9 : 0.7,
   }));
 
@@ -42,7 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       productEntries = products.map((product: { slug?: string; id: string }) => ({
         url: `${baseUrl}/product/${product.slug || product.id}`,
         lastModified: new Date(),
-        changeFrequency: 'weekly' as const,
+        changeFrequency: 'weekly' as const satisfies 'weekly',
         priority: 0.8,
       }));
     }
