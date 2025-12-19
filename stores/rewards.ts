@@ -93,12 +93,12 @@ function loadPersistedState(): Partial<RewardsState> {
     if (!saved) return {};
     const parsed = JSON.parse(saved);
     return {
-      points: parsed.points || 0,
+      points: typeof parsed.points === 'number' ? parsed.points : 0,
       tier: parsed.tier || 'bronze',
-      pointsHistory: parsed.pointsHistory || [],
-      referralCode: parsed.referralCode || '',
-      referralCount: parsed.referralCount || 0,
-      lifetimePoints: parsed.lifetimePoints || 0
+      pointsHistory: Array.isArray(parsed.pointsHistory) ? parsed.pointsHistory : [],
+      referralCode: typeof parsed.referralCode === 'string' ? parsed.referralCode : '',
+      referralCount: typeof parsed.referralCount === 'number' ? parsed.referralCount : 0,
+      lifetimePoints: typeof parsed.lifetimePoints === 'number' ? parsed.lifetimePoints : 0
     };
   } catch (e) {
     console.error('Failed to load persisted rewards state:', e);
@@ -129,7 +129,7 @@ export const useRewardsStore = create<RewardsState>((set, get) => {
   return {
     points: initial.points || 0,
     tier: initial.tier || 'bronze',
-    pointsHistory: initial.pointsHistory || [],
+    pointsHistory: Array.isArray(initial.pointsHistory) ? initial.pointsHistory : [],
     referralCode: initial.referralCode || '',
     referralCount: initial.referralCount || 0,
     lifetimePoints: initial.lifetimePoints || 0,
@@ -151,7 +151,8 @@ export const useRewardsStore = create<RewardsState>((set, get) => {
       const newPoints = state.points + bonusAmount;
       const newLifetimePoints = state.lifetimePoints + bonusAmount;
       const newTier = calculateTier(newLifetimePoints);
-      const newHistory = [entry, ...state.pointsHistory].slice(0, 50);
+      const history = Array.isArray(state.pointsHistory) ? state.pointsHistory : [];
+      const newHistory = [entry, ...history].slice(0, 50);
       
       set({
         points: newPoints,
@@ -192,7 +193,8 @@ export const useRewardsStore = create<RewardsState>((set, get) => {
       };
       
       const newPoints = state.points - amount;
-      const newHistory = [entry, ...state.pointsHistory].slice(0, 50);
+      const history = Array.isArray(state.pointsHistory) ? state.pointsHistory : [];
+      const newHistory = [entry, ...history].slice(0, 50);
       
       set({
         points: newPoints,
@@ -254,7 +256,8 @@ export const useRewardsStore = create<RewardsState>((set, get) => {
       
       const newPoints = state.points + bonusPoints;
       const newLifetimePoints = state.lifetimePoints + bonusPoints;
-      const newHistory = [entry, ...state.pointsHistory].slice(0, 50);
+      const history = Array.isArray(state.pointsHistory) ? state.pointsHistory : [];
+      const newHistory = [entry, ...history].slice(0, 50);
       
       set({
         points: newPoints,
