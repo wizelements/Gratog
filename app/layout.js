@@ -11,6 +11,8 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import SkipLinks from '@/components/SkipLinks';
 import { A11yAnnouncerProvider } from '@/components/ui/a11y-announcer';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import StickySecondaryNav from '@/components/StickySecondaryNav';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -123,8 +125,10 @@ export default async function RootLayout({ children }) {
                 
                 <div className="flex min-h-screen flex-col">
                   <Header />
+                  <Breadcrumbs />
                   <main id="main-content" className="flex-1">{children}</main>
                   <Footer />
+                  <StickySecondaryNav />
                   <FloatingCart />
                   <LiveChatWidget />
                   <CartNotification />
