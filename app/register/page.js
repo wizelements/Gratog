@@ -233,11 +233,11 @@ export default function RegisterPage() {
               )}
 
               {/* Full Name */}
-              <div className="space-y-2">
+              <div className="form-field">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="name" className="text-gray-700 font-medium">Full Name</Label>
+                  <Label htmlFor="name" className="form-label">Full Name <span className="text-red-500">*</span></Label>
                   {fieldValidation.name?.valid && (
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-4 w-4 text-green-500" aria-label="Valid" />
                   )}
                 </div>
                 <Input
@@ -248,24 +248,26 @@ export default function RegisterPage() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className={`border-emerald-200 focus:border-emerald-500 ${
-                    fieldErrors.name ? 'border-red-500 focus:border-red-500' : ''
+                  aria-invalid={!!fieldErrors.name}
+                  aria-describedby={fieldErrors.name ? 'name-error' : undefined}
+                  className={`form-input border-emerald-200 focus:border-emerald-500 ${
+                    fieldErrors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
                   }`}
                 />
                 {fieldErrors.name && (
-                  <p className="text-red-600 text-xs flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
+                  <p id="name-error" role="alert" className="text-red-600 text-xs flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" aria-hidden="true" />
                     {fieldErrors.name}
                   </p>
                 )}
               </div>
 
               {/* Email */}
-              <div className="space-y-2">
+              <div className="form-field">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
+                  <Label htmlFor="email" className="form-label">Email <span className="text-red-500">*</span></Label>
                   {fieldValidation.email?.valid && (
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-4 w-4 text-green-500" aria-label="Valid" />
                   )}
                 </div>
                 <Input
@@ -276,24 +278,26 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className={`border-emerald-200 focus:border-emerald-500 ${
-                    fieldErrors.email ? 'border-red-500 focus:border-red-500' : ''
+                  aria-invalid={!!fieldErrors.email}
+                  aria-describedby={fieldErrors.email ? 'email-error' : undefined}
+                  className={`form-input border-emerald-200 focus:border-emerald-500 ${
+                    fieldErrors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
                   }`}
                 />
                 {fieldErrors.email && (
-                  <p className="text-red-600 text-xs flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
+                  <p id="email-error" role="alert" className="text-red-600 text-xs flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" aria-hidden="true" />
                     {fieldErrors.email}
                   </p>
                 )}
               </div>
 
               {/* Phone */}
-              <div className="space-y-2">
+              <div className="form-field">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="phone" className="text-gray-700 font-medium">Phone (Optional)</Label>
+                  <Label htmlFor="phone" className="form-label">Phone <span className="text-gray-400">(Optional)</span></Label>
                   {fieldValidation.phone?.valid && (
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-4 w-4 text-green-500" aria-label="Valid" />
                   )}
                 </div>
                 <Input
@@ -303,24 +307,26 @@ export default function RegisterPage() {
                   placeholder="(555) 123-4567"
                   value={formData.phone}
                   onChange={handleChange}
-                  className={`border-emerald-200 focus:border-emerald-500 ${
-                    fieldErrors.phone ? 'border-red-500 focus:border-red-500' : ''
+                  aria-invalid={!!fieldErrors.phone}
+                  aria-describedby={fieldErrors.phone ? 'phone-error' : undefined}
+                  className={`form-input border-emerald-200 focus:border-emerald-500 ${
+                    fieldErrors.phone ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
                   }`}
                 />
                 {fieldErrors.phone && (
-                  <p className="text-red-600 text-xs flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
+                  <p id="phone-error" role="alert" className="text-red-600 text-xs flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" aria-hidden="true" />
                     {fieldErrors.phone}
                   </p>
                 )}
               </div>
 
               {/* Password */}
-              <div className="space-y-2">
+              <div className="form-field">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
+                  <Label htmlFor="password" className="form-label">Password <span className="text-red-500">*</span></Label>
                   {fieldValidation.password?.valid && (
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-4 w-4 text-green-500" aria-label="Valid" />
                   )}
                 </div>
                 <div className="relative">
@@ -332,25 +338,28 @@ export default function RegisterPage() {
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className={`border-emerald-200 focus:border-emerald-500 pr-10 ${
-                      fieldErrors.password ? 'border-red-500 focus:border-red-500' : ''
+                    aria-invalid={!!fieldErrors.password}
+                    aria-describedby={fieldErrors.password ? 'password-error' : 'password-strength'}
+                    className={`form-input border-emerald-200 focus:border-emerald-500 pr-10 ${
+                      fieldErrors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-900"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
+                      <EyeOff className="h-4 w-4" aria-hidden="true" />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-4 w-4" aria-hidden="true" />
                     )}
                   </button>
                 </div>
 
                 {formData.password && (
-                  <div className="space-y-1">
+                  <div id="password-strength" className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-gray-600">Password strength:</span>
                       <span className={`font-semibold ${
@@ -362,7 +371,7 @@ export default function RegisterPage() {
                         {getPasswordStrengthText()}
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                    <div className="w-full bg-gray-200 rounded-full h-1.5" role="progressbar" aria-valuenow={passwordStrength} aria-valuemin={0} aria-valuemax={100} aria-label="Password strength">
                       <div
                         className={`h-1.5 rounded-full transition-all ${getPasswordStrengthColor()}`}
                         style={{ width: `${passwordStrength}%` }}
@@ -372,19 +381,19 @@ export default function RegisterPage() {
                 )}
 
                 {fieldErrors.password && (
-                  <p className="text-red-600 text-xs flex items-start gap-1">
-                    <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                  <p id="password-error" role="alert" className="text-red-600 text-xs flex items-start gap-1">
+                    <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" aria-hidden="true" />
                     <span>{fieldErrors.password}</span>
                   </p>
                 )}
               </div>
 
               {/* Confirm Password */}
-              <div className="space-y-2">
+              <div className="form-field">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="confirmPassword" className="text-gray-700 font-medium">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword" className="form-label">Confirm Password <span className="text-red-500">*</span></Label>
                   {fieldValidation.confirmPassword?.valid && (
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-4 w-4 text-green-500" aria-label="Valid" />
                   )}
                 </div>
                 <div className="relative">
@@ -396,25 +405,28 @@ export default function RegisterPage() {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     required
-                    className={`border-emerald-200 focus:border-emerald-500 pr-10 ${
-                      fieldErrors.confirmPassword ? 'border-red-500 focus:border-red-500' : ''
+                    aria-invalid={!!fieldErrors.confirmPassword}
+                    aria-describedby={fieldErrors.confirmPassword ? 'confirm-password-error' : undefined}
+                    className={`form-input border-emerald-200 focus:border-emerald-500 pr-10 ${
+                      fieldErrors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-900"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
+                      <EyeOff className="h-4 w-4" aria-hidden="true" />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-4 w-4" aria-hidden="true" />
                     )}
                   </button>
                 </div>
                 {fieldErrors.confirmPassword && (
-                  <p className="text-red-600 text-xs flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
+                  <p id="confirm-password-error" role="alert" className="text-red-600 text-xs flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" aria-hidden="true" />
                     {fieldErrors.confirmPassword}
                   </p>
                 )}

@@ -3,21 +3,17 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Box, Smartphone, ArrowLeft } from 'lucide-react';
+import { Box, Smartphone, ArrowLeft, Sparkles, Rotate3d, Eye } from 'lucide-react';
 import Link from 'next/link';
-import ModelViewer from '@/components/explore/3d/ModelViewer';
-import ARViewer from '@/components/explore/3d/ARViewer';
+import Image from 'next/image';
 
-// Sample product data - in production, fetch from API
 const PRODUCTS = [
   {
     id: 'sea-moss-gel',
     name: 'Sea Moss Gel',
     description: 'Premium wildcrafted sea moss gel packed with 92 minerals',
-    modelUrl: '/models/products/jar-placeholder.glb',
-    poster: '/images/products/sea-moss-gel.jpg',
+    image: '/images/products/sea-moss-gel.jpg',
     price: '$25.00',
     benefits: ['Thyroid Support', 'Immunity', 'Skin Health']
   },
@@ -25,8 +21,7 @@ const PRODUCTS = [
     id: 'elderberry-syrup',
     name: 'Elderberry Syrup',
     description: 'Immune-boosting elderberry syrup with honey and spices',
-    modelUrl: '/models/products/bottle-placeholder.glb',
-    poster: '/images/products/elderberry-syrup.jpg',
+    image: '/images/products/elderberry-syrup.jpg',
     price: '$18.00',
     benefits: ['Immunity', 'Antioxidants', 'Respiratory']
   }
@@ -34,10 +29,10 @@ const PRODUCTS = [
 
 export default function ShowcasePage() {
   const [selectedProduct, setSelectedProduct] = useState(PRODUCTS[0]);
+  const [rotation, setRotation] = useState(0);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      {/* Header */}
       <div className="container mx-auto px-4 py-8">
         <Link href="/explore">
           <Button variant="ghost" className="mb-4">
@@ -51,11 +46,10 @@ export default function ShowcasePage() {
             3D Product Showcase
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Explore our products in stunning 3D and place them in your space with AR
+            Interactive product visualization experience
           </p>
         </div>
 
-        {/* Product Selector */}
         <div className="flex justify-center gap-4 mb-8">
           {PRODUCTS.map((product) => (
             <Button
@@ -70,46 +64,64 @@ export default function ShowcasePage() {
           ))}
         </div>
 
-        {/* Main Content */}
         <div className="grid lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
-          {/* 3D Viewer */}
           <div>
-            <Tabs defaultValue="3d" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="3d">
-                  <Box className="w-4 h-4 mr-2" />
-                  3D View
-                </TabsTrigger>
-                <TabsTrigger value="ar">
-                  <Smartphone className="w-4 h-4 mr-2" />
-                  AR View
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="3d" className="mt-4">
-                <Card>
-                  <CardContent className="p-0">
-                    <ModelViewer
-                      modelUrl={selectedProduct.modelUrl}
-                      poster={selectedProduct.poster}
-                      alt={selectedProduct.name}
-                      ar={false}
-                      autoRotate={true}
-                      cameraControls={true}
-                      className="w-full min-h-[600px] rounded-lg"
-                    />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="ar" className="mt-4">
-                <ARViewer
-                  modelUrl={selectedProduct.modelUrl}
-                  poster={selectedProduct.poster}
-                  alt={selectedProduct.name}
-                />
-              </TabsContent>
-            </Tabs>
+            <Card className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="relative min-h-[500px] bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex items-center justify-center">
+                  <div 
+                    className="relative w-64 h-64 transition-transform duration-300 ease-out"
+                    style={{ transform: `rotateY(${rotation}deg)` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-200/50 to-teal-300/50 rounded-2xl shadow-2xl flex items-center justify-center">
+                      <div className="text-center p-6">
+                        <div className="text-6xl mb-4">🫙</div>
+                        <h3 className="text-xl font-bold text-emerald-800">{selectedProduct.name}</h3>
+                        <p className="text-emerald-600 mt-2">{selectedProduct.price}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
+                    <Button 
+                      size="sm" 
+                      variant="secondary"
+                      onClick={() => setRotation(r => r - 45)}
+                      className="bg-white/80 backdrop-blur"
+                    >
+                      <Rotate3d className="w-4 h-4 mr-1" />
+                      Rotate Left
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="secondary"
+                      onClick={() => setRotation(r => r + 45)}
+                      className="bg-white/80 backdrop-blur"
+                    >
+                      Rotate Right
+                      <Rotate3d className="w-4 h-4 ml-1 scale-x-[-1]" />
+                    </Button>
+                  </div>
+                  
+                  <div className="absolute top-4 right-4">
+                    <Badge className="bg-amber-500 text-white">
+                      <Sparkles className="w-3 h-3 mr-1" />
+                      Preview Mode
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 border-t">
+                  <div className="flex items-center gap-3 text-purple-700">
+                    <Sparkles className="w-5 h-5" />
+                    <div>
+                      <p className="font-semibold">Full 3D & AR Coming Soon!</p>
+                      <p className="text-sm text-purple-600">Interactive 3D models with AR placement</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Product Info */}

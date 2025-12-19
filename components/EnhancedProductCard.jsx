@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { ShoppingCart, Star, Sparkles, Info, Eye } from 'lucide-react';
+import { ShoppingCart, Star, Sparkles, Eye } from 'lucide-react';
 import Link from 'next/link';
 import QuickAddButton from './QuickAddButton';
 import QuickViewModal from './QuickViewModal';
@@ -19,7 +19,6 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [isClient, setIsClient] = useState(false);
   
-  // Ensure we're on client side for modal interactions
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -27,54 +26,38 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
   const fallbackImage = '/images/sea-moss-default.svg';
   const hasIngredientData = product.ingredients && product.ingredients.length > 0;
   
-  // Get the best available image - prefer images array over placeholder SVGs
   const getProductImage = () => {
-    // Check images array first (real Square images)
     if (product.images?.length > 0 && product.images[0] && !product.images[0].startsWith('data:')) {
       return product.images[0];
     }
-    // Check main image if it's not a placeholder SVG
     if (product.image && !product.image.startsWith('data:image/svg')) {
       return product.image;
     }
-    // Return null to show fallback UI
     return null;
   };
   
   const productImage = getProductImage();
-  
-  // Determine if product has multiple variants
   const hasMultipleVariants = product.variations && product.variations.length > 1;
   
-  // Get display price - use selected variant or first variant or product price
   const displayPrice = selectedVariant?.price 
     || product.variations?.[0]?.price 
     || product.price 
     || 0;
   
-  // Get display size
   const displaySize = selectedVariant?.name 
     || product.variations?.[0]?.name 
     || product.size 
     || '';
+
+  const visibleIngredients = product.ingredients?.slice(0, 2) || [];
+  const remainingIngredients = (product.ingredients?.length || 0) - 2;
   
-  // Get category color class
-  const getCategoryColor = () => {
-    const colorMap = {
-      'emerald': 'bg-emerald-100 text-emerald-800 border-emerald-300',
-      'yellow': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-      'orange': 'bg-orange-100 text-orange-800 border-orange-300',
-      'purple': 'bg-purple-100 text-purple-800 border-purple-300',
-      'teal': 'bg-teal-100 text-teal-800 border-teal-300'
-    };
-    
-    const color = product.categoryData?.color || 'emerald';
-    return colorMap[color] || colorMap.emerald;
-  };
+  const visibleTags = product.tags?.slice(0, 2) || [];
+  const remainingTags = (product.tags?.length || 0) - 2;
   
   return (
     <Card 
-      className="group overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-2"
+      className="group overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border"
       data-testid={`enhanced-product-card-${product.id}`}
       data-product={product.id}
     >
@@ -85,60 +68,26 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
               src={imageError ? fallbackImage : productImage}
               alt={`${product.name} - ${product.benefitStory || 'Premium wellness product'}`}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-110"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
               onError={() => setImageError(true)}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Sparkles className="h-16 w-16 text-emerald-600" />
+            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-emerald-100 via-teal-50 to-emerald-50">
+              <div className="w-24 h-24 rounded-full bg-white/90 flex items-center justify-center shadow-md">
+                <Sparkles className="h-12 w-12 text-emerald-500" />
+              </div>
+              <span className="mt-4 text-sm text-emerald-600/80 font-medium">Premium Product</span>
             </div>
           )}
           
-          {/* Ingredient Icons Overlay */}
-          {hasIngredientData && product.ingredientIcons && (
-            <div className="absolute top-3 left-3 flex gap-1">
-              {product.ingredientIcons.slice(0, 4).map((icon, idx) => {
-                // Handle both string and object format
-                const ingredientName = typeof product.ingredients[idx] === 'object' 
-                  ? product.ingredients[idx]?.name 
-                  : product.ingredients[idx];
-                
-                return (
-                  <div 
-                    key={idx}
-                    className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-lg shadow-sm"
-                    title={ingredientName}
-                  >
-                    {icon}
-                  </div>
-                );
-              })}
-              {product.ingredientIcons.length > 4 && (
-                <div className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-xs font-semibold text-emerald-600 shadow-sm">
-                  +{product.ingredientIcons.length - 4}
-                </div>
-              )}
-            </div>
-          )}
-          
-          {/* Wishlist Button */}
           <div className="absolute top-3 right-3 z-10">
             <WishlistButton productId={product.id || product.slug} size="small" />
           </div>
           
-          {/* Category Badge */}
-          {product.intelligentCategory && (
-            <Badge 
-              className={`absolute top-12 right-3 ${getCategoryColor()} border`}
-            >
-              {product.categoryData?.icon} {product.intelligentCategory}
-            </Badge>
-          )}
-          
           {product.featured && (
             <Badge 
-              className="absolute bottom-3 left-3 bg-yellow-500 text-white border-none"
+              className="absolute top-3 left-3 bg-yellow-500 text-white border-none shadow-sm"
               data-testid="featured-badge"
             >
               <Star className="h-3 w-3 mr-1 fill-white" />
@@ -148,24 +97,11 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
         </div>
       </Link>
       
-      <CardHeader>
+      <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <CardTitle className="text-lg line-clamp-2 group-hover:text-emerald-600 transition-colors">
-              {product.name}
-            </CardTitle>
-            
-            {/* Benefit Story (if available) */}
-            {product.benefitStory && (
-              <CardDescription className="mt-2 text-sm line-clamp-2">
-                {product.benefitStory}
-              </CardDescription>
-            )}
-            
-            {!product.benefitStory && product.description && (
-              <CardDescription className="mt-1 line-clamp-1">{product.description}</CardDescription>
-            )}
-          </div>
+          <CardTitle className="text-lg line-clamp-2 group-hover:text-emerald-600 transition-colors">
+            {product.name}
+          </CardTitle>
           
           {product.points && (
             <Badge 
@@ -178,12 +114,20 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
           )}
         </div>
         
-        {/* Ingredient Benefits Tags */}
-        {hasIngredientData && product.ingredients.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-3">
+        {product.benefitStory && (
+          <CardDescription className="mt-1.5 text-sm line-clamp-2">
+            {product.benefitStory}
+          </CardDescription>
+        )}
+        
+        {!product.benefitStory && product.description && (
+          <CardDescription className="mt-1 line-clamp-1">{product.description}</CardDescription>
+        )}
+        
+        {hasIngredientData && visibleIngredients.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
             <TooltipProvider>
-              {product.ingredients.slice(0, 3).map((ingredient, idx) => {
-                // Handle both string format and object format
+              {visibleIngredients.map((ingredient, idx) => {
                 const isObject = typeof ingredient === 'object';
                 const ingredientName = isObject ? ingredient.name : ingredient;
                 const ingredientIcon = isObject ? ingredient.icon : '';
@@ -194,7 +138,7 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
                     <TooltipTrigger asChild>
                       <Badge 
                         variant="secondary" 
-                        className="text-xs cursor-help bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                        className="text-xs cursor-help bg-emerald-50 text-emerald-700 hover:bg-emerald-100 py-0.5"
                       >
                         {ingredientIcon && `${ingredientIcon} `}{ingredientName}
                       </Badge>
@@ -212,9 +156,9 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
                   </Tooltip>
                 );
               })}
-              {product.ingredients.length > 3 && (
-                <Badge variant="secondary" className="text-xs bg-emerald-50 text-emerald-700">
-                  +{product.ingredients.length - 3} more
+              {remainingIngredients > 0 && (
+                <Badge variant="outline" className="text-xs text-muted-foreground py-0.5">
+                  +{remainingIngredients} more
                 </Badge>
               )}
             </TooltipProvider>
@@ -222,9 +166,9 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
         )}
       </CardHeader>
       
-      <CardContent>
+      <CardContent className="pt-0">
         <div className="flex items-baseline gap-2 mb-3">
-          <span className="text-3xl font-bold text-emerald-600">
+          <span className="text-2xl font-bold text-emerald-600">
             ${typeof displayPrice === 'number' ? displayPrice.toFixed(2) : '0.00'}
           </span>
           {displaySize && (
@@ -232,21 +176,20 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
           )}
         </div>
         
-        {/* Variant Selector - only show if multiple variants */}
         {hasMultipleVariants && (
-          <div className="mb-4">
+          <div className="mb-3">
             <VariantSelector
               variations={product.variations}
               defaultVariant={product.variations[0]}
               onVariantChange={setSelectedVariant}
+              compact
             />
           </div>
         )}
         
-        {/* Tags */}
-        {product.tags && product.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {product.tags.slice(0, 4).map((tag, idx) => (
+        {visibleTags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {visibleTags.map((tag, idx) => (
               <span 
                 key={idx}
                 className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full"
@@ -254,47 +197,42 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
                 #{tag}
               </span>
             ))}
+            {remainingTags > 0 && (
+              <span className="text-xs px-2 py-0.5 text-gray-400">
+                +{remainingTags} more
+              </span>
+            )}
           </div>
         )}
       </CardContent>
       
-      <CardFooter className="flex flex-col gap-2">
-        <div className="flex gap-2 w-full">
-          <QuickAddButton 
-            product={product}
-            selectedVariant={selectedVariant || product.variations?.[0]}
-            className="flex-1"
-          />
-          
-          <Button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setShowQuickView(true);
-            }}
-            variant="outline"
-            className="flex-1 border-emerald-600 text-emerald-700 hover:bg-emerald-50"
-            type="button"
-          >
-            <Eye className="mr-2 h-4 w-4" />
-            Quick View
-          </Button>
-        </div>
+      <CardFooter className="pt-0 flex gap-2">
+        <QuickAddButton 
+          product={product}
+          selectedVariant={selectedVariant || product.variations?.[0]}
+          className="flex-1"
+        />
         
-        <Link href={`/product/${product.slug || product.id}`} className="w-full">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className="w-full text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50"
-            data-testid={`view-details-${product.id}`}
-          >
-            <Info className="mr-2 h-3 w-3" />
-            Full Details
-          </Button>
-        </Link>
+        <Button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setShowQuickView(true);
+          }}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setShowQuickView(true);
+          }}
+          variant="outline"
+          className="flex-1 border-emerald-600 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-700 active:bg-emerald-100 transition-colors"
+          type="button"
+        >
+          <Eye className="mr-2 h-4 w-4" />
+          Quick View
+        </Button>
       </CardFooter>
       
-      {/* Quick View Modal - only render on client */}
       {isClient && (
         <QuickViewModal 
           product={product}

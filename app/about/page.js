@@ -15,9 +15,10 @@ export default function AboutPage() {
             className="object-cover brightness-50"
           />
         </div>
+        <div className="absolute inset-0 bg-black/40 z-[1]" />
         <div className="container relative z-10 text-center text-white">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4">Our Story</h1>
-          <p className="text-xl max-w-2xl mx-auto">
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 drop-shadow-lg">Our Story</h1>
+          <p className="text-xl max-w-2xl mx-auto drop-shadow-md">
             Crafted with gratitude, rooted in wellness
           </p>
         </div>
@@ -27,7 +28,7 @@ export default function AboutPage() {
       <section className="container py-16">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">Our Mission</h2>
-          <p className="text-lg text-muted-foreground leading-relaxed">
+          <p className="text-lg text-muted-foreground leading-relaxed content-readable mx-auto">
             At Taste of Gratitude, we believe wellness should be accessible, delicious, and rooted in nature's wisdom. 
             We craft premium sea moss gel products using wildcrafted ingredients and time-honored preparation methods, 
             bringing you the ocean's most powerful superfood in its purest form.
@@ -38,10 +39,8 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="text-center">
             <CardContent className="pt-6">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 bg-[#D4AF37]/10 rounded-full">
-                  <Leaf className="h-8 w-8 text-[#D4AF37]" />
-                </div>
+              <div className="icon-container mx-auto mb-4">
+                <Leaf className="h-8 w-8 text-[#D4AF37]" />
               </div>
               <h3 className="font-semibold mb-2">Natural Ingredients</h3>
               <p className="text-sm text-muted-foreground">
@@ -52,10 +51,8 @@ export default function AboutPage() {
 
           <Card className="text-center">
             <CardContent className="pt-6">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 bg-[#D4AF37]/10 rounded-full">
-                  <Heart className="h-8 w-8 text-[#D4AF37]" />
-                </div>
+              <div className="icon-container mx-auto mb-4">
+                <Heart className="h-8 w-8 text-[#D4AF37]" />
               </div>
               <h3 className="font-semibold mb-2">Made with Love</h3>
               <p className="text-sm text-muted-foreground">
@@ -66,10 +63,8 @@ export default function AboutPage() {
 
           <Card className="text-center">
             <CardContent className="pt-6">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 bg-[#D4AF37]/10 rounded-full">
-                  <Award className="h-8 w-8 text-[#D4AF37]" />
-                </div>
+              <div className="icon-container mx-auto mb-4">
+                <Award className="h-8 w-8 text-[#D4AF37]" />
               </div>
               <h3 className="font-semibold mb-2">Quality First</h3>
               <p className="text-sm text-muted-foreground">
@@ -80,10 +75,8 @@ export default function AboutPage() {
 
           <Card className="text-center">
             <CardContent className="pt-6">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 bg-[#D4AF37]/10 rounded-full">
-                  <Users className="h-8 w-8 text-[#D4AF37]" />
-                </div>
+              <div className="icon-container mx-auto mb-4">
+                <Users className="h-8 w-8 text-[#D4AF37]" />
               </div>
               <h3 className="font-semibold mb-2">Community Focus</h3>
               <p className="text-sm text-muted-foreground">

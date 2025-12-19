@@ -7,11 +7,17 @@ import NewsletterSignup from '@/components/NewsletterSignup';
 export default function Footer() {
   return (
     <footer id="footer" className="border-t bg-gradient-to-b from-muted/30 to-muted/60" role="contentinfo" aria-label="Site footer">
-      {/* Newsletter Section */}
+      {/* Newsletter Section - Compact inline version to reduce CTA repetition
+          Note: This can be hidden on pages that have their own newsletter section
+          by passing hideFooterNewsletter prop to the layout or using CSS */}
       <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-b">
-        <div className="container py-12">
-          <div className="max-w-2xl mx-auto">
-            <NewsletterSignup />
+        <div className="container py-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
+            <div className="flex items-center gap-2 text-emerald-800">
+              <Mail className="h-5 w-5 text-emerald-600" />
+              <span className="font-medium text-sm">Join our wellness community</span>
+            </div>
+            <NewsletterSignup variant="inline" />
           </div>
         </div>
       </div>
@@ -137,7 +143,7 @@ export default function Footer() {
                 href="https://www.facebook.com/tasteofgratitude"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-muted hover:bg-[#D4AF37] text-muted-foreground hover:text-white transition-all flex items-center justify-center group"
+                className="w-10 h-10 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white transition-all flex items-center justify-center group"
                 aria-label="Facebook"
               >
                 <Facebook className="h-5 w-5 group-hover:scale-110 transition-transform" />
@@ -146,14 +152,14 @@ export default function Footer() {
                 href="https://www.instagram.com/tasteofgratitude"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-muted hover:bg-[#D4AF37] text-muted-foreground hover:text-white transition-all flex items-center justify-center group"
+                className="w-10 h-10 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white transition-all flex items-center justify-center group"
                 aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5 group-hover:scale-110 transition-transform" />
               </a>
               <a
                 href="mailto:hello@tasteofgratitude.com"
-                className="w-10 h-10 rounded-full bg-muted hover:bg-[#D4AF37] text-muted-foreground hover:text-white transition-all flex items-center justify-center group"
+                className="w-10 h-10 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white transition-all flex items-center justify-center group"
                 aria-label="Email"
               >
                 <Mail className="h-5 w-5 group-hover:scale-110 transition-transform" />

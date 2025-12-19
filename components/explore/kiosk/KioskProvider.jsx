@@ -26,7 +26,7 @@ export default function KioskProvider({
     if (!isKioskMode) return;
 
     const handleIdle = () => {
-      debug('[KioskProvider] Idle timeout - showing attract mode');
+      console.log('[KioskProvider] Idle timeout - showing attract mode');
       
       // Stop any background audio
       audioManager.stopBackgroundMusic();

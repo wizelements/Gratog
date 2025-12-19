@@ -57,10 +57,8 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           <Card className="text-center">
             <CardContent className="pt-6">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 bg-[#D4AF37]/10 rounded-full">
-                  <Mail className="h-6 w-6 text-[#D4AF37]" />
-                </div>
+              <div className="icon-container mx-auto mb-4">
+                <Mail className="h-6 w-6 text-[#D4AF37]" />
               </div>
               <h3 className="font-semibold mb-2">Email</h3>
               <a
@@ -74,10 +72,8 @@ export default function ContactPage() {
 
           <Card className="text-center">
             <CardContent className="pt-6">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 bg-[#D4AF37]/10 rounded-full">
-                  <Phone className="h-6 w-6 text-[#D4AF37]" />
-                </div>
+              <div className="icon-container mx-auto mb-4">
+                <Phone className="h-6 w-6 text-[#D4AF37]" />
               </div>
               <h3 className="font-semibold mb-2">Phone</h3>
               <a
@@ -91,10 +87,8 @@ export default function ContactPage() {
 
           <Card className="text-center">
             <CardContent className="pt-6">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 bg-[#D4AF37]/10 rounded-full">
-                  <MapPin className="h-6 w-6 text-[#D4AF37]" />
-                </div>
+              <div className="icon-container mx-auto mb-4">
+                <MapPin className="h-6 w-6 text-[#D4AF37]" />
               </div>
               <h3 className="font-semibold mb-2">Location</h3>
               <p className="text-sm text-muted-foreground">
@@ -124,7 +118,6 @@ export default function ContactPage() {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    placeholder="Your name"
                   />
                 </div>
                 <div className="space-y-2">
@@ -149,7 +142,6 @@ export default function ContactPage() {
                   value={formData.subject}
                   onChange={handleChange}
                   required
-                  placeholder="How can we help?"
                 />
               </div>
 
@@ -161,7 +153,6 @@ export default function ContactPage() {
                   value={formData.message}
                   onChange={handleChange}
                   required
-                  placeholder="Tell us more about your inquiry..."
                   rows={6}
                 />
               </div>

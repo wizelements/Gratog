@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import EnhancedProductCard from '@/components/EnhancedProductCard';
 import ProductCard from '@/components/ProductCard';
 import FitQuiz from '@/components/FitQuiz';
-import { Sparkles, Filter, Grid, List, Loader2, Droplets, Heart, Award, Leaf } from 'lucide-react';
+import { Sparkles, Filter, Grid, List, Loader2, Droplets, Heart, Award } from 'lucide-react';
 import { toast } from 'sonner';
 import AnalyticsSystem from '@/lib/analytics';
 import Link from 'next/link';
@@ -259,13 +259,18 @@ export default function CatalogPage() {
           </div>
 
           {/* Results Header */}
-          <div className="mb-6">
-            <p className="text-muted-foreground">
-              Showing {filteredProducts.length} of {products.length} products
-              {selectedFilter === 'recommended' && (
-                <span className="text-emerald-600 font-medium"> - Recommended for you</span>
-              )}
-            </p>
+          <div className="mb-6 h-6">
+            {!isInitialLoad && (
+              <p className="text-muted-foreground text-sm">
+                {selectedFilter === 'recommended' ? (
+                  <span className="text-emerald-600 font-medium">✨ Personalized recommendations for you</span>
+                ) : selectedFilter === 'all' ? (
+                  <span>{products.length} products</span>
+                ) : (
+                  <span>{filteredProducts.length} products in {selectedFilter}</span>
+                )}
+              </p>
+            )}
           </div>
 
           {/* Loading State */}
@@ -310,152 +315,38 @@ export default function CatalogPage() {
         </div>
       </section>
 
-      {/* Storytelling Section - Why Choose Us */}
+      {/* Trust Indicators - Compact inline section */}
       {!loading && !showQuiz && (
-        <section className="py-20 bg-gradient-to-b from-white to-emerald-50">
+        <section className="py-12 bg-emerald-50/50 border-y border-emerald-100">
           <div className="container">
-            <div className="text-center mb-16">
-              <Badge className="mb-4 bg-emerald-600 text-white px-4 py-2">
-                <Heart className="mr-2 h-4 w-4" />
-                The Taste of Gratitude Difference
-              </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Why Our Customers Choose Us
-              </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                More than just products - a commitment to your wellness
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              <Card className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-                <CardContent className="p-8 text-center">
-                  <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Droplets className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-4 text-gray-900">100% Wildcrafted</h3>
-                  <p className="text-gray-700 leading-relaxed mb-4">
-                    Never pool-grown or farmed. Our sea moss is harvested from pristine Atlantic waters, ensuring maximum mineral content and authentic ocean nutrition.
-                  </p>
-                  <Badge variant="outline" className="text-emerald-600 border-emerald-600">
-                    92 Essential Minerals
-                  </Badge>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-                <CardContent className="p-8 text-center">
-                  <div className="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Award className="h-8 w-8 text-emerald-600" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-4 text-gray-900">Hand-Crafted Quality</h3>
-                  <p className="text-gray-700 leading-relaxed mb-4">
-                    Every jar is made in small batches with meticulous care. We hand-select each strand, ensuring only the finest sea moss makes it to your table.
-                  </p>
-                  <Badge variant="outline" className="text-emerald-600 border-emerald-600">
-                    Artisan Process
-                  </Badge>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-                <CardContent className="p-8 text-center">
-                  <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Heart className="h-8 w-8 text-purple-600" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-4 text-gray-900">Community First</h3>
-                  <p className="text-gray-700 leading-relaxed mb-4">
-                    Join 15,000+ customers who've transformed their wellness. Our community-focused approach means you're never alone on your journey.
-                  </p>
-                  <Badge variant="outline" className="text-emerald-600 border-emerald-600">
-                    4.9★ Rating
-                  </Badge>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Ingredient Spotlight */}
-      {!loading && !showQuiz && (
-        <section className="py-20 bg-white">
-          <div className="container max-w-5xl">
-            <div className="text-center mb-16">
-              <Badge className="mb-4 bg-emerald-600 text-white px-4 py-2">
-                <Leaf className="mr-2 h-4 w-4" />
-                Power Ingredients
-              </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Nature's Finest Ingredients
-              </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Each ingredient is carefully selected for maximum wellness benefits
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8">
-                <div className="text-5xl mb-4">🌊</div>
-                <h3 className="text-2xl font-bold mb-3 text-gray-900">Sea Moss</h3>
-                <p className="text-gray-700 leading-relaxed mb-4">
-                  The ocean's superfood containing 92 of 102 essential minerals. Supports immune function, thyroid health, digestion, and provides natural energy. Rich in iodine, potassium, calcium, and vitamins.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary">Immune Support</Badge>
-                  <Badge variant="secondary">Thyroid Health</Badge>
-                  <Badge variant="secondary">Energy Boost</Badge>
+            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 text-center">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center">
+                  <Droplets className="h-6 w-6 text-blue-600" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-gray-900">100% Wildcrafted</p>
+                  <p className="text-sm text-gray-600">92 Essential Minerals</p>
                 </div>
               </div>
-
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8">
-                <div className="text-5xl mb-4">🫐</div>
-                <h3 className="text-2xl font-bold mb-3 text-gray-900">Elderberry</h3>
-                <p className="text-gray-700 leading-relaxed mb-4">
-                  Powerful antioxidant-rich berry known for immune-boosting properties. Packed with vitamins A, B, and C. Traditional remedy used for centuries to support respiratory health and overall wellness.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary">Antioxidants</Badge>
-                  <Badge variant="secondary">Vitamin C</Badge>
-                  <Badge variant="secondary">Immune Defense</Badge>
+              <div className="flex items-center gap-3">
+                <div className="bg-emerald-100 w-12 h-12 rounded-full flex items-center justify-center">
+                  <Award className="h-6 w-6 text-emerald-600" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-gray-900">Hand-Crafted</p>
+                  <p className="text-sm text-gray-600">Small Batch Quality</p>
                 </div>
               </div>
-
-              <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-8">
-                <div className="text-5xl mb-4">🍋</div>
-                <h3 className="text-2xl font-bold mb-3 text-gray-900">Fresh Lemon</h3>
-                <p className="text-gray-700 leading-relaxed mb-4">
-                  Bursting with vitamin C and alkalizing properties. Supports digestive health, aids detoxification, and adds refreshing flavor. Natural antibacterial and anti-inflammatory benefits.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary">Vitamin C</Badge>
-                  <Badge variant="secondary">Detox Support</Badge>
-                  <Badge variant="secondary">Digestive Aid</Badge>
+              <div className="flex items-center gap-3">
+                <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center">
+                  <Heart className="h-6 w-6 text-purple-600" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-gray-900">15,000+ Customers</p>
+                  <p className="text-sm text-gray-600">4.9★ Average Rating</p>
                 </div>
               </div>
-
-              <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-8">
-                <div className="text-5xl mb-4">🌶️</div>
-                <h3 className="text-2xl font-bold mb-3 text-gray-900">Cayenne</h3>
-                <p className="text-gray-700 leading-relaxed mb-4">
-                  Metabolism-boosting spice rich in capsaicin. Supports circulation, aids digestion, and provides natural energy. Anti-inflammatory properties promote overall wellness and vitality.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary">Metabolism</Badge>
-                  <Badge variant="secondary">Circulation</Badge>
-                  <Badge variant="secondary">Energy</Badge>
-                </div>
-              </div>
-            </div>
-
-            <div className="text-center mt-12">
-              <p className="text-gray-600 mb-4">Want to learn more about our ingredients?</p>
-              <Link href="/about">
-                <Button variant="outline" className="border-emerald-600 text-emerald-600 hover:bg-emerald-50">
-                  <Leaf className="mr-2 h-4 w-4" />
-                  About Our Process
-                </Button>
-              </Link>
             </div>
           </div>
         </section>

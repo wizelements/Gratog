@@ -16,36 +16,31 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
   
   const fallbackImage = '/images/sea-moss-default.svg';
   
-  // Get the best available image - prefer images array over placeholder SVGs
   const getProductImage = () => {
-    // Check images array first (real Square images)
     if (product.images?.length > 0 && product.images[0] && !product.images[0].startsWith('data:')) {
       return product.images[0];
     }
-    // Check main image if it's not a placeholder SVG
     if (product.image && !product.image.startsWith('data:image/svg')) {
       return product.image;
     }
-    // Return null to show fallback UI
     return null;
   };
   
   const productImage = getProductImage();
-  
-  // Determine if product has multiple variants
   const hasMultipleVariants = product.variations && product.variations.length > 1;
   
-  // Get display price - use selected variant or first variant or product price
   const displayPrice = selectedVariant?.price 
     || product.variations?.[0]?.price 
     || product.price 
     || 0;
   
-  // Get display size
   const displaySize = selectedVariant?.name 
     || product.variations?.[0]?.name 
     || product.size 
     || '';
+
+  const visibleBenefits = product.benefits?.slice(0, 2) || [];
+  const remainingBenefits = (product.benefits?.length || 0) - 2;
   
   return (
     <Card 
@@ -54,25 +49,28 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
       data-product={product.id}
     >
       <Link href={`/product/${product.slug || product.id}`}>
-        <div className="relative h-64 overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100">
+        <div className="relative h-64 overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50">
           {productImage ? (
             <Image
               src={imageError ? fallbackImage : productImage}
               alt={`${product.name} - Premium wildcrafted sea moss product`}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-110"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
               onError={() => setImageError(true)}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Sparkles className="h-16 w-16 text-emerald-600" />
+            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-emerald-100 via-teal-50 to-emerald-50">
+              <div className="w-20 h-20 rounded-full bg-white/80 flex items-center justify-center shadow-sm">
+                <Sparkles className="h-10 w-10 text-emerald-500" />
+              </div>
+              <span className="mt-3 text-sm text-emerald-600/70 font-medium">Premium Product</span>
             </div>
           )}
           
           {product.featured && (
             <Badge 
-              className="absolute top-3 right-3 bg-yellow-600 text-white border-none"
+              className="absolute top-3 right-3 bg-yellow-500 text-white border-none shadow-sm"
               data-testid="featured-badge"
             >
               <Star className="h-3 w-3 mr-1 fill-white" />
@@ -80,9 +78,9 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
             </Badge>
           )}
           
-          {product.badge && (
+          {product.badge && !product.featured && (
             <Badge 
-              className="absolute top-3 left-3 bg-emerald-600 text-white border-none"
+              className="absolute top-3 right-3 bg-emerald-600 text-white border-none shadow-sm"
               data-testid="special-badge"
             >
               {product.badge}
@@ -91,14 +89,9 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
         </div>
       </Link>
       
-      <CardHeader>
+      <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <CardTitle className="text-lg line-clamp-2">{product.name}</CardTitle>
-            {product.subtitle && (
-              <CardDescription className="mt-1 line-clamp-1">{product.subtitle}</CardDescription>
-            )}
-          </div>
+          <CardTitle className="text-lg line-clamp-2">{product.name}</CardTitle>
           {product.points && (
             <Badge 
               variant="outline" 
@@ -110,33 +103,42 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
           )}
         </div>
         
-        {product.benefits && product.benefits.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {product.benefits.slice(0, 2).map((benefit, idx) => (
-              <Badge key={idx} variant="secondary" className="text-xs">
+        {product.subtitle && (
+          <CardDescription className="mt-1 line-clamp-1">{product.subtitle}</CardDescription>
+        )}
+        
+        {visibleBenefits.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {visibleBenefits.map((benefit, idx) => (
+              <Badge key={idx} variant="secondary" className="text-xs py-0.5">
                 <Leaf className="w-3 h-3 mr-1" />
                 {benefit}
               </Badge>
             ))}
+            {remainingBenefits > 0 && (
+              <Badge variant="outline" className="text-xs py-0.5 text-muted-foreground">
+                +{remainingBenefits} more
+              </Badge>
+            )}
           </div>
         )}
       </CardHeader>
       
-      <CardContent>
-        <div className="flex items-baseline gap-2 mb-4">
+      <CardContent className="pt-0">
+        <div className="flex items-baseline gap-2 mb-3">
           <span className="text-2xl font-bold text-emerald-600">${displayPrice.toFixed(2)}</span>
           {displaySize && (
             <span className="text-sm text-muted-foreground">/ {displaySize}</span>
           )}
         </div>
         
-        {/* Variant Selector - only show if multiple variants */}
         {hasMultipleVariants && (
-          <div className="mb-4">
+          <div className="mb-3">
             <VariantSelector
               variations={product.variations}
               defaultVariant={product.variations[0]}
               onVariantChange={setSelectedVariant}
+              compact
             />
           </div>
         )}
@@ -148,7 +150,7 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
         )}
       </CardContent>
       
-      <CardFooter className="flex flex-col gap-2">
+      <CardFooter className="pt-0">
         <div className="flex gap-2 w-full">
           <QuickAddButton 
             product={product}
@@ -159,7 +161,7 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
           <Link href={`/product/${product.slug || product.id}`} className="flex-1">
             <Button 
               variant="outline" 
-              className="w-full border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+              className="w-full border-emerald-600 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-700 transition-colors"
               data-testid={`view-details-${product.id}`}
             >
               View Details

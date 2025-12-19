@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 
-export default function InstagramFeed({ limit = 6 }) {
+export default function InstagramFeed({ limit = 6, hideWhenEmpty = true }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [source, setSource] = useState('mock');
@@ -32,14 +32,16 @@ export default function InstagramFeed({ limit = 6 }) {
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin mx-auto text-emerald-600" />
-        <p className="text-muted-foreground mt-2">Loading posts...</p>
+      <div className="flex items-center justify-center py-6">
+        <Loader2 className="h-5 w-5 animate-spin text-emerald-600" />
       </div>
     );
   }
 
   if (posts.length === 0) {
+    if (hideWhenEmpty) {
+      return null;
+    }
     return (
       <div className="text-center py-12 bg-gray-50 rounded-lg">
         <Instagram className="h-12 w-12 mx-auto text-gray-400 mb-3" />

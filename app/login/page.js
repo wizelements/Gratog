@@ -75,8 +75,8 @@ export default function LoginPage() {
                   {error}
                 </div>
               )}
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+              <div className="form-field">
+                <Label htmlFor="email" className="form-label">Email</Label>
                 <Input
                   id="email"
                   name="email"
@@ -85,12 +85,13 @@ export default function LoginPage() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="border-emerald-200 focus:border-emerald-500"
+                  aria-invalid={!!error}
+                  className="form-input border-emerald-200 focus:border-emerald-500"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+              <div className="form-field">
+                <Label htmlFor="password" className="form-label">Password</Label>
                 <Input
                   id="password"
                   name="password"
@@ -99,7 +100,8 @@ export default function LoginPage() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="border-emerald-200 focus:border-emerald-500"
+                  aria-invalid={!!error}
+                  className="form-input border-emerald-200 focus:border-emerald-500"
                 />
               </div>
 

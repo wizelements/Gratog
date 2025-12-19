@@ -342,12 +342,12 @@ export default function RewardsPage() {
         )}
 
         <Tabs defaultValue="rewards" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
-            <TabsTrigger value="rewards">Rewards</TabsTrigger>
-            <TabsTrigger value="tiers">VIP Tiers</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
-            <TabsTrigger value="referrals">Referrals</TabsTrigger>
-            <TabsTrigger value="passport">Passport</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 mb-8 bg-emerald-100/50 p-1">
+            <TabsTrigger value="rewards" className="data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm data-[state=inactive]:text-emerald-600/70">Rewards</TabsTrigger>
+            <TabsTrigger value="tiers" className="data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm data-[state=inactive]:text-emerald-600/70">VIP Tiers</TabsTrigger>
+            <TabsTrigger value="history" className="data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm data-[state=inactive]:text-emerald-600/70">History</TabsTrigger>
+            <TabsTrigger value="referrals" className="data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm data-[state=inactive]:text-emerald-600/70">Referrals</TabsTrigger>
+            <TabsTrigger value="passport" className="data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm data-[state=inactive]:text-emerald-600/70">Passport</TabsTrigger>
           </TabsList>
 
           <TabsContent value="rewards" className="space-y-6">
@@ -365,6 +365,7 @@ export default function RewardsPage() {
                 <CardContent className="space-y-4">
                   {AVAILABLE_REWARDS.map((reward) => {
                     const canRedeem = mounted && points >= reward.pointsCost;
+                    const pointsNeeded = reward.pointsCost - points;
                     return (
                       <div 
                         key={reward.id}
@@ -385,6 +386,11 @@ export default function RewardsPage() {
                           <div>
                             <div className="font-medium">{reward.name}</div>
                             <div className="text-sm text-muted-foreground">{reward.description}</div>
+                            {!canRedeem && mounted && (
+                              <div className="text-xs text-amber-600 mt-1">
+                                Need {pointsNeeded.toLocaleString()} more points to unlock
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="text-right">
@@ -423,11 +429,11 @@ export default function RewardsPage() {
                         <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
                           <item.icon className="w-5 h-5 text-emerald-600" />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <div className="font-medium text-emerald-800">{item.activity}</div>
                           <div className="text-xs text-emerald-600">{item.description}</div>
                         </div>
-                        <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+                        <Badge className="bg-amber-100 text-amber-700 border-amber-200 flex-shrink-0 ml-auto">
                           +{item.points} {typeof item.points === 'number' ? 'pts' : ''}
                         </Badge>
                       </div>
@@ -438,7 +444,7 @@ export default function RewardsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+              <Card className="bg-gradient-to-br from-emerald-600 to-teal-600 text-white">
                 <CardHeader>
                   <CardTitle className="text-white">Get Your Passport</CardTitle>
                   <CardDescription className="text-emerald-100">
@@ -456,17 +462,17 @@ export default function RewardsPage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+              <Card className="bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
                 <CardHeader>
                   <CardTitle className="text-white">Shop & Earn</CardTitle>
-                  <CardDescription className="text-amber-100">
+                  <CardDescription className="text-emerald-100">
                     Earn {tierMultiplier}x points on every purchase
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button 
                     onClick={() => window.location.href = '/catalog'}
-                    className="w-full bg-white text-amber-600 hover:bg-amber-50"
+                    className="w-full bg-white text-emerald-600 hover:bg-emerald-50"
                   >
                     <ShoppingBag className="w-4 h-4 mr-2" />
                     Shop Now
@@ -474,17 +480,17 @@ export default function RewardsPage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-purple-500 to-pink-600 text-white">
+              <Card className="bg-gradient-to-br from-teal-500 to-cyan-600 text-white">
                 <CardHeader>
                   <CardTitle className="text-white">Visit Markets</CardTitle>
-                  <CardDescription className="text-purple-100">
+                  <CardDescription className="text-teal-100">
                     Find us at local farmers markets
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button 
                     onClick={() => window.location.href = '/markets'}
-                    className="w-full bg-white text-purple-600 hover:bg-purple-50"
+                    className="w-full bg-white text-teal-600 hover:bg-teal-50"
                   >
                     <MapPin className="w-4 h-4 mr-2" />
                     View Markets

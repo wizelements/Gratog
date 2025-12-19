@@ -172,13 +172,13 @@ export default function HomePage() {
                     <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/90 via-emerald-800/80 to-teal-900/90" />
                 </div>
 
-                <div className="relative z-10 container text-center text-white animate-fade-in">
+                <div className="relative z-10 container text-center text-white animate-fade-in text-on-gradient">
                     <Badge className="mb-6 bg-white/20 backdrop-blur-sm text-white border-white/30 px-6 py-2 text-lg">
                         <Sparkles className="mr-2 h-5 w-5" />
                         29 Premium Products Available
                     </Badge>
 
-                    <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+                    <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white">
                         Wildcrafted Sea Moss
                         <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-300">
@@ -186,7 +186,7 @@ export default function HomePage() {
                         </span>
                     </h1>
 
-                    <p className="text-xl md:text-2xl mb-8 text-emerald-100 max-w-3xl mx-auto">
+                    <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto">
                         Hand-crafted, nutrient-rich sea moss products. From our ocean to your table with 92 essential minerals.
                     </p>
 
@@ -204,7 +204,8 @@ export default function HomePage() {
                         <Button
                             onClick={() => document.getElementById('featured')?.scrollIntoView({ behavior: 'smooth' })}
                             size="lg"
-                            className="h-14 px-8 text-lg bg-white text-emerald-600 hover:bg-emerald-50 shadow-2xl hover:scale-105 transition-all"
+                            variant="outline"
+                            className="h-14 px-8 text-lg border-2 border-white text-white hover:bg-white/10 shadow-2xl hover:scale-105 transition-all"
                         >
                             View Featured
                         </Button>
@@ -382,8 +383,8 @@ export default function HomePage() {
                             }
                         ].map((benefit, index) => (
                             <Card key={index} className="text-center p-8 hover:shadow-xl transition-all hover:-translate-y-1 duration-300">
-                                <CardContent className="p-0">
-                                    <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4 transition-transform hover:scale-110 duration-300">
+                                <CardContent className="p-0 flex flex-col items-center">
+                                    <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4 transition-transform hover:scale-110 duration-300">
                                         <benefit.icon className="h-8 w-8 text-emerald-600" />
                                     </div>
                                     <h3 className="text-xl font-bold text-gray-900 mb-3">
@@ -415,7 +416,7 @@ export default function HomePage() {
                     </div>
 
                     <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-12">
-                        <div className="prose prose-lg max-w-none">
+                        <div className="prose prose-lg max-w-none content-readable mx-auto">
                             <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
                                 <Droplets className="mr-3 h-6 w-6 text-emerald-600" />
                                 Overview & Scientific Classification
@@ -648,11 +649,11 @@ export default function HomePage() {
             </section>
 
             <section className="py-20 bg-gradient-to-br from-emerald-600 to-teal-600 text-white">
-                <div className="container text-center">
-                    <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                <div className="container text-center text-on-gradient">
+                    <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
                         Ready to Start Your Wellness Journey?
                     </h2>
-                    <p className="text-xl mb-8 text-emerald-100 max-w-2xl mx-auto">
+                    <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
                         Join thousands of satisfied customers experiencing the power of wildcrafted sea moss
                     </p>
                     <Button

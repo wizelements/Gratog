@@ -30,10 +30,10 @@ export default function WishlistButton({
     return () => window.removeEventListener('wishlistUpdate', handleUpdate);
   }, [mounted, productId, isInWishlist]);
 
-  const handleClick = (e) => {
+  const handleClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleWishlist(productId);
+    await toggleWishlist(productId, false); // false = guest mode, uses localStorage
     setIsWishlisted(!isWishlisted);
   };
 
