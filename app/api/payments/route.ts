@@ -1,7 +1,7 @@
 
 import { logger } from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
-import { getSquareClient, SQUARE_LOCATION_ID } from '@/lib/square';
+import { getSquareClient, getSquareLocationId } from '@/lib/square';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
 import { fromCents, toSquareMoney } from '@/lib/money';
@@ -46,11 +46,24 @@ export async function POST(request: NextRequest) {
     // Generate idempotency key to prevent duplicate payments
     const paymentIdempotencyKey = idempotencyKey || randomUUID();
     
+    // Get location ID with proper validation
+    let locationId: string;
+    try {
+      locationId = getSquareLocationId();
+    } catch (err) {
+      logger.error('API', 'Square location ID not configured', { error: err });
+      return NextResponse.json(
+        { error: 'Payment processing not configured. Please contact support.' },
+        { status: 503 }
+      );
+    }
+    
+    // Log payment processing start
     logger.debug('API', 'Processing Square Web Payment:', {
       sourceId: sourceId.substring(0, 20) + '...',
       amountCents,
       currency,
-      locationId: SQUARE_LOCATION_ID,
+      locationId,
       idempotencyKey: paymentIdempotencyKey,
       orderId,
       squareOrderId
@@ -92,27 +105,6 @@ export async function POST(request: NextRequest) {
     const noteText = `Payment for order ${orderId || 'unknown'}`;
     const truncatedNote = noteText.length > 45 ? noteText.substring(0, 45) : noteText;
     
-    // Prepare payment request
-    const paymentRequest: any = {
-      sourceId,
-      idempotencyKey: paymentIdempotencyKey,
-      amountMoney: {
-        amount: BigInt(amountCents),
-        currency
-      },
-      locationId: SQUARE_LOCATION_ID,
-      autocomplete: true, // Immediately complete the payment
-      acceptPartialAuthorization: false,
-      note: truncatedNote,
-      customerId: squareCustomerId, // ⭐ Link payment to customer
-      ...(customer?.email && { buyerEmailAddress: customer.email })
-    };
-    
-    // Add order ID if provided
-    if (orderId) {
-      paymentRequest.orderId = orderId;
-    }
-    
     logger.debug('API', 'Sending payment request to Square via REST...');
     
     // Use REST API instead of SDK
@@ -120,7 +112,7 @@ export async function POST(request: NextRequest) {
       sourceId,
       amount: amountCents,
       currency,
-      locationId: SQUARE_LOCATION_ID,
+      locationId,
       idempotencyKey: paymentIdempotencyKey,
       note: truncatedNote,
       orderId: squareOrderId, // Pass Square Order ID to link payment to order
