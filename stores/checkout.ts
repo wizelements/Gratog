@@ -165,8 +165,8 @@ function persistState(state: CheckoutState) {
 }
 
 export const useCheckoutStore = create<CheckoutState>((set, get) => {
-  // Load initial cart and compute totals
-  const initialCart = CartAPI.getCart();
+  // Load initial cart safely (returns empty array during SSR)
+  const initialCart = typeof window !== 'undefined' ? CartAPI.getCart() : [];
   const persisted = loadPersistedState();
   
   const initialTotals = computeTotals({

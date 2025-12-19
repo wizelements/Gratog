@@ -2,22 +2,39 @@
 
 import { useEffect, useState } from 'react';
 import { CheckCircle2, ShoppingCart, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
+
+// Dynamically import framer-motion with SSR disabled to prevent hydration issues
+const MotionDiv = dynamic(
+  () => import('framer-motion').then(mod => mod.motion.div),
+  { ssr: false }
+);
+
+const AnimatePresence = dynamic(
+  () => import('framer-motion').then(mod => mod.AnimatePresence),
+  { ssr: false }
+);
 
 /**
  * 🎉 Creative cart notification with undo feature
  */
 export default function CartNotification() {
   const [notification, setNotification] = useState(null);
-  const [undoTimer, setUndoTimer] = useState(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     const handleCartUpdate = (event) => {
       const { cart } = event.detail;
       
       // Show brief notification
       setNotification({
-        count: cart.reduce((sum, i) => sum + i.quantity, 0),
+        count: Array.isArray(cart) ? cart.reduce((sum, i) => sum + i.quantity, 0) : 0,
         timestamp: Date.now()
       });
 
@@ -27,12 +44,17 @@ export default function CartNotification() {
 
     window.addEventListener('cartUpdated', handleCartUpdate);
     return () => window.removeEventListener('cartUpdated', handleCartUpdate);
-  }, []);
+  }, [mounted]);
+
+  // Don't render anything during SSR
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <AnimatePresence>
       {notification && (
-        <motion.div
+        <MotionDiv
           initial={{ opacity: 0, y: -20, scale: 0.8 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.8 }}
@@ -54,7 +76,7 @@ export default function CartNotification() {
           >
             <X className="h-4 w-4" />
           </button>
-        </motion.div>
+        </MotionDiv>
       )}
     </AnimatePresence>
   );
