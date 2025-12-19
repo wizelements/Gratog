@@ -112,22 +112,38 @@ export default function SquarePaymentForm({
   const applePayRef = useRef<ApplePay | null>(null);
   const googlePayRef = useRef<GooglePay | null>(null);
   const initRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const paymentIdempotencyKeyRef = useRef<string>('');
+
+  // Stabilize onError callback to prevent unnecessary refetches
+  const stableOnError = useCallback(onError, []);
 
   useEffect(() => {
     const fetchConfig = async () => {
       try {
         const res = await fetch('/api/square/config');
-        if (!res.ok) throw new Error('Failed to fetch Square config');
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+          throw new Error(errorData.error || 'Failed to fetch Square config');
+        }
         const data = await res.json();
+        
+        // Validate required fields
+        if (!data.applicationId || !data.locationId) {
+          throw new Error('Missing required Square configuration fields');
+        }
+        
         setConfig(data);
+        setIsLoading(false);
       } catch (err) {
         console.error('Failed to load Square config:', err);
-        onError('Payment system configuration error');
+        const errorMsg = err instanceof Error ? err.message : 'Payment system configuration error';
+        stableOnError(errorMsg);
         setIsLoading(false);
       }
     };
     fetchConfig();
-  }, [onError]);
+  }, [stableOnError]);
 
   useEffect(() => {
     if (!config || initRef.current) return;
@@ -245,7 +261,8 @@ export default function SquarePaymentForm({
             setGooglePayAvailable(true);
           }
         } catch (gpErr) {
-          console.log('Google Pay not available');
+          console.debug('Google Pay not available:', gpErr instanceof Error ? gpErr.message : 'Unknown error');
+          // Google Pay not available in this browser/region - this is expected and not an error
         }
 
         track('payment_form_loaded', { 
@@ -264,14 +281,30 @@ export default function SquarePaymentForm({
     initializePayments();
 
     return () => {
+      // Cleanup payment in progress if component unmounts
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
       cardRef.current?.destroy().catch(console.error);
       applePayRef.current?.destroy?.().catch(console.error);
       googlePayRef.current?.destroy().catch(console.error);
     };
-  }, [config, amountCents, onError]);
+  }, [config, amountCents, stableOnError]);
 
   const processPayment = useCallback(async (sourceId: string) => {
     try {
+      // Create abort controller for this payment attempt (allow previous one to abort)
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
+      
+      // Generate or reuse idempotency key (for same payment attempt, same key)
+      const idempotencyKey = paymentIdempotencyKeyRef.current || `payment_${orderId}_${Date.now()}`;
+      if (!paymentIdempotencyKeyRef.current) {
+        paymentIdempotencyKeyRef.current = idempotencyKey;
+      }
+      
       const res = await fetch('/api/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -281,8 +314,10 @@ export default function SquarePaymentForm({
           currency: 'USD',
           orderId,
           squareOrderId,
-          customer
-        })
+          customer,
+          idempotencyKey
+        }),
+        signal: abortControllerRef.current.signal
       });
 
       const data = await res.json();
@@ -305,6 +340,11 @@ export default function SquarePaymentForm({
         cardBrand: data.payment.cardBrand
       });
     } catch (err) {
+      // Don't throw AbortError - just silently ignore
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.debug('Payment request cancelled');
+        return;
+      }
       throw err;
     }
   }, [amountCents, orderId, squareOrderId, customer, onSuccess]);
@@ -418,11 +458,13 @@ export default function SquarePaymentForm({
               className="w-full h-12 bg-black hover:bg-gray-900 text-white"
             >
               <Smartphone className="w-5 h-5 mr-2" />
-               Pay
+              Apple Pay
             </Button>
           )}
           
-          <div id="google-pay-button" className={googlePayAvailable ? '' : 'hidden'} onClick={handleGooglePay} />
+          {googlePayAvailable && (
+            <div id="google-pay-button" />
+          )}
 
           {(applePayAvailable || googlePayAvailable) && (
             <div className="relative">

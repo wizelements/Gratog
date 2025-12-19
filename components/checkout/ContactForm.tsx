@@ -43,74 +43,76 @@ export default function ContactForm({ contact, onChange, errors = {} }: ContactF
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* First Name */}
-        <div className="relative">
-          <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
-            First Name *
-          </Label>
-          <div className="relative mt-1">
-            <Input
-              id="firstName"
-              type="text"
-              value={contact.firstName}
-              onChange={(e) => onChange({ firstName: e.target.value })}
-              onBlur={(e) => handleFieldComplete('firstName', e.target.value)}
-              placeholder="John"
-              className={`pr-10 ${errors.firstName ? 'border-red-500' : ''}`}
-              aria-invalid={!!errors.firstName}
-              aria-describedby={errors.firstName ? 'firstName-error' : undefined}
-            />
-            <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            {completedFields.has('firstName') && !errors.firstName && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
-              >
-                <Check className="w-4 h-4 text-emerald-500" />
-              </motion.div>
-            )}
-          </div>
-          {errors.firstName && (
-            <p id="firstName-error" className="mt-1 text-xs text-red-500">
-              {errors.firstName}
-            </p>
-          )}
-        </div>
+         <div className="relative">
+           <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+             First Name *
+           </Label>
+           <div className="relative mt-1">
+             <Input
+               id="firstName"
+               type="text"
+               value={contact.firstName}
+               onChange={(e) => onChange({ firstName: e.target.value })}
+               onBlur={(e) => handleFieldComplete('firstName', e.target.value)}
+               placeholder="John"
+               className={`pr-10 ${errors.firstName ? 'border-red-500' : ''}`}
+               aria-invalid={!!errors.firstName}
+               aria-describedby={errors.firstName ? 'firstName-error' : undefined}
+             />
+             {!completedFields.has('firstName') || errors.firstName ? (
+               <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+             ) : (
+               <motion.div
+                 initial={{ scale: 0 }}
+                 animate={{ scale: 1 }}
+                 className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+               >
+                 <Check className="w-4 h-4 text-emerald-500" />
+               </motion.div>
+             )}
+           </div>
+           {errors.firstName && (
+             <p id="firstName-error" className="mt-1 text-xs text-red-500">
+               {errors.firstName}
+             </p>
+           )}
+         </div>
         
         {/* Last Name */}
-        <div className="relative">
-          <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
-            Last Name *
-          </Label>
-          <div className="relative mt-1">
-            <Input
-              id="lastName"
-              type="text"
-              value={contact.lastName}
-              onChange={(e) => onChange({ lastName: e.target.value })}
-              onBlur={(e) => handleFieldComplete('lastName', e.target.value)}
-              placeholder="Doe"
-              className={`pr-10 ${errors.lastName ? 'border-red-500' : ''}`}
-              aria-invalid={!!errors.lastName}
-              aria-describedby={errors.lastName ? 'lastName-error' : undefined}
-            />
-            <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            {completedFields.has('lastName') && !errors.lastName && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
-              >
-                <Check className="w-4 h-4 text-emerald-500" />
-              </motion.div>
-            )}
-          </div>
-          {errors.lastName && (
-            <p id="lastName-error" className="mt-1 text-xs text-red-500">
-              {errors.lastName}
-            </p>
-          )}
-        </div>
+         <div className="relative">
+           <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+             Last Name *
+           </Label>
+           <div className="relative mt-1">
+             <Input
+               id="lastName"
+               type="text"
+               value={contact.lastName}
+               onChange={(e) => onChange({ lastName: e.target.value })}
+               onBlur={(e) => handleFieldComplete('lastName', e.target.value)}
+               placeholder="Doe"
+               className={`pr-10 ${errors.lastName ? 'border-red-500' : ''}`}
+               aria-invalid={!!errors.lastName}
+               aria-describedby={errors.lastName ? 'lastName-error' : undefined}
+             />
+             {!completedFields.has('lastName') || errors.lastName ? (
+               <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+             ) : (
+               <motion.div
+                 initial={{ scale: 0 }}
+                 animate={{ scale: 1 }}
+                 className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+               >
+                 <Check className="w-4 h-4 text-emerald-500" />
+               </motion.div>
+             )}
+           </div>
+           {errors.lastName && (
+             <p id="lastName-error" className="mt-1 text-xs text-red-500">
+               {errors.lastName}
+             </p>
+           )}
+         </div>
       </div>
       
       {/* Email */}
@@ -131,12 +133,13 @@ export default function ContactForm({ contact, onChange, errors = {} }: ContactF
             aria-describedby={errors.email ? 'email-error' : undefined}
             autoComplete="email"
           />
-          <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          {completedFields.has('email') && !errors.email && (
+          {!completedFields.has('email') || errors.email ? (
+            <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          ) : (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute right-3 top-1/2 -translate-y-1/2"
+              className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
             >
               <Check className="w-4 h-4 text-emerald-500" />
             </motion.div>
@@ -167,12 +170,13 @@ export default function ContactForm({ contact, onChange, errors = {} }: ContactF
             aria-describedby={errors.phone ? 'phone-error' : undefined}
             autoComplete="tel"
           />
-          <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          {completedFields.has('phone') && !errors.phone && (
+          {!completedFields.has('phone') || errors.phone ? (
+            <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          ) : (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute right-3 top-1/2 -translate-y-1/2"
+              className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
             >
               <Check className="w-4 h-4 text-emerald-500" />
             </motion.div>
