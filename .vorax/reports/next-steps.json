@@ -12,7 +12,7 @@
     "hasMetaTags": true,
     "hasTestimonials": true,
     "hasAboutPage": true,
-    "hasPoliciesPage": false,
+    "hasPoliciesPage": true,
     "hasEmailCapture": true,
     "hasReviewSystem": true,
     "hasWishlist": true,

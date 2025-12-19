@@ -62,108 +62,109 @@ export default function Header() {
 
       {/* Desktop Navigation Row */}
       <nav className="hidden md:block border-t bg-gradient-to-r from-white to-gray-50" aria-label="Main navigation">
-        <div className="container flex h-12 items-center space-x-8">
-          <Link 
-            href="/" 
-            className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
-              isActive('/') ? 'text-[#D4AF37]' : ''
-            }`}
-          >
-            Home
-            <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
-              isActive('/') ? 'w-full' : ''
-            }`} />
-          </Link>
-          {/* Mega Menu for Shop */}
-          <MegaMenu trigger="Shop" />
-          <Link 
-            href="/markets" 
-            className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
-              isActive('/markets') ? 'text-[#D4AF37]' : ''
-            }`}
-          >
-            Markets
-            <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
-              isActive('/markets') ? 'w-full' : ''
-            }`} />
-          </Link>
-          <Link 
-            href="/explore" 
-            className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
-              pathname?.startsWith('/explore') ? 'text-[#D4AF37]' : ''
-            }`}
-          >
-            Explore
-            <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
-              pathname?.startsWith('/explore') ? 'w-full' : ''
-            }`} />
-          </Link>
-          <Link 
-            href="/community" 
-            className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
-              isActive('/community') ? 'text-[#D4AF37]' : ''
-            }`}
-          >
-            Community
-            <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
-              isActive('/community') ? 'w-full' : ''
-            }`} />
-          </Link>
-          <Link 
-            href="/rewards" 
-            className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
-              isActive('/rewards') || isActive('/passport') ? 'text-[#D4AF37]' : ''
-            }`}
-          >
-            Rewards
-            <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
-              isActive('/rewards') || isActive('/passport') ? 'w-full' : ''
-            }`} />
-          </Link>
-          <Link 
-            href="/about" 
-            className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
-              isActive('/about') ? 'text-[#D4AF37]' : ''
-            }`}
-          >
-            About
-            <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
-              isActive('/about') ? 'w-full' : ''
-            }`} />
-          </Link>
-          <MegaMenu trigger="Learn" />
-          <MegaMenu trigger="Account" />
-        </div>
+        <div className="container flex h-12 items-center justify-between">
+          <div className="flex items-center space-x-8">
+            <Link 
+              href="/" 
+              className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
+                isActive('/') ? 'text-[#D4AF37]' : ''
+              }`}
+            >
+              Home
+              <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
+                isActive('/') ? 'w-full' : ''
+              }`} />
+            </Link>
+            {/* Mega Menu for Shop */}
+            <MegaMenu trigger="Shop" />
+            <Link 
+              href="/markets" 
+              className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
+                isActive('/markets') ? 'text-[#D4AF37]' : ''
+              }`}
+            >
+              Markets
+              <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
+                isActive('/markets') ? 'w-full' : ''
+              }`} />
+            </Link>
+            <Link 
+              href="/explore" 
+              className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
+                pathname?.startsWith('/explore') ? 'text-[#D4AF37]' : ''
+              }`}
+            >
+              Explore
+              <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
+                pathname?.startsWith('/explore') ? 'w-full' : ''
+              }`} />
+            </Link>
+            <Link 
+              href="/community" 
+              className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
+                isActive('/community') ? 'text-[#D4AF37]' : ''
+              }`}
+            >
+              Community
+              <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
+                isActive('/community') ? 'w-full' : ''
+              }`} />
+            </Link>
+            <Link 
+              href="/rewards" 
+              className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
+                isActive('/rewards') || isActive('/passport') ? 'text-[#D4AF37]' : ''
+              }`}
+            >
+              Rewards
+              <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
+                isActive('/rewards') || isActive('/passport') ? 'w-full' : ''
+              }`} />
+            </Link>
+            <Link 
+              href="/about" 
+              className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
+                isActive('/about') ? 'text-[#D4AF37]' : ''
+              }`}
+            >
+              About
+              <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
+                isActive('/about') ? 'w-full' : ''
+              }`} />
+            </Link>
+            <MegaMenu trigger="Learn" />
+          </div>
 
-        {/* Right Side Action Buttons */}
-        <div className="hidden md:flex items-center space-x-2 ml-auto">
-          <WishlistBadge />
-          <CartBadge />
-          {isAuthenticated ? (
-            <Button
-              asChild
-              size="sm"
-              variant="outline"
-              className="border-emerald-500/50 text-emerald-600 hover:bg-emerald-600 hover:text-white"
-            >
-              <Link href="/profile">
-                <User className="h-4 w-4 mr-1" />
-                Profile
-              </Link>
-            </Button>
-          ) : (
-            <Button
-              asChild
-              size="sm"
-              variant="outline"
-              className="border-emerald-500/50 text-emerald-600 hover:bg-emerald-600 hover:text-white"
-            >
-              <Link href="/login">
-                <LogIn className="h-4 w-4 mr-1" />
-                Login
-              </Link>
-            </Button>
-          )}
+          {/* Right Side Action Buttons */}
+          <div className="flex items-center space-x-2">
+            <WishlistBadge />
+            <CartBadge />
+            {isAuthenticated ? (
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="border-emerald-500/50 text-emerald-600 hover:bg-emerald-600 hover:text-white"
+              >
+                <Link href="/profile">
+                  <User className="h-4 w-4 mr-1" />
+                  Profile
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="border-emerald-500/50 text-emerald-600 hover:bg-emerald-600 hover:text-white"
+              >
+                <Link href="/login">
+                  <LogIn className="h-4 w-4 mr-1" />
+                  Login
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
       </nav>
 
