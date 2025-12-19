@@ -109,6 +109,7 @@ export default function SearchBar({ placeholder = 'Search products, benefits, gu
                     onClick={() => handleSearch(item.query)}
                     className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b last:border-b-0 transition-colors flex justify-between items-center group"
                     role="option"
+                    aria-selected="false"
                   >
                     <div className="flex items-center gap-2">
                       <Search className="h-4 w-4 text-gray-400" />
