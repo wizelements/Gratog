@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
     const response = await square.payments.create({
       sourceId,
       amountMoney: {
-        amount: amountCents,
+        amount: BigInt(amountCents),
         currency
       },
       orderId: squareOrderId,
@@ -304,6 +304,20 @@ export async function POST(request: NextRequest) {
     
     // Handle specific Square API errors
     if (error instanceof Error) {
+      // Check for Square SDK errors with specific status codes
+      const anyError = error as any;
+      if (anyError.statusCode === 400) {
+        return NextResponse.json(
+          { 
+            success: false,
+            error: 'Invalid payment request - please check your payment details',
+            details: anyError.errors?.[0]?.detail || error.message,
+            traceId: ctx.traceId
+          },
+          { status: 400 }
+        );
+      }
+      
       if (error.message.includes('CARD_DECLINED')) {
         return NextResponse.json(
           { 
@@ -331,6 +345,18 @@ export async function POST(request: NextRequest) {
           { 
             success: false,
             error: 'Invalid card details - please check your information',
+            traceId: ctx.traceId
+          },
+          { status: 400 }
+        );
+      }
+      
+      if (error.message.includes('BAD_REQUEST') || error.message.includes('Invalid')) {
+        return NextResponse.json(
+          { 
+            success: false,
+            error: 'Invalid request - please check your payment details',
+            details: error.message,
             traceId: ctx.traceId
           },
           { status: 400 }
