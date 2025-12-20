@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSquareClient, SQUARE_LOCATION_ID, getSquareLocationId } from '@/lib/square';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
-import { createPaymentLinkDirect } from '@/lib/square-direct';
 import { shouldAllowFallback, getAuthFailureResponse, logSquareOperation } from '@/lib/square-guard';
 import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
 import { logger } from '@/lib/logger';
@@ -137,7 +136,7 @@ export async function POST(request: NextRequest) {
       prePopulatedData.buyerPhoneNumber = customer.phone;
     }
     
-    logger.debug('Checkout', 'Creating payment link with SDK (direct)...');
+    logger.debug('Checkout', 'Creating payment link with SDK...');
     
     // Prepare line items for payment link
     const paymentLinkLineItems = lineItems.map((item: any) => ({
@@ -154,7 +153,7 @@ export async function POST(request: NextRequest) {
     }));
     
     // Create payment link directly with SDK
-    const paymentLinkResponse = await createPaymentLinkDirect({
+    const paymentLinkResponse = await square.checkout.paymentLinks.create({
       locationId: getSquareLocationId(),
       lineItems: paymentLinkLineItems,
       idempotencyKey: randomUUID(),

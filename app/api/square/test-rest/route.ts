@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { listLocationsDirect, listPaymentsDirect, listCatalogDirect } from '@/lib/square-direct';
+import { getSquareClient } from '@/lib/square';
 import { logger } from '@/lib/logger';
 
 /**
@@ -7,8 +7,9 @@ import { logger } from '@/lib/logger';
  */
 export async function GET() {
   try {
-    logger.info('SQUARE-REST', 'Testing Square REST API...');
+    logger.info('SQUARE-REST', 'Testing Square API...');
     
+    const square = getSquareClient();
     const results: any = {
       timestamp: new Date().toISOString(),
       tests: {}
@@ -16,7 +17,7 @@ export async function GET() {
     
     // Test 1: List Locations
     try {
-      const locationsResponse = await listLocationsDirect();
+      const locationsResponse = await square.locations.list();
       results.tests.locations = {
         success: true,
         count: locationsResponse.locations?.length || 0,
@@ -36,14 +37,14 @@ export async function GET() {
     
     // Test 2: List Payments
     try {
-      const paymentsResponse = await listPaymentsDirect({ limit: 3 });
+      const paymentsResponse = await square.payments.list({ limit: 3 });
       results.tests.payments = {
         success: true,
-        count: paymentsResponse.payments?.length || 0,
-        recentPayment: paymentsResponse.payments?.[0] ? {
-          id: paymentsResponse.payments[0].id,
-          amount: paymentsResponse.payments[0].amountMoney,
-          status: paymentsResponse.payments[0].status
+        count: paymentsResponse.result?.payments?.length || 0,
+        recentPayment: paymentsResponse.result?.payments?.[0] ? {
+          id: paymentsResponse.result.payments[0].id,
+          amount: paymentsResponse.result.payments[0].amountMoney,
+          status: paymentsResponse.result.payments[0].status
         } : null
       };
     } catch (error: any) {
@@ -56,10 +57,10 @@ export async function GET() {
     
     // Test 3: List Catalog
     try {
-      const catalogResponse = await listCatalogDirect({ types: 'ITEM' });
+      const catalogResponse = await square.catalog.list({ types: 'ITEM' });
       results.tests.catalog = {
         success: true,
-        count: catalogResponse.objects?.length || 0
+        count: catalogResponse.result?.objects?.length || 0
       };
     } catch (error: any) {
       results.tests.catalog = {

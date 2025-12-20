@@ -1,0 +1,280 @@
+
+> taste-of-gratitude@2.0.0 build
+> next build
+
+   ▲ Next.js 15.5.9
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ✓ optimizeCss
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings in 52s
+
+./node_modules/framer-motion/dist/cjs/feature-bundle-v2Gb94eA.js
+Module not found: Can't resolve '@emotion/is-prop-valid' in '/workspaces/Gratog/node_modules/framer-motion/dist/cjs'
+
+Import trace for requested module:
+./node_modules/framer-motion/dist/cjs/feature-bundle-v2Gb94eA.js
+./node_modules/framer-motion/dist/cjs/index.js
+./components/cart/CartNotification.jsx
+./components/CustomerLayout.jsx
+
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+⚠️ [Using MOCK Email (set SENDGRID_API_KEY for real email)] undefined {}
+   Generating static pages (0/158) ...
+   Generating static pages (39/158) 
+   Generating static pages (78/158) 
+⚠️ [Using MOCK Email (set SENDGRID_API_KEY for real email)] undefined {}
+   Generating static pages (118/158) 
+ ✓ Generating static pages (158/158)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                         Size  First Load JS  Revalidate  Expire
+┌ ○ /                                            15.6 kB         457 kB
+├ ○ /_not-found                                    210 B         442 kB
+├ ○ /about                                         255 B         442 kB
+├ ○ /admin                                       2.63 kB         444 kB
+├ ○ /admin/analytics                               629 B         442 kB
+├ ○ /admin/campaigns                             1.87 kB         444 kB
+├ ○ /admin/campaigns/new                          3.5 kB         445 kB
+├ ○ /admin/coupons                               3.04 kB         445 kB
+├ ○ /admin/customers                             1.87 kB         444 kB
+├ ○ /admin/inventory                             2.19 kB         444 kB
+├ ○ /admin/login                                 1.35 kB         443 kB
+├ ○ /admin/orders                                3.98 kB         446 kB
+├ ○ /admin/products                              1.68 kB         443 kB
+├ ƒ /admin/products/[id]                         2.71 kB         444 kB
+├ ○ /admin/settings                              1.04 kB         443 kB
+├ ○ /admin/setup                                 2.32 kB         444 kB
+├ ○ /admin/square-oauth                          3.04 kB         445 kB
+├ ○ /admin/waitlist                              1.54 kB         443 kB
+├ ƒ /api/[[...path]]                               210 B         442 kB
+├ ƒ /api/admin/analytics/campaigns                 210 B         442 kB
+├ ƒ /api/admin/analytics/customers                 210 B         442 kB
+├ ƒ /api/admin/analytics/sales                     210 B         442 kB
+├ ƒ /api/admin/audit-logs                          210 B         442 kB
+├ ƒ /api/admin/auth                                210 B         442 kB
+├ ƒ /api/admin/auth/login                          210 B         442 kB
+├ ƒ /api/admin/auth/logout                         210 B         442 kB
+├ ƒ /api/admin/auth/me                             210 B         442 kB
+├ ƒ /api/admin/campaigns                           210 B         442 kB
+├ ƒ /api/admin/campaigns/generate                  210 B         442 kB
+├ ƒ /api/admin/campaigns/send                      210 B         442 kB
+├ ƒ /api/admin/cleanup-sandbox                     210 B         442 kB
+├ ƒ /api/admin/coupons                             210 B         442 kB
+├ ƒ /api/admin/coupons/[id]                        210 B         442 kB
+├ ƒ /api/admin/customers                           210 B         442 kB
+├ ƒ /api/admin/dashboard                           210 B         442 kB
+├ ƒ /api/admin/email-preview                       210 B         442 kB
+├ ƒ /api/admin/emergency-init                      209 B         442 kB
+├ ƒ /api/admin/init                                210 B         442 kB
+├ ƒ /api/admin/inventory/[productId]               210 B         442 kB
+├ ƒ /api/admin/orders                              209 B         442 kB
+├ ƒ /api/admin/orders/sync                         210 B         442 kB
+├ ƒ /api/admin/orders/update-status                210 B         442 kB
+├ ƒ /api/admin/products                            210 B         442 kB
+├ ƒ /api/admin/products/[id]                       210 B         442 kB
+├ ƒ /api/admin/products/[id]/sync                  210 B         442 kB
+├ ƒ /api/admin/products/sync                       210 B         442 kB
+├ ƒ /api/admin/reviews                             210 B         442 kB
+├ ƒ /api/admin/reviews/[id]                        210 B         442 kB
+├ ƒ /api/admin/setup                               210 B         442 kB
+├ ƒ /api/analytics                                 210 B         442 kB
+├ ƒ /api/auth/login                                209 B         442 kB
+├ ƒ /api/auth/logout                               210 B         442 kB
+├ ƒ /api/auth/register                             209 B         442 kB
+├ ƒ /api/auth/session                              210 B         442 kB
+├ ƒ /api/cart/price                                210 B         442 kB
+├ ƒ /api/checkout                                  210 B         442 kB
+├ ƒ /api/coupons/create                            210 B         442 kB
+├ ƒ /api/coupons/validate                          210 B         442 kB
+├ ƒ /api/create-checkout                           210 B         442 kB
+├ ƒ /api/cron/missed-pickup                        210 B         442 kB
+├ ƒ /api/cron/morning-reminders                    210 B         442 kB
+├ ƒ /api/cron/pickup-reminders                     210 B         442 kB
+├ ƒ /api/csp-report                                210 B         442 kB
+├ ƒ /api/customers                                 209 B         442 kB
+├ ƒ /api/db-health                                 210 B         442 kB
+├ ƒ /api/debug/logs                                210 B         442 kB
+├ ƒ /api/email/send-coupon                         209 B         442 kB
+├ ƒ /api/email/send-newsletter-confirmation        210 B         442 kB
+├ ƒ /api/email/send-order-confirmation             209 B         442 kB
+├ ƒ /api/email/send-order-status                   210 B         442 kB
+├ ƒ /api/email/send-welcome                        210 B         442 kB
+├ ƒ /api/email/test                                210 B         442 kB
+├ ƒ /api/emails/queue                              210 B         442 kB
+├ ƒ /api/emails/test                               210 B         442 kB
+├ ƒ /api/health                                    210 B         442 kB
+├ ƒ /api/ics/market-route                          210 B         442 kB
+├ ƒ /api/ingredients                               210 B         442 kB
+├ ƒ /api/ingredients/[slug]                        210 B         442 kB
+├ ƒ /api/instagram/post/[slug]                     210 B         442 kB
+├ ƒ /api/instagram/posts                           210 B         442 kB
+├ ƒ /api/instagram/sync                            210 B         442 kB
+├ ƒ /api/newsletter/subscribe                      209 B         442 kB
+├ ƒ /api/oauth/square/authorize                    210 B         442 kB
+├ ƒ /api/oauth/square/callback                     210 B         442 kB
+├ ƒ /api/oauth/square/status                       210 B         442 kB
+├ ƒ /api/orders/[id]                               210 B         442 kB
+├ ƒ /api/orders/by-ref                             210 B         442 kB
+├ ƒ /api/orders/create                             210 B         442 kB
+├ ƒ /api/payments                                  209 B         442 kB
+├ ƒ /api/pos/callback                              210 B         442 kB
+├ ƒ /api/products                                  210 B         442 kB
+├ ƒ /api/products/enhanced                         210 B         442 kB
+├ ƒ /api/quiz/analytics                            210 B         442 kB
+├ ƒ /api/quiz/conversion-webhook                   210 B         442 kB
+├ ƒ /api/quiz/email-scheduler                      210 B         442 kB
+├ ƒ /api/quiz/recommendations                      210 B         442 kB
+├ ƒ /api/quiz/results/[id]                         209 B         442 kB
+├ ƒ /api/quiz/submit                               210 B         442 kB
+├ ƒ /api/recommendations                           210 B         442 kB
+├ ƒ /api/reviews                                   210 B         442 kB
+├ ƒ /api/reviews/[id]                              210 B         442 kB
+├ ƒ /api/reviews/analytics                         210 B         442 kB
+├ ƒ /api/reviews/upload                            209 B         442 kB
+├ ƒ /api/rewards/add-points                        210 B         442 kB
+├ ƒ /api/rewards/leaderboard                       210 B         442 kB
+├ ƒ /api/rewards/passport                          210 B         442 kB
+├ ƒ /api/rewards/redeem                            210 B         442 kB
+├ ƒ /api/rewards/stamp                             210 B         442 kB
+├ ƒ /api/search/enhanced                           210 B         442 kB
+├ ƒ /api/seo/analyze                               210 B         442 kB
+├ ƒ /api/shipping/rates                            210 B         442 kB
+├ ƒ /api/square-webhook                            210 B         442 kB
+├ ƒ /api/square/config                             210 B         442 kB
+├ ƒ /api/square/create-checkout                    209 B         442 kB
+├ ƒ /api/square/diagnose                           210 B         442 kB
+├ ƒ /api/square/self-diagnose                      210 B         442 kB
+├ ƒ /api/square/test-rest                          209 B         442 kB
+├ ƒ /api/square/test-token                         210 B         442 kB
+├ ƒ /api/square/validate-token                     210 B         442 kB
+├ ƒ /api/startup                                   210 B         442 kB
+├ ƒ /api/stripe/create-checkout                    210 B         442 kB
+├ ƒ /api/stripe/webhook                            210 B         442 kB
+├ ƒ /api/sync-trigger                              210 B         442 kB
+├ ƒ /api/tracking/user                             210 B         442 kB
+├ ƒ /api/transactions/log                          210 B         442 kB
+├ ƒ /api/transactions/stats                        210 B         442 kB
+├ ƒ /api/ugc/submit                                210 B         442 kB
+├ ƒ /api/unified/products                          209 B         442 kB
+├ ƒ /api/unified/sync                              210 B         442 kB
+├ ƒ /api/user/challenge                            210 B         442 kB
+├ ƒ /api/user/challenge/checkin                    210 B         442 kB
+├ ƒ /api/user/email-preferences                    210 B         442 kB
+├ ƒ /api/user/favorites                            210 B         442 kB
+├ ƒ /api/user/orders                               209 B         442 kB
+├ ƒ /api/user/profile                              209 B         442 kB
+├ ƒ /api/user/rewards                              210 B         442 kB
+├ ƒ /api/user/stats                                210 B         442 kB
+├ ƒ /api/user/wishlist                             210 B         442 kB
+├ ƒ /api/waitlist                                  210 B         442 kB
+├ ƒ /api/webhooks/inventory                        210 B         442 kB
+├ ƒ /api/webhooks/square                           210 B         442 kB
+├ ○ /catalog                                     8.65 kB         450 kB
+├ ○ /checkout                                      208 B         442 kB
+├ ○ /checkout/square                             3.37 kB         445 kB
+├ ƒ /checkout/success                            3.79 kB         445 kB
+├ ○ /community                                   2.99 kB         445 kB
+├ ○ /contact                                     1.44 kB         443 kB
+├ ○ /diagnostic                                  2.38 kB         444 kB
+├ ○ /explore                                     1.87 kB         444 kB
+├ ○ /explore/games                               1.89 kB         444 kB
+├ ○ /explore/games/benefit-sort                  2.48 kB         444 kB
+├ ○ /explore/games/ingredient-quiz               2.57 kB         444 kB
+├ ○ /explore/games/ingredient-rush               2.52 kB         444 kB
+├ ○ /explore/games/memory-match                  2.48 kB         444 kB
+├ ○ /explore/ingredients                         3.41 kB         445 kB
+├ ƒ /explore/ingredients/[slug]                  1.82 kB         444 kB
+├ ○ /explore/learn                               1.85 kB         444 kB
+├ ○ /explore/showcase                            2.11 kB         444 kB
+├ ○ /faq                                          5.3 kB         447 kB
+├ ƒ /instagram/[slug]                            2.42 kB         444 kB
+├ ○ /login                                       1.49 kB         443 kB
+├ ○ /markets                                     4.54 kB         446 kB
+├ ○ /offline                                       815 B         443 kB
+├ ○ /order                                       7.61 kB         449 kB
+├ ○ /order-v2                                      209 B         442 kB
+├ ƒ /order/success                               3.71 kB         445 kB
+├ ○ /passport                                     3.3 kB         445 kB
+├ ○ /policies                                      255 B         442 kB
+├ ○ /privacy                                       210 B         442 kB
+├ ƒ /product/[slug]                              8.55 kB         450 kB
+├ ○ /profile                                     2.15 kB         444 kB
+├ ○ /profile/challenge                           2.06 kB         444 kB
+├ ○ /profile/orders                              1.63 kB         443 kB
+├ ○ /profile/rewards                             1.81 kB         444 kB
+├ ○ /profile/settings                            2.38 kB         444 kB
+├ ○ /quiz                                          880 B         443 kB
+├ ƒ /quiz/results/[id]                           2.97 kB         445 kB
+├ ○ /register                                    3.88 kB         446 kB
+├ ○ /rewards                                     9.51 kB         451 kB
+├ ○ /robots.txt                                    210 B         442 kB
+├ ○ /sitemap.xml                                   210 B         442 kB          1h      1y
+├ ○ /terms                                         210 B         442 kB
+├ ○ /test-auth                                   1.09 kB         443 kB
+├ ○ /ugc                                           435 B         442 kB
+├ ○ /ugc/spicy-bloom                             1.19 kB         443 kB
+├ ○ /unsubscribe                                 1.24 kB         443 kB
+└ ○ /wishlist                                    2.55 kB         444 kB
++ First Load JS shared by all                     442 kB
+  ├ chunks/common-58d043b2-a6beb3e3a2737217.js   13.6 kB
+  ├ chunks/common-a3dad144-59f3dac804569c53.js   14.6 kB
+  ├ chunks/vendors-36598b9c-9cb5161d7a4a0fe6.js    55 kB
+  └ chunks/vendors-98a6762f-52cb490f604a495b.js  14.4 kB
+  ├ chunks/vendors-9a66d3c2-ea3f36f83ab0aa20.js  16.1 kB
+  ├ chunks/vendors-a0de3438-7d9a08c24dd45b0a.js    53 kB
+  ├ chunks/vendors-aeee2aa1-f70edd295bdf49a0.js  18.3 kB
+  ├ chunks/vendors-b32ad36f-18c96ca49aebf52d.js  18.6 kB
+  ├ chunks/vendors-dfc0d3ba-ffa7ccb6cef70394.js  13.1 kB
+  ├ chunks/vendors-eb2fbf4c-6f15498edfdf239a.js  17.7 kB
+  ├ chunks/vendors-f33ddaf2-96ce3f1e24b9c640.js  19.5 kB
+  ├ chunks/vendors-ff30e0d3-b59f4c05c2bfeb6f.js  54.2 kB
+  └ other shared chunks (total)                   134 kB
+
+
+ƒ Middleware                                     43.5 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+> taste-of-gratitude@2.0.0 postbuild
+> next-sitemap
+
+Failed to load env from /workspaces/Gratog/.env.local TypeError: Cannot read properties of undefined (reading 'split')
+    at /workspaces/Gratog/node_modules/next-sitemap/node_modules/@next/env/dist/index.js:1:311
+    at Array.reduce (<anonymous>)
+    at _interpolate (/workspaces/Gratog/node_modules/next-sitemap/node_modules/@next/env/dist/index.js:1:125)
+    at expand (/workspaces/Gratog/node_modules/next-sitemap/node_modules/@next/env/dist/index.js:1:709)
+    at processEnv (/workspaces/Gratog/node_modules/next-sitemap/node_modules/@next/env/dist/index.js:1:4057)
+    at Module.loadEnvConfig (/workspaces/Gratog/node_modules/next-sitemap/node_modules/@next/env/dist/index.js:1:5038)
+    at file:///workspaces/Gratog/node_modules/next-sitemap/bin/next-sitemap.mjs:6:11
+    at ModuleJob.run (node:internal/modules/esm/module_job:377:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:671:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+✨ [next-sitemap] Loading next-sitemap config: file:///workspaces/Gratog/next-sitemap.config.js
+✅ [next-sitemap] Generation completed
+┌───────────────┬────────┐
+│ (index)       │ Values │
+├───────────────┼────────┤
+│ indexSitemaps │ 1      │
+│ sitemaps      │ 1      │
+└───────────────┴────────┘
+-----------------------------------------------------
+ SITEMAP INDICES 
+-----------------------------------------------------
+
+   ○ https://tasteofgratitude.shop/sitemap.xml
+
+
+-----------------------------------------------------
+ SITEMAPS 
+-----------------------------------------------------
+
+   ○ https://tasteofgratitude.shop/sitemap-0.xml
+
+

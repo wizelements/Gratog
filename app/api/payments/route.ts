@@ -6,7 +6,6 @@ import { getSquareClient, getSquareLocationId } from '@/lib/square';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
 import { fromCents, toSquareMoney } from '@/lib/money';
-import { createPaymentDirect } from '@/lib/square-direct';
 import { shouldAllowFallback, getAuthFailureResponse, logSquareOperation } from '@/lib/square-guard';
 import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
 
@@ -109,21 +108,20 @@ export async function POST(request: NextRequest) {
     const noteText = `Payment for order ${orderId || 'unknown'}`;
     const truncatedNote = noteText.length > 45 ? noteText.substring(0, 45) : noteText;
     
-    logger.debug('API', 'Sending payment request to Square SDK (direct)...');
+    logger.debug('API', 'Sending payment request to Square SDK...');
     
-    // Use SDK directly - no custom timeout layer
-    const response = await createPaymentDirect({
+    // Use SDK directly - no timeout wrapper
+    const response = await square.payments.create({
       sourceId,
-      amount: amountCents,
-      currency,
+      amountMoney: {
+        amount: amountCents,
+        currency
+      },
       orderId: squareOrderId,
       customerId: squareCustomerId,
       idempotencyKey: paymentIdempotencyKey,
-      metadata: {
-        note: truncatedNote,
-        buyerEmail: customer?.email,
-        ...metadata
-      }
+      note: truncatedNote,
+      buyerEmailAddress: customer?.email
     });
     
     if (!response.payment) {
