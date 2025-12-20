@@ -7,6 +7,7 @@ import { randomUUID } from 'crypto';
 import { shouldAllowFallback, getAuthFailureResponse, logSquareOperation } from '@/lib/square-guard';
 import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
 import { logger } from '@/lib/logger';
+import * as Sentry from '@sentry/nextjs';
 
 /**
  * Square Checkout API - Payment Links Integration
@@ -154,7 +155,6 @@ export async function POST(request: NextRequest) {
     
     // Create payment link directly with SDK
     const paymentLinkResponse = await square.checkout.paymentLinks.create({
-      locationId: getSquareLocationId(),
       lineItems: paymentLinkLineItems,
       idempotencyKey: randomUUID(),
       checkoutOptions: {
@@ -216,6 +216,27 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('Checkout API error:', error);
+    
+    // Capture error in Sentry with context
+    let itemCount = 0;
+    try {
+      const bodyData = await request.json();
+      itemCount = bodyData?.lineItems?.length || 0;
+    } catch {
+      // Could not parse body
+    }
+    
+    Sentry.captureException(error, {
+      tags: {
+        api: 'checkout',
+        component: 'square_payment_link'
+      },
+      contexts: {
+        checkout: {
+          itemCount
+        }
+      }
+    });
     
     // Log full error details for debugging
     if (error && typeof error === 'object') {

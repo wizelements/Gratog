@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import { fromCents, toSquareMoney } from '@/lib/money';
 import { shouldAllowFallback, getAuthFailureResponse, logSquareOperation } from '@/lib/square-guard';
 import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
+import * as Sentry from '@sentry/nextjs';
 
 /**
  * Square Payments API - Web Payments SDK Integration
@@ -279,6 +280,20 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('Payment API error:', error);
+    
+    // Capture error in Sentry with context
+    Sentry.captureException(error, {
+      tags: {
+        api: 'payments',
+        component: 'square_payment'
+      },
+      contexts: {
+        payment: {
+          traceId: ctx.traceId,
+          duration: ctx.durationMs()
+        }
+      }
+    });
     
     logger.error('API', 'Payment processing failed', {
       traceId: ctx.traceId,
