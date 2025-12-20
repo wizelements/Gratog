@@ -26,12 +26,30 @@ export default function SquarePaymentForm({ orderId, orderTotal, squareOrderId, 
     
     hasInitialized.current = true;
     logger.info('SquarePaymentForm mounted - starting initialization');
+    
+    // Log network and SDK info
+    if (navigator.onLine) {
+      logger.info('Network status: Online');
+    } else {
+      logger.warn('Network status: Offline');
+    }
+    
+    // Check if SDK script exists in DOM
+    const squareScript = document.querySelector('script[src*="squarecdn.com"]');
+    logger.info('Square SDK script in DOM:', !!squareScript);
+    if (squareScript) {
+      logger.info('Script status:', {
+        loaded: squareScript.hasAttribute('data-loaded'),
+        readyState: squareScript.readyState
+      });
+    }
+    
     initializeSquare();
   }, []);
 
   const initializeSquare = async () => {
     let attempts = 0;
-    const maxAttempts = 20;
+    const maxAttempts = 133; // 40 seconds at 300ms intervals
     let isInitialized = false; // Prevent double initialization
     
     const tryInit = async () => {
@@ -51,7 +69,8 @@ export default function SquarePaymentForm({ orderId, orderTotal, squareOrderId, 
           setTimeout(tryInit, 300);
         } else {
           setPaymentStatus('error');
-          setErrorMessage('Payment form failed to load');
+          setErrorMessage('Payment form failed to load - container not found');
+          logger.error('DOM container not found after 40 seconds');
         }
         return;
       }
@@ -63,7 +82,8 @@ export default function SquarePaymentForm({ orderId, orderTotal, squareOrderId, 
           setTimeout(tryInit, 300);
         } else {
           setPaymentStatus('error');
-          setErrorMessage('Square SDK failed to load. Please refresh.');
+          setErrorMessage('Web Payments SDK was unable to be initialized in time. Please refresh the page.');
+          logger.error('Square SDK failed to load after 40 seconds');
         }
         return;
       }
@@ -82,8 +102,21 @@ export default function SquarePaymentForm({ orderId, orderTotal, squareOrderId, 
           container.removeChild(container.firstChild);
         }
         
-        logger.info('Initializing Square SDK', { appId: appId.substring(0, 10) + '...', locationId });
+        logger.info('Initializing Square SDK', { 
+          appId: appId.substring(0, 10) + '...', 
+          locationId,
+          squareAvailable: !!window.Square 
+        });
+        
+        if (!window.Square || !window.Square.payments) {
+          throw new Error('Square.payments is not available - SDK may not have loaded correctly');
+        }
+        
         const payments = window.Square.payments(appId, locationId);
+        
+        if (!payments) {
+          throw new Error('Failed to initialize Square payments object');
+        }
         
         logger.info('Creating card element');
         const cardInstance = await payments.card();
@@ -97,10 +130,14 @@ export default function SquarePaymentForm({ orderId, orderTotal, squareOrderId, 
         logger.info('✅ Square Payment Form initialized successfully!');
         
       } catch (error) {
-        logger.error('Square init error', { error: error.message, stack: error.stack });
+        logger.error('Square init error', { 
+          error: error.message, 
+          stack: error.stack,
+          squareAvailable: !!window.Square
+        });
         setPaymentStatus('error');
-        setErrorMessage(error.message);
-        toast.error('Payment form error: ' + error.message);
+        setErrorMessage(error.message || 'Failed to initialize payment form');
+        toast.error('Payment form error: ' + (error.message || 'Unknown error'));
       }
     };
 
