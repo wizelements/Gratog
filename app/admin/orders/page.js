@@ -24,12 +24,20 @@ const ORDER_STATUSES = [
   { value: 'cancelled', label: 'Cancelled', color: 'bg-red-600' }
 ];
 
+const PAYMENT_STATUSES = [
+  { value: 'all_payments', label: 'All Payments', color: 'bg-gray-600' },
+  { value: 'paid', label: 'Paid ✓', color: 'bg-green-600' },
+  { value: 'pending', label: 'Awaiting Payment ⚠', color: 'bg-red-600' },
+  { value: 'processing', label: 'Processing', color: 'bg-yellow-600' }
+];
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [paymentFilter, setPaymentFilter] = useState('all_payments');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -165,6 +173,12 @@ export default function OrdersPage() {
       if (new Date(order.createdAt).toDateString() !== today) return false;
     }
     if (statusFilter !== 'all' && order.status !== statusFilter) return false;
+    
+    // Payment status filter
+    if (paymentFilter === 'paid' && (order.paymentStatus !== 'COMPLETED' && order.paymentStatus !== 'APPROVED' && order.paymentStatus !== 'paid')) return false;
+    if (paymentFilter === 'pending' && (order.paymentStatus === 'COMPLETED' || order.paymentStatus === 'APPROVED' || order.paymentStatus === 'paid')) return false;
+    if (paymentFilter === 'processing' && order.paymentStatus !== 'PROCESSING') return false;
+    
     return true;
   });
 
@@ -174,7 +188,9 @@ export default function OrdersPage() {
     delivery: orders.filter(o => o.fulfillmentType === 'delivery').length,
     revenue: orders.reduce((sum, o) => sum + (o.total || 0), 0),
     pending: orders.filter(o => o.status === 'pending').length,
-    inProgress: orders.filter(o => ['confirmed', 'preparing', 'ready_for_pickup', 'out_for_delivery'].includes(o.status)).length
+    inProgress: orders.filter(o => ['confirmed', 'preparing', 'ready_for_pickup', 'out_for_delivery'].includes(o.status)).length,
+    paid: orders.filter(o => o.paymentStatus === 'COMPLETED' || o.paymentStatus === 'APPROVED' || o.paymentStatus === 'paid').length,
+    awaitingPayment: orders.filter(o => !o.paymentStatus || (o.paymentStatus !== 'COMPLETED' && o.paymentStatus !== 'APPROVED' && o.paymentStatus !== 'paid')).length
   };
 
   return (
@@ -212,7 +228,7 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-8 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -267,6 +283,24 @@ export default function OrdersPage() {
           </CardContent>
         </Card>
 
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-green-700">✓ Paid</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{stats.paid}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-red-700">⚠ Awaiting Payment</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">{stats.awaitingPayment}</div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -297,6 +331,19 @@ export default function OrdersPage() {
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
             {ORDER_STATUSES.map(status => (
+              <SelectItem key={status.value} value={status.value}>
+                {status.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Filter by payment" />
+          </SelectTrigger>
+          <SelectContent>
+            {PAYMENT_STATUSES.map(status => (
               <SelectItem key={status.value} value={status.value}>
                 {status.label}
               </SelectItem>

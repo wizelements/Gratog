@@ -185,6 +185,9 @@ export async function POST(request: NextRequest) {
         // Map Square payment status to order status
         const orderStatus = payment.status === 'COMPLETED' || payment.status === 'APPROVED' ? 'paid' : 'payment_processing';
         
+        // Fetch the order before updating (needed for notifications)
+        const order = await db.collection('orders').findOne({ id: orderId });
+        
         await db.collection('orders').updateOne(
           { id: orderId },
           {
@@ -213,6 +216,44 @@ export async function POST(request: NextRequest) {
           }
         );
         logger.debug('API', 'Order status updated:', { orderId, status: orderStatus, paymentStatus: payment.status });
+        
+        // Send confirmation emails and notifications only after successful payment
+        if (order && (payment.status === 'COMPLETED' || payment.status === 'APPROVED')) {
+          try {
+            const { sendOrderConfirmationEmail } = await import('@/lib/resend-email');
+            await sendOrderConfirmationEmail(order);
+            logger.debug('API', 'Confirmation email sent', { orderId });
+          } catch (emailError) {
+            logger.warn('API', 'Confirmation email failed (non-critical)', { 
+              orderId,
+              error: emailError instanceof Error ? emailError.message : String(emailError)
+            });
+          }
+          
+          try {
+            const { sendOrderConfirmationSMS } = await import('@/lib/sms');
+            await sendOrderConfirmationSMS(order);
+            logger.debug('API', 'Confirmation SMS sent', { orderId });
+          } catch (smsError) {
+            logger.warn('API', 'Confirmation SMS failed (non-critical)', { 
+              orderId,
+              error: smsError instanceof Error ? smsError.message : String(smsError)
+            });
+          }
+          
+          try {
+            const { notifyStaffPickupOrder } = await import('@/lib/staff-notifications');
+            if (order.fulfillmentType === 'pickup_market' || order.fulfillmentType === 'pickup_browns_mill' || order.fulfillmentType === 'delivery' || order.fulfillmentType === 'meetup_serenbe') {
+              await notifyStaffPickupOrder(order);
+              logger.debug('API', 'Staff notification sent', { orderId, type: order.fulfillmentType });
+            }
+          } catch (staffError) {
+            logger.warn('API', 'Staff notification failed (non-critical)', { 
+              orderId,
+              error: staffError instanceof Error ? staffError.message : String(staffError)
+            });
+          }
+        }
       }
     } catch (dbError) {
       console.warn('Failed to save payment record (non-critical):', dbError);

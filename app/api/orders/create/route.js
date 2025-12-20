@@ -356,6 +356,9 @@ export async function POST(request) {
     }
     
     // Create local order (NO payment link generation - in-app payment only)
+    // IMPORTANT: Order is created with status: 'pending' and paymentStatus: 'pending'
+    // After payment succeeds, the payment API updates these statuses
+    // See PAYMENT_FORM_AND_ORDER_FLOW_CRITICAL_ANALYSIS.md for details
     enhancedOrderData.metadata.squareOrderId = squareOrderId;
     
     const result = await orderTracking.createOrder(enhancedOrderData, true);
@@ -369,37 +372,16 @@ export async function POST(request) {
     
     const order = result.order;
     
-    logger.info('✅ Order created', { 
+    logger.info('✅ Order created (payment pending)', { 
       orderId: order.id, 
       orderNumber: order.orderNumber,
-      squareOrderId
+      squareOrderId,
+      paymentStatus: order.paymentStatus || 'pending'
     });
     
-    // Send confirmations
-    try {
-      await sendOrderConfirmationEmail(order);
-      logger.info('Email sent', { orderId: order.id });
-    } catch (emailError) {
-      logger.warn('Email failed', { error: emailError.message });
-    }
-    
-    try {
-      await sendOrderConfirmationSMS(order);
-      logger.info('SMS sent', { orderId: order.id });
-    } catch (smsError) {
-      logger.warn('SMS failed', { error: smsError.message });
-    }
-    
-    // Send staff notification for pickup, meet-up, AND delivery orders
-    if (order.fulfillmentType === 'pickup_market' || order.fulfillmentType === 'pickup_browns_mill' || order.fulfillmentType === 'delivery' || order.fulfillmentType === 'meetup_serenbe') {
-      try {
-        const { notifyStaffPickupOrder } = await import('@/lib/staff-notifications');
-        await notifyStaffPickupOrder(order);
-        logger.info('Staff notification sent', { orderId: order.id, type: order.fulfillmentType });
-      } catch (staffError) {
-        logger.warn('Staff notification failed', { error: staffError.message });
-      }
-    }
+    // IMPORTANT: Do NOT send confirmations until payment is verified
+    // Confirmations are sent by the payment API after successful payment
+    // (See /app/api/payments/route.ts)
     
     return NextResponse.json({
       success: true,
@@ -407,13 +389,14 @@ export async function POST(request) {
         id: order.id,
         orderNumber: order.orderNumber,
         status: order.status,
+        paymentStatus: order.paymentStatus || 'pending',
         customer: order.customer,
         items: order.items,
         pricing: order.pricing,
-        fulfillment: order.fulfillment, // ⭐ Include fulfillment data for tests
-        paymentLink: order.paymentLink, // ⭐ Include payment link if exists
+        fulfillment: order.fulfillment,
         squareOrderId,
-        squareCustomerId // ⭐ Return customer ID for frontend use
+        squareCustomerId,
+        note: '⚠️ Order created but payment is still pending. Confirmations will be sent after payment.'
       }
     });
     
