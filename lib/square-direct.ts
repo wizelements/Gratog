@@ -16,11 +16,11 @@ export async function createPaymentDirect(params: {
 }) {
   const client = getSquareClient();
 
-  if (!client.paymentsApi) {
+  if (!client.payments) {
     throw new Error('Payments API not available');
   }
 
-  return client.paymentsApi.createPayment({
+  return client.payments.createPayment({
     sourceId: params.sourceId,
     amountMoney: {
       amount: params.amount,
@@ -36,11 +36,11 @@ export async function createPaymentDirect(params: {
 export async function retrieveOrderDirect(orderId: string) {
   const client = getSquareClient();
 
-  if (!client.ordersApi) {
+  if (!client.orders) {
     throw new Error('Orders API not available');
   }
 
-  return client.ordersApi.retrieveOrder(orderId);
+  return client.orders.retrieveOrder(orderId);
 }
 
 export async function createOrderDirect(params: {
@@ -67,11 +67,11 @@ export async function createOrderDirect(params: {
 }) {
   const client = getSquareClient();
 
-  if (!client.ordersApi) {
+  if (!client.orders) {
     throw new Error('Orders API not available');
   }
 
-  return client.ordersApi.createOrder({
+  return client.orders.createOrder({
     locationId: params.locationId || getSquareLocationId(),
     lineItems: params.lineItems,
     discounts: params.discounts,
@@ -82,12 +82,12 @@ export async function createOrderDirect(params: {
 export async function searchCustomersDirect(query?: string) {
   const client = getSquareClient();
 
-  if (!client.customersApi) {
+  if (!client.customers) {
     throw new Error('Customers API not available');
   }
 
   if (query) {
-    return client.customersApi.searchCustomers({
+    return client.customers.searchCustomers({
       query: {
         filter: {
           textFilter: {
@@ -98,7 +98,7 @@ export async function searchCustomersDirect(query?: string) {
     });
   }
 
-  return client.customersApi.listCustomers();
+  return client.customers.listCustomers();
 }
 
 export async function createCustomerDirect(params: {
@@ -110,11 +110,11 @@ export async function createCustomerDirect(params: {
 }) {
   const client = getSquareClient();
 
-  if (!client.customersApi) {
+  if (!client.customers) {
     throw new Error('Customers API not available');
   }
 
-  return client.customersApi.createCustomer({
+  return client.customers.createCustomer({
     givenName: params.givenName,
     familyName: params.familyName,
     emailAddress: params.emailAddress,
@@ -126,21 +126,21 @@ export async function createCustomerDirect(params: {
 export async function listLocationsDirect() {
   const client = getSquareClient();
 
-  if (!client.locationsApi) {
+  if (!client.locations) {
     throw new Error('Locations API not available');
   }
 
-  return client.locationsApi.listLocations();
+  return client.locations.listLocations();
 }
 
 export async function listCatalogDirect(params?: { types?: string }) {
   const client = getSquareClient();
 
-  if (!client.catalogApi) {
+  if (!client.catalog) {
     throw new Error('Catalog API not available');
   }
 
-  return client.catalogApi.listCatalog({
+  return client.catalog.listCatalog({
     types: params?.types,
   });
 }
@@ -167,7 +167,7 @@ export async function createPaymentLinkDirect(params: {
 }) {
   const client = getSquareClient();
 
-  if (!client.checkoutApi) {
+  if (!client.checkout) {
     throw new Error('Checkout API not available');
   }
 
@@ -189,7 +189,7 @@ export async function createPaymentLinkDirect(params: {
     };
   }
 
-  return client.checkoutApi.createPaymentLink(paymentLinkRequest);
+  return client.checkout.createPaymentLink(paymentLinkRequest);
 }
 
 export async function listPaymentsDirect(params?: {
@@ -200,11 +200,11 @@ export async function listPaymentsDirect(params?: {
 }) {
   const client = getSquareClient();
 
-  if (!client.paymentsApi) {
+  if (!client.payments) {
     throw new Error('Payments API not available');
   }
 
-  return client.paymentsApi.listPayments({
+  return client.payments.listPayments({
     beginTime: params?.beginTime,
     endTime: params?.endTime,
     locationId: params?.locationId,
