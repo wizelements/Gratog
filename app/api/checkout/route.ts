@@ -1,10 +1,10 @@
 
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSquareClient, SQUARE_LOCATION_ID } from '@/lib/square';
+import { getSquareClient, SQUARE_LOCATION_ID, getSquareLocationId } from '@/lib/square';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
-import { createOrder, createPaymentLink } from '@/lib/square-ops';
+import { createPaymentLinkDirect } from '@/lib/square-direct';
 import { shouldAllowFallback, getAuthFailureResponse, logSquareOperation } from '@/lib/square-guard';
 import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
 import { logger } from '@/lib/logger';
@@ -137,15 +137,15 @@ export async function POST(request: NextRequest) {
       prePopulatedData.buyerPhoneNumber = customer.phone;
     }
     
-    logger.debug('Checkout', 'Creating payment link directly with line items (quick_pay approach)...');
+    logger.debug('Checkout', 'Creating payment link with SDK (direct)...');
     
-    // Prepare line items for payment link (without pre-creating order)
+    // Prepare line items for payment link
     const paymentLinkLineItems = lineItems.map((item: any) => ({
-      catalog_object_id: item.catalogObjectId,
+      catalogObjectId: item.catalogObjectId,
       quantity: String(item.quantity),
-      base_price_money: item.basePriceMoney,
+      basePriceMoney: item.basePriceMoney,
       name: item.name,
-      variation_name: item.variationName,
+      variationName: item.variationName,
       metadata: {
         originalProductId: item.productId,
         category: item.category,
@@ -153,9 +153,9 @@ export async function POST(request: NextRequest) {
       }
     }));
     
-    // Create payment link directly with line items
-    const paymentLinkResponse = await createPaymentLink({
-      locationId: SQUARE_LOCATION_ID,
+    // Create payment link directly with SDK
+    const paymentLinkResponse = await createPaymentLinkDirect({
+      locationId: getSquareLocationId(),
       lineItems: paymentLinkLineItems,
       idempotencyKey: randomUUID(),
       checkoutOptions: {
@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
       }
     });
     
-    if (!paymentLinkResponse.payment_link) {
+    if (!paymentLinkResponse.paymentLink) {
       console.error('Square Payment Link creation failed:', paymentLinkResponse);
       return NextResponse.json(
         { error: 'Failed to create payment link - no payment link returned' },
@@ -172,11 +172,11 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const paymentLink = paymentLinkResponse.payment_link;
+    const paymentLink = paymentLinkResponse.paymentLink;
     
     logger.debug('Checkout', 'Square Payment Link created successfully:', {
       paymentLinkId: paymentLink.id,
-      orderId: paymentLink.order_id,
+      orderId: paymentLink.orderId,
       url: paymentLink.url?.substring(0, 50) + '...'
     });
     
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
       const { db } = await connectToDatabase();
       const preOrder = {
         id: orderId || randomUUID(),
-        squareOrderId: paymentLink.order_id,  // Order ID from payment link
+        squareOrderId: paymentLink.orderId,  // Order ID from payment link
         paymentLinkId: paymentLink.id,
         paymentLinkUrl: paymentLink.url,
         customer: customer || {},
@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
       paymentLink: {
         id: paymentLink.id,
         url: paymentLink.url,
-        orderId: paymentLink.order_id
+        orderId: paymentLink.orderId
       },
       message: 'Payment link created successfully'
     });
