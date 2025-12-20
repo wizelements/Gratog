@@ -1,5 +1,6 @@
 
 import { logger } from '@/lib/logger';
+import { RequestContext } from '@/lib/request-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSquareClient, getSquareLocationId } from '@/lib/square';
 import { connectToDatabase } from '@/lib/db-optimized';
@@ -14,6 +15,8 @@ import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-cus
  * Processes tokenized payment methods from the Web Payments SDK for in-page checkout
  */
 export async function POST(request: NextRequest) {
+  const ctx = new RequestContext();
+  
   try {
     const body = await request.json();
     const { 
@@ -60,7 +63,8 @@ export async function POST(request: NextRequest) {
     
     // Log payment processing start
     logger.debug('API', 'Processing Square Web Payment:', {
-      sourceId: sourceId.substring(0, 20) + '...',
+      traceId: ctx.traceId,
+      sourceId: sourceId?.substring(0, 20) + '...',
       amountCents,
       currency,
       locationId,
@@ -131,6 +135,8 @@ export async function POST(request: NextRequest) {
     const payment = response.payment;
     
     logger.debug('API', 'Square payment completed:', {
+      traceId: ctx.traceId,
+      duration: ctx.durationMs(),
       paymentId: payment.id,
       status: payment.status,
       amountMoney: payment.amountMoney,
@@ -215,6 +221,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
+      traceId: ctx.traceId,
       payment: {
         id: payment.id,
         status: payment.status,
@@ -232,25 +239,44 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Payment API error:', error);
     
+    logger.error('API', 'Payment processing failed', {
+      traceId: ctx.traceId,
+      duration: ctx.durationMs(),
+      error: error instanceof Error ? error.message : String(error),
+      errorType: error instanceof Error ? error.constructor.name : 'Unknown'
+    });
+    
     // Handle specific Square API errors
     if (error instanceof Error) {
       if (error.message.includes('CARD_DECLINED')) {
         return NextResponse.json(
-          { error: 'Payment declined - please try a different payment method' },
+          { 
+            success: false,
+            error: 'Payment declined - please try a different payment method',
+            traceId: ctx.traceId
+          },
           { status: 400 }
         );
       }
       
       if (error.message.includes('INSUFFICIENT_FUNDS')) {
         return NextResponse.json(
-          { error: 'Insufficient funds - please try a different payment method' },
+          { 
+            success: false,
+            error: 'Insufficient funds - please try a different payment method',
+            traceId: ctx.traceId
+          },
           { status: 400 }
         );
       }
       
       if (error.message.includes('INVALID_CARD')) {
         return NextResponse.json(
-          { error: 'Invalid card details - please check your information' },
+          { 
+            success: false,
+            error: 'Invalid card details - please check your information',
+            traceId: ctx.traceId
+          },
           { status: 400 }
         );
       }
@@ -260,15 +286,20 @@ export async function POST(request: NextRequest) {
         
         if (!shouldAllowFallback()) {
           const failureResponse = getAuthFailureResponse(error);
-          return NextResponse.json(failureResponse, { status: 503 });
+          return NextResponse.json(
+            { ...failureResponse, traceId: ctx.traceId },
+            { status: 503 }
+          );
         }
         
         // Development fallback mode
         return NextResponse.json(
           { 
+            success: false,
             error: 'Payment processing temporarily unavailable',
             fallbackMode: true,
-            warning: 'Development mode - no real charges processed'
+            warning: 'Development mode - no real charges processed',
+            traceId: ctx.traceId
           },
           { status: 500 }
         );
@@ -279,7 +310,8 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Payment processing failed',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
+        traceId: ctx.traceId
       },
       { status: 500 }
     );

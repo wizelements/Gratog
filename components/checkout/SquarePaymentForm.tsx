@@ -162,19 +162,40 @@ export default function SquarePaymentForm({
             resolve();
             return;
           }
-          existingScript.addEventListener('load', () => resolve());
-          existingScript.addEventListener('error', () => reject(new Error('Failed to load Square SDK')));
+
+          // Add timeout for existing script load
+          const timeoutId = setTimeout(() => {
+            reject(new Error('Square SDK load timeout after 10 seconds'));
+          }, 10000);
+
+          existingScript.addEventListener('load', () => {
+            clearTimeout(timeoutId);
+            resolve();
+          });
+          existingScript.addEventListener('error', () => {
+            clearTimeout(timeoutId);
+            reject(new Error('Failed to load Square SDK'));
+          });
           return;
         }
+
+        // Add timeout for new script load
+        const timeoutId = setTimeout(() => {
+          reject(new Error('Square SDK load timeout after 10 seconds'));
+        }, 10000);
 
         const script = document.createElement('script');
         script.src = config.sdkUrl;
         script.async = true;
         script.onload = () => {
+          clearTimeout(timeoutId);
           script.setAttribute('data-loaded', 'true');
           resolve();
         };
-        script.onerror = () => reject(new Error('Failed to load Square SDK'));
+        script.onerror = () => {
+          clearTimeout(timeoutId);
+          reject(new Error('Failed to load Square SDK'));
+        };
         document.head.appendChild(script);
       });
     };
@@ -305,42 +326,58 @@ export default function SquarePaymentForm({
         paymentIdempotencyKeyRef.current = idempotencyKey;
       }
       
-      const res = await fetch('/api/payments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sourceId,
-          amountCents,
-          currency: 'USD',
+      // Add 15 second timeout for payment request
+      const timeoutId = setTimeout(() => {
+        abortControllerRef.current?.abort();
+      }, 15000);
+      
+      try {
+        const res = await fetch('/api/payments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sourceId,
+            amountCents,
+            currency: 'USD',
+            orderId,
+            squareOrderId,
+            customer,
+            idempotencyKey
+          }),
+          signal: abortControllerRef.current.signal
+        });
+
+        clearTimeout(timeoutId);
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Payment processing failed');
+        }
+
+        track('payment_completed', {
           orderId,
-          squareOrderId,
-          customer,
-          idempotencyKey
-        }),
-        signal: abortControllerRef.current.signal
-      });
+          amount: amountCents / 100,
+          paymentId: data.payment?.id
+        });
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Payment processing failed');
+        onSuccess({
+          paymentId: data.payment.id,
+          status: data.payment.status,
+          receiptUrl: data.payment.receiptUrl,
+          cardLast4: data.payment.cardLast4,
+          cardBrand: data.payment.cardBrand
+        });
+      } catch (err) {
+        clearTimeout(timeoutId);
+        
+        // Distinguish timeout from other errors
+        if (err instanceof Error && err.name === 'AbortError') {
+          throw new Error('Payment request timed out after 15 seconds - please try again');
+        }
+        throw err;
       }
-
-      track('payment_completed', {
-        orderId,
-        amount: amountCents / 100,
-        paymentId: data.payment?.id
-      });
-
-      onSuccess({
-        paymentId: data.payment.id,
-        status: data.payment.status,
-        receiptUrl: data.payment.receiptUrl,
-        cardLast4: data.payment.cardLast4,
-        cardBrand: data.payment.cardBrand
-      });
     } catch (err) {
-      // Don't throw AbortError - just silently ignore
+      // Don't silently ignore - let caller handle
       if (err instanceof Error && err.name === 'AbortError') {
         console.debug('Payment request cancelled');
         return;

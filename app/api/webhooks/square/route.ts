@@ -86,15 +86,15 @@ export async function POST(request: NextRequest) {
     
     // Parse the webhook event
     const webhookEvent = JSON.parse(requestBody);
-    logger.debug('Webhook', 'Webhook event received:', {
-      type: webhookEvent.type,
-      eventId: webhookEvent.event_id,
-      timestamp: webhookEvent.created_at
-    });
-    
-    // Process different event types
+    const eventId = webhookEvent.id || webhookEvent.event_id;
     const eventType = webhookEvent.type;
     const eventData = webhookEvent.data;
+    
+    logger.debug('Webhook', 'Webhook event received:', {
+      type: eventType,
+      eventId,
+      timestamp: webhookEvent.created_at
+    });
     
     // FIX: Proper event data structure handling
     if (!eventData || !eventData.object) {
@@ -105,33 +105,104 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    switch (eventType) {
-      case 'inventory.count.updated':
-        await handleInventoryUpdate(eventData.object);
-        break;
-        
-      case 'catalog.version.updated':
-        await handleCatalogUpdate(eventData.object);
-        break;
-        
-      case 'payment.created':
-        await handlePaymentCreated(eventData.object.payment || eventData.object);
-        break;
-        
-      case 'payment.updated':
-        await handlePaymentUpdated(eventData.object.payment || eventData.object);
-        break;
-        
-      case 'order.created':
-        await handleOrderCreated(eventData.object.order || eventData.object);
-        break;
-        
-      case 'order.updated':
-        await handleOrderUpdated(eventData.object.order || eventData.object);
-        break;
-        
-      default:
-        logger.debug('Webhook', `Unhandled webhook event type: ${eventType}`);
+    // CRITICAL: Webhook event deduplication - prevent double-processing
+    // Square may retry webhook delivery if we don't respond quickly
+    let isAlreadyProcessed = false;
+    try {
+      const { db } = await connectToDatabase();
+      
+      // Check if we've already processed this event
+      const processed = await db.collection('webhook_events_processed')
+        .findOne({ eventId });
+      
+      if (processed) {
+        logger.debug('Webhook', 'Event already processed (idempotent return)', { eventId, eventType });
+        isAlreadyProcessed = true;
+      }
+    } catch (dbErr) {
+      logger.warn('Webhook', 'Failed to check webhook dedup (continuing anyway)', dbErr);
+      // Continue processing even if dedup check fails - better to process twice than lose event
+    }
+    
+    // If already processed, return success immediately (idempotent)
+    if (isAlreadyProcessed) {
+      return NextResponse.json({
+        received: true,
+        eventType,
+        eventId,
+        processedAt: new Date().toISOString(),
+        cached: true
+      });
+    }
+    
+    // Process the event (only once per eventId)
+    try {
+      switch (eventType) {
+        case 'inventory.count.updated':
+          await handleInventoryUpdate(eventData.object);
+          break;
+          
+        case 'catalog.version.updated':
+          await handleCatalogUpdate(eventData.object);
+          break;
+          
+        case 'payment.created':
+          await handlePaymentCreated(eventData.object.payment || eventData.object);
+          break;
+          
+        case 'payment.updated':
+          await handlePaymentUpdated(eventData.object.payment || eventData.object);
+          break;
+          
+        case 'order.created':
+          await handleOrderCreated(eventData.object.order || eventData.object);
+          break;
+          
+        case 'order.updated':
+          await handleOrderUpdated(eventData.object.order || eventData.object);
+          break;
+          
+        default:
+          logger.debug('Webhook', `Unhandled webhook event type: ${eventType}`);
+      }
+      
+      // Mark as successfully processed (idempotency)
+      try {
+        const { db } = await connectToDatabase();
+        await db.collection('webhook_events_processed')
+          .insertOne({
+            eventId,
+            eventType,
+            processedAt: new Date(),
+            status: 'success'
+          }, { writeConcern: { w: 1 } });
+        logger.debug('Webhook', 'Event marked as processed', { eventId, eventType });
+      } catch (dbErr) {
+        logger.warn('Webhook', 'Failed to record webhook processing (non-critical)', dbErr);
+        // Don't fail the response if we can't record processing
+      }
+      
+    } catch (eventError) {
+      logger.error('Webhook', 'Error processing webhook event', {
+        eventId,
+        eventType,
+        error: eventError instanceof Error ? eventError.message : String(eventError)
+      });
+      // Still mark as processed even if there was an error
+      // This prevents infinite retry loops
+      try {
+        const { db } = await connectToDatabase();
+        await db.collection('webhook_events_processed')
+          .insertOne({
+            eventId,
+            eventType,
+            processedAt: new Date(),
+            status: 'error',
+            error: eventError instanceof Error ? eventError.message : String(eventError)
+          }, { writeConcern: { w: 1 } });
+      } catch (dbErr) {
+        logger.warn('Webhook', 'Failed to record webhook error', dbErr);
+      }
     }
     
     // Log webhook for debugging
@@ -140,7 +211,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       received: true,
       eventType,
-      eventId: webhookEvent.event_id,
+      eventId,
       processedAt: new Date().toISOString()
     });
     
