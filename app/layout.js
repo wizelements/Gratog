@@ -66,22 +66,23 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* Preconnect hints for external resources - improves LCP */}
-        <link rel="preconnect" href="https://web.squarecdn.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://items-images-production.s3.us-west-2.amazonaws.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://web.squarecdn.com" />
-        <link rel="dns-prefetch" href="https://images.unsplash.com" />
-        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-        
-        {/* Square Web Payments SDK */}
-        <script 
-          type="text/javascript" 
-          src="https://web.squarecdn.com/v1/square.js"
-          async
-        />
-      </head>
+         {/* Preconnect hints for external resources - improves LCP */}
+         <link rel="preconnect" href="https://web.squarecdn.com" crossOrigin="anonymous" />
+         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+         <link rel="preconnect" href="https://items-images-production.s3.us-west-2.amazonaws.com" crossOrigin="anonymous" />
+         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+         <link rel="dns-prefetch" href="https://web.squarecdn.com" />
+         <link rel="dns-prefetch" href="https://images.unsplash.com" />
+         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+         
+         {/* Square Web Payments SDK - loaded with high priority */}
+         <link rel="preload" as="script" href="https://web.squarecdn.com/v1/square.js" />
+         <script 
+           type="text/javascript" 
+           src="https://web.squarecdn.com/v1/square.js"
+           async
+         />
+       </head>
       <body className={inter.className}>
         <AdminLayoutWrapper>
           <CustomerLayout>{children}</CustomerLayout>

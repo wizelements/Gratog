@@ -156,43 +156,65 @@ export default function SquarePaymentForm({
           return;
         }
 
+        // Poll for window.Square in case it loads after script event
+        let pollCount = 0;
+        const maxPolls = 400; // 20 seconds at 50ms intervals
+        const pollInterval = setInterval(() => {
+          pollCount++;
+          if (window.Square) {
+            clearInterval(pollInterval);
+            resolve();
+            return;
+          }
+          if (pollCount >= maxPolls) {
+            clearInterval(pollInterval);
+          }
+        }, 50);
+
         const existingScript = document.querySelector(`script[src="${config.sdkUrl}"]`);
         if (existingScript) {
           if ((existingScript as HTMLScriptElement).getAttribute('data-loaded') === 'true') {
+            clearInterval(pollInterval);
             resolve();
             return;
           }
 
-          // Add timeout for existing script load
+          // Add timeout for existing script load (20 seconds)
           const timeoutId = setTimeout(() => {
-            reject(new Error('Square SDK load timeout after 10 seconds'));
-          }, 10000);
+            clearInterval(pollInterval);
+            reject(new Error('Square SDK load timeout after 20 seconds'));
+          }, 20000);
 
           existingScript.addEventListener('load', () => {
+            clearInterval(pollInterval);
             clearTimeout(timeoutId);
             resolve();
           });
           existingScript.addEventListener('error', () => {
+            clearInterval(pollInterval);
             clearTimeout(timeoutId);
             reject(new Error('Failed to load Square SDK'));
           });
           return;
         }
 
-        // Add timeout for new script load
+        // Add timeout for new script load (20 seconds)
         const timeoutId = setTimeout(() => {
-          reject(new Error('Square SDK load timeout after 10 seconds'));
-        }, 10000);
+          clearInterval(pollInterval);
+          reject(new Error('Square SDK load timeout after 20 seconds'));
+        }, 20000);
 
         const script = document.createElement('script');
         script.src = config.sdkUrl;
         script.async = true;
         script.onload = () => {
+          clearInterval(pollInterval);
           clearTimeout(timeoutId);
           script.setAttribute('data-loaded', 'true');
           resolve();
         };
         script.onerror = () => {
+          clearInterval(pollInterval);
           clearTimeout(timeoutId);
           reject(new Error('Failed to load Square SDK'));
         };
@@ -294,7 +316,13 @@ export default function SquarePaymentForm({
 
       } catch (err) {
         console.error('Square payment initialization error:', err);
-        onError('Failed to initialize payment form');
+        const errorMsg = err instanceof Error ? err.message : 'Failed to initialize payment form';
+        // Check if it's a timeout/network issue
+        if (errorMsg.includes('timeout') || errorMsg.includes('SDK')) {
+          onError('Payment form initialization timed out. Please refresh the page and try again.');
+        } else {
+          onError(errorMsg);
+        }
         setIsLoading(false);
       }
     };
