@@ -20,7 +20,7 @@ export async function createPaymentDirect(params: {
     throw new Error('Payments API not available');
   }
 
-  return client.payments.createPayment({
+  return client.payments.create({
     sourceId: params.sourceId,
     amountMoney: {
       amount: params.amount,
@@ -40,7 +40,7 @@ export async function retrieveOrderDirect(orderId: string) {
     throw new Error('Orders API not available');
   }
 
-  return client.orders.retrieveOrder(orderId);
+  return client.orders.retrieve(orderId);
 }
 
 export async function createOrderDirect(params: {
@@ -71,7 +71,7 @@ export async function createOrderDirect(params: {
     throw new Error('Orders API not available');
   }
 
-  return client.orders.createOrder({
+  return client.orders.create({
     locationId: params.locationId || getSquareLocationId(),
     lineItems: params.lineItems,
     discounts: params.discounts,
@@ -87,7 +87,7 @@ export async function searchCustomersDirect(query?: string) {
   }
 
   if (query) {
-    return client.customers.searchCustomers({
+    return client.customers.search({
       query: {
         filter: {
           textFilter: {
@@ -98,7 +98,7 @@ export async function searchCustomersDirect(query?: string) {
     });
   }
 
-  return client.customers.listCustomers();
+  return client.customers.list();
 }
 
 export async function createCustomerDirect(params: {
@@ -114,7 +114,7 @@ export async function createCustomerDirect(params: {
     throw new Error('Customers API not available');
   }
 
-  return client.customers.createCustomer({
+  return client.customers.create({
     givenName: params.givenName,
     familyName: params.familyName,
     emailAddress: params.emailAddress,
@@ -130,7 +130,7 @@ export async function listLocationsDirect() {
     throw new Error('Locations API not available');
   }
 
-  return client.locations.listLocations();
+  return client.locations.list();
 }
 
 export async function listCatalogDirect(params?: { types?: string }) {
@@ -140,7 +140,7 @@ export async function listCatalogDirect(params?: { types?: string }) {
     throw new Error('Catalog API not available');
   }
 
-  return client.catalog.listCatalog({
+  return client.catalog.list({
     types: params?.types,
   });
 }
@@ -189,7 +189,7 @@ export async function createPaymentLinkDirect(params: {
     };
   }
 
-  return client.checkout.createPaymentLink(paymentLinkRequest);
+  return client.checkout.paymentLinks.create(paymentLinkRequest);
 }
 
 export async function listPaymentsDirect(params?: {
@@ -204,7 +204,7 @@ export async function listPaymentsDirect(params?: {
     throw new Error('Payments API not available');
   }
 
-  return client.payments.listPayments({
+  return client.payments.list({
     beginTime: params?.beginTime,
     endTime: params?.endTime,
     locationId: params?.locationId,
