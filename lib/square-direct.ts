@@ -15,13 +15,12 @@ export async function createPaymentDirect(params: {
   metadata?: Record<string, string>;
 }) {
   const client = getSquareClient();
-  const { paymentsApi } = client;
 
-  if (!paymentsApi) {
+  if (!client.paymentsApi) {
     throw new Error('Payments API not available');
   }
 
-  return paymentsApi.createPayment({
+  return client.paymentsApi.createPayment({
     sourceId: params.sourceId,
     amountMoney: {
       amount: params.amount,
@@ -36,13 +35,12 @@ export async function createPaymentDirect(params: {
 
 export async function retrieveOrderDirect(orderId: string) {
   const client = getSquareClient();
-  const { ordersApi } = client;
 
-  if (!ordersApi) {
+  if (!client.ordersApi) {
     throw new Error('Orders API not available');
   }
 
-  return ordersApi.retrieveOrder(orderId);
+  return client.ordersApi.retrieveOrder(orderId);
 }
 
 export async function createOrderDirect(params: {
@@ -68,13 +66,12 @@ export async function createOrderDirect(params: {
   metadata?: Record<string, string>;
 }) {
   const client = getSquareClient();
-  const { ordersApi } = client;
 
-  if (!ordersApi) {
+  if (!client.ordersApi) {
     throw new Error('Orders API not available');
   }
 
-  return ordersApi.createOrder({
+  return client.ordersApi.createOrder({
     locationId: params.locationId || getSquareLocationId(),
     lineItems: params.lineItems,
     discounts: params.discounts,
@@ -84,14 +81,13 @@ export async function createOrderDirect(params: {
 
 export async function searchCustomersDirect(query?: string) {
   const client = getSquareClient();
-  const { customersApi } = client;
 
-  if (!customersApi) {
+  if (!client.customersApi) {
     throw new Error('Customers API not available');
   }
 
   if (query) {
-    return customersApi.searchCustomers({
+    return client.customersApi.searchCustomers({
       query: {
         filter: {
           textFilter: {
@@ -102,7 +98,7 @@ export async function searchCustomersDirect(query?: string) {
     });
   }
 
-  return customersApi.listCustomers();
+  return client.customersApi.listCustomers();
 }
 
 export async function createCustomerDirect(params: {
@@ -113,13 +109,12 @@ export async function createCustomerDirect(params: {
   referenceId?: string;
 }) {
   const client = getSquareClient();
-  const { customersApi } = client;
 
-  if (!customersApi) {
+  if (!client.customersApi) {
     throw new Error('Customers API not available');
   }
 
-  return customersApi.createCustomer({
+  return client.customersApi.createCustomer({
     givenName: params.givenName,
     familyName: params.familyName,
     emailAddress: params.emailAddress,
@@ -130,24 +125,22 @@ export async function createCustomerDirect(params: {
 
 export async function listLocationsDirect() {
   const client = getSquareClient();
-  const { locationsApi } = client;
 
-  if (!locationsApi) {
+  if (!client.locationsApi) {
     throw new Error('Locations API not available');
   }
 
-  return locationsApi.listLocations();
+  return client.locationsApi.listLocations();
 }
 
 export async function listCatalogDirect(params?: { types?: string }) {
   const client = getSquareClient();
-  const { catalogApi } = client;
 
-  if (!catalogApi) {
+  if (!client.catalogApi) {
     throw new Error('Catalog API not available');
   }
 
-  return catalogApi.listCatalog({
+  return client.catalogApi.listCatalog({
     types: params?.types,
   });
 }
@@ -173,9 +166,8 @@ export async function createPaymentLinkDirect(params: {
   };
 }) {
   const client = getSquareClient();
-  const { checkoutApi } = client;
 
-  if (!checkoutApi) {
+  if (!client.checkoutApi) {
     throw new Error('Checkout API not available');
   }
 
@@ -197,7 +189,7 @@ export async function createPaymentLinkDirect(params: {
     };
   }
 
-  return checkoutApi.createPaymentLink(paymentLinkRequest);
+  return client.checkoutApi.createPaymentLink(paymentLinkRequest);
 }
 
 export async function listPaymentsDirect(params?: {
@@ -207,13 +199,12 @@ export async function listPaymentsDirect(params?: {
   limit?: number;
 }) {
   const client = getSquareClient();
-  const { paymentsApi } = client;
 
-  if (!paymentsApi) {
+  if (!client.paymentsApi) {
     throw new Error('Payments API not available');
   }
 
-  return paymentsApi.listPayments({
+  return client.paymentsApi.listPayments({
     beginTime: params?.beginTime,
     endTime: params?.endTime,
     locationId: params?.locationId,
