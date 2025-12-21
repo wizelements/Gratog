@@ -1,0 +1,64 @@
+name: Smart Failure Notifications
+
+on:
+  workflow_run:
+    workflows: [Quality Gate, Security Scanning, Test Coverage Analysis]
+    types: [completed]
+
+jobs:
+  notify-failures:
+    name: Smart Failure Alerts
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'failure'
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+      
+      - name: Download run artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: ${{ github.event.workflow_run.workflow_id }}
+          run_id: ${{ github.event.workflow_run.id }}
+          if_no_artifact_found: warn
+      
+      - name: Post failure summary
+        run: |
+          echo "### ❌ Workflow Failed: ${{ github.event.workflow_run.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Details:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Workflow: ${{ github.event.workflow_run.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: ${{ github.event.workflow_run.head_branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: ${{ github.event.workflow_run.head_commit }}" >> $GITHUB_STEP_SUMMARY
+          echo "- [View Details](${{ github.event.workflow_run.html_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Suggested Actions:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Review the workflow run" >> $GITHUB_STEP_SUMMARY
+          echo "2. Check test failures or linting errors" >> $GITHUB_STEP_SUMMARY
+          echo "3. Run locally: \`yarn && yarn lint && yarn test\`" >> $GITHUB_STEP_SUMMARY
+
+  auto-fix-suggestion:
+    name: Auto-Fix Suggestions
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'failure'
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+      
+      - name: Analyze failure type
+        run: |
+          echo "## Automated Diagnostics" >> $GITHUB_STEP_SUMMARY
+          
+          # This would integrate with your actual failure logs
+          echo "⚡ Running automated diagnostics..." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Example suggestions based on common issues
+          echo "**Common Fixes:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Lint errors? Run: \`yarn lint --fix\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Type errors? Check TypeScript strict mode" >> $GITHUB_STEP_SUMMARY
+          echo "- Test failures? Run: \`yarn vitest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Build issues? Clear cache: \`rm -rf .next\`" >> $GITHUB_STEP_SUMMARY

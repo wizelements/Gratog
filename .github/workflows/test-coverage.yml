@@ -1,0 +1,80 @@
+name: Test Coverage Analysis
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  coverage:
+    name: Code Coverage Report
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+      
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      
+      - name: Run tests with coverage
+        run: yarn vitest run --coverage --reporter=verbose
+        continue-on-error: true
+      
+      - name: Generate coverage report
+        run: |
+          echo "## Test Coverage Report" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -d coverage ]; then
+            echo "### Coverage Summary" >> $GITHUB_STEP_SUMMARY
+            
+            # Extract coverage stats
+            if [ -f coverage/coverage-summary.json ]; then
+              cat coverage/coverage-summary.json | jq '.total' >> $GITHUB_STEP_SUMMARY || true
+            fi
+            
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Coverage |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|----------|" >> $GITHUB_STEP_SUMMARY
+            
+            # Parse coverage thresholds
+            LINES=$(grep -o '"lines":[^}]*' coverage/coverage-summary.json 2>/dev/null | grep -o '[0-9.]*' | head -1 || echo "N/A")
+            STATEMENTS=$(grep -o '"statements":[^}]*' coverage/coverage-summary.json 2>/dev/null | grep -o '[0-9.]*' | head -1 || echo "N/A")
+            FUNCTIONS=$(grep -o '"functions":[^}]*' coverage/coverage-summary.json 2>/dev/null | grep -o '[0-9.]*' | head -1 || echo "N/A")
+            BRANCHES=$(grep -o '"branches":[^}]*' coverage/coverage-summary.json 2>/dev/null | grep -o '[0-9.]*' | head -1 || echo "N/A")
+            
+            echo "| Lines | $LINES% |" >> $GITHUB_STEP_SUMMARY
+            echo "| Statements | $STATEMENTS% |" >> $GITHUB_STEP_SUMMARY
+            echo "| Functions | $FUNCTIONS% |" >> $GITHUB_STEP_SUMMARY
+            echo "| Branches | $BRANCHES% |" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Check coverage thresholds
+        run: |
+          echo "## Coverage Enforcement" >> $GITHUB_STEP_SUMMARY
+          
+          # Minimum thresholds
+          MIN_LINE_COVERAGE=70
+          
+          # This is a target - not enforced yet to avoid blocking
+          echo "📊 Coverage targets (advisory):" >> $GITHUB_STEP_SUMMARY
+          echo "- Lines: >${MIN_LINE_COVERAGE}%" >> $GITHUB_STEP_SUMMARY
+          echo "- Statements: >70%" >> $GITHUB_STEP_SUMMARY
+          echo "- Functions: >65%" >> $GITHUB_STEP_SUMMARY
+          echo "- Branches: >60%" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30

@@ -1,0 +1,117 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 2 * * *' # Daily at 2 AM UTC
+
+jobs:
+  dependency-check:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+      
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      
+      - name: Check for vulnerabilities
+        run: |
+          echo "## Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          
+          # npm audit for vulnerabilities
+          yarn audit --level moderate 2>&1 | tee audit.log || true
+          
+          # Parse results
+          if grep -q "found.*vulnerabilities" audit.log; then
+            echo "⚠️ Found vulnerabilities - review required" >> $GITHUB_STEP_SUMMARY
+            cat audit.log >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "✅ No moderate/high vulnerabilities detected" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  code-quality:
+    name: Code Quality & Security Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+      
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      
+      - name: Detect secrets
+        run: |
+          echo "## Secrets Detection" >> $GITHUB_STEP_SUMMARY
+          
+          # Check for common secret patterns
+          if grep -r "PRIVATE.*KEY\|PASSWORD.*=\|API.*SECRET" --include="*.ts" --include="*.tsx" --include="*.js" . | grep -v node_modules | grep -v ".next"; then
+            echo "❌ Potential secrets found in code" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "✅ No hardcoded secrets detected" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Check for common vulnerabilities
+        run: |
+          echo "## Vulnerability Patterns" >> $GITHUB_STEP_SUMMARY
+          
+          # Check for eval usage
+          if grep -r "eval(" --include="*.ts" --include="*.tsx" . | grep -v node_modules | grep -v ".next"; then
+            echo "❌ Found eval() usage - security risk" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          
+          # Check for dangerous dependencies
+          if grep -q "eval\|new Function" package.json; then
+            echo "⚠️ Review installed packages for security" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No suspicious eval patterns" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  sql-injection-check:
+    name: SQL Injection Pattern Detection
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Check for SQL injection patterns
+        run: |
+          echo "## SQL Security Check" >> $GITHUB_STEP_SUMMARY
+          
+          # Look for unsafe database queries
+          if grep -r "query.*\`.*\${" --include="*.ts" --include="*.tsx" . | grep -v node_modules; then
+            echo "⚠️ Found potential SQL injection patterns - use parameterized queries" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No obvious SQL injection patterns" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check for MongoDB injection
+          if grep -r "{.*\$.*:.*}" --include="*.ts" | grep -v node_modules | grep -v "\.next" | head -5; then
+            echo "⚠️ Review MongoDB queries for injection risks" >> $GITHUB_STEP_SUMMARY
+          fi
