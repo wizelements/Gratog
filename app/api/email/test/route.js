@@ -28,7 +28,7 @@ export async function POST(request) {
     <p style="color: #495057; line-height: 1.6;">${testMessage}</p>
     <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 4px;">
       <p style="margin: 0; color: #6c757d; font-size: 14px;"><strong>Email Provider:</strong> ${isRealEmail() ? 'Resend (Live)' : 'Mock Mode'}</p>
-      <p style="margin: 5px 0 0; color: #6c757d; font-size: 14px;"><strong>Sent:</strong> ${new Date().toLocaleString()}</p>
+      <p style="margin: 5px 0 0; color: #6c757d; font-size: 14px;"><strong>Sent:</strong> ${new Date().toISOString()}</p>
     </div>
   </div>
 </body>

@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-echo "🔒 Pre-push: running checks..."
+echo "🔒 Pre-push: running comprehensive checks..."
 
 # TypeScript check - FAIL if errors
 echo "🔍 TypeScript check..."
@@ -26,5 +26,21 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-echo "✅ Pre-push checks passed"
+# Smoke tests - Critical path validation
+echo "🚨 Running smoke tests..."
+yarn vitest run tests/smoke.test.ts tests/hydration-safety.test.ts --reporter=dot 2>/dev/null
+if [ $? -ne 0 ]; then
+  echo "❌ Smoke test failures - potential production breakage!"
+  exit 1
+fi
+
+# Pre-deployment validation
+echo "🔍 Running deployment validation..."
+node scripts/validate-deployment.js
+if [ $? -ne 0 ]; then
+  echo "❌ Deployment validation failed. Fix errors before pushing."
+  exit 1
+fi
+
+echo "✅ All pre-push checks passed - safe to deploy!"
 exit 0

@@ -30,7 +30,10 @@
     "vorax:nano": "node .vorax/vorax-cli.js nano",
     "vorax:watch": "node .vorax/vorax-cli.js watch",
     "vorax:status": "node .vorax/vorax-cli.js status",
-    "vorax:report": "node .vorax/vorax-cli.js report"
+    "vorax:report": "node .vorax/vorax-cli.js report",
+    "validate": "node scripts/validate-deployment.js",
+    "test:smoke": "vitest run tests/smoke.test.ts tests/hydration-safety.test.ts --reporter=verbose",
+    "predeploy": "npm run validate && npm run test:smoke && npm run build"
   },
   "dependencies": {
     "@google/model-viewer": "^4.1.0",
