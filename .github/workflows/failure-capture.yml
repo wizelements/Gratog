@@ -1,0 +1,262 @@
+name: Failure Capture & Context
+
+# Trigger on any workflow failure to capture full context
+on:
+  workflow_run:
+    workflows: 
+      - "Integration Tests"
+      - "Test & Report"
+      - "CI"
+    types: [completed]
+    branches: [main, develop]
+
+jobs:
+  capture-failure:
+    runs-on: ubuntu-latest
+    if: failure() || github.event.workflow_run.conclusion == 'failure'
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Download all artifacts
+        continue-on-error: true
+        run: |
+          mkdir -p failure-context
+          cd failure-context
+      
+      - name: Get workflow run details
+        id: workflow
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const run = await github.rest.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id
+            });
+            
+            console.log('Workflow Details:', JSON.stringify(run.data, null, 2));
+            
+            // Get all jobs from this run
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id
+            });
+            
+            // Write to file for processing
+            const fs = require('fs');
+            fs.writeFileSync('workflow-context.json', JSON.stringify({
+              run: run.data,
+              jobs: jobs.data.jobs
+            }, null, 2));
+      
+      - name: Extract failure context
+        id: context
+        run: |
+          cat > extract-context.js << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+          
+          const workflowData = JSON.parse(fs.readFileSync('workflow-context.json', 'utf8'));
+          const failedJobs = workflowData.jobs.filter(j => j.conclusion === 'failure');
+          
+          const context = {
+            timestamp: new Date().toISOString(),
+            workflowName: workflowData.run.name,
+            workflowUrl: workflowData.run.html_url,
+            branch: workflowData.run.head_branch,
+            commit: workflowData.run.head_sha,
+            conclusion: workflowData.run.conclusion,
+            failedJobs: failedJobs.map(job => ({
+              name: job.name,
+              id: job.id,
+              status: job.status,
+              conclusion: job.conclusion,
+              startedAt: job.started_at,
+              completedAt: job.completed_at,
+              logsUrl: job.logs_url,
+              stepFailures: job.steps ? job.steps.filter(s => s.conclusion === 'failure').map(s => ({
+                name: s.name,
+                number: s.number,
+                conclusion: s.conclusion
+              })) : []
+            })),
+            totalFailedJobs: failedJobs.length
+          };
+          
+          fs.writeFileSync('failure-context.json', JSON.stringify(context, null, 2));
+          
+          // Create structured log
+          let log = `# Failure Capture Report\n\n`;
+          log += `**Time:** ${context.timestamp}\n`;
+          log += `**Workflow:** ${context.workflowName}\n`;
+          log += `**Branch:** ${context.branch}\n`;
+          log += `**Commit:** ${context.commit}\n\n`;
+          
+          log += `## Failed Jobs (${context.totalFailedJobs})\n\n`;
+          context.failedJobs.forEach(job => {
+            log += `### ${job.name}\n`;
+            log += `- Status: ${job.status}\n`;
+            log += `- Conclusion: ${job.conclusion}\n`;
+            log += `- Started: ${job.startedAt}\n`;
+            log += `- Completed: ${job.completedAt}\n`;
+            log += `- [View Logs](${job.logsUrl})\n\n`;
+            
+            if (job.stepFailures.length > 0) {
+              log += `**Failed Steps:**\n`;
+              job.stepFailures.forEach(step => {
+                log += `- Step ${step.number}: ${step.name}\n`;
+              });
+            }
+            log += '\n';
+          });
+          
+          fs.writeFileSync('failure-context.log', log);
+          console.log(log);
+          EOF
+          
+          node extract-context.js
+      
+      - name: Create comprehensive failure report
+        id: report
+        run: |
+          cat > FAILURE_CONTEXT.md << 'EOF'
+          # 🔴 Deployment Failure Context Report
+          
+          **Generated:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')
+          **Status:** Waiting for investigation & fixes
+          
+          ## Quick Links
+          - [GitHub Actions Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }})
+          - [Branch](${{ github.server_url }}/${{ github.repository }}/tree/${{ github.event.workflow_run.head_branch }})
+          - [Commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }})
+          
+          ## Failure Context
+          
+          ### Workflow Information
+          - **Name:** ${{ github.event.workflow_run.name }}
+          - **Branch:** ${{ github.event.workflow_run.head_branch }}
+          - **Commit SHA:** ${{ github.event.workflow_run.head_sha }}
+          - **Conclusion:** ${{ github.event.workflow_run.conclusion }}
+          - **ID:** ${{ github.event.workflow_run.id }}
+          
+          ### Failed Components
+          EOF
+          
+          if [ -f "failure-context.json" ]; then
+            cat failure-context.json >> FAILURE_CONTEXT.md
+          fi
+          
+          cat >> FAILURE_CONTEXT.md << 'EOF'
+          
+          ## Integration Test Failures
+          
+          ### Database Integration Tests
+          - **Config:** `vitest.db.config.ts`
+          - **Service:** MongoDB (localhost:27017)
+          - **Common Issues:**
+            - Database connection timeout
+            - Missing environment variables
+            - MongoDB service not starting
+          
+          ### API Integration Tests  
+          - **Config:** `vitest.integration.config.ts`
+          - **Service:** Next.js server (localhost:3000)
+          - **Common Issues:**
+            - Server failed to start (build errors)
+            - Health check endpoint timeout
+            - Square SDK initialization failure
+            - Missing payment credentials
+          
+          ## Required Context for Next Fix
+          
+          ```json
+          {
+            "workflowId": "${{ github.event.workflow_run.id }}",
+            "branch": "${{ github.event.workflow_run.head_branch }}",
+            "commit": "${{ github.event.workflow_run.head_sha }}",
+            "timestamp": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')",
+            "failures": ["DATABASE_INTEGRATION_TESTS", "API_INTEGRATION_TESTS"],
+            "serverStatus": "needs-diagnosis",
+            "mongodbStatus": "needs-diagnosis",
+            "paymentCredentials": "needs-verification"
+          }
+          ```
+          
+          ## What Needs Investigation
+          
+          - [ ] Database connectivity
+          - [ ] Server startup logs
+          - [ ] Build errors
+          - [ ] Environment variable configuration
+          - [ ] Square SDK authentication
+          - [ ] Health check endpoint response
+          
+          ## Standby Status
+          
+          ✅ **Failure context captured**
+          ✅ **Awaiting developer fixes**
+          ⏳ **Ready for next iteration**
+          
+          ---
+          
+          **This file will be used as context for the next fix iteration.**
+          
+          EOF
+          
+          cat FAILURE_CONTEXT.md
+      
+      - name: Store failure context
+        if: always()
+        run: |
+          mkdir -p .failure-reports
+          cp FAILURE_CONTEXT.md ".failure-reports/failure-${{ github.event.workflow_run.id }}-$(date +%Y%m%d-%H%M%S).md"
+          cp failure-context.json ".failure-reports/context-${{ github.event.workflow_run.id }}.json"
+      
+      - name: Create standby issue
+        if: failure() || github.event.workflow_run.conclusion == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let body = '## 🔴 Deployment Failure - Standby Mode Activated\n\n';
+            
+            if (fs.existsSync('FAILURE_CONTEXT.md')) {
+              body += fs.readFileSync('FAILURE_CONTEXT.md', 'utf8');
+            }
+            
+            body += '\n\n## Next Steps\n';
+            body += '1. Review failure context above\n';
+            body += '2. Check workflow logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}\n';
+            body += '3. Implement fix\n';
+            body += '4. Push changes\n';
+            body += '5. Verify tests pass\n\n';
+            body += '**Standby System:** Ready to assist with next fix.\n';
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔴 [STANDBY] Deployment Failure - ${{ github.event.workflow_run.name }}`,
+              body: body,
+              labels: ['deployment-failure', 'needs-fix', 'standby-active'],
+              assignees: []
+            });
+      
+      - name: Commit failure context
+        if: always()
+        continue-on-error: true
+        run: |
+          git config user.name "Amp Failure Capture"
+          git config user.email "amp@failurecapture"
+          
+          git add .failure-reports/ FAILURE_CONTEXT.md 2>/dev/null || true
+          git commit -m "capture: failure context for ${{ github.event.workflow_run.id }} [skip ci]" || true
+          git push origin ${{ github.event.workflow_run.head_branch }} || true
