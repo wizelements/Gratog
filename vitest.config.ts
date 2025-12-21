@@ -14,9 +14,10 @@ export default defineConfig({
       'playwright-report/**',
       '**/*.config.*',
       '**/dist/**',
-      // Exclude integration tests that require running server
+      // Exclude integration tests that require running server or database
       'tests/square/**',
-      'tests/api/**'
+      'tests/api/**',
+      'tests/db/**'
     ],
     coverage: {
       provider: 'v8',

@@ -1,0 +1,178 @@
+name: Smoke Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  smoke-tests:
+    name: Critical Path Smoke Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand({ping: 1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+      
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+      
+      - name: Build application
+        run: yarn build
+        env:
+          MONGODB_URI: mongodb://localhost:27017/smoke_test_db
+          MONGO_URL: mongodb://localhost:27017/smoke_test_db
+          JWT_SECRET: smoke-test-jwt-secret
+          ADMIN_JWT_SECRET: smoke-test-admin-jwt-secret
+          NEXT_PUBLIC_BASE_URL: http://localhost:3000
+          SQUARE_ENVIRONMENT: sandbox
+      
+      - name: Start server
+        run: |
+          yarn start &
+          echo $! > server.pid
+        env:
+          PORT: 3000
+          MONGODB_URI: mongodb://localhost:27017/smoke_test_db
+          MONGO_URL: mongodb://localhost:27017/smoke_test_db
+          JWT_SECRET: smoke-test-jwt-secret
+          ADMIN_JWT_SECRET: smoke-test-admin-jwt-secret
+          ADMIN_API_KEY: smoke-test-api-key
+          NEXT_PUBLIC_BASE_URL: http://localhost:3000
+          SQUARE_ENVIRONMENT: sandbox
+      
+      - name: Wait for server
+        run: |
+          echo "Waiting for server..."
+          for i in {1..60}; do
+            if curl -s http://localhost:3000/api/health > /dev/null 2>&1; then
+              echo "Server ready!"
+              break
+            fi
+            sleep 2
+          done
+      
+      - name: Run smoke tests
+        run: npx playwright test --config=playwright.smoke.config.ts --reporter=list
+        env:
+          BASE_URL: http://localhost:3000
+      
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill $(cat server.pid) 2>/dev/null || true
+          fi
+      
+      - name: Upload smoke test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-results
+          path: |
+            playwright-report/
+            test-results/
+
+  api-smoke-tests:
+    name: API Smoke Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+      
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      
+      - name: Build application
+        run: yarn build
+        env:
+          MONGODB_URI: mongodb://localhost:27017/api_smoke_db
+          MONGO_URL: mongodb://localhost:27017/api_smoke_db
+          JWT_SECRET: api-smoke-jwt
+          ADMIN_JWT_SECRET: api-smoke-admin-jwt
+          NEXT_PUBLIC_BASE_URL: http://localhost:3000
+          SQUARE_ENVIRONMENT: sandbox
+      
+      - name: Start server
+        run: |
+          yarn start &
+          sleep 15
+        env:
+          PORT: 3000
+          MONGODB_URI: mongodb://localhost:27017/api_smoke_db
+          MONGO_URL: mongodb://localhost:27017/api_smoke_db
+          JWT_SECRET: api-smoke-jwt
+          ADMIN_JWT_SECRET: api-smoke-admin-jwt
+          ADMIN_API_KEY: api-smoke-key
+          NEXT_PUBLIC_BASE_URL: http://localhost:3000
+          SQUARE_ENVIRONMENT: sandbox
+      
+      - name: Run API smoke tests
+        run: |
+          echo "## API Smoke Test Results" >> $GITHUB_STEP_SUMMARY
+          
+          # Health check
+          echo "### Health Check" >> $GITHUB_STEP_SUMMARY
+          HEALTH=$(curl -s http://localhost:3000/api/health)
+          if echo "$HEALTH" | grep -q '"status":"healthy"'; then
+            echo "✅ Health endpoint: PASS" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Health endpoint: FAIL" >> $GITHUB_STEP_SUMMARY
+            echo "$HEALTH" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          
+          # Products API
+          echo "### Products API" >> $GITHUB_STEP_SUMMARY
+          PRODUCTS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/products)
+          if [ "$PRODUCTS" = "200" ]; then
+            echo "✅ Products endpoint: PASS (HTTP $PRODUCTS)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Products endpoint: FAIL (HTTP $PRODUCTS)" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          
+          # Rewards leaderboard
+          echo "### Rewards API" >> $GITHUB_STEP_SUMMARY
+          LEADERBOARD=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/rewards/leaderboard)
+          if [ "$LEADERBOARD" = "200" ]; then
+            echo "✅ Leaderboard endpoint: PASS (HTTP $LEADERBOARD)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Leaderboard endpoint: FAIL (HTTP $LEADERBOARD)" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All API smoke tests passed!" >> $GITHUB_STEP_SUMMARY
