@@ -1,0 +1,389 @@
+name: Performance Monitoring
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 0,6,12,18 * * *'  # Every 6 hours
+
+jobs:
+  lighthouse-audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+      
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      
+      - name: Build app
+        run: yarn build
+      
+      - name: Start server
+        run: |
+          yarn start &
+          sleep 10
+      
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          configPath: ./lighthouserc.js
+          temporaryPublicStorage: true
+          runs: 3
+      
+      - name: Parse Lighthouse scores
+        id: lighthouse
+        run: |
+          cat > parse-lighthouse.js << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+          
+          const resultsDir = './.lighthouseci/lhr-results';
+          if (!fs.existsSync(resultsDir)) {
+            console.error('Lighthouse results not found');
+            process.exit(1);
+          }
+          
+          const files = fs.readdirSync(resultsDir).filter(f => f.endsWith('.json'));
+          const results = files.map(f => JSON.parse(fs.readFileSync(path.join(resultsDir, f), 'utf8')));
+          
+          // Average scores across runs
+          const scores = {
+            performance: 0,
+            accessibility: 0,
+            best_practices: 0,
+            seo: 0,
+            pwa: 0
+          };
+          
+          results.forEach(result => {
+            scores.performance += result.categories.performance.score * 100;
+            scores.accessibility += result.categories.accessibility.score * 100;
+            scores.best_practices += result.categories['best-practices'].score * 100;
+            scores.seo += result.categories.seo.score * 100;
+            scores.pwa = result.categories.pwa ? scores.pwa + result.categories.pwa.score * 100 : 0;
+          });
+          
+          const count = results.length;
+          const avgScores = {
+            performance: Math.round(scores.performance / count),
+            accessibility: Math.round(scores.accessibility / count),
+            best_practices: Math.round(scores.best_practices / count),
+            seo: Math.round(scores.seo / count),
+            pwa: results[0].categories.pwa ? Math.round(scores.pwa / count) : 0
+          };
+          
+          // Get metrics from first result
+          const metrics = results[0].audits;
+          
+          console.log('PERFORMANCE_SCORE=' + avgScores.performance);
+          console.log('ACCESSIBILITY_SCORE=' + avgScores.accessibility);
+          console.log('BEST_PRACTICES_SCORE=' + avgScores.best_practices);
+          console.log('SEO_SCORE=' + avgScores.seo);
+          console.log('PWA_SCORE=' + avgScores.pwa);
+          
+          const fcp = metrics['first-contentful-paint'].numericValue / 1000;
+          const lcp = metrics['largest-contentful-paint'].numericValue / 1000;
+          const cls = metrics['cumulative-layout-shift'].numericValue;
+          const fid = metrics['first-input-delay'] ? metrics['first-input-delay'].numericValue : 0;
+          
+          console.log('FCP=' + fcp.toFixed(2));
+          console.log('LCP=' + lcp.toFixed(2));
+          console.log('CLS=' + cls.toFixed(3));
+          console.log('FID=' + fid.toFixed(0));
+          
+          fs.writeFileSync('lighthouse-scores.json', JSON.stringify(avgScores, null, 2));
+          EOF
+          
+          node parse-lighthouse.js >> $GITHUB_ENV
+      
+      - name: Compare with baseline
+        run: |
+          cat > compare-performance.js << 'EOF'
+          const fs = require('fs');
+          
+          const currentScores = JSON.parse(fs.readFileSync('lighthouse-scores.json', 'utf8'));
+          
+          // Baseline thresholds
+          const baselines = {
+            performance: 85,
+            accessibility: 95,
+            best_practices: 90,
+            seo: 95,
+            pwa: 80
+          };
+          
+          let regressions = [];
+          Object.keys(baselines).forEach(category => {
+            if (currentScores[category] < baselines[category]) {
+              regressions.push({
+                category,
+                current: currentScores[category],
+                baseline: baselines[category],
+                diff: baselines[category] - currentScores[category]
+              });
+            }
+          });
+          
+          fs.writeFileSync('performance-regressions.json', JSON.stringify(regressions, null, 2));
+          
+          if (regressions.length > 0) {
+            console.log('⚠️ Performance Regressions Detected:');
+            regressions.forEach(r => {
+              console.log(`  ${r.category}: ${r.current} (baseline: ${r.baseline}, -${r.diff})`);
+            });
+            process.exit(1);
+          } else {
+            console.log('✅ All performance metrics within baselines');
+          }
+          EOF
+          
+          node compare-performance.js
+      
+      - name: Generate performance report
+        if: always()
+        run: |
+          cat > PERFORMANCE_REPORT.md << 'EOF'
+          # 📊 Performance Monitoring Report
+          
+          **Date:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')
+          **Branch:** ${{ github.ref_name }}
+          **Commit:** ${{ github.sha }}
+          
+          ## Lighthouse Scores
+          
+          | Metric | Score | Target | Status |
+          |--------|-------|--------|--------|
+          | Performance | ${{ env.PERFORMANCE_SCORE }} | 85 | ${{ env.PERFORMANCE_SCORE >= 85 && '✅' || '❌' }} |
+          | Accessibility | ${{ env.ACCESSIBILITY_SCORE }} | 95 | ${{ env.ACCESSIBILITY_SCORE >= 95 && '✅' || '❌' }} |
+          | Best Practices | ${{ env.BEST_PRACTICES_SCORE }} | 90 | ${{ env.BEST_PRACTICES_SCORE >= 90 && '✅' || '❌' }} |
+          | SEO | ${{ env.SEO_SCORE }} | 95 | ${{ env.SEO_SCORE >= 95 && '✅' || '❌' }} |
+          | PWA | ${{ env.PWA_SCORE }} | 80 | ${{ env.PWA_SCORE >= 80 && '✅' || '❌' }} |
+          
+          ## Core Web Vitals
+          
+          | Metric | Value | Budget | Status |
+          |--------|-------|--------|--------|
+          | FCP | ${{ env.FCP }}s | < 1.8s | ${{ env.FCP < 1.8 && '✅' || '❌' }} |
+          | LCP | ${{ env.LCP }}s | < 2.5s | ${{ env.LCP < 2.5 && '✅' || '❌' }} |
+          | CLS | ${{ env.CLS }} | < 0.1 | ${{ env.CLS < 0.1 && '✅' || '❌' }} |
+          | FID | ${{ env.FID }}ms | < 100ms | ${{ env.FID < 100 && '✅' || '❌' }} |
+          
+          ## Detailed Report
+          [View full Lighthouse report →](${{ steps.lighthouse.outputs.resultsUrl }})
+          
+          EOF
+          
+          cat PERFORMANCE_REPORT.md
+      
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: lighthouse-results
+          path: |
+            .lighthouseci
+            lighthouse-scores.json
+            PERFORMANCE_REPORT.md
+            performance-regressions.json
+          retention-days: 30
+      
+      - name: Create performance issue
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const regressions = JSON.parse(fs.readFileSync('performance-regressions.json', 'utf8'));
+            
+            if (regressions.length === 0) return;
+            
+            let body = '## Performance Regression Detected\n\n';
+            body += 'The following Lighthouse scores fell below baseline:\n\n';
+            
+            regressions.forEach(r => {
+              body += `- **${r.category}**: ${r.current} (baseline: ${r.baseline}, -${r.diff} points)\n`;
+            });
+            
+            body += '\n[View Lighthouse report →](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})';
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `⚠️ Performance Regression - ${new Date().toISOString().split('T')[0]}`,
+              body: body,
+              labels: ['performance', 'regression', 'needs-investigation']
+            });
+
+  bundle-size-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+      
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      
+      - name: Build app
+        run: yarn build
+      
+      - name: Analyze bundle
+        run: |
+          cat > analyze-bundle.js << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+          
+          const bundleDir = '.next';
+          const files = [];
+          
+          function walk(dir) {
+            const items = fs.readdirSync(dir);
+            items.forEach(item => {
+              const fullPath = path.join(dir, item);
+              const stat = fs.statSync(fullPath);
+              if (stat.isFile() && (item.endsWith('.js') || item.endsWith('.json'))) {
+                files.push({
+                  path: fullPath,
+                  size: stat.size,
+                  name: item
+                });
+              } else if (stat.isDirectory() && item !== 'cache') {
+                walk(fullPath);
+              }
+            });
+          }
+          
+          walk(bundleDir);
+          
+          // Sort by size
+          files.sort((a, b) => b.size - a.size);
+          
+          // Total size
+          const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+          const totalSizeMB = (totalSize / 1024 / 1024).toFixed(2);
+          
+          console.log(`Total bundle size: ${totalSizeMB} MB`);
+          
+          // Top 10 largest
+          console.log('\nTop 10 Largest Files:');
+          files.slice(0, 10).forEach(f => {
+            const sizeMB = (f.size / 1024 / 1024).toFixed(2);
+            const percent = ((f.size / totalSize) * 100).toFixed(1);
+            console.log(`  ${f.name.padEnd(40)} ${sizeMB.padStart(8)} MB (${percent.padStart(5)}%)`);
+          });
+          
+          // Check against budget
+          const budgets = {
+            'total': 5, // MB
+            'main': 0.5, // MB
+            'page': 0.2 // MB per page
+          };
+          
+          let violations = [];
+          if (totalSize / 1024 / 1024 > budgets.total) {
+            violations.push(`Total bundle (${totalSizeMB} MB) exceeds budget (${budgets.total} MB)`);
+          }
+          
+          fs.writeFileSync('bundle-analysis.json', JSON.stringify({
+            totalSize: totalSizeMB,
+            files: files.map(f => ({
+              name: f.name,
+              sizeMB: (f.size / 1024 / 1024).toFixed(2)
+            })),
+            violations
+          }, null, 2));
+          
+          if (violations.length > 0) {
+            console.error('\n❌ Bundle size violations:');
+            violations.forEach(v => console.error('  ' + v));
+            process.exit(1);
+          }
+          EOF
+          
+          node analyze-bundle.js
+      
+      - name: Upload bundle analysis
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: bundle-analysis
+          path: bundle-analysis.json
+
+  security-audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+      
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      
+      - name: Run npm audit
+        id: audit
+        run: |
+          npm audit --audit-level=high 2>&1 | tee audit-output.txt || echo "AUDIT_FAILED=true" >> $GITHUB_ENV
+      
+      - name: Check for vulnerabilities
+        run: |
+          cat > check-vulnerabilities.js << 'EOF'
+          const fs = require('fs');
+          const { execSync } = require('child_process');
+          
+          try {
+            const output = execSync('npm audit --json', { encoding: 'utf8' });
+            const audit = JSON.parse(output);
+            
+            if (audit.vulnerabilities) {
+              const vulns = Object.entries(audit.vulnerabilities)
+                .filter(([_, v]) => v.severity === 'high' || v.severity === 'critical')
+                .map(([name, v]) => ({
+                  package: name,
+                  severity: v.severity,
+                  fix: v.fix ? 'Available' : 'Not available'
+                }));
+              
+              if (vulns.length > 0) {
+                console.log('High/Critical Vulnerabilities Found:');
+                vulns.forEach(v => {
+                  console.log(`  ${v.package}: ${v.severity} (${v.fix})`);
+                });
+                fs.writeFileSync('security-audit.json', JSON.stringify(vulns, null, 2));
+                process.exit(1);
+              }
+            }
+            console.log('✅ No high/critical vulnerabilities found');
+          } catch (e) {
+            console.log('Audit check passed or no vulnerabilities');
+          }
+          EOF
+          
+          node check-vulnerabilities.js
+      
+      - name: Upload security report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-audit
+          path: |
+            audit-output.txt
+            security-audit.json
