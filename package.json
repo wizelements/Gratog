@@ -13,7 +13,7 @@
     "create:test-user": "node scripts/create-test-user.js",
     "typecheck": "tsc --noEmit --skipLibCheck || echo 'TypeScript errors found but continuing...'",
     "test:unit": "vitest run --coverage --reporter=dot",
-    "test:api": "cross-env NODE_ENV=test vitest run tests/api --reporter=dot",
+    "test:api": "cross-env NODE_ENV=test vitest run --config vitest.integration.config.ts --reporter=dot",
     "test:e2e:headless": "playwright test --reporter=line",
     "test:e2e:smoke": "playwright test -g @smoke --reporter=line",
     "test:k6": "k6 run e2e/k6/smoke.js",

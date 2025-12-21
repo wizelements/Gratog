@@ -5,7 +5,29 @@
 
 import { beforeAll, afterAll } from 'vitest';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+// Normalize BASE_URL: ensure it's a valid absolute URL
+const normalizeBaseUrl = (url: string | undefined): string => {
+  const raw = url || 'http://localhost:3000';
+  
+  // If it's already a full URL, return as-is
+  if (raw.startsWith('http://') || raw.startsWith('https://')) {
+    return raw.replace(/\/$/, ''); // Remove trailing slash
+  }
+  
+  // If it's just a path (like "/" or "/api"), prepend default host
+  if (raw.startsWith('/')) {
+    return `http://localhost:3000${raw}`.replace(/\/$/, '');
+  }
+  
+  // If it's just a hostname, add protocol
+  if (!raw.includes('://')) {
+    return `http://${raw}`.replace(/\/$/, '');
+  }
+  
+  return raw.replace(/\/$/, '');
+};
+
+const BASE_URL = normalizeBaseUrl(process.env.BASE_URL);
 
 beforeAll(async () => {
   console.log(`Integration tests running against: ${BASE_URL}`);
