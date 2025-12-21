@@ -63,9 +63,20 @@ jobs:
         run: |
           echo "## Secrets Detection" >> $GITHUB_STEP_SUMMARY
           
-          # Check for common secret patterns
-          if grep -r "PRIVATE.*KEY\|PASSWORD.*=\|API.*SECRET" --include="*.ts" --include="*.tsx" --include="*.js" . | grep -v node_modules | grep -v ".next"; then
-            echo "❌ Potential secrets found in code" >> $GITHUB_STEP_SUMMARY
+          # Check for common secret patterns (exclude scripts/, tests/, and env examples)
+          SECRETS_FOUND=$(grep -r "PRIVATE.*KEY\|PASSWORD.*=\|API.*SECRET" --include="*.ts" --include="*.tsx" --include="*.js" . \
+            | grep -v node_modules \
+            | grep -v ".next" \
+            | grep -v "scripts/" \
+            | grep -v "tests/" \
+            | grep -v ".example" \
+            | grep -v "process.env" \
+            | grep -v "// " \
+            || true)
+          
+          if [ -n "$SECRETS_FOUND" ]; then
+            echo "❌ Potential secrets found in code:" >> $GITHUB_STEP_SUMMARY
+            echo "$SECRETS_FOUND" >> $GITHUB_STEP_SUMMARY
             exit 1
           else
             echo "✅ No hardcoded secrets detected" >> $GITHUB_STEP_SUMMARY

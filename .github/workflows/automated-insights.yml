@@ -46,8 +46,9 @@ jobs:
         run: |
           echo "### Duplication Detection" >> $GITHUB_STEP_SUMMARY
           
-          # Simple duplication check - multiple similar function names
-          if grep -r "^export function\|^export const" app/ lib/ --include="*.ts" --include="*.tsx" 2>/dev/null | wc -l | xargs echo "- Found"; fi >> $GITHUB_STEP_SUMMARY
+          # Simple duplication check - count exported functions
+          EXPORT_COUNT=$(grep -r "^export function\|^export const" app/ lib/ --include="*.ts" --include="*.tsx" 2>/dev/null | wc -l || echo "0")
+          echo "- Found $EXPORT_COUNT exported functions/constants" >> $GITHUB_STEP_SUMMARY
           
           echo "✅ Code duplication scan completed" >> $GITHUB_STEP_SUMMARY
       

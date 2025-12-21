@@ -15,9 +15,15 @@
 const { MongoClient } = require('mongodb');
 const bcrypt = require('bcryptjs');
 
-const ADMIN_EMAIL = 'admin@tasteofgratitude.com';
-const ADMIN_PASSWORD = 'TasteOfGratitude2025!';
-const ADMIN_NAME = 'Admin User';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@tasteofgratitude.com';
+const ADMIN_PASSWORD = process.env.INIT_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD;
+const ADMIN_NAME = process.env.ADMIN_NAME || 'Admin User';
+
+if (!ADMIN_PASSWORD) {
+  console.error('❌ INIT_ADMIN_PASSWORD environment variable is required');
+  console.error('   Set it before running this script: INIT_ADMIN_PASSWORD=your_secure_password node scripts/init-admin-user.js');
+  process.exit(1);
+}
 
 async function initAdminUser() {
   let client;

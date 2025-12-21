@@ -14,8 +14,9 @@ export default defineConfig({
       'playwright-report/**',
       '**/*.config.*',
       '**/dist/**',
-      // Exclude Square integration tests from default run (requires running server + env vars)
-      'tests/square/**'
+      // Exclude integration tests that require running server
+      'tests/square/**',
+      'tests/api/**'
     ],
     coverage: {
       provider: 'v8',
