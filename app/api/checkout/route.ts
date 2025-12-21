@@ -7,6 +7,7 @@ import { randomUUID } from 'crypto';
 import { shouldAllowFallback, getAuthFailureResponse, logSquareOperation } from '@/lib/square-guard';
 import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
 import { logger } from '@/lib/logger';
+import { sanitizeErrorMessage, createSafeErrorResponse } from '@/lib/response-sanitizer';
 import * as Sentry from '@sentry/nextjs';
 
 /**
@@ -301,7 +302,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Failed to create checkout',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: sanitizeErrorMessage(error instanceof Error ? error.message : 'Unknown error')
       },
       { status: 500 }
     );
@@ -351,7 +352,7 @@ export async function GET(request: NextRequest) {
       {
         success: false,
         error: 'Failed to retrieve status',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: sanitizeErrorMessage(error instanceof Error ? error.message : 'Unknown error')
       },
       { status: 500 }
     );
