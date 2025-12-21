@@ -1,72 +1,151 @@
-import { NextResponse } from 'next/server';
-import { rewardsSystem } from '@/lib/enhanced-rewards';
+import SecureRewardsSystem from '@/lib/rewards-secure';
+import {
+  verifyRequestAuthentication,
+  VoucherRedeemSchema,
+  validateRequest,
+  createErrorResponse,
+  createSecureResponse
+} from '@/lib/rewards-security';
+import { ObjectId } from 'mongodb';
 
+/**
+ * REDEEM VOUCHER - Secure Endpoint
+ * 
+ * SECURITY FIXES IMPLEMENTED:
+ * ✓ Authentication required
+ * ✓ Input validation (Zod schemas)
+ * ✓ User can only redeem own vouchers
+ * ✓ Transaction-safe redemption (no double-spend)
+ * ✓ No PII in response
+ */
 export async function POST(request) {
   try {
-    const { email, rewardId } = await request.json();
+    // ====================================================================
+    // 1. AUTHENTICATION
+    // ====================================================================
+    const auth = await verifyRequestAuthentication(request);
+    if (!auth.authenticated) {
+      return createErrorResponse('Unauthorized', 401);
+    }
+
+    const userEmail = auth.userEmail;
+
+    // ====================================================================
+    // 2. INPUT VALIDATION
+    // ====================================================================
+    const body = await request.json();
+    const validation = validateRequest(body, VoucherRedeemSchema);
     
-    if (!email || !rewardId) {
-      return NextResponse.json(
-        { success: false, error: 'Email and reward ID are required' },
-        { status: 400 }
-      );
+    if (!validation.valid) {
+      return createErrorResponse('Invalid request', 400);
+    }
+
+    const { voucherId, orderId } = validation.data;
+
+    // ====================================================================
+    // 3. GET PASSPORT FOR USER
+    // ====================================================================
+    const passport = await SecureRewardsSystem.getPassportByEmail(userEmail);
+    
+    if (!passport) {
+      return createErrorResponse('Passport not found', 404);
+    }
+
+    // ====================================================================
+    // 4. REDEEM VOUCHER - Transaction-safe
+    // ====================================================================
+    const result = await SecureRewardsSystem.redeemVoucher(
+      passport._id.toString(),
+      voucherId,
+      orderId
+    );
+
+    // ====================================================================
+    // 5. RETURN SECURE RESPONSE
+    // ====================================================================
+    return createSecureResponse({
+      success: true,
+      message: 'Voucher redeemed successfully',
+      voucher: {
+        code: result.voucher.code,
+        type: result.voucher.type,
+        value: result.voucher.discountPercent || result.voucher.value,
+        usedAt: result.voucher.usedAt
+      }
+    });
+  } catch (error) {
+    console.error('Redeem error:', error);
+    
+    // Determine appropriate HTTP status
+    let status = 500;
+    let message = 'Failed to redeem voucher';
+    
+    if (error.message === 'Voucher not found') {
+      status = 404;
+      message = 'Voucher not found';
+    } else if (error.message === 'Voucher already used') {
+      status = 400;
+      message = 'Voucher has already been used';
+    } else if (error.message === 'Voucher expired') {
+      status = 400;
+      message = 'Voucher has expired';
     }
     
-    // Redeem reward using enhanced system
-    const result = await rewardsSystem.redeemReward(email, rewardId, true);
-    
-    return NextResponse.json({
-      success: true,
-      redemption: result.redemption,
-      remainingPoints: result.remainingPoints,
-      passport: result.passport,
-      isFallback: result.isFallback,
-      message: result.isFallback 
-        ? 'Reward redeemed offline - will sync when connection is restored'
-        : 'Reward redeemed successfully'
-    });
-    
-  } catch (error) {
-    console.error('Redeem reward error:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to redeem reward' },
-      { status: 500 }
-    );
+    return createErrorResponse(message, status, error);
   }
 }
 
-// GET endpoint to get available rewards
+/**
+ * GET AVAILABLE VOUCHERS
+ */
 export async function GET(request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const email = searchParams.get('email');
-    
-    if (!email) {
-      return NextResponse.json(
-        { success: false, error: 'Email parameter is required' },
-        { status: 400 }
-      );
+    // ====================================================================
+    // 1. AUTHENTICATION
+    // ====================================================================
+    const auth = await verifyRequestAuthentication(request);
+    if (!auth.authenticated) {
+      return createErrorResponse('Unauthorized', 401);
     }
+
+    const userEmail = auth.userEmail;
+
+    // ====================================================================
+    // 2. GET PASSPORT
+    // ====================================================================
+    const passport = await SecureRewardsSystem.getPassportByEmail(userEmail);
     
-    // Get passport to determine available rewards
-    const passport = await rewardsSystem.createOrGetPassport(email, null, true);
-    
-    return NextResponse.json({
-      success: true,
-      availableRewards: passport.availableRewards || [],
-      currentPoints: passport.points || 0,
-      level: passport.level,
-      levelInfo: passport.levelInfo,
-      message: passport.isFallback 
-        ? 'Rewards in offline mode'
-        : 'Available rewards retrieved successfully'
-    });
-    
-  } catch (error) {
-    console.error('Get rewards error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to retrieve rewards' },
-      { status: 500 }
+    if (!passport) {
+      return createErrorResponse('Passport not found', 404);
+    }
+
+    // ====================================================================
+    // 3. FILTER AVAILABLE VOUCHERS
+    // ====================================================================
+    const now = new Date();
+    const availableVouchers = passport.vouchers.filter(v => 
+      !v.used &&                           // Not used yet
+      (!v.expiresAt || v.expiresAt > now) // Not expired
     );
+
+    // ====================================================================
+    // 4. RETURN SECURE RESPONSE
+    // ====================================================================
+    return createSecureResponse({
+      success: true,
+      vouchers: availableVouchers.map(v => ({
+        id: v.id,
+        type: v.type,
+        title: v.title,
+        description: v.description,
+        code: v.code,
+        value: v.discountPercent || v.value,
+        expiresAt: v.expiresAt,
+        awardedAt: v.awardedAt
+      }))
+    });
+  } catch (error) {
+    console.error('Get vouchers error:', error);
+    return createErrorResponse('Internal server error', 500, error);
   }
 }

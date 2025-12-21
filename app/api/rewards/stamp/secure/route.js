@@ -1,101 +1,143 @@
+/**
+ * Secure Stamp API Endpoint
+ * 
+ * Features:
+ * - Authentication required (NextAuth)
+ * - Input validation with Zod
+ * - Rate limiting
+ * - Transaction-safe with idempotency
+ * - CSRF protection
+ * - No PII exposed
+ * - Proper error handling
+ */
+
 import { NextResponse } from 'next/server';
-import { EnhancedRewardsSystem, validation } from '@/lib/rewards-enhanced';
-import { connectToDatabase } from '@/lib/db-optimized';
-
-// Rate limiting map (in production, use Redis)
-const rateLimitMap = new Map();
-
-function checkRateLimit(key, maxRequests = 10, windowMs = 60000) {
-  const now = Date.now();
-  const windowStart = now - windowMs;
-  
-  if (!rateLimitMap.has(key)) {
-    rateLimitMap.set(key, []);
-  }
-  
-  const timestamps = rateLimitMap.get(key).filter(t => t > windowStart);
-  
-  if (timestamps.length >= maxRequests) {
-    return false;
-  }
-  
-  timestamps.push(now);
-  rateLimitMap.set(key, timestamps);
-  return true;
-}
+import SecureRewardsSystem from '@/lib/rewards-secure';
+import {
+  verifyRequestAuthentication,
+  authorizePassportAccess,
+  StampRequestSchema,
+  validateRequest,
+  createErrorResponse,
+  createSecureResponse,
+  checkStampRateLimit,
+  generateIdempotencyKey
+} from '@/lib/rewards-security';
 
 export async function POST(request) {
   try {
+    // ====================================================================
+    // 1. AUTHENTICATION
+    // ====================================================================
+    const auth = await verifyRequestAuthentication(request);
+    if (!auth.authenticated) {
+      return createErrorResponse(
+        'Unauthorized - Please log in',
+        401,
+        new Error('No session')
+      );
+    }
+
+    const userEmail = auth.userEmail;
+
+    // ====================================================================
+    // 2. INPUT VALIDATION
+    // ====================================================================
     const body = await request.json();
-    const { passportId, email, marketName, activityType = 'visit', idempotencyKey } = body;
-    
-    // Require idempotency key
-    if (!idempotencyKey) {
-      return NextResponse.json(
-        { success: false, error: 'Idempotency key is required' },
-        { status: 400 }
+
+    // Add idempotency key if not provided
+    const requestData = {
+      ...body,
+      idempotencyKey: body.idempotencyKey || generateIdempotencyKey()
+    };
+
+    const validation = validateRequest(requestData, StampRequestSchema);
+    if (!validation.valid) {
+      return createErrorResponse(
+        'Invalid request',
+        400,
+        new Error(`Validation failed: ${JSON.stringify(validation.error)}`)
       );
     }
-    
-    // Rate limiting
-    const rateLimitKey = `stamp:${passportId || email}`;
-    if (!checkRateLimit(rateLimitKey, 5, 60000)) {
-      return NextResponse.json(
-        { success: false, error: 'Too many stamp requests. Please wait a moment.' },
-        { status: 429 }
+
+    const { email, passportId, marketName, activityType, idempotencyKey } =
+      validation.data;
+
+    // ====================================================================
+    // 3. AUTHORIZATION
+    // ====================================================================
+    // User can only stamp their own passport
+    const stampEmail = email || userEmail;
+    if (!authorizePassportAccess(userEmail, stampEmail)) {
+      return createErrorResponse(
+        'Forbidden - Cannot modify other users\' passports',
+        403,
+        new Error(`Unauthorized access attempt: ${userEmail} -> ${stampEmail}`)
       );
     }
-    
-    // Get or find passport
-    let finalPassportId = passportId;
-    if (!finalPassportId && email) {
-      if (!validation.isValidEmail(email)) {
-        return NextResponse.json(
-          { success: false, error: 'Invalid email address' },
-          { status: 400 }
-        );
-      }
-      
-      const { db } = await connectToDatabase();
-      const passport = await db.collection('passports').findOne({ email });
-      
+
+    // ====================================================================
+    // 4. RATE LIMITING
+    // ====================================================================
+    const rateLimit = checkStampRateLimit(userEmail, marketName);
+    if (!rateLimit.allowed) {
+      return createErrorResponse(
+        rateLimit.error,
+        429,
+        new Error(`Rate limit exceeded for ${userEmail} at ${marketName}`)
+      );
+    }
+
+    // ====================================================================
+    // 5. GET OR CREATE PASSPORT
+    // ====================================================================
+    let passport = null;
+
+    if (passportId) {
+      passport = await SecureRewardsSystem.getPassportByEmail(userEmail);
       if (!passport) {
-        return NextResponse.json(
-          { success: false, error: 'Passport not found. Please create a passport first.' },
-          { status: 404 }
+        return createErrorResponse(
+          'Passport not found',
+          404,
+          new Error(`Passport not found for ${userEmail}`)
         );
       }
-      
-      finalPassportId = passport._id;
-    }
-    
-    if (!finalPassportId) {
-      return NextResponse.json(
-        { success: false, error: 'Either passportId or email is required' },
-        { status: 400 }
+    } else {
+      // Create passport if needed (with idempotency)
+      passport = await SecureRewardsSystem.createPassport(
+        userEmail,
+        null,
+        `passport_${userEmail}_${Date.now()}`
       );
     }
-    
-    if (!validation.isValidMarketName(marketName)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid market name' },
-        { status: 400 }
-      );
-    }
-    
-    // Add stamp with enhanced system
-    const result = await EnhancedRewardsSystem.addStamp(
-      finalPassportId,
+
+    // ====================================================================
+    // 6. ADD STAMP (WITH TRANSACTION SAFETY)
+    // ====================================================================
+    const result = await SecureRewardsSystem.addStamp(
+      passport._id.toString(),
       marketName,
       activityType,
       idempotencyKey
     );
-    
-    return NextResponse.json({
+
+    if (!result.success) {
+      return createErrorResponse(
+        'Failed to add stamp',
+        500,
+        new Error('Transaction failed')
+      );
+    }
+
+    // ====================================================================
+    // 7. RETURN SECURE RESPONSE (NO PII)
+    // ====================================================================
+    return createSecureResponse({
       success: true,
       stamp: {
         id: result.stamp.id,
         marketName: result.stamp.marketName,
+        activityType: result.stamp.activityType,
         timestamp: result.stamp.timestamp,
         xpValue: result.stamp.xpValue
       },
@@ -104,41 +146,70 @@ export async function POST(request) {
         title: r.title,
         description: r.description,
         code: r.code,
+        ...(r.discountPercent && { discountPercent: r.discountPercent }),
+        ...(r.newLevel && { newLevel: r.newLevel }),
         expiresAt: r.expiresAt
       })),
       passport: {
         totalStamps: result.passport.totalStamps,
         xpPoints: result.passport.xpPoints,
         level: result.passport.level,
-        activeVouchers: result.passport.vouchers.filter(v => !v.used).length
-      }
-    }, {
-      headers: {
-        'Idempotency-Key': idempotencyKey,
-        'Cache-Control': 'no-store'
+        vouchersCount: result.passport.vouchers.length
+      },
+      rateLimitInfo: {
+        remaining: rateLimit.remainingToday,
+        resetTime: new Date(Date.now() + 3600000) // 1 hour
       }
     });
-    
   } catch (error) {
-    console.error('Add stamp error:', error);
-    
-    if (error.message.includes('duplicate') || error.message.includes('Duplicate')) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 409 }
-      );
-    }
-    
-    if (error.message.includes('Invalid')) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 400 }
-      );
-    }
-    
-    return NextResponse.json(
-      { success: false, error: 'Failed to add stamp' },
-      { status: 500 }
+    console.error('Stamp endpoint error:', {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date()
+    });
+
+    return createErrorResponse(
+      'Internal server error',
+      500,
+      error
     );
+  }
+}
+
+/**
+ * GET endpoint for passport info (with authentication)
+ */
+export async function GET(request) {
+  try {
+    // Authentication required
+    const auth = await verifyRequestAuthentication(request);
+    if (!auth.authenticated) {
+      return createErrorResponse('Unauthorized', 401);
+    }
+
+    const userEmail = auth.userEmail;
+
+    // Get passport
+    const passport = await SecureRewardsSystem.getPassportByEmail(userEmail);
+
+    if (!passport) {
+      return createErrorResponse('Passport not found', 404);
+    }
+
+    // Return safe response
+    return createSecureResponse({
+      success: true,
+      passport: {
+        totalStamps: passport.totalStamps,
+        xpPoints: passport.xpPoints,
+        level: passport.level,
+        vouchersAvailable: passport.vouchers.filter(
+          v => !v.used && (!v.expiresAt || v.expiresAt > new Date())
+        ).length
+      }
+    });
+  } catch (error) {
+    console.error('Get passport error:', error);
+    return createErrorResponse('Internal server error', 500, error);
   }
 }

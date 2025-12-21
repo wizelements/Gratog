@@ -1,92 +1,130 @@
 import { NextResponse } from 'next/server';
-import { rewardsSystem } from '@/lib/enhanced-rewards';
+import SecureRewardsSystem from '@/lib/rewards-secure';
+import {
+  verifyRequestAuthentication,
+  PassportCreateSchema,
+  validateRequest,
+  createErrorResponse,
+  createSecureResponse
+} from '@/lib/rewards-security';
 
+/**
+ * CREATE PASSPORT - Secure Endpoint
+ * 
+ * SECURITY FIXES IMPLEMENTED:
+ * ✓ Authentication required
+ * ✓ Input validation (Zod schemas)
+ * ✓ Email must be authenticated user's email
+ * ✓ No PII in response
+ * ✓ Transaction-safe creation
+ */
 export async function POST(request) {
   try {
-    const { email, name } = await request.json();
+    // ====================================================================
+    // 1. AUTHENTICATION - Verify user is logged in
+    // ====================================================================
+    const auth = await verifyRequestAuthentication(request);
+    if (!auth.authenticated) {
+      return createErrorResponse('Unauthorized - Please log in', 401);
+    }
+
+    const userEmail = auth.userEmail;
+
+    // ====================================================================
+    // 2. INPUT VALIDATION
+    // ====================================================================
+    const body = await request.json();
     
-    if (!email) {
-      return NextResponse.json(
-        { success: false, error: 'Email is required' },
-        { status: 400 }
+    const validation = validateRequest(body, PassportCreateSchema);
+    if (!validation.valid) {
+      return createErrorResponse('Invalid request', 400);
+    }
+
+    const { email, name } = validation.data;
+
+    // ====================================================================
+    // 3. AUTHORIZATION - User can only create passport for themselves
+    // ====================================================================
+    if (email && email !== userEmail) {
+      return createErrorResponse(
+        'Forbidden - Can only create passport for yourself',
+        403
       );
     }
-    
-    // Use enhanced rewards system with robust fallback
-    const passport = await rewardsSystem.createOrGetPassport(email, name, true);
-    
-    return NextResponse.json({
+
+    // ====================================================================
+    // 4. CREATE PASSPORT - Use secure transaction-safe method
+    // ====================================================================
+    const passport = await SecureRewardsSystem.createPassport(
+      userEmail,
+      name,
+      `passport_${userEmail}_${Date.now()}`
+    );
+
+    // ====================================================================
+    // 5. RETURN SECURE RESPONSE
+    // ====================================================================
+    return createSecureResponse({
       success: true,
-      passport,
-      message: passport.isFallback ? 'Passport created in offline mode' : 'Passport loaded successfully'
+      message: 'Passport created successfully',
+      passport: {
+        totalStamps: passport.totalStamps,
+        xpPoints: passport.xpPoints,
+        level: passport.level,
+        vouchersCount: passport.vouchers.length
+      }
     });
-    
   } catch (error) {
-    console.error('Passport creation error:', { error: error.message, stack: error.stack });
-    
-    // Create emergency fallback passport
-    const fallbackPassport = {
-      email: request.body?.email || 'unknown@example.com',
-      points: 0,
-      totalPointsEarned: 0,
-      level: 'EXPLORER',
-      levelInfo: {
-        name: 'Explorer',
-        emoji: '🌱',
-        min: 0,
-        max: 99
-      },
-      progressToNext: {
-        progress: 0,
-        pointsToNext: 100,
-        isMaxLevel: false,
-        nextLevel: {
-          name: 'Enthusiast',
-          emoji: '🌿'
-        }
-      },
-      availableRewards: [],
-      activities: [],
-      createdAt: new Date(),
-      isFallback: true,
-      isEmergencyFallback: true
-    };
-    
-    return NextResponse.json({
-      success: true,
-      passport: fallbackPassport,
-      message: 'Emergency fallback passport created',
-      warning: 'System temporarily offline - data will sync when restored'
+    console.error('Passport creation error:', {
+      message: error.message,
+      stack: error.stack
     });
+
+    return createErrorResponse('Failed to create passport', 500, error);
   }
 }
 
-// GET endpoint to retrieve passport
+/**
+ * GET PASSPORT - Retrieve passport info (authentication required)
+ */
 export async function GET(request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const email = searchParams.get('email');
-    
-    if (!email) {
-      return NextResponse.json(
-        { success: false, error: 'Email parameter is required' },
-        { status: 400 }
-      );
+    // ====================================================================
+    // 1. AUTHENTICATION
+    // ====================================================================
+    const auth = await verifyRequestAuthentication(request);
+    if (!auth.authenticated) {
+      return createErrorResponse('Unauthorized', 401);
     }
-    
-    const passport = await rewardsSystem.createOrGetPassport(email, null, true);
-    
-    return NextResponse.json({
+
+    const userEmail = auth.userEmail;
+
+    // ====================================================================
+    // 2. GET PASSPORT
+    // ====================================================================
+    const passport = await SecureRewardsSystem.getPassportByEmail(userEmail);
+
+    if (!passport) {
+      return createErrorResponse('Passport not found', 404);
+    }
+
+    // ====================================================================
+    // 3. RETURN SECURE RESPONSE
+    // ====================================================================
+    return createSecureResponse({
       success: true,
-      passport,
-      message: passport.isFallback ? 'Passport in offline mode' : 'Passport retrieved successfully'
+      passport: {
+        totalStamps: passport.totalStamps,
+        xpPoints: passport.xpPoints,
+        level: passport.level,
+        vouchersAvailable: passport.vouchers.filter(
+          v => !v.used && (!v.expiresAt || v.expiresAt > new Date())
+        ).length,
+        vouchersTotal: passport.vouchers.length
+      }
     });
-    
   } catch (error) {
-    console.error('Get passport error:', { error: error.message, stack: error.stack });
-    return NextResponse.json(
-      { success: false, error: 'Failed to retrieve passport' },
-      { status: 500 }
-    );
+    console.error('Get passport error:', error);
+    return createErrorResponse('Internal server error', 500, error);
   }
 }
