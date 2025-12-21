@@ -40,11 +40,11 @@ export async function GET() {
       const paymentsResponse = await square.payments.list({ limit: 3 });
       results.tests.payments = {
         success: true,
-        count: paymentsResponse.result?.payments?.length || 0,
-        recentPayment: paymentsResponse.result?.payments?.[0] ? {
-          id: paymentsResponse.result.payments[0].id,
-          amount: paymentsResponse.result.payments[0].amountMoney,
-          status: paymentsResponse.result.payments[0].status
+        count: paymentsResponse.data?.length || 0,
+        recentPayment: paymentsResponse.data?.[0] ? {
+          id: paymentsResponse.data[0].id,
+          amount: paymentsResponse.data[0].amountMoney,
+          status: paymentsResponse.data[0].status
         } : null
       };
     } catch (error: any) {
@@ -60,7 +60,7 @@ export async function GET() {
       const catalogResponse = await square.catalog.list({ types: 'ITEM' });
       results.tests.catalog = {
         success: true,
-        count: catalogResponse.result?.objects?.length || 0
+        count: catalogResponse.data?.length || 0
       };
     } catch (error: any) {
       results.tests.catalog = {

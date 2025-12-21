@@ -153,9 +153,27 @@ export async function POST(request: NextRequest) {
       }
     }));
     
-    // Create payment link directly with SDK
+    // Create payment link directly with SDK using Order (since lineItems isn't directly supported)
     const paymentLinkResponse = await square.checkout.paymentLinks.create({
-      lineItems: paymentLinkLineItems,
+      order: {
+        locationId: SQUARE_LOCATION_ID,
+        referenceId: orderId,
+        lineItems: paymentLinkLineItems,
+        customerId: squareCustomerId || undefined,
+        pricingOptions: {
+          autoApplyTaxes: true,
+          autoApplyDiscounts: true
+        },
+        metadata: {
+          orderId: orderId || randomUUID(),
+          source: 'website',
+          fulfillmentType: fulfillmentType || 'pickup',
+          customerEmail: customer?.email || '',
+          customerName: customer?.name || '',
+          customerPhone: customer?.phone || '',
+          createdAt: new Date().toISOString()
+        }
+      },
       idempotencyKey: randomUUID(),
       checkoutOptions: {
         redirectUrl: redirectUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success`,
