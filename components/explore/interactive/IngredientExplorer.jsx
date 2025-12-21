@@ -46,7 +46,7 @@ export default function IngredientExplorer({ ingredients = [] }) {
               placeholder="Search ingredients or benefits..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+              className="pl-10 bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
               aria-label="Search ingredients or benefits"
             />
           </div>
@@ -57,7 +57,7 @@ export default function IngredientExplorer({ ingredients = [] }) {
               variant={viewMode === 'grid' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewMode('grid')}
-              className={viewMode === 'grid' ? '' : 'border-white/20 text-white hover:bg-white/10'}
+              className={viewMode === 'grid' ? '' : 'border-emerald-600/40 text-emerald-100 hover:bg-emerald-600/20 hover:border-emerald-500/60'}
             >
               <Grid3x3 className="h-4 w-4" />
             </Button>
@@ -65,7 +65,7 @@ export default function IngredientExplorer({ ingredients = [] }) {
               variant={viewMode === 'list' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewMode('list')}
-              className={viewMode === 'list' ? '' : 'border-white/20 text-white hover:bg-white/10'}
+              className={viewMode === 'list' ? '' : 'border-emerald-600/40 text-emerald-100 hover:bg-emerald-600/20 hover:border-emerald-500/60'}
             >
               <List className="h-4 w-4" />
             </Button>
@@ -83,7 +83,7 @@ export default function IngredientExplorer({ ingredients = [] }) {
                 `cursor-pointer transition-colors capitalize ${
                   selectedCategory === category 
                     ? 'bg-emerald-500 text-white' 
-                    : 'border-white/20 text-white/60 hover:bg-white/10'
+                    : 'border-emerald-600/40 text-emerald-200 hover:bg-emerald-600/30 hover:border-emerald-500'
                 }`
               }
               onClick={() => setSelectedCategory(category)}

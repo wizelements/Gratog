@@ -155,7 +155,7 @@ export default function BlendMaker({ ingredients = [] }) {
                 size="lg"
                 variant="outline"
                 onClick={reset}
-                className="border-white/20 text-white hover:bg-white/10"
+                className="border-blue-600/50 text-blue-200 hover:bg-blue-600/30 hover:border-blue-500"
               >
                 Reset
               </Button>

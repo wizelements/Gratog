@@ -150,7 +150,7 @@ export default function IngredientQuiz({ ingredients = [] }) {
           <Button size="lg" onClick={startGame} className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700">
             Play Again
           </Button>
-          <Button size="lg" variant="outline" onClick={() => setGameState('start')} className="border-white/20 text-white hover:bg-white/10">
+          <Button size="lg" variant="outline" onClick={() => setGameState('start')} className="border-purple-500/60 text-purple-200 hover:bg-purple-600/30">
             Back
           </Button>
         </div>

@@ -52,10 +52,10 @@ export default function WishlistButton({
   if (!mounted) {
     return (
       <button
-        className={`${sizeClasses[size]} rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center transition-all hover:scale-110 ${className}`}
+        className={`${sizeClasses[size]} rounded-full bg-emerald-600 backdrop-blur-sm shadow-md flex items-center justify-center transition-all hover:scale-110 hover:bg-emerald-700 ${className}`}
         aria-label="Add to wishlist"
       >
-        <Heart className={`${iconSizes[size]} text-gray-400`} />
+        <Heart className={`${iconSizes[size]} text-white`} />
       </button>
     );
   }
@@ -64,7 +64,7 @@ export default function WishlistButton({
     <motion.button
       onClick={handleClick}
       whileTap={{ scale: 0.85 }}
-      className={`${sizeClasses[size]} rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center transition-all hover:scale-110 hover:shadow-lg ${className}`}
+      className={`${sizeClasses[size]} rounded-full bg-emerald-600 backdrop-blur-sm shadow-md flex items-center justify-center transition-all hover:scale-110 hover:shadow-lg hover:bg-emerald-700 ${className}`}
       aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
       aria-pressed={isWishlisted}
     >

@@ -113,7 +113,7 @@ export default function MemoryMatch({ ingredients = [] }) {
                 key={diff}
                 variant={difficulty === diff ? 'default' : 'outline'}
                 onClick={() => setDifficulty(diff)}
-                className={difficulty === diff ? '' : 'border-white/20 text-white hover:bg-white/10'}
+                className={difficulty === diff ? '' : 'border-cyan-500/60 text-cyan-200 hover:bg-cyan-600/30 hover:border-cyan-400'}
               >
                 {diff.charAt(0).toUpperCase() + diff.slice(1)}
                 <br />
@@ -149,7 +149,7 @@ export default function MemoryMatch({ ingredients = [] }) {
           <Button size="lg" onClick={startGame} className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700">
             Play Again
           </Button>
-          <Button size="lg" variant="outline" onClick={() => setGameState('start')} className="border-white/20 text-white hover:bg-white/10">
+          <Button size="lg" variant="outline" onClick={() => setGameState('start')} className="border-cyan-500/60 text-cyan-200 hover:bg-cyan-600/30 hover:border-cyan-400">
             Back
           </Button>
         </div>
