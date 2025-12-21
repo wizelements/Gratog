@@ -1,0 +1,193 @@
+name: Post-Deploy Tests
+
+on:
+  deployment_status:
+    types: [created]
+
+jobs:
+  test-production:
+    runs-on: ubuntu-latest
+    if: github.event.deployment_status.state == 'success'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Wait for deployment
+        run: sleep 30
+      
+      - name: Health Check
+        id: health
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" https://tasteofgratitude.shop/api/health)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          
+          echo "HTTP_CODE=$HTTP_CODE" >> $GITHUB_ENV
+          echo "HEALTH_BODY=$BODY" >> $GITHUB_ENV
+          
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "HEALTH_CHECK_FAILED=true" >> $GITHUB_ENV
+          else
+            echo "HEALTH_CHECK_FAILED=false" >> $GITHUB_ENV
+          fi
+      
+      - name: Test Products API
+        id: products
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" https://tasteofgratitude.shop/api/products?limit=5)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          
+          echo "PRODUCTS_HTTP_CODE=$HTTP_CODE" >> $GITHUB_ENV
+          
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "PRODUCTS_TEST_FAILED=true" >> $GITHUB_ENV
+          else
+            # Check if we got products
+            COUNT=$(echo "$BODY" | jq '.data | length' 2>/dev/null || echo "0")
+            echo "PRODUCTS_COUNT=$COUNT" >> $GITHUB_ENV
+            if [ "$COUNT" -lt 1 ]; then
+              echo "PRODUCTS_TEST_FAILED=true" >> $GITHUB_ENV
+            else
+              echo "PRODUCTS_TEST_FAILED=false" >> $GITHUB_ENV
+            fi
+          fi
+      
+      - name: Test Performance
+        id: performance
+        run: |
+          # Measure homepage load time
+          START=$(date +%s%N)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://tasteofgratitude.shop)
+          END=$(date +%s%N)
+          
+          DURATION=$((($END - $START) / 1000000))
+          
+          echo "PAGE_LOAD_TIME=$DURATION" >> $GITHUB_ENV
+          echo "HOMEPAGE_STATUS=$STATUS" >> $GITHUB_ENV
+          
+          if [ "$DURATION" -gt 5000 ]; then
+            echo "PERFORMANCE_WARNING=true" >> $GITHUB_ENV
+          else
+            echo "PERFORMANCE_WARNING=false" >> $GITHUB_ENV
+          fi
+      
+      - name: Check for Sentry Errors
+        id: sentry
+        run: |
+          # This would need SENTRY_AUTH_TOKEN environment variable
+          echo "SENTRY_CHECK=skipped (requires auth)" >> $GITHUB_ENV
+      
+      - name: Generate Deployment Report
+        id: deploy_report
+        if: always()
+        run: |
+          cat > deployment-report.md << 'EOF'
+          # 🚀 Post-Deployment Test Report
+          
+          **Date:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')
+          **Environment:** Production
+          **URL:** https://tasteofgratitude.shop
+          **Deployment SHA:** ${{ github.event.deployment.sha }}
+          
+          ## Deployment Tests
+          
+          | Test | Status | Details |
+          |------|--------|---------|
+          | Health Check (API) | ${{ env.HEALTH_CHECK_FAILED == 'true' && '❌ FAILED' || '✅ PASSED' }} | HTTP ${{ env.HTTP_CODE }} |
+          | Products API | ${{ env.PRODUCTS_TEST_FAILED == 'true' && '❌ FAILED' || '✅ PASSED' }} | ${{ env.PRODUCTS_COUNT }} products loaded |
+          | Homepage Load Time | ${{ env.PERFORMANCE_WARNING == 'true' && '⚠️ SLOW' || '✅ FAST' }} | ${{ env.PAGE_LOAD_TIME }}ms |
+          | Homepage Status | ${{ env.HOMEPAGE_STATUS == '200' && '✅ OK' || '❌ ERROR' }} | HTTP ${{ env.HOMEPAGE_STATUS }} |
+          
+          ## Performance Metrics
+          
+          - **Page Load Time:** ${{ env.PAGE_LOAD_TIME }}ms
+          - **Status:** ${{ env.HOMEPAGE_STATUS }}
+          
+          ## Next Steps
+          
+          EOF
+          
+          if [ "${{ env.HEALTH_CHECK_FAILED }}" == "true" ] || [ "${{ env.PRODUCTS_TEST_FAILED }}" == "true" ]; then
+            echo "❌ **DEPLOYMENT FAILED** - Critical endpoints not responding" >> deployment-report.md
+            echo ""
+            echo "### Required Actions:" >> deployment-report.md
+            echo "1. Check Vercel deployment logs" >> deployment-report.md
+            echo "2. Verify environment variables" >> deployment-report.md
+            echo "3. Check database connections" >> deployment-report.md
+            echo "4. Rollback if necessary" >> deployment-report.md
+            echo "DEPLOYMENT_STATUS=FAILED" >> $GITHUB_ENV
+          else
+            echo "✅ **DEPLOYMENT SUCCESSFUL** - All critical endpoints responding" >> deployment-report.md
+            echo ""
+            echo "### Monitoring:" >> deployment-report.md
+            echo "- Monitor Sentry for errors: https://sentry.io" >> deployment-report.md
+            echo "- Monitor Analytics for user behavior" >> deployment-report.md
+            echo "- Check performance metrics in Vercel" >> deployment-report.md
+            echo "DEPLOYMENT_STATUS=SUCCESS" >> $GITHUB_ENV
+          fi
+          
+          cat deployment-report.md
+      
+      # Save artifacts
+      - name: Save deployment report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-report
+          path: deployment-report.md
+      
+      # Create issue if deployment fails
+      - name: Create deployment failure issue
+        if: env.DEPLOYMENT_STATUS == 'FAILED'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('deployment-report.md', 'utf8');
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Production Deployment Failed - ${new Date().toISOString().split('T')[0]}`,
+              body: `**Deployment SHA:** ${context.payload.deployment.sha}\n\n${report}\n\n**URGENT:** Site may be down or partially unavailable.`,
+              labels: ['deployment-failure', 'critical', 'needs-immediate-fix'],
+              assignees: ['@maintainer'] // Change to actual maintainer
+            });
+      
+      # Notify on Slack (optional)
+      - name: Notify Slack on failure
+        if: env.DEPLOYMENT_STATUS == 'FAILED'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK }}
+          payload: |
+            {
+              "text": "🚨 Production Deployment Failed",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Production Deployment Failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*URL:* https://tasteofgratitude.shop\n*Status:* Health check failed\n*Deployment:* ${{ github.event.deployment.sha }}"
+                  }
+                }
+              ]
+            }
+      
+      - name: Report Status
+        if: always()
+        run: |
+          echo "## Deployment Test Results"
+          echo ""
+          echo "Health Check: ${{ env.HEALTH_CHECK_FAILED == 'true' && 'FAILED' || 'PASSED' }}"
+          echo "Products API: ${{ env.PRODUCTS_TEST_FAILED == 'true' && 'FAILED' || 'PASSED' }}"
+          echo "Page Load Time: ${{ env.PAGE_LOAD_TIME }}ms"
+          echo "Overall: ${{ env.DEPLOYMENT_STATUS }}"

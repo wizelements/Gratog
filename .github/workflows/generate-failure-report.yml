@@ -1,0 +1,261 @@
+name: Generate Failure Report
+
+# Triggered when tests fail, generates detailed markdown for context
+on:
+  workflow_run:
+    workflows: ["Test & Report"]
+    types: [completed]
+    branches: [main, develop]
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: test-logs
+      
+      - name: Parse test failures
+        id: parse
+        run: |
+          cat > parse-failures.js << 'EOF'
+          const fs = require('fs');
+          
+          let unitTestFailures = [];
+          let smokeTestFailures = [];
+          let buildFailures = [];
+          let tsFailures = [];
+          
+          // Parse unit test output
+          if (fs.existsSync('test-output.txt')) {
+            const content = fs.readFileSync('test-output.txt', 'utf8');
+            const failures = content.match(/✗.*?(FAIL|Error|Expected|AssertionError)/g) || [];
+            unitTestFailures = failures.slice(0, 10); // First 10
+          }
+          
+          // Parse smoke test output
+          if (fs.existsSync('smoke-output.txt')) {
+            const content = fs.readFileSync('smoke-output.txt', 'utf8');
+            const failures = content.match(/✗.*/g) || [];
+            smokeTestFailures = failures.slice(0, 10);
+          }
+          
+          // Parse build output
+          if (fs.existsSync('build-output.txt')) {
+            const content = fs.readFileSync('build-output.txt', 'utf8');
+            const errors = content.match(/error|Error|ERROR[^\n]*/g) || [];
+            buildFailures = errors.slice(0, 10);
+          }
+          
+          // Parse TypeScript output
+          if (fs.existsSync('ts-output.txt')) {
+            const content = fs.readFileSync('ts-output.txt', 'utf8');
+            const errors = content.match(/error TS\d+[^\n]*/g) || [];
+            tsFailures = errors.slice(0, 10);
+          }
+          
+          const summary = {
+            unitTestFailures,
+            smokeTestFailures,
+            buildFailures,
+            tsFailures,
+            timestamp: new Date().toISOString()
+          };
+          
+          fs.writeFileSync('failure-summary.json', JSON.stringify(summary, null, 2));
+          EOF
+          
+          node parse-failures.js
+          cat failure-summary.json
+      
+      - name: Generate detailed failure report
+        id: report
+        run: |
+          cat > FAILURE_REPORT.md << 'EOF'
+          # ❌ Test Failure Report
+          
+          **Generated:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')
+          **Branch:** ${{ github.event.workflow_run.head_branch }}
+          **Commit:** ${{ github.event.workflow_run.head_commit.id }}
+          **Workflow Run:** ${{ github.event.workflow_run.id }}
+          
+          ## Summary
+          
+          Tests failed during the automated test run. This report identifies what broke and what needs to be fixed.
+          
+          ## Failure Details
+          
+          ### Unit Test Failures
+          EOF
+          
+          if grep -q "unitTestFailures" failure-summary.json && [ -s "test-output.txt" ]; then
+            echo "
+          \`\`\`
+          $(head -50 test-output.txt)
+          \`\`\`
+          " >> FAILURE_REPORT.md
+          else
+            echo "None detected" >> FAILURE_REPORT.md
+          fi
+          
+          echo "
+          ### Smoke Test Failures
+          " >> FAILURE_REPORT.md
+          
+          if [ -s "smoke-output.txt" ]; then
+            echo "
+          \`\`\`
+          $(head -50 smoke-output.txt)
+          \`\`\`
+          " >> FAILURE_REPORT.md
+          else
+            echo "None detected" >> FAILURE_REPORT.md
+          fi
+          
+          echo "
+          ### Build Failures
+          " >> FAILURE_REPORT.md
+          
+          if [ -s "build-output.txt" ]; then
+            echo "
+          \`\`\`
+          $(grep -i error build-output.txt | head -20)
+          \`\`\`
+          " >> FAILURE_REPORT.md
+          else
+            echo "None detected" >> FAILURE_REPORT.md
+          fi
+          
+          echo "
+          ### TypeScript Errors
+          " >> FAILURE_REPORT.md
+          
+          if [ -s "ts-output.txt" ]; then
+            echo "
+          \`\`\`
+          $(head -30 ts-output.txt)
+          \`\`\`
+          " >> FAILURE_REPORT.md
+          else
+            echo "None detected" >> FAILURE_REPORT.md
+          fi
+          
+          cat >> FAILURE_REPORT.md << 'EOF'
+          
+          ## Root Cause Analysis
+          
+          ### Common Causes
+          
+          - ❌ **Hydration Mismatch** - Server/Client rendering differences
+            - **Fix:** Check for window guards, useEffect hooks
+          
+          - ❌ **Import Errors** - Missing modules or circular dependencies
+            - **Fix:** Check imports, verify all dependencies installed
+          
+          - ❌ **Type Errors** - TypeScript compilation failures
+            - **Fix:** Check type definitions, review recent type changes
+          
+          - ❌ **Component Errors** - Render errors in components
+            - **Fix:** Check error boundaries, verify props
+          
+          - ❌ **Build Errors** - Next.js build failures
+            - **Fix:** Check next.config.js, verify environmental setup
+          
+          ## Next Steps
+          
+          ### Step 1: Review Logs
+          - [ ] Read full test output above
+          - [ ] Identify specific failing test
+          - [ ] Find error message (error TS..., ✗ Test..., etc)
+          
+          ### Step 2: Identify Root Cause
+          - [ ] Check git diff for recent changes
+          - [ ] Run locally to reproduce: `yarn test`
+          - [ ] Check component imports and dependencies
+          
+          ### Step 3: Fix
+          - [ ] Apply fix based on error message
+          - [ ] Re-run tests locally: `yarn test`
+          - [ ] Verify all tests pass before pushing
+          
+          ### Step 4: Push & Verify
+          - [ ] Push fix to branch
+          - [ ] Wait for GitHub Actions to re-run
+          - [ ] Confirm ✅ tests pass
+          
+          ## Debug Commands
+          
+          Run these locally to debug:
+          
+          \`\`\`bash
+          # Run unit tests with verbose output
+          yarn test -- --reporter=verbose
+          
+          # Run smoke tests
+          yarn test:smoke
+          
+          # Build and check for errors
+          yarn build
+          
+          # Type check
+          yarn tsc --noEmit --skipLibCheck
+          
+          # Lint
+          yarn lint
+          \`\`\`
+          
+          ## Resources
+          
+          - 📖 [FIX_VERIFICATION_COMPLETE.md](../../FIX_VERIFICATION_COMPLETE.md) - Current fix status
+          - 📖 [ERROR_MONITORING_GUIDE.md](../../ERROR_MONITORING_GUIDE.md) - Error handling setup
+          - 📖 [DEEP_TEST_PLAN.md](../../DEEP_TEST_PLAN.md) - Full test coverage
+          
+          ---
+          
+          **Status:** Needs Investigation and Fix  
+          **Priority:** High  
+          **Owner:** [Assign to developer]
+          EOF
+          
+          cat FAILURE_REPORT.md
+      
+      - name: Commit failure report
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          
+          if [ -f "FAILURE_REPORT.md" ]; then
+            cp FAILURE_REPORT.md "/tmp/FAILURE_REPORT_$(date +%Y%m%d_%H%M%S).md"
+            git add FAILURE_REPORT.md
+            git commit -m "docs: add failure report for investigation [skip ci]" || true
+            git push origin ${{ github.event.workflow_run.head_branch }} || true
+          fi
+      
+      - name: Create investigation issue
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let body = 'Test failure detected. ';
+            
+            if (fs.existsSync('FAILURE_REPORT.md')) {
+              const report = fs.readFileSync('FAILURE_REPORT.md', 'utf8');
+              body = report;
+            }
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔴 Test Failure - Investigation Required`,
+              body: body,
+              labels: ['bug', 'test-failure', 'investigation-needed'],
+              assignees: [] // Can be assigned manually
+            });
