@@ -5,15 +5,16 @@ import { NextResponse } from 'next/server';
  * DO NOT expose in production - for debugging only
  */
 export async function GET(request) {
-  // Only allow in development or with secret key
-  const debugSecret = request.headers.get('x-debug-secret');
-  const isDev = process.env.NODE_ENV === 'development';
-  
-  if (!isDev && debugSecret !== process.env.DEBUG_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  try {
+    // Only allow in development or with secret key
+    const debugSecret = request.headers.get('x-debug-secret');
+    const isDev = process.env.NODE_ENV === 'development';
+    
+    if (!isDev && debugSecret !== process.env.DEBUG_SECRET) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-  const envCheck = {
+    const envCheck = {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
     platform: process.env.VERCEL ? 'Vercel' : 'Local',
@@ -79,15 +80,21 @@ export async function GET(request) {
     issues.push('❌ ERROR: Using Client Secret (sq0csp-) instead of Access Token (EAAA-)');
   }
   
-  return NextResponse.json({
-    status: issues.length === 0 ? 'healthy' : 'issues_found',
-    issues,
-    issueCount: issues.length,
-    environment: envCheck
-  }, {
-    headers: {
-      'Cache-Control': 'no-store, no-cache, must-revalidate',
-      'Pragma': 'no-cache'
-    }
-  });
+    return NextResponse.json({
+      status: issues.length === 0 ? 'healthy' : 'issues_found',
+      issues,
+      issueCount: issues.length,
+      environment: envCheck
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Debug endpoint failed' },
+      { status: 500 }
+    );
+  }
 }
