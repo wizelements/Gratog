@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { ADMIN_SETUP_SECRET } from '@/lib/auth-config';
 import { logger } from '@/lib/logger';
 

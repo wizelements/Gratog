@@ -1,8 +1,14 @@
 /**
  * Rewards Store - Zustand store for loyalty/rewards program state management
+ * 
+ * SECURITY: Uses sessionStorage via SecureStorage for:
+ * - No persistent client-side storage (cleared on browser close)
+ * - 30-minute TTL for session data
+ * - Referral codes NOT persisted (fraud prevention)
  */
 
 import { create } from 'zustand';
+import { rewardsStorage } from '@/lib/secure-storage';
 
 export type RewardsTier = 'bronze' | 'silver' | 'gold' | 'platinum';
 
@@ -85,20 +91,25 @@ function calculateTier(points: number): RewardsTier {
   return 'bronze';
 }
 
+/**
+ * Load session state from SecureStorage (sessionStorage with TTL)
+ * NOTE: Referral code is intentionally NOT loaded from storage (fraud prevention)
+ */
 function loadPersistedState(): Partial<RewardsState> {
   if (typeof window === 'undefined') return {};
   
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = rewardsStorage.get<Partial<RewardsState>>(STORAGE_KEY);
     if (!saved) return {};
-    const parsed = JSON.parse(saved);
+    
     return {
-      points: typeof parsed.points === 'number' ? parsed.points : 0,
-      tier: parsed.tier || 'bronze',
-      pointsHistory: Array.isArray(parsed.pointsHistory) ? parsed.pointsHistory : [],
-      referralCode: typeof parsed.referralCode === 'string' ? parsed.referralCode : '',
-      referralCount: typeof parsed.referralCount === 'number' ? parsed.referralCount : 0,
-      lifetimePoints: typeof parsed.lifetimePoints === 'number' ? parsed.lifetimePoints : 0
+      points: typeof saved.points === 'number' ? saved.points : 0,
+      tier: saved.tier || 'bronze',
+      pointsHistory: Array.isArray(saved.pointsHistory) ? saved.pointsHistory : [],
+      // SECURITY: referralCode is NOT persisted - generate fresh each session
+      referralCode: '',
+      referralCount: typeof saved.referralCount === 'number' ? saved.referralCount : 0,
+      lifetimePoints: typeof saved.lifetimePoints === 'number' ? saved.lifetimePoints : 0
     };
   } catch (e) {
     console.error('Failed to load persisted rewards state:', e);
@@ -106,18 +117,22 @@ function loadPersistedState(): Partial<RewardsState> {
   }
 }
 
+/**
+ * Persist session state to SecureStorage (30-minute TTL)
+ * NOTE: Referral code is intentionally NOT persisted (fraud prevention)
+ */
 function persistState(state: Partial<RewardsState>) {
   if (typeof window === 'undefined') return;
   
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    rewardsStorage.set(STORAGE_KEY, {
       points: state.points,
       tier: state.tier,
       pointsHistory: state.pointsHistory,
-      referralCode: state.referralCode,
+      // SECURITY: referralCode intentionally excluded from persistence
       referralCount: state.referralCount,
       lifetimePoints: state.lifetimePoints
-    }));
+    });
   } catch (e) {
     console.error('Failed to persist rewards state:', e);
   }
@@ -320,9 +335,8 @@ export const useRewardsStore = create<RewardsState>((set, get) => {
         lifetimePoints: 0
       });
       
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(STORAGE_KEY);
-      }
+      // SECURITY: Use SecureStorage for cleanup
+      rewardsStorage.remove(STORAGE_KEY);
     }
   };
 });

@@ -1,0 +1,78 @@
+name: Production Health Monitor
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Every 15 minutes
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    name: Monitor Production Health
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check Production Health
+        id: health
+        run: |
+          PROD_URL="${{ vars.PRODUCTION_URL || 'https://tasteofgratitude.shop' }}"
+          
+          echo "Checking: $PROD_URL"
+          
+          # Health endpoint check
+          HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL/api/health" --max-time 30 || echo "000")
+          echo "health_status=$HEALTH_RESPONSE" >> $GITHUB_OUTPUT
+          
+          # Main page check
+          MAIN_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL" --max-time 30 || echo "000")
+          echo "main_status=$MAIN_RESPONSE" >> $GITHUB_OUTPUT
+          
+          # API check
+          API_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL/api/products" --max-time 30 || echo "000")
+          echo "api_status=$API_RESPONSE" >> $GITHUB_OUTPUT
+          
+          echo "## Health Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Endpoint | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| /api/health | $HEALTH_RESPONSE |" >> $GITHUB_STEP_SUMMARY
+          echo "| / (main) | $MAIN_RESPONSE |" >> $GITHUB_STEP_SUMMARY
+          echo "| /api/products | $API_RESPONSE |" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Alert on Failure
+        if: steps.health.outputs.health_status != '200' || steps.health.outputs.main_status != '200'
+        run: |
+          echo "::error::Production health check failed!"
+          echo "Health: ${{ steps.health.outputs.health_status }}"
+          echo "Main: ${{ steps.health.outputs.main_status }}"
+          echo "API: ${{ steps.health.outputs.api_status }}"
+          
+          # Could add Slack/Discord/email notification here
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK }} -d '{"text":"🚨 Production down!"}'
+          
+          exit 1
+      
+      - name: Log Success
+        if: steps.health.outputs.health_status == '200' && steps.health.outputs.main_status == '200'
+        run: |
+          echo "✅ All health checks passed"
+
+  performance-check:
+    name: Performance Baseline
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Measure Response Times
+        run: |
+          PROD_URL="${{ vars.PRODUCTION_URL || 'https://tasteofgratitude.shop' }}"
+          
+          echo "## Performance Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "| Endpoint | Time (ms) |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-----------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Measure response times
+          for endpoint in "/api/health" "/" "/api/products"; do
+            TIME=$(curl -s -o /dev/null -w "%{time_total}" "$PROD_URL$endpoint" --max-time 30 || echo "timeout")
+            TIME_MS=$(echo "$TIME * 1000" | bc 2>/dev/null || echo "$TIME")
+            echo "| $endpoint | $TIME_MS |" >> $GITHUB_STEP_SUMMARY
+          done

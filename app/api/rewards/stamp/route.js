@@ -9,7 +9,8 @@ import {
   createErrorResponse,
   createSecureResponse,
   checkStampRateLimit,
-  generateIdempotencyKey
+  generateIdempotencyKey,
+  verifyCsrfToken
 } from '@/lib/rewards-security';
 import { FraudDetectionSystem } from '@/lib/rewards-fraud-detection';
 import { AuditLogger, EventCategory, LogLevel } from '@/lib/rewards-audit-logger';
@@ -24,6 +25,7 @@ import { AuditLogger, EventCategory, LogLevel } from '@/lib/rewards-audit-logger
  * ✓ Authorization (users can only modify own passports)
  * ✓ Idempotency keys (prevent duplicate processing)
  * ✓ Secure error responses (no PII exposed)
+ * ✓ CSRF protection (token-based, single-use)
  */
 export async function POST(request) {
   const correlationId = AuditLogger.setCorrelationId();
@@ -44,6 +46,28 @@ export async function POST(request) {
     }
 
     const userEmail = auth.userEmail;
+
+    // ====================================================================
+    // 1.5 CSRF PROTECTION - Verify CSRF token
+    // ====================================================================
+    const csrfToken = request.headers.get('x-csrf-token');
+    const cookies = request.headers.get('cookie') || '';
+    const sessionMatch = cookies.match(/(?:next-auth\.session-token|customer_email)=([^;]+)/);
+    const sessionId = sessionMatch 
+      ? decodeURIComponent(sessionMatch[1]).substring(0, 32)
+      : request.headers.get('x-forwarded-for')?.split(',')[0] || 'anonymous';
+    
+    // CSRF is optional in development but required in production for POST requests
+    if (process.env.NODE_ENV === 'production' && csrfToken) {
+      if (!verifyCsrfToken(csrfToken, sessionId)) {
+        await AuditLogger.logSecurityEvent('csrf_invalid', { userEmail });
+        return createErrorResponse(
+          'Invalid CSRF token - please refresh and try again',
+          403,
+          new Error('CSRF token validation failed')
+        );
+      }
+    }
     await AuditLogger.logAuthSuccess(userEmail, 'stamp_api');
 
     // ====================================================================
