@@ -11,6 +11,9 @@ export default function WhatsNewModal() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
+    // Guard against SSR - localStorage only available in browser
+    if (typeof window === 'undefined') return;
+    
     // Check if user has seen the modal
     const hasSeenModal = localStorage.getItem('whats-new-square-v1');
     
@@ -25,7 +28,9 @@ export default function WhatsNewModal() {
   }, []);
 
   const handleClose = () => {
-    localStorage.setItem('whats-new-square-v1', 'true');
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('whats-new-square-v1', 'true');
+    }
     setIsOpen(false);
   };
 

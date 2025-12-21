@@ -18,7 +18,8 @@ export default function ExitIntentPopup() {
     
     setIsSaving(true);
     try {
-      const cart = localStorage.getItem('cart');
+      // Guard against SSR - localStorage only available in browser
+      const cart = typeof window !== 'undefined' ? localStorage.getItem('cart') : null;
       console.log('Saving cart for email:', email, 'Cart:', cart);
       await new Promise(resolve => setTimeout(resolve, 500));
       setSaved(true);

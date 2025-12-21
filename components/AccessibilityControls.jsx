@@ -11,6 +11,9 @@ export default function AccessibilityControls() {
 
   // Load saved preferences
   useEffect(() => {
+    // Guard against SSR
+    if (typeof window === 'undefined') return;
+    
     const savedFontSize = localStorage.getItem('a11y-font-size');
     const savedContrast = localStorage.getItem('a11y-high-contrast');
 
@@ -25,6 +28,7 @@ export default function AccessibilityControls() {
   }, []);
 
   const adjustFontSize = (delta) => {
+    if (typeof window === 'undefined') return;
     const newSize = Math.min(Math.max(fontSize + delta, 75), 150);
     setFontSize(newSize);
     localStorage.setItem('a11y-font-size', newSize);
@@ -32,6 +36,7 @@ export default function AccessibilityControls() {
   };
 
   const toggleHighContrast = () => {
+    if (typeof window === 'undefined') return;
     const newContrast = !highContrast;
     setHighContrast(newContrast);
     localStorage.setItem('a11y-high-contrast', newContrast);
