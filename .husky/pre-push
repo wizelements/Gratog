@@ -1,11 +1,30 @@
 #!/usr/bin/env sh
 
 echo "🔒 Pre-push: running checks..."
-echo "📝 Linting..."
-yarn lint || true
+
+# TypeScript check - FAIL if errors
 echo "🔍 TypeScript check..."
-yarn tsc --noEmit --skipLibCheck || true
-echo "🧪 Unit tests (e2e and square integration tests skipped)..."
-yarn vitest run --reporter=dot || true
-echo "✅ Pre-push checks complete"
+yarn tsc --noEmit --skipLibCheck
+if [ $? -ne 0 ]; then
+  echo "❌ TypeScript errors found. Fix them before pushing."
+  exit 1
+fi
+
+# Linting - FAIL if errors
+echo "📝 Linting..."
+yarn lint
+if [ $? -ne 0 ]; then
+  echo "❌ Linting errors found. Fix them before pushing."
+  exit 1
+fi
+
+# Unit tests - FAIL if errors (but not e2e/integration)
+echo "🧪 Running unit tests..."
+yarn vitest run --reporter=dot
+if [ $? -ne 0 ]; then
+  echo "❌ Unit test failures found. Fix them before pushing."
+  exit 1
+fi
+
+echo "✅ Pre-push checks passed"
 exit 0
