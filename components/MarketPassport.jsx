@@ -263,32 +263,34 @@ export default function MarketPassport({ customerEmail, customerName }) {
         </Card>
       )}
       
-      {/* Demo Stamp Buttons (for testing) */}
-      <Card className="border-dashed border-2 border-gray-300">
-        <CardHeader>
-          <CardTitle className="text-sm text-gray-600">Demo: Simulate Market Visits</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => simulateStamp('Serenbe')}
-              disabled={scanning}
-            >
-              Stamp: Serenbe
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => simulateStamp('East Atlanta Village')}
-              disabled={scanning}
-            >
-              Stamp: EAV
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Demo Stamp Buttons (development only) */}
+      {process.env.NEXT_PUBLIC_ENABLE_DEMO === 'true' && (
+        <Card className="border-dashed border-2 border-gray-300">
+          <CardHeader>
+            <CardTitle className="text-sm text-gray-600">Demo: Simulate Market Visits</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => simulateStamp('Serenbe')}
+                disabled={scanning}
+              >
+                Stamp: Serenbe
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => simulateStamp('East Atlanta Village')}
+                disabled={scanning}
+              >
+                Stamp: EAV
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
