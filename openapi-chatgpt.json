@@ -1,0 +1,565 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Taste of Gratitude - Testing & Monitoring API",
+    "description": "API for ChatGPT to test and monitor the Taste of Gratitude e-commerce site",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Taste of Gratitude Support",
+      "url": "https://tasteofgratitude.shop"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://tasteofgratitude.shop/api",
+      "description": "Production API"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Check if the site is up and responsive",
+        "operationId": "healthCheck",
+        "tags": ["monitoring"],
+        "responses": {
+          "200": {
+            "description": "Site is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "uptime": {
+                      "type": "number",
+                      "description": "Uptime in seconds"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Site is down"
+          }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "summary": "Get All Products",
+        "description": "Retrieve all available products",
+        "operationId": "getProducts",
+        "tags": ["products"],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["sea-moss-gel", "sea-moss-powder", "blends"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Products retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "count": {
+                      "type": "integer"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "price": {
+                            "type": "number"
+                          },
+                          "category": {
+                            "type": "string"
+                          },
+                          "inStock": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error fetching products"
+          }
+        }
+      }
+    },
+    "/test/checkout": {
+      "post": {
+        "summary": "Test Checkout Flow",
+        "description": "Execute a complete checkout test with mock payment",
+        "operationId": "testCheckout",
+        "tags": ["testing"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "firstName", "lastName", "phone"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "fulfillmentType": {
+                    "type": "string",
+                    "enum": ["pickup", "delivery", "shipping"],
+                    "default": "delivery"
+                  },
+                  "address": {
+                    "type": "object",
+                    "properties": {
+                      "street": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "zip": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "testMode": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Use test payment details"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Checkout test completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "orderId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["pending", "completed", "failed"]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "executionTime": {
+                      "type": "number",
+                      "description": "Time in milliseconds"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid checkout request"
+          },
+          "500": {
+            "description": "Checkout error"
+          }
+        }
+      }
+    },
+    "/test/errors": {
+      "post": {
+        "summary": "Test Error Handling",
+        "description": "Trigger and verify error handling mechanisms",
+        "operationId": "testErrorHandling",
+        "tags": ["testing"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["errorType"],
+                "properties": {
+                  "errorType": {
+                    "type": "string",
+                    "enum": [
+                      "javascript",
+                      "api_failure",
+                      "network_timeout",
+                      "validation_error",
+                      "payment_declined"
+                    ],
+                    "description": "Type of error to trigger"
+                  },
+                  "component": {
+                    "type": "string",
+                    "enum": ["header", "footer", "checkout", "cart", "products"],
+                    "description": "Component to test error in"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Error handling test completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errorCaught": {
+                      "type": "boolean"
+                    },
+                    "fallbackRenderered": {
+                      "type": "boolean"
+                    },
+                    "sentryReported": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error test failed"
+          }
+        }
+      }
+    },
+    "/test/performance": {
+      "get": {
+        "summary": "Get Performance Metrics",
+        "description": "Retrieve Lighthouse and Core Web Vitals scores",
+        "operationId": "getPerformanceMetrics",
+        "tags": ["monitoring"],
+        "responses": {
+          "200": {
+            "description": "Performance metrics retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "lighthouse": {
+                      "type": "object",
+                      "properties": {
+                        "performance": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "accessibility": {
+                          "type": "number"
+                        },
+                        "bestPractices": {
+                          "type": "number"
+                        },
+                        "seo": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "coreWebVitals": {
+                      "type": "object",
+                      "properties": {
+                        "largestContentfulPaint": {
+                          "type": "number",
+                          "description": "Milliseconds"
+                        },
+                        "firstInputDelay": {
+                          "type": "number"
+                        },
+                        "cumulativeLayoutShift": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sentry/errors": {
+      "get": {
+        "summary": "Get Recent Errors from Sentry",
+        "description": "Retrieve recent errors and monitoring data",
+        "operationId": "getSentryErrors",
+        "tags": ["monitoring"],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["production", "development"],
+              "default": "production"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Error data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer"
+                          },
+                          "lastSeen": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "userCount": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Sentry token required"
+          }
+        }
+      }
+    },
+    "/test/accessibility": {
+      "get": {
+        "summary": "Test Accessibility",
+        "description": "Run accessibility audit using axe",
+        "operationId": "testAccessibility",
+        "tags": ["testing"],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["homepage", "catalog", "checkout", "product"],
+              "default": "homepage"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Accessibility test completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "violations": {
+                      "type": "integer"
+                    },
+                    "passes": {
+                      "type": "integer"
+                    },
+                    "score": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "issues": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "impact": {
+                            "type": "string",
+                            "enum": ["minor", "moderate", "serious", "critical"]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/test/mobile": {
+      "post": {
+        "summary": "Test Mobile Responsiveness",
+        "description": "Test site on specific mobile device",
+        "operationId": "testMobileResponsiveness",
+        "tags": ["testing"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["device"],
+                "properties": {
+                  "device": {
+                    "type": "string",
+                    "enum": ["iPhone12", "iPhone14Pro", "iPad", "Pixel5", "SamsungS21"],
+                    "description": "Device to test on"
+                  },
+                  "page": {
+                    "type": "string",
+                    "enum": ["homepage", "catalog", "checkout"],
+                    "default": "homepage"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mobile test completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "device": {
+                      "type": "string"
+                    },
+                    "responsive": {
+                      "type": "boolean"
+                    },
+                    "touchOptimized": {
+                      "type": "boolean"
+                    },
+                    "issues": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "screenshot": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL to screenshot"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Bearer token for API authentication"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}
