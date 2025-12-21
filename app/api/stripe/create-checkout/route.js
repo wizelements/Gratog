@@ -38,8 +38,8 @@ export async function POST(request) {
 
     // Build URLs
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` :
-                    'http://localhost:3000';
+                    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` :
+                    'https://tasteofgratitude.shop');
     
     const successUrl = `${baseUrl}/order/success?session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${baseUrl}/checkout?cancelled=true`;

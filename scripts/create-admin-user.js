@@ -111,7 +111,7 @@ async function createAdminUser() {
     console.log('   Created:', admin.createdAt);
 
     console.log('\n🎉 Admin user setup complete!');
-    console.log('\n📌 Login at: https://gratog.vercel.app/admin/login');
+    console.log('\n📌 Login at: https://tasteofgratitude.shop/admin/login');
     console.log('   Email:', adminEmail);
     console.log('   Password:', adminPassword);
 

@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { CartItem, CartAPI } from '@/adapters/cartAdapter';
 import { computeTotals, OrderTotals } from '@/adapters/totalsAdapter';
+import { shippingMethods, ShippingMethod } from '@/adapters/fulfillmentAdapter';
 
 export type CheckoutStage = 'cart' | 'details' | 'review';
 
@@ -244,10 +245,9 @@ export const useCheckoutStore = create<CheckoutState>((set, get) => {
       
       let shippingFee = 0;
       if (state.fulfillment.type === 'shipping' && state.fulfillment.shipping?.methodId) {
-        // Get shipping method price from adapter
-        const { Fulfillment } = require('@/adapters/fulfillmentAdapter');
-        const methods = Fulfillment.shippingMethods();
-        const method = methods.find((m: any) => m.id === state.fulfillment.shipping?.methodId);
+        // Get shipping method price from imported function (safe for client bundle)
+        const methods = shippingMethods();
+        const method = methods.find((m: ShippingMethod) => m.id === state.fulfillment.shipping?.methodId);
         shippingFee = method?.price || 0;
       }
       
