@@ -48,7 +48,7 @@ export default function PoliciesPage() {
           </CardHeader>
           <CardContent className="space-y-6 text-sm">
             <p className="text-muted-foreground">
-              Last updated: {new Date().toLocaleDateString()}
+              Last updated: December 21, 2025
             </p>
 
             <section className="space-y-3">

@@ -18,7 +18,7 @@ export default function TermsPage() {
             Please read these terms carefully before using our services.
           </p>
           <p className="text-sm text-muted-foreground">
-            Last updated: {new Date().toLocaleDateString()}
+            Last updated: December 21, 2025
           </p>
         </div>
 
@@ -224,7 +224,7 @@ export default function TermsPage() {
 
         <div className="text-center text-sm text-muted-foreground">
           <p>
-            These terms are effective as of {new Date().toLocaleDateString()} and may be updated periodically. 
+            These terms are effective as of December 21, 2025 and may be updated periodically. 
             Continued use of our services constitutes acceptance of any changes.
           </p>
         </div>

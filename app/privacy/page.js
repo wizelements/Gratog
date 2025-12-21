@@ -18,7 +18,7 @@ export default function PrivacyPage() {
             Your privacy is important to us. Learn how we protect your information.
           </p>
           <p className="text-sm text-muted-foreground">
-            Last updated: {new Date().toLocaleDateString()}
+            Last updated: December 21, 2025
           </p>
         </div>
 
@@ -156,7 +156,7 @@ export default function PrivacyPage() {
 
         <div className="text-center text-sm text-muted-foreground">
           <p>
-            This privacy policy is effective as of {new Date().toLocaleDateString()} and may be updated periodically.
+            This privacy policy is effective as of December 21, 2025 and may be updated periodically.
             We will notify you of any significant changes.
           </p>
         </div>
