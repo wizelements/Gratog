@@ -7,25 +7,58 @@ import dynamic from 'next/dynamic';
 // Import static components directly
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Dynamically import ALL components that might have SSR issues
-const Header = dynamic(() => import('@/components/Header'), { ssr: false });
-const Footer = dynamic(() => import('@/components/Footer'), { ssr: false });
-const GoogleAnalytics = dynamic(() => import('@/components/analytics/GoogleAnalytics'), { ssr: false });
-const SkipLinks = dynamic(() => import('@/components/SkipLinks'), { ssr: false });
-const A11yAnnouncerProvider = dynamic(
-  () => import('@/components/ui/a11y-announcer').then(mod => mod.A11yAnnouncerProvider),
+const Header = dynamic(() => import('@/components/Header').catch(() => () => null), { 
+  ssr: false,
+  loading: () => <div className="h-28 bg-white border-b" />
+});
+const Footer = dynamic(() => import('@/components/Footer').catch(() => () => null), { 
+  ssr: false,
+  loading: () => <div className="h-64 bg-gray-100" />
+});
+const GoogleAnalytics = dynamic(
+  () => import('@/components/analytics/GoogleAnalytics').catch(() => () => null), 
   { ssr: false }
 );
-const Breadcrumbs = dynamic(() => import('@/components/Breadcrumbs'), { ssr: false });
-const FloatingCart = dynamic(() => import('@/components/FloatingCart'), { ssr: false });
-const LiveChatWidget = dynamic(() => import('@/components/LiveChatWidget'), { ssr: false });
-const CartNotification = dynamic(() => import('@/components/cart/CartNotification'), { ssr: false });
-const StickySecondaryNav = dynamic(() => import('@/components/StickySecondaryNav'), { ssr: false });
+const SkipLinks = dynamic(
+  () => import('@/components/SkipLinks').catch(() => () => null), 
+  { ssr: false }
+);
+const A11yAnnouncerProvider = dynamic(
+  () => import('@/components/ui/a11y-announcer')
+    .then(mod => mod.A11yAnnouncerProvider)
+    .catch(() => ({ children }) => children),
+  { ssr: false }
+);
+const Breadcrumbs = dynamic(
+  () => import('@/components/Breadcrumbs').catch(() => () => null), 
+  { ssr: false }
+);
+const FloatingCart = dynamic(
+  () => import('@/components/FloatingCart').catch(() => () => null), 
+  { ssr: false }
+);
+const LiveChatWidget = dynamic(
+  () => import('@/components/LiveChatWidget').catch(() => () => null), 
+  { ssr: false }
+);
+const CartNotification = dynamic(
+  () => import('@/components/cart/CartNotification').catch(() => () => null), 
+  { ssr: false }
+);
+const StickySecondaryNav = dynamic(
+  () => import('@/components/StickySecondaryNav').catch(() => () => null), 
+  { ssr: false }
+);
 
 /**
  * Customer Layout - Wraps customer-facing pages with full storefront UI
  * Renders nothing for admin routes (admin routes have their own layout)
+ * 
+ * Each component is wrapped in an ErrorBoundary so if one fails,
+ * the rest of the page still works (graceful degradation)
  */
 export default function CustomerLayout({ children }) {
   const pathname = usePathname();
@@ -41,12 +74,14 @@ export default function CustomerLayout({ children }) {
     return <>{children}</>;
   }
 
-  // SSR: render minimal shell
+  // SSR: render minimal shell that matches client structure
   if (!mounted) {
     return (
       <AuthProvider>
         <div className="flex min-h-screen flex-col">
+          <div className="h-28 bg-white border-b" /> {/* Header placeholder */}
           <main id="main-content" className="flex-1">{children}</main>
+          <div className="h-64 bg-gray-100" /> {/* Footer placeholder */}
         </div>
         <Toaster />
       </AuthProvider>
@@ -55,8 +90,14 @@ export default function CustomerLayout({ children }) {
 
   return (
     <>
-      <GoogleAnalytics />
-      <SkipLinks />
+      <ErrorBoundary silent>
+        <GoogleAnalytics />
+      </ErrorBoundary>
+      
+      <ErrorBoundary silent>
+        <SkipLinks />
+      </ErrorBoundary>
+      
       <AuthProvider>
         <A11yAnnouncerProvider>
           {/* Dev Build Indicator - Only in Development */}
@@ -70,36 +111,79 @@ export default function CustomerLayout({ children }) {
           )}
           
           <div className="flex min-h-screen flex-col">
-            <Header />
-            <Breadcrumbs />
-            <main id="main-content" className="flex-1">{children}</main>
-            <Footer />
-            <StickySecondaryNav />
-            <FloatingCart />
-            <LiveChatWidget />
-            <CartNotification />
+            <ErrorBoundary fallback={<div className="h-28 bg-white border-b" />}>
+              <Header />
+            </ErrorBoundary>
+            
+            <ErrorBoundary silent>
+              <Breadcrumbs />
+            </ErrorBoundary>
+            
+            <main id="main-content" className="flex-1">
+              <ErrorBoundary 
+                fallback={
+                  <div className="container py-20 text-center">
+                    <p className="text-gray-600">We're experiencing a temporary issue. Please refresh the page.</p>
+                    <button 
+                      onClick={() => window.location.reload()}
+                      className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                    >
+                      Refresh Page
+                    </button>
+                  </div>
+                }
+              >
+                {children}
+              </ErrorBoundary>
+            </main>
+            
+            <ErrorBoundary fallback={<div className="h-64 bg-gray-100" />}>
+              <Footer />
+            </ErrorBoundary>
+            
+            <ErrorBoundary silent>
+              <StickySecondaryNav />
+            </ErrorBoundary>
+            
+            <ErrorBoundary silent>
+              <FloatingCart />
+            </ErrorBoundary>
+            
+            <ErrorBoundary silent>
+              <LiveChatWidget />
+            </ErrorBoundary>
+            
+            <ErrorBoundary silent>
+              <CartNotification />
+            </ErrorBoundary>
           </div>
           <Toaster />
         </A11yAnnouncerProvider>
       </AuthProvider>
       
       {/* Service Worker Registration for PWA */}
-      <ServiceWorkerRegistration />
+      <ErrorBoundary silent>
+        <ServiceWorkerRegistration />
+      </ErrorBoundary>
     </>
   );
 }
 
 function ServiceWorkerRegistration() {
   useEffect(() => {
-    if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
-      navigator.serviceWorker.register('/sw.js')
-        .then((registration) => {
-          console.log('✅ PWA: Service Worker registered');
-          setInterval(() => { registration.update(); }, 3600000);
-        })
-        .catch((error) => {
-          console.error('❌ PWA: Service Worker registration failed:', error);
-        });
+    try {
+      if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('✅ PWA: Service Worker registered');
+            setInterval(() => { registration.update(); }, 3600000);
+          })
+          .catch((error) => {
+            console.error('❌ PWA: Service Worker registration failed:', error);
+          });
+      }
+    } catch (e) {
+      // Silently fail - SW is not critical
     }
   }, []);
   
