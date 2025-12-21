@@ -12,9 +12,12 @@ describe('Rewards Database Operations', () => {
   
   beforeEach(async () => {
     const db = getDb();
-    // Clean up test data
-    await db.collection('passports').deleteMany({ customerEmail: testEmail });
-    await db.collection('test_passports').deleteMany({});
+    // Clean up test data - only clean test collections
+    try {
+      await db.collection('test_passports').deleteMany({});
+    } catch (error) {
+      // Collection might not exist yet, that's ok
+    }
   });
 
   describe('Passport CRUD Operations', () => {

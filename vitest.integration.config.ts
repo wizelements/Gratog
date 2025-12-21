@@ -17,9 +17,10 @@ export default defineConfig({
       'node_modules/**',
       '.next/**'
     ],
-    // Longer timeout for API calls
-    testTimeout: 30000,
-    hookTimeout: 30000,
+    // Extended timeouts for API calls and network operations
+    // Square API calls can take time, database operations might be slow
+    testTimeout: 60000,    // 60 seconds per test
+    hookTimeout: 60000,    // 60 seconds for setup/teardown
     // Run tests sequentially to avoid race conditions
     pool: 'forks',
     poolOptions: {

@@ -16,8 +16,12 @@ beforeAll(async () => {
   
   try {
     client = await MongoClient.connect(MONGODB_URI);
-    db = client.db();
-    console.log('✅ Database connection established');
+    // Explicitly specify test database name
+    db = client.db('test_db');
+    
+    // Verify connection with ping
+    await db.command({ ping: 1 });
+    console.log('✅ Database connection established to test_db');
   } catch (error) {
     console.error('❌ Database connection failed:', error);
     throw new Error(

@@ -35,16 +35,34 @@ jobs:
         run: yarn install --frozen-lockfile
       
       - name: Wait for MongoDB
-        run: |
-          echo "Waiting for MongoDB to be ready..."
-          for i in {1..30}; do
-            if mongosh --eval "db.adminCommand({ping: 1})" --quiet mongodb://localhost:27017 2>/dev/null; then
-              echo "MongoDB is ready!"
-              break
-            fi
-            echo "Attempt $i: MongoDB not ready yet..."
-            sleep 2
-          done
+         run: |
+           echo "Waiting for MongoDB to be ready..."
+           max_attempts=60
+           attempt=0
+           wait_time=1
+           
+           while [ $attempt -lt $max_attempts ]; do
+             attempt=$((attempt + 1))
+             
+             if mongosh --eval "db.adminCommand({ping: 1})" --quiet mongodb://localhost:27017 2>/dev/null; then
+               echo "✅ MongoDB is ready!"
+               break
+             fi
+             
+             echo "Attempt $attempt/$max_attempts: MongoDB not ready yet (waiting ${wait_time}s)"
+             
+             if [ $attempt -eq $max_attempts ]; then
+               echo "❌ MongoDB failed to start within 120 seconds"
+               docker logs mongo 2>/dev/null || echo "Could not get Docker logs"
+               exit 1
+             fi
+             
+             # Exponential backoff: 1s, 2s, 3s, max 5s
+             if [ $wait_time -lt 5 ]; then
+               wait_time=$((wait_time + 1))
+             fi
+             sleep $wait_time
+           done
       
       - name: Build application
         run: yarn build
@@ -81,25 +99,38 @@ jobs:
       - name: Wait for server to be ready
         run: |
           echo "Waiting for server to be ready..."
-          for i in {1..60}; do
+          max_attempts=60
+          attempt=0
+          wait_time=1
+          
+          while [ $attempt -lt $max_attempts ]; do
+            attempt=$((attempt + 1))
+            
             response=$(curl -s -w "\n%{http_code}" http://localhost:3000/api/health 2>&1 || echo "000")
             http_code=$(echo "$response" | tail -n1)
             
-            echo "Attempt $i: HTTP $http_code"
+            echo "Attempt $attempt/$max_attempts: HTTP $http_code (waiting ${wait_time}s)"
             
             if [ "$http_code" = "200" ]; then
               echo "✅ Server is ready!"
               break
             fi
             
-            if [ $i -eq 60 ]; then
+            if [ $attempt -eq $max_attempts ]; then
               echo "❌ Server failed to start within 120 seconds"
-              echo "Server logs:"
-              cat server.log || echo "No server logs available"
+              echo "Server logs (last 50 lines):"
+              tail -50 server.log || echo "No server logs available"
+              echo ""
+              echo "Process info:"
+              ps aux | grep -E "node|yarn|next" || echo "No processes found"
               exit 1
             fi
             
-            sleep 2
+            # Exponential backoff: 1s, 2s, 3s, max 5s
+            if [ $wait_time -lt 5 ]; then
+              wait_time=$((wait_time + 1))
+            fi
+            sleep $wait_time
           done
       
       - name: Run integration tests
