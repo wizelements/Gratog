@@ -1,0 +1,51 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - main [ref=e3]:
+    - generic [ref=e5]:
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - generic [ref=e10]: "1"
+          - text: Cart
+        - generic [ref=e11]:
+          - generic [ref=e12]: "2"
+          - text: Details
+        - generic [ref=e13]:
+          - generic [ref=e14]: "3"
+          - text: Review & Pay
+      - generic [ref=e15]:
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - heading "Review Your Cart" [level=2] [ref=e19]
+            - generic [ref=e20]:
+              - generic [ref=e22]:
+                - img [ref=e23]
+                - heading "Your Cart" [level=3] [ref=e27]
+                - generic [ref=e28]: 0 items
+              - generic [ref=e29]:
+                - generic [ref=e30]: Subtotal$0.00
+                - generic [ref=e31]: Delivery Fee$6.99
+                - generic [ref=e32]: Tax$0.00
+                - generic [ref=e33]: Total$6.99
+                - paragraph [ref=e35]: Add $75.00 more for FREE delivery!
+          - generic [ref=e36]:
+            - button "Back" [disabled] [ref=e37]:
+              - img [ref=e38]
+              - text: Back
+            - button "Continue to Details" [disabled] [ref=e40]:
+              - text: Continue to Details
+              - img [ref=e41]
+        - generic [ref=e45]:
+          - generic [ref=e47]:
+            - img [ref=e48]
+            - heading "Your Cart" [level=3] [ref=e52]
+            - generic [ref=e53]: 0 items
+          - generic [ref=e54]:
+            - generic [ref=e55]: Subtotal$0.00
+            - generic [ref=e56]: Delivery Fee$6.99
+            - generic [ref=e57]: Tax$0.00
+            - generic [ref=e58]: Total$6.99
+            - paragraph [ref=e60]: Add $75.00 more for FREE delivery!
+  - region "Notifications alt+T"
+```
