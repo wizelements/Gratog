@@ -34,6 +34,7 @@
     "validate": "node scripts/validate-deployment.js",
     "standby": "node scripts/standby-monitor.js",
     "diagnose": "node scripts/diagnose-integration-tests.js",
+    "deploy:monitor": "node scripts/deploy-monitor.js",
     "test:smoke": "vitest run tests/smoke.test.ts tests/hydration-safety.test.ts --reporter=verbose",
     "predeploy": "npm run validate && npm run test:smoke && npm run build"
   },
