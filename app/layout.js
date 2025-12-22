@@ -2,6 +2,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import CustomerLayout from '@/components/CustomerLayout';
 import AdminLayoutWrapper from '@/components/AdminLayoutWrapper';
+import { ThemeProvider } from 'next-themes';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -84,9 +85,11 @@ export default function RootLayout({ children }) {
          />
        </head>
       <body className={inter.className}>
-        <AdminLayoutWrapper>
-          <CustomerLayout>{children}</CustomerLayout>
-        </AdminLayoutWrapper>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+          <AdminLayoutWrapper>
+            <CustomerLayout>{children}</CustomerLayout>
+          </AdminLayoutWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );
