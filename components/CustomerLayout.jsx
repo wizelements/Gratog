@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 // Import static components directly
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Dynamically import ALL components that might have SSR issues
 const Header = dynamic(() => import('@/components/Header').catch(() => () => null), { 

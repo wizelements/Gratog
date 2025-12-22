@@ -36,11 +36,13 @@
     "diagnose": "node scripts/diagnose-integration-tests.js",
     "monitor": "node scripts/monitor-and-fix.js",
     "ci:monitor": "node scripts/ci-monitor.js",
+    "verify:deployment": "node scripts/verify-deployment.js",
     "deploy:monitor": "node scripts/deploy-monitor-simple.js",
     "test:smoke": "vitest run tests/smoke.test.ts tests/hydration-safety.test.ts --reporter=verbose",
     "predeploy": "npm run validate && npm run test:smoke && npm run build"
   },
   "dependencies": {
+    "@emotion/is-prop-valid": "^1.4.0",
     "@google/model-viewer": "^4.1.0",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
