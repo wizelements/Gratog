@@ -275,8 +275,10 @@ describe('Rewards Database Operations', () => {
     test('should use email index for lookups', async () => {
       const db = getDb();
       
-      // Create index
-      await db.collection('test_passports').createIndex({ customerEmail: 1 });
+      // Index already created in previous test, just verify it exists
+      const indexes = await db.collection('test_passports').listIndexes().toArray();
+      const hasEmailIndex = indexes.some(idx => idx.key.customerEmail === 1);
+      expect(hasEmailIndex).toBe(true);
       
       // Insert some data
       await db.collection('test_passports').insertOne({
