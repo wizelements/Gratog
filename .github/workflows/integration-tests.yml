@@ -73,6 +73,7 @@ jobs:
           ADMIN_JWT_SECRET: test-admin-jwt-secret-for-ci
           NEXT_PUBLIC_BASE_URL: http://localhost:3000
           SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}
+          SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
           SQUARE_ENVIRONMENT: sandbox
       
       - name: Start server in background
@@ -94,6 +95,7 @@ jobs:
           MASTER_API_KEY: test-master-api-key
           NEXT_PUBLIC_BASE_URL: http://localhost:3000
           SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}
+          SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
           SQUARE_ENVIRONMENT: sandbox
       
       - name: Wait for server to be ready
@@ -139,6 +141,7 @@ jobs:
           BASE_URL: http://localhost:3000
           MONGODB_URI: mongodb://localhost:27017/test_db
           SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}
+          SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
           SQUARE_ENVIRONMENT: sandbox
       
       - name: Capture server logs for debugging

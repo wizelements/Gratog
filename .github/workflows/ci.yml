@@ -36,6 +36,7 @@ jobs:
           ADMIN_JWT_SECRET: ${{ secrets.ADMIN_JWT_SECRET }}
           NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
           SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}
+          SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
           SQUARE_ENVIRONMENT: sandbox
       
       - name: Upload build artifacts

@@ -8,6 +8,7 @@ import { shouldAllowFallback, getAuthFailureResponse, logSquareOperation } from 
 import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
 import { logger } from '@/lib/logger';
 import { sanitizeErrorMessage, createSafeErrorResponse } from '@/lib/response-sanitizer';
+import { RequestContext } from '@/lib/request-context';
 import * as Sentry from '@sentry/nextjs';
 
 /**
@@ -15,8 +16,10 @@ import * as Sentry from '@sentry/nextjs';
  * Creates Square-hosted checkout pages for seamless payment processing
  */
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
+   const ctx = new RequestContext();
+   
+   try {
+     const body = await request.json();
     const { 
       lineItems, 
       redirectUrl,
@@ -224,14 +227,15 @@ export async function POST(request: NextRequest) {
     }
     
     return NextResponse.json({
-      success: true,
-      paymentLink: {
-        id: paymentLink.id,
-        url: paymentLink.url,
-        orderId: paymentLink.orderId
-      },
-      message: 'Payment link created successfully'
-    });
+       success: true,
+       traceId: ctx.traceId,
+       paymentLink: {
+         id: paymentLink.id,
+         url: paymentLink.url,
+         orderId: paymentLink.orderId
+       },
+       message: 'Payment link created successfully'
+     });
     
   } catch (error) {
     console.error('Checkout API error:', error);
@@ -246,8 +250,9 @@ export async function POST(request: NextRequest) {
     }
     
     Sentry.captureException(error, {
-      tags: {
-        api: 'checkout',
+       tags: {
+         api: 'checkout',
+         traceId: ctx.traceId,
         component: 'square_payment_link'
       },
       contexts: {
@@ -299,10 +304,11 @@ export async function POST(request: NextRequest) {
     }
     
     return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to create checkout',
-        details: sanitizeErrorMessage(error instanceof Error ? error.message : 'Unknown error')
+       {
+         success: false,
+         traceId: ctx.traceId,
+         error: 'Failed to create checkout',
+         details: sanitizeErrorMessage(error instanceof Error ? error.message : 'Unknown error')
       },
       { status: 500 }
     );
