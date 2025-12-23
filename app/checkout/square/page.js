@@ -44,10 +44,16 @@ function SquareCheckoutContent() {
     
     const fullSummary = `My Taste of Gratitude Order:\n\n${summary}\n\nSubtotal: $${orderData.subtotal.toFixed(2)}\nTotal: $${orderData.total.toFixed(2)}`;
     
-    navigator.clipboard.writeText(fullSummary);
-    setCopied(true);
-    toast.success('Order summary copied to clipboard!');
-    setTimeout(() => setCopied(false), 3000);
+    navigator.clipboard.writeText(fullSummary)
+      .then(() => {
+        setCopied(true);
+        toast.success('Order summary copied to clipboard!');
+        setTimeout(() => setCopied(false), 3000);
+      })
+      .catch((err) => {
+        console.warn('Clipboard write failed:', err);
+        toast.error('Unable to copy to clipboard. Please copy manually.');
+      });
   };
 
   const openSquareStore = () => {

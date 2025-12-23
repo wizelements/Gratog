@@ -139,8 +139,14 @@ export default function ProductDetailPage() {
       });
     } catch (error) {
       // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      toast.success('Link copied to clipboard!');
+      navigator.clipboard.writeText(window.location.href)
+        .then(() => {
+          toast.success('Link copied to clipboard!');
+        })
+        .catch((err) => {
+          console.warn('Clipboard write failed:', err);
+          toast.error('Unable to copy link. Please copy manually from the address bar.');
+        });
     }
   };
 

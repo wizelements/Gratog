@@ -187,8 +187,8 @@ function SuccessContent() {
       if (response.ok) {
         const data = await response.json();
         
-        // Record spin usage
-        await fetch('/api/tracking/user', {
+        // Record spin usage (with error handling)
+        fetch('/api/tracking/user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -200,13 +200,17 @@ function SuccessContent() {
               prizeValue: prize.discount || prize.value / 100
             }
           })
+        }).catch((err) => {
+          console.warn('Failed to record spin usage:', err);
+          // Non-critical - don't block user experience
         });
         
         alert(`🎉 You won ${prize.label}! Coupon code ${data.coupon.code} created for your next order!\n\nCheck your email for the code or find it in your Rewards page.`);
       }
-    } catch (error) {
+      } catch (error) {
       console.error('Failed to create coupon:', error);
-    }
+      toast.error('Failed to claim prize. Please try again.');
+      }
     
     setShowSpinWheel(false);
   };

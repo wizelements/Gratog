@@ -154,8 +154,14 @@ export default function InstagramPostPage() {
                   <button
                     onClick={() => {
                       const url = window.location.href;
-                      navigator.clipboard.writeText(url);
-                      alert('Link copied to clipboard!');
+                      navigator.clipboard.writeText(url)
+                        .then(() => {
+                          alert('Link copied to clipboard!');
+                        })
+                        .catch((err) => {
+                          console.warn('Clipboard write failed:', err);
+                          alert('Unable to copy link. Please copy manually from the address bar.');
+                        });
                     }}
                     className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors text-sm"
                   >

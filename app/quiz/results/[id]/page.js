@@ -67,8 +67,13 @@ export default function QuizResultsPage() {
   };
 
   const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Link copied to clipboard!');
+    navigator.clipboard.writeText(text).catch((err) => {
+      console.warn('Clipboard write failed:', err);
+      // Fallback: show toast without copying if clipboard denied
+      toast.error('Unable to copy to clipboard. Please copy manually.');
+    }).then(() => {
+      toast.success('Link copied to clipboard!');
+    });
   };
 
   const handleAddToCart = (product) => {
