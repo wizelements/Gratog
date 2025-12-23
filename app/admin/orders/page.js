@@ -62,12 +62,11 @@ export default function OrdersPage() {
   useEffect(() => {
     fetchOrders();
     fetchSyncStatus();
-    const interval = setInterval(() => {
-      // Call fetchOrders without dependency to avoid recreating intervals
-      setLoading(false);
-    }, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    // Removed broken interval that wasn't calling fetchOrders
+    return () => {
+      // Cleanup if needed
+    };
+  }, [fetchOrders]);
 
   const fetchSyncStatus = async () => {
     try {

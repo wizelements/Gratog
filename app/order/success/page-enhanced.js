@@ -35,11 +35,11 @@ export default function OrderSuccessPage() {
       });
       
       if (!response.ok) {
-        if (response.status === 404 && attempt < 10) {
-          // Webhook race condition - poll for order
-          console.log(`Order not found yet, polling... (attempt ${attempt + 1}/10)`);
+        if (response.status === 404 && attempt < 5) {
+          // Webhook race condition - poll for order (reduced from 10 to 5)
+          console.log(`Order not found yet, polling... (attempt ${attempt + 1}/5)`);
           setPollAttempts(attempt + 1);
-          setTimeout(() => fetchOrderDetails(attempt + 1), 1500);
+          setTimeout(() => fetchOrderDetails(attempt + 1), 2000);
           return;
         }
         throw new Error(`HTTP ${response.status}: Order not found`);
@@ -47,12 +47,12 @@ export default function OrderSuccessPage() {
       
       const data = await response.json();
       
-      // If order is still DRAFT/PENDING, poll for completion (webhook race)
-      if (['DRAFT', 'PENDING', 'pending'].includes(data.status) && attempt < 20) {
-        console.log(`Order status: ${data.status}, polling for completion... (attempt ${attempt + 1}/20)`);
+      // If order is still DRAFT/PENDING, poll for completion (webhook race) - reduced from 20 to 3
+      if (['DRAFT', 'PENDING', 'pending'].includes(data.status) && attempt < 3) {
+        console.log(`Order status: ${data.status}, polling for completion... (attempt ${attempt + 1}/3)`);
         setPollAttempts(attempt + 1);
         setOrder(data); // Show what we have so far
-        setTimeout(() => fetchOrderDetails(attempt + 1), 1500);
+        setTimeout(() => fetchOrderDetails(attempt + 1), 2500);
         return;
       }
       
@@ -62,10 +62,10 @@ export default function OrderSuccessPage() {
     } catch (err) {
       console.error('Order fetch error:', err);
       
-      // Retry on network errors
-      if (attempt < 5) {
-        console.log(`Network error, retrying... (attempt ${attempt + 1}/5)`);
-        setTimeout(() => fetchOrderDetails(attempt + 1), 2000);
+      // Retry on network errors (reduced from 5 to 3)
+      if (attempt < 3) {
+        console.log(`Network error, retrying... (attempt ${attempt + 1}/3)`);
+        setTimeout(() => fetchOrderDetails(attempt + 1), 2500);
         return;
       }
       
