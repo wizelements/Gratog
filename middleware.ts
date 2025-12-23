@@ -47,16 +47,17 @@ export async function middleware(req: NextRequest) {
   // CRITICAL FIX 1: Enforce HTTPS and correct canonical domain
   const host = req.headers.get('host') || '';
   const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
-  const isProd = !isLocalhost && !host.includes('preview') && !host.includes('vercel');
+  const isVercelUrl = host.includes('vercel.app');
+  const isProd = !isLocalhost && !host.includes('preview') && !isVercelUrl;
   
-  if (!isLocalhost && isProd) {
+  if (!isLocalhost && !isVercelUrl && isProd) {
     // Force HTTPS
     if (req.nextUrl.protocol === 'http:') {
       url.protocol = 'https:';
       return NextResponse.redirect(url, 301);
     }
     
-    // Redirect non-canonical domains to primary domain
+    // Redirect non-canonical domains to primary domain (only on custom domains)
     if (!host.includes('tasteofgratitude.shop')) {
       const canonicalUrl = new URL(pathname + url.search, 'https://tasteofgratitude.shop');
       return NextResponse.redirect(canonicalUrl, 301);

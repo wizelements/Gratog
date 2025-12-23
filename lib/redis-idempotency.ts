@@ -19,8 +19,9 @@ interface IdempotencyRecord {
 let redisClient: any | null = null;
 let isRedisAvailable = false;
 
-// Fallback in-memory cache
+// Fallback in-memory cache (MEMORY FIX: Added size limit)
 const memoryCache = new Map<string, IdempotencyRecord>();
+const MAX_MEMORY_CACHE_SIZE = 100;
 
 /**
  * Initialize Redis client
@@ -105,9 +106,27 @@ export async function setIdempotentResponse(
     }
   }
 
-  // Fallback to memory cache
+  // Fallback to memory cache (MEMORY FIX: Check size limit)
   const now = new Date();
   const expiresAt = new Date(now.getTime() + ttlSeconds * 1000);
+
+  // MEMORY FIX: Evict oldest entry if at capacity
+  if (memoryCache.size >= MAX_MEMORY_CACHE_SIZE) {
+    let oldestKey: string | null = null;
+    let oldestTime = Infinity;
+    
+    for (const [k, v] of memoryCache.entries()) {
+      const time = v.createdAt.getTime();
+      if (time < oldestTime) {
+        oldestTime = time;
+        oldestKey = k;
+      }
+    }
+    
+    if (oldestKey) {
+      memoryCache.delete(oldestKey);
+    }
+  }
 
   memoryCache.set(key, {
     key,

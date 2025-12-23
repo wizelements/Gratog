@@ -1,11 +1,22 @@
 'use client';
 
+import { useEffect } from 'react';
+import { captureClientError } from '@/lib/error-tracker';
+
 /**
  * Global Error Boundary
  * Catches errors in the root layout and renders a fallback UI
  * This is critical for Vercel deployments to show something instead of "Application Error"
  */
 export default function GlobalError({ error, reset }) {
+  useEffect(() => {
+    if (error) {
+      captureClientError(
+        error instanceof Error ? error : new Error(String(error)),
+        'GlobalError'
+      ).catch(err => console.error('Failed to capture global error:', err));
+    }
+  }, [error]);
   return (
     <html lang="en">
       <body>

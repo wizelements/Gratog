@@ -1,10 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
+import { captureClientError } from '@/lib/error-tracker';
 
 export default function Error({ error, reset }) {
   useEffect(() => {
     console.error('Application error:', error);
+    
+    // Capture error with tracking system
+    if (error) {
+      captureClientError(
+        error instanceof Error ? error : new Error(String(error)),
+        'ErrorBoundary'
+      ).catch(err => console.error('Failed to capture error:', err));
+    }
   }, [error]);
 
   return (

@@ -4,11 +4,12 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { captureClientError } from '@/lib/error-tracker';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, errorId: null };
   }
 
   static getDerivedStateFromError(error) {
@@ -17,6 +18,13 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
+    
+    // Capture with tracking system
+    captureClientError(error, this.props.name || 'ErrorBoundary')
+      .then(errorId => {
+        this.setState({ errorId });
+      })
+      .catch(err => console.error('Failed to capture error:', err));
   }
 
   render() {
@@ -37,6 +45,17 @@ class ErrorBoundary extends React.Component {
                 We encountered an unexpected error. Don't worry, your data is safe.
               </p>
               
+              {this.state.errorId && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-xs font-mono text-blue-800 break-all">
+                    Error ID: {this.state.errorId}
+                  </p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    Share this ID with support for investigation
+                  </p>
+                </div>
+              )}
+
               {this.state.error && process.env.NODE_ENV === 'development' && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-sm font-mono text-red-800">

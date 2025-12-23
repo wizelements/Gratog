@@ -28,6 +28,9 @@ export interface AdminSession {
   name?: string;
 }
 
+// MEMORY FIX: Reuse TextEncoder instance instead of creating new one every time
+const textEncoder = new TextEncoder();
+
 // Get JWT secret as Uint8Array for jose library
 function getJwtSecretKey(): Uint8Array {
   const secret = process.env.JWT_SECRET;
@@ -39,7 +42,7 @@ function getJwtSecretKey(): Uint8Array {
     }
     // Development fallback - NEVER use in production
     console.warn('⚠️ Using insecure development JWT secret');
-    return new TextEncoder().encode('dev-only-insecure-secret-do-not-use-in-production');
+    return textEncoder.encode('dev-only-insecure-secret-do-not-use-in-production');
   }
   
   // Warn if secret is too short
@@ -47,7 +50,7 @@ function getJwtSecretKey(): Uint8Array {
     console.warn('⚠️ JWT_SECRET should be at least 32 characters for security');
   }
   
-  return new TextEncoder().encode(secret);
+  return textEncoder.encode(secret);
 }
 
 /**
