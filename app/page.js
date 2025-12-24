@@ -33,9 +33,15 @@ export default function HomePage() {
             }, 10000);
 
             try {
-                const response = await fetch('/api/products', {
-                    signal: AbortSignal.timeout(8000) // 8 second fetch timeout
-                });
+                // Create abort signal with fallback for older browsers
+                const fetchOptions = {};
+                if (typeof AbortController !== 'undefined') {
+                    const controller = new AbortController();
+                    fetchOptions.signal = controller.signal;
+                    setTimeout(() => controller.abort(), 8000);
+                }
+                
+                const response = await fetch('/api/products', fetchOptions);
                 clearTimeout(timeoutId);
                 const data = await response.json();
 
@@ -65,6 +71,15 @@ export default function HomePage() {
     }, []);
 
     useEffect(() => {
+        // Guard for older browsers that don't support IntersectionObserver
+        if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+            // Fallback: just make elements visible without animation
+            document.querySelectorAll('.fade-in-section').forEach(el => {
+                el.classList.add('animate-in');
+            });
+            return;
+        }
+        
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -100px 0px'

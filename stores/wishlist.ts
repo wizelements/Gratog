@@ -5,6 +5,24 @@
 
 import { create } from 'zustand';
 
+/**
+ * Get safe localStorage reference
+ * Returns null if localStorage is unavailable (Safari Private, embedded browsers, etc.)
+ */
+function getSafeLocalStorage(): Storage | null {
+  if (typeof window === 'undefined') return null;
+  
+  try {
+    const testKey = '__storage_test__';
+    window.localStorage.setItem(testKey, '1');
+    window.localStorage.removeItem(testKey);
+    return window.localStorage;
+  } catch {
+    console.warn('localStorage not available for wishlist, using in-memory fallback');
+    return null;
+  }
+}
+
 export interface WishlistState {
   items: string[];
   isAuthenticated: boolean;
@@ -22,10 +40,11 @@ export interface WishlistState {
 const STORAGE_KEY = 'wishlist_v1';
 
 function loadPersistedState(): string[] {
-  if (typeof window === 'undefined') return [];
+  const storage = getSafeLocalStorage();
+  if (!storage) return [];
   
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = storage.getItem(STORAGE_KEY);
     if (!saved) return [];
     return JSON.parse(saved);
   } catch (e) {
@@ -35,10 +54,11 @@ function loadPersistedState(): string[] {
 }
 
 function persistState(items: string[]) {
-  if (typeof window === 'undefined') return;
+  const storage = getSafeLocalStorage();
+  if (!storage) return;
   
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    storage.setItem(STORAGE_KEY, JSON.stringify(items));
   } catch (e) {
     console.error('Failed to persist wishlist state:', e);
   }
@@ -49,10 +69,11 @@ export const useWishlistStore = create<WishlistState>((set, get) => {
   // Client-side hydration will happen in useEffect
   const initialItems: string[] = [];
   
-  // Hydrate from localStorage on client-side only
-  if (typeof window !== 'undefined') {
+  // Hydrate from localStorage on client-side only using safe accessor
+  const storage = getSafeLocalStorage();
+  if (storage) {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = storage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {

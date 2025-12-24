@@ -1,6 +1,34 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
+/**
+ * Create a safe storage that handles environments where localStorage is unavailable
+ * (Safari Private Browsing, some embedded browsers, strict privacy modes)
+ */
+function createSafeStorage() {
+  if (typeof window === 'undefined') {
+    return {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    }
+  }
+
+  try {
+    const testKey = '__storage_test__'
+    window.localStorage.setItem(testKey, '1')
+    window.localStorage.removeItem(testKey)
+    return window.localStorage
+  } catch {
+    console.warn('localStorage not available, using in-memory fallback')
+    return {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    }
+  }
+}
+
 export interface CartItem {
   productId: string
   slug: string
@@ -73,18 +101,7 @@ export const useCart = create<CartState>()(
     {
       name: 'tog_cart_v3',
       version: 3,
-      storage: createJSONStorage(() => {
-        // Only use localStorage in browser
-        if (typeof window !== 'undefined') {
-          return localStorage
-        }
-        // Fallback for SSR
-        return {
-          getItem: () => null,
-          setItem: () => {},
-          removeItem: () => {},
-        }
-      }),
+      storage: createJSONStorage(() => createSafeStorage()),
     }
   )
 )
