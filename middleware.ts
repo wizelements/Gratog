@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyAdminToken } from '@/lib/admin-session';
+import { verifyAdminToken, refreshTokenIfNeeded } from '@/lib/admin-session';
 
 function addSecurityHeaders(response: NextResponse): NextResponse {
   const csp = [
@@ -101,6 +101,14 @@ export async function middleware(req: NextRequest) {
       const redirectResponse = NextResponse.redirect(loginUrl);
       return addSecurityHeaders(redirectResponse);
     }
+    
+    // Token rotation: Refresh token if it's getting old (sliding window expiration)
+    // This happens on every authenticated admin page request
+    const response = NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+    const rotatedResponse = await refreshTokenIfNeeded(req, response);
+    return addSecurityHeaders(rotatedResponse);
   }
 
   // Protect admin API routes (except public routes)

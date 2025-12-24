@@ -4,21 +4,38 @@ import crypto from 'crypto';
 import { updateOrderStatus } from '@/lib/db-customers';
 import { sendOrderUpdateSMS } from '@/lib/sms';
 import { sendOrderUpdateEmail } from '@/lib/email';
+import * as Sentry from '@sentry/nextjs';
 
 // Get webhook signature key from environment
 const SQUARE_WEBHOOK_SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
 
-// Verify webhook signature for security
+/**
+ * SECURITY: Webhook signature verification
+ * CRITICAL: Never skip verification in any production-like environment
+ */
 function verifyWebhookSignature(signatureHeader, requestUrl, requestBody) {
-  if (!signatureHeader || !SQUARE_WEBHOOK_SIGNATURE_KEY) {
-    logger.debug('Webhook', 'Missing signature header or webhook key');
+  if (!SQUARE_WEBHOOK_SIGNATURE_KEY) {
+    logger.error('Webhook', 'SQUARE_WEBHOOK_SIGNATURE_KEY not configured - rejecting all webhooks');
+    return false;
+  }
+  
+  if (!signatureHeader) {
+    logger.warn('Webhook', 'Missing signature header');
     return false;
   }
   
   try {
     const [signatureKeyVersion, signature] = signatureHeader.split(',');
-    const version = signatureKeyVersion.split('=')[1];
+    if (!signatureKeyVersion || !signature) {
+      logger.warn('Webhook', 'Invalid signature header format');
+      return false;
+    }
+    
     const squareSignature = signature.split('=')[1];
+    if (!squareSignature) {
+      logger.warn('Webhook', 'Could not extract signature from header');
+      return false;
+    }
     
     // Create HMAC using the signature key
     const hmac = crypto.createHmac('sha256', SQUARE_WEBHOOK_SIGNATURE_KEY);
@@ -30,11 +47,17 @@ function verifyWebhookSignature(signatureHeader, requestUrl, requestBody) {
     // Get the calculated signature
     const calculatedSignature = hmac.digest('base64');
     
-    // Compare signatures securely
-    return crypto.timingSafeEqual(
-      Buffer.from(calculatedSignature),
-      Buffer.from(squareSignature)
-    );
+    // Compare signatures securely using timing-safe comparison
+    try {
+      return crypto.timingSafeEqual(
+        Buffer.from(calculatedSignature),
+        Buffer.from(squareSignature)
+      );
+    } catch (compareError) {
+      // Buffers have different lengths - invalid signature
+      logger.warn('Webhook', 'Signature length mismatch');
+      return false;
+    }
   } catch (error) {
     logger.error('Webhook', 'Webhook signature verification error:', error);
     return false;
@@ -42,6 +65,9 @@ function verifyWebhookSignature(signatureHeader, requestUrl, requestBody) {
 }
 
 export async function POST(request) {
+  const startTime = Date.now();
+  let eventType = 'unknown';
+  
   try {
     logger.debug('Webhook', 'Square webhook received');
     
@@ -52,9 +78,25 @@ export async function POST(request) {
     // Get the Square-Signature header
     const signatureHeader = request.headers.get('square-signature');
     
-    // Verify the webhook signature (skip in development)
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    if (!isDevelopment) {
+    /**
+     * SECURITY FIX: Always verify signature except with explicit opt-out
+     * 
+     * The only way to skip verification is:
+     * 1. NODE_ENV is 'development' (local dev)
+     * 2. AND SQUARE_SKIP_WEBHOOK_VERIFICATION is 'true'
+     * 3. AND we're NOT on Vercel (VERCEL env var not set)
+     * 
+     * This prevents accidental bypass in staging/production
+     */
+    const isLocalDevelopment = 
+      process.env.NODE_ENV === 'development' && 
+      !process.env.VERCEL;
+    
+    const skipVerification = 
+      isLocalDevelopment && 
+      process.env.SQUARE_SKIP_WEBHOOK_VERIFICATION === 'true';
+    
+    if (!skipVerification) {
       const isSignatureValid = verifyWebhookSignature(
         signatureHeader,
         requestUrl,
@@ -62,176 +104,227 @@ export async function POST(request) {
       );
       
       if (!isSignatureValid) {
-        logger.error('Webhook', 'Invalid webhook signature');
+        logger.error('Webhook', 'Invalid webhook signature - rejecting request', {
+          hasSignatureHeader: !!signatureHeader,
+          hasSignatureKey: !!SQUARE_WEBHOOK_SIGNATURE_KEY,
+        });
+        
+        // Track attempted security bypass
+        Sentry.captureMessage('Invalid webhook signature attempted', {
+          level: 'warning',
+          tags: { security: 'webhook_signature_invalid' },
+          extra: { 
+            hasHeader: !!signatureHeader,
+            requestUrl: requestUrl?.substring(0, 100) 
+          }
+        });
+        
         return NextResponse.json(
           { error: 'Invalid signature' },
           { status: 401 }
         );
       }
+    } else {
+      logger.warn('Webhook', '⚠️ Signature verification SKIPPED (local development only)');
     }
     
     // Parse the webhook event
-    const webhookEvent = JSON.parse(requestBody);
-    logger.debug('Webhook', 'Webhook event type:', webhookEvent.type);
+    let webhookEvent;
+    try {
+      webhookEvent = JSON.parse(requestBody);
+    } catch (parseError) {
+      logger.error('Webhook', 'Failed to parse webhook body:', parseError);
+      return NextResponse.json(
+        { error: 'Invalid JSON body' },
+        { status: 400 }
+      );
+    }
     
-    // Process different event types
-    const eventType = webhookEvent.type;
+    eventType = webhookEvent.type || 'unknown';
+    logger.debug('Webhook', 'Processing webhook event:', eventType);
     
+    /**
+     * CRITICAL FIX: Handlers now throw on failure instead of swallowing errors
+     * This ensures Square receives 500 and retries the webhook
+     */
     switch (eventType) {
       case 'payment.created':
-        await handlePaymentCreated(webhookEvent.data.object.payment);
+        await handlePaymentCreated(webhookEvent.data?.object?.payment);
         break;
         
       case 'payment.updated':
-        await handlePaymentUpdated(webhookEvent.data.object.payment);
+        await handlePaymentUpdated(webhookEvent.data?.object?.payment);
         break;
         
       case 'payment.completed':
-        await handlePaymentCompleted(webhookEvent.data.object.payment);
+        await handlePaymentCompleted(webhookEvent.data?.object?.payment);
         break;
         
       case 'payment.failed':
-        await handlePaymentFailed(webhookEvent.data.object.payment);
+        await handlePaymentFailed(webhookEvent.data?.object?.payment);
         break;
         
       case 'refund.created':
-        await handleRefundCreated(webhookEvent.data.object.refund);
+        await handleRefundCreated(webhookEvent.data?.object?.refund);
         break;
         
       default:
         logger.debug('Webhook', `Unhandled webhook event type: ${eventType}`);
     }
     
+    const duration = Date.now() - startTime;
+    logger.debug('Webhook', `Webhook processed successfully in ${duration}ms`, { eventType });
+    
     // Return success response
     return NextResponse.json({ 
       received: true,
       eventType: eventType,
+      processingTimeMs: duration,
       timestamp: new Date().toISOString()
     });
     
   } catch (error) {
-    logger.error('Webhook', '❌ Webhook processing error:', error);
+    const duration = Date.now() - startTime;
+    logger.error('Webhook', '❌ Webhook processing FAILED - Square will retry', { 
+      eventType,
+      error: error.message,
+      duration 
+    });
     
+    // Capture in Sentry for monitoring
+    Sentry.captureException(error, {
+      tags: { 
+        webhook: true,
+        eventType 
+      },
+      extra: { duration }
+    });
+    
+    /**
+     * CRITICAL FIX: Return 500 so Square retries the webhook
+     * Previously returned 200 which caused Square to mark as delivered
+     * even when processing failed
+     */
     return NextResponse.json(
       { 
         error: 'Webhook processing failed',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        message: 'Internal error - will be retried',
+        // Never expose error details in production
+        ...(process.env.NODE_ENV === 'development' && { debug: error.message })
       },
       { status: 500 }
     );
   }
 }
 
-// Handler functions for different Square webhook events
+/**
+ * Handler functions for Square webhook events
+ * 
+ * CRITICAL: These handlers now THROW on failure instead of catching and swallowing
+ * This ensures the main handler returns 500 and Square retries
+ */
 
 async function handlePaymentCreated(payment) {
   logger.debug('Webhook', 'Payment created:', payment?.id);
   
-  try {
-    // Validate payment data
-    if (!payment || !payment.id) {
-      logger.error('Webhook', 'Invalid payment data received:', payment);
-      return;
-    }
-    
-    // Update order status to payment_processing
-    if (payment.order_id) {
-      await updateOrderStatus(payment.order_id, 'payment_processing', {
-        paymentId: payment.id,
-        status: payment.status,
-        updatedAt: new Date().toISOString()
-      });
-      logger.debug('Webhook', `Order ${payment.order_id} status updated to payment_processing`);
-    } else {
-      logger.debug('Webhook', 'Payment created without order_id:', payment.id);
-    }
-  } catch (error) {
-    logger.error('Webhook', '❌ Error handling payment created:', error);
+  // Validate payment data - throw if invalid
+  if (!payment || !payment.id) {
+    throw new Error('Invalid payment data received in payment.created webhook');
+  }
+  
+  // Update order status to payment_processing
+  if (payment.order_id) {
+    await updateOrderStatus(payment.order_id, 'payment_processing', {
+      paymentId: payment.id,
+      status: payment.status,
+      updatedAt: new Date().toISOString()
+    });
+    logger.debug('Webhook', `Order ${payment.order_id} status updated to payment_processing`);
+  } else {
+    logger.debug('Webhook', 'Payment created without order_id:', payment.id);
   }
 }
 
 async function handlePaymentUpdated(payment) {
-  logger.debug('Webhook', 'Payment updated:', payment.id, 'Status:', payment.status);
+  logger.debug('Webhook', 'Payment updated:', payment?.id, 'Status:', payment?.status);
   
-  try {
-    if (payment.order_id) {
-      const statusMap = {
-        'COMPLETED': 'paid',
-        'APPROVED': 'paid', 
-        'PENDING': 'payment_processing',
-        'CANCELED': 'payment_failed',
-        'FAILED': 'payment_failed'
-      };
-      
-      const newOrderStatus = statusMap[payment.status] || 'payment_processing';
-      
-      await updateOrderStatus(payment.order_id, newOrderStatus, {
-        paymentId: payment.id,
-        status: payment.status,
-        amount: payment.amount_money?.amount,
-        currency: payment.amount_money?.currency,
-        updatedAt: new Date().toISOString()
-      });
-      
-      logger.debug('Webhook', `Order ${payment.order_id} status updated to ${newOrderStatus}`);
-    }
-  } catch (error) {
-    logger.error('Webhook', 'Error handling payment updated:', error);
+  if (!payment || !payment.id) {
+    throw new Error('Invalid payment data received in payment.updated webhook');
+  }
+  
+  if (payment.order_id) {
+    const statusMap = {
+      'COMPLETED': 'paid',
+      'APPROVED': 'paid', 
+      'PENDING': 'payment_processing',
+      'CANCELED': 'payment_failed',
+      'FAILED': 'payment_failed'
+    };
+    
+    const newOrderStatus = statusMap[payment.status] || 'payment_processing';
+    
+    await updateOrderStatus(payment.order_id, newOrderStatus, {
+      paymentId: payment.id,
+      status: payment.status,
+      amount: payment.amount_money?.amount,
+      currency: payment.amount_money?.currency,
+      updatedAt: new Date().toISOString()
+    });
+    
+    logger.debug('Webhook', `Order ${payment.order_id} status updated to ${newOrderStatus}`);
   }
 }
 
 async function handlePaymentCompleted(payment) {
-  logger.debug('Webhook', 'Payment completed successfully:', payment.id);
+  logger.debug('Webhook', 'Payment completed successfully:', payment?.id);
   
-  try {
-    if (payment.order_id) {
-      // Update order to paid status
-      await updateOrderStatus(payment.order_id, 'paid', {
-        paymentId: payment.id,
-        status: 'COMPLETED',
-        amount: payment.amount_money?.amount,
-        currency: payment.amount_money?.currency,
-        completedAt: new Date().toISOString()
-      });
-      
-      // Send success notifications
-      // Note: You would need order details to send notifications
-      logger.debug('Webhook', `Payment completed for order ${payment.order_id}`);
-    }
-  } catch (error) {
-    logger.error('Webhook', 'Error handling payment completed:', error);
+  if (!payment || !payment.id) {
+    throw new Error('Invalid payment data received in payment.completed webhook');
+  }
+  
+  if (payment.order_id) {
+    // Update order to paid status
+    await updateOrderStatus(payment.order_id, 'paid', {
+      paymentId: payment.id,
+      status: 'COMPLETED',
+      amount: payment.amount_money?.amount,
+      currency: payment.amount_money?.currency,
+      completedAt: new Date().toISOString()
+    });
+    
+    logger.debug('Webhook', `Payment completed for order ${payment.order_id}`);
   }
 }
 
 async function handlePaymentFailed(payment) {
-  logger.debug('Webhook', 'Payment failed:', payment.id);
+  logger.debug('Webhook', 'Payment failed:', payment?.id);
   
-  try {
-    if (payment.order_id) {
-      await updateOrderStatus(payment.order_id, 'payment_failed', {
-        paymentId: payment.id,
-        status: 'FAILED',
-        failureReason: payment.processing_fee?.[0]?.type || 'Unknown',
-        failedAt: new Date().toISOString()
-      });
-      
-      logger.debug('Webhook', `Order ${payment.order_id} marked as payment failed`);
-    }
-  } catch (error) {
-    logger.error('Webhook', 'Error handling payment failed:', error);
+  if (!payment || !payment.id) {
+    throw new Error('Invalid payment data received in payment.failed webhook');
+  }
+  
+  if (payment.order_id) {
+    await updateOrderStatus(payment.order_id, 'payment_failed', {
+      paymentId: payment.id,
+      status: 'FAILED',
+      failureReason: payment.processing_fee?.[0]?.type || 'Unknown',
+      failedAt: new Date().toISOString()
+    });
+    
+    logger.debug('Webhook', `Order ${payment.order_id} marked as payment failed`);
   }
 }
 
 async function handleRefundCreated(refund) {
-  logger.debug('Webhook', 'Refund created:', refund.id);
+  logger.debug('Webhook', 'Refund created:', refund?.id);
   
-  try {
-    if (refund.payment_id) {
-      // You could update order status to 'refunded' or handle partial refunds
-      logger.debug('Webhook', `Refund created for payment ${refund.payment_id}`);
-    }
-  } catch (error) {
-    logger.error('Webhook', 'Error handling refund created:', error);
+  if (!refund || !refund.id) {
+    throw new Error('Invalid refund data received in refund.created webhook');
+  }
+  
+  if (refund.payment_id) {
+    // You could update order status to 'refunded' or handle partial refunds
+    logger.debug('Webhook', `Refund created for payment ${refund.payment_id}`);
   }
 }
 
@@ -240,6 +333,7 @@ export async function GET(request) {
   return NextResponse.json({
     message: 'Square webhook endpoint active',
     timestamp: new Date().toISOString(),
+    signatureKeyConfigured: !!SQUARE_WEBHOOK_SIGNATURE_KEY,
     environment: process.env.NODE_ENV || 'development'
   });
 }

@@ -192,7 +192,35 @@ export class DeadLetterQueue {
   }
 }
 
-// Periodic cleanup
-setInterval(() => {
-  Cache.cleanup();
-}, 60000); // Clean every minute
+/**
+ * SERVERLESS COMPATIBILITY FIX
+ * 
+ * DO NOT use setInterval in module scope for serverless environments.
+ * Each cold start creates a new interval that never gets cleaned up,
+ * causing memory leaks over time.
+ * 
+ * Instead, cleanup should be triggered:
+ * 1. On cache access (implemented in Cache.get/set)
+ * 2. Via cron job (see /api/cron/cleanup-abandoned-orders)
+ * 
+ * If you need periodic cleanup in a long-running Node.js process,
+ * call startPeriodicCleanup() explicitly.
+ */
+
+let cleanupIntervalId: NodeJS.Timeout | null = null;
+
+export function startPeriodicCleanup(intervalMs: number = 60000): void {
+  if (cleanupIntervalId) {
+    return; // Already running
+  }
+  cleanupIntervalId = setInterval(() => {
+    Cache.cleanup();
+  }, intervalMs);
+}
+
+export function stopPeriodicCleanup(): void {
+  if (cleanupIntervalId) {
+    clearInterval(cleanupIntervalId);
+    cleanupIntervalId = null;
+  }
+}

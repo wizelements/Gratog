@@ -84,6 +84,10 @@ export function sanitizePhone(phone: string | undefined | null): string {
 
 /**
  * Sanitizes an email address
+ * 
+ * CRITICAL FIX: Previous regex was removing @ symbols because the regex
+ * included @ in the character class, so `match` was never exactly '@'.
+ * Now we use a regex that explicitly excludes @ and .
  */
 export function sanitizeEmail(email: string | undefined | null): string {
   if (!email || typeof email !== 'string') {
@@ -93,12 +97,15 @@ export function sanitizeEmail(email: string | undefined | null): string {
   return email
     .toLowerCase()
     .trim()
-    // Remove any characters that shouldn't be in an email
-    .replace(/[<>()[\]\\,;:\s@"]+/g, (match) => {
-      // Keep @ symbol and dots
-      if (match === '@' || match === '.') return match;
-      return '';
-    });
+    // Remove dangerous characters but keep @ and . which are valid in emails
+    // Explicitly list only the characters to remove (not @ or .)
+    .replace(/[<>()[\]\\,;:\s"]+/g, '')
+    // Remove multiple consecutive @ symbols (keep only first)
+    .replace(/@+/g, '@')
+    // Remove @ if at start or end
+    .replace(/^@|@$/g, '')
+    // Remove multiple consecutive dots
+    .replace(/\.{2,}/g, '.');
 }
 
 /**

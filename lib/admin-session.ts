@@ -84,6 +84,10 @@ export async function verifyAdminToken(token: string): Promise<AdminTokenPayload
   }
 }
 
+// Token configuration
+const TOKEN_EXPIRY = '7d';
+const TOKEN_ROTATION_THRESHOLD_MS = 24 * 60 * 60 * 1000; // Rotate if more than 1 day old
+
 /**
  * Generate admin JWT token with standardized payload
  */
@@ -102,10 +106,50 @@ export async function generateAdminToken(admin: {
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime(TOKEN_EXPIRY)
     .sign(secretKey);
   
   return token;
+}
+
+/**
+ * Check if token should be rotated (more than 1 day old)
+ */
+export function shouldRotateToken(payload: AdminTokenPayload): boolean {
+  if (!payload.iat) return false;
+  
+  const issuedAt = payload.iat * 1000; // Convert to milliseconds
+  const age = Date.now() - issuedAt;
+  
+  return age > TOKEN_ROTATION_THRESHOLD_MS;
+}
+
+/**
+ * Refresh token if it's getting old but not yet expired
+ * This provides sliding window expiration for active users
+ */
+export async function refreshTokenIfNeeded(
+  request: NextRequest,
+  response: NextResponse
+): Promise<NextResponse> {
+  const token = getAdminTokenFromRequest(request);
+  if (!token) return response;
+  
+  const payload = await verifyAdminToken(token);
+  if (!payload) return response;
+  
+  if (shouldRotateToken(payload)) {
+    const newToken = await generateAdminToken({
+      id: payload.id,
+      email: payload.email,
+      name: payload.name,
+    });
+    
+    // Set new token in response
+    return setAdminCookie(response, newToken);
+  }
+  
+  return response;
 }
 
 /**

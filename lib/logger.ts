@@ -24,7 +24,19 @@ const LOG_EMOJIS = {
   error: '❌',
 } as const;
 
-function isEnabled(): boolean {
+/**
+ * Check if logging is enabled for a given level
+ * 
+ * CRITICAL FIX (M11): Always log errors and warnings in production
+ * Only debug/info are suppressed when DEBUG is not set
+ */
+function isEnabledForLevel(level: LogLevel): boolean {
+  // Always log errors and warnings in all environments
+  if (level === 'error' || level === 'warn') {
+    return true;
+  }
+  
+  // For debug/info, require DEBUG flag or development mode
   if (typeof window !== 'undefined') {
     return (
       process.env.NODE_ENV === 'development' ||
@@ -36,6 +48,11 @@ function isEnabled(): boolean {
     process.env.NODE_ENV === 'development' ||
     process.env.DEBUG === 'true'
   );
+}
+
+// Legacy function for backward compatibility
+function isEnabled(): boolean {
+  return isEnabledForLevel('debug');
 }
 
 function isServer(): boolean {
@@ -63,7 +80,7 @@ function extractStack(error: unknown): string | undefined {
 }
 
 function log(level: LogLevel, category: string, message: string, ...data: unknown[]): void {
-  if (!isEnabled() && level !== 'error') {
+  if (!isEnabledForLevel(level)) {
     return;
   }
 

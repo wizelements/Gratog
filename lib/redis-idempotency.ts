@@ -1,5 +1,5 @@
 const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
-const debug = (...args) => { if (DEBUG) debug(...args); };
+const debug = (...args: unknown[]) => { if (DEBUG) console.log('[REDIS-IDEMPOTENCY]', ...args); };
 
 /**
  * Redis-based idempotency key management for production multi-instance deployments
@@ -172,8 +172,28 @@ export function cleanupMemoryCache() {
   }
 }
 
-// Clean up memory cache every hour
-setInterval(cleanupMemoryCache, 60 * 60 * 1000);
+/**
+ * SERVERLESS COMPATIBILITY FIX
+ * 
+ * DO NOT use setInterval in module scope for serverless environments.
+ * Cleanup is now triggered via cron job at /api/cron/cleanup-abandoned-orders
+ * 
+ * For long-running Node.js processes, call startCleanupInterval() explicitly.
+ */
+
+let cleanupIntervalId: NodeJS.Timeout | null = null;
+
+export function startCleanupInterval(intervalMs: number = 3600000): void {
+  if (cleanupIntervalId) return;
+  cleanupIntervalId = setInterval(cleanupMemoryCache, intervalMs);
+}
+
+export function stopCleanupInterval(): void {
+  if (cleanupIntervalId) {
+    clearInterval(cleanupIntervalId);
+    cleanupIntervalId = null;
+  }
+}
 
 /**
  * Graceful shutdown

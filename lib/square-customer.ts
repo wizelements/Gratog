@@ -5,9 +5,43 @@
 
 import { getSquareClient } from './square';
 import { logger } from './logger';
+import { withRetry } from './critical-operations';
 import type { Customer, Address, Country } from 'square';
 
 const log = logger.withCategory('SquareCustomer');
+
+/**
+ * Normalize phone number to E.164 format for Square API
+ * Square prefers E.164 format (+1XXXXXXXXXX for US numbers)
+ * 
+ * FIX M7: Ensures consistent phone number format for customer search
+ */
+function normalizePhoneNumber(phone: string | undefined): string | undefined {
+  if (!phone) return undefined;
+  
+  // Strip all non-digit characters
+  const digits = phone.replace(/\D/g, '');
+  
+  if (digits.length === 0) return undefined;
+  
+  // US phone number (10 digits)
+  if (digits.length === 10) {
+    return `+1${digits}`;
+  }
+  
+  // US phone number with country code (11 digits starting with 1)
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return `+${digits}`;
+  }
+  
+  // Already has country code or international format
+  if (digits.length > 10) {
+    return `+${digits}`;
+  }
+  
+  // Return as-is if we can't normalize (let Square validate)
+  return phone;
+}
 
 export interface CustomerData {
   email: string;
@@ -29,23 +63,54 @@ export type SquareCustomer = Customer;
 /**
  * Find or create a customer in Square
  * This ensures orders are properly attributed to customers in Square dashboard
+ * 
+ * FIX M14: Wrapped with retry logic for transient failures
+ * FIX M7: Phone numbers are normalized to E.164 format
  */
 export async function findOrCreateSquareCustomer(
   customerData: CustomerData
 ): Promise<{ success: boolean; customer?: SquareCustomer; error?: string }> {
-  try {
-    const square = getSquareClient();
-    
-    // Parse name into first and last
-    const nameParts = customerData.name.trim().split(' ');
-    const givenName = nameParts[0] || '';
-    const familyName = nameParts.slice(1).join(' ') || nameParts[0]; // Use first name if no last name
-    
-    log.info('Finding or creating Square customer', { 
-      email: customerData.email,
-      givenName,
-      familyName 
+  // Wrap the entire operation with retry for transient failures
+  return withRetry(
+    () => findOrCreateSquareCustomerInternal(customerData),
+    'square_customer_create',
+    { maxAttempts: 3, baseDelayMs: 500 }
+  ).catch((error) => {
+    // Return error result instead of throwing after all retries exhausted
+    log.error('Square customer operation failed after retries', { 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      customerEmail: customerData.email
     });
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  });
+}
+
+/**
+ * Internal implementation - separated for retry wrapper
+ */
+async function findOrCreateSquareCustomerInternal(
+  customerData: CustomerData
+): Promise<{ success: boolean; customer?: SquareCustomer; error?: string }> {
+  const square = getSquareClient();
+  
+  // Parse name into first and last
+  const nameParts = customerData.name.trim().split(' ');
+  const givenName = nameParts[0] || '';
+  const familyName = nameParts.slice(1).join(' ') || nameParts[0]; // Use first name if no last name
+  
+  // FIX M7: Normalize phone number to E.164 format
+  const normalizedPhone = normalizePhoneNumber(customerData.phone);
+  
+  log.info('Finding or creating Square customer', { 
+    email: customerData.email,
+    givenName,
+    familyName,
+    phoneOriginal: customerData.phone,
+    phoneNormalized: normalizedPhone
+  });
     
     // Step 1: Search for existing customer by email
     try {
@@ -80,7 +145,7 @@ export async function findOrCreateSquareCustomer(
             customerId: existingCustomer.id!,
             givenName,
             familyName,
-            phoneNumber: customerData.phone,
+            phoneNumber: normalizedPhone, // Use normalized phone
             ...(address && { address }),
             ...(customerData.note && {
               note: customerData.note.substring(0, 500) // Max 500 chars
@@ -119,7 +184,7 @@ export async function findOrCreateSquareCustomer(
       givenName,
       familyName,
       emailAddress: customerData.email.toLowerCase().trim(),
-      phoneNumber: customerData.phone,
+      phoneNumber: normalizedPhone, // Use normalized phone
       referenceId: customerData.referenceId || `web_${Date.now()}`,
       ...(createAddress && { address: createAddress }),
       ...(customerData.note && {
@@ -141,18 +206,6 @@ export async function findOrCreateSquareCustomer(
       success: true,
       customer: newCustomer
     };
-    
-  } catch (error) {
-    log.error('Square customer operation failed', { 
-      error: error instanceof Error ? error.message : 'Unknown error',
-      customerEmail: customerData.email
-    });
-    
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    };
-  }
 }
 
 /**

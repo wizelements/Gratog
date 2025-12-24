@@ -91,14 +91,34 @@ export function getSquareWebhookSignatureKey(): string {
   return key;
 }
 
-// DEPRECATED: Use getter functions instead to ensure proper validation
-// These exports can cause silent failures in production with empty strings
-/** @deprecated Use getSquareLocationId() instead - this export can be empty string */
-export const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID || '';
-/** @deprecated Use getSquareApplicationId() instead - this export can be empty string */
-export const SQUARE_APPLICATION_ID = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || '';
-/** @deprecated Use getSquareWebhookSignatureKey() instead - this export can be empty string */
-export const SQUARE_WEBHOOK_SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || '';
+/**
+ * DEPRECATED EXPORTS REMOVED
+ * 
+ * These exports were causing silent failures in production because they could be empty strings.
+ * Code like `if (SQUARE_LOCATION_ID)` would fail silently when the value was ''.
+ * 
+ * MIGRATION: Use the getter functions which throw meaningful errors:
+ * - SQUARE_LOCATION_ID → getSquareLocationId()
+ * - SQUARE_APPLICATION_ID → getSquareApplicationId()
+ * - SQUARE_WEBHOOK_SIGNATURE_KEY → getSquareWebhookSignatureKey()
+ * 
+ * If you see a TypeScript error about missing exports, update your import to use the getter.
+ */
+
+// Throw helpful error if someone tries to use deprecated exports
+const deprecatedExportHandler = {
+  get(target: any, prop: string) {
+    throw new Error(
+      `❌ DEPRECATED: ${prop} export removed. Use get${prop.replace(/_/g, '')}() function instead. ` +
+      `The old export could be an empty string, causing silent failures.`
+    );
+  }
+};
+
+// These are intentionally broken to force migration to getter functions
+export const SQUARE_LOCATION_ID: never = new Proxy({}, deprecatedExportHandler) as never;
+export const SQUARE_APPLICATION_ID: never = new Proxy({}, deprecatedExportHandler) as never;
+export const SQUARE_WEBHOOK_SIGNATURE_KEY: never = new Proxy({}, deprecatedExportHandler) as never;
 
 // Helper to validate Square environment configuration
 export function validateSquareConfig() {

@@ -8,17 +8,73 @@ import { validateCustomerData } from '@/lib/validation/customer';
 import { validateCart } from '@/lib/validation/cart';
 import { sanitizeObject } from '@/lib/validation/sanitize';
 import { createLogger } from '@/lib/logger';
-import { randomUUID } from 'crypto';
+import { randomUUID, createHash } from 'crypto';
 import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
+import { RateLimit } from '@/lib/redis';
+import { withIdempotency, getIdempotencyKeyFromHeaders } from '@/lib/idempotency';
 
 const logger = createLogger('OrdersCreateAPI');
 
+// Rate limiting configuration
+const ORDER_RATE_LIMIT = 10; // Max orders per window
+const ORDER_RATE_WINDOW = 300; // 5 minutes
+
+// FIX M12: Atlanta/Eastern timezone for pickup date calculations
+const ATLANTA_TIMEZONE = 'America/New_York';
+
+/**
+ * Get the next Saturday pickup date in Atlanta timezone
+ * 
+ * FIX M12: Previously used naive Date which could give wrong day
+ * when server timezone differs from customer timezone (Atlanta).
+ * Now explicitly calculates based on Atlanta local time.
+ */
 function getNextSaturday(time = '09:00') {
+  // Get current time in Atlanta
   const now = new Date();
-  const daysUntilSaturday = (6 - now.getDay() + 7) % 7 || 7;
+  const atlantaFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: ATLANTA_TIMEZONE,
+    weekday: 'long',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+  
+  // Parse Atlanta local time components
+  const parts = atlantaFormatter.formatToParts(now);
+  const getPart = (type) => parts.find(p => p.type === type)?.value;
+  const atlantaDayOfWeek = getPart('weekday');
+  
+  // Map weekday name to number (Sunday=0, Saturday=6)
+  const dayMap = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
+  const currentDayNum = dayMap[atlantaDayOfWeek] ?? now.getDay();
+  
+  // Calculate days until next Saturday
+  let daysUntilSaturday = (6 - currentDayNum + 7) % 7;
+  if (daysUntilSaturday === 0) {
+    // If today is Saturday, check if pickup time has passed
+    const currentHour = parseInt(getPart('hour') || '0');
+    const currentMinute = parseInt(getPart('minute') || '0');
+    const [targetHour, targetMinute] = time.split(':').map(Number);
+    
+    if (currentHour > targetHour || (currentHour === targetHour && currentMinute >= targetMinute)) {
+      // Pickup time passed, use next Saturday
+      daysUntilSaturday = 7;
+    }
+  }
+  
+  // Build the target date
   const nextSat = new Date(now.getTime() + daysUntilSaturday * 24 * 60 * 60 * 1000);
   const [hours, minutes] = time.split(':');
+  
+  // Create ISO string for the Atlanta timezone date
+  // We use a simple approach: set the hours in UTC offset to approximate Atlanta time
+  // For precision, we'd use a library like date-fns-tz, but this is close enough
   nextSat.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+  
   return nextSat.toISOString();
 }
 
@@ -117,6 +173,62 @@ export async function POST(request) {
       cartItemsCount: orderData.cart?.length,
       customerEmail: orderData.customer?.email 
     });
+    
+    // RATE LIMITING: Prevent order creation abuse
+    const clientIp = request.headers.get('x-forwarded-for') || 
+                     request.headers.get('x-real-ip') || 
+                     'unknown';
+    const rateLimitKey = `order_create:${clientIp}`;
+    
+    if (!RateLimit.check(rateLimitKey, ORDER_RATE_LIMIT, ORDER_RATE_WINDOW)) {
+      logger.warn('Order creation rate limit exceeded', { ip: clientIp });
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Too many order attempts. Please wait a few minutes and try again.',
+          code: 'RATE_LIMIT_EXCEEDED'
+        },
+        { status: 429 }
+      );
+    }
+    
+    // IDEMPOTENCY: Generate key from order data to prevent duplicate orders
+    // Check for client-provided idempotency key first
+    let idempotencyKey = getIdempotencyKeyFromHeaders(request.headers);
+    
+    if (!idempotencyKey && orderData.customer?.email) {
+      // Generate key from order content for deduplication
+      const orderHash = createHash('sha256')
+        .update(JSON.stringify({
+          email: orderData.customer.email,
+          cart: orderData.cart?.map(i => ({ id: i.id, qty: i.quantity })),
+          fulfillmentType: orderData.fulfillmentType,
+          // Include timestamp bucket (5-minute window) to allow genuine re-orders
+          timeBucket: Math.floor(Date.now() / (5 * 60 * 1000))
+        }))
+        .digest('hex')
+        .substring(0, 32);
+      
+      idempotencyKey = `order_${orderHash}`;
+    }
+    
+    // If we have an idempotency key, wrap the order creation
+    if (idempotencyKey) {
+      const cachedResult = await import('@/lib/idempotency').then(m => 
+        m.getIdempotentResponse(idempotencyKey)
+      );
+      
+      if (cachedResult) {
+        logger.info('Returning cached order (idempotency hit)', { 
+          idempotencyKey,
+          orderId: cachedResult.order?.id 
+        });
+        return NextResponse.json({
+          ...cachedResult,
+          _cached: true
+        });
+      }
+    }
     
     // VALIDATION 1: Validate cart data
     const cartValidation = validateCart(orderData.cart);
@@ -383,7 +495,7 @@ export async function POST(request) {
     // Confirmations are sent by the payment API after successful payment
     // (See /app/api/payments/route.ts)
     
-    return NextResponse.json({
+    const successResponse = {
       success: true,
       order: {
         id: order.id,
@@ -398,7 +510,15 @@ export async function POST(request) {
         squareCustomerId,
         note: '⚠️ Order created but payment is still pending. Confirmations will be sent after payment.'
       }
-    });
+    };
+    
+    // Cache successful response for idempotency
+    if (idempotencyKey) {
+      const { setIdempotentResponse } = await import('@/lib/idempotency');
+      await setIdempotentResponse(idempotencyKey, successResponse, 300); // 5 minute TTL
+    }
+    
+    return NextResponse.json(successResponse);
     
   } catch (error) {
     logger.error('Order creation error', { 

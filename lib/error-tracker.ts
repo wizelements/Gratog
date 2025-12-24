@@ -80,10 +80,26 @@ interface ErrorCorrelation {
   timeWindow: number; // milliseconds
 }
 
-// In-memory error store (limited to last 1000 errors)
+/**
+ * In-memory error store with strict size limits
+ * 
+ * CRITICAL FIX: Both errorStore Map AND errorList array are now bounded.
+ * Previously errorStore could grow unbounded because the eviction logic
+ * was searching for oldest by timestamp (inefficient) and could miss entries.
+ * 
+ * Now we use a simple ring buffer approach with the array as source of truth.
+ */
+const MAX_ERRORS_STORED = 500; // Reduced from 1000 for memory safety
+
+// Use a single data structure to avoid sync issues
+interface StoredError {
+  id: string;
+  context: ErrorContext;
+}
+const errorRingBuffer: StoredError[] = [];
+
+// Keep Map for O(1) lookups by ID, but sync it with ring buffer
 const errorStore = new Map<string, ErrorContext>();
-const MAX_ERRORS_STORED = 1000;
-const errorList: ErrorContext[] = [];
 
 /**
  * Capture error with full context
@@ -101,29 +117,17 @@ export async function captureError(error: Error | string, context: Partial<Error
     ...context,
   };
 
-  // Store error
-  errorStore.set(errorId, errorContext);
-  errorList.push(errorContext);
-
-  // Maintain size limit
-  if (errorList.length > MAX_ERRORS_STORED) {
-    const removed = errorList.shift();
-    if (removed) {
-      // Find and delete the oldest error
-      let oldestId = '';
-      let oldestTime = Infinity;
-      for (const [id, ctx] of errorStore.entries()) {
-        const time = new Date(ctx.timestamp).getTime();
-        if (time < oldestTime) {
-          oldestTime = time;
-          oldestId = id;
-        }
-      }
-      if (oldestId) {
-        errorStore.delete(oldestId);
-      }
+  // Enforce size limit BEFORE adding
+  while (errorRingBuffer.length >= MAX_ERRORS_STORED) {
+    const oldest = errorRingBuffer.shift();
+    if (oldest) {
+      errorStore.delete(oldest.id);
     }
   }
+
+  // Add to both structures
+  errorRingBuffer.push({ id: errorId, context: errorContext });
+  errorStore.set(errorId, errorContext);
 
   // Log to system
   const errorLogger = logger.withCategory('ERROR');
@@ -495,7 +499,32 @@ export function getStoredErrors(): ErrorContext[] {
  */
 export function clearErrorStore(): void {
   errorStore.clear();
-  errorList.length = 0;
+  errorRingBuffer.length = 0;
+}
+
+/**
+ * Clear old errors (for cron job cleanup)
+ * Removes errors older than specified age
+ */
+export function clearOldErrors(maxAgeMs: number = 24 * 60 * 60 * 1000): number {
+  const cutoff = Date.now() - maxAgeMs;
+  let removed = 0;
+  
+  // Remove from beginning (oldest first) until we hit a recent error
+  while (errorRingBuffer.length > 0) {
+    const oldest = errorRingBuffer[0];
+    const errorTime = new Date(oldest.context.timestamp).getTime();
+    
+    if (errorTime < cutoff) {
+      errorRingBuffer.shift();
+      errorStore.delete(oldest.id);
+      removed++;
+    } else {
+      break; // Rest are newer
+    }
+  }
+  
+  return removed;
 }
 
 /**

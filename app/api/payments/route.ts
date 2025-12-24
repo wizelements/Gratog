@@ -9,6 +9,14 @@ import { fromCents, toSquareMoney } from '@/lib/money';
 import { shouldAllowFallback, getAuthFailureResponse, logSquareOperation } from '@/lib/square-guard';
 import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
 import * as Sentry from '@sentry/nextjs';
+import { 
+  persistWithFallback, 
+  sendNotificationReliably, 
+  criticalAlert,
+  safeStringify,
+  withRetry 
+} from '@/lib/critical-operations';
+import { rewardsSystem } from '@/lib/enhanced-rewards';
 
 /**
  * Square Payments API - Web Payments SDK Integration
@@ -144,59 +152,92 @@ export async function POST(request: NextRequest) {
       receiptUrl: payment.receiptUrl
     });
     
-    // Store payment record in database
-    try {
-      const { db } = await connectToDatabase();
-      const paymentRecord = {
-        id: randomUUID(),
+    // CRITICAL: Store payment record in database with fallback persistence
+    const paymentRecordId = randomUUID();
+    const paymentRecord = {
+      id: paymentRecordId,
+      squarePaymentId: payment.id,
+      idempotencyKey: paymentIdempotencyKey,
+      status: payment.status,
+      // Convert BigInt to string for JSON serialization
+      amountMoney: payment.amountMoney ? {
+        amount: String(payment.amountMoney.amount),
+        currency: payment.amountMoney.currency
+      } : null,
+      totalMoney: payment.totalMoney ? {
+        amount: String(payment.totalMoney.amount),
+        currency: payment.totalMoney.currency
+      } : null,
+      sourceType: payment.sourceType,
+      cardDetails: payment.cardDetails ? {
+        brand: payment.cardDetails.card?.cardBrand,
+        last4: payment.cardDetails.card?.last4,
+        fingerprint: payment.cardDetails.card?.fingerprint,
+        expMonth: payment.cardDetails.card?.expMonth,
+        expYear: payment.cardDetails.card?.expYear
+      } : null,
+      receiptNumber: payment.receiptNumber,
+      receiptUrl: payment.receiptUrl,
+      customer: customer || null,
+      orderId,
+      lineItems,
+      metadata: {
+        ...metadata,
+        processedAt: new Date().toISOString(),
+        userAgent: request.headers.get('user-agent'),
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      source: 'web_payments_sdk'
+    };
+    
+    // Persist with fallback - NEVER silently lose payment data
+    const persistResult = await persistWithFallback(
+      async () => {
+        const { db } = await connectToDatabase();
+        await db.collection('payments').insertOne(paymentRecord);
+      },
+      paymentRecord,
+      { type: 'payment', id: payment.id! }
+    );
+    
+    if (!persistResult.success) {
+      // CRITICAL: Payment processed but not persisted anywhere
+      await criticalAlert('PaymentPersistenceFailure', 'Payment processed but ALL persistence mechanisms failed', {
         squarePaymentId: payment.id,
-        idempotencyKey: paymentIdempotencyKey,
-        status: payment.status,
-        amountMoney: payment.amountMoney,
-        totalMoney: payment.totalMoney,
-        sourceType: payment.sourceType,
-        cardDetails: payment.cardDetails ? {
-          brand: payment.cardDetails.card?.cardBrand,
-          last4: payment.cardDetails.card?.last4,
-          fingerprint: payment.cardDetails.card?.fingerprint,
-          expMonth: payment.cardDetails.card?.expMonth,
-          expYear: payment.cardDetails.card?.expYear
-        } : null,
-        receiptNumber: payment.receiptNumber,
-        receiptUrl: payment.receiptUrl,
-        customer: customer || null,
         orderId,
-        lineItems,
-        metadata: {
-          ...metadata,
-          processedAt: new Date().toISOString(),
-          userAgent: request.headers.get('user-agent'),
-          ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
-        },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        source: 'web_payments_sdk'
-      };
-      
-      await db.collection('payments').insertOne(paymentRecord);
-      logger.debug('API', 'Payment record saved:', paymentRecord.id);
-      
-      // Update order status if orderId provided
-      if (orderId) {
+        amountCents,
+        paymentRecord: safeStringify(paymentRecord)
+      });
+    } else {
+      logger.debug('API', 'Payment record saved:', { 
+        id: paymentRecordId, 
+        primary: persistResult.primary, 
+        fallback: persistResult.fallback 
+      });
+    }
+    
+    // Update order status if orderId provided
+    let order: any = null;
+    if (orderId) {
+      try {
+        const { db } = await connectToDatabase();
+        
         // Map Square payment status to order status
         const orderStatus = payment.status === 'COMPLETED' || payment.status === 'APPROVED' ? 'paid' : 'payment_processing';
         
         // Fetch the order before updating (needed for notifications)
-        const order = await db.collection('orders').findOne({ id: orderId });
+        order = await db.collection('orders').findOne({ id: orderId });
         
         await db.collection('orders').updateOne(
           { id: orderId },
           {
             $set: {
-              status: orderStatus, // Update main order status
-              paymentStatus: payment.status, // Square payment status
+              status: orderStatus,
+              paymentStatus: payment.status,
               squarePaymentId: payment.id,
-              'payment.status': payment.status === 'COMPLETED' || payment.status === 'APPROVED' ? 'completed' : 'processing', // Update nested payment object
+              'payment.status': payment.status === 'COMPLETED' || payment.status === 'APPROVED' ? 'completed' : 'processing',
               'payment.squarePaymentId': payment.id,
               'payment.receiptUrl': payment.receiptUrl,
               'payment.receiptNumber': payment.receiptNumber,
@@ -218,47 +259,99 @@ export async function POST(request: NextRequest) {
         );
         logger.debug('API', 'Order status updated:', { orderId, status: orderStatus, paymentStatus: payment.status });
         
-        // Send confirmation emails and notifications only after successful payment
+        // CRITICAL FIX: Award reward points AFTER payment confirmation (not in order creation)
         if (order && (payment.status === 'COMPLETED' || payment.status === 'APPROVED')) {
           try {
-            const { sendOrderConfirmationEmail } = await import('@/lib/resend-email');
-            await sendOrderConfirmationEmail(order);
-            logger.debug('API', 'Confirmation email sent', { orderId });
-          } catch (emailError) {
-            logger.warn('API', 'Confirmation email failed (non-critical)', { 
-              orderId,
-              error: emailError instanceof Error ? emailError.message : String(emailError)
+            const total = order.pricing?.total || amountCents / 100;
+            const pointsEarned = Math.floor(total);
+            await rewardsSystem.addPoints(
+              customer?.email || order.customer?.email,
+              pointsEarned,
+              'purchase',
+              {
+                orderId: order.id,
+                orderTotal: total,
+                itemCount: order.items?.length || 0,
+                squarePaymentId: payment.id
+              }
+            );
+            logger.debug('API', 'Reward points awarded after payment', { 
+              email: customer?.email || order.customer?.email, 
+              points: pointsEarned 
             });
-          }
-          
-          try {
-            const { sendOrderConfirmationSMS } = await import('@/lib/sms');
-            await sendOrderConfirmationSMS(order);
-            logger.debug('API', 'Confirmation SMS sent', { orderId });
-          } catch (smsError) {
-            logger.warn('API', 'Confirmation SMS failed (non-critical)', { 
+          } catch (pointsError) {
+            // Non-critical but log for manual reconciliation
+            logger.warn('API', 'Failed to award reward points', { 
               orderId,
-              error: smsError instanceof Error ? smsError.message : String(smsError)
-            });
-          }
-          
-          try {
-            const { notifyStaffPickupOrder } = await import('@/lib/staff-notifications');
-            if (order.fulfillmentType === 'pickup_market' || order.fulfillmentType === 'pickup_browns_mill' || order.fulfillmentType === 'delivery' || order.fulfillmentType === 'meetup_serenbe') {
-              await notifyStaffPickupOrder(order);
-              logger.debug('API', 'Staff notification sent', { orderId, type: order.fulfillmentType });
-            }
-          } catch (staffError) {
-            logger.warn('API', 'Staff notification failed (non-critical)', { 
-              orderId,
-              error: staffError instanceof Error ? staffError.message : String(staffError)
+              error: pointsError instanceof Error ? pointsError.message : String(pointsError)
             });
           }
         }
+      } catch (orderError) {
+        // Log but don't fail - payment was successful
+        logger.error('API', 'Failed to update order status', {
+          orderId,
+          error: orderError instanceof Error ? orderError.message : String(orderError)
+        });
+        await criticalAlert('OrderUpdateFailure', 'Payment succeeded but order update failed', {
+          orderId,
+          squarePaymentId: payment.id,
+          error: orderError instanceof Error ? orderError.message : String(orderError)
+        });
       }
-    } catch (dbError) {
-      console.warn('Failed to save payment record (non-critical):', dbError);
-      // Don't fail the payment if DB save fails
+    }
+    
+    // Send confirmation notifications with retry and queue fallback
+    if (order && (payment.status === 'COMPLETED' || payment.status === 'APPROVED')) {
+      // Email notification
+      const emailResult = await sendNotificationReliably(
+        'email',
+        async () => {
+          const { sendOrderConfirmationEmail } = await import('@/lib/resend-email');
+          await sendOrderConfirmationEmail(order);
+        },
+        { orderId: order.id, recipient: customer?.email || order.customer?.email }
+      );
+      
+      if (emailResult.success) {
+        logger.debug('API', 'Confirmation email sent', { orderId });
+      } else if (emailResult.queued) {
+        logger.info('API', 'Confirmation email queued for retry', { orderId });
+      }
+      
+      // SMS notification
+      const smsResult = await sendNotificationReliably(
+        'sms',
+        async () => {
+          const { sendOrderConfirmationSMS } = await import('@/lib/sms');
+          await sendOrderConfirmationSMS(order);
+        },
+        { orderId: order.id, recipient: customer?.phone || order.customer?.phone }
+      );
+      
+      if (smsResult.success) {
+        logger.debug('API', 'Confirmation SMS sent', { orderId });
+      } else if (smsResult.queued) {
+        logger.info('API', 'Confirmation SMS queued for retry', { orderId });
+      }
+      
+      // Staff notification (best effort, less critical)
+      try {
+        const { notifyStaffPickupOrder } = await import('@/lib/staff-notifications');
+        if (['pickup_market', 'pickup_browns_mill', 'delivery', 'meetup_serenbe'].includes(order.fulfillmentType)) {
+          await withRetry(
+            () => notifyStaffPickupOrder(order),
+            'staff_notification',
+            { maxAttempts: 2 }
+          );
+          logger.debug('API', 'Staff notification sent', { orderId, type: order.fulfillmentType });
+        }
+      } catch (staffError) {
+        logger.warn('API', 'Staff notification failed', { 
+          orderId,
+          error: staffError instanceof Error ? staffError.message : String(staffError)
+        });
+      }
     }
     
     return NextResponse.json({

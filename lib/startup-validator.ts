@@ -1,5 +1,5 @@
 const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
-const debug = (...args) => { if (DEBUG) debug(...args); };
+const debug = (...args: unknown[]) => { if (DEBUG) console.log('[STARTUP-VALIDATOR]', ...args); };
 
 /**
  * Production Startup Validator
