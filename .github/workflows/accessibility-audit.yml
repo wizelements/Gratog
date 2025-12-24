@@ -12,6 +12,14 @@ jobs:
   accessibility-tests:
     runs-on: ubuntu-latest
     
+    env:
+      SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
+      SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
+      NEXT_PUBLIC_SQUARE_APPLICATION_ID: ${{ secrets.NEXT_PUBLIC_SQUARE_APPLICATION_ID }}
+      SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
+      SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}
+      SQUARE_ENVIRONMENT: sandbox
+    
     steps:
       - uses: actions/checkout@v4
       

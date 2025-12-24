@@ -162,6 +162,14 @@ jobs:
     if: needs.detect-changes.outputs.test-unit == 'true'
     runs-on: ubuntu-latest
     
+    env:
+      SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
+      SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
+      NEXT_PUBLIC_SQUARE_APPLICATION_ID: ${{ secrets.NEXT_PUBLIC_SQUARE_APPLICATION_ID }}
+      SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
+      SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}
+      SQUARE_ENVIRONMENT: sandbox
+    
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -182,6 +190,14 @@ jobs:
     if: needs.detect-changes.outputs.test-e2e == 'true'
     runs-on: ubuntu-latest
     
+    env:
+      SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
+      SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
+      NEXT_PUBLIC_SQUARE_APPLICATION_ID: ${{ secrets.NEXT_PUBLIC_SQUARE_APPLICATION_ID }}
+      SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
+      SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}
+      SQUARE_ENVIRONMENT: sandbox
+    
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -198,6 +214,14 @@ jobs:
     if: needs.detect-changes.outputs.test-integration == 'true'
     runs-on: ubuntu-latest
     
+    env:
+      SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
+      SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
+      NEXT_PUBLIC_SQUARE_APPLICATION_ID: ${{ secrets.NEXT_PUBLIC_SQUARE_APPLICATION_ID }}
+      SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
+      SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}
+      SQUARE_ENVIRONMENT: sandbox
+    
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -212,6 +236,14 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.test-accessibility == 'true'
     runs-on: ubuntu-latest
+    
+    env:
+      SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
+      SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
+      NEXT_PUBLIC_SQUARE_APPLICATION_ID: ${{ secrets.NEXT_PUBLIC_SQUARE_APPLICATION_ID }}
+      SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
+      SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}
+      SQUARE_ENVIRONMENT: sandbox
     
     steps:
       - uses: actions/checkout@v4
@@ -228,6 +260,14 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.test-performance == 'true'
     runs-on: ubuntu-latest
+    
+    env:
+      SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
+      SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
+      NEXT_PUBLIC_SQUARE_APPLICATION_ID: ${{ secrets.NEXT_PUBLIC_SQUARE_APPLICATION_ID }}
+      SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
+      SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}
+      SQUARE_ENVIRONMENT: sandbox
     
     steps:
       - uses: actions/checkout@v4
