@@ -82,7 +82,7 @@ jobs:
       
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report-${{ matrix.browser }}-${{ matrix.device }}
           path: playwright-report/
@@ -180,7 +180,7 @@ jobs:
           cat CONSOLIDATED_E2E_REPORT.md
       
       - name: Upload consolidated report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: consolidated-e2e-report
           path: CONSOLIDATED_E2E_REPORT.md
