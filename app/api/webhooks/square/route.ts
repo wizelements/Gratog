@@ -2,7 +2,7 @@ import { logger } from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
-import { SQUARE_WEBHOOK_SIGNATURE_KEY } from '@/lib/square';
+import { getSquareWebhookSignatureKey } from '@/lib/square';
 
 // Force Node.js runtime for crypto operations and raw body access
 export const runtime = 'nodejs';
@@ -14,8 +14,16 @@ export const runtime = 'nodejs';
 
 // Verify webhook signature for security
 function verifyWebhookSignature(signatureHeader: string, requestUrl: string, requestBody: string): boolean {
-  if (!signatureHeader || !SQUARE_WEBHOOK_SIGNATURE_KEY) {
-    logger.warn('Webhook', 'Missing signature header or webhook signature key');
+  let webhookKey: string;
+  try {
+    webhookKey = getSquareWebhookSignatureKey();
+  } catch {
+    logger.warn('Webhook', 'Webhook signature key not configured');
+    return false;
+  }
+  
+  if (!signatureHeader) {
+    logger.warn('Webhook', 'Missing signature header');
     return false;
   }
   
@@ -40,7 +48,7 @@ function verifyWebhookSignature(signatureHeader: string, requestUrl: string, req
     const stringToSign = requestUrl + requestBody;
     
     // Calculate HMAC
-    const hmac = crypto.createHmac('sha256', SQUARE_WEBHOOK_SIGNATURE_KEY);
+    const hmac = crypto.createHmac('sha256', webhookKey);
     hmac.update(stringToSign);
     const calculatedSignature = hmac.digest('base64');
     

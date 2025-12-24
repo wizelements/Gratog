@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { ShoppingCart, Star } from 'lucide-react';
-import { addToCart } from '@/lib/cartUtils';
+import { addToCart } from '@/lib/cart-engine';
 import { toast } from 'sonner';
 import Link from 'next/link';
 

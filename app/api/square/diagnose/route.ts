@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSquareClient, SQUARE_LOCATION_ID, SQUARE_APPLICATION_ID, validateSquareConfig } from '@/lib/square';
+import { getSquareClient, getSquareLocationId, getSquareApplicationId, validateSquareConfig } from '@/lib/square';
 import { logger } from '@/lib/logger';
 
 /**
@@ -89,19 +89,20 @@ export async function GET(request: NextRequest) {
         };
         
         // Verify configured location exists
-        const configuredLocation = response.locations?.find((loc) => loc.id === SQUARE_LOCATION_ID);
-        if (configuredLocation) {
-          diagnostics.tests.locationValidation = {
-            status: 'PASS',
-            locationId: SQUARE_LOCATION_ID,
-            locationName: configuredLocation.name,
-            locationStatus: configuredLocation.status
-          };
-        } else {
-          diagnostics.tests.locationValidation = {
-            status: 'FAIL',
-            error: `Location ${SQUARE_LOCATION_ID} not found in account`
-          };
+         const configuredLocationId = getSquareLocationId();
+         const configuredLocation = response.locations?.find((loc) => loc.id === configuredLocationId);
+         if (configuredLocation) {
+           diagnostics.tests.locationValidation = {
+             status: 'PASS',
+             locationId: configuredLocationId,
+             locationName: configuredLocation.name,
+             locationStatus: configuredLocation.status
+           };
+         } else {
+           diagnostics.tests.locationValidation = {
+             status: 'FAIL',
+             error: `Location ${configuredLocationId} not found in account`
+           };
           diagnostics.errors.push('Configured location ID not found');
           diagnostics.recommendations.push('Verify SQUARE_LOCATION_ID matches a location in your Square account');
         }

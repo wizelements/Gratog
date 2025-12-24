@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSquareClient, SQUARE_LOCATION_ID } from '@/lib/square';
+import { getSquareClient, getSquareLocationId } from '@/lib/square';
 import { toSquareMoney, fromSquareMoney } from '@/lib/money';
 import { logger } from '@/lib/logger';
 

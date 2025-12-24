@@ -1,7 +1,7 @@
 
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSquareClient, SQUARE_LOCATION_ID, getSquareLocationId } from '@/lib/square';
+import { getSquareClient, getSquareLocationId } from '@/lib/square';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
 import { shouldAllowFallback, getAuthFailureResponse, logSquareOperation } from '@/lib/square-guard';
@@ -48,9 +48,10 @@ export async function POST(request: NextRequest) {
       }
     }
     
+    const locationId = getSquareLocationId();
     logger.debug('Checkout', 'Creating Square Payment Link:', {
       itemCount: lineItems.length,
-      locationId: SQUARE_LOCATION_ID,
+      locationId,
       customerEmail: customer?.email,
       orderId
     });
@@ -96,7 +97,7 @@ export async function POST(request: NextRequest) {
     
     // Prepare order for Square
     const orderRequest: any = {
-      locationId: SQUARE_LOCATION_ID,
+      locationId,
       referenceId: orderId, // ⭐ Order reference for matching
       lineItems: lineItems.map((item: any) => ({
         catalogObjectId: item.catalogObjectId,
@@ -160,7 +161,7 @@ export async function POST(request: NextRequest) {
     // Create payment link directly with SDK using Order (since lineItems isn't directly supported)
     const paymentLinkResponse = await square.checkout.paymentLinks.create({
       order: {
-        locationId: SQUARE_LOCATION_ID,
+        locationId,
         referenceId: orderId,
         lineItems: paymentLinkLineItems,
         customerId: squareCustomerId || undefined,
@@ -324,11 +325,12 @@ export async function GET(request: NextRequest) {
     
     // If no parameters, return service status
     if (!paymentLinkId && !orderId) {
+      const locationId = getSquareLocationId();
       return NextResponse.json({
         service: 'Square Checkout API',
         status: 'active',
         environment: process.env.SQUARE_ENVIRONMENT || 'sandbox',
-        locationId: SQUARE_LOCATION_ID,
+        locationId,
         timestamp: new Date().toISOString()
       });
     }

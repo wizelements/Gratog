@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, ShoppingCart, Check, Loader2, Star, Heart, Share2, Truck, Shield, Package, Sparkles, Droplets, Award, Users, Quote, ChevronRight, Leaf, Sun, Zap } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { addToCart } from '@/lib/cartUtils';
+import { addToCart } from '@/lib/cart-engine';
 import RecommendationsWidget from '@/components/RecommendationsWidget';
 import Breadcrumbs, { getProductBreadcrumbs } from '@/components/Breadcrumbs';
 import Script from 'next/script';

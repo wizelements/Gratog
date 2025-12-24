@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { loadCart, saveCart, updateQuantity, removeFromCart, clearCart, getCartTotal } from '@/lib/cartUtils';
+import { loadCart, updateQuantity, removeFromCart, clearCart, getCartTotal } from '@/lib/cart-engine';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('FloatingCart');
