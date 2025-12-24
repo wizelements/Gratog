@@ -49,7 +49,7 @@ jobs:
       
       - name: Take screenshots
         run: |
-          cat > capture-screenshots.mjs << 'EOF'
+          cat > capture-screenshots.js << 'EOF'
           import { chromium } from 'playwright';
           import fs from 'fs-extra';
           
@@ -105,14 +105,14 @@ jobs:
           console.log('Screenshot capture complete');
           EOF
           
-          node --input-type=module capture-screenshots.mjs
+          node --input-type=module capture-screenshots.js
       
       - name: Compare with baseline
         if: github.event_name == 'pull_request'
         run: |
           yarn add -D pixelmatch jpeg-js pngjs
           
-          cat > compare-screenshots.mjs << 'EOF'
+          cat > compare-screenshots.js << 'EOF'
           import fs from 'fs-extra';
           import { PNG } from 'pngjs';
           import pixelmatch from 'pixelmatch';
@@ -184,7 +184,7 @@ jobs:
           }
           EOF
           
-          node --input-type=module compare-screenshots.mjs || true
+          node --input-type=module compare-screenshots.js || true
       
       - name: Generate visual regression report
         if: always()

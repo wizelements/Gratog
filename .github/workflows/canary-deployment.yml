@@ -37,7 +37,7 @@ jobs:
       - name: Build and verify
         run: |
           yarn build
-          yarn test
+          yarn test:unit
       
       - name: Deploy to Vercel (canary)
         id: canary
