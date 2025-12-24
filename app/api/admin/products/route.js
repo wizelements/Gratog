@@ -28,23 +28,41 @@ export async function GET(request) {
         .toArray();
     }
     
-    // Transform to admin format
-    const adminProducts = products.map(product => ({
-      id: product.id || product._id?.toString() || 'unknown',
-      name: product.name || 'Unnamed Product',
-      description: product.description || '',
-      category: product.intelligentCategory || product.category || 'uncategorized',
-      price: product.price || 0,
-      variations: product.variations || [],
-      images: product.images || [],
-      image: product.images?.[0] || product.image || '/images/sea-moss-default.svg',
-      inStock: product.inStock !== false,
-      active: true,
-      subtitle: product.benefitStory || (product.description ? product.description.substring(0, 100) : '') || 'Premium sea moss product',
-      featured: product.featured || false,
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt
-    }));
+    // Fetch inventory data for all products
+    const inventory = await db.collection('inventory')
+      .find({})
+      .toArray();
+    
+    // Create map for O(1) inventory lookup by productId
+    const inventoryMap = new Map(
+      inventory.map(item => [item.productId, item])
+    );
+    
+    // Transform to admin format with inventory data
+    const adminProducts = products.map(product => {
+      const inv = inventoryMap.get(product.id) || {};
+      
+      return {
+        id: product.id || product._id?.toString() || 'unknown',
+        name: product.name || 'Unnamed Product',
+        description: product.description || '',
+        category: product.intelligentCategory || product.category || 'uncategorized',
+        price: product.price || 0,
+        variations: product.variations || [],
+        images: product.images || [],
+        image: product.images?.[0] || product.image || '/images/sea-moss-default.svg',
+        inStock: product.inStock !== false,
+        active: true,
+        subtitle: product.benefitStory || (product.description ? product.description.substring(0, 100) : '') || 'Premium sea moss product',
+        featured: product.featured || false,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
+        // Inventory data - critical for admin dashboard
+        stock: inv.currentStock || 0,
+        lowStockThreshold: inv.lowStockThreshold || 5,
+        lastRestocked: inv.lastRestocked || null
+      };
+    });
     
     return NextResponse.json({
       success: true,
