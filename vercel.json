@@ -167,6 +167,17 @@
       ],
       "destination": "https://tasteofgratitude.shop/:path*",
       "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "taste-og.vercel.app"
+        }
+      ],
+      "destination": "https://tasteofgratitude.shop/:path*",
+      "permanent": true
     }
   ]
 }
