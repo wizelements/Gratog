@@ -35,34 +35,34 @@ jobs:
         run: yarn install --frozen-lockfile
       
       - name: Wait for MongoDB
-         run: |
-           echo "Waiting for MongoDB to be ready..."
-           max_attempts=60
-           attempt=0
-           wait_time=1
-           
-           while [ $attempt -lt $max_attempts ]; do
-             attempt=$((attempt + 1))
-             
-             if mongosh --eval "db.adminCommand({ping: 1})" --quiet mongodb://localhost:27017 2>/dev/null; then
-               echo "✅ MongoDB is ready!"
-               break
-             fi
-             
-             echo "Attempt $attempt/$max_attempts: MongoDB not ready yet (waiting ${wait_time}s)"
-             
-             if [ $attempt -eq $max_attempts ]; then
-               echo "❌ MongoDB failed to start within 120 seconds"
-               docker logs mongo 2>/dev/null || echo "Could not get Docker logs"
-               exit 1
-             fi
-             
-             # Exponential backoff: 1s, 2s, 3s, max 5s
-             if [ $wait_time -lt 5 ]; then
-               wait_time=$((wait_time + 1))
-             fi
-             sleep $wait_time
-           done
+        run: |
+          echo "Waiting for MongoDB to be ready..."
+          max_attempts=60
+          attempt=0
+          wait_time=1
+          
+          while [ $attempt -lt $max_attempts ]; do
+            attempt=$((attempt + 1))
+            
+            if mongosh --eval "db.adminCommand({ping: 1})" --quiet mongodb://localhost:27017 2>/dev/null; then
+              echo "✅ MongoDB is ready!"
+              break
+            fi
+            
+            echo "Attempt $attempt/$max_attempts: MongoDB not ready yet (waiting ${wait_time}s)"
+            
+            if [ $attempt -eq $max_attempts ]; then
+              echo "❌ MongoDB failed to start within 120 seconds"
+              docker logs mongo 2>/dev/null || echo "Could not get Docker logs"
+              exit 1
+            fi
+            
+            # Exponential backoff: 1s, 2s, 3s, max 5s
+            if [ $wait_time -lt 5 ]; then
+              wait_time=$((wait_time + 1))
+            fi
+            sleep $wait_time
+          done
       
       - name: Build application
         run: yarn build

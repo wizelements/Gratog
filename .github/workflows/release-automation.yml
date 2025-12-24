@@ -11,7 +11,9 @@ jobs:
   version-and-release:
     name: Automated Version Management
     runs-on: ubuntu-latest
-    if: startsWith(github.event.head_commit.message, 'chore: release') || startsWith(github.event.head_commit.message, 'release:')
+    if: |
+      startsWith(github.event.head_commit.message, 'chore: release') ||
+      startsWith(github.event.head_commit.message, 'release:')
     
     steps:
       - uses: actions/checkout@v4
