@@ -218,17 +218,24 @@ export async function GET(request: Request) {
       logger.error('SELF-DIAGNOSE', 'Could not write status file', err);
     }
     
-    return NextResponse.json(report, {
+    // Return sanitized response (don't expose full diagnostics in production)
+    const sanitizedReport = {
+      status: report.status,
+      timestamp: report.timestamp
+    };
+    
+    return NextResponse.json(sanitizedReport, {
       status: report.status === 'verified' ? 200 : 
               report.status === 'partial' ? 207 : 503
     });
     
-  } catch (error: any) {
+    } catch (error: any) {
     logger.error('SELF-DIAGNOSE', 'Self-diagnosis failed', error);
     
-    report.status = 'error';
-    report.errors.push(`Self-diagnosis error: ${error.message}`);
-    
-    return NextResponse.json(report, { status: 500 });
+    // Return minimal error response
+    return NextResponse.json({ 
+      status: 'error',
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }

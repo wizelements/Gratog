@@ -75,8 +75,7 @@ export async function POST(request) {
     debug('Creating Square checkout session:', {
       orderId,
       items: lineItems.length,
-      total: total,
-      locationId: SQUARE_LOCATION_ID
+      total: total
     });
 
     // Call Square Checkout API
@@ -135,8 +134,6 @@ export async function POST(request) {
 export async function GET() {
   return NextResponse.json({
     message: 'Square Checkout API',
-    configured: !!(SQUARE_ACCESS_TOKEN && SQUARE_LOCATION_ID),
-    environment: SQUARE_ENVIRONMENT,
-    locationId: SQUARE_LOCATION_ID ? '✓' : '✗'
+    configured: !!(SQUARE_ACCESS_TOKEN && SQUARE_LOCATION_ID)
   });
 }

@@ -228,8 +228,6 @@ export async function GET() {
   return NextResponse.json({
     service: 'Square Checkout API v2',
     configured: !!(SQUARE_ACCESS_TOKEN && SQUARE_LOCATION_ID),
-    environment: SQUARE_ENVIRONMENT,
-    locationId: SQUARE_LOCATION_ID ? '✓' : '✗',
     featureFlag: FEATURE_CHECKOUT_V2,
     timestamp: new Date().toISOString()
   })

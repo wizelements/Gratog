@@ -325,12 +325,11 @@ export async function GET(request: NextRequest) {
     
     // If no parameters, return service status
     if (!paymentLinkId && !orderId) {
-      const locationId = getSquareLocationId();
+      // Validate config exists but don't expose it
+      getSquareLocationId();
       return NextResponse.json({
         service: 'Square Checkout API',
         status: 'active',
-        environment: process.env.SQUARE_ENVIRONMENT || 'sandbox',
-        locationId,
         timestamp: new Date().toISOString()
       });
     }
