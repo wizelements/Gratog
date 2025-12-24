@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { captureClientError } from '@/lib/error-tracker';
 
 /**
@@ -9,14 +9,58 @@ import { captureClientError } from '@/lib/error-tracker';
  * This is critical for Vercel deployments to show something instead of "Application Error"
  */
 export default function GlobalError({ error, reset }) {
+  const [showDetails, setShowDetails] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [reported, setReported] = useState(false);
+
+  const errorDetails = {
+    message: error?.message || String(error),
+    stack: error?.stack || 'No stack trace',
+    name: error?.name || 'Error',
+    url: typeof window !== 'undefined' ? window.location.href : '',
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+    timestamp: new Date().toISOString(),
+    digest: error?.digest || null,
+    source: 'GlobalError',
+  };
+
   useEffect(() => {
     if (error) {
       captureClientError(
         error instanceof Error ? error : new Error(String(error)),
         'GlobalError'
       ).catch(err => console.error('Failed to capture global error:', err));
+
+      // Report to our API
+      fetch('/api/error-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(errorDetails),
+      }).then(() => setReported(true)).catch(() => {});
     }
   }, [error]);
+
+  const copyErrorDetails = () => {
+    const text = `GLOBAL ERROR REPORT
+====================
+Message: ${errorDetails.message}
+Name: ${errorDetails.name}
+Digest: ${errorDetails.digest}
+URL: ${errorDetails.url}
+Time: ${errorDetails.timestamp}
+User Agent: ${errorDetails.userAgent}
+
+Stack Trace:
+${errorDetails.stack}`;
+    
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 3000);
+      });
+    }
+  };
+
   return (
     <html lang="en">
       <body>
@@ -56,9 +100,16 @@ export default function GlobalError({ error, reset }) {
             <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#111827', marginBottom: '0.5rem' }}>
               Something went wrong
             </h2>
-            <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
-              We're sorry, but something unexpected happened. Our team has been notified.
+            <p style={{ color: '#6b7280', marginBottom: '1rem' }}>
+              We're sorry, but something unexpected happened.
             </p>
+            
+            {reported && (
+              <p style={{ fontSize: '0.875rem', color: '#16a34a', marginBottom: '1rem' }}>
+                ✓ Error automatically reported
+              </p>
+            )}
+
             <button
               onClick={() => reset()}
               style={{
@@ -90,22 +141,63 @@ export default function GlobalError({ error, reset }) {
             >
               Go to Homepage
             </button>
-            {process.env.NODE_ENV === 'development' && error && (
-              <pre style={{
-                marginTop: '1rem',
-                padding: '0.5rem',
-                backgroundColor: '#fef2f2',
-                borderRadius: '0.25rem',
-                fontSize: '0.75rem',
-                textAlign: 'left',
-                overflow: 'auto',
-                maxHeight: '10rem'
-              }}>
-                {error.message}
-                {'\n'}
-                {error.stack}
-              </pre>
-            )}
+            
+            <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+              <button
+                onClick={() => setShowDetails(!showDetails)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#2563eb',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem'
+                }}
+              >
+                {showDetails ? 'Hide' : 'Show'} error details
+              </button>
+              
+              {showDetails && (
+                <div style={{ marginTop: '1rem', textAlign: 'left' }}>
+                  <div style={{
+                    backgroundColor: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    borderRadius: '0.5rem',
+                    padding: '1rem',
+                    fontSize: '0.75rem',
+                    fontFamily: 'monospace',
+                    overflow: 'auto',
+                    maxHeight: '12rem'
+                  }}>
+                    <p><strong>Error:</strong> {errorDetails.message}</p>
+                    <p><strong>Name:</strong> {errorDetails.name}</p>
+                    {errorDetails.digest && <p><strong>Digest:</strong> {errorDetails.digest}</p>}
+                    <p style={{ marginTop: '0.5rem' }}><strong>Stack:</strong></p>
+                    <pre style={{ whiteSpace: 'pre-wrap', color: '#b91c1c', margin: 0 }}>
+                      {errorDetails.stack}
+                    </pre>
+                  </div>
+                  
+                  <button
+                    onClick={copyErrorDetails}
+                    style={{
+                      marginTop: '0.75rem',
+                      width: '100%',
+                      backgroundColor: '#2563eb',
+                      color: 'white',
+                      fontWeight: '600',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '0.5rem',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    {copied ? '✓ Copied to clipboard!' : '📋 Copy error details'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </body>

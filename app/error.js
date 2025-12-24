@@ -1,9 +1,23 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { captureClientError } from '@/lib/error-tracker';
 
 export default function Error({ error, reset }) {
+  const [showDetails, setShowDetails] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [reported, setReported] = useState(false);
+
+  const errorDetails = {
+    message: error?.message || String(error),
+    stack: error?.stack || 'No stack trace',
+    name: error?.name || 'Error',
+    url: typeof window !== 'undefined' ? window.location.href : '',
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+    timestamp: new Date().toISOString(),
+    digest: error?.digest || null,
+  };
+
   useEffect(() => {
     console.error('Application error:', error);
     
@@ -13,8 +27,34 @@ export default function Error({ error, reset }) {
         error instanceof Error ? error : new Error(String(error)),
         'ErrorBoundary'
       ).catch(err => console.error('Failed to capture error:', err));
+
+      // Also report to our API
+      fetch('/api/error-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(errorDetails),
+      }).then(() => setReported(true)).catch(() => {});
     }
   }, [error]);
+
+  const copyErrorDetails = () => {
+    const text = `ERROR REPORT
+====================
+Message: ${errorDetails.message}
+Name: ${errorDetails.name}
+Digest: ${errorDetails.digest}
+URL: ${errorDetails.url}
+Time: ${errorDetails.timestamp}
+User Agent: ${errorDetails.userAgent}
+
+Stack Trace:
+${errorDetails.stack}`;
+    
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    });
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -35,9 +75,14 @@ export default function Error({ error, reset }) {
           </svg>
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h2>
-        <p className="text-gray-600 mb-6">
-          We encountered an error while loading this page. Please try again.
+        <p className="text-gray-600 mb-4">
+          We encountered an error while loading this page.
         </p>
+        
+        {reported && (
+          <p className="text-sm text-green-600 mb-4">✓ Error automatically reported</p>
+        )}
+
         <button
           onClick={() => reset()}
           className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
@@ -50,6 +95,34 @@ export default function Error({ error, reset }) {
         >
           Go home
         </button>
+        
+        <div className="mt-6 pt-4 border-t">
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="text-sm text-blue-600 hover:text-blue-800 underline"
+          >
+            {showDetails ? 'Hide' : 'Show'} error details
+          </button>
+          
+          {showDetails && (
+            <div className="mt-4 text-left">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-xs font-mono overflow-auto max-h-48">
+                <p><strong>Error:</strong> {errorDetails.message}</p>
+                <p><strong>Name:</strong> {errorDetails.name}</p>
+                {errorDetails.digest && <p><strong>Digest:</strong> {errorDetails.digest}</p>}
+                <p className="mt-2"><strong>Stack:</strong></p>
+                <pre className="whitespace-pre-wrap text-red-700">{errorDetails.stack}</pre>
+              </div>
+              
+              <button
+                onClick={copyErrorDetails}
+                className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+              >
+                {copied ? '✓ Copied to clipboard!' : '📋 Copy error details'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
