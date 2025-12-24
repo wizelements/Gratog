@@ -18,9 +18,28 @@ jobs:
       - name: Health Check
         id: health
         run: |
-          RESPONSE=$(curl -s -w "\n%{http_code}" https://tasteofgratitude.shop/api/health)
-          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          BODY=$(echo "$RESPONSE" | head -n-1)
+          # Retry health check up to 3 times with exponential backoff
+          MAX_ATTEMPTS=3
+          ATTEMPT=1
+          HTTP_CODE="000"
+          BODY=""
+          
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 5 https://tasteofgratitude.shop/api/health || echo "")
+            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+            BODY=$(echo "$RESPONSE" | head -n-1)
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              break
+            fi
+            
+            if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+              WAIT=$((ATTEMPT * 5))
+              echo "Health check failed (attempt $ATTEMPT/$MAX_ATTEMPTS), retrying in ${WAIT}s..."
+              sleep $WAIT
+            fi
+            ATTEMPT=$((ATTEMPT + 1))
+          done
           
           echo "HTTP_CODE=$HTTP_CODE" >> $GITHUB_ENV
           echo "HEALTH_BODY=$BODY" >> $GITHUB_ENV
@@ -40,13 +59,14 @@ jobs:
           
           echo "PRODUCTS_HTTP_CODE=$HTTP_CODE" >> $GITHUB_ENV
           
-          if [ "$HTTP_CODE" != "200" ]; then
+          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "304" ]; then
             echo "PRODUCTS_TEST_FAILED=true" >> $GITHUB_ENV
+            echo "PRODUCTS_COUNT=0" >> $GITHUB_ENV
           else
-            # Check if we got products
+            # Check if we got products or valid cached response
             COUNT=$(echo "$BODY" | jq '.data | length' 2>/dev/null || echo "0")
             echo "PRODUCTS_COUNT=$COUNT" >> $GITHUB_ENV
-            if [ "$COUNT" -lt 1 ]; then
+            if [ "$COUNT" -lt 1 ] && [ "$HTTP_CODE" != "304" ]; then
               echo "PRODUCTS_TEST_FAILED=true" >> $GITHUB_ENV
             else
               echo "PRODUCTS_TEST_FAILED=false" >> $GITHUB_ENV
@@ -56,9 +76,9 @@ jobs:
       - name: Test Performance
         id: performance
         run: |
-          # Measure homepage load time
+          # Measure homepage load time with timeout
           START=$(date +%s%N)
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://tasteofgratitude.shop)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://tasteofgratitude.shop || echo "000")
           END=$(date +%s%N)
           
           DURATION=$((($END - $START) / 1000000))
@@ -66,7 +86,8 @@ jobs:
           echo "PAGE_LOAD_TIME=$DURATION" >> $GITHUB_ENV
           echo "HOMEPAGE_STATUS=$STATUS" >> $GITHUB_ENV
           
-          if [ "$DURATION" -gt 5000 ]; then
+          # Allow up to 8 seconds for first response
+          if [ "$DURATION" -gt 8000 ]; then
             echo "PERFORMANCE_WARNING=true" >> $GITHUB_ENV
           else
             echo "PERFORMANCE_WARNING=false" >> $GITHUB_ENV

@@ -46,10 +46,10 @@ jobs:
         run: |
           yarn add -D @axe-core/playwright
           
-          cat > a11y-test.mjs << 'EOF'
-          import { chromium } from 'playwright';
-          import { injectAxe, checkA11y } from 'axe-playwright';
-          import fs from 'fs';
+          cat > a11y-test.js << 'EOF'
+          const { chromium } = require('playwright');
+          const { injectAxe, checkA11y } = require('axe-playwright');
+          const fs = require('fs');
           
           const pages = [
             '/',
@@ -67,72 +67,74 @@ jobs:
             timestamp: new Date().toISOString()
           };
           
-          const browser = await chromium.launch();
-          const context = await browser.newContext();
-          const page = await context.newPage();
-          
-          for (const pagePath of pages) {
-            try {
-              await page.goto(`http://localhost:3000${pagePath}`);
-              await injectAxe(page);
-              
-              const result = await checkA11y(page, null, {
-                detailedReport: true,
-                detailedReportOptions: {
-                  html: true
+          (async () => {
+            const browser = await chromium.launch();
+            const context = await browser.newContext();
+            const page = await context.newPage();
+            
+            for (const pagePath of pages) {
+              try {
+                await page.goto(`http://localhost:3000${pagePath}`);
+                await injectAxe(page);
+                
+                const result = await checkA11y(page, null, {
+                  detailedReport: true,
+                  detailedReportOptions: {
+                    html: true
+                  }
+                });
+                
+                // Categorize results
+                result.violations?.forEach(violation => {
+                  results.violations.push({
+                    page: pagePath,
+                    impact: violation.impact,
+                    description: violation.description,
+                    tags: violation.tags,
+                    nodes: violation.nodes.length
+                  });
+                });
+                
+                if (result.passes) {
+                  results.passes.push({
+                    page: pagePath,
+                    count: result.passes.length
+                  });
                 }
-              });
-              
-              // Categorize results
-              result.violations?.forEach(violation => {
-                results.violations.push({
-                  page: pagePath,
-                  impact: violation.impact,
-                  description: violation.description,
-                  tags: violation.tags,
-                  nodes: violation.nodes.length
-                });
-              });
-              
-              if (result.passes) {
-                results.passes.push({
-                  page: pagePath,
-                  count: result.passes.length
-                });
+                
+                if (result.incomplete) {
+                  results.incomplete.push({
+                    page: pagePath,
+                    count: result.incomplete.length
+                  });
+                }
+              } catch (error) {
+                console.error(`Error testing ${pagePath}:`, error.message);
               }
-              
-              if (result.incomplete) {
-                results.incomplete.push({
-                  page: pagePath,
-                  count: result.incomplete.length
-                });
-              }
-            } catch (error) {
-              console.error(`Error testing ${pagePath}:`, error.message);
             }
-          }
-          
-          await browser.close();
-          
-          // Categorize by impact
-          const byImpact = {};
-          results.violations.forEach(v => {
-            byImpact[v.impact] = (byImpact[v.impact] || 0) + v.nodes;
-          });
-          
-          fs.writeFileSync('a11y-results.json', JSON.stringify({
-            ...results,
-            byImpact,
-            violations: results.violations.sort((a, b) => {
-              const impactOrder = { critical: 0, serious: 1, moderate: 2, minor: 3 };
-              return impactOrder[a.impact] - impactOrder[b.impact];
-            })
-          }, null, 2));
-          
-          console.log('Accessibility audit complete');
+            
+            await browser.close();
+            
+            // Categorize by impact
+            const byImpact = {};
+            results.violations.forEach(v => {
+              byImpact[v.impact] = (byImpact[v.impact] || 0) + v.nodes;
+            });
+            
+            fs.writeFileSync('a11y-results.json', JSON.stringify({
+              ...results,
+              byImpact,
+              violations: results.violations.sort((a, b) => {
+                const impactOrder = { critical: 0, serious: 1, moderate: 2, minor: 3 };
+                return impactOrder[a.impact] - impactOrder[b.impact];
+              })
+            }, null, 2));
+            
+            console.log('Accessibility audit complete');
+          })();
           EOF
           
-          node --input-type=module a11y-test.mjs || {
+          node a11y-test.js || {
             echo "A11Y_TESTS_FAILED=true" >> $GITHUB_ENV
             # Create fallback results file if tests failed
             echo '{"violations":[],"passes":[],"incomplete":[],"totalPages":5,"timestamp":"'"$(date -u +'%Y-%m-%dT%H:%M:%SZ')"'","byImpact":{}}' > a11y-results.json

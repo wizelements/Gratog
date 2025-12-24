@@ -50,8 +50,8 @@ jobs:
       - name: Take screenshots
         run: |
           cat > capture-screenshots.js << 'EOF'
-          import { chromium } from 'playwright';
-          import fs from 'fs-extra';
+          const { chromium } = require('playwright');
+          const fs = require('fs-extra');
           
           const pages = [
             { path: '/', name: 'homepage' },
@@ -69,43 +69,45 @@ jobs:
           
           fs.ensureDirSync('screenshots');
           
-          const browser = await chromium.launch();
-          
-          for (const device of devices) {
-            const context = await browser.createBrowserContext({
-              viewport: { width: device.width, height: device.height }
-            });
-            const page = await context.newPage();
+          (async () => {
+            const browser = await chromium.launch();
             
-            for (const p of pages) {
-              try {
-                await page.goto(`http://localhost:3000${p.path}`, { waitUntil: 'networkidle' });
-                
-                // Wait for dynamic content
-                await page.waitForTimeout(1000);
-                
-                // Full page screenshot
-                const filename = `screenshots/${device.name}-${p.name}-full.png`;
-                await page.screenshot({ path: filename, fullPage: true });
-                
-                // Above-fold screenshot
-                const aboveFoldFilename = `screenshots/${device.name}-${p.name}-fold.png`;
-                await page.screenshot({ path: aboveFoldFilename, fullPage: false });
-                
-                console.log(`✅ Captured ${device.name} - ${p.name}`);
-              } catch (error) {
-                console.error(`❌ Failed to capture ${device.name} - ${p.name}:`, error.message);
+            for (const device of devices) {
+              const context = await browser.createBrowserContext({
+                viewport: { width: device.width, height: device.height }
+              });
+              const page = await context.newPage();
+              
+              for (const p of pages) {
+                try {
+                  await page.goto(`http://localhost:3000${p.path}`, { waitUntil: 'networkidle' });
+                  
+                  // Wait for dynamic content
+                  await page.waitForTimeout(1000);
+                  
+                  // Full page screenshot
+                  const filename = `screenshots/${device.name}-${p.name}-full.png`;
+                  await page.screenshot({ path: filename, fullPage: true });
+                  
+                  // Above-fold screenshot
+                  const aboveFoldFilename = `screenshots/${device.name}-${p.name}-fold.png`;
+                  await page.screenshot({ path: aboveFoldFilename, fullPage: false });
+                  
+                  console.log(`✅ Captured ${device.name} - ${p.name}`);
+                } catch (error) {
+                  console.error(`❌ Failed to capture ${device.name} - ${p.name}:`, error.message);
+                }
               }
+              
+              await context.close();
             }
             
-            await context.close();
-          }
-          
-          await browser.close();
-          console.log('Screenshot capture complete');
+            await browser.close();
+            console.log('Screenshot capture complete');
+          })();
           EOF
           
-          node --input-type=module capture-screenshots.js
+          node capture-screenshots.js
       
       - name: Compare with baseline
         if: github.event_name == 'pull_request'
@@ -113,9 +115,9 @@ jobs:
           yarn add -D pixelmatch jpeg-js pngjs
           
           cat > compare-screenshots.js << 'EOF'
-          import fs from 'fs-extra';
-          import { PNG } from 'pngjs';
-          import pixelmatch from 'pixelmatch';
+          const fs = require('fs-extra');
+          const { PNG } = require('pngjs');
+          const pixelmatch = require('pixelmatch');
           
           const results = {
             total: 0,
@@ -124,67 +126,69 @@ jobs:
             differences: []
           };
           
-          const screenshotFiles = fs.readdirSync('screenshots').filter(f => f.endsWith('.png'));
-          
-          for (const file of screenshotFiles) {
-            const baselineFile = `baseline-screenshots/${file}`;
-            const currentFile = `screenshots/${file}`;
+          (async () => {
+            const screenshotFiles = fs.readdirSync('screenshots').filter(f => f.endsWith('.png'));
             
-            if (!fs.existsSync(baselineFile)) {
-              console.log(`⚠️ No baseline for ${file}, treating as new`);
-              results.total++;
-              continue;
-            }
-            
-            try {
-              const baseline = PNG.sync.read(fs.readFileSync(baselineFile));
-              const current = PNG.sync.read(fs.readFileSync(currentFile));
+            for (const file of screenshotFiles) {
+              const baselineFile = `baseline-screenshots/${file}`;
+              const currentFile = `screenshots/${file}`;
               
-              if (baseline.width !== current.width || baseline.height !== current.height) {
+              if (!fs.existsSync(baselineFile)) {
+                console.log(`⚠️ No baseline for ${file}, treating as new`);
                 results.total++;
-                results.different++;
-                results.differences.push({
-                  file,
-                  reason: 'Size change'
-                });
                 continue;
               }
               
-              const diff = new PNG({ width: baseline.width, height: baseline.height });
-              const pixelDiff = pixelmatch(baseline.data, current.data, diff.data, baseline.width, baseline.height, { threshold: 0.1 });
-              
-              results.total++;
-              if (pixelDiff === 0) {
-                results.identical++;
-              } else {
-                results.different++;
-                results.differences.push({
-                  file,
-                  pixelDifference: pixelDiff,
-                  percentDifference: ((pixelDiff / (baseline.width * baseline.height)) * 100).toFixed(2)
-                });
+              try {
+                const baseline = PNG.sync.read(fs.readFileSync(baselineFile));
+                const current = PNG.sync.read(fs.readFileSync(currentFile));
+                
+                if (baseline.width !== current.width || baseline.height !== current.height) {
+                  results.total++;
+                  results.different++;
+                  results.differences.push({
+                    file,
+                    reason: 'Size change'
+                  });
+                  continue;
+                }
+                
+                const diff = new PNG({ width: baseline.width, height: baseline.height });
+                const pixelDiff = pixelmatch(baseline.data, current.data, diff.data, baseline.width, baseline.height, { threshold: 0.1 });
+                
+                results.total++;
+                if (pixelDiff === 0) {
+                  results.identical++;
+                } else {
+                  results.different++;
+                  results.differences.push({
+                    file,
+                    pixelDifference: pixelDiff,
+                    percentDifference: ((pixelDiff / (baseline.width * baseline.height)) * 100).toFixed(2)
+                  });
+                }
+              } catch (error) {
+                console.error(`Error comparing ${file}:`, error.message);
               }
-            } catch (error) {
-              console.error(`Error comparing ${file}:`, error.message);
             }
-          }
-          
-          fs.writeFileSync('visual-regression-results.json', JSON.stringify(results, null, 2));
-          
-          console.log(`\n📊 Visual Regression Results`);
-          console.log(`Total screenshots: ${results.total}`);
-          console.log(`Identical: ${results.identical}`);
-          console.log(`Different: ${results.different}`);
-          
-          if (results.different > 0) {
-            console.log(`\n⚠️ Visual differences detected:`);
-            results.differences.forEach(d => {
-              console.log(`  - ${d.file}: ${d.percentDifference || 0}% change`);
-            });
-          }
+            
+            fs.writeFileSync('visual-regression-results.json', JSON.stringify(results, null, 2));
+            
+            console.log(`\n📊 Visual Regression Results`);
+            console.log(`Total screenshots: ${results.total}`);
+            console.log(`Identical: ${results.identical}`);
+            console.log(`Different: ${results.different}`);
+            
+            if (results.different > 0) {
+              console.log(`\n⚠️ Visual differences detected:`);
+              results.differences.forEach(d => {
+                console.log(`  - ${d.file}: ${d.percentDifference || 0}% change`);
+              });
+            }
+          })();
           EOF
           
-          node --input-type=module compare-screenshots.js || true
+          node compare-screenshots.js || true
       
       - name: Generate visual regression report
         if: always()
