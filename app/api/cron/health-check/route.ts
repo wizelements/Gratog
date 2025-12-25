@@ -12,23 +12,29 @@
 
 import { NextResponse } from 'next/server';
 import { monitorHealth } from '@/lib/health-monitor';
-import { createLogger } from '@/lib/logger';
-
-const logger = createLogger('HealthCheckCron');
-
-const CRON_SECRET = process.env.CRON_SECRET;
+import { logger } from '@/lib/logger';
+import { CRON_SECRET } from '@/lib/auth-config';
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
+  const isVercelCron = request.headers.get('x-vercel-cron') === '1';
   const expected = `Bearer ${CRON_SECRET}`;
 
-  // Verify cron secret
-  if (!CRON_SECRET || authHeader !== expected) {
+  // Debug logging
+  console.log('[HealthCheck] authHeader:', authHeader);
+  console.log('[HealthCheck] expected:', expected);
+  console.log('[HealthCheck] CRON_SECRET:', CRON_SECRET ? `***${CRON_SECRET.slice(-4)}` : 'undefined');
+  console.log('[HealthCheck] match:', authHeader === expected);
+  console.log('[HealthCheck] isVercelCron:', isVercelCron);
+
+  // Verify cron secret (skip for Vercel internal cron which has different auth)
+  if (!isVercelCron && (!CRON_SECRET || authHeader !== expected)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    logger.warn('Running health check cron job');
+    const log = logger.withCategory('HealthCheckCron');
+    log.info('Running health check cron job');
 
     // Run health monitoring (will auto-report issues)
     await monitorHealth();
@@ -38,7 +44,8 @@ export async function GET(request: Request) {
       { status: 200 }
     );
   } catch (error) {
-    logger.error('Health check cron job failed', error instanceof Error ? error.message : String(error));
+    const log = logger.withCategory('HealthCheckCron');
+    log.error('Health check cron job failed', error instanceof Error ? error.message : String(error));
 
     return NextResponse.json(
       {
