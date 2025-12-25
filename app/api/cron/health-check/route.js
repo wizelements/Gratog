@@ -20,13 +20,6 @@ async function handleHealthCheck(request) {
   const isVercelCron = request.headers.get('x-vercel-cron') === '1';
   const expected = `Bearer ${CRON_SECRET}`;
 
-  // Debug logging
-  console.log('[HealthCheck] authHeader:', authHeader);
-  console.log('[HealthCheck] expected:', expected);
-  console.log('[HealthCheck] CRON_SECRET:', CRON_SECRET ? `***${CRON_SECRET.slice(-4)}` : 'undefined');
-  console.log('[HealthCheck] match:', authHeader === expected);
-  console.log('[HealthCheck] isVercelCron:', isVercelCron);
-
   // Verify cron secret (skip for Vercel internal cron which has different auth)
   if (!isVercelCron && (!CRON_SECRET || authHeader !== expected)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
