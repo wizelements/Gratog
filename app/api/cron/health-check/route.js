@@ -1,3 +1,10 @@
+import { NextResponse } from 'next/server';
+import { monitorHealth } from '@/lib/health-monitor';
+import { CRON_SECRET } from '@/lib/auth-config';
+import { logger } from '@/lib/logger';
+
+const log = logger.withCategory('HealthCheckCron');
+
 /**
  * Automated Health Check Cron Job
  * 
@@ -10,25 +17,20 @@
  * - Header: Authorization: Bearer YOUR_CRON_SECRET
  */
 
-import { NextResponse } from 'next/server';
-import { monitorHealth } from '@/lib/health-monitor';
-import { logger } from '@/lib/logger';
-import { CRON_SECRET } from '@/lib/auth-config';
-
-const log = logger.withCategory('HealthCheckCron');
-
-async function handleHealthCheck(request) {
-  const authHeader = request.headers.get('authorization');
+export async function POST(request) {
+  const authHeader = request.headers.get('Authorization');
   const isVercelCron = request.headers.get('x-vercel-cron') === '1';
-  const expected = `Bearer ${CRON_SECRET}`;
-
-  // Verify cron secret (skip for Vercel internal cron which has different auth)
-  if (!isVercelCron && (!CRON_SECRET || authHeader !== expected)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  
+  if (!isVercelCron && (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`)) {
+    log.warn('Unauthorized cron job attempt');
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 }
+    );
   }
 
   try {
-    log.info('Running health check cron job');
+    log.info('Starting health check cron job');
 
     // Run health monitoring (will auto-report issues)
     await monitorHealth();
@@ -42,20 +44,13 @@ async function handleHealthCheck(request) {
 
     return NextResponse.json(
       {
+        success: false,
         error: 'Health check failed',
         message: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
   }
-}
-
-export async function GET(request) {
-  return handleHealthCheck(request);
-}
-
-export async function POST(request) {
-  return handleHealthCheck(request);
 }
 
 export const runtime = 'nodejs';
