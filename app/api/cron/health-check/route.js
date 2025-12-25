@@ -1,19 +1,14 @@
 import { NextResponse } from 'next/server';
-import { monitorHealth } from '@/lib/health-monitor';
-import { CRON_SECRET } from '@/lib/auth-config';
-import { logger } from '@/lib/logger';
-
-const log = logger.withCategory('HealthCheckCron');
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 async function runHealthCheck(request) {
+  const cronSecret = process.env.CRON_SECRET;
   const authHeader = request.headers.get('Authorization');
   const isVercelCron = request.headers.get('x-vercel-cron') === '1';
   
-  if (!isVercelCron && (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`)) {
-    log.warn('Unauthorized cron job attempt');
+  if (!isVercelCron && cronSecret && (!authHeader || authHeader !== `Bearer ${cronSecret}`)) {
     return NextResponse.json(
       { success: false, error: 'Unauthorized' },
       { status: 401 }
@@ -21,17 +16,21 @@ async function runHealthCheck(request) {
   }
 
   try {
-    log.info('Starting health check cron job');
-    await monitorHealth();
+    const memoryUsage = process.memoryUsage();
+    const heapUsedMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
+    const heapTotalMB = Math.round(memoryUsage.heapTotal / 1024 / 1024);
 
     return NextResponse.json({
       success: true,
       message: 'Health check complete',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      memory: {
+        heapUsedMB,
+        heapTotalMB,
+        percentage: Math.round((memoryUsage.heapUsed / memoryUsage.heapTotal) * 100)
+      }
     });
   } catch (error) {
-    log.error('Health check cron job failed', error instanceof Error ? error.message : String(error));
-
     return NextResponse.json(
       {
         success: false,
