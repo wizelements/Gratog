@@ -15,7 +15,7 @@ import { monitorHealth } from '@/lib/health-monitor';
 import { logger } from '@/lib/logger';
 import { CRON_SECRET } from '@/lib/auth-config';
 
-export async function GET(request) {
+async function handleHealthCheck(request) {
   const authHeader = request.headers.get('authorization');
   const isVercelCron = request.headers.get('x-vercel-cron') === '1';
   const expected = `Bearer ${CRON_SECRET}`;
@@ -55,6 +55,14 @@ export async function GET(request) {
       { status: 500 }
     );
   }
+}
+
+export async function GET(request) {
+  return handleHealthCheck(request);
+}
+
+export async function POST(request) {
+  return handleHealthCheck(request);
 }
 
 export const runtime = 'nodejs';
