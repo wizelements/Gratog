@@ -17,7 +17,7 @@ const log = logger.withCategory('HealthCheckCron');
  * - Header: Authorization: Bearer YOUR_CRON_SECRET
  */
 
-export async function POST(request) {
+async function handleHealthCheck(request) {
   const authHeader = request.headers.get('Authorization');
   const isVercelCron = request.headers.get('x-vercel-cron') === '1';
   
@@ -36,7 +36,7 @@ export async function POST(request) {
     await monitorHealth();
 
     return NextResponse.json(
-      { success: true, message: 'Health check complete' },
+      { success: true, message: 'Health check complete', timestamp: new Date().toISOString() },
       { status: 200 }
     );
   } catch (error) {
@@ -51,6 +51,14 @@ export async function POST(request) {
       { status: 500 }
     );
   }
+}
+
+export async function GET(request) {
+  return handleHealthCheck(request);
+}
+
+export async function POST(request) {
+  return handleHealthCheck(request);
 }
 
 export const runtime = 'nodejs';
