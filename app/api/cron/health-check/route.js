@@ -15,6 +15,8 @@ import { monitorHealth } from '@/lib/health-monitor';
 import { logger } from '@/lib/logger';
 import { CRON_SECRET } from '@/lib/auth-config';
 
+const log = logger.withCategory('HealthCheckCron');
+
 async function handleHealthCheck(request) {
   const authHeader = request.headers.get('authorization');
   const isVercelCron = request.headers.get('x-vercel-cron') === '1';
@@ -26,7 +28,6 @@ async function handleHealthCheck(request) {
   }
 
   try {
-    const log = logger.withCategory('HealthCheckCron');
     log.info('Running health check cron job');
 
     // Run health monitoring (will auto-report issues)
@@ -37,7 +38,6 @@ async function handleHealthCheck(request) {
       { status: 200 }
     );
   } catch (error) {
-    const log = logger.withCategory('HealthCheckCron');
     log.error('Health check cron job failed', error instanceof Error ? error.message : String(error));
 
     return NextResponse.json(
