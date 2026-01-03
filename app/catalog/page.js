@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
@@ -24,9 +24,37 @@ import {
   getHealthBenefitCounts 
 } from '@/lib/health-benefits';
 
+// Wrapper component to handle Suspense for useSearchParams
 export default function CatalogPage() {
+  return (
+    <Suspense fallback={<CatalogLoadingFallback />}>
+      <CatalogContent />
+    </Suspense>
+  );
+}
+
+function CatalogLoadingFallback() {
+  return (
+    <div className="min-h-screen">
+      <section className="bg-gradient-to-br from-emerald-50 to-teal-50 py-16">
+        <div className="container text-center">
+          <Skeleton className="h-8 w-48 mx-auto mb-4" />
+          <Skeleton className="h-12 w-96 mx-auto mb-4" />
+          <Skeleton className="h-6 w-80 mx-auto" />
+        </div>
+      </section>
+      <section className="py-16">
+        <div className="container">
+          <SkeletonProductGrid count={6} />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function CatalogContent() {
   const searchParams = useSearchParams();
-  const infoMode = searchParams.get('mode') === 'info';
+  const infoMode = searchParams?.get('mode') === 'info';
   
   const [showQuiz, setShowQuiz] = useState(false);
   const [products, setProducts] = useState([]);
