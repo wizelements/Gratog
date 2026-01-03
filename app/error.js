@@ -74,9 +74,9 @@ ${errorDetails.stack}`;
             />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">We'll be right back</h2>
         <p className="text-gray-600 mb-4">
-          We encountered an error while loading this page.
+          This page is temporarily unavailable. Please try again.
         </p>
         
         {reported && (

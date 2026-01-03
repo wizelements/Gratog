@@ -98,10 +98,10 @@ ${errorDetails.stack}`;
               </svg>
             </div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#111827', marginBottom: '0.5rem' }}>
-              Something went wrong
+              We'll be right back
             </h2>
             <p style={{ color: '#6b7280', marginBottom: '1rem' }}>
-              We're sorry, but something unexpected happened.
+              This page is temporarily unavailable. Please try again.
             </p>
             
             {reported && (

@@ -37,12 +37,12 @@ class ErrorBoundary extends React.Component {
                 <div className="p-3 bg-red-100 rounded-full">
                   <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
-                <CardTitle className="text-xl">Something Went Wrong</CardTitle>
+                <CardTitle className="text-xl">We'll be right back</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                We encountered an unexpected error. Don't worry, your data is safe.
+                This page is temporarily unavailable. Please try again.
               </p>
               
               {this.state.errorId && (
