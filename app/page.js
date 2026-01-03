@@ -217,12 +217,12 @@ export default function HomePage() {
                         </Button>
 
                         <Button
-                            onClick={() => document.getElementById('featured')?.scrollIntoView({ behavior: 'smooth' })}
+                            asChild
                             size="lg"
                             variant="outline"
                             className="h-14 px-8 text-lg border-2 border-white text-white hover:bg-white hover:text-emerald-600 shadow-2xl hover:scale-105 transition-all"
                         >
-                            View Featured
+                            <a href="#featured">View Featured</a>
                         </Button>
                     </div>
 
