@@ -7,7 +7,6 @@ import dynamic from 'next/dynamic';
 // Import static components directly
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
-import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Dynamically import ALL components that might have SSR issues
 const Header = dynamic(() => import('@/components/Header').catch(() => () => null), { 
@@ -56,9 +55,6 @@ const StickySecondaryNav = dynamic(
 /**
  * Customer Layout - Wraps customer-facing pages with full storefront UI
  * Renders nothing for admin routes (admin routes have their own layout)
- * 
- * Each component is wrapped in an ErrorBoundary so if one fails,
- * the rest of the page still works (graceful degradation)
  */
 export default function CustomerLayout({ children }) {
   const pathname = usePathname();
@@ -79,9 +75,9 @@ export default function CustomerLayout({ children }) {
     return (
       <AuthProvider>
         <div className="flex min-h-screen flex-col">
-          <div className="h-28 bg-white border-b" /> {/* Header placeholder */}
+          <div className="h-28 bg-white border-b" />
           <main id="main-content" className="flex-1">{children}</main>
-          <div className="h-64 bg-gray-100" /> {/* Footer placeholder */}
+          <div className="h-64 bg-gray-100" />
         </div>
         <Toaster />
       </AuthProvider>
@@ -90,13 +86,8 @@ export default function CustomerLayout({ children }) {
 
   return (
     <>
-      <ErrorBoundary silent>
-        <GoogleAnalytics />
-      </ErrorBoundary>
-      
-      <ErrorBoundary silent>
-        <SkipLinks />
-      </ErrorBoundary>
+      <GoogleAnalytics />
+      <SkipLinks />
       
       <AuthProvider>
         <A11yAnnouncerProvider>
@@ -111,60 +102,24 @@ export default function CustomerLayout({ children }) {
           )}
           
           <div className="flex min-h-screen flex-col">
-            <ErrorBoundary fallback={<div className="h-28 bg-white border-b" />}>
-              <Header />
-            </ErrorBoundary>
-            
-            <ErrorBoundary silent>
-              <Breadcrumbs />
-            </ErrorBoundary>
+            <Header />
+            <Breadcrumbs />
             
             <main id="main-content" className="flex-1">
-              <ErrorBoundary 
-                fallback={
-                  <div className="container py-20 text-center">
-                    <p className="text-gray-600">We're experiencing a temporary issue. Please refresh the page.</p>
-                    <button 
-                      onClick={() => window.location.reload()}
-                      className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-                    >
-                      Refresh Page
-                    </button>
-                  </div>
-                }
-              >
-                {children}
-              </ErrorBoundary>
+              {children}
             </main>
             
-            <ErrorBoundary fallback={<div className="h-64 bg-gray-100" />}>
-              <Footer />
-            </ErrorBoundary>
-            
-            <ErrorBoundary silent>
-              <StickySecondaryNav />
-            </ErrorBoundary>
-            
-            <ErrorBoundary silent>
-              <FloatingCart />
-            </ErrorBoundary>
-            
-            <ErrorBoundary silent>
-              <LiveChatWidget />
-            </ErrorBoundary>
-            
-            <ErrorBoundary silent>
-              <CartNotification />
-            </ErrorBoundary>
+            <Footer />
+            <StickySecondaryNav />
+            <FloatingCart />
+            <LiveChatWidget />
+            <CartNotification />
           </div>
           <Toaster />
         </A11yAnnouncerProvider>
       </AuthProvider>
       
-      {/* Service Worker Registration for PWA */}
-      <ErrorBoundary silent>
-        <ServiceWorkerRegistration />
-      </ErrorBoundary>
+      <ServiceWorkerRegistration />
     </>
   );
 }
