@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,20 +9,31 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import EnhancedProductCard from '@/components/EnhancedProductCard';
 import ProductCard from '@/components/ProductCard';
+import InfoBoardProductCard from '@/components/InfoBoardProductCard';
+import HealthBenefitFilters from '@/components/HealthBenefitFilters';
 import FitQuiz from '@/components/FitQuiz';
-import { Sparkles, Filter, Grid, List, Loader2, Droplets, Heart, Award, Search, X } from 'lucide-react';
+import { Sparkles, Filter, Grid, List, Loader2, Droplets, Heart, Award, Search, X, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import AnalyticsSystem from '@/lib/analytics';
 import Link from 'next/link';
 import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import { 
+  enrichProductWithHealthBenefits, 
+  filterProductsByHealthBenefit,
+  getHealthBenefitCounts 
+} from '@/lib/health-benefits';
 
 export default function CatalogPage() {
+  const searchParams = useSearchParams();
+  const infoMode = searchParams.get('mode') === 'info';
+  
   const [showQuiz, setShowQuiz] = useState(false);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [selectedHealthBenefit, setSelectedHealthBenefit] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
   const [loading, setLoading] = useState(true);
   const [useEnhanced, setUseEnhanced] = useState(true);
@@ -44,12 +56,14 @@ export default function CatalogPage() {
         const data = await response.json();
         
         if (data.success && data.products) {
-          setProducts(data.products);
-          setFilteredProducts(data.products);
+          // Enrich products with health benefit data
+          const enrichedProducts = data.products.map(enrichProductWithHealthBenefits);
+          setProducts(enrichedProducts);
+          setFilteredProducts(enrichedProducts);
           setCategories(data.categories || []);
           // Store categories for stable reference during future loads
           prevCategoriesRef.current = data.categories || [];
-          logger.debug(`✅ Loaded ${data.products.length} products from ${data.source}`);
+          logger.debug(`✅ Loaded ${enrichedProducts.length} products from ${data.source}`);
           logger.debug(`📊 Categories:`, data.categories?.map(c => `${c.name} (${c.count})`));
         }
       } catch (error) {
@@ -170,13 +184,48 @@ export default function CatalogPage() {
     // Prevent filtering during loading to avoid empty flashes
     if (loading || products.length === 0) return;
     
-    if (filter === 'all') {
-      setFilteredProducts(products);
-    } else {
-      // Filter by intelligent category
-      setFilteredProducts(products.filter(p => p.intelligentCategory === filter));
+    let result = products;
+    
+    // Apply health benefit filter if set
+    if (selectedHealthBenefit !== 'all') {
+      result = filterProductsByHealthBenefit(result, selectedHealthBenefit);
     }
+    
+    // Apply category filter
+    if (filter !== 'all') {
+      result = result.filter(p => p.intelligentCategory === filter);
+    }
+    
+    setFilteredProducts(result);
   };
+  
+  // Health benefit filter handler
+  const handleHealthBenefitChange = (benefitId) => {
+    setSelectedHealthBenefit(benefitId);
+    setSearchQuery('');
+    setSearchResults(null);
+    
+    if (loading || products.length === 0) return;
+    
+    let result = products;
+    
+    // Apply health benefit filter
+    if (benefitId !== 'all') {
+      result = filterProductsByHealthBenefit(result, benefitId);
+    }
+    
+    // Apply category filter if set
+    if (selectedFilter !== 'all') {
+      result = result.filter(p => p.intelligentCategory === selectedFilter);
+    }
+    
+    setFilteredProducts(result);
+  };
+  
+  // Get health benefit counts
+  const healthBenefitCounts = useMemo(() => {
+    return getHealthBenefitCounts(products);
+  }, [products]);
 
   // Use intelligent categories from API or fallback to static
   // Use stable reference during loading to prevent count flicker
@@ -224,12 +273,32 @@ export default function CatalogPage() {
       {/* Header Section */}
       <section className="bg-gradient-to-br from-emerald-50 to-teal-50 py-16">
         <div className="container">
-          {/* Square Integration Badge */}
+          {/* Mode Badge & Info Toggle */}
           <div className="text-center mb-8">
-            <Badge className="bg-emerald-600 text-white px-4 py-2 text-sm mb-4">
-              <Sparkles className="h-4 w-4 mr-2 inline" />
-              {loading ? 'Loading...' : `${products.length} Premium Products`} Available with Square Checkout
-            </Badge>
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <Badge className="bg-emerald-600 text-white px-4 py-2 text-sm">
+                <Sparkles className="h-4 w-4 mr-2 inline" />
+                {loading ? 'Loading...' : `${products.length} Premium Products`}
+              </Badge>
+              
+              {!infoMode && (
+                <Link href="/catalog?mode=info">
+                  <Badge className="bg-blue-100 text-blue-700 border-blue-200 px-4 py-2 text-sm cursor-pointer hover:bg-blue-200 transition-colors">
+                    <Info className="h-4 w-4 mr-2 inline" />
+                    Info Board Mode
+                  </Badge>
+                </Link>
+              )}
+              
+              {infoMode && (
+                <Link href="/catalog">
+                  <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 px-4 py-2 text-sm cursor-pointer hover:bg-emerald-200 transition-colors">
+                    <Sparkles className="h-4 w-4 mr-2 inline" />
+                    Full Catalog Mode
+                  </Badge>
+                </Link>
+              )}
+            </div>
           </div>
 
           <div className="text-center mb-12">
@@ -241,29 +310,46 @@ export default function CatalogPage() {
               Each product is hand-crafted with 92 essential minerals from the ocean, designed to support your unique wellness journey
             </p>
             
-            {/* Personalized Quiz CTA */}
-            <Card className="max-w-2xl mx-auto bg-white/80 backdrop-blur-sm border-emerald-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  <Sparkles className="w-6 h-6 text-emerald-600" />
-                  <h3 className="text-xl font-semibold text-emerald-800">Not sure where to start?</h3>
-                </div>
-                <p className="text-emerald-600 mb-4">
-                  Take our 60-second wellness quiz for personalized product recommendations
-                </p>
-                <Button 
-                  onClick={() => setShowQuiz(true)}
-                  className="bg-emerald-600 hover:bg-emerald-700"
-                >
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Take the Quiz
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Personalized Quiz CTA - Hidden in info mode */}
+            {!infoMode && (
+              <Card className="max-w-2xl mx-auto bg-white/80 backdrop-blur-sm border-emerald-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <Sparkles className="w-6 h-6 text-emerald-600" />
+                    <h3 className="text-xl font-semibold text-emerald-800">Not sure where to start?</h3>
+                  </div>
+                  <p className="text-emerald-600 mb-4">
+                    Take our 60-second wellness quiz for personalized product recommendations
+                  </p>
+                  <Button 
+                    onClick={() => setShowQuiz(true)}
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Take the Quiz
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Info Mode Banner */}
+            {infoMode && (
+              <Card className="max-w-2xl mx-auto bg-blue-50 border-blue-200">
+                <CardContent className="p-6 text-center">
+                  <div className="flex items-center justify-center gap-3 mb-2">
+                    <Info className="w-6 h-6 text-blue-600" />
+                    <h3 className="text-xl font-semibold text-blue-800">Info Board Mode</h3>
+                  </div>
+                  <p className="text-blue-600">
+                    Explore products by wellness goals. Filter by health benefits to find what supports your journey.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
-          {/* Fit Quiz Modal */}
-          {showQuiz && (
+          {/* Fit Quiz Modal - Hidden in info mode */}
+          {showQuiz && !infoMode && (
             <div className="mb-12">
               <FitQuiz 
                 onRecommendations={handleQuizRecommendations}
@@ -324,7 +410,17 @@ export default function CatalogPage() {
             </div>
           </div>
           
-          {/* Filters and View Options */}
+          {/* Health Benefit Filters - Wellness Goal Filtering */}
+          <div className="mb-8 bg-white rounded-xl p-6 shadow-sm border border-emerald-100">
+            <HealthBenefitFilters
+              benefitCounts={healthBenefitCounts}
+              selectedBenefit={selectedHealthBenefit}
+              onBenefitChange={handleHealthBenefitChange}
+              totalProducts={products.length}
+            />
+          </div>
+          
+          {/* Category Filters and View Options */}
           <div className="flex flex-col lg:flex-row justify-between items-center mb-8 gap-4">
             {/* Category Filters */}
             <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
@@ -407,7 +503,17 @@ export default function CatalogPage() {
                       : 'grid-cols-1 lg:grid-cols-2'
                   }`}>
                     {displayProducts.map((product) => {
-                      // Use EnhancedProductCard if product has ingredient data
+                      // In info mode, use InfoBoardProductCard (no selling UI)
+                      // Otherwise use EnhancedProductCard or ProductCard
+                      if (infoMode) {
+                        return (
+                          <InfoBoardProductCard
+                            key={product.id}
+                            product={product}
+                          />
+                        );
+                      }
+                      
                       const CardComponent = product.ingredients && useEnhanced 
                         ? EnhancedProductCard 
                         : ProductCard;
