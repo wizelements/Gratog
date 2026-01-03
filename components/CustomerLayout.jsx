@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 // Import static components directly
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Dynamically import ALL components that might have SSR issues
 const Header = dynamic(() => import('@/components/Header').catch(() => () => null), { 
@@ -86,8 +87,13 @@ export default function CustomerLayout({ children }) {
 
   return (
     <>
-      <GoogleAnalytics />
-      <SkipLinks />
+      <ErrorBoundary>
+        <GoogleAnalytics />
+      </ErrorBoundary>
+      
+      <ErrorBoundary>
+        <SkipLinks />
+      </ErrorBoundary>
       
       <AuthProvider>
         <A11yAnnouncerProvider>
@@ -102,24 +108,45 @@ export default function CustomerLayout({ children }) {
           )}
           
           <div className="flex min-h-screen flex-col">
-            <Header />
-            <Breadcrumbs />
+            <ErrorBoundary fallback={<div className="h-28 bg-white border-b" />}>
+              <Header />
+            </ErrorBoundary>
+            
+            <ErrorBoundary>
+              <Breadcrumbs />
+            </ErrorBoundary>
             
             <main id="main-content" className="flex-1">
               {children}
             </main>
             
-            <Footer />
-            <StickySecondaryNav />
-            <FloatingCart />
-            <LiveChatWidget />
-            <CartNotification />
+            <ErrorBoundary fallback={<div className="h-64 bg-gray-100" />}>
+              <Footer />
+            </ErrorBoundary>
+            
+            <ErrorBoundary>
+              <StickySecondaryNav />
+            </ErrorBoundary>
+            
+            <ErrorBoundary>
+              <FloatingCart />
+            </ErrorBoundary>
+            
+            <ErrorBoundary>
+              <LiveChatWidget />
+            </ErrorBoundary>
+            
+            <ErrorBoundary>
+              <CartNotification />
+            </ErrorBoundary>
           </div>
           <Toaster />
         </A11yAnnouncerProvider>
       </AuthProvider>
       
-      <ServiceWorkerRegistration />
+      <ErrorBoundary>
+        <ServiceWorkerRegistration />
+      </ErrorBoundary>
     </>
   );
 }
