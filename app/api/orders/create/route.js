@@ -391,20 +391,46 @@ export async function POST(request) {
         // STEP 2: Create Square Order with customer link
         logger.info('Creating Square Order', { orderId, customerId: squareCustomerId });
         
+        // Helper to check if a catalog ID looks valid for Square
+        // Square IDs are 20+ char alphanumeric (e.g., "Y4CVHHOK55IJ727SWK4QTP5A")
+        const isValidSquareCatalogId = (id) => {
+          return id && typeof id === 'string' && id.length >= 20 && /^[A-Z0-9]+$/i.test(id);
+        };
+        
         const orderPayload = {
           idempotency_key: `order_${orderId}_${Date.now()}`,
           order: {
             location_id: SQUARE_LOCATION_ID,
             reference_id: orderNumber, // ⭐ THIS MAKES ORDER NUMBERS MATCH
-            line_items: orderData.cart.map(item => ({
-              catalog_object_id: item.catalogObjectId || item.variationId || item.id,
-              quantity: String(item.quantity),
-              base_price_money: {
-                amount: Math.round((item.price || 0) * 100),
-                currency: 'USD'
-              },
-              note: item.name || '' // Product name visible in Square
-            })),
+            line_items: orderData.cart.map(item => {
+              // Find the best catalog ID candidate
+              const catalogId = item.catalogObjectId || item.variationId || item.squareVariationId;
+              
+              // Build line item - only include catalog_object_id if it's valid
+              const lineItem = {
+                quantity: String(item.quantity),
+                base_price_money: {
+                  amount: Math.round((item.price || 0) * 100),
+                  currency: 'USD'
+                },
+                note: item.name || '' // Product name visible in Square
+              };
+              
+              // CRITICAL FIX: Only add catalog_object_id if it's a valid Square ID
+              // Otherwise, Square API will reject with "catalog object not found"
+              if (isValidSquareCatalogId(catalogId)) {
+                lineItem.catalog_object_id = catalogId;
+              } else {
+                // Ad-hoc item - must have name for Square to accept it
+                lineItem.name = item.name || 'Product';
+                logger.debug('Using ad-hoc line item (no valid catalog ID)', { 
+                  itemName: item.name, 
+                  providedId: catalogId 
+                });
+              }
+              
+              return lineItem;
+            }),
             customer_id: squareCustomerId || undefined, // ⭐ LINKS CUSTOMER TO ORDER
             metadata: {
               source: 'website',
