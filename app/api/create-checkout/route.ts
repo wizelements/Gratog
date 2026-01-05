@@ -16,6 +16,14 @@ const SQUARE_API_BASE = SQUARE_ENVIRONMENT === 'production'
   ? 'https://connect.squareup.com'
   : 'https://connect.squareupsandbox.com'
 
+// Consistent Square API version across all endpoints
+const SQUARE_VERSION = '2024-01-18'
+
+// Helper to validate Square catalog IDs (20+ char alphanumeric)
+const isValidSquareCatalogId = (id?: string): boolean => {
+  return !!id && typeof id === 'string' && id.length >= 20 && /^[A-Z0-9]+$/i.test(id)
+}
+
 // Validation schema
 const CartItemSchema = z.object({
   productId: z.string(),
@@ -93,8 +101,9 @@ export async function POST(request: NextRequest) {
         },
       }
 
-      // Add catalog_object_id if available (preferred by Square)
-      if (item.catalogObjectId) {
+      // CRITICAL FIX: Only add catalog_object_id if it's a valid Square ID
+      // Invalid IDs cause "catalog object not found" errors
+      if (isValidSquareCatalogId(item.catalogObjectId)) {
         lineItem.catalog_object_id = item.catalogObjectId
       }
 
@@ -153,7 +162,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(`${SQUARE_API_BASE}/v2/online-checkout/payment-links`, {
       method: 'POST',
       headers: {
-        'Square-Version': '2024-12-18',
+        'Square-Version': SQUARE_VERSION,
         'Authorization': `Bearer ${SQUARE_ACCESS_TOKEN}`,
         'Content-Type': 'application/json'
       },

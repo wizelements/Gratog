@@ -11,6 +11,11 @@ import { sanitizeErrorMessage, createSafeErrorResponse } from '@/lib/response-sa
 import { RequestContext } from '@/lib/request-context';
 import * as Sentry from '@sentry/nextjs';
 
+// Helper to validate Square catalog IDs (20+ char alphanumeric)
+const isValidSquareCatalogId = (id?: string): boolean => {
+  return !!id && typeof id === 'string' && id.length >= 20 && /^[A-Z0-9]+$/i.test(id);
+};
+
 /**
  * Square Checkout API - Payment Links Integration
  * Creates Square-hosted checkout pages for seamless payment processing
@@ -38,11 +43,18 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Validate line items structure
+    // Validate line items structure - quantity is required, catalogObjectId is optional
     for (const item of lineItems) {
-      if (!item.catalogObjectId || !item.quantity) {
+      if (!item.quantity) {
         return NextResponse.json(
-          { error: 'Each line item must have catalogObjectId and quantity' },
+          { error: 'Each line item must have quantity' },
+          { status: 400 }
+        );
+      }
+      // Name is required for ad-hoc items without valid catalog IDs
+      if (!isValidSquareCatalogId(item.catalogObjectId) && !item.name) {
+        return NextResponse.json(
+          { error: 'Each line item must have either a valid catalogObjectId or a name' },
           { status: 400 }
         );
       }
@@ -99,18 +111,24 @@ export async function POST(request: NextRequest) {
     const orderRequest: any = {
       locationId,
       referenceId: orderId, // ⭐ Order reference for matching
-      lineItems: lineItems.map((item: any) => ({
-        catalogObjectId: item.catalogObjectId,
-        quantity: String(item.quantity),
-        basePriceMoney: item.basePriceMoney,
-        name: item.name,
-        variationName: item.variationName,
-        metadata: {
-          originalProductId: item.productId,
-          category: item.category,
-          size: item.size
+      lineItems: lineItems.map((item: any) => {
+        const lineItem: any = {
+          quantity: String(item.quantity),
+          basePriceMoney: item.basePriceMoney,
+          name: item.name,
+          variationName: item.variationName,
+          metadata: {
+            originalProductId: item.productId,
+            category: item.category,
+            size: item.size
+          }
+        };
+        // CRITICAL FIX: Only include catalogObjectId if it's a valid Square ID
+        if (isValidSquareCatalogId(item.catalogObjectId)) {
+          lineItem.catalogObjectId = item.catalogObjectId;
         }
-      })),
+        return lineItem;
+      }),
       customerId: squareCustomerId || undefined, // ⭐ Link customer to order
       pricingOptions: {
         autoApplyTaxes: true,
@@ -145,18 +163,24 @@ export async function POST(request: NextRequest) {
     logger.debug('Checkout', 'Creating payment link with SDK...');
     
     // Prepare line items for payment link
-    const paymentLinkLineItems = lineItems.map((item: any) => ({
-      catalogObjectId: item.catalogObjectId,
-      quantity: String(item.quantity),
-      basePriceMoney: item.basePriceMoney,
-      name: item.name,
-      variationName: item.variationName,
-      metadata: {
-        originalProductId: item.productId,
-        category: item.category,
-        size: item.size
+    const paymentLinkLineItems = lineItems.map((item: any) => {
+      const lineItem: any = {
+        quantity: String(item.quantity),
+        basePriceMoney: item.basePriceMoney,
+        name: item.name,
+        variationName: item.variationName,
+        metadata: {
+          originalProductId: item.productId,
+          category: item.category,
+          size: item.size
+        }
+      };
+      // CRITICAL FIX: Only include catalogObjectId if it's a valid Square ID
+      if (isValidSquareCatalogId(item.catalogObjectId)) {
+        lineItem.catalogObjectId = item.catalogObjectId;
       }
-    }));
+      return lineItem;
+    });
     
     // Create payment link directly with SDK using Order (since lineItems isn't directly supported)
     const paymentLinkResponse = await square.checkout.paymentLinks.create({

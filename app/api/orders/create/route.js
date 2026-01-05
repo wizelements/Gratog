@@ -579,9 +579,22 @@ export async function GET(request) {
       );
     }
     
-    const order = await orderTracking.getOrder(orderId);
+    const trackingResult = await orderTracking.getOrder(orderId);
     
-    if (!order) {
+    // FIX: orderTracking.getOrder returns { success, order } wrapper
+    // Unwrap it to prevent double-nesting in response
+    if (!trackingResult) {
+      return NextResponse.json(
+        { success: false, error: 'Order not found' },
+        { status: 404 }
+      );
+    }
+    
+    // Handle both wrapped and unwrapped responses from orderTracking
+    const order = trackingResult.order || trackingResult;
+    const isFallback = trackingResult.isFallback || order.isFallback || false;
+    
+    if (!order || !order.id) {
       return NextResponse.json(
         { success: false, error: 'Order not found' },
         { status: 404 }
@@ -590,7 +603,8 @@ export async function GET(request) {
     
     return NextResponse.json({
       success: true,
-      order
+      order,
+      isFallback
     });
     
   } catch (error) {
