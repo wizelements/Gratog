@@ -13,7 +13,7 @@ import { ArrowRight, ShoppingBag, Trash2, Plus, Minus, MapPin, Home, Package, Cr
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { loadCart, updateQuantity, removeFromCart, clearCart, getCartTotal, formatPrice } from '@/lib/cart-engine';
-import SquarePaymentForm from '@/components/checkout/SquarePaymentForm';
+import SquarePaymentForm from '@/components/checkout/SquarePaymentFormV2';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('OrderPage');
@@ -734,8 +734,24 @@ export default function OrderPage() {
                       </div>
                     )}
                     {fulfillmentType === 'delivery' && subtotal < 30 && (
-                      <div className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200">
-                        ⚠️ Minimum ${formatPrice(30 - subtotal)} more required for delivery
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
+                        <div className="text-sm text-red-800 font-medium flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4" />
+                          Delivery requires $30 minimum
+                        </div>
+                        <div className="text-xs text-red-700">
+                          Add {formatPrice(30 - subtotal)} more to your cart to qualify for delivery.
+                        </div>
+                        <Button 
+                          type="button"
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => router.push('/catalog')}
+                          className="w-full text-red-700 border-red-300 hover:bg-red-100"
+                        >
+                          <ShoppingBag className="w-3 h-3 mr-1" />
+                          Continue Shopping
+                        </Button>
                       </div>
                     )}
                     {fulfillmentType === 'delivery' && subtotal >= 25 && subtotal < 75 && (
