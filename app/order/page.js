@@ -13,7 +13,7 @@ import { ArrowRight, ShoppingBag, Trash2, Plus, Minus, MapPin, Home, Package, Cr
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { loadCart, updateQuantity, removeFromCart, clearCart, getCartTotal, formatPrice } from '@/lib/cart-engine';
-import SquarePaymentForm from '@/components/SquarePaymentForm';
+import SquarePaymentForm from '@/components/checkout/SquarePaymentForm';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('OrderPage');
@@ -318,9 +318,18 @@ export default function OrderPage() {
 
           <SquarePaymentForm
             orderId={orderCreated.id}
-            orderTotal={total}
+            amountCents={Math.round(total * 100)}
             squareOrderId={orderCreated.squareOrderId}
-            onPaymentSuccess={handlePaymentSuccess}
+            customer={{
+              email: customer.email,
+              name: customer.name,
+              phone: customer.phone
+            }}
+            onSuccess={handlePaymentSuccess}
+            onError={(error) => {
+              logger.error('Payment error', { error });
+              toast.error(error || 'Payment failed. Please try again.');
+            }}
           />
 
           <div className="mt-6 text-center">

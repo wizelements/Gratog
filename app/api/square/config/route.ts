@@ -1,42 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getSquarePublicConfig, validateSquareConfig } from '@/lib/payments/config';
 
 /**
  * Public endpoint to get Square configuration for Web Payments SDK
  * Only exposes public/client-safe values - never access tokens
+ * 
+ * Uses centralized config module to ensure consistency across all payment code.
  */
 export async function GET(request: NextRequest) {
   try {
-    const applicationId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || '';
-    const locationId = process.env.SQUARE_LOCATION_ID || '';
-    const environment = (process.env.SQUARE_ENVIRONMENT || 'sandbox').toLowerCase();
-
-    if (!applicationId) {
+    // Validate config first
+    const validation = validateSquareConfig();
+    
+    if (!validation.valid) {
+      console.error('Square config validation failed:', validation.missing);
       return NextResponse.json(
-        { error: 'Square application ID not configured' },
+        { 
+          error: 'Payment system not configured',
+          details: process.env.NODE_ENV === 'development' ? validation.missing : undefined
+        },
         { status: 500 }
       );
     }
-
-    if (!locationId) {
-      return NextResponse.json(
-        { error: 'Square location ID not configured' },
-        { status: 500 }
-      );
-    }
-
-    const isSandbox = environment === 'sandbox' || applicationId.startsWith('sandbox-');
-
-    return NextResponse.json({
-      applicationId,
-      locationId,
-      environment: isSandbox ? 'sandbox' : 'production',
-      sdkUrl: isSandbox 
-        ? 'https://sandbox.web.squarecdn.com/v1/square.js'
-        : 'https://web.squarecdn.com/v1/square.js'
-    });
+    
+    // Get public config (no secrets)
+    const config = getSquarePublicConfig();
+    
+    return NextResponse.json(config);
+    
   } catch (error) {
+    console.error('Square config error:', error);
     return NextResponse.json(
-      { error: 'Failed to retrieve Square configuration' },
+      { error: 'Failed to retrieve payment configuration' },
       { status: 500 }
     );
   }
