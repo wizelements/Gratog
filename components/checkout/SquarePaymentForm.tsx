@@ -352,11 +352,9 @@ export default function SquarePaymentForm({
       }
       abortControllerRef.current = new AbortController();
       
-      // Generate or reuse idempotency key (for same payment attempt, same key)
-      const idempotencyKey = paymentIdempotencyKeyRef.current || `payment_${orderId}_${Date.now()}`;
-      if (!paymentIdempotencyKeyRef.current) {
-        paymentIdempotencyKeyRef.current = idempotencyKey;
-      }
+      // FIXED: Generate fresh idempotency key per attempt (like TOG)
+      // Old code reused same key which blocked retries on failure
+      const idempotencyKey = `${orderId.slice(0, 32)}_${Date.now().toString(36)}`;
       
       // Add 15 second timeout for payment request
       const timeoutId = setTimeout(() => {

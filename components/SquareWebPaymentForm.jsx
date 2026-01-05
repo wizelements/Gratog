@@ -34,12 +34,9 @@ export default function SquareWebPaymentForm({
   const abortControllerRef = useRef(null);
   const idempotencyKeyRef = useRef(null);
   
-  // Generate stable idempotency key once per order
-  useEffect(() => {
-    if (orderId && !idempotencyKeyRef.current) {
-      idempotencyKeyRef.current = `${orderId}-${customer?.email || 'guest'}-${Date.now()}`;
-    }
-  }, [orderId, customer?.email]);
+  // FIXED: Generate fresh idempotency key per payment attempt (not per order)
+  // Old code used stable key which blocked retries on failure
+  const generateIdempotencyKey = () => `${orderId?.slice(0, 32) || 'order'}_${Date.now().toString(36)}`;
   
   // Fetch Square config from API (unified with SquarePaymentForm.tsx)
   useEffect(() => {
@@ -224,7 +221,7 @@ export default function SquareWebPaymentForm({
             squareOrderId, // FIXED: Now passing squareOrderId for order-payment linking
             customer,
             lineItems,
-            idempotencyKey: idempotencyKeyRef.current
+            idempotencyKey: generateIdempotencyKey()
           }),
           signal: abortControllerRef.current.signal
         });
