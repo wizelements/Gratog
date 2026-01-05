@@ -171,72 +171,89 @@ export default function SquarePaymentForm({
 
     const loadScript = (): Promise<void> => {
       return new Promise((resolve, reject) => {
+        console.debug('[Square] Loading SDK from:', config.sdkUrl);
+        
         if (window.Square) {
+          console.debug('[Square] SDK already available');
           resolve();
           return;
         }
 
+        // Single 20-second timeout for everything
+        const timeoutId = setTimeout(() => {
+          console.error('[Square] SDK load timeout after 20 seconds');
+          reject(new Error('Square SDK load timeout - please check your internet connection and refresh'));
+        }, 20000);
+
+        // Helper to clean up and resolve
+        const complete = () => {
+          clearTimeout(timeoutId);
+          console.debug('[Square] SDK loaded successfully');
+          resolve();
+        };
+
         // Poll for window.Square in case it loads after script event
-        let pollCount = 0;
-        const maxPolls = 400; // 20 seconds at 50ms intervals
         const pollInterval = setInterval(() => {
-          pollCount++;
           if (window.Square) {
             clearInterval(pollInterval);
-            resolve();
-            return;
+            complete();
           }
-          if (pollCount >= maxPolls) {
-            clearInterval(pollInterval);
-          }
-        }, 50);
+        }, 100);
 
         const existingScript = document.querySelector(`script[src="${config.sdkUrl}"]`);
         if (existingScript) {
-          if ((existingScript as HTMLScriptElement).getAttribute('data-loaded') === 'true') {
+          console.debug('[Square] Found existing script tag');
+          if ((existingScript as HTMLScriptElement).getAttribute('data-loaded') === 'true' && window.Square) {
             clearInterval(pollInterval);
-            resolve();
+            complete();
             return;
           }
 
-          // Add timeout for existing script load (20 seconds)
-          const timeoutId = setTimeout(() => {
-            clearInterval(pollInterval);
-            reject(new Error('Square SDK load timeout after 20 seconds'));
-          }, 20000);
-
           existingScript.addEventListener('load', () => {
             clearInterval(pollInterval);
-            clearTimeout(timeoutId);
-            resolve();
+            // Give it a moment for window.Square to be available
+            setTimeout(() => {
+              if (window.Square) {
+                complete();
+              } else {
+                console.error('[Square] Script loaded but window.Square not available');
+                clearTimeout(timeoutId);
+                reject(new Error('Square SDK loaded but not initialized - please refresh'));
+              }
+            }, 100);
           });
           existingScript.addEventListener('error', () => {
             clearInterval(pollInterval);
             clearTimeout(timeoutId);
-            reject(new Error('Failed to load Square SDK'));
+            console.error('[Square] Failed to load SDK script');
+            reject(new Error('Failed to load Square payment SDK'));
           });
           return;
         }
 
-        // Add timeout for new script load (20 seconds)
-        const timeoutId = setTimeout(() => {
-          clearInterval(pollInterval);
-          reject(new Error('Square SDK load timeout after 20 seconds'));
-        }, 20000);
-
+        console.debug('[Square] Creating new script tag');
         const script = document.createElement('script');
         script.src = config.sdkUrl;
         script.async = true;
         script.onload = () => {
           clearInterval(pollInterval);
-          clearTimeout(timeoutId);
           script.setAttribute('data-loaded', 'true');
-          resolve();
+          // Give it a moment for window.Square to be available
+          setTimeout(() => {
+            if (window.Square) {
+              complete();
+            } else {
+              console.error('[Square] Script loaded but window.Square not available');
+              clearTimeout(timeoutId);
+              reject(new Error('Square SDK loaded but not initialized - please refresh'));
+            }
+          }, 100);
         };
         script.onerror = () => {
           clearInterval(pollInterval);
           clearTimeout(timeoutId);
-          reject(new Error('Failed to load Square SDK'));
+          console.error('[Square] Script load error');
+          reject(new Error('Failed to load Square payment SDK'));
         };
         document.head.appendChild(script);
       });
@@ -244,13 +261,16 @@ export default function SquarePaymentForm({
 
     const initializePayments = async () => {
       try {
+        console.debug('[Square] Starting payment initialization');
         await loadScript();
 
         if (!window.Square) {
-          throw new Error('Square SDK not available');
+          throw new Error('Square SDK not available after script load');
         }
 
+        console.debug('[Square] Initializing payments with appId:', config.applicationId.slice(0, 10) + '...');
         const payments = await window.Square.payments(config.applicationId, config.locationId);
+        console.debug('[Square] Payments object created');
 
         const card = await payments.card({
           style: {
@@ -284,8 +304,10 @@ export default function SquarePaymentForm({
           }
         });
 
+        console.debug('[Square] Attaching card to #card-container');
         await card.attach('#card-container');
         cardRef.current = card;
+        console.debug('[Square] Card attached successfully');
 
         card.addEventListener('errorClassAdded', (e: any) => {
           setCardError(e.detail?.field ? `Invalid ${e.detail.field}` : 'Invalid card details');
