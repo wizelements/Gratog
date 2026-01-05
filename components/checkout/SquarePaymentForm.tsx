@@ -595,9 +595,10 @@ export default function SquarePaymentForm({
           </label>
           <div 
             id="card-container"
-            className={`min-h-[50px] p-3 border rounded-lg transition-colors ${
+            className={`min-h-[130px] p-3 border rounded-lg transition-colors ${
               cardError ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
             }`}
+            style={{ minHeight: '130px' }}
           />
           {cardError && (
             <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
