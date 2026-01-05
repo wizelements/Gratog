@@ -115,8 +115,11 @@ export default function SquarePaymentForm({
   const abortControllerRef = useRef<AbortController | null>(null);
   const paymentIdempotencyKeyRef = useRef<string>('');
 
-  // Stabilize onError callback to prevent unnecessary refetches
-  const stableOnError = useCallback(onError, []);
+  // Store onError in a ref to use latest version without re-triggering effects
+  const onErrorRef = useRef(onError);
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -138,12 +141,13 @@ export default function SquarePaymentForm({
       } catch (err) {
         console.error('Failed to load Square config:', err);
         const errorMsg = err instanceof Error ? err.message : 'Payment system configuration error';
-        stableOnError(errorMsg);
+        // Use ref to always call the latest onError
+        onErrorRef.current(errorMsg);
         setIsLoading(false);
       }
     };
     fetchConfig();
-  }, [stableOnError]);
+  }, []); // Empty deps - fetch once on mount
 
   useEffect(() => {
     if (!config || initRef.current) return;
@@ -319,9 +323,9 @@ export default function SquarePaymentForm({
         const errorMsg = err instanceof Error ? err.message : 'Failed to initialize payment form';
         // Check if it's a timeout/network issue
         if (errorMsg.includes('timeout') || errorMsg.includes('SDK')) {
-          onError('Payment form initialization timed out. Please refresh the page and try again.');
+          onErrorRef.current('Payment form initialization timed out. Please refresh the page and try again.');
         } else {
-          onError(errorMsg);
+          onErrorRef.current(errorMsg);
         }
         setIsLoading(false);
       }
@@ -338,7 +342,7 @@ export default function SquarePaymentForm({
       applePayRef.current?.destroy?.().catch(console.error);
       googlePayRef.current?.destroy().catch(console.error);
     };
-  }, [config, amountCents, stableOnError]);
+  }, [config, amountCents]); // Removed stableOnError - using ref instead
 
   const processPayment = useCallback(async (sourceId: string) => {
     try {

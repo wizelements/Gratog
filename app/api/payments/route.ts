@@ -47,15 +47,105 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    if (!amountCents || amountCents <= 0) {
+    if (!orderId) {
       return NextResponse.json(
-        { error: 'Valid amount in cents is required' },
+        { error: 'Order ID is required for payment processing' },
         { status: 400 }
       );
     }
     
+    // SECURITY FIX: Validate amount server-side and prevent double-charging
+    // Fetch the order from database to verify amount and payment status
+    let order: any = null;
+    let expectedAmountCents: number;
+    
+    try {
+      const { db } = await connectToDatabase();
+      order = await db.collection('orders').findOne({ id: orderId });
+      
+      if (!order) {
+        logger.warn('API', 'Payment attempted for non-existent order', { orderId });
+        return NextResponse.json(
+          { success: false, error: 'Order not found. Please try again or contact support.' },
+          { status: 404 }
+        );
+      }
+      
+      // CRITICAL: Check if order is already paid to prevent double-charging
+      const paidStatuses = ['paid', 'COMPLETED', 'completed'];
+      if (paidStatuses.includes(order.status) || paidStatuses.includes(order.paymentStatus)) {
+        logger.warn('API', 'Double-charge prevention: Order already paid', { 
+          orderId, 
+          status: order.status,
+          paymentStatus: order.paymentStatus 
+        });
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'This order has already been paid. Please contact support if this is unexpected.',
+            alreadyPaid: true,
+            orderId
+          },
+          { status: 409 }
+        );
+      }
+      
+      // Calculate expected amount from order (server-side validation)
+      // Use order.pricing.total (in dollars) converted to cents, or totalCents if stored
+      expectedAmountCents = order.totalCents || 
+                            (order.pricing?.total ? Math.round(order.pricing.total * 100) : 0) ||
+                            (order.total ? Math.round(order.total * 100) : 0);
+      
+      if (!expectedAmountCents || expectedAmountCents <= 0) {
+        logger.error('API', 'Order has invalid total amount', { orderId, order: order.pricing });
+        return NextResponse.json(
+          { success: false, error: 'Invalid order total. Please contact support.' },
+          { status: 400 }
+        );
+      }
+      
+      // Allow small tolerance (1 cent) for rounding differences
+      const amountDifference = Math.abs(amountCents - expectedAmountCents);
+      if (amountDifference > 1) {
+        logger.warn('API', 'Payment amount mismatch detected', { 
+          orderId, 
+          clientAmount: amountCents, 
+          expectedAmount: expectedAmountCents,
+          difference: amountDifference
+        });
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Payment amount does not match order total. Please refresh and try again.',
+            expectedAmountCents
+          },
+          { status: 400 }
+        );
+      }
+      
+      logger.debug('API', 'Order validated for payment', { 
+        orderId, 
+        expectedAmountCents, 
+        clientAmountCents: amountCents 
+      });
+      
+    } catch (dbError) {
+      logger.error('API', 'Database error during payment validation', { 
+        orderId, 
+        error: dbError instanceof Error ? dbError.message : String(dbError) 
+      });
+      return NextResponse.json(
+        { success: false, error: 'Unable to validate order. Please try again.' },
+        { status: 500 }
+      );
+    }
+    
+    // Use server-validated amount (not client-provided)
+    const validatedAmountCents = expectedAmountCents;
+    
     // Generate idempotency key to prevent duplicate payments
-    const paymentIdempotencyKey = idempotencyKey || randomUUID();
+    // Use order-specific key to ensure same order always uses same key
+    const paymentIdempotencyKey = idempotencyKey || `payment_${orderId}_${order.orderNumber || orderId}`;
     
     // Get location ID with proper validation
     let locationId: string;
@@ -73,7 +163,8 @@ export async function POST(request: NextRequest) {
     logger.debug('API', 'Processing Square Web Payment:', {
       traceId: ctx.traceId,
       sourceId: sourceId?.substring(0, 20) + '...',
-      amountCents,
+      validatedAmountCents, // Using server-validated amount
+      clientAmountCents: amountCents,
       currency,
       locationId,
       idempotencyKey: paymentIdempotencyKey,
@@ -87,15 +178,18 @@ export async function POST(request: NextRequest) {
     // STEP 1: Create or find Square Customer (if customer info provided)
     let squareCustomerId: string | undefined;
     
-    if (customer && customer.email && customer.name) {
+    // Use customer from order if not provided in request
+    const customerInfo = customer || order.customer;
+    
+    if (customerInfo && customerInfo.email && customerInfo.name) {
       logger.debug('API', 'Creating/finding Square customer for payment...');
       try {
         const customerResult = await findOrCreateSquareCustomer({
-          email: customer.email,
-          name: customer.name,
-          phone: customer.phone,
+          email: customerInfo.email,
+          name: customerInfo.name,
+          phone: customerInfo.phone,
           note: createCustomerNote({
-            orderNumber: orderId,
+            orderNumber: order.orderNumber || orderId,
             source: 'web_payment_sdk'
           })
         });
@@ -114,16 +208,16 @@ export async function POST(request: NextRequest) {
     }
     
     // Truncate note to Square's 45 character limit (must be defined before use)
-    const noteText = `Payment for order ${orderId || 'unknown'}`;
+    const noteText = `Order ${order.orderNumber || orderId}`;
     const truncatedNote = noteText.length > 45 ? noteText.substring(0, 45) : noteText;
     
     logger.debug('API', 'Sending payment request to Square SDK...');
     
-    // Use SDK directly - no timeout wrapper
+    // Use SDK directly with SERVER-VALIDATED amount (not client-provided)
     const response = await square.payments.create({
       sourceId,
       amountMoney: {
-        amount: BigInt(amountCents),
+        amount: BigInt(validatedAmountCents), // SECURITY: Use validated amount
         currency
       },
       orderId: squareOrderId,
@@ -219,7 +313,6 @@ export async function POST(request: NextRequest) {
     }
     
     // Update order status if orderId provided
-    let order: any = null;
     if (orderId) {
       try {
         const { db } = await connectToDatabase();
@@ -227,8 +320,7 @@ export async function POST(request: NextRequest) {
         // Map Square payment status to order status
         const orderStatus = payment.status === 'COMPLETED' || payment.status === 'APPROVED' ? 'paid' : 'payment_processing';
         
-        // Fetch the order before updating (needed for notifications)
-        order = await db.collection('orders').findOne({ id: orderId });
+        // Re-fetch order for notifications (order already validated above)
         
         await db.collection('orders').updateOne(
           { id: orderId },
@@ -552,6 +644,12 @@ export async function GET(request: NextRequest) {
       createdAt: paymentRecord?.createdAt
     };
     
+    // FIX: Handle both Square API shape (cardDetails.card.last4) and 
+    // DB record shape (cardDetails.last4) for consistency
+    const cardInfo = squarePayment 
+      ? payment.cardDetails?.card  // Square API: nested under .card
+      : payment.cardDetails;        // DB record: flat structure
+    
     return NextResponse.json({
       success: true,
       payment: {
@@ -561,8 +659,8 @@ export async function GET(request: NextRequest) {
         currency: payment.amountMoney?.currency,
         receiptUrl: payment.receiptUrl,
         receiptNumber: payment.receiptNumber,
-        cardLast4: payment.cardDetails?.card?.last4,
-        cardBrand: payment.cardDetails?.card?.cardBrand,
+        cardLast4: cardInfo?.last4,
+        cardBrand: cardInfo?.cardBrand || cardInfo?.brand, // DB uses 'brand', Square uses 'cardBrand'
         createdAt: payment.createdAt
       },
       source: squarePayment ? 'square_api' : 'database'
