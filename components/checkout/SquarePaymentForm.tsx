@@ -268,11 +268,20 @@ export default function SquarePaymentForm({
           throw new Error('Square SDK not available after script load');
         }
 
-        console.debug('[Square] Initializing payments with appId:', config.applicationId.slice(0, 10) + '...');
-        const payments = await window.Square.payments(config.applicationId, config.locationId);
-        console.debug('[Square] Payments object created');
+        console.debug('[Square] Initializing payments with appId:', config.applicationId.slice(0, 10) + '...', 'locationId:', config.locationId);
+        
+        let payments;
+        try {
+          payments = await window.Square.payments(config.applicationId, config.locationId);
+          console.debug('[Square] Payments object created');
+        } catch (paymentsErr) {
+          console.error('[Square] Failed to create payments object:', paymentsErr);
+          throw new Error(`Square payments initialization failed: ${paymentsErr instanceof Error ? paymentsErr.message : 'Unknown error'}`);
+        }
 
-        const card = await payments.card({
+        let card;
+        try {
+          card = await payments.card({
           style: {
             '.input-container': {
               borderColor: '#d1d5db',
@@ -303,11 +312,29 @@ export default function SquarePaymentForm({
             }
           }
         });
+          console.debug('[Square] Card object created');
+        } catch (cardErr) {
+          console.error('[Square] Failed to create card object:', cardErr);
+          throw new Error(`Square card creation failed: ${cardErr instanceof Error ? cardErr.message : 'Unknown error'}`);
+        }
 
         console.debug('[Square] Attaching card to #card-container');
-        await card.attach('#card-container');
-        cardRef.current = card;
-        console.debug('[Square] Card attached successfully');
+        
+        // Ensure the container exists
+        const container = document.getElementById('card-container');
+        if (!container) {
+          throw new Error('Card container element not found in DOM');
+        }
+        console.debug('[Square] Container found, dimensions:', container.offsetWidth, 'x', container.offsetHeight);
+        
+        try {
+          await card.attach('#card-container');
+          cardRef.current = card;
+          console.debug('[Square] Card attached successfully');
+        } catch (attachErr) {
+          console.error('[Square] Failed to attach card:', attachErr);
+          throw new Error(`Square card attach failed: ${attachErr instanceof Error ? attachErr.message : 'Unknown error'}`);
+        }
 
         card.addEventListener('errorClassAdded', (e: any) => {
           setCardError(e.detail?.field ? `Invalid ${e.detail.field}` : 'Invalid card details');
