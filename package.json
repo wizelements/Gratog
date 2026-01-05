@@ -39,7 +39,9 @@
     "verify:deployment": "node scripts/verify-deployment.js",
     "deploy:monitor": "node scripts/deploy-monitor-simple.js",
     "test:smoke": "vitest run tests/smoke.test.ts tests/hydration-safety.test.ts --reporter=verbose",
-    "predeploy": "npm run validate && npm run test:smoke && npm run build"
+    "validate:payments": "node scripts/validate-payments.js",
+    "predeploy": "npm run validate && npm run validate:payments && npm run test:smoke && npm run build",
+    "deploy:safe": "npm run validate:payments && vercel --prod"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",

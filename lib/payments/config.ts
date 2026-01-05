@@ -122,6 +122,7 @@ export function getSquarePublicConfig(): SquarePublicConfig {
 export function validateSquareConfig(): ConfigValidationResult {
   const missing: string[] = [];
   const warnings: string[] = [];
+  const errors: string[] = [];
   
   // Check server-side vars
   for (const key of REQUIRED_SERVER_VARS) {
@@ -135,6 +136,12 @@ export function validateSquareConfig(): ConfigValidationResult {
     if (!process.env[key]) {
       missing.push(key);
     }
+  }
+  
+  // CRITICAL: Check for client secret misuse (common mistake)
+  const accessToken = process.env.SQUARE_ACCESS_TOKEN || '';
+  if (accessToken.startsWith('sq0csp-')) {
+    errors.push('FATAL: SQUARE_ACCESS_TOKEN is a Client Secret (sq0csp-). Use Production Access Token (EAAA... or sq0atp-...) instead!');
   }
   
   // Warnings for deprecated patterns
@@ -151,9 +158,14 @@ export function validateSquareConfig(): ConfigValidationResult {
     warnings.push(`SQUARE_ENVIRONMENT (${explicitEnv}) doesn't match application ID pattern (${inferredEnv})`);
   }
   
+  // Add domain registration reminder for production
+  if (inferredEnv === 'production') {
+    warnings.push('Ensure your domain is registered in Square Dashboard > Applications > Web Payments SDK');
+  }
+  
   return {
-    valid: missing.length === 0,
-    missing,
+    valid: missing.length === 0 && errors.length === 0,
+    missing: [...missing, ...errors],
     warnings,
   };
 }
