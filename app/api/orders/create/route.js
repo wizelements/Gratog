@@ -79,12 +79,14 @@ function getNextSaturday(time = '09:00') {
 }
 
 function buildFulfillment(orderData) {
-  const { fulfillmentType, customer, deliveryAddress, shippingAddress, deliveryInstructions, pickup } = orderData;
+  const { fulfillmentType, customer, deliveryAddress, shippingAddress, deliveryInstructions, pickup, meetUpDetails } = orderData;
   
   // Pickup orders (Serenbe or Browns Mill)
   // NORMALIZED: pickup_market = Serenbe, pickup_browns_mill = Browns Mill
+  // Also handle legacy 'meetup_serenbe' type
   const isPickupOrder = fulfillmentType === 'pickup' || fulfillmentType === 'pickup_serenbe' || 
-                        fulfillmentType === 'pickup_market' || fulfillmentType === 'pickup_browns_mill';
+                        fulfillmentType === 'pickup_market' || fulfillmentType === 'pickup_browns_mill' ||
+                        fulfillmentType === 'meetup_serenbe';
   if (isPickupOrder) {
     const isBrownsMill = fulfillmentType === 'pickup_browns_mill' || pickup?.locationId === 'browns_mill';
     // Normalize fulfillment type for consistency across all systems
@@ -307,7 +309,8 @@ export async function POST(request) {
     const isPickup = orderData.fulfillmentType === 'pickup' || 
                      orderData.fulfillmentType === 'pickup_serenbe' || 
                      orderData.fulfillmentType === 'pickup_market' || 
-                     orderData.fulfillmentType === 'pickup_browns_mill';
+                     orderData.fulfillmentType === 'pickup_browns_mill' ||
+                     orderData.fulfillmentType === 'meetup_serenbe';
     if (isPickup) {
       const isBrownsMill = orderData.fulfillmentType === 'pickup_browns_mill' || 
                            orderData.pickup?.locationId === 'browns_mill';

@@ -8,7 +8,7 @@ import { OrderTotals, formatCurrency } from '@/adapters/totalsAdapter';
 import { ContactInfo, FulfillmentData } from '@/stores/checkout';
 import Image from 'next/image';
 import { useState, useCallback } from 'react';
-import { createOrder } from '@/services/order';
+import { createOrder, OrderCreationError } from '@/services/order';
 import { toast } from 'sonner';
 import { track } from '@/utils/analytics';
 import SquarePaymentForm from './SquarePaymentForm';
@@ -57,24 +57,36 @@ export default function ReviewAndPay({
     track('checkout_proceed_to_payment', { fulfillmentType: fulfillment.type });
     
     try {
+      // Pass couponDiscount (in dollars) so backend calculates correct total
       const orderResponse = await createOrder(
         contact,
         fulfillment,
         cart,
         tip,
-        couponCode
+        couponCode,
+        totals.couponDiscount // couponDiscount is already in dollars from totalsAdapter
       );
       
       setOrderId(orderResponse.order.id);
       setSquareOrderId(orderResponse.order.squareOrderId);
       setStep('payment');
       track('order_created', { orderId: orderResponse.order.id });
-    } catch (error: any) {
+    } catch (error) {
       console.error('Order creation error:', error);
-      const errorMessage = error.message || 'Failed to create order. Please try again.';
+      
+      let errorMessage = 'Failed to create order. Please try again.';
+      let errorCode = 'UNKNOWN';
+      
+      if (error instanceof OrderCreationError) {
+        errorMessage = error.message;
+        errorCode = error.code;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       setOrderError(errorMessage);
       toast.error(errorMessage);
-      track('order_creation_failed', { error: error.message });
+      track('order_creation_failed', { error: errorMessage, code: errorCode });
     } finally {
       setIsCreatingOrder(false);
     }

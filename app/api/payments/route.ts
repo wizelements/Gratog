@@ -7,11 +7,11 @@ import { randomUUID } from 'crypto';
 import * as Sentry from '@sentry/nextjs';
 import { 
   persistWithFallback, 
-  sendNotificationReliably, 
   criticalAlert,
   withRetry 
 } from '@/lib/critical-operations';
 import { rewardsSystem } from '@/lib/enhanced-rewards';
+import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 
 /**
  * Square Payments API - Web Payments SDK Integration
@@ -311,22 +311,43 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Notifications and rewards (best-effort, wrapped)
+    // Send order confirmation email (best-effort)
     try {
-      if (customerInfo?.email && isCompleted) {
-        await sendNotificationReliably({
-          type: 'payment_confirmation',
-          to: customerInfo.email,
-          data: {
-            orderId,
-            orderNumber: order?.orderNumber || orderId,
+      if (customerInfo?.email && isCompleted && order) {
+        const emailResult = await sendOrderConfirmationEmail({
+          id: orderId,
+          orderNumber: order.orderNumber || orderId,
+          customer: {
+            email: customerInfo.email,
+            name: customerInfo.name || 'Customer',
+            phone: customerInfo.phone
+          },
+          items: order.items || [],
+          pricing: {
+            subtotal: order.pricing?.subtotal || validatedAmountCents / 100,
             total: validatedAmountCents / 100,
-            receiptUrl: payment.receiptUrl
+            deliveryFee: order.pricing?.deliveryFee || 0,
+            tax: order.pricing?.tax || 0
+          },
+          fulfillment: order.fulfillment || { type: 'pickup' },
+          payment: {
+            receiptUrl: payment.receiptUrl,
+            cardBrand: payment.cardDetails?.card?.cardBrand,
+            cardLast4: payment.cardDetails?.card?.last4
           }
         });
+        
+        if (emailResult.success) {
+          logger.info('API', 'Order confirmation email sent', { orderId, to: customerInfo.email });
+        } else {
+          logger.warn('API', 'Order confirmation email failed', { orderId, error: emailResult.error });
+        }
       }
     } catch (notifyError) {
-      logger.warn('API', 'Notification failed', { error: notifyError });
+      logger.warn('API', 'Notification failed', { 
+        orderId,
+        error: notifyError instanceof Error ? notifyError.message : String(notifyError) 
+      });
     }
     
     try {
@@ -340,6 +361,29 @@ export async function POST(request: NextRequest) {
       }
     } catch (rewardsError) {
       logger.warn('API', 'Rewards failed', { error: rewardsError });
+    }
+    
+    // Mark coupon as used (best-effort) - prevents reuse
+    try {
+      if (order?.coupon?.code && isCompleted) {
+        const { db } = await connectToDatabase();
+        await db.collection('coupons').updateOne(
+          { code: order.coupon.code.toUpperCase(), isUsed: false },
+          { 
+            $set: { 
+              isUsed: true, 
+              usedAt: new Date().toISOString(),
+              orderId 
+            } 
+          }
+        );
+        logger.debug('API', 'Coupon marked as used', { code: order.coupon.code, orderId });
+      }
+    } catch (couponError) {
+      logger.warn('API', 'Failed to mark coupon as used', { 
+        orderId, 
+        error: couponError instanceof Error ? couponError.message : String(couponError) 
+      });
     }
     
     return NextResponse.json({

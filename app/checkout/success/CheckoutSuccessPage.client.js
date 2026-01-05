@@ -3,7 +3,16 @@
 import { useEffect, useState, Suspense } from 'react';
 import { logger } from '@/lib/logger';
 import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+// Debug helper - logs in development only
+const debug = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[CheckoutSuccess]', ...args);
+  }
+};
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Package, Star, Gift, ArrowRight, Trophy } from 'lucide-react';
@@ -172,17 +181,40 @@ function SuccessContent() {
   const handleSpinWin = async (prize) => {
     // Record spin usage and generate coupon for next order
     try {
-      // Create coupon
+      // Validate email before API call
+      const email = orderDetails?.customer?.email?.trim()?.toLowerCase();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        console.error('Invalid email for coupon creation');
+        toast.error('Unable to create coupon - invalid email');
+        return;
+      }
+      
+      // Calculate discount in cents (handle both prize.value in cents and prize.discount in dollars)
+      const discountCents = Math.max(0, prize.value || Math.round((prize.discount || 0) * 100));
+      
+      // API expects: customerEmail, discountAmount (in cents)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      
       const response = await fetch('/api/coupons/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: orderDetails?.customer?.email,
-          discount: prize.discount || prize.value / 100,
+          customerEmail: email,
+          discountAmount: discountCents,
           type: 'post_purchase_spin',
-          description: `Post-purchase spin reward: $${prize.discount || prize.value / 100} off next order`
-        })
+          freeShipping: Boolean(prize.freeShipping),
+          source: 'post_purchase',
+          metadata: {
+            prize: String(prize.label || '').slice(0, 50),
+            orderId: orderId || orderDetails?.id,
+            description: `Post-purchase spin reward: $${(discountCents / 100).toFixed(2)} off next order`
+          }
+        }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
       
       if (response.ok) {
         const data = await response.json();

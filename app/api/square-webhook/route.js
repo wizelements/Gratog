@@ -1,3 +1,16 @@
+/**
+ * @deprecated This webhook handler is DEPRECATED. 
+ * Use /api/webhooks/square instead.
+ * 
+ * TODO: Remove this file after confirming Square Dashboard 
+ * only has /api/webhooks/square registered.
+ * 
+ * Migration steps:
+ * 1. Go to Square Developer Dashboard → Webhooks
+ * 2. Update webhook URL from /api/square-webhook to /api/webhooks/square
+ * 3. Delete this file after 30 days of successful operation
+ */
+
 import { logger } from '@/lib/logger';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
@@ -12,6 +25,8 @@ const SQUARE_WEBHOOK_SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
 /**
  * SECURITY: Webhook signature verification
  * CRITICAL: Never skip verification in any production-like environment
+ * 
+ * @deprecated Use /api/webhooks/square instead
  */
 function verifyWebhookSignature(signatureHeader, requestUrl, requestBody) {
   if (!SQUARE_WEBHOOK_SIGNATURE_KEY) {

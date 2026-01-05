@@ -226,24 +226,37 @@ export default function SpinWheel({ onWin, customerEmail, disabled = false }) {
     setIsCreatingCoupon(true);
     
     try {
+      // Validate email before API call
+      const trimmedEmail = customerEmail?.trim();
+      if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+        throw new Error('Valid email is required');
+      }
+      
+      // API expects: customerEmail (not email), discountAmount in cents
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      
       const response = await fetch('/api/coupons/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: customerEmail,
+          customerEmail: trimmedEmail.toLowerCase(),
           type: 'spin_wheel',
-          discountAmount: prize.value / 100, // Convert cents to dollars
-          freeShipping: prize.freeShipping || false,
+          discountAmount: Math.max(0, prize.value || 0), // Ensure non-negative cents
+          freeShipping: Boolean(prize.freeShipping),
           source: 'spin_wheel',
           metadata: {
-            prize: prize.label,
+            prize: String(prize.label).slice(0, 50),
             wheelSegmentId: prize.id,
             timestamp: new Date().toISOString()
           }
-        })
+        }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));

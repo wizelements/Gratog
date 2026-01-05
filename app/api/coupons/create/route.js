@@ -1,7 +1,12 @@
-
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
+
+const debug = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[CouponsCreate]', ...args);
+  }
+};
 
 export async function POST(request) {
   try {
