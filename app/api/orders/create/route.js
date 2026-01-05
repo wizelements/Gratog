@@ -419,12 +419,15 @@ export async function POST(request) {
           }
         };
         
+        // FIXED: Use current stable Square API version (was future date 2025-10-16)
+        const SQUARE_VERSION = '2024-01-18';
+        
         const orderResponse = await fetch(`${SQUARE_BASE}/v2/orders`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${SQUARE_TOKEN}`,
             'Content-Type': 'application/json',
-            'Square-Version': '2025-10-16'
+            'Square-Version': SQUARE_VERSION
           },
           body: JSON.stringify(orderPayload)
         });

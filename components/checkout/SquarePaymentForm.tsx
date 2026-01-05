@@ -113,7 +113,23 @@ export default function SquarePaymentForm({
   const googlePayRef = useRef<GooglePay | null>(null);
   const initRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const paymentIdempotencyKeyRef = useRef<string>('');
+  
+  // FIX #11: Stable idempotency key that persists across refreshes
+  // This prevents double-charges if user refreshes after payment succeeds but before response
+  const [stableIdempotencyKey] = useState<string>(() => {
+    if (typeof window === 'undefined') return '';
+    
+    const storageKey = `payment_idem_${orderId}`;
+    let existingKey = sessionStorage.getItem(storageKey);
+    
+    if (!existingKey) {
+      // Generate stable key for this order
+      existingKey = `pay_${orderId.slice(0, 36)}`;
+      sessionStorage.setItem(storageKey, existingKey);
+    }
+    
+    return existingKey;
+  });
 
   // Store onError in a ref to use latest version without re-triggering effects
   const onErrorRef = useRef(onError);
@@ -352,14 +368,18 @@ export default function SquarePaymentForm({
       }
       abortControllerRef.current = new AbortController();
       
-      // FIXED: Generate fresh idempotency key per attempt (like TOG)
-      // Old code reused same key which blocked retries on failure
-      const idempotencyKey = `${orderId.slice(0, 32)}_${Date.now().toString(36)}`;
+      // FIX #11: Use STABLE idempotency key that persists across refreshes
+      // This prevents double-charges if Square succeeds but client crashes before seeing response
+      // The key is stable per orderId, so retries for the same order use the same key
+      // If Square already processed this payment, it will return the existing payment instead
+      const idempotencyKey = stableIdempotencyKey || `pay_${orderId.slice(0, 36)}`;
       
-      // Add 15 second timeout for payment request
+      console.debug('[Payment] Using idempotency key:', idempotencyKey);
+      
+      // Add 30 second timeout for payment request (increased from 15s for reliability)
       const timeoutId = setTimeout(() => {
         abortControllerRef.current?.abort();
-      }, 15000);
+      }, 30000);
       
       try {
         const res = await fetch('/api/payments', {
@@ -402,7 +422,7 @@ export default function SquarePaymentForm({
         
         // Distinguish timeout from other errors
         if (err instanceof Error && err.name === 'AbortError') {
-          throw new Error('Payment request timed out after 15 seconds - please try again');
+          throw new Error('Payment request timed out after 30 seconds - please try again');
         }
         throw err;
       }
@@ -414,7 +434,7 @@ export default function SquarePaymentForm({
       }
       throw err;
     }
-  }, [amountCents, orderId, squareOrderId, customer, onSuccess]);
+  }, [amountCents, orderId, squareOrderId, customer, onSuccess, stableIdempotencyKey]);
 
   const handleCardPayment = async () => {
     if (!cardRef.current || isProcessing) return;
