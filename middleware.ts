@@ -3,20 +3,24 @@ import type { NextRequest } from 'next/server';
 import { verifyAdminToken, refreshTokenIfNeeded } from '@/lib/admin-session';
 
 function addSecurityHeaders(response: NextResponse): NextResponse {
-  const csp = [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.squareup.com https://*.squareupsandbox.com https://*.squarecdn.com https://web.squarecdn.com https://vercel.live https://*.vercel.app https://www.googletagmanager.com https://www.google-analytics.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https://*.squarecdn.com https://*.squareup.com https://*.googleusercontent.com https://www.google-analytics.com https://*.amazonaws.com https://items-images-production.s3.us-west-2.amazonaws.com",
-    "connect-src 'self' https://*.squareup.com https://*.squareupsandbox.com https://*.squarecdn.com https://www.google-analytics.com https://vercel.live wss://vercel.live https://pci-connect.squareup.com",
-    "frame-src 'self' https://*.squareup.com https://*.squareupsandbox.com",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-  ].join('; ');
-
-  response.headers.set('Content-Security-Policy', csp);
+  // TEMPORARILY DISABLED CSP for Square SDK debugging
+  // Square Web Payments SDK requires very permissive CSP settings
+  // TOG works without any CSP middleware
+  
+  // Minimal security headers without restrictive CSP
+  // const csp = [
+  //   "default-src 'self'",
+  //   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.squareup.com https://*.squareupsandbox.com https://*.squarecdn.com https://web.squarecdn.com https://js.squareup.com https://js.squareupsandbox.com https://vercel.live https://*.vercel.app https://www.googletagmanager.com https://www.google-analytics.com",
+  //   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  //   "font-src 'self' https://fonts.gstatic.com",
+  //   "img-src 'self' data: blob: https://*.squarecdn.com https://*.squareup.com https://*.googleusercontent.com https://www.google-analytics.com https://*.amazonaws.com https://items-images-production.s3.us-west-2.amazonaws.com",
+  //   "connect-src 'self' https://*.squareup.com https://*.squareupsandbox.com https://*.squarecdn.com https://pci-connect.squareup.com https://pci-connect.squareupsandbox.com https://www.google-analytics.com https://vercel.live wss://vercel.live",
+  //   "frame-src 'self' https://*.squareup.com https://*.squareupsandbox.com https://*.squarecdn.com",
+  //   "object-src 'none'",
+  //   "base-uri 'self'",
+  //   "form-action 'self' https://*.squareup.com",
+  // ].join('; ');
+  // response.headers.set('Content-Security-Policy', csp);
   response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
