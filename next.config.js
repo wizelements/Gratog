@@ -146,29 +146,7 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
-          // Content Security Policy - allows Square SDK and Web Payments
-          {
-            key: "Content-Security-Policy",
-            value: [
-              "default-src 'self'",
-              // Allow Square SDK scripts (both sandbox and production)
-              "script-src 'self' https://sandbox.web.squarecdn.com https://web.squarecdn.com 'unsafe-inline'",
-              // Allow Square iframes for payment processing
-              "frame-src 'self' https://sandbox.squareup.com https://squareup.com",
-              // Allow API calls to Square
-              "connect-src 'self' https://connect.squareupsandbox.com https://connect.squareup.com",
-              // Allow inline styles (needed for dynamic UI)
-              "style-src 'self' 'unsafe-inline'",
-              // Allow images from all HTTPS sources
-              "img-src 'self' https: data:",
-              // Allow fonts from HTTPS sources
-              "font-src 'self' https:",
-              // Disable plugins
-              "object-src 'none'",
-              // Enable sandbox for iframes
-              "sandbox allow-same-origin allow-scripts allow-forms allow-popups"
-            ].join("; ")
-          }
+          // CSP temporarily removed for Square SDK debugging
         ],
       },
       {
