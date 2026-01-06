@@ -193,7 +193,7 @@ export default function SquarePaymentForm({
             '.input-container': { borderColor: '#d1d5db', borderRadius: '8px' },
             '.input-container.is-focus': { borderColor: '#10b981' },
             '.input-container.is-error': { borderColor: '#ef4444' },
-            'input': { fontSize: '16px', fontFamily: 'system-ui, -apple-system, sans-serif', color: '#1f2937' },
+            'input': { fontSize: '16px', fontFamily: 'sans-serif', color: '#1f2937' },
             'input::placeholder': { color: '#9ca3af' }
           }
         });
