@@ -210,16 +210,48 @@ export default function SquarePaymentFormV2({
           throw new Error('Square SDK not available');
         }
         
-        console.debug('[Square] Initializing with appId:', config.applicationId.slice(0, 10) + '...');
+        console.debug('[Square] Initializing with:', {
+          appId: config.applicationId.slice(0, 15) + '...',
+          locationId: config.locationId,
+          environment: config.environment,
+          origin: window.location.origin
+        });
+        
         let payments: Payments;
         try {
           payments = await window.Square.payments(config.applicationId, config.locationId);
         } catch (initErr: any) {
-          const msg = initErr?.message || initErr?.toString() || 'Unknown';
-          if (msg.includes('domain') || msg.includes('origin') || msg.includes('not authorized')) {
-            throw new Error(`Domain not authorized. Add "${window.location.origin}" to Square Dashboard > Web Payments SDK.`);
+          // Log the FULL error for debugging
+          console.error('[Square] payments() initialization failed:', {
+            error: initErr,
+            name: initErr?.name,
+            message: initErr?.message,
+            stack: initErr?.stack,
+            toString: initErr?.toString?.()
+          });
+          
+          const msg = initErr?.message || initErr?.toString() || 'Unknown error';
+          const errorName = initErr?.name || 'Error';
+          
+          // Check for specific error types
+          if (errorName === 'BrowserNotSupportedError') {
+            throw new Error('Your browser is not supported. Please use a modern browser like Chrome, Firefox, Safari, or Edge.');
           }
-          throw new Error(`Square init failed: ${msg}`);
+          if (errorName === 'WebSdkEmbedError') {
+            throw new Error('Payment requires HTTPS. Please ensure you are on a secure connection.');
+          }
+          if (msg.includes('domain') || msg.includes('origin') || msg.includes('not authorized')) {
+            throw new Error(`Domain not authorized. Add "${window.location.origin}" to Square Dashboard.`);
+          }
+          if (msg.includes('location') || msg.includes('Location')) {
+            throw new Error(`Invalid Location ID: ${config.locationId}. Verify it exists in your Square Dashboard.`);
+          }
+          if (msg.includes('application') || msg.includes('Application')) {
+            throw new Error(`Invalid Application ID. Check NEXT_PUBLIC_SQUARE_APPLICATION_ID in Vercel.`);
+          }
+          
+          // Pass through the original error message for debugging
+          throw new Error(`Square initialization failed: ${errorName} - ${msg}`);
         }
         
         if (currentAttempt !== initAttemptRef.current) return;
