@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
-import { sendNewsletterWelcome } from '@/lib/resend';
+import { sendNewsletterConfirmation } from '@/lib/resend-email';
+import { logger } from '@/lib/logger';
 
 export async function POST(request) {
   try {
@@ -60,15 +61,24 @@ export async function POST(request) {
       });
     }
 
-    // Send welcome email
-    await sendNewsletterWelcome(email, firstName);
+    // Send newsletter confirmation email (uses community@ sender via email-config)
+    const emailResult = await sendNewsletterConfirmation(email, firstName);
+
+    if (!emailResult.success) {
+      logger.error('Newsletter', 'Newsletter welcome email failed', {
+        to: email,
+        error: emailResult.error,
+      });
+      // Still return success for subscription, but log the email failure
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Successfully subscribed to newsletter',
+      emailSent: emailResult.success,
     });
   } catch (error) {
-    console.error('Newsletter subscription error:', { error: error.message, stack: error.stack });
+    logger.error('Newsletter', 'Newsletter subscription error', { error: error.message, stack: error.stack });
     return NextResponse.json(
       { error: 'Failed to subscribe. Please try again.' },
       { status: 500 }

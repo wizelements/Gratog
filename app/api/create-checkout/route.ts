@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
         }
       },
       pre_populate_buyer_email: contact?.email || undefined,
-      merchant_support_email: process.env.SENDGRID_FROM_EMAIL || 'hello@tasteofgratitude.com'
+      merchant_support_email: process.env.SENDGRID_FROM_EMAIL || 'hello@tasteofgratitude.net'
     }
 
     logger.debug('API', 'Creating Square checkout session:', {

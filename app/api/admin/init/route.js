@@ -51,7 +51,7 @@ export async function POST(request) {
     const inventory = await getInventory();
 
     // Check if admin already exists
-    const adminEmail = process.env.ADMIN_DEFAULT_EMAIL || 'admin@tasteofgratitude.com';
+    const adminEmail = process.env.ADMIN_DEFAULT_EMAIL || 'admin@tasteofgratitude.net';
     const existingAdmin = await adminUsers.findOne({ email: adminEmail });
     
     if (existingAdmin) {

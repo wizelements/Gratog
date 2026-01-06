@@ -12,7 +12,7 @@ import { Resend } from 'resend';
 
 const TEST_EMAIL = process.argv[2] || 'test@example.com';
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'hello@tasteofgratitude.com';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'hello@tasteofgratitude.net';
 
 let resend = null;
 if (RESEND_API_KEY) {

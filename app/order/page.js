@@ -267,18 +267,19 @@ export default function OrderPage() {
   const handlePaymentSuccess = (paymentData) => {
     logger.info('Payment successful', { 
       orderId: orderCreated?.id,
-      paymentId: paymentData.payment?.id 
+      paymentId: paymentData.paymentId 
     });
     
     // Clear cart
     clearCart();
     setCart([]);
     
-    // Redirect to success page with orderRef (stateless pattern)
+    // Redirect to success page with orderRef and amount (stateless pattern)
     const orderRef = orderCreated?.id; // Our orderId IS the orderRef
+    const amountCents = paymentData.amountCents || Math.round(total * 100);
     toast.success('Payment successful! 🎉', { duration: 3000 });
     setTimeout(() => {
-      router.push(`/order/success?orderRef=${orderRef}&paid=true`);
+      router.push(`/order/success?orderRef=${orderRef}&paid=true&amount=${amountCents}`);
     }, 1500);
   };
 

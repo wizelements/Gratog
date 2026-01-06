@@ -43,7 +43,7 @@ export default function ReferralWidget({ variant = 'full' }) {
 
   const referralLink = typeof window !== 'undefined' 
     ? `${window.location.origin}?ref=${code}`
-    : `https://tasteofgratitude.com?ref=${code}`;
+    : `https://tasteofgratitude.shop?ref=${code}`;
 
   const handleCopy = async (text) => {
     try {

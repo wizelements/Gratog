@@ -25,7 +25,7 @@ const CRAWL_CONFIG = {
   timeout: 30000,
   maxRetries: 3,
   circuitBreakerThreshold: 5,
-  userAgent: 'TasteOfGratitude-Bot/1.0 (+https://tasteofgratitude.com/bot)'
+  userAgent: 'TasteOfGratitude-Bot/1.0 (+https://tasteofgratitude.shop/bot)'
 };
 
 // Rate limiter

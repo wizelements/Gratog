@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
-import { sendReviewConfirmation } from '@/lib/resend';
+import { sendReviewConfirmation } from '@/lib/resend-email';
 import { verifyToken } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
@@ -152,12 +152,20 @@ export async function POST(request) {
       logger.error('API', 'Failed to award points', passportError);
     }
 
-    await sendReviewConfirmation(email, productName, REVIEW_POINTS);
+    const emailResult = await sendReviewConfirmation(email, productName, REVIEW_POINTS);
+    if (!emailResult.success) {
+      logger.error('Reviews', 'Review confirmation email failed', {
+        to: email,
+        productName,
+        error: emailResult.error,
+      });
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Review submitted successfully. It will be visible after approval.',
       pointsEarned: REVIEW_POINTS,
+      emailSent: emailResult.success,
       review: {
         ...review,
         _id: review._id?.toString(),

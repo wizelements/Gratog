@@ -69,7 +69,7 @@ export async function GET() {
   return NextResponse.json({
     emailConfigured: isRealEmail(),
     provider: isRealEmail() ? 'Resend' : 'Mock',
-    fromEmail: process.env.RESEND_FROM_EMAIL || 'hello@tasteofgratitude.com',
+    fromEmail: process.env.RESEND_FROM_EMAIL || 'hello@tasteofgratitude.net',
     hasApiKey: !!process.env.RESEND_API_KEY
   });
 }

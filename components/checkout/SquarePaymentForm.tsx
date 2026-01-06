@@ -77,6 +77,7 @@ interface PaymentResult {
   receiptUrl?: string;
   cardLast4?: string;
   cardBrand?: string;
+  amountCents?: number;
 }
 
 export default function SquarePaymentForm({
@@ -261,7 +262,8 @@ export default function SquarePaymentForm({
       status: data.payment.status,
       receiptUrl: data.payment.receiptUrl,
       cardLast4: data.payment.cardLast4,
-      cardBrand: data.payment.cardBrand
+      cardBrand: data.payment.cardBrand,
+      amountCents: data.payment.amountCents || amountCents
     });
   }, [amountCents, orderId, squareOrderId, customer, onSuccess]);
 

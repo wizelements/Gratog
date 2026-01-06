@@ -57,7 +57,7 @@ function SquareCheckoutContent() {
   };
 
   const openSquareStore = () => {
-    window.open('https://tasteofgratitude.shop/s/order', '_blank');
+    window.open('https://tasteofgratitude.net/s/order', '_blank');
   };
 
   const openProductOnSquare = (product) => {
@@ -242,7 +242,7 @@ function SquareCheckoutContent() {
                     </div>
                     <div className="mt-2 text-xs">
                       ⚠️ Square doesn't automatically apply this discount. After completing your purchase, 
-                      email us at <a href="mailto:hello@tasteofgratitude.com" className="underline">hello@tasteofgratitude.com</a> with 
+                      email us at <a href="mailto:hello@tasteofgratitude.net" className="underline">hello@tasteofgratitude.net</a> with 
                       your order # and coupon code for a refund!
                     </div>
                   </AlertDescription>

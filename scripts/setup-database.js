@@ -84,7 +84,7 @@ async function setupDatabase() {
     // 3. Insert default admin user if it doesn't exist
     console.log('👤 Setting up admin user...');
     
-    const adminEmail = process.env.ADMIN_DEFAULT_EMAIL || 'admin@tasteofgratitude.shop';
+    const adminEmail = process.env.ADMIN_DEFAULT_EMAIL || 'admin@tasteofgratitude.net';
     const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'TasteOfGratitude2024!';
     
     const existingAdmin = await db.collection('users').findOne({ email: adminEmail });

@@ -69,7 +69,7 @@ export async function POST(request) {
         }
       },
       pre_populate_buyer_email: customer?.email || undefined,
-      merchant_support_email: process.env.SENDGRID_FROM_EMAIL || 'hello@tasteofgratitude.com'
+      merchant_support_email: process.env.SENDGRID_FROM_EMAIL || 'hello@tasteofgratitude.net'
     };
 
     debug('Creating Square checkout session:', {

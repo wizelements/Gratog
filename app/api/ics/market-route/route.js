@@ -49,7 +49,7 @@ export async function GET(request) {
 VERSION:2.0
 PRODID:-//Taste of Gratitude//Market Calendar//EN
 BEGIN:VEVENT
-UID:${Date.now()}@tasteofgratitude.com
+UID:${Date.now()}@tasteofgratitude.net
 DTSTAMP:${formatICSDate(new Date())}
 DTSTART:${formatICSDate(startDateTime)}
 DTEND:${formatICSDate(endDateTime)}

@@ -9,8 +9,8 @@ const contactDetails = [
   {
     icon: Mail,
     label: 'Email',
-    value: 'support@tasteofgratitude.com',
-    href: 'mailto:support@tasteofgratitude.com',
+    value: 'support@tasteofgratitude.net',
+    href: 'mailto:support@tasteofgratitude.net',
   },
   {
     icon: Phone,

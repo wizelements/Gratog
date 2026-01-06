@@ -67,7 +67,7 @@ export default function AdminLoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@tasteofgratitude.com"
+                placeholder="admin@tasteofgratitude.net"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -103,7 +103,7 @@ export default function AdminLoginPage() {
           </form>
           <div className="mt-6 text-center text-xs text-muted-foreground">
             <p>Default credentials:</p>
-            <p className="font-mono mt-1">admin@tasteofgratitude.com</p>
+            <p className="font-mono mt-1">admin@tasteofgratitude.net</p>
             <p className="font-mono">TasteOfGratitude2025!</p>
           </div>
         </CardContent>
