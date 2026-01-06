@@ -477,26 +477,30 @@ export default function SquarePaymentFormV2({
     );
   }
 
-  // Render loading state
-  if (paymentSM.isLoading || !config) {
-    return (
-      <PaymentLoadingUI
-        state={paymentSM.state}
-        message={STATE_MESSAGES[paymentSM.state] || 'Loading...'}
-      />
-    );
-  }
+  // Show loading overlay but keep card-container in DOM
+  // This is critical - the container must exist for Square SDK to attach to it
+  const isInitializing = paymentSM.isLoading || !config;
 
-  // Render ready state
+  // Render ready state (with loading overlay if still initializing)
   return (
     <motion.div
-      className="space-y-6"
+      className="space-y-6 relative"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
+      {/* Loading overlay - shows while initializing but keeps DOM intact */}
+      {isInitializing && (
+        <div className="absolute inset-0 bg-white/80 z-10 flex items-center justify-center rounded-lg">
+          <PaymentLoadingUI
+            state={paymentSM.state}
+            message={STATE_MESSAGES[paymentSM.state] || 'Loading...'}
+          />
+        </div>
+      )}
+
       {/* Sandbox mode indicator */}
-      {config.environment === 'sandbox' && (
+      {config?.environment === 'sandbox' && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
           <div className="text-sm text-amber-800">
@@ -512,7 +516,7 @@ export default function SquarePaymentFormV2({
             <Button
               type="button"
               onClick={handleApplePay}
-              disabled={isProcessing}
+              disabled={isProcessing || isInitializing}
               className="w-full h-12 bg-black hover:bg-gray-900 text-white"
             >
               <Smartphone className="w-5 h-5 mr-2" />
@@ -533,7 +537,7 @@ export default function SquarePaymentFormV2({
         </div>
       )}
 
-      {/* Card Form */}
+      {/* Card Form - ALWAYS render so Square can attach to it */}
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -557,7 +561,7 @@ export default function SquarePaymentFormV2({
         <Button
           type="button"
           onClick={handleCardPayment}
-          disabled={!paymentSM.isReady || isProcessing}
+          disabled={!paymentSM.isReady || isProcessing || isInitializing}
           className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50"
         >
           {isProcessing ? (
