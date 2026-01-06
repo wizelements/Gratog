@@ -13,7 +13,7 @@ import { ArrowRight, ShoppingBag, Trash2, Plus, Minus, MapPin, Home, Package, Cr
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { loadCart, updateQuantity, removeFromCart, clearCart, getCartTotal, formatPrice } from '@/lib/cart-engine';
-import SquarePaymentForm from '@/components/checkout/SquarePaymentFormV2';
+import SquarePaymentForm from '@/components/checkout/SquarePaymentForm';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('OrderPage');
