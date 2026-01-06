@@ -5,7 +5,6 @@ import { useState, useEffect, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 
 // Import static components directly
-import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -80,7 +79,6 @@ export default function CustomerLayout({ children }) {
           <main id="main-content" className="flex-1">{children}</main>
           <div className="h-64 bg-gray-100" />
         </div>
-        <Toaster />
       </AuthProvider>
     );
   }
@@ -140,7 +138,6 @@ export default function CustomerLayout({ children }) {
               <CartNotification />
             </ErrorBoundary>
           </div>
-          <Toaster />
         </A11yAnnouncerProvider>
       </AuthProvider>
       

@@ -2,7 +2,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import CustomerLayout from '@/components/CustomerLayout';
 import AdminLayoutWrapper from '@/components/AdminLayoutWrapper';
-import { ThemeProvider } from 'next-themes';
+import { Toaster } from 'sonner';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -85,11 +85,10 @@ export default function RootLayout({ children }) {
          />
        </head>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <AdminLayoutWrapper>
-            <CustomerLayout>{children}</CustomerLayout>
-          </AdminLayoutWrapper>
-        </ThemeProvider>
+        <AdminLayoutWrapper>
+          <CustomerLayout>{children}</CustomerLayout>
+        </AdminLayoutWrapper>
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );
