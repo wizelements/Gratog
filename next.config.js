@@ -163,3 +163,4 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
+// Debug timestamp: 1767662191
