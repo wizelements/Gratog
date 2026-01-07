@@ -264,7 +264,24 @@ export default function HomePage() {
                         </div>
                     )}
 
-                    {!loading && (
+                    {!loading && featuredProducts.length === 0 && (
+                        <div className="text-center py-16 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl">
+                            <Sparkles className="h-16 w-16 text-emerald-400 mx-auto mb-4" />
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Products Coming Soon</h3>
+                            <p className="text-gray-600 max-w-md mx-auto mb-6">
+                                Our premium sea moss products are being prepared with love. Check back shortly!
+                            </p>
+                            <Button
+                                onClick={() => window.location.reload()}
+                                variant="outline"
+                                className="border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+                            >
+                                Refresh Page
+                            </Button>
+                        </div>
+                    )}
+
+                    {!loading && featuredProducts.length > 0 && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
                             {featuredProducts.map((product) => (
                                 <Card
@@ -370,10 +387,13 @@ export default function HomePage() {
                         </Button>
                     </div>
 
-                    {/* Product Bundles Section */}
-                    <div className="mt-16">
-                        <ProductBundles limit={3} />
-                    </div>
+                    {/* Product Bundles Section - Temporarily disabled, will be re-enabled after customization */}
+                    {/* Set NEXT_PUBLIC_ENABLE_BUNDLES=true in environment to enable */}
+                    {process.env.NEXT_PUBLIC_ENABLE_BUNDLES === 'true' && (
+                        <div className="mt-16">
+                            <ProductBundles limit={3} />
+                        </div>
+                    )}
                 </div>
             </section>
 
