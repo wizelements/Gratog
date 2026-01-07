@@ -376,14 +376,14 @@ export default function NewCampaignPage() {
               <div>
                 <Label htmlFor="purchaseFrequency">Purchase Frequency</Label>
                 <Select 
-                  value={segments.purchaseFrequency} 
-                  onValueChange={(value) => setSegments({ ...segments, purchaseFrequency: value })}
+                  value={segments.purchaseFrequency || "all"} 
+                  onValueChange={(value) => setSegments({ ...segments, purchaseFrequency: value === "all" ? "" : value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All customers" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All customers</SelectItem>
+                    <SelectItem value="all">All customers</SelectItem>
                     <SelectItem value="first-time">First-time buyers</SelectItem>
                     <SelectItem value="repeat">Repeat customers</SelectItem>
                     <SelectItem value="loyal">Loyal customers (5+ orders)</SelectItem>
@@ -394,14 +394,14 @@ export default function NewCampaignPage() {
               <div>
                 <Label htmlFor="purchaseAmount">Lifetime Value</Label>
                 <Select 
-                  value={segments.purchaseAmount} 
-                  onValueChange={(value) => setSegments({ ...segments, purchaseAmount: value })}
+                  value={segments.purchaseAmount || "all"} 
+                  onValueChange={(value) => setSegments({ ...segments, purchaseAmount: value === "all" ? "" : value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All ranges" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All ranges</SelectItem>
+                    <SelectItem value="all">All ranges</SelectItem>
                     <SelectItem value="low">Low ($0-$50)</SelectItem>
                     <SelectItem value="medium">Medium ($50-$200)</SelectItem>
                     <SelectItem value="high">High ($200+)</SelectItem>
@@ -412,14 +412,14 @@ export default function NewCampaignPage() {
               <div>
                 <Label htmlFor="rewardsTier">Rewards Tier</Label>
                 <Select 
-                  value={segments.rewardsTier} 
-                  onValueChange={(value) => setSegments({ ...segments, rewardsTier: value })}
+                  value={segments.rewardsTier || "all"} 
+                  onValueChange={(value) => setSegments({ ...segments, rewardsTier: value === "all" ? "" : value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All tiers" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All tiers</SelectItem>
+                    <SelectItem value="all">All tiers</SelectItem>
                     <SelectItem value="bronze">Bronze (&lt; 500 pts)</SelectItem>
                     <SelectItem value="silver">Silver (500-1000 pts)</SelectItem>
                     <SelectItem value="gold">Gold (1000+ pts)</SelectItem>
@@ -430,14 +430,14 @@ export default function NewCampaignPage() {
               <div>
                 <Label htmlFor="challengeParticipation">Challenge Activity</Label>
                 <Select 
-                  value={segments.challengeParticipation} 
-                  onValueChange={(value) => setSegments({ ...segments, challengeParticipation: value })}
+                  value={segments.challengeParticipation || "all"} 
+                  onValueChange={(value) => setSegments({ ...segments, challengeParticipation: value === "all" ? "" : value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
                     <SelectItem value="active">Active (3+ day streak)</SelectItem>
                     <SelectItem value="inactive">Inactive</SelectItem>
                   </SelectContent>
