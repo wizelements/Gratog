@@ -51,7 +51,7 @@ export default function MineralGalaxy() {
         <h2 className="text-3xl md:text-4xl font-semibold text-emerald-50 mb-4">
           92 Minerals, One Jar
         </h2>
-        <p className="text-emerald-100/80 text-sm md:text-base">
+        <p className="text-emerald-50 text-base md:text-lg leading-relaxed">
           Each spoonful contains a constellation of essential minerals your body craves.
           Explore the stars of your wellness universe.
         </p>
@@ -63,7 +63,7 @@ export default function MineralGalaxy() {
           return (
             <div
               key={mineral.name}
-              className="group relative bg-white/5 border border-emerald-500/20 rounded-2xl p-5 backdrop-blur-sm hover:bg-emerald-500/10 hover:border-emerald-400/40 transition-all duration-300"
+              className="group relative bg-slate-900/80 border border-emerald-500/40 rounded-2xl p-5 hover:bg-slate-900 hover:border-emerald-400/60 transition-all duration-300"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="absolute -top-2 -right-2 w-16 h-16 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-400/20 transition-all" />
@@ -79,7 +79,7 @@ export default function MineralGalaxy() {
                 <p className="text-xs uppercase tracking-[0.15em] text-emerald-300/80 mb-2">
                   {mineral.benefit}
                 </p>
-                <p className="text-emerald-100/70 text-xs leading-relaxed">
+                <p className="text-emerald-100 text-sm leading-relaxed">
                   {mineral.description}
                 </p>
               </div>
@@ -89,7 +89,7 @@ export default function MineralGalaxy() {
       </div>
 
       <div className="text-center pt-4">
-        <p className="text-emerald-200/60 text-xs">
+        <p className="text-emerald-200/80 text-sm">
           + 86 more essential minerals in every jar
         </p>
       </div>

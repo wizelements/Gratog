@@ -21,18 +21,18 @@ export default function ExperienceHero() {
     >
       <motion.div
         style={getStyle(0.2)}
-        className="pointer-events-none absolute -top-32 -left-24 w-72 h-72 bg-emerald-500/20 blur-3xl rounded-full"
+        className="pointer-events-none absolute -top-32 -left-24 w-72 h-72 bg-emerald-500/10 blur-3xl rounded-full"
       />
       <motion.div
         style={getStyle(0.4)}
-        className="pointer-events-none absolute top-10 right-0 w-60 h-60 bg-teal-400/25 blur-3xl rounded-full"
+        className="pointer-events-none absolute top-10 right-0 w-60 h-60 bg-teal-400/10 blur-3xl rounded-full"
       />
       <motion.div
         style={getStyle(0.6)}
-        className="pointer-events-none absolute bottom-[-4rem] left-1/2 -translate-x-1/2 w-[32rem] h-[32rem] bg-emerald-300/10 blur-3xl rounded-full"
+        className="pointer-events-none absolute bottom-[-4rem] left-1/2 -translate-x-1/2 w-[32rem] h-[32rem] bg-emerald-300/5 blur-3xl rounded-full"
       />
 
-      <div className="relative z-10 max-w-4xl mx-auto text-center space-y-6">
+      <div className="relative z-10 max-w-4xl mx-auto text-center space-y-6 bg-slate-950/50 rounded-3xl px-4 py-8 md:px-8 md:py-12 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -60,7 +60,7 @@ export default function ExperienceHero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.8 }}
-          className="text-base md:text-lg text-emerald-100/80 max-w-2xl mx-auto"
+          className="text-base md:text-lg text-emerald-50 max-w-2xl mx-auto leading-relaxed"
         >
           Float through layers of benefits, ingredients, and rituals. Open the
           cold glow of our sea moss fridge and step into your next wellness chapter.
@@ -77,7 +77,7 @@ export default function ExperienceHero() {
               Shop the Galaxy
             </Button>
           </Link>
-          <a href="#fridge" className="text-emerald-200 text-sm flex items-center gap-2">
+          <a href="#fridge" className="text-emerald-50 text-base flex items-center gap-2 hover:text-emerald-200 transition-colors">
             <Droplets className="h-4 w-4" />
             Scroll to open the Fridge
           </a>
@@ -87,7 +87,7 @@ export default function ExperienceHero() {
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.7 }}
-          className="flex flex-wrap justify-center gap-6 pt-6 text-xs md:text-sm text-emerald-100/80"
+          className="flex flex-wrap justify-center gap-6 pt-6 text-sm md:text-base text-emerald-100"
         >
           <span className="inline-flex items-center gap-2">
             <Leaf className="h-4 w-4 text-emerald-300" />

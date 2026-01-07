@@ -35,7 +35,7 @@ export default function JourneyTimeline() {
         <h2 className="text-3xl md:text-4xl font-semibold text-emerald-50">
           Drift Through Your Wellness Journey
         </h2>
-        <p className="text-emerald-100/80 text-sm md:text-base">
+        <p className="text-emerald-50 text-base md:text-lg leading-relaxed">
           Scroll to move through each layer—from ocean to jar to your daily rituals.
           Every stop is a chapter in your sea moss story.
         </p>
@@ -46,19 +46,19 @@ export default function JourneyTimeline() {
             return (
               <li
                 key={step.title}
-                className="flex items-start gap-4 bg-white/5 border border-emerald-500/20 rounded-xl p-4 backdrop-blur-sm"
+                className="flex items-start gap-4 bg-slate-900/80 border border-emerald-500/40 rounded-xl p-4 md:p-5"
               >
                 <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20 flex-shrink-0">
                   <Icon className="h-5 w-5 text-emerald-300" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-emerald-300/80 mb-1">
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-emerald-300 mb-1">
                     Step {i + 1}
                   </p>
                   <h3 className="text-base md:text-lg font-semibold text-emerald-50">
                     {step.title}
                   </h3>
-                  <p className="text-emerald-100/80 text-xs md:text-sm mt-1">
+                  <p className="text-emerald-100 text-sm md:text-base mt-1 leading-relaxed">
                     {step.body}
                   </p>
                 </div>

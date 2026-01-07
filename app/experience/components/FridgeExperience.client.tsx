@@ -38,14 +38,14 @@ export default function FridgeExperience() {
           <h2 className="text-3xl md:text-4xl font-semibold text-emerald-50">
             Open the Cold Glow
           </h2>
-          <p className="text-emerald-100/80 text-sm md:text-base leading-relaxed">
+          <p className="text-emerald-50 text-base md:text-lg leading-relaxed">
             Hover and move through a glowing fridge filled with our signature
             sea moss jars. Click a jar to pull it into focus, explore flavor,
             benefits, and add it to your ritual.
           </p>
 
           {isMobile && (
-            <p className="text-xs text-emerald-200/70 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3">
+            <p className="text-sm text-emerald-50 bg-emerald-900/70 border border-emerald-400/60 rounded-lg p-3 leading-relaxed">
               📱 Mobile view: Tap the jar cards below to explore products.
               For the full 3D fridge experience, visit on desktop.
             </p>
@@ -95,7 +95,7 @@ export default function FridgeExperience() {
                   <button
                     key={p.id || p.slug || p.name}
                     onClick={() => setActiveProduct(p)}
-                    className="flex flex-col items-start rounded-xl bg-white/5 border border-emerald-500/30 p-4 text-left hover:bg-emerald-500/10 hover:border-emerald-400/50 transition-all"
+                    className="flex flex-col items-start rounded-xl bg-slate-900/80 border border-emerald-500/40 p-4 text-left hover:bg-slate-900 hover:border-emerald-400/70 transition-all"
                   >
                     <span className="text-[10px] uppercase tracking-[0.25em] text-emerald-300/80 mb-2">
                       {p.category || 'Sea Moss'}
@@ -103,7 +103,7 @@ export default function FridgeExperience() {
                     <span className="text-sm font-semibold text-emerald-50 line-clamp-2 mb-2">
                       {p.name}
                     </span>
-                    <span className="text-xs text-emerald-300 font-medium">
+                    <span className="text-sm text-emerald-200 font-medium">
                       ${typeof p.price === 'number' ? p.price.toFixed(2) : '—'}
                     </span>
                   </button>

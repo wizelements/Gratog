@@ -69,7 +69,7 @@ export default function ProductDetailsPanel({ product, onClose }: Props) {
           {product.name}
         </h3>
 
-        <div className="flex items-center gap-3 text-xs text-emerald-200/80 mb-4">
+        <div className="flex items-center gap-3 text-sm text-emerald-200 mb-4">
           <div className="flex items-center gap-1">
             <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
             <span>Customer Favorite</span>
@@ -78,7 +78,7 @@ export default function ProductDetailsPanel({ product, onClose }: Props) {
           <span>{product.category || 'Sea Moss Gel'}</span>
         </div>
 
-        <p className="text-emerald-100/80 text-sm md:text-base mb-6 leading-relaxed">
+        <p className="text-emerald-50 text-base md:text-lg mb-6 leading-relaxed">
           {product.description ||
             'Wildcrafted sea moss gel crafted in small batches with gratitude, ready for your daily ritual. Each jar contains 92 essential minerals your body craves.'}
         </p>
@@ -98,7 +98,7 @@ export default function ProductDetailsPanel({ product, onClose }: Props) {
 
         <Link
           href={`/product/${slug}`}
-          className="inline-flex items-center text-sm text-emerald-200/80 hover:text-emerald-50 transition-colors"
+          className="inline-flex items-center text-sm text-emerald-50 hover:text-emerald-200 transition-colors"
         >
           View full product details
           <ArrowRight className="ml-2 h-4 w-4" />

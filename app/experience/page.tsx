@@ -50,7 +50,7 @@ export default function ExperiencePage() {
           <h2 className="text-3xl md:text-4xl font-semibold text-emerald-50">
             Start Your Wellness Journey Today
           </h2>
-          <p className="text-emerald-100/80 text-sm md:text-base">
+          <p className="text-emerald-50 text-base md:text-lg leading-relaxed">
             Explore our full collection of wildcrafted sea moss products
             and find the perfect addition to your daily ritual.
           </p>
