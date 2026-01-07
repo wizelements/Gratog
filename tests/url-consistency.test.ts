@@ -194,8 +194,8 @@ describe('URL Consistency - Critical Config Files', () => {
 });
 
 describe('URL Consistency - Email Templates', () => {
-  it('lib/resend.js should use production URLs', () => {
-    const resendPath = path.join(WORKSPACE, 'lib/resend.js');
+  it('lib/resend-email.js should use production URLs', () => {
+    const resendPath = path.join(WORKSPACE, 'lib/resend-email.js');
     const content = fs.readFileSync(resendPath, 'utf8');
     
     for (const domain of FORBIDDEN_DOMAINS) {

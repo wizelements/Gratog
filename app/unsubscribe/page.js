@@ -1,102 +1,122 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Leaf, CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, MailX } from 'lucide-react';
 
-export default function UnsubscribePage() {
+function UnsubscribeContent() {
   const searchParams = useSearchParams();
-  const token = searchParams.get('token');
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
+    const token = searchParams.get('token');
+    
     if (!token) {
-      setStatus('error');
-      setMessage('Invalid unsubscribe link');
+      setStatus('invalid');
+      setMessage('Invalid unsubscribe link. Please use the link from your email.');
       return;
     }
 
-    handleUnsubscribe();
-  }, [token]);
+    handleUnsubscribe(token);
+  }, [searchParams]);
 
-  const handleUnsubscribe = async () => {
+  const handleUnsubscribe = async (token) => {
     try {
-      // For now, just show success (will implement backend later)
-      setStatus('success');
-      setMessage('You have been successfully unsubscribed from marketing emails.');
+      const response = await fetch('/api/unsubscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        setStatus('success');
+        setMessage(data.message || 'You have been successfully unsubscribed from marketing emails.');
+      } else {
+        setStatus('error');
+        setMessage(data.error || 'Failed to unsubscribe. The link may have expired.');
+      }
     } catch (error) {
       setStatus('error');
-      setMessage('Failed to unsubscribe. Please try again.');
+      setMessage('An error occurred. Please try again later.');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50 px-4 py-12">
-      <div className="w-full max-w-md">
-        {/* Logo & Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-4">
-            <Leaf className="h-8 w-8 text-emerald-600" />
-            <span className="text-2xl font-bold text-emerald-900">Taste of Gratitude</span>
-          </Link>
-        </div>
-
-        <Card className="border-emerald-200 shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-emerald-900 text-center">
-              {status === 'loading' && 'Processing...'}
-              {status === 'success' && 'Unsubscribed'}
-              {status === 'error' && 'Error'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            {status === 'loading' && (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600" />
-              </div>
-            )}
-
-            {status === 'success' && (
-              <div>
-                <CheckCircle className="h-16 w-16 text-emerald-600 mx-auto mb-4" />
-                <p className="text-emerald-700 mb-6">{message}</p>
-                <p className="text-sm text-gray-600 mb-6">
-                  You'll still receive important emails about your orders and account.
-                  You can manage all your email preferences in your account settings.
-                </p>
-                <div className="space-y-3">
-                  <Link href="/profile/settings">
-                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
-                      Manage Preferences
-                    </Button>
-                  </Link>
-                  <Link href="/">
-                    <Button variant="outline" className="w-full border-emerald-300 text-emerald-700">
-                      Back to Home
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            {status === 'error' && (
-              <div>
-                <XCircle className="h-16 w-16 text-red-600 mx-auto mb-4" />
-                <p className="text-red-700 mb-6">{message}</p>
-                <Link href="/">
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
-                    Back to Home
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 p-4">
+      <Card className="max-w-md w-full p-8 text-center">
+        {status === 'loading' && (
+          <>
+            <Loader2 className="h-16 w-16 text-emerald-600 mx-auto mb-4 animate-spin" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Processing...</h1>
+            <p className="text-gray-600">Please wait while we update your preferences.</p>
+          </>
+        )}
+        
+        {status === 'success' && (
+          <>
+            <CheckCircle className="h-16 w-16 text-emerald-600 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Unsubscribed</h1>
+            <p className="text-gray-600 mb-6">{message}</p>
+            <p className="text-sm text-gray-500 mb-4">
+              You will still receive order confirmations and important account updates.
+            </p>
+            <Button 
+              onClick={() => window.location.href = '/'}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              Return to Homepage
+            </Button>
+          </>
+        )}
+        
+        {status === 'error' && (
+          <>
+            <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Unsubscribe Failed</h1>
+            <p className="text-gray-600 mb-6">{message}</p>
+            <p className="text-sm text-gray-500 mb-4">
+              If you continue to have issues, please contact support@tasteofgratitude.net
+            </p>
+            <Button 
+              onClick={() => window.location.href = '/'}
+              variant="outline"
+            >
+              Return to Homepage
+            </Button>
+          </>
+        )}
+        
+        {status === 'invalid' && (
+          <>
+            <MailX className="h-16 w-16 text-amber-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Invalid Link</h1>
+            <p className="text-gray-600 mb-6">{message}</p>
+            <Button 
+              onClick={() => window.location.href = '/'}
+              variant="outline"
+            >
+              Return to Homepage
+            </Button>
+          </>
+        )}
+      </Card>
     </div>
+  );
+}
+
+export default function UnsubscribePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+      </div>
+    }>
+      <UnsubscribeContent />
+    </Suspense>
   );
 }

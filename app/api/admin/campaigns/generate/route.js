@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-session';
 import { generateNewsletterContent } from '@/lib/ai-newsletter';
-import clientPromise from '@/lib/db-optimized';
+import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 
 /**
@@ -25,9 +25,7 @@ export async function POST(request) {
     // Get product details if product IDs provided
     let productDetails = [];
     if (products && products.length > 0) {
-      const client = await clientPromise;
-      const db = client.db(process.env.DB_NAME || 'taste_of_gratitude');
-      
+      const { db } = await connectToDatabase();
       productDetails = await db.collection('products').find({
         slug: { $in: products }
       }).toArray();

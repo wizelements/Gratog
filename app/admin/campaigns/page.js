@@ -49,23 +49,31 @@ export default function CampaignsPage() {
   };
 
   const getStatusBadge = (status) => {
-    const variants = {
-      draft: 'secondary',
-      scheduled: 'default',
-      sending: 'default',
-      sent: 'default'
-    };
-    
     const colors = {
       draft: 'bg-gray-100 text-gray-700',
       scheduled: 'bg-blue-100 text-blue-700',
       sending: 'bg-yellow-100 text-yellow-700',
-      sent: 'bg-green-100 text-green-700'
+      processing: 'bg-yellow-100 text-yellow-700',
+      sent: 'bg-green-100 text-green-700',
+      partially_sent: 'bg-orange-100 text-orange-700',
+      failed: 'bg-red-100 text-red-700',
+      cancelled: 'bg-gray-200 text-gray-600'
+    };
+    
+    const labels = {
+      draft: 'Draft',
+      scheduled: 'Scheduled',
+      sending: 'Sending',
+      processing: 'Processing',
+      sent: 'Sent',
+      partially_sent: 'Partial',
+      failed: 'Failed',
+      cancelled: 'Cancelled'
     };
     
     return (
       <Badge className={colors[status] || 'bg-gray-100 text-gray-700'}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {labels[status] || status?.charAt(0).toUpperCase() + status?.slice(1)}
       </Badge>
     );
   };

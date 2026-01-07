@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Sparkles, Send, Eye, Save, Users, ArrowLeft } from 'lucide-react';
+import { Sparkles, Send, Eye, Save, Users, ArrowLeft, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function NewCampaignPage() {
@@ -27,7 +27,8 @@ export default function NewCampaignPage() {
     subject: '',
     preheader: '',
     body: '',
-    segmentCriteria: {}
+    segmentCriteria: {},
+    scheduledFor: null
   });
 
   // AI generation options
@@ -71,6 +72,40 @@ export default function NewCampaignPage() {
       setEstimatedRecipients(data.count || 0);
     } catch (error) {
       logger.error('Admin', 'Failed to fetch recipients', error);
+    }
+  };
+
+  const sendTestEmail = async () => {
+    if (!campaignData.subject || !campaignData.body) {
+      toast.error('Please add subject and content first');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const response = await fetch('/api/admin/campaigns/test', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: campaignData.subject,
+          preheader: campaignData.preheader,
+          body: campaignData.body
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to send test');
+      
+      const data = await response.json();
+      if (data.success) {
+        toast.success(`Test email sent to ${data.sentTo}`);
+      } else {
+        throw new Error(data.error || 'Failed to send');
+      }
+    } catch (error) {
+      toast.error(error.message || 'Failed to send test email');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -131,7 +166,8 @@ export default function NewCampaignPage() {
         },
         body: JSON.stringify({
           ...campaignData,
-          segmentCriteria: segments
+          segmentCriteria: segments,
+          scheduledFor: campaignData.scheduledFor
         })
       });
 
@@ -395,6 +431,33 @@ export default function NewCampaignPage() {
           <Card className="p-6">
             <h2 className="text-lg font-semibold mb-4">Actions</h2>
             <div className="space-y-3">
+              {/* Schedule Option */}
+              <div className="space-y-2">
+                <Label>Schedule Send (Optional)</Label>
+                <Input
+                  type="datetime-local"
+                  value={campaignData.scheduledFor ? new Date(campaignData.scheduledFor).toISOString().slice(0, 16) : ''}
+                  onChange={(e) => setCampaignData({ 
+                    ...campaignData, 
+                    scheduledFor: e.target.value ? new Date(e.target.value).toISOString() : null 
+                  })}
+                  min={new Date().toISOString().slice(0, 16)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Leave empty to save as draft
+                </p>
+              </div>
+
+              <Button
+                variant="outline"
+                onClick={sendTestEmail}
+                disabled={loading || !campaignData.body}
+                className="w-full"
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                Send Test to Myself
+              </Button>
+
               <Button
                 onClick={() => saveCampaign(true)}
                 disabled={loading}
