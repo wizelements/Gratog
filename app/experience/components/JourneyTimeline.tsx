@@ -29,7 +29,7 @@ export default function JourneyTimeline() {
   return (
     <div className="grid md:grid-cols-[1.2fr,0.8fr] gap-10 items-center">
       <div className="space-y-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-emerald-300/80">
+        <p className="text-[11px] md:text-xs uppercase tracking-[0.18em] text-emerald-100">
           The Journey
         </p>
         <h2 className="text-3xl md:text-4xl font-semibold text-emerald-50">
@@ -52,7 +52,7 @@ export default function JourneyTimeline() {
                   <Icon className="h-5 w-5 text-emerald-300" />
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-emerald-300 mb-1">
+                  <p className="text-[11px] uppercase tracking-[0.15em] text-emerald-200 mb-1">
                     Step {i + 1}
                   </p>
                   <h3 className="text-base md:text-lg font-semibold text-emerald-50">
@@ -81,7 +81,7 @@ export default function JourneyTimeline() {
               <div className="w-16 h-28 bg-gradient-to-b from-emerald-100 to-emerald-200 rounded-2xl shadow-xl shadow-emerald-400/50 scale-110" />
               <div className="w-14 h-24 bg-gradient-to-b from-teal-200 to-teal-300 rounded-2xl shadow-xl shadow-teal-500/40 transform rotate-6" />
             </div>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-200/60 mt-4">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-emerald-100 mt-4">
               Floating in Wellness
             </p>
           </div>

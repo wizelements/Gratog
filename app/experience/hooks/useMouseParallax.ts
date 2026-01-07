@@ -13,6 +13,11 @@ export function useMouseParallax({ strength = 40, disabled = false }: Options = 
 
   useEffect(() => {
     if (disabled) return;
+    if (typeof window === 'undefined') return;
+    
+    const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
+    
     const el = containerRef.current;
     if (!el) return;
 

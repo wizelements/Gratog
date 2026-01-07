@@ -37,7 +37,7 @@ export default function ExperienceHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-4 py-2 text-xs uppercase tracking-[0.25em] text-emerald-200"
+          className="inline-flex items-center gap-2 rounded-full border border-emerald-400/80 bg-slate-900/80 px-4 py-2 text-[11px] md:text-xs uppercase tracking-[0.18em] text-emerald-50"
         >
           <Sparkles className="h-4 w-4" />
           Immersive Sea Moss Journey
@@ -77,7 +77,10 @@ export default function ExperienceHero() {
               Shop the Galaxy
             </Button>
           </Link>
-          <a href="#fridge" className="text-emerald-50 text-base flex items-center gap-2 hover:text-emerald-200 transition-colors">
+          <a 
+            href="#fridge" 
+            className="text-emerald-50 text-base flex items-center gap-2 hover:text-emerald-200 transition-colors rounded-full px-2 -mx-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+          >
             <Droplets className="h-4 w-4" />
             Scroll to open the Fridge
           </a>
@@ -87,7 +90,7 @@ export default function ExperienceHero() {
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.7 }}
-          className="flex flex-wrap justify-center gap-6 pt-6 text-sm md:text-base text-emerald-100"
+          className="flex flex-wrap justify-center gap-6 pt-6 text-sm md:text-base text-emerald-50"
         >
           <span className="inline-flex items-center gap-2">
             <Leaf className="h-4 w-4 text-emerald-300" />

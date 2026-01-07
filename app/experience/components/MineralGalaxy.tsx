@@ -45,7 +45,7 @@ export default function MineralGalaxy() {
   return (
     <div className="space-y-8">
       <div className="text-center max-w-2xl mx-auto">
-        <p className="text-xs uppercase tracking-[0.3em] text-emerald-300/80 mb-3">
+        <p className="text-[11px] md:text-xs uppercase tracking-[0.18em] text-emerald-100 mb-3">
           The Galaxy Within
         </p>
         <h2 className="text-3xl md:text-4xl font-semibold text-emerald-50 mb-4">
@@ -76,7 +76,7 @@ export default function MineralGalaxy() {
                 <h3 className="text-lg font-semibold text-emerald-50 mb-1">
                   {mineral.name}
                 </h3>
-                <p className="text-xs uppercase tracking-[0.15em] text-emerald-300/80 mb-2">
+                <p className="text-[11px] uppercase tracking-[0.15em] text-emerald-200 mb-2">
                   {mineral.benefit}
                 </p>
                 <p className="text-emerald-100 text-sm leading-relaxed">
@@ -89,8 +89,8 @@ export default function MineralGalaxy() {
       </div>
 
       <div className="text-center pt-4">
-        <p className="text-emerald-200/80 text-sm">
-          + 86 more essential minerals in every jar
+        <p className="text-emerald-100 text-sm">
+          + 86 more essential minerals in every jar — scroll down to open the cold glow and choose your ritual.
         </p>
       </div>
     </div>

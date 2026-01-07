@@ -44,7 +44,7 @@ export default function ExperiencePage() {
 
       <section className="py-20 md:py-28 px-4">
         <div className="max-w-3xl mx-auto text-center space-y-6">
-          <p className="text-xs uppercase tracking-[0.3em] text-emerald-300/80">
+          <p className="text-[11px] md:text-xs uppercase tracking-[0.18em] text-emerald-100">
             Ready to Begin?
           </p>
           <h2 className="text-3xl md:text-4xl font-semibold text-emerald-50">

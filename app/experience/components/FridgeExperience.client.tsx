@@ -32,31 +32,31 @@ export default function FridgeExperience() {
     >
       <div className="max-w-6xl mx-auto grid lg:grid-cols-[1fr,1.1fr] gap-10 items-center">
         <div className="space-y-5">
-          <p className="text-xs uppercase tracking-[0.3em] text-emerald-300/80">
+          <p className="text-[11px] md:text-xs uppercase tracking-[0.18em] text-emerald-100">
             Interactive Fridge
           </p>
           <h2 className="text-3xl md:text-4xl font-semibold text-emerald-50">
-            Open the Cold Glow
+            Open the Cold Glow of Your Sea Moss Ritual
           </h2>
           <p className="text-emerald-50 text-base md:text-lg leading-relaxed">
-            Hover and move through a glowing fridge filled with our signature
-            sea moss jars. Click a jar to pull it into focus, explore flavor,
-            benefits, and add it to your ritual.
+            You've drifted through the journey and explored the mineral galaxy. 
+            Now step inside the fridge — hover through glowing jars, click to 
+            pull one into focus, and add it straight to your cart.
           </p>
 
           {isMobile && (
-            <p className="text-sm text-emerald-50 bg-emerald-900/70 border border-emerald-400/60 rounded-lg p-3 leading-relaxed">
+            <p className="text-sm text-emerald-50 bg-slate-900/90 border border-emerald-400/60 rounded-lg p-3 leading-relaxed">
               📱 Mobile view: Tap the jar cards below to explore products.
               For the full 3D fridge experience, visit on desktop.
             </p>
           )}
 
           <div className="flex flex-wrap gap-3 pt-2">
-            <div className="flex items-center gap-2 text-xs text-emerald-200/70">
+            <div className="flex items-center gap-2 text-xs text-emerald-100">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>Hover to glow</span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-emerald-200/70">
+            <div className="flex items-center gap-2 text-xs text-emerald-100">
               <span className="w-2 h-2 rounded-full bg-teal-400" />
               <span>Click to select</span>
             </div>
@@ -73,10 +73,14 @@ export default function FridgeExperience() {
           )}
 
           {!isMobile && loading && (
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div 
+              className="absolute inset-0 flex items-center justify-center"
+              aria-busy="true"
+              aria-live="polite"
+            >
               <div className="flex flex-col items-center gap-3">
                 <div className="w-8 h-8 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin" />
-                <p className="text-emerald-200/60 text-xs uppercase tracking-[0.2em]">
+                <p className="text-emerald-100 text-[11px] md:text-xs uppercase tracking-[0.18em]">
                   Loading fridge...
                 </p>
               </div>
@@ -87,7 +91,7 @@ export default function FridgeExperience() {
             <div className="p-4 grid grid-cols-2 gap-3 overflow-y-auto max-h-full">
               {loading && (
                 <div className="col-span-2 flex items-center justify-center py-8">
-                  <p className="text-emerald-200/60 text-xs">Loading products…</p>
+                  <p className="text-emerald-100 text-sm">Loading products…</p>
                 </div>
               )}
               {!loading &&
@@ -95,15 +99,24 @@ export default function FridgeExperience() {
                   <button
                     key={p.id || p.slug || p.name}
                     onClick={() => setActiveProduct(p)}
-                    className="flex flex-col items-start rounded-xl bg-slate-900/80 border border-emerald-500/40 p-4 text-left hover:bg-slate-900 hover:border-emerald-400/70 transition-all"
+                    className="group flex flex-col items-start rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-emerald-500/50 p-4 text-left shadow-lg shadow-emerald-900/40 hover:-translate-y-1 hover:border-emerald-400/80 hover:shadow-emerald-700/60 transition-transform transition-shadow transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
                   >
-                    <span className="text-[10px] uppercase tracking-[0.25em] text-emerald-300/80 mb-2">
+                    {p.image && (
+                      <div className="w-full aspect-[4/3] rounded-xl bg-slate-800/80 mb-3 overflow-hidden">
+                        <img
+                          src={p.image}
+                          alt={p.name}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </div>
+                    )}
+                    <span className="text-[11px] uppercase tracking-[0.15em] text-emerald-200 mb-2">
                       {p.category || 'Sea Moss'}
                     </span>
                     <span className="text-sm font-semibold text-emerald-50 line-clamp-2 mb-2">
                       {p.name}
                     </span>
-                    <span className="text-sm text-emerald-200 font-medium">
+                    <span className="text-sm text-emerald-100 font-medium">
                       ${typeof p.price === 'number' ? p.price.toFixed(2) : '—'}
                     </span>
                   </button>
