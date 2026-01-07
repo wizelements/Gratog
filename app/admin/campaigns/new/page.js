@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { logger } from '@/lib/logger';
+import { clientLogger as logger } from '@/lib/client-logger';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -150,10 +150,23 @@ export default function NewCampaignPage() {
 
   const saveCampaign = async (asDraft = true) => {
     try {
-      // Validation
+      // Client-side validation
       if (!campaignData.name || !campaignData.subject || !campaignData.body) {
         toast.error('Please fill in all required fields');
         return;
+      }
+
+      // Validate scheduled time if provided
+      if (campaignData.scheduledFor) {
+        const scheduledDate = new Date(campaignData.scheduledFor);
+        if (Number.isNaN(scheduledDate.getTime())) {
+          toast.error('Invalid scheduled date/time');
+          return;
+        }
+        if (scheduledDate < new Date()) {
+          toast.error('Scheduled send time must be in the future');
+          return;
+        }
       }
 
       setLoading(true);
@@ -171,16 +184,33 @@ export default function NewCampaignPage() {
         })
       });
 
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        toast.success(`Campaign ${asDraft ? 'saved as draft' : 'created'}!`);
-        router.push('/admin/campaigns');
+      // Parse response body to get error details
+      let data = null;
+      try {
+        data = await response.json();
+      } catch {
+        // Non-JSON response
       }
+
+      if (!response.ok) {
+        // Handle auth errors
+        if (response.status === 401 || response.status === 403) {
+          toast.error(data?.error || 'Your admin session has expired');
+          return;
+        }
+        // Throw with server error message
+        throw new Error(data?.error || `Request failed with status ${response.status}`);
+      }
+      
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to create campaign');
+      }
+
+      toast.success(`Campaign ${asDraft ? 'saved as draft' : 'created'}!`);
+      router.push('/admin/campaigns');
     } catch (error) {
       logger.error('Admin', 'Save campaign error', error);
-      toast.error('Failed to save campaign');
+      toast.error(error.message || 'Failed to save campaign');
     } finally {
       setLoading(false);
     }

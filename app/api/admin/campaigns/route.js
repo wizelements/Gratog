@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-session';
-import { getCampaigns, createCampaign } from '@/lib/campaign-manager';
+import { getCampaigns, createCampaign, CampaignValidationError } from '@/lib/campaign-manager';
 import { logger } from '@/lib/logger';
 
 /**
@@ -35,7 +35,7 @@ export async function GET(request) {
     }
     logger.error('API', 'Get campaigns error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch campaigns' },
+      { success: false, error: 'Failed to fetch campaigns' },
       { status: 500 }
     );
   }
@@ -83,9 +83,20 @@ export async function POST(request) {
         { status: error.statusCode || 401 }
       );
     }
+
+    // Handle validation errors with 400 status and specific message
+    if (error instanceof CampaignValidationError) {
+      logger.warn('API', 'Create campaign validation error:', { error: error.message });
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: 400 }
+      );
+    }
+
+    // Internal errors - log details but return generic message
     logger.error('API', 'Create campaign error:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to create campaign' },
+      { success: false, error: 'Failed to create campaign' },
       { status: 500 }
     );
   }
