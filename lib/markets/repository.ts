@@ -81,10 +81,21 @@ export async function getMarketById(id: string): Promise<AdminMarket | null> {
   }
 }
 
-export interface CreateMarketData extends MarketLocation {
+export type CreateMarketData = {
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  lat: number;
+  lng: number;
+  hours: string;
+  dayOfWeek: number;
+  description: string;
+  mapsUrl?: string;
   isActive?: boolean;
   featured?: boolean;
-}
+};
 
 export async function createMarket(data: CreateMarketData): Promise<AdminMarket> {
   try {

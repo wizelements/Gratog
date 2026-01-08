@@ -15,7 +15,7 @@ import { getAdminFromRequest } from '@/lib/admin-auth';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = await getAdminFromRequest(request);
@@ -27,7 +27,8 @@ export async function POST(
     }
     const authResult = { authorized: true, adminEmail: admin.email };
 
-    const orderId = params.id;
+    const { id } = await params;
+    const orderId = id;
     if (!orderId) {
       return NextResponse.json(
         { error: 'Order ID is required' },

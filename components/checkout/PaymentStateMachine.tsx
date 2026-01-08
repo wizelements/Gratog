@@ -111,7 +111,7 @@ export function usePaymentStateMachine(orderId: string) {
 
   const logTelemetry = useCallback((event: string, data?: Record<string, any>) => {
     const elapsed = context.startTime ? Date.now() - context.startTime : 0;
-    track(event, { orderId, elapsed, retryCount: context.retryCount, ...data });
+    track(event as import('@/utils/analytics').AnalyticsEvent, { orderId, elapsed, retryCount: context.retryCount, ...data });
     console.debug(`[PaymentSM] ${event}`, { orderId, elapsed, ...data });
   }, [orderId, context.startTime, context.retryCount]);
 

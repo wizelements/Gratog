@@ -7,14 +7,7 @@
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 // Sandbox product variations we created
-const SANDBOX_PRODUCTS = [
-  { name: 'Gold Sea Moss Gel 8oz', catalogObjectId: 'YZIUDBNSRDOKP6JI5WA2Z6QP', price: 2999 },
-  { name: 'Gold Sea Moss Gel 16oz', catalogObjectId: 'CZZ6K7K54RW52M2JXL6RTIZV', price: 4999 },
-  { name: 'Purple Sea Moss Gel 8oz', catalogObjectId: 'EGGD5UPDR5MNAMT3AJYM47ZF', price: 3499 },
-  { name: 'Elderberry Sea Moss Gel 8oz', catalogObjectId: 'O3TDEIQLTCOZKG5CZ7TFVRPS', price: 3299 },
-  { name: 'Mango Sea Moss Gel 8oz', catalogObjectId: 'F4DBUTNH5IBAKQYIRGXHEPU5', price: 3299 },
-  { name: 'Wellness Starter Bundle', catalogObjectId: '2QHZ5O5ZJKDNGC3D4WEM2SUQ', price: 7999 },
-];
+const SANDBOX_PRODUCTS = [];
 
 async function testCheckoutFlow() {
   console.log('🧪 Square Sandbox Payment Flow Test\n');

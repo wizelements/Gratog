@@ -11,6 +11,7 @@ import {
   createMarket,
   updateMarket,
   deleteMarket,
+  type CreateMarketData,
 } from '@/lib/markets/repository';
 import {
   createMarketSchema,
@@ -76,7 +77,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const market = await createMarket(parsed.data);
+    const market = await createMarket(parsed.data as CreateMarketData);
 
     logger.info('API', 'Market created by admin', {
       adminEmail: admin.email,

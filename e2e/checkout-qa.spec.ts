@@ -30,8 +30,8 @@ const CART_A_PICKUP = [
 ]; // $15 total - below delivery min
 
 const CART_B_DELIVERY_BELOW_MIN = [
-  { id: 'test-item-2', name: 'Sea Moss Sample', price: 10.00, quantity: 1, variationId: 'var-2' }
-]; // $10 total - well below min
+  { id: 'test-item-2', name: 'Sea Moss Lemonade', price: 15.00, quantity: 1, variationId: 'var-2' }
+]; // $15 total - well below min
 
 const CART_C_DELIVERY_ABOVE_MIN = [
   { id: 'test-item-3', name: 'Sea Moss Gel (Large)', price: 35.00, quantity: 1, variationId: 'var-3' }

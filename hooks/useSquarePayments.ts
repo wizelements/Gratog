@@ -1,51 +1,17 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+import type {
+  SquarePayments as Payments,
+  SquareCard as Card,
+  SquareApplePay as ApplePay,
+  SquareGooglePay as GooglePay,
+  SquareTokenResult as TokenResult,
+  SquareApplePayRequest as ApplePayRequest,
+  SquareGooglePayRequest as GooglePayRequest,
+} from '@/types/square';
 
-interface Payments {
-  card: () => Promise<Card>;
-  applePay: (request: ApplePayRequest) => Promise<ApplePay | null>;
-  googlePay: (request: GooglePayRequest) => Promise<GooglePay | null>;
-}
-
-interface Card {
-  attach: (selector: string) => Promise<void>;
-  tokenize: () => Promise<TokenResult>;
-  destroy: () => Promise<void>;
-}
-
-interface ApplePay {
-  tokenize: () => Promise<TokenResult>;
-  destroy: () => Promise<void>;
-}
-
-interface GooglePay {
-  attach: (selector: string) => Promise<void>;
-  tokenize: () => Promise<TokenResult>;
-  destroy: () => Promise<void>;
-}
-
-interface ApplePayRequest {
-  countryCode: string;
-  currencyCode: string;
-  total: { amount: string; label: string };
-}
-
-interface GooglePayRequest {
-  countryCode: string;
-  currencyCode: string;
-  total?: { amount: string };
-}
-
-export interface TokenResult {
-  status: 'OK' | 'ERROR';
-  token?: string;
-  errors?: Array<{
-    type: string;
-    message: string;
-    field?: string;
-  }>;
-}
+export type { SquareTokenResult as TokenResult } from '@/types/square';
 
 interface SquarePaymentsConfig {
   applicationId: string;

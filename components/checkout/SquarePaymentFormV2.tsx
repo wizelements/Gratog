@@ -17,53 +17,13 @@ import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/adapters/totalsAdapter';
 import { usePaymentStateMachine, STATE_MESSAGES, ERROR_CODES } from './PaymentStateMachine';
 import { PaymentErrorUI, PaymentLoadingUI } from './PaymentErrorUI';
-
-// Square SDK types
-interface Payments {
-  card: (options?: CardOptions) => Promise<Card>;
-  applePay: (request: ApplePayRequest) => Promise<ApplePay | null>;
-  googlePay: (request: GooglePayRequest) => Promise<GooglePay | null>;
-}
-
-interface CardOptions {
-  style?: Record<string, Record<string, string>>;
-}
-
-interface Card {
-  attach: (selector: string) => Promise<void>;
-  tokenize: () => Promise<TokenResult>;
-  destroy: () => Promise<void>;
-  addEventListener: (event: string, callback: (e: any) => void) => void;
-}
-
-interface ApplePay {
-  tokenize: () => Promise<TokenResult>;
-  destroy: () => Promise<void>;
-}
-
-interface GooglePay {
-  attach: (selector: string) => Promise<void>;
-  tokenize: () => Promise<TokenResult>;
-  destroy: () => Promise<void>;
-}
-
-interface ApplePayRequest {
-  countryCode: string;
-  currencyCode: string;
-  total: { amount: string; label: string };
-}
-
-interface GooglePayRequest {
-  countryCode: string;
-  currencyCode: string;
-  total?: { amount: string };
-}
-
-interface TokenResult {
-  status: 'OK' | 'ERROR';
-  token?: string;
-  errors?: Array<{ type: string; message: string; field?: string }>;
-}
+import type { 
+  SquarePayments as Payments, 
+  SquareCard as Card,
+  SquareApplePay as ApplePay,
+  SquareGooglePay as GooglePay,
+  SquareTokenResult as TokenResult 
+} from '@/types/square';
 
 interface SquareConfig {
   applicationId: string;
@@ -92,15 +52,6 @@ interface SquarePaymentFormProps {
   onSuccess: (paymentResult: PaymentResult) => void;
   onError: (error: string) => void;
   onCancel?: () => void;
-}
-
-// Extend Window for Square SDK
-declare global {
-  interface Window {
-    Square?: {
-      payments: (appId: string, locationId: string) => Promise<Payments>;
-    };
-  }
 }
 
 export default function SquarePaymentFormV2({

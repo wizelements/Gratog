@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
+import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import EnhancedProductCard from '@/components/EnhancedProductCard';
@@ -12,7 +13,7 @@ import ProductCard from '@/components/ProductCard';
 import InfoBoardProductCard from '@/components/InfoBoardProductCard';
 import HealthBenefitFilters from '@/components/HealthBenefitFilters';
 import FitQuiz from '@/components/FitQuiz';
-import { Sparkles, Filter, Grid, List, Loader2, Droplets, Heart, Award, Search, X, Info } from 'lucide-react';
+import { Sparkles, Grid, List, Droplets, Heart, Award, Search, X, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import AnalyticsSystem from '@/lib/analytics';
 import Link from 'next/link';
@@ -24,7 +25,6 @@ import {
   getHealthBenefitCounts 
 } from '@/lib/health-benefits';
 
-// Wrapper component to handle Suspense for useSearchParams
 export default function CatalogPage() {
   return (
     <Suspense fallback={<CatalogLoadingFallback />}>
@@ -54,52 +54,45 @@ function CatalogLoadingFallback() {
 
 function CatalogContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const infoMode = searchParams?.get('mode') === 'info';
   
-  const [showQuiz, setShowQuiz] = useState(false);
+  // Core state - minimal and clean
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [selectedFilter, setSelectedFilter] = useState('all');
-  const [selectedHealthBenefit, setSelectedHealthBenefit] = useState('all');
-  const [viewMode, setViewMode] = useState('grid');
   const [loading, setLoading] = useState(true);
-  const [useEnhanced, setUseEnhanced] = useState(true);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   
-  // Search state
+  // Filter inputs (single source of truth)
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedHealthBenefit, setSelectedHealthBenefit] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState(null);
-  const searchInputRef = useRef(null);
+  const [recommendedIds, setRecommendedIds] = useState(null);
   
-  // Keep stable reference to previous categories during loading
-  const prevCategoriesRef = useRef([]);
+  // UI state
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [viewMode, setViewMode] = useState('grid');
+  
+  const searchInputRef = useRef(null);
 
-  // Fetch products from Unified Intelligent API
+  // Fetch products once on mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/products'); // Uses unified by default
+        const response = await fetch('/api/products');
         const data = await response.json();
         
         if (data.success && data.products) {
-          // Enrich products with health benefit data
           const enrichedProducts = data.products.map(enrichProductWithHealthBenefits);
           setProducts(enrichedProducts);
-          setFilteredProducts(enrichedProducts);
           setCategories(data.categories || []);
-          // Store categories for stable reference during future loads
-          prevCategoriesRef.current = data.categories || [];
           logger.debug(`✅ Loaded ${enrichedProducts.length} products from ${data.source}`);
-          logger.debug(`📊 Categories:`, data.categories?.map(c => `${c.name} (${c.count})`));
         }
       } catch (error) {
         console.error('Failed to fetch products:', error);
         toast.error('Failed to load products. Please refresh the page.');
       } finally {
         setLoading(false);
-        setIsInitialLoad(false);
       }
     };
     
@@ -107,159 +100,78 @@ function CatalogContent() {
     AnalyticsSystem.initPostHog();
   }, []);
 
-  const handleCheckout = async (items) => {
-    try {
-      // Redirect to order page for Square checkout flow
-      window.location.href = '/order';
-    } catch (error) {
-      console.error('Checkout error:', error);
-      toast.error('Failed to start checkout. Please try again.');
-    }
-  };
-
-  const handleAddToCart = (product) => {
-    toast.success(`${product.name} added to cart!`);
-    AnalyticsSystem.trackPDPView(product.id);
-    setTimeout(() => {
-      window.location.href = '/order';
-    }, 1000);
-  };
-
-  const handleQuizRecommendations = (recommendations) => {
-    // Highlight recommended products
-    setFilteredProducts(recommendations.length > 0 ? recommendations : products);
-    setSelectedFilter('recommended');
-    setShowQuiz(false);
-    toast.success(`Found ${recommendations.length} perfect matches for you!`);
-  };
-
-  // Search functionality
-  const performSearch = useCallback((query) => {
-    if (!query || query.trim().length < 2) {
-      setSearchResults(null);
-      return;
-    }
-    
-    const searchTerm = query.toLowerCase().trim();
-    const results = products.filter(product => {
-      const name = (product.name || '').toLowerCase();
-      const description = (product.description || '').toLowerCase();
-      const category = (product.intelligentCategory || product.category || '').toLowerCase();
-      const ingredients = (product.ingredients || []).map(i => 
-        typeof i === 'string' ? i.toLowerCase() : (i.name || '').toLowerCase()
-      ).join(' ');
-      const benefits = (product.benefits || []).join(' ').toLowerCase();
-      
-      return (
-        name.includes(searchTerm) ||
-        description.includes(searchTerm) ||
-        category.includes(searchTerm) ||
-        ingredients.includes(searchTerm) ||
-        benefits.includes(searchTerm)
-      );
-    });
-    
-    // Sort results: exact name matches first, then starts with, then contains
-    results.sort((a, b) => {
-      const aName = (a.name || '').toLowerCase();
-      const bName = (b.name || '').toLowerCase();
-      const aExact = aName === searchTerm;
-      const bExact = bName === searchTerm;
-      const aStarts = aName.startsWith(searchTerm);
-      const bStarts = bName.startsWith(searchTerm);
-      
-      if (aExact && !bExact) return -1;
-      if (!aExact && bExact) return 1;
-      if (aStarts && !bStarts) return -1;
-      if (!aStarts && bStarts) return 1;
-      
-      // Prioritize products with images
-      const aHasImage = a.image && !a.image.startsWith('data:');
-      const bHasImage = b.image && !b.image.startsWith('data:');
-      if (aHasImage && !bHasImage) return -1;
-      if (!aHasImage && bHasImage) return 1;
-      
-      return aName.localeCompare(bName);
-    });
-    
-    setSearchResults(results);
-  }, [products]);
-  
-  const handleSearchChange = (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    performSearch(query);
-    
-    // Reset category filter when searching
-    if (query.trim().length >= 2) {
-      setSelectedFilter('all');
-    }
-  };
-  
-  const clearSearch = () => {
-    setSearchQuery('');
-    setSearchResults(null);
-    searchInputRef.current?.focus();
-  };
-
-  const filterProducts = (filter) => {
-    setSelectedFilter(filter);
-    
-    // Clear search when changing category
-    setSearchQuery('');
-    setSearchResults(null);
-    
-    // Prevent filtering during loading to avoid empty flashes
-    if (loading || products.length === 0) return;
-    
-    let result = products;
-    
-    // Apply health benefit filter if set
-    if (selectedHealthBenefit !== 'all') {
-      result = filterProductsByHealthBenefit(result, selectedHealthBenefit);
-    }
-    
-    // Apply category filter
-    if (filter !== 'all') {
-      result = result.filter(p => p.intelligentCategory === filter);
-    }
-    
-    setFilteredProducts(result);
-  };
-  
-  // Health benefit filter handler
-  const handleHealthBenefitChange = (benefitId) => {
-    setSelectedHealthBenefit(benefitId);
-    setSearchQuery('');
-    setSearchResults(null);
-    
-    if (loading || products.length === 0) return;
-    
-    let result = products;
-    
-    // Apply health benefit filter
-    if (benefitId !== 'all') {
-      result = filterProductsByHealthBenefit(result, benefitId);
-    }
-    
-    // Apply category filter if set
-    if (selectedFilter !== 'all') {
-      result = result.filter(p => p.intelligentCategory === selectedFilter);
-    }
-    
-    setFilteredProducts(result);
-  };
-  
-  // Get health benefit counts
+  // Derived: Health benefit counts (memoized)
   const healthBenefitCounts = useMemo(() => {
     return getHealthBenefitCounts(products);
   }, [products]);
 
-  // Use intelligent categories from API or fallback to static
-  // Use stable reference during loading to prevent count flicker
+  // Derived: Display products (single source of filtering truth)
+  const displayProducts = useMemo(() => {
+    if (!products.length) return [];
+
+    let result = products;
+
+    // Quiz recommendations take priority
+    if (recommendedIds) {
+      result = result.filter(p => recommendedIds.has(p.id));
+    } else {
+      // Health benefit filter
+      if (selectedHealthBenefit !== 'all') {
+        result = filterProductsByHealthBenefit(result, selectedHealthBenefit);
+      }
+
+      // Category filter
+      if (selectedCategory !== 'all') {
+        result = result.filter(p => p.intelligentCategory === selectedCategory);
+      }
+    }
+
+    // Search filter (works on top of other filters)
+    const term = searchQuery.toLowerCase().trim();
+    if (term.length >= 2) {
+      result = result.filter(product => {
+        const name = (product.name || '').toLowerCase();
+        const description = (product.description || '').toLowerCase();
+        const category = (product.intelligentCategory || product.category || '').toLowerCase();
+        const ingredients = (product.ingredients || [])
+          .map(i => typeof i === 'string' ? i.toLowerCase() : (i.name || '').toLowerCase())
+          .join(' ');
+        const benefits = (product.benefits || []).join(' ').toLowerCase();
+
+        return (
+          name.includes(term) ||
+          description.includes(term) ||
+          category.includes(term) ||
+          ingredients.includes(term) ||
+          benefits.includes(term)
+        );
+      });
+
+      // Sort search results by relevance
+      result.sort((a, b) => {
+        const aName = (a.name || '').toLowerCase();
+        const bName = (b.name || '').toLowerCase();
+
+        if (aName === term) return -1;
+        if (bName === term) return 1;
+        if (aName.startsWith(term) && !bName.startsWith(term)) return -1;
+        if (!aName.startsWith(term) && bName.startsWith(term)) return 1;
+
+        const aHasImage = a.image && !a.image.startsWith('data:');
+        const bHasImage = b.image && !b.image.startsWith('data:');
+        if (aHasImage && !bHasImage) return -1;
+        if (!aHasImage && bHasImage) return 1;
+
+        return aName.localeCompare(bName);
+      });
+    }
+
+    return result;
+  }, [products, selectedCategory, selectedHealthBenefit, searchQuery, recommendedIds]);
+
+  // Derived: Category list for UI
   const productCategories = useMemo(() => {
-    // During initial load, return skeleton placeholder
-    if (isInitialLoad) {
+    if (loading) {
       return [
         { id: 'all', label: 'All Products', count: null, icon: '✨', isLoading: true },
         { id: 'skeleton-1', label: 'Category', count: null, isLoading: true },
@@ -267,19 +179,10 @@ function CatalogContent() {
       ];
     }
     
-    // Use previous categories during refresh to prevent flicker
-    const stableCategories = loading && prevCategoriesRef.current.length > 0 
-      ? prevCategoriesRef.current 
-      : categories;
-    
-    const stableProducts = loading && products.length === 0 
-      ? [] 
-      : products;
-    
-    if (stableCategories.length > 0) {
+    if (categories.length > 0) {
       return [
-        { id: 'all', label: 'All Products', count: stableProducts.length, icon: '✨' },
-        ...stableCategories.map(cat => ({
+        { id: 'all', label: 'All Products', count: products.length, icon: '✨' },
+        ...categories.map(cat => ({
           id: cat.name,
           label: cat.name,
           count: cat.count,
@@ -289,39 +192,90 @@ function CatalogContent() {
     }
     
     return [
-      { id: 'all', label: 'All Products', count: stableProducts.length },
-      { id: 'gels', label: 'Sea Moss Gels', count: stableProducts.filter(p => p.category === 'gel').length },
-      { id: 'lemonades', label: 'Lemonades', count: stableProducts.filter(p => p.category === 'lemonade').length },
-      { id: 'shots', label: 'Wellness Shots', count: stableProducts.filter(p => p.category === 'shot').length },
+      { id: 'all', label: 'All Products', count: products.length },
+      { id: 'gels', label: 'Sea Moss Gels', count: products.filter(p => p.category === 'gel').length },
+      { id: 'lemonades', label: 'Lemonades', count: products.filter(p => p.category === 'lemonade').length },
+      { id: 'shots', label: 'Wellness Shots', count: products.filter(p => p.category === 'shot').length },
     ];
-  }, [categories, products, loading, isInitialLoad]);
+  }, [categories, products, loading]);
+
+  // Derived: Check if any filters are active
+  const hasActiveFilters = selectedCategory !== 'all' || selectedHealthBenefit !== 'all' || searchQuery || recommendedIds;
+  const isSearchMode = searchQuery.trim().length >= 2;
+  const displayCount = displayProducts.length;
+
+  // Handlers - clean and simple
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategory(categoryId);
+    setRecommendedIds(null);
+  };
+
+  const handleHealthBenefitChange = (benefitId) => {
+    setSelectedHealthBenefit(benefitId);
+    setRecommendedIds(null);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    searchInputRef.current?.focus();
+  };
+
+  const clearAllFilters = () => {
+    setSelectedCategory('all');
+    setSelectedHealthBenefit('all');
+    setSearchQuery('');
+    setRecommendedIds(null);
+  };
+
+  const handleQuizRecommendations = (recommendations) => {
+    if (recommendations.length > 0) {
+      setRecommendedIds(new Set(recommendations.map(p => p.id)));
+      toast.success(`Found ${recommendations.length} perfect matches for you!`);
+    }
+    setShowQuiz(false);
+  };
+
+  const handleCheckout = () => {
+    router.push('/order');
+  };
+
+  const handleAddToCart = (product) => {
+    toast.success(`${product.name} added to cart!`);
+    AnalyticsSystem.trackPDPView(product.id);
+    setTimeout(() => router.push('/order'), 1000);
+  };
+
+  // Get label for active health benefit
+  const activeHealthBenefitLabel = healthBenefitCounts.find(b => b.id === selectedHealthBenefit)?.label || selectedHealthBenefit;
 
   return (
     <div className="min-h-screen">
       {/* Header Section */}
       <section className="bg-gradient-to-br from-emerald-50 to-teal-50 py-16">
         <div className="container">
-          {/* Mode Badge & Info Toggle */}
+          {/* Mode Badge */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <Badge className="bg-emerald-600 text-white px-4 py-2 text-sm">
-                <Sparkles className="h-4 w-4 mr-2 inline" />
-                {loading ? 'Loading...' : `${products.length} Premium Products`}
+                <Sparkles className="h-4 w-4 mr-2 inline" aria-hidden="true" />
+                Premium Wellness Collection
               </Badge>
               
-              {!infoMode && (
+              {!infoMode ? (
                 <Link href="/catalog?mode=info">
                   <Badge className="bg-blue-100 text-blue-700 border-blue-200 px-4 py-2 text-sm cursor-pointer hover:bg-blue-200 transition-colors">
-                    <Info className="h-4 w-4 mr-2 inline" />
+                    <Info className="h-4 w-4 mr-2 inline" aria-hidden="true" />
                     Info Board Mode
                   </Badge>
                 </Link>
-              )}
-              
-              {infoMode && (
+              ) : (
                 <Link href="/catalog">
                   <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 px-4 py-2 text-sm cursor-pointer hover:bg-emerald-200 transition-colors">
-                    <Sparkles className="h-4 w-4 mr-2 inline" />
+                    <Sparkles className="h-4 w-4 mr-2 inline" aria-hidden="true" />
                     Full Catalog Mode
                   </Badge>
                 </Link>
@@ -335,25 +289,25 @@ function CatalogContent() {
               Premium Wildcrafted Sea Moss Products
             </p>
             <p className="text-lg text-emerald-600 max-w-2xl mx-auto mb-8">
-              Each product is hand-crafted with 92 essential minerals from the ocean, designed to support your unique wellness journey
+              Each product is hand-crafted with 92 essential minerals from the ocean
             </p>
             
-            {/* Personalized Quiz CTA - Hidden in info mode */}
-            {!infoMode && (
+            {/* Quiz CTA */}
+            {!infoMode && !showQuiz && (
               <Card className="max-w-2xl mx-auto bg-white/80 backdrop-blur-sm border-emerald-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-center gap-3 mb-4">
-                    <Sparkles className="w-6 h-6 text-emerald-600" />
+                    <Sparkles className="w-6 h-6 text-emerald-600" aria-hidden="true" />
                     <h3 className="text-xl font-semibold text-emerald-800">Not sure where to start?</h3>
                   </div>
                   <p className="text-emerald-600 mb-4">
-                    Take our 60-second wellness quiz for personalized product recommendations
+                    Take our 60-second wellness quiz for personalized recommendations
                   </p>
                   <Button 
                     onClick={() => setShowQuiz(true)}
                     className="bg-emerald-600 hover:bg-emerald-700"
                   >
-                    <Sparkles className="mr-2 h-4 w-4" />
+                    <Sparkles className="mr-2 h-4 w-4" aria-hidden="true" />
                     Take the Quiz
                   </Button>
                 </CardContent>
@@ -365,7 +319,7 @@ function CatalogContent() {
               <Card className="max-w-2xl mx-auto bg-blue-50 border-blue-200">
                 <CardContent className="p-6 text-center">
                   <div className="flex items-center justify-center gap-3 mb-2">
-                    <Info className="w-6 h-6 text-blue-600" />
+                    <Info className="w-6 h-6 text-blue-600" aria-hidden="true" />
                     <h3 className="text-xl font-semibold text-blue-800">Info Board Mode</h3>
                   </div>
                   <p className="text-blue-600">
@@ -376,7 +330,7 @@ function CatalogContent() {
             )}
           </div>
 
-          {/* Fit Quiz Modal - Hidden in info mode */}
+          {/* Quiz Modal */}
           {showQuiz && !infoMode && (
             <div className="mb-12">
               <FitQuiz 
@@ -404,7 +358,7 @@ function CatalogContent() {
           <div className="mb-8">
             <div className="max-w-xl mx-auto">
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" aria-hidden="true" />
                 <Input
                   ref={searchInputRef}
                   type="text"
@@ -425,173 +379,216 @@ function CatalogContent() {
                   </button>
                 )}
               </div>
-              {searchResults !== null && (
-                <div className="mt-2 text-center">
-                  <span className="text-sm text-emerald-600">
-                    {searchResults.length === 0 
-                      ? `No products found for "${searchQuery}"` 
-                      : `Found ${searchResults.length} product${searchResults.length === 1 ? '' : 's'} for "${searchQuery}"`
-                    }
-                  </span>
-                </div>
-              )}
             </div>
           </div>
           
-          {/* Health Benefit Filters - Wellness Goal Filtering */}
+          {/* Active Filters - Airbnb-style chips */}
+          {hasActiveFilters && (
+            <div className="bg-emerald-50 p-4 rounded-lg mb-6 border border-emerald-200">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex gap-2 flex-wrap items-center">
+                  <span className="text-sm text-gray-600 font-medium">Active:</span>
+                  
+                  {recommendedIds && (
+                    <Badge className="bg-yellow-200 text-yellow-800 flex items-center gap-1">
+                      ✨ Quiz Recommendations
+                      <button
+                        onClick={() => setRecommendedIds(null)}
+                        className="ml-1 hover:text-yellow-600"
+                        aria-label="Clear quiz recommendations"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  
+                  {selectedCategory !== 'all' && !recommendedIds && (
+                    <Badge className="bg-emerald-200 text-emerald-800 flex items-center gap-1">
+                      {selectedCategory}
+                      <button
+                        onClick={() => handleCategoryChange('all')}
+                        className="ml-1 hover:text-emerald-600"
+                        aria-label="Remove category filter"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  
+                  {selectedHealthBenefit !== 'all' && !recommendedIds && (
+                    <Badge className="bg-blue-200 text-blue-800 flex items-center gap-1">
+                      {activeHealthBenefitLabel}
+                      <button
+                        onClick={() => handleHealthBenefitChange('all')}
+                        className="ml-1 hover:text-blue-600"
+                        aria-label="Remove wellness filter"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  
+                  {searchQuery && (
+                    <Badge className="bg-purple-200 text-purple-800 flex items-center gap-1">
+                      "{searchQuery}"
+                      <button
+                        onClick={clearSearch}
+                        className="ml-1 hover:text-purple-600"
+                        aria-label="Clear search"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                </div>
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearAllFilters}
+                  className="text-gray-600 hover:text-gray-800"
+                >
+                  Clear all
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Health Benefit Filters */}
           <div className="mb-8 bg-white rounded-xl p-6 shadow-sm border border-emerald-100">
             <HealthBenefitFilters
               benefitCounts={healthBenefitCounts}
               selectedBenefit={selectedHealthBenefit}
               onBenefitChange={handleHealthBenefitChange}
-              totalProducts={products.length}
             />
           </div>
           
-          {/* Category Filters and View Options */}
+          {/* Category Filters + View Toggle */}
           <div className="flex flex-col lg:flex-row justify-between items-center mb-8 gap-4">
-            {/* Category Filters */}
-            <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+            <div 
+              className="flex flex-wrap gap-2 justify-center lg:justify-start"
+              role="radiogroup"
+              aria-label="Filter by category"
+            >
               {productCategories.map((category) => (
                 <Button
                   key={category.id}
-                  variant={selectedFilter === category.id ? "default" : "outline"}
-                  onClick={() => filterProducts(category.id)}
+                  role="radio"
+                  aria-checked={selectedCategory === category.id}
+                  variant={selectedCategory === category.id ? "default" : "outline"}
+                  onClick={() => handleCategoryChange(category.id)}
                   disabled={category.isLoading}
                   className={`transition-all duration-200 ${
-                    selectedFilter === category.id 
+                    selectedCategory === category.id 
                       ? "bg-emerald-600 hover:bg-emerald-700" 
                       : "border-emerald-300 text-emerald-700 hover:bg-emerald-50"
                   } ${category.isLoading ? "opacity-70" : ""}`}
                 >
-                  {category.icon && <span className="mr-2">{category.icon}</span>}
-                  {category.label}{' '}
-                  {category.isLoading ? (
-                    <Skeleton className="inline-block h-4 w-6 ml-1 rounded bg-emerald-200/50" />
-                  ) : (
-                    <span className="transition-opacity duration-200">({category.count})</span>
-                  )}
+                  {category.icon && <span className="mr-2" aria-hidden="true">{category.icon}</span>}
+                  {category.label}
                 </Button>
               ))}
-              {selectedFilter === 'recommended' && (
-                <Badge className="bg-yellow-100 text-yellow-700 px-3 py-1">
-                  ✨ Personalized for You
-                </Badge>
-              )}
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" role="group" aria-label="View mode">
               <Button
                 variant={viewMode === 'grid' ? "default" : "outline"}
                 size="sm"
                 onClick={() => setViewMode('grid')}
+                aria-pressed={viewMode === 'grid'}
+                aria-label="Grid view"
               >
-                <Grid className="w-4 h-4" />
+                <Grid className="w-4 h-4" aria-hidden="true" />
               </Button>
               <Button
                 variant={viewMode === 'list' ? "default" : "outline"}
                 size="sm"
                 onClick={() => setViewMode('list')}
+                aria-pressed={viewMode === 'list'}
+                aria-label="List view"
               >
-                <List className="w-4 h-4" />
+                <List className="w-4 h-4" aria-hidden="true" />
               </Button>
             </div>
           </div>
 
-          {/* Results Header */}
-          <div className="mb-6 h-6">
-            {!isInitialLoad && searchResults === null && (
-              <p className="text-muted-foreground text-sm">
-                {selectedFilter === 'recommended' ? (
-                  <span className="text-emerald-600 font-medium">✨ Personalized recommendations for you</span>
-                ) : selectedFilter === 'all' ? (
-                  <span>{products.length} products</span>
-                ) : (
-                  <span>{filteredProducts.length} products in {selectedFilter}</span>
-                )}
-              </p>
-            )}
-          </div>
+          {/* Results Status - only show when filtering/searching */}
+          {(isSearchMode || recommendedIds || displayCount === 0) && (
+            <div className="mb-6 p-4 bg-emerald-50 rounded-lg" aria-live="polite">
+              <div className="text-sm text-emerald-700">
+                {recommendedIds ? (
+                  <span>✨ Showing your personalized recommendations</span>
+                ) : isSearchMode ? (
+                  <span>Showing results for "{searchQuery}"</span>
+                ) : displayCount === 0 ? (
+                  <span>No products match your filters</span>
+                ) : null}
+              </div>
+            </div>
+          )}
 
           {/* Loading State */}
           {loading && <SkeletonProductGrid count={6} />}
 
           {/* Products Grid */}
           {!loading && (
-            (() => {
-              // Determine which products to display
-              const displayProducts = searchResults !== null ? searchResults : filteredProducts;
-              
-              return (
-                <>
-                  <div className={`grid gap-8 ${
-                    viewMode === 'grid' 
-                      ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                      : 'grid-cols-1 lg:grid-cols-2'
-                  }`}>
-                    {displayProducts.map((product) => {
-                      // In info mode, use InfoBoardProductCard (no selling UI)
-                      // Otherwise use EnhancedProductCard or ProductCard
-                      if (infoMode) {
-                        return (
-                          <InfoBoardProductCard
-                            key={product.id}
-                            product={product}
-                          />
-                        );
-                      }
-                      
-                      const CardComponent = product.ingredients && useEnhanced 
-                        ? EnhancedProductCard 
-                        : ProductCard;
-                      
-                      return (
-                        <CardComponent
-                          key={product.id}
-                          product={product}
-                          onCheckout={handleCheckout}
-                          viewMode={viewMode}
-                          isRecommended={selectedFilter === 'recommended'}
-                        />
-                      );
-                    })}
-                  </div>
+            <>
+              <div className={`grid gap-8 ${
+                viewMode === 'grid' 
+                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
+                  : 'grid-cols-1 lg:grid-cols-2'
+              }`}>
+                {displayProducts.map((product) => {
+                  if (infoMode) {
+                    return (
+                      <InfoBoardProductCard
+                        key={product.id}
+                        product={product}
+                      />
+                    );
+                  }
+                  
+                  const CardComponent = product.ingredients ? EnhancedProductCard : ProductCard;
+                  
+                  return (
+                    <CardComponent
+                      key={product.id}
+                      product={product}
+                      onCheckout={handleCheckout}
+                      viewMode={viewMode}
+                      isRecommended={!!recommendedIds}
+                    />
+                  );
+                })}
+              </div>
 
-                  {displayProducts.length === 0 && (
-                    <div className="text-center py-12">
-                      <p className="text-muted-foreground text-lg mb-4">
-                        {searchResults !== null 
-                          ? `No products found for "${searchQuery}". Try a different search term.`
-                          : 'No products found for this category.'
-                        }
-                      </p>
-                      <Button 
-                        onClick={() => {
-                          clearSearch();
-                          filterProducts('all');
-                        }} 
-                        variant="outline"
-                      >
-                        Show All Products
-                      </Button>
-                    </div>
-                  )}
-                </>
-              );
-            })()
+              {displayCount === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground text-lg mb-4">
+                    {isSearchMode 
+                      ? `No products found for "${searchQuery}". Try a different search term.`
+                      : 'No products match your filters.'
+                    }
+                  </p>
+                  <Button onClick={clearAllFilters} variant="outline">
+                    Show All Products
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
 
-      {/* Trust Indicators - Compact inline section */}
+      {/* Trust Indicators */}
       {!loading && !showQuiz && (
         <section className="py-12 bg-emerald-50/50 border-y border-emerald-100">
           <div className="container">
             <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 text-center">
               <div className="flex items-center gap-3">
                 <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center">
-                  <Droplets className="h-6 w-6 text-blue-600" />
+                  <Droplets className="h-6 w-6 text-blue-600" aria-hidden="true" />
                 </div>
                 <div className="text-left">
                   <p className="font-semibold text-gray-900">100% Wildcrafted</p>
@@ -600,7 +597,7 @@ function CatalogContent() {
               </div>
               <div className="flex items-center gap-3">
                 <div className="bg-emerald-100 w-12 h-12 rounded-full flex items-center justify-center">
-                  <Award className="h-6 w-6 text-emerald-600" />
+                  <Award className="h-6 w-6 text-emerald-600" aria-hidden="true" />
                 </div>
                 <div className="text-left">
                   <p className="font-semibold text-gray-900">Hand-Crafted</p>
@@ -609,7 +606,7 @@ function CatalogContent() {
               </div>
               <div className="flex items-center gap-3">
                 <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center">
-                  <Heart className="h-6 w-6 text-purple-600" />
+                  <Heart className="h-6 w-6 text-purple-600" aria-hidden="true" />
                 </div>
                 <div className="text-left">
                   <p className="font-semibold text-gray-900">15,000+ Customers</p>
@@ -637,7 +634,7 @@ function CatalogContent() {
                 size="lg"
                 className="h-14 px-8 text-lg bg-white text-emerald-600 hover:bg-emerald-50 shadow-2xl hover:scale-105 transition-all"
               >
-                <Sparkles className="mr-2 h-5 w-5" />
+                <Sparkles className="mr-2 h-5 w-5" aria-hidden="true" />
                 Take the Quiz
               </Button>
               <Link href="/contact">

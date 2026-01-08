@@ -534,7 +534,7 @@ export async function POST(request: NextRequest) {
     // PERSIST PAYMENT RECORD (for idempotency checks and audit)
     // ========================================================================
     try {
-      await persistWithFallback('payments', {
+      const paymentData = {
         squarePaymentId: payment.id,
         status: payment.status,
         amountCents: payment.amountMoney?.amount,
@@ -559,7 +559,15 @@ export async function POST(request: NextRequest) {
           traceId: ctx.traceId
         },
         idempotencyKey: `payment_record_${payment.id}`
-      });
+      };
+      
+      await persistWithFallback(
+        async () => {
+          await db.collection('payment_records').insertOne(paymentData);
+        },
+        paymentData,
+        { type: 'payment', id: payment.id }
+      );
     } catch (persistError) {
       // Critical: Payment succeeded but record failed - alert
       logger.error('API', 'CRITICAL: Payment record persistence failed', { 
@@ -679,12 +687,13 @@ export async function POST(request: NextRequest) {
     // ========================================================================
     try {
       if (customerInfo?.email && isCompleted && rewardsSystem) {
-        await rewardsSystem.awardPoints({
-          customerEmail: customerInfo.email,
-          orderId,
-          amountCents: validatedAmountCents,
-          source: 'purchase'
-        });
+        const pointsToAward = Math.ceil(validatedAmountCents / 100);
+        await rewardsSystem.addPoints(
+          customerInfo.email,
+          pointsToAward,
+          'purchase',
+          { orderId, amountCents: validatedAmountCents }
+        );
       }
     } catch (rewardsError) {
       logger.warn('API', 'Rewards failed', { 
