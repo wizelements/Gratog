@@ -5,6 +5,11 @@ import { getCategoriesWithCounts } from '@/lib/ingredient-taxonomy';
 import { getDemoProducts, getDemoCategories } from '@/lib/demo-products';
 import { createLogger } from '@/lib/logger';
 import { enhanceProductCatalog } from '@/lib/product-enhancements';
+import { 
+  filterOutSandboxProducts, 
+  sanitizeProductForClient,
+  validateNoSandboxProducts 
+} from '@/lib/sandbox-detection';
 
 const logger = createLogger('ProductsAPI');
 
@@ -62,8 +67,11 @@ export async function GET(request) {
         rawProducts = [];
       }
       
+      // SAFETY: Filter out any sandbox products that somehow made it through
+      const filteredRaw = filterOutSandboxProducts(rawProducts);
+      
       // Transform products to expose variationId at top level for cart compatibility
-      const products = rawProducts.map(product => ({
+      const products = filteredRaw.map(product => ({
         ...product,
         variationId: product.squareData?.variationId || product.variations?.[0]?.id || product.id,
         catalogObjectId: product.squareData?.variationId || product.variations?.[0]?.id || product.id
@@ -71,6 +79,22 @@ export async function GET(request) {
       
       // Enhance with beautiful placeholders and sort by image priority
       const enhancedProducts = enhanceProductCatalog(products);
+      
+      // SAFETY: Validate no sandbox products in final response
+      try {
+        validateNoSandboxProducts(enhancedProducts, '/api/products unified path');
+      } catch (error) {
+        logger.error('Sandbox products detected in API response!', {
+          error: error.message,
+          count: error.count,
+          severity: 'critical'
+        });
+        // In production, still return them but log critical error
+        // In dev, re-throw to catch during testing
+        if (process.env.NODE_ENV === 'development') {
+          throw error;
+        }
+      }
       
       const categories = getCategoriesWithCounts(enhancedProducts);
       
