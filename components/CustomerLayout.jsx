@@ -17,6 +17,10 @@ const Footer = dynamic(() => import('@/components/Footer').catch(() => () => nul
   ssr: false,
   loading: () => <div className="h-64 bg-gray-100" />
 });
+const EcosystemFooter = dynamic(() => import('@/components/EcosystemFooter').catch(() => () => null), { 
+  ssr: false,
+  loading: () => <div className="h-32 bg-gray-50" />
+});
 const GoogleAnalytics = dynamic(
   () => import('@/components/analytics/GoogleAnalytics').catch(() => () => null), 
   { ssr: false }
@@ -120,6 +124,10 @@ export default function CustomerLayout({ children }) {
             
             <ErrorBoundary fallback={<div className="h-64 bg-gray-100" />}>
               <Footer />
+            </ErrorBoundary>
+            
+            <ErrorBoundary fallback={<div className="h-32 bg-gray-50" />}>
+              <EcosystemFooter currentProduct="gratog" />
             </ErrorBoundary>
             
             <ErrorBoundary>
