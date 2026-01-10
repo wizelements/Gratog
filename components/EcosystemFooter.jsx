@@ -27,12 +27,6 @@ const PRODUCTS = [
     url: 'https://image-to-svg.vercel.app',
   },
   {
-    id: 'tog-compare',
-    name: 'TOG Compare',
-    tagline: 'Product Comparison Tool',
-    url: 'https://tog-compare.vercel.app',
-  },
-  {
     id: 'eco-pack',
     name: 'Instant Launch Pages',
     tagline: 'DTC Landing Page Templates',
