@@ -12,7 +12,7 @@ const PRODUCTS = [
     id: 'gratog',
     name: 'Taste of Gratitude',
     tagline: 'Wildcrafted Sea Moss & Wellness',
-    url: 'https://tasteofgratitude.shop',
+    url: 'https://gratog.vercel.app',
   },
   {
     id: 'sd-studio',
@@ -24,7 +24,13 @@ const PRODUCTS = [
     id: 'image-to-svg',
     name: 'Image to SVG',
     tagline: 'Convert Images to Vector Graphics',
-    url: 'https://image-to-svg.vercel.app',
+    url: 'https://image-to-svg-eight.vercel.app',
+  },
+  {
+    id: 'tog-compare',
+    name: 'TOG Compare',
+    tagline: 'Product Comparison Tool',
+    url: 'https://tog-app.vercel.app',
   },
   {
     id: 'eco-pack',
@@ -36,7 +42,7 @@ const PRODUCTS = [
     id: 'tradealert',
     name: 'TradeAlert',
     tagline: 'Real-Time Trading Signals',
-    url: 'https://tradealert.vercel.app',
+    url: '#',
   },
 ];
 
