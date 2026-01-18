@@ -6,13 +6,13 @@ import { useMusic } from '@/contexts/MusicContext';
 export function MusicControls() {
   const music = useMusic();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(true); // Default true for mobile rendering
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
+  // Always render (mounted is true by default, ensuring mobile doesn't skip render)
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
