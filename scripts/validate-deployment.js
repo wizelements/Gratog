@@ -23,7 +23,8 @@ let warnings = [];
 // Check if only workflow/docs files changed (skip build validation)
 function isWorkflowOnlyChange() {
   try {
-    const changedFiles = execSync('git diff --name-only HEAD origin/$(git rev-parse --abbrev-ref HEAD) 2>/dev/null || git diff --name-only --cached 2>/dev/null || echo ""', { 
+    // Check files in the last commit
+    const changedFiles = execSync('git diff --name-only HEAD~1 HEAD 2>/dev/null || echo ""', { 
       encoding: 'utf8',
       cwd: WORKSPACE 
     }).trim();
@@ -34,11 +35,17 @@ function isWorkflowOnlyChange() {
     if (files.length === 0) return false;
     
     // Check if all changed files are in .github/workflows or are docs
-    return files.every(file => 
+    const isWorkflowOnly = files.every(file => 
       file.startsWith('.github/workflows/') || 
       file.endsWith('.md') ||
       file.startsWith('docs/')
     );
+    
+    if (isWorkflowOnly) {
+      log(`Detected workflow-only change: ${files.join(', ')}`, BLUE);
+    }
+    
+    return isWorkflowOnly;
   } catch (e) {
     return false;
   }
