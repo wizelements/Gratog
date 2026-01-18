@@ -168,7 +168,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const setEnabled = useCallback((enabled: boolean) => {
     setState(p => ({ ...p, enabled }));
     localStorage.setItem('music_enabled', enabled.toString());
-    if (!enabled && audioRef.current?.playing) {
+    if (!enabled && audioRef.current && !audioRef.current.paused) {
       audioRef.current.pause();
     }
   }, []);
