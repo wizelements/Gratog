@@ -3,6 +3,7 @@ import './globals.css';
 import CustomerLayout from '@/components/CustomerLayout';
 import AdminLayoutWrapper from '@/components/AdminLayoutWrapper';
 import { Toaster } from 'sonner';
+import { Suspense } from 'react';
 import { MusicProvider } from '@/contexts/MusicContext';
 import { BackgroundMusic } from '@/components/BackgroundMusic';
 import { MusicControls } from '@/components/MusicControls';
@@ -93,7 +94,9 @@ export default function RootLayout({ children }) {
             <CustomerLayout>{children}</CustomerLayout>
           </AdminLayoutWrapper>
           <BackgroundMusic />
-          <MusicControls />
+          <Suspense>
+            <MusicControls />
+          </Suspense>
           <Toaster position="top-right" richColors />
         </MusicProvider>
       </body>

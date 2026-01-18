@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useMusic } from '@/contexts/MusicContext';
 
 function MusicControlsContent() {
@@ -126,21 +126,25 @@ function MusicControlsContent() {
   );
 }
 
+function MusicFallback() {
+  return (
+    <div className="fixed bottom-4 right-4 z-50">
+      <button 
+        disabled 
+        className="w-12 h-12 rounded-full bg-gray-300 text-gray-500 shadow-lg flex items-center justify-center text-lg"
+        title="Music loading..."
+        aria-label="Music unavailable"
+      >
+        🔄
+      </button>
+    </div>
+  );
+}
+
 export function MusicControls() {
-  try {
-    return <MusicControlsContent />;
-  } catch (error) {
-    console.error('[MusicControls] Rendering failed:', error);
-    return (
-      <div className="fixed bottom-4 right-4 z-50">
-        <button 
-          disabled 
-          className="w-12 h-12 rounded-full bg-gray-300 text-gray-500 shadow-lg flex items-center justify-center text-lg"
-          title="Music unavailable"
-        >
-          ❌
-        </button>
-      </div>
-    );
-  }
+  return (
+    <Suspense fallback={<MusicFallback />}>
+      <MusicControlsContent />
+    </Suspense>
+  );
 }
