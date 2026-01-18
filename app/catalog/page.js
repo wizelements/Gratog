@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
+import { useState, useEffect, useRef, useMemo, Suspense, startTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
@@ -74,23 +74,36 @@ function CatalogContent() {
   
   const searchInputRef = useRef(null);
 
-  // Fetch products once on mount
+  // Fetch products once on mount with timeout
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/products');
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000); // 8sec timeout
+        
+        const response = await fetch('/api/products', { signal: controller.signal });
+        clearTimeout(timeout);
         const data = await response.json();
         
         if (data.success && data.products) {
           const enrichedProducts = data.products.map(enrichProductWithHealthBenefits);
-          setProducts(enrichedProducts);
-          setCategories(data.categories || []);
+          startTransition(() => {
+            setProducts(enrichedProducts);
+            setCategories(data.categories || []);
+          });
           logger.debug(`✅ Loaded ${enrichedProducts.length} products from ${data.source}`);
         }
       } catch (error) {
         console.error('Failed to fetch products:', error);
-        toast.error('Failed to load products. Please refresh the page.');
+        // Don't show error toast on timeout - show empty state instead
+        if (error.name !== 'AbortError') {
+          toast.error('Failed to load products. Please refresh the page.');
+        }
+        startTransition(() => {
+          setProducts([]);
+          setCategories([]);
+        });
       } finally {
         setLoading(false);
       }
