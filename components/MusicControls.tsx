@@ -13,15 +13,40 @@ function MusicControlsContent() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      {/* Toggle Button */}
+      {/* Main Music Button - tap to play/pause, long press to expand */}
+      <button
+        onClick={() => {
+          if (music.isPlaying) {
+            music.pause();
+          } else {
+            music.setEnabled(true);
+            music.play('that_gratitude_intro', 1000);
+          }
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          setIsExpanded(!isExpanded);
+        }}
+        className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all ${
+          music.isPlaying 
+            ? 'bg-green-500 hover:bg-green-600 animate-pulse' 
+            : 'bg-blue-500 hover:bg-blue-600'
+        } text-white`}
+        aria-label={music.isPlaying ? 'Pause music' : 'Play music'}
+        title="Tap to play/pause • Right-click for settings"
+      >
+        <span aria-hidden="true">{music.isPlaying ? '🎶' : '🎵'}</span>
+      </button>
+      
+      {/* Settings gear button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg flex items-center justify-center transition-all"
-        aria-label="Music controls toggle"
+        className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-700 hover:bg-gray-600 text-white text-xs flex items-center justify-center shadow"
+        aria-label="Music settings"
         aria-expanded={isExpanded}
         aria-controls="music-controls-panel"
       >
-        <span aria-hidden="true">🎵</span>
+        ⚙
       </button>
 
       {/* Expanded Controls */}
@@ -33,20 +58,27 @@ function MusicControlsContent() {
           aria-label="Music controls panel"
         >
           <div className="space-y-4">
-            {/* Enable/Disable */}
+            {/* Play/Pause Control */}
             <div className="flex items-center justify-between">
-              <label htmlFor="music-toggle" className="text-sm font-medium">Music</label>
+              <label htmlFor="music-play" className="text-sm font-medium">Music</label>
               <button
-                id="music-toggle"
-                onClick={() => music.setEnabled(!music.enabled)}
+                id="music-play"
+                onClick={() => {
+                  if (music.isPlaying) {
+                    music.pause();
+                  } else {
+                    music.setEnabled(true);
+                    music.play('that_gratitude_intro', 1000);
+                  }
+                }}
                 className={`px-3 py-1 rounded text-sm font-medium transition ${
-                  music.enabled
+                  music.isPlaying
                     ? 'bg-green-500 text-white'
-                    : 'bg-gray-300 text-gray-700'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
                 }`}
-                aria-pressed={music.enabled}
+                aria-pressed={music.isPlaying}
               >
-                {music.enabled ? 'ON' : 'OFF'}
+                {music.isPlaying ? '⏸ Pause' : '▶ Play'}
               </button>
             </div>
 
