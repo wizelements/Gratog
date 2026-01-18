@@ -101,6 +101,10 @@ export default function SquarePaymentForm({
     if (!config || initRef.current) return;
     initRef.current = true;
 
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout | null = null;
+    let intervalId: NodeJS.Timeout | null = null;
+
     const loadScript = (): Promise<void> => {
       return new Promise((resolve, reject) => {
         if (window.Square) {
@@ -111,15 +115,15 @@ export default function SquarePaymentForm({
         const existingScript = document.querySelector(`script[src="${config.sdkUrl}"]`);
         if (existingScript) {
           // Script exists, wait for it to load
-          const checkLoaded = setInterval(() => {
+          intervalId = setInterval(() => {
             if (window.Square) {
-              clearInterval(checkLoaded);
-              resolve();
+              if (intervalId) clearInterval(intervalId);
+              if (isMounted) resolve();
             }
           }, 100);
-          setTimeout(() => {
-            clearInterval(checkLoaded);
-            if (!window.Square) reject(new Error('SDK load timeout'));
+          timeoutId = setTimeout(() => {
+            if (intervalId) clearInterval(intervalId);
+            if (isMounted) reject(new Error('SDK load timeout'));
           }, 15000);
           return;
         }
@@ -129,12 +133,14 @@ export default function SquarePaymentForm({
         script.async = true;
         script.onload = () => {
           // Give SDK a moment to initialize
-          setTimeout(() => {
-            if (window.Square) resolve();
-            else reject(new Error('SDK loaded but Square not available'));
+          timeoutId = setTimeout(() => {
+            if (window.Square && isMounted) resolve();
+            else if (isMounted) reject(new Error('SDK loaded but Square not available'));
           }, 100);
         };
-        script.onerror = () => reject(new Error('Failed to load Square SDK'));
+        script.onerror = () => {
+          if (isMounted) reject(new Error('Failed to load Square SDK'));
+        };
         document.head.appendChild(script);
       });
     };
@@ -190,9 +196,14 @@ export default function SquarePaymentForm({
     };
 
     // Small delay to ensure DOM is ready
-    setTimeout(initializePayments, 100);
+    const startTimeout = setTimeout(initializePayments, 100);
 
     return () => {
+      isMounted = false;
+      clearTimeout(startTimeout);
+      if (timeoutId) clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+      
       if (cardRef.current) {
         cardRef.current.destroy().catch(console.error);
         cardRef.current = null;

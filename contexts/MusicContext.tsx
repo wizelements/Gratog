@@ -45,6 +45,12 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   });
   const [recentSnippets, setRecentSnippets] = useState<string[]>([]);
   const fadeIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const stateRef = useRef(state); // Keep state ref in sync for setInterval closures
+
+  // Keep stateRef in sync with state
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   // Initialize audio element
   useEffect(() => {
@@ -99,12 +105,12 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
     // Fade in
     audio.volume = 0;
-    audio.play().catch(e => console.log('Autoplay blocked:', e));
+    audio.play().catch(e => console.debug('Autoplay blocked:', e));
 
     let elapsed = 0;
     const step = 50;
     const startVolume = dbToLinear(-20);
-    const targetVolume = dbToLinear(state.volume);
+    const targetVolume = dbToLinear(stateRef.current.volume); // Use ref for current state
 
     if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
 
@@ -120,7 +126,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     }, step);
 
     setState(p => ({ ...p, isPlaying: true, currentSnippet: snippet }));
-  }, [state.enabled, state.volume, dbToLinear]);
+  }, [state.enabled, dbToLinear]);
 
   const pause = useCallback(async (fadeOutDuration = 1000) => {
     const audio = audioRef.current;
@@ -136,7 +142,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       elapsed += step;
       if (elapsed >= fadeOutDuration) {
         audio.pause();
-        audio.volume = dbToLinear(state.volume);
+        audio.volume = dbToLinear(stateRef.current.volume); // Use ref for current state
         if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
         setState(p => ({ ...p, isPlaying: false }));
       } else {
@@ -144,7 +150,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         audio.volume = startVolume * (1 - progress);
       }
     }, step);
-  }, [state.volume, dbToLinear]);
+  }, [dbToLinear]);
 
   const transitionTo = useCallback(async (snippetId: string, duration = 3000) => {
     await pause(duration / 2);

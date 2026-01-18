@@ -20,25 +20,34 @@ export function MusicControls() {
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg flex items-center justify-center transition-all"
-        title="Music Controls"
+        aria-label="Music controls toggle"
+        aria-expanded={isExpanded}
+        aria-controls="music-controls-panel"
       >
-        🎵
+        <span aria-hidden="true">🎵</span>
       </button>
 
       {/* Expanded Controls */}
       {isExpanded && (
-        <div className="absolute bottom-16 right-0 bg-white dark:bg-gray-900 rounded-lg shadow-xl p-4 w-64 border border-gray-200 dark:border-gray-700">
+        <div 
+          id="music-controls-panel"
+          className="absolute bottom-16 right-0 bg-white dark:bg-gray-900 rounded-lg shadow-xl p-4 w-64 border border-gray-200 dark:border-gray-700"
+          role="region"
+          aria-label="Music controls panel"
+        >
           <div className="space-y-4">
             {/* Enable/Disable */}
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Music</label>
+              <label htmlFor="music-toggle" className="text-sm font-medium">Music</label>
               <button
+                id="music-toggle"
                 onClick={() => music.setEnabled(!music.enabled)}
                 className={`px-3 py-1 rounded text-sm font-medium transition ${
                   music.enabled
                     ? 'bg-green-500 text-white'
                     : 'bg-gray-300 text-gray-700'
                 }`}
+                aria-pressed={music.enabled}
               >
                 {music.enabled ? 'ON' : 'OFF'}
               </button>
@@ -46,11 +55,13 @@ export function MusicControls() {
 
             {/* Volume Control */}
             {music.enabled && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
+              <fieldset className="space-y-2 border-0 p-0">
+                <legend className="text-sm font-medium">Volume</legend>
+                <label htmlFor="volume-slider" className="sr-only">
                   Volume: {music.volume} dB
                 </label>
                 <input
+                  id="volume-slider"
                   type="range"
                   min="-20"
                   max="0"
@@ -58,11 +69,15 @@ export function MusicControls() {
                   value={music.volume}
                   onChange={e => music.setVolume(parseFloat(e.target.value))}
                   className="w-full"
+                  aria-label="Volume control"
+                  aria-valuenow={music.volume}
+                  aria-valuemin={-20}
+                  aria-valuemax={0}
                 />
-                <p className="text-xs text-gray-500">
-                  {music.isPlaying ? '🎵 Now playing' : 'Paused'}
+                <p className="text-xs text-gray-500" aria-live="polite">
+                  {music.isPlaying ? <span aria-hidden="true">🎵</span> : null} {music.isPlaying ? 'Now playing' : 'Paused'}
                 </p>
-              </div>
+              </fieldset>
             )}
 
             {/* Info */}

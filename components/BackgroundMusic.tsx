@@ -10,13 +10,34 @@ export function BackgroundMusic() {
   useEffect(() => {
     if (!music.enabled) return;
 
+    let isMounted = true;
+    let fadeTimeout: NodeJS.Timeout | null = null;
+
     // Start with intro phase music on mount
-    const introSnippet = snippetSelector.selectForContext('intro');
-    music.play(introSnippet.id, 2000).catch(e => console.log('Auto-play may be blocked:', e));
+    const startMusic = async () => {
+      try {
+        const introSnippet = snippetSelector.selectForContext('intro');
+        if (isMounted) {
+          await music.play(introSnippet.id, 2000);
+        }
+      } catch (error) {
+        // Browser autoplay policy may block—this is expected
+        if (isMounted) {
+          console.debug('AutoPlay blocked (expected):', error instanceof Error ? error.message : 'Unknown error');
+        }
+      }
+    };
+
+    startMusic();
 
     return () => {
+      isMounted = false;
+      if (fadeTimeout) clearTimeout(fadeTimeout);
+      
       // Fade out on unmount
-      music.pause(2000).catch(() => {});
+      music.pause(500).catch(err => {
+        console.debug('Pause on unmount failed:', err instanceof Error ? err.message : 'Unknown');
+      });
     };
   }, [music.enabled, music.play, music.pause]);
 
