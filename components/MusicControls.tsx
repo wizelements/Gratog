@@ -3,16 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useMusic } from '@/contexts/MusicContext';
 
-export function MusicControls() {
+function MusicControlsContent() {
   const music = useMusic();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [mounted, setMounted] = useState(true); // Default true for mobile rendering
 
   useEffect(() => {
-    setMounted(true);
+    // Component mounted
   }, []);
-
-  // Always render (mounted is true by default, ensuring mobile doesn't skip render)
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
@@ -95,4 +92,23 @@ export function MusicControls() {
       )}
     </div>
   );
+}
+
+export function MusicControls() {
+  try {
+    return <MusicControlsContent />;
+  } catch (error) {
+    console.error('[MusicControls] Rendering failed:', error);
+    return (
+      <div className="fixed bottom-4 right-4 z-50">
+        <button 
+          disabled 
+          className="w-12 h-12 rounded-full bg-gray-300 text-gray-500 shadow-lg flex items-center justify-center text-lg"
+          title="Music unavailable"
+        >
+          ❌
+        </button>
+      </div>
+    );
+  }
 }
