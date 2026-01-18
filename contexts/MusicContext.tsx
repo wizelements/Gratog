@@ -78,24 +78,24 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     // Find snippet (will be in context from parent)
     const snippet = { id: snippetId } as Snippet;
 
-    // Construct path based on snippet ID
-    // Audio hosted on Cloudflare R2 to avoid Vercel size limits
+    // Audio hosted on Cloudflare R2
+    const R2_BASE = 'https://pub-5562920411814baeba7fe2cc990d43ef.r2.dev';
     const pathMap: Record<string, string> = {
-      'that_gratitude_intro': 'https://2e2a437c61510403bd8e35c3be42dab7.r2.cloudflarestorage.com/gratog-music/snippets/that-gratitude/intro_0-30s.mp3',
-      'that_gratitude_processing': 'https://2e2a437c61510403bd8e35c3be42dab7.r2.cloudflarestorage.com/gratog-music/snippets/that-gratitude/processing_3-4min.mp3',
-      'that_gratitude_climax': 'https://2e2a437c61510403bd8e35c3be42dab7.r2.cloudflarestorage.com/gratog-music/snippets/that-gratitude/climax_8-10min.mp3',
-      'that_gratitude_loop': 'https://2e2a437c61510403bd8e35c3be42dab7.r2.cloudflarestorage.com/gratog-music/snippets/that-gratitude/ambient_loop_10min.mp3',
-      'cant_let_it_go_struggle': 'https://2e2a437c61510403bd8e35c3be42dab7.r2.cloudflarestorage.com/gratog-music/snippets/cant-let-it-go/struggle_0-2min.mp3',
-      'cant_let_it_go_acceptance': 'https://2e2a437c61510403bd8e35c3be42dab7.r2.cloudflarestorage.com/gratog-music/snippets/cant-let-it-go/acceptance_7-8min.mp3',
-      'cant_let_it_go_victory': 'https://2e2a437c61510403bd8e35c3be42dab7.r2.cloudflarestorage.com/gratog-music/snippets/cant-let-it-go/victory_10-11min.mp3',
-      'cant_let_it_go_journey': 'https://2e2a437c61510403bd8e35c3be42dab7.r2.cloudflarestorage.com/gratog-music/snippets/cant-let-it-go/journey_4-11min.mp3',
-      'under_covers_opening': 'https://2e2a437c61510403bd8e35c3be42dab7.r2.cloudflarestorage.com/gratog-music/snippets/under-covers/opening_0-1m.mp3',
-      'under_covers_vulnerability': 'https://2e2a437c61510403bd8e35c3be42dab7.r2.cloudflarestorage.com/gratog-music/snippets/under-covers/vulnerability_2-5min.mp3',
-      'under_covers_warmth': 'https://2e2a437c61510403bd8e35c3be42dab7.r2.cloudflarestorage.com/gratog-music/snippets/under-covers/warmth_6-8min.mp3',
-      'under_covers_loop': 'https://2e2a437c61510403bd8e35c3be42dab7.r2.cloudflarestorage.com/gratog-music/snippets/under-covers/contemplative_loop_8min.mp3',
+      'that_gratitude_intro': `${R2_BASE}/That%20Gratitude%20%28Remastered%29.wav`,
+      'that_gratitude_processing': `${R2_BASE}/That%20Gratitude%20%28Remastered%29.wav`,
+      'that_gratitude_climax': `${R2_BASE}/That%20Gratitude%20%28Remastered%29.wav`,
+      'that_gratitude_loop': `${R2_BASE}/That%20Gratitude%20%28Remastered%29.wav`,
+      'cant_let_it_go_struggle': `${R2_BASE}/Can't%20Let%20It%20Go.wav`,
+      'cant_let_it_go_acceptance': `${R2_BASE}/Can't%20Let%20It%20Go.wav`,
+      'cant_let_it_go_victory': `${R2_BASE}/Can't%20Let%20It%20Go.wav`,
+      'cant_let_it_go_journey': `${R2_BASE}/Can't%20Let%20It%20Go.wav`,
+      'under_covers_opening': `${R2_BASE}/Under%20the%20Covers%20%28Remastered%29.wav`,
+      'under_covers_vulnerability': `${R2_BASE}/Under%20the%20Covers%20%28Remastered%29.wav`,
+      'under_covers_warmth': `${R2_BASE}/Under%20the%20Covers%20%28Remastered%29.wav`,
+      'under_covers_loop': `${R2_BASE}/Under%20the%20Covers%20%28Remastered%29.wav`,
     };
 
-    audio.src = pathMap[snippetId] || 'https://2e2a437c61510403bd8e35c3be42dab7.r2.cloudflarestorage.com/gratog-music/snippets/that-gratitude/intro_0-30s.mp3';
+    audio.src = pathMap[snippetId] || `${R2_BASE}/That%20Gratitude%20%28Remastered%29.wav`;
 
     // Fade in
     audio.volume = 0;
