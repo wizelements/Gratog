@@ -3,6 +3,9 @@ import './globals.css';
 import CustomerLayout from '@/components/CustomerLayout';
 import AdminLayoutWrapper from '@/components/AdminLayoutWrapper';
 import { Toaster } from 'sonner';
+import { MusicProvider } from '@/contexts/MusicContext';
+import { BackgroundMusic } from '@/components/BackgroundMusic';
+import { MusicControls } from '@/components/MusicControls';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -85,10 +88,14 @@ export default function RootLayout({ children }) {
          />
        </head>
       <body className={inter.className}>
-        <AdminLayoutWrapper>
-          <CustomerLayout>{children}</CustomerLayout>
-        </AdminLayoutWrapper>
-        <Toaster position="top-right" richColors />
+        <MusicProvider>
+          <AdminLayoutWrapper>
+            <CustomerLayout>{children}</CustomerLayout>
+          </AdminLayoutWrapper>
+          <BackgroundMusic />
+          <MusicControls />
+          <Toaster position="top-right" richColors />
+        </MusicProvider>
       </body>
     </html>
   );
