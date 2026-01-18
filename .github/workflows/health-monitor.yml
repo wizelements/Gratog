@@ -9,6 +9,8 @@ jobs:
   health-check:
     name: Monitor Production Health
     runs-on: ubuntu-latest
+    # Skip scheduled runs on forks
+    if: github.event_name != 'schedule' || github.repository == 'wizelements/Gratog'
     
     steps:
       - uses: actions/checkout@v4
@@ -91,6 +93,8 @@ jobs:
   performance-check:
     name: Performance Baseline
     runs-on: ubuntu-latest
+    # Skip scheduled runs on forks
+    if: github.event_name != 'schedule' || github.repository == 'wizelements/Gratog'
     
     steps:
       - name: Measure Response Times

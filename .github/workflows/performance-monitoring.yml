@@ -7,10 +7,13 @@ on:
     branches: [main, develop]
   schedule:
     - cron: '0 0,6,12,18 * * *'  # Every 6 hours
+  workflow_dispatch:
 
 jobs:
   lighthouse-audit:
     runs-on: ubuntu-latest
+    # Skip scheduled runs on forks
+    if: github.event_name != 'schedule' || github.repository == 'wizelements/Gratog'
     
     env:
       SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID || 'test-location' }}
@@ -296,6 +299,8 @@ jobs:
 
   bundle-size-check:
     runs-on: ubuntu-latest
+    # Skip scheduled runs on forks
+    if: github.event_name != 'schedule' || github.repository == 'wizelements/Gratog'
     
     env:
       SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID || 'test-location' }}
@@ -413,6 +418,8 @@ jobs:
 
   security-audit:
     runs-on: ubuntu-latest
+    # Skip scheduled runs on forks
+    if: github.event_name != 'schedule' || github.repository == 'wizelements/Gratog'
     
     env:
       SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID || 'test-location' }}
