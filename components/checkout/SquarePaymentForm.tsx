@@ -12,43 +12,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { CreditCard, Loader2, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 import { formatCurrency } from '@/adapters/totalsAdapter';
-
-interface SquarePayments {
-  card: (options?: CardOptions) => Promise<Card>;
-}
-
-declare global {
-  interface Window {
-    Square?: {
-      payments: (appId: string, locationId: string) => Promise<SquarePayments>;
-    };
-  }
-}
-
-interface CardOptions {
-  style?: Record<string, Record<string, string>>;
-}
-
-interface Card {
-  attach: (selector: string) => Promise<void>;
-  tokenize: () => Promise<TokenResult>;
-  destroy: () => Promise<void>;
-  addEventListener: (event: string, callback: (e: CardEvent) => void) => void;
-}
-
-interface CardEvent {
-  detail: {
-    currentState: {
-      isCompletelyValid: boolean;
-    };
-  };
-}
-
-interface TokenResult {
-  status: 'OK' | 'ERROR';
-  token?: string;
-  errors?: Array<{ type: string; message: string; field?: string }>;
-}
+import type { SquareCard, SquareCardOptions, SquarePayments, SquareTokenResult } from '@/types/square';
 
 interface SquareConfig {
   applicationId: string;
@@ -96,7 +60,7 @@ export default function SquarePaymentForm({
   const [cardError, setCardError] = useState<string | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
   
-  const cardRef = useRef<Card | null>(null);
+  const cardRef = useRef<SquareCard | null>(null);
   const initRef = useRef(false);
   
   // Generate idempotency key (Square limits to 45 chars)
