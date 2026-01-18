@@ -79,22 +79,23 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     const snippet = { id: snippetId } as Snippet;
 
     // Construct path based on snippet ID
+    // Audio hosted on external CDN to avoid Vercel size limits
     const pathMap: Record<string, string> = {
-      'that_gratitude_intro': '/music/snippets/that-gratitude/intro_0-30s.mp3',
-      'that_gratitude_processing': '/music/snippets/that-gratitude/processing_3-4min.mp3',
-      'that_gratitude_climax': '/music/snippets/that-gratitude/climax_8-10min.mp3',
-      'that_gratitude_loop': '/music/snippets/that-gratitude/ambient_loop_10min.mp3',
-      'cant_let_it_go_struggle': '/music/snippets/cant-let-it-go/struggle_0-2min.mp3',
-      'cant_let_it_go_acceptance': '/music/snippets/cant-let-it-go/acceptance_7-8min.mp3',
-      'cant_let_it_go_victory': '/music/snippets/cant-let-it-go/victory_10-11min.mp3',
-      'cant_let_it_go_journey': '/music/snippets/cant-let-it-go/journey_4-11min.mp3',
-      'under_covers_opening': '/music/snippets/under-covers/opening_0-1m.mp3',
-      'under_covers_vulnerability': '/music/snippets/under-covers/vulnerability_2-5min.mp3',
-      'under_covers_warmth': '/music/snippets/under-covers/warmth_6-8min.mp3',
-      'under_covers_loop': '/music/snippets/under-covers/contemplative_loop_8min.mp3',
+      'that_gratitude_intro': 'https://cdn.tasteofgratitude.shop/music/snippets/that-gratitude/intro_0-30s.mp3',
+      'that_gratitude_processing': 'https://cdn.tasteofgratitude.shop/music/snippets/that-gratitude/processing_3-4min.mp3',
+      'that_gratitude_climax': 'https://cdn.tasteofgratitude.shop/music/snippets/that-gratitude/climax_8-10min.mp3',
+      'that_gratitude_loop': 'https://cdn.tasteofgratitude.shop/music/snippets/that-gratitude/ambient_loop_10min.mp3',
+      'cant_let_it_go_struggle': 'https://cdn.tasteofgratitude.shop/music/snippets/cant-let-it-go/struggle_0-2min.mp3',
+      'cant_let_it_go_acceptance': 'https://cdn.tasteofgratitude.shop/music/snippets/cant-let-it-go/acceptance_7-8min.mp3',
+      'cant_let_it_go_victory': 'https://cdn.tasteofgratitude.shop/music/snippets/cant-let-it-go/victory_10-11min.mp3',
+      'cant_let_it_go_journey': 'https://cdn.tasteofgratitude.shop/music/snippets/cant-let-it-go/journey_4-11min.mp3',
+      'under_covers_opening': 'https://cdn.tasteofgratitude.shop/music/snippets/under-covers/opening_0-1m.mp3',
+      'under_covers_vulnerability': 'https://cdn.tasteofgratitude.shop/music/snippets/under-covers/vulnerability_2-5min.mp3',
+      'under_covers_warmth': 'https://cdn.tasteofgratitude.shop/music/snippets/under-covers/warmth_6-8min.mp3',
+      'under_covers_loop': 'https://cdn.tasteofgratitude.shop/music/snippets/under-covers/contemplative_loop_8min.mp3',
     };
 
-    audio.src = pathMap[snippetId] || '/music/snippets/that-gratitude/intro_0-30s.mp3';
+    audio.src = pathMap[snippetId] || 'https://cdn.tasteofgratitude.shop/music/snippets/that-gratitude/intro_0-30s.mp3';
 
     // Fade in
     audio.volume = 0;
