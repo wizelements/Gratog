@@ -59,12 +59,17 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     audio.preload = 'auto';
     audioRef.current = audio;
     
-    // Load user preferences
-    const savedVolume = localStorage.getItem('music_volume');
-    const savedEnabled = localStorage.getItem('music_enabled');
-    
-    if (savedVolume) setState(p => ({ ...p, volume: parseFloat(savedVolume) }));
-    if (savedEnabled !== null) setState(p => ({ ...p, enabled: savedEnabled === 'true' }));
+    // Load user preferences (safely handle localStorage)
+    try {
+      const savedVolume = localStorage.getItem('music_volume');
+      const savedEnabled = localStorage.getItem('music_enabled');
+      
+      if (savedVolume) setState(p => ({ ...p, volume: parseFloat(savedVolume) }));
+      if (savedEnabled !== null) setState(p => ({ ...p, enabled: savedEnabled === 'true' }));
+    } catch (error) {
+      // localStorage disabled or unavailable - use defaults
+      console.debug('localStorage unavailable, using defaults:', error instanceof Error ? error.message : 'unknown error');
+    }
   }, []);
 
   const dbToLinear = useCallback((db: number): number => {
@@ -165,7 +170,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       audioRef.current.volume = linear;
     }
     setState(p => ({ ...p, volume: clipped }));
-    localStorage.setItem('music_volume', clipped.toString());
+    try {
+      localStorage.setItem('music_volume', clipped.toString());
+    } catch (error) {
+      console.debug('localStorage write failed:', error instanceof Error ? error.message : 'unknown error');
+    }
   }, [dbToLinear]);
 
   const setSessionPhase = useCallback((phase: SessionPhase) => {
@@ -174,7 +183,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const setEnabled = useCallback((enabled: boolean) => {
     setState(p => ({ ...p, enabled }));
-    localStorage.setItem('music_enabled', enabled.toString());
+    try {
+      localStorage.setItem('music_enabled', enabled.toString());
+    } catch (error) {
+      console.debug('localStorage write failed:', error instanceof Error ? error.message : 'unknown error');
+    }
     if (!enabled && audioRef.current && !audioRef.current.paused) {
       audioRef.current.pause();
     }
