@@ -16,6 +16,8 @@ jobs:
     if: github.event_name != 'schedule' || github.repository == 'wizelements/Gratog'
     
     env:
+      # Fallback defaults for CI - GitHub Actions || operator works with secrets
+      # See: https://docs.github.com/en/actions/learn-github-actions/expressions
       SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID || 'test-location' }}
       SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID || 'test-app-id' }}
       NEXT_PUBLIC_SQUARE_APPLICATION_ID: ${{ secrets.NEXT_PUBLIC_SQUARE_APPLICATION_ID || 'test-public-app-id' }}
@@ -255,12 +257,18 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          # Stop the server if it's running
+          # Stop the server gracefully if it's running
           if [ -n "$SERVER_PID" ]; then
-            kill $SERVER_PID || true
+            echo "Stopping server (PID: $SERVER_PID)..."
+            kill $SERVER_PID 2>/dev/null || true
+            sleep 2
+            # Force kill if still running
+            kill -9 $SERVER_PID 2>/dev/null || true
           fi
           # Also try to kill any remaining node processes on port 3000
-          lsof -ti:3000 | xargs kill -9 || true
+          lsof -ti:3000 | xargs -r kill 2>/dev/null || true
+          sleep 1
+          lsof -ti:3000 | xargs -r kill -9 2>/dev/null || true
       
       - name: Create performance issue
         if: failure()

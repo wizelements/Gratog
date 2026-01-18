@@ -82,8 +82,8 @@ jobs:
       
       - name: Log Success
         if: |
-          steps.health.outputs.main_status == '200' || 
-          steps.health.outputs.main_status == '301' || 
+          steps.health.outputs.main_status == '200' ||
+          steps.health.outputs.main_status == '301' ||
           steps.health.outputs.main_status == '302' ||
           steps.health.outputs.main_status == '307' ||
           steps.health.outputs.main_status == '308'

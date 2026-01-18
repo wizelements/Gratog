@@ -23,6 +23,16 @@ let warnings = [];
 // Check if only workflow/docs files changed (skip build validation)
 function isWorkflowOnlyChange() {
   try {
+    // Check if we have at least 2 commits
+    const commitCount = execSync('git rev-list --count HEAD 2>/dev/null || echo "0"', { 
+      encoding: 'utf8',
+      cwd: WORKSPACE 
+    }).trim();
+    
+    if (parseInt(commitCount) < 2) {
+      return false; // Not enough history to compare
+    }
+    
     // Check files in the last commit
     const changedFiles = execSync('git diff --name-only HEAD~1 HEAD 2>/dev/null || echo ""', { 
       encoding: 'utf8',
@@ -47,6 +57,7 @@ function isWorkflowOnlyChange() {
     
     return isWorkflowOnly;
   } catch (e) {
+    // If git command fails, default to false
     return false;
   }
 }
