@@ -13,16 +13,16 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { CreditCard, Loader2, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 import { formatCurrency } from '@/adapters/totalsAdapter';
 
+interface SquarePayments {
+  card: (options?: CardOptions) => Promise<Card>;
+}
+
 declare global {
   interface Window {
     Square?: {
-      payments: (appId: string, locationId: string) => Promise<Payments>;
+      payments: (appId: string, locationId: string) => Promise<SquarePayments>;
     };
   }
-}
-
-interface Payments {
-  card: (options?: CardOptions) => Promise<Card>;
 }
 
 interface CardOptions {
