@@ -118,15 +118,17 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     const snippet = { id: snippetId } as Snippet;
 
     const R2_BASE = 'https://pub-5562920411814baeba7fe2cc990d43ef.r2.dev';
+    // WAV files: That Gratitude (20MB), Can't Let It Go (34MB), Under the Covers (34MB)
+    // Apostrophe must be %27 encoded for proper CDN handling
     const pathMap: Record<string, string> = {
       'that_gratitude_intro': `${R2_BASE}/That%20Gratitude%20%28Remastered%29.wav`,
       'that_gratitude_processing': `${R2_BASE}/That%20Gratitude%20%28Remastered%29.wav`,
       'that_gratitude_climax': `${R2_BASE}/That%20Gratitude%20%28Remastered%29.wav`,
       'that_gratitude_loop': `${R2_BASE}/That%20Gratitude%20%28Remastered%29.wav`,
-      'cant_let_it_go_struggle': `${R2_BASE}/Can't%20Let%20It%20Go.wav`,
-      'cant_let_it_go_acceptance': `${R2_BASE}/Can't%20Let%20It%20Go.wav`,
-      'cant_let_it_go_victory': `${R2_BASE}/Can't%20Let%20It%20Go.wav`,
-      'cant_let_it_go_journey': `${R2_BASE}/Can't%20Let%20It%20Go.wav`,
+      'cant_let_it_go_struggle': `${R2_BASE}/Can%27t%20Let%20It%20Go.wav`,
+      'cant_let_it_go_acceptance': `${R2_BASE}/Can%27t%20Let%20It%20Go.wav`,
+      'cant_let_it_go_victory': `${R2_BASE}/Can%27t%20Let%20It%20Go.wav`,
+      'cant_let_it_go_journey': `${R2_BASE}/Can%27t%20Let%20It%20Go.wav`,
       'under_covers_opening': `${R2_BASE}/Under%20the%20Covers%20%28Remastered%29.wav`,
       'under_covers_vulnerability': `${R2_BASE}/Under%20the%20Covers%20%28Remastered%29.wav`,
       'under_covers_warmth': `${R2_BASE}/Under%20the%20Covers%20%28Remastered%29.wav`,

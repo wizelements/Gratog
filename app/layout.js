@@ -6,6 +6,7 @@ import { Toaster } from 'sonner';
 import { Suspense } from 'react';
 import { BackgroundMusic } from '@/components/BackgroundMusic';
 import { MusicControls } from '@/components/MusicControls';
+import { CookieConsent } from '@/components/CookieConsent';
 import MusicProviderWrapper from '@/components/MusicProviderWrapper';
 
 const inter = Inter({ 
@@ -96,6 +97,9 @@ export default function RootLayout({ children }) {
           <BackgroundMusic />
           <Suspense fallback={<div className="fixed bottom-6 left-6 z-[9999] w-12 h-12 rounded-full bg-gray-800/90 shadow-lg flex items-center justify-center text-white backdrop-blur-sm">🎵</div>}>
             <MusicControls />
+          </Suspense>
+          <Suspense fallback={null}>
+            <CookieConsent />
           </Suspense>
           <Toaster position="top-right" richColors />
         </MusicProviderWrapper>
