@@ -110,12 +110,16 @@ function MusicControlsContent() {
     };
   }, [isExpanded]);
 
-  const handleTogglePlay = () => {
+  const handleTogglePlay = async () => {
     if (music.isPlaying) {
       music.pause();
     } else {
       music.setEnabled(true);
-      music.play('that_gratitude_intro', 1000);
+      try {
+        await music.play('that_gratitude_intro', 1000);
+      } catch (error) {
+        console.error('[MusicControls] Play error:', error);
+      }
     }
   };
 

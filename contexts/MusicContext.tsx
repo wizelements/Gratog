@@ -64,9 +64,15 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     isMountedRef.current = true;
     const audio = new Audio();
-    audio.crossOrigin = 'anonymous';
+    // Don't set crossOrigin - R2 public buckets don't need it and it can cause CORS issues
     audio.preload = 'auto';
     audioRef.current = audio;
+    
+    // Debug: log audio events
+    audio.addEventListener('canplay', () => console.debug('[Music] Audio can play'));
+    audio.addEventListener('error', (e) => console.error('[Music] Audio error:', audio.error?.message || e));
+    audio.addEventListener('loadstart', () => console.debug('[Music] Loading audio...'));
+    audio.addEventListener('playing', () => console.debug('[Music] Now playing'));
     
     // Load user preferences (safely handle localStorage)
     try {
@@ -101,11 +107,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const play = useCallback((snippetId: string, fadeInDuration = 1000): Promise<void> => {
-    // Note: We don't check enabled here - caller is responsible for enabling first
-    // This allows setEnabled(true) + play() to work in sequence
-
     const audio = audioRef.current;
-    if (!audio) return Promise.resolve();
+    if (!audio) {
+      console.error('[Music] No audio element');
+      return Promise.resolve();
+    }
 
     clearFade();
 
@@ -127,12 +133,19 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       'under_covers_loop': `${R2_BASE}/Under%20the%20Covers%20%28Remastered%29.wav`,
     };
 
-    audio.src = pathMap[snippetId] || `${R2_BASE}/That%20Gratitude%20%28Remastered%29.wav`;
+    const audioUrl = pathMap[snippetId] || `${R2_BASE}/That%20Gratitude%20%28Remastered%29.wav`;
+    console.debug('[Music] Loading:', audioUrl);
+    
+    audio.src = audioUrl;
     audio.volume = 0;
+    audio.load(); // Explicitly load
 
     return new Promise<void>((resolve, reject) => {
+      console.debug('[Music] Attempting to play...');
+      
       audio.play()
         .then(() => {
+          console.debug('[Music] Play started successfully');
           if (!isMountedRef.current) {
             resolve();
             return;
@@ -158,7 +171,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
           }, step);
         })
         .catch((e) => {
-          console.debug('Autoplay blocked:', e);
+          console.error('[Music] Play failed:', e.name, e.message);
           if (isMountedRef.current) {
             setState(p => ({ ...p, isPlaying: false }));
           }
