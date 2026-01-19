@@ -6,7 +6,28 @@ import { useMusic } from '@/contexts/MusicContext';
 function MusicControlsContent() {
   const music = useMusic();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [position, setPosition] = useState({ bottom: 24, right: 80 }); // Start offset from cart
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Dynamic positioning - find safe spot away from other widgets
+  useEffect(() => {
+    const updatePosition = () => {
+      const cart = document.querySelector('[class*="FloatingCart"], [class*="fixed"][class*="bottom-6"][class*="right-6"]');
+      const isMobile = window.innerWidth < 640;
+      
+      if (isMobile) {
+        // Mobile: bottom-left corner
+        setPosition({ bottom: 24, right: window.innerWidth - 72 });
+      } else {
+        // Desktop: above the cart button area
+        setPosition({ bottom: 80, right: 24 });
+      }
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    return () => window.removeEventListener('resize', updatePosition);
+  }, []);
 
   // Close panel on outside click
   useEffect(() => {
@@ -19,11 +40,15 @@ function MusicControlsContent() {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
+    const timer = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside);
+      document.addEventListener('touchend', handleClickOutside);
+    }, 100);
+    
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
+      clearTimeout(timer);
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('touchend', handleClickOutside);
     };
   }, [isExpanded]);
 
@@ -39,7 +64,8 @@ function MusicControlsContent() {
   return (
     <div 
       ref={panelRef}
-      className="fixed bottom-[88px] right-6 z-40"
+      className="fixed z-50"
+      style={{ bottom: position.bottom, right: position.right }}
     >
       {/* Main Music Button - 48px touch target */}
       <button
@@ -60,7 +86,7 @@ function MusicControlsContent() {
       {/* Settings gear - small subtle button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute -top-1 -left-1 w-6 h-6 rounded-full bg-gray-600/80 hover:bg-gray-500 active:bg-gray-700 text-white text-xs flex items-center justify-center shadow touch-manipulation backdrop-blur-sm"
+        className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gray-600/80 hover:bg-gray-500 active:bg-gray-700 text-white text-xs flex items-center justify-center shadow touch-manipulation backdrop-blur-sm"
         aria-label="Music settings"
         aria-expanded={isExpanded}
         aria-controls="music-controls-panel"
@@ -68,7 +94,7 @@ function MusicControlsContent() {
         ⚙
       </button>
 
-      {/* Expanded Controls - opens left to avoid edge */}
+      {/* Expanded Controls */}
       {isExpanded && (
         <div 
           id="music-controls-panel"

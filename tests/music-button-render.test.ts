@@ -71,9 +71,9 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
     // Check that Suspense has a fallback prop
     expect(content).toMatch(/Suspense\s+fallback=/);
     
-    // Check that the fallback contains visible content matching MusicControls position
+    // Check that the fallback contains visible content with fixed positioning
     expect(content).toMatch(/fallback\s*=\s*{/);
-    expect(content).toMatch(/className="fixed bottom-\[88px\] right-6 z-40/);
+    expect(content).toMatch(/className="fixed.*z-50/);
   });
 
   // Test 4: Verify MusicControls doesn't have duplicate Suspense
@@ -138,11 +138,9 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
     const fixedContainer = container.querySelector('.fixed');
     expect(fixedContainer).toBeTruthy();
     
-    // Check positioning classes (updated for mobile-friendly stacking)
+    // Check has fixed positioning with z-50 (position is dynamic via style)
     expect(fixedContainer?.className).toMatch(/fixed/);
-    expect(fixedContainer?.className).toMatch(/bottom-\[88px\]/);
-    expect(fixedContainer?.className).toMatch(/right-6/);
-    expect(fixedContainer?.className).toMatch(/z-40/);
+    expect(fixedContainer?.className).toMatch(/z-50/);
   });
 
   // Test 8: Verify button has emoji content (browser only)
@@ -199,15 +197,15 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
     }
   });
 
-  // Test 10: Verify z-index stacks properly with other widgets
-  it('should have z-40 to layer below cart/chat but above content', async () => {
+  // Test 10: Verify z-index is z-50 for visibility
+  it('should have z-50 for proper visibility', async () => {
     const fs = await import('fs').then(m => m.promises);
     const componentPath = '/data/data/com.termux/files/home/projects/apps/gratog/components/MusicControls.tsx';
     
     const content = await fs.readFile(componentPath, 'utf-8');
     
-    // z-40 to layer below FloatingCart (z-50) and LiveChat (z-50)
-    expect(content).toMatch(/className="fixed.*z-40/);
+    // z-50 with dynamic positioning via style
+    expect(content).toMatch(/className="fixed z-50"/);
   });
 });
 
