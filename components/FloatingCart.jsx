@@ -111,7 +111,7 @@ export default function FloatingCart() {
   return (
     <>
       {/* Cart Toggle Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-6 right-6 z-50" data-widget="floating-cart">
         <Button
           onClick={() => setIsOpen(!isOpen)}
           className="h-16 w-16 rounded-full shadow-2xl bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 hover:scale-110"

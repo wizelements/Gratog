@@ -142,7 +142,7 @@ export default function LiveChatWidget() {
   return (
     <>
       {/* Chat Toggle Button - positioned above the cart button */}
-      <div className="fixed bottom-24 right-6 z-50">
+      <div className="fixed bottom-24 right-6 z-50" data-widget="live-chat">
         <Button
           onClick={() => setIsOpen(!isOpen)}
           className={`h-14 w-14 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 ${
