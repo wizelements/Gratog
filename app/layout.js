@@ -4,9 +4,9 @@ import CustomerLayout from '@/components/CustomerLayout';
 import AdminLayoutWrapper from '@/components/AdminLayoutWrapper';
 import { Toaster } from 'sonner';
 import { Suspense } from 'react';
-import { MusicProvider } from '@/contexts/MusicContext';
 import { BackgroundMusic } from '@/components/BackgroundMusic';
 import { MusicControls } from '@/components/MusicControls';
+import MusicProviderWrapper from '@/components/MusicProviderWrapper';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -89,16 +89,16 @@ export default function RootLayout({ children }) {
          />
        </head>
       <body className={inter.className}>
-        <MusicProvider>
+        <MusicProviderWrapper>
           <AdminLayoutWrapper>
             <CustomerLayout>{children}</CustomerLayout>
           </AdminLayoutWrapper>
           <BackgroundMusic />
-          <Suspense>
+          <Suspense fallback={<div className="fixed bottom-4 right-4 z-50 w-12 h-12 rounded-full bg-gray-300 shadow-lg flex items-center justify-center text-gray-500" style={{ animation: 'spin 1s linear infinite' }}>♪</div>}>
             <MusicControls />
           </Suspense>
           <Toaster position="top-right" richColors />
-        </MusicProvider>
+        </MusicProviderWrapper>
       </body>
     </html>
   );
