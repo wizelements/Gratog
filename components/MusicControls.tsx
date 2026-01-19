@@ -6,22 +6,16 @@ import { useMusic } from '@/contexts/MusicContext';
 function MusicControlsContent() {
   const music = useMusic();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [position, setPosition] = useState({ bottom: 24, right: 80 }); // Start offset from cart
+  const [position, setPosition] = useState<{ bottom: number; left?: number; right?: number }>({ bottom: 24, left: 24 });
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Dynamic positioning - find safe spot away from other widgets
+  // Position in bottom-left to avoid cart/chat on right side
   useEffect(() => {
     const updatePosition = () => {
-      const cart = document.querySelector('[class*="FloatingCart"], [class*="fixed"][class*="bottom-6"][class*="right-6"]');
-      const isMobile = window.innerWidth < 640;
-      
-      if (isMobile) {
-        // Mobile: bottom-left corner
-        setPosition({ bottom: 24, right: window.innerWidth - 72 });
-      } else {
-        // Desktop: above the cart button area
-        setPosition({ bottom: 80, right: 24 });
-      }
+      // Always bottom-left, safe area aware
+      const safeBottom = 24;
+      const safeLeft = 24;
+      setPosition({ bottom: safeBottom, left: safeLeft });
     };
 
     updatePosition();
@@ -64,8 +58,8 @@ function MusicControlsContent() {
   return (
     <div 
       ref={panelRef}
-      className="fixed z-50"
-      style={{ bottom: position.bottom, right: position.right }}
+      className="fixed z-[60]"
+      style={{ bottom: position.bottom, left: position.left }}
     >
       {/* Main Music Button - 48px touch target */}
       <button
@@ -94,11 +88,11 @@ function MusicControlsContent() {
         ⚙
       </button>
 
-      {/* Expanded Controls */}
+      {/* Expanded Controls - opens to the right */}
       {isExpanded && (
         <div 
           id="music-controls-panel"
-          className="absolute bottom-14 right-0 bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-4 w-56 border border-gray-200 dark:border-gray-700"
+          className="absolute bottom-14 left-0 bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-4 w-56 border border-gray-200 dark:border-gray-700"
           role="region"
           aria-label="Music controls panel"
         >

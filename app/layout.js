@@ -94,7 +94,7 @@ export default function RootLayout({ children }) {
             <CustomerLayout>{children}</CustomerLayout>
           </AdminLayoutWrapper>
           <BackgroundMusic />
-          <Suspense fallback={<div className="fixed bottom-20 right-6 z-50 w-12 h-12 rounded-full bg-gray-800/90 shadow-lg flex items-center justify-center text-white backdrop-blur-sm">🎵</div>}>
+          <Suspense fallback={<div className="fixed bottom-6 left-6 z-[60] w-12 h-12 rounded-full bg-gray-800/90 shadow-lg flex items-center justify-center text-white backdrop-blur-sm">🎵</div>}>
             <MusicControls />
           </Suspense>
           <Toaster position="top-right" richColors />

@@ -138,9 +138,9 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
     const fixedContainer = container.querySelector('.fixed');
     expect(fixedContainer).toBeTruthy();
     
-    // Check has fixed positioning with z-50 (position is dynamic via style)
+    // Check has fixed positioning with z-[60] (position is dynamic via style)
     expect(fixedContainer?.className).toMatch(/fixed/);
-    expect(fixedContainer?.className).toMatch(/z-50/);
+    expect(fixedContainer?.className).toMatch(/z-\[60\]/);
   });
 
   // Test 8: Verify button has emoji content (browser only)
@@ -197,15 +197,15 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
     }
   });
 
-  // Test 10: Verify z-index is z-50 for visibility
-  it('should have z-50 for proper visibility', async () => {
+  // Test 10: Verify z-index is high enough for visibility
+  it('should have z-[60] for proper visibility above other widgets', async () => {
     const fs = await import('fs').then(m => m.promises);
     const componentPath = '/data/data/com.termux/files/home/projects/apps/gratog/components/MusicControls.tsx';
     
     const content = await fs.readFile(componentPath, 'utf-8');
     
-    // z-50 with dynamic positioning via style
-    expect(content).toMatch(/className="fixed z-50"/);
+    // z-[60] to be above cart/chat (z-50)
+    expect(content).toMatch(/className="fixed z-\[60\]"/);
   });
 });
 
