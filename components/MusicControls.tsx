@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useMusic } from '@/contexts/MusicContext';
 
 interface WidgetPosition {
@@ -10,127 +11,78 @@ interface WidgetPosition {
   side: 'left' | 'right';
 }
 
-interface DetectedWidget {
-  id: string;
-  rect: DOMRect;
-  side: 'left' | 'right';
+interface PanelPosition {
+  bottom: number;
+  left: number;
+  maxHeight: number;
 }
 
-const WIDGET_SELECTORS = [
-  '[data-widget="floating-cart"]',
-  '[data-widget="live-chat"]', 
-  '[data-widget="music-controls"]',
-  '.fixed.bottom-6.right-6', // FloatingCart fallback
-  '.fixed.bottom-24.right-6', // LiveChat fallback
-];
-
 const BUTTON_SIZE = 48;
-const SAFE_MARGIN = 16;
+const PANEL_GAP = 12;
 const BASE_BOTTOM = 24;
+const SAFE_MARGIN = 16;
 
 function MusicControlsContent() {
   const music = useMusic();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [position, setPosition] = useState<WidgetPosition>({ bottom: BASE_BOTTOM, left: 24, side: 'left' });
-  const panelRef = useRef<HTMLDivElement>(null);
+  const [panelPosition, setPanelPosition] = useState<PanelPosition | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Intelligent position detection
-  const calculateSmartPosition = useCallback((): WidgetPosition => {
-    if (typeof window === 'undefined') {
-      return { bottom: BASE_BOTTOM, left: 24, side: 'left' };
-    }
-
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    
-    // Detect other floating widgets
-    const detectedWidgets: DetectedWidget[] = [];
-    
-    WIDGET_SELECTORS.forEach(selector => {
-      document.querySelectorAll(selector).forEach(el => {
-        // Skip self
-        if (el === panelRef.current || el.contains(panelRef.current as Node)) return;
-        
-        const rect = el.getBoundingClientRect();
-        if (rect.width === 0 || rect.height === 0) return;
-        
-        const isRightSide = rect.left > viewportWidth / 2;
-        detectedWidgets.push({
-          id: selector,
-          rect,
-          side: isRightSide ? 'right' : 'left'
-        });
-      });
-    });
-
-    // Count widgets on each side
-    const rightSideWidgets = detectedWidgets.filter(w => w.side === 'right');
-    const leftSideWidgets = detectedWidgets.filter(w => w.side === 'left');
-
-    // Prefer left side if right side has more widgets (cart, chat are usually right)
-    if (rightSideWidgets.length > leftSideWidgets.length) {
-      // Check if left side is clear
-      const leftBottomOccupied = leftSideWidgets.some(w => {
-        return w.rect.bottom > viewportHeight - 100;
-      });
-      
-      if (!leftBottomOccupied) {
-        return { bottom: BASE_BOTTOM, left: 24, side: 'left' };
-      }
-      
-      // Left bottom is occupied, stack above
-      const highestLeftWidget = leftSideWidgets.reduce((max, w) => 
-        Math.max(max, viewportHeight - w.rect.top + SAFE_MARGIN), 0);
-      return { bottom: Math.max(BASE_BOTTOM, highestLeftWidget), left: 24, side: 'left' };
-    }
-
-    // Check right side positioning (above existing widgets)
-    if (rightSideWidgets.length > 0) {
-      // Find highest widget on right side
-      const highestRightWidget = rightSideWidgets.reduce((max, w) => 
-        Math.max(max, viewportHeight - w.rect.top + SAFE_MARGIN), 0);
-      
-      // Stack above it
-      return { 
-        bottom: Math.max(BASE_BOTTOM, highestRightWidget), 
-        right: 24, 
-        side: 'right' 
-      };
-    }
-
-    // Default: left side
-    return { bottom: BASE_BOTTOM, left: 24, side: 'left' };
+  // Client-side only
+  useEffect(() => {
+    setIsMounted(true);
   }, []);
 
-  // Update position on mount and resize
+  // Calculate panel position when expanded
   useEffect(() => {
-    const updatePosition = () => {
-      // Small delay to let other widgets render
-      requestAnimationFrame(() => {
-        setPosition(calculateSmartPosition());
+    if (!isExpanded || !buttonRef.current) {
+      setPanelPosition(null);
+      return;
+    }
+
+    const calculatePanelPosition = () => {
+      const buttonRect = buttonRef.current?.getBoundingClientRect();
+      if (!buttonRect) return;
+
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      
+      // Panel should appear above the button
+      const panelBottom = viewportHeight - buttonRect.top + PANEL_GAP;
+      
+      // Left position: align with button, but keep within viewport
+      const panelWidth = Math.min(288, viewportWidth - 32); // 288px or viewport - 32px padding
+      let panelLeft = buttonRect.left;
+      
+      // Ensure panel doesn't overflow right edge
+      if (panelLeft + panelWidth > viewportWidth - SAFE_MARGIN) {
+        panelLeft = viewportWidth - panelWidth - SAFE_MARGIN;
+      }
+      
+      // Ensure panel doesn't overflow left edge
+      panelLeft = Math.max(SAFE_MARGIN, panelLeft);
+      
+      // Max height: from panel bottom to top of viewport with padding
+      const maxHeight = viewportHeight - panelBottom - SAFE_MARGIN;
+
+      setPanelPosition({
+        bottom: panelBottom,
+        left: panelLeft,
+        maxHeight: Math.max(200, maxHeight),
       });
     };
 
-    updatePosition();
-    
-    // Re-check after DOM settles
-    const timeout = setTimeout(updatePosition, 500);
-    
-    window.addEventListener('resize', updatePosition);
-    
-    // Watch for DOM changes (new widgets appearing)
-    const observer = new MutationObserver(() => {
-      setTimeout(updatePosition, 100);
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    calculatePanelPosition();
+    window.addEventListener('resize', calculatePanelPosition);
+    window.addEventListener('scroll', calculatePanelPosition);
 
     return () => {
-      clearTimeout(timeout);
-      window.removeEventListener('resize', updatePosition);
-      observer.disconnect();
+      window.removeEventListener('resize', calculatePanelPosition);
+      window.removeEventListener('scroll', calculatePanelPosition);
     };
-  }, [calculateSmartPosition]);
+  }, [isExpanded]);
 
   // Close panel on outside click
   useEffect(() => {
@@ -138,7 +90,10 @@ function MusicControlsContent() {
     
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       const target = e.target as Node;
-      if (panelRef.current && !panelRef.current.contains(target)) {
+      const panel = document.getElementById('music-controls-panel');
+      const container = containerRef.current;
+      
+      if (panel && !panel.contains(target) && container && !container.contains(target)) {
         setIsExpanded(false);
       }
     };
@@ -166,13 +121,8 @@ function MusicControlsContent() {
 
   return (
     <div 
-      ref={panelRef}
-      className="fixed z-[9999]"
-      style={{ 
-        bottom: position.bottom, 
-        left: position.left,
-        right: position.right,
-      }}
+      ref={containerRef}
+      className="fixed z-[9999] bottom-6 left-6"
       data-widget="music-controls"
     >
       {/* Main Music Button - 48px touch target, premium styling */}
@@ -240,14 +190,20 @@ function MusicControlsContent() {
         </span>
       </button>
 
-      {/* Expanded Controls Panel - fixed position at bottom of viewport */}
-      {isExpanded && (
+      {/* Expanded Controls Panel - rendered via portal for proper stacking */}
+      {isExpanded && isMounted && panelPosition && createPortal(
         <div 
           id="music-controls-panel"
-          className="fixed left-4 right-4 bottom-20 sm:left-auto sm:right-auto sm:w-72 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-5 border border-gray-200 dark:border-gray-700 z-[10000]"
-          style={position.side === 'left' ? { left: 16 } : { right: 16 }}
-          role="region"
+          className="fixed bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-5 border border-gray-200 dark:border-gray-700 z-[10000] overflow-y-auto"
+          style={{ 
+            bottom: panelPosition.bottom,
+            left: panelPosition.left,
+            width: 288,
+            maxHeight: panelPosition.maxHeight,
+          }}
+          role="dialog"
           aria-label="Music controls panel"
+          aria-modal="true"
         >
           {/* Panel header */}
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
@@ -335,7 +291,8 @@ function MusicControlsContent() {
               </span>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
