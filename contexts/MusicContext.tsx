@@ -41,19 +41,28 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     currentSnippet: null,
     volume: -10,
     sessionPhase: 'intro',
-    enabled: true,
+    enabled: false, // Default to false - only enable after user interaction
   });
-  const [recentSnippets, setRecentSnippets] = useState<string[]>([]);
   const fadeIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const stateRef = useRef(state); // Keep state ref in sync for setInterval closures
+  const stateRef = useRef(state);
+  const isMountedRef = useRef(true);
 
   // Keep stateRef in sync with state
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
 
-  // Initialize audio element
+  // Clear fade interval helper
+  const clearFade = useCallback(() => {
+    if (fadeIntervalRef.current) {
+      clearInterval(fadeIntervalRef.current);
+      fadeIntervalRef.current = null;
+    }
+  }, []);
+
+  // Initialize audio element and cleanup on unmount
   useEffect(() => {
+    isMountedRef.current = true;
     const audio = new Audio();
     audio.crossOrigin = 'anonymous';
     audio.preload = 'auto';
@@ -65,12 +74,23 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       const savedEnabled = localStorage.getItem('music_enabled');
       
       if (savedVolume) setState(p => ({ ...p, volume: parseFloat(savedVolume) }));
-      if (savedEnabled !== null) setState(p => ({ ...p, enabled: savedEnabled === 'true' }));
+      // Only restore enabled if explicitly set by user before
+      if (savedEnabled === 'true') setState(p => ({ ...p, enabled: true }));
     } catch (error) {
-      // localStorage disabled or unavailable - use defaults
       console.debug('localStorage unavailable, using defaults:', error instanceof Error ? error.message : 'unknown error');
     }
-  }, []);
+
+    // Provider cleanup - prevent memory leaks and setState after unmount
+    return () => {
+      isMountedRef.current = false;
+      clearFade();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+        audioRef.current = null;
+      }
+    };
+  }, [clearFade]);
 
   const dbToLinear = useCallback((db: number): number => {
     return Math.pow(10, db / 20);
@@ -80,16 +100,17 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     return 20 * Math.log10(linear);
   }, []);
 
-  const play = useCallback(async (snippetId: string, fadeInDuration = 1000) => {
-    if (!state.enabled) return;
+  const play = useCallback((snippetId: string, fadeInDuration = 1000): Promise<void> => {
+    // Use stateRef to avoid dependency on state.enabled (stabilizes callback)
+    if (!stateRef.current.enabled) return Promise.resolve();
 
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio) return Promise.resolve();
 
-    // Find snippet (will be in context from parent)
+    clearFade();
+
     const snippet = { id: snippetId } as Snippet;
 
-    // Audio hosted on Cloudflare R2
     const R2_BASE = 'https://pub-5562920411814baeba7fe2cc990d43ef.r2.dev';
     const pathMap: Record<string, string> = {
       'that_gratitude_intro': `${R2_BASE}/That%20Gratitude%20%28Remastered%29.wav`,
@@ -107,55 +128,73 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     };
 
     audio.src = pathMap[snippetId] || `${R2_BASE}/That%20Gratitude%20%28Remastered%29.wav`;
-
-    // Fade in
     audio.volume = 0;
-    audio.play().catch(e => console.debug('Autoplay blocked:', e));
 
-    let elapsed = 0;
-    const step = 50;
-    const startVolume = dbToLinear(-20);
-    const targetVolume = dbToLinear(stateRef.current.volume); // Use ref for current state
+    return new Promise<void>((resolve, reject) => {
+      audio.play()
+        .then(() => {
+          if (!isMountedRef.current) {
+            resolve();
+            return;
+          }
+          
+          setState(p => ({ ...p, isPlaying: true, currentSnippet: snippet }));
 
-    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+          let elapsed = 0;
+          const step = 50;
+          const startVolume = dbToLinear(-20);
+          const targetVolume = dbToLinear(stateRef.current.volume);
 
-    fadeIntervalRef.current = setInterval(() => {
-      elapsed += step;
-      if (elapsed >= fadeInDuration) {
-        audio.volume = targetVolume;
-        if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
-      } else {
-        const progress = elapsed / fadeInDuration;
-        audio.volume = startVolume + (targetVolume - startVolume) * progress;
-      }
-    }, step);
+          fadeIntervalRef.current = setInterval(() => {
+            elapsed += step;
+            if (elapsed >= fadeInDuration) {
+              audio.volume = targetVolume;
+              clearFade();
+              resolve();
+            } else {
+              const progress = elapsed / fadeInDuration;
+              audio.volume = startVolume + (targetVolume - startVolume) * progress;
+            }
+          }, step);
+        })
+        .catch((e) => {
+          console.debug('Autoplay blocked:', e);
+          if (isMountedRef.current) {
+            setState(p => ({ ...p, isPlaying: false }));
+          }
+          reject(e);
+        });
+    });
+  }, [dbToLinear, clearFade]);
 
-    setState(p => ({ ...p, isPlaying: true, currentSnippet: snippet }));
-  }, [state.enabled, dbToLinear]);
-
-  const pause = useCallback(async (fadeOutDuration = 1000) => {
+  const pause = useCallback((fadeOutDuration = 1000): Promise<void> => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio) return Promise.resolve();
 
-    let elapsed = 0;
-    const step = 50;
-    const startVolume = audio.volume;
+    clearFade();
 
-    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+    return new Promise<void>((resolve) => {
+      let elapsed = 0;
+      const step = 50;
+      const startVolume = audio.volume;
 
-    fadeIntervalRef.current = setInterval(() => {
-      elapsed += step;
-      if (elapsed >= fadeOutDuration) {
-        audio.pause();
-        audio.volume = dbToLinear(stateRef.current.volume); // Use ref for current state
-        if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
-        setState(p => ({ ...p, isPlaying: false }));
-      } else {
-        const progress = elapsed / fadeOutDuration;
-        audio.volume = startVolume * (1 - progress);
-      }
-    }, step);
-  }, [dbToLinear]);
+      fadeIntervalRef.current = setInterval(() => {
+        elapsed += step;
+        if (elapsed >= fadeOutDuration) {
+          audio.pause();
+          audio.volume = dbToLinear(stateRef.current.volume);
+          clearFade();
+          if (isMountedRef.current) {
+            setState(p => ({ ...p, isPlaying: false }));
+          }
+          resolve();
+        } else {
+          const progress = elapsed / fadeOutDuration;
+          audio.volume = startVolume * (1 - progress);
+        }
+      }, step);
+    });
+  }, [dbToLinear, clearFade]);
 
   const transitionTo = useCallback(async (snippetId: string, duration = 3000) => {
     await pause(duration / 2);
@@ -188,10 +227,14 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.debug('localStorage write failed:', error instanceof Error ? error.message : 'unknown error');
     }
-    if (!enabled && audioRef.current && !audioRef.current.paused) {
-      audioRef.current.pause();
+    if (!enabled) {
+      clearFade();
+      if (audioRef.current && !audioRef.current.paused) {
+        audioRef.current.pause();
+      }
+      setState(p => ({ ...p, isPlaying: false }));
     }
-  }, []);
+  }, [clearFade]);
 
   return (
     <MusicContext.Provider

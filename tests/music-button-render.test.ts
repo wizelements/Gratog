@@ -1,6 +1,20 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
 import React from 'react';
+
+type RenderResult = {
+  container: HTMLElement;
+};
+
+const render = (element: React.ReactElement): RenderResult => {
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+  
+  const ReactDOM = require('react-dom/client');
+  const root = ReactDOM.createRoot(container);
+  root.render(element);
+  
+  return { container };
+};
 
 /**
  * Music Button Rendering Test Suite
@@ -34,13 +48,12 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
     expect(wrapper.default).toBeDefined();
     expect(typeof wrapper.default).toBe('function');
     
-    // Check that it's marked as client component (has the marker)
-    const fileContent = await import.meta.glob('/data/data/com.termux/files/home/projects/apps/gratog/components/MusicProviderWrapper.tsx', { as: 'raw' });
-    const contentString = Object.values(fileContent)[0];
+    // Check that it's marked as client component (has the marker) using fs
+    const fs = await import('fs').then(m => m.promises);
+    const wrapperPath = '/data/data/com.termux/files/home/projects/apps/gratog/components/MusicProviderWrapper.tsx';
+    const contentString = await fs.readFile(wrapperPath, 'utf-8');
     
-    if (typeof contentString === 'string') {
-      expect(contentString).toContain("'use client'");
-    }
+    expect(contentString).toContain("'use client'");
   });
 
   // Test 3: Verify Suspense fallback exists in layout
