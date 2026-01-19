@@ -1,47 +1,66 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useMusic } from '@/contexts/MusicContext';
 
 function MusicControlsContent() {
   const music = useMusic();
   const [isExpanded, setIsExpanded] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
 
+  // Close panel on outside click
   useEffect(() => {
-    // Component mounted
-  }, []);
+    if (!isExpanded) return;
+    
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node;
+      if (panelRef.current && !panelRef.current.contains(target)) {
+        setIsExpanded(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isExpanded]);
+
+  const handleTogglePlay = () => {
+    if (music.isPlaying) {
+      music.pause();
+    } else {
+      music.setEnabled(true);
+      music.play('that_gratitude_intro', 1000);
+    }
+  };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      {/* Main Music Button - tap to play/pause, long press to expand */}
+    <div 
+      ref={panelRef}
+      className="fixed bottom-[88px] right-6 z-40"
+    >
+      {/* Main Music Button - 48px touch target */}
       <button
-        onClick={() => {
-          if (music.isPlaying) {
-            music.pause();
-          } else {
-            music.setEnabled(true);
-            music.play('that_gratitude_intro', 1000);
-          }
-        }}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          setIsExpanded(!isExpanded);
-        }}
-        className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all ${
+        onClick={handleTogglePlay}
+        className={`relative w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all text-lg ${
           music.isPlaying 
-            ? 'bg-green-500 hover:bg-green-600 animate-pulse' 
-            : 'bg-blue-500 hover:bg-blue-600'
-        } text-white`}
+            ? 'bg-green-500 hover:bg-green-600 active:bg-green-700' 
+            : 'bg-gray-800/90 hover:bg-gray-700 active:bg-gray-900'
+        } text-white touch-manipulation backdrop-blur-sm`}
         aria-label={music.isPlaying ? 'Pause music' : 'Play music'}
-        title="Tap to play/pause • Right-click for settings"
       >
         <span aria-hidden="true">{music.isPlaying ? '🎶' : '🎵'}</span>
+        {music.isPlaying && (
+          <span className="absolute inset-0 rounded-full animate-ping bg-green-400 opacity-20 pointer-events-none" />
+        )}
       </button>
       
-      {/* Settings gear button */}
+      {/* Settings gear - small subtle button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-700 hover:bg-gray-600 text-white text-xs flex items-center justify-center shadow"
+        className="absolute -top-1 -left-1 w-6 h-6 rounded-full bg-gray-600/80 hover:bg-gray-500 active:bg-gray-700 text-white text-xs flex items-center justify-center shadow touch-manipulation backdrop-blur-sm"
         aria-label="Music settings"
         aria-expanded={isExpanded}
         aria-controls="music-controls-panel"
@@ -49,32 +68,33 @@ function MusicControlsContent() {
         ⚙
       </button>
 
-      {/* Expanded Controls */}
+      {/* Expanded Controls - opens left to avoid edge */}
       {isExpanded && (
         <div 
           id="music-controls-panel"
-          className="absolute bottom-16 right-0 bg-white dark:bg-gray-900 rounded-lg shadow-xl p-4 w-64 border border-gray-200 dark:border-gray-700"
+          className="absolute bottom-14 right-0 bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-4 w-56 border border-gray-200 dark:border-gray-700"
           role="region"
           aria-label="Music controls panel"
         >
+          {/* Close button */}
+          <button
+            onClick={() => setIsExpanded(false)}
+            className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+            aria-label="Close settings"
+          >
+            ✕
+          </button>
+
           <div className="space-y-4">
             {/* Play/Pause Control */}
             <div className="flex items-center justify-between">
-              <label htmlFor="music-play" className="text-sm font-medium">Music</label>
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Music</span>
               <button
-                id="music-play"
-                onClick={() => {
-                  if (music.isPlaying) {
-                    music.pause();
-                  } else {
-                    music.setEnabled(true);
-                    music.play('that_gratitude_intro', 1000);
-                  }
-                }}
-                className={`px-3 py-1 rounded text-sm font-medium transition ${
+                onClick={handleTogglePlay}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition touch-manipulation ${
                   music.isPlaying
-                    ? 'bg-green-500 text-white'
-                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                    ? 'bg-green-500 text-white active:bg-green-600'
+                    : 'bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700'
                 }`}
                 aria-pressed={music.isPlaying}
               >
@@ -83,41 +103,29 @@ function MusicControlsContent() {
             </div>
 
             {/* Volume Control */}
-            {music.enabled && (
-              <fieldset className="space-y-2 border-0 p-0">
-                <legend className="text-sm font-medium">Volume</legend>
-                <label htmlFor="volume-slider" className="sr-only">
-                  Volume: {music.volume} dB
-                </label>
-                <input
-                  id="volume-slider"
-                  type="range"
-                  min="-20"
-                  max="0"
-                  step="1"
-                  value={music.volume}
-                  onChange={e => music.setVolume(parseFloat(e.target.value))}
-                  className="w-full"
-                  aria-label="Volume control"
-                  aria-valuenow={music.volume}
-                  aria-valuemin={-20}
-                  aria-valuemax={0}
-                />
-                <p className="text-xs text-gray-500" aria-live="polite">
-                  {music.isPlaying ? <span aria-hidden="true">🎵</span> : null} {music.isPlaying ? 'Now playing' : 'Paused'}
-                </p>
-              </fieldset>
-            )}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Volume</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">
+                  {Math.round(((music.volume + 20) / 20) * 100)}%
+                </span>
+              </div>
+              <input
+                type="range"
+                min="-20"
+                max="0"
+                step="1"
+                value={music.volume}
+                onChange={e => music.setVolume(parseFloat(e.target.value))}
+                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                aria-label="Volume control"
+              />
+            </div>
 
-            {/* Info */}
-            <div className="text-xs text-gray-600 dark:text-gray-400 border-t pt-2">
-              <p className="font-semibold mb-1">Music Psychology</p>
-              <ul className="space-y-1 text-left">
-                <li>✓ Reduces stress</li>
-                <li>✓ Enhances focus</li>
-                <li>✓ Deepens gratitude</li>
-                <li>✓ Improves retention</li>
-              </ul>
+            {/* Status indicator */}
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-100 dark:border-gray-800">
+              <span className={`w-2 h-2 rounded-full ${music.isPlaying ? 'bg-green-500 animate-pulse' : 'bg-gray-300 dark:bg-gray-600'}`} />
+              {music.isPlaying ? 'Now playing' : 'Tap to play'}
             </div>
           </div>
         </div>
