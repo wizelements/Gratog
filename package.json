@@ -40,8 +40,9 @@
     "deploy:monitor": "node scripts/deploy-monitor-simple.js",
     "test:smoke": "vitest run tests/smoke.test.ts tests/hydration-safety.test.ts --reporter=verbose",
     "validate:payments": "node scripts/validate-payments.js",
-    "predeploy": "npm run validate && npm run validate:payments && npm run test:smoke && npm run build",
-    "deploy:safe": "npm run validate:payments && vercel --prod"
+    "validate:music-button": "node scripts/validate-music-button.js",
+    "predeploy": "npm run validate:music-button && npm run validate && npm run validate:payments && npm run test:smoke && npm run build",
+    "deploy:safe": "npm run validate:music-button && npm run validate:payments && vercel --prod"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",
