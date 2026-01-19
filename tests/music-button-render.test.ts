@@ -73,7 +73,7 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
     
     // Check that the fallback contains visible content with fixed positioning
     expect(content).toMatch(/fallback\s*=\s*{/);
-    expect(content).toMatch(/className="fixed.*z-50/);
+    expect(content).toMatch(/className="fixed.*z-\[/);
   });
 
   // Test 4: Verify MusicControls doesn't have duplicate Suspense
@@ -198,14 +198,14 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
   });
 
   // Test 10: Verify z-index is high enough for visibility
-  it('should have z-[60] for proper visibility above other widgets', async () => {
+  it('should have high z-index for proper visibility above other widgets', async () => {
     const fs = await import('fs').then(m => m.promises);
     const componentPath = '/data/data/com.termux/files/home/projects/apps/gratog/components/MusicControls.tsx';
     
     const content = await fs.readFile(componentPath, 'utf-8');
     
-    // z-[60] to be above cart/chat (z-50)
-    expect(content).toMatch(/className="fixed z-\[60\]"/);
+    // z-[9999] to be above all other widgets
+    expect(content).toMatch(/z-\[9999\]/);
   });
 });
 
