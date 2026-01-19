@@ -71,9 +71,9 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
     // Check that Suspense has a fallback prop
     expect(content).toMatch(/Suspense\s+fallback=/);
     
-    // Check that the fallback contains visible content (not just whitespace)
+    // Check that the fallback contains visible content matching MusicControls position
     expect(content).toMatch(/fallback\s*=\s*{/);
-    expect(content).toMatch(/className="fixed bottom-4 right-4 z-50/);
+    expect(content).toMatch(/className="fixed bottom-\[88px\] right-6 z-40/);
   });
 
   // Test 4: Verify MusicControls doesn't have duplicate Suspense
@@ -138,11 +138,11 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
     const fixedContainer = container.querySelector('.fixed');
     expect(fixedContainer).toBeTruthy();
     
-    // Check positioning classes
+    // Check positioning classes (updated for mobile-friendly stacking)
     expect(fixedContainer?.className).toMatch(/fixed/);
-    expect(fixedContainer?.className).toMatch(/bottom-4/);
-    expect(fixedContainer?.className).toMatch(/right-4/);
-    expect(fixedContainer?.className).toMatch(/z-50/);
+    expect(fixedContainer?.className).toMatch(/bottom-\[88px\]/);
+    expect(fixedContainer?.className).toMatch(/right-6/);
+    expect(fixedContainer?.className).toMatch(/z-40/);
   });
 
   // Test 8: Verify button has emoji content (browser only)
@@ -199,15 +199,15 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
     }
   });
 
-  // Test 10: Verify z-index is high enough
-  it('should have z-50 to avoid being hidden by other elements', async () => {
+  // Test 10: Verify z-index stacks properly with other widgets
+  it('should have z-40 to layer below cart/chat but above content', async () => {
     const fs = await import('fs').then(m => m.promises);
     const componentPath = '/data/data/com.termux/files/home/projects/apps/gratog/components/MusicControls.tsx';
     
     const content = await fs.readFile(componentPath, 'utf-8');
     
-    // Check that the main container has z-50
-    expect(content).toMatch(/className="fixed.*z-50/);
+    // z-40 to layer below FloatingCart (z-50) and LiveChat (z-50)
+    expect(content).toMatch(/className="fixed.*z-40/);
   });
 });
 
