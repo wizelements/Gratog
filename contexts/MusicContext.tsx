@@ -101,8 +101,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const play = useCallback((snippetId: string, fadeInDuration = 1000): Promise<void> => {
-    // Use stateRef to avoid dependency on state.enabled (stabilizes callback)
-    if (!stateRef.current.enabled) return Promise.resolve();
+    // Note: We don't check enabled here - caller is responsible for enabling first
+    // This allows setEnabled(true) + play() to work in sequence
 
     const audio = audioRef.current;
     if (!audio) return Promise.resolve();
