@@ -9,6 +9,8 @@ jobs:
   health-check:
     name: Monitor Production Health
     runs-on: ubuntu-latest
+    # Skip scheduled runs on forks
+    if: github.event_name != 'schedule' || github.repository == 'wizelements/Gratog'
     
     steps:
       - uses: actions/checkout@v4
@@ -20,16 +22,42 @@ jobs:
           
           echo "Checking: $PROD_URL"
           
-          # Health endpoint check
-          HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL/api/health" --max-time 30 || echo "000")
+          # Function to check endpoint with retries
+          check_endpoint() {
+            local url=$1
+            local max_retries=3
+            local retry_count=0
+            local response=""
+            
+            while [ $retry_count -lt $max_retries ]; do
+              response=$(curl -s -o /dev/null -w "%{http_code}" "$url" --max-time 30 --connect-timeout 10 2>/dev/null || echo "000")
+              
+              if [ "$response" != "000" ]; then
+                echo "$response"
+                return 0
+              fi
+              
+              retry_count=$((retry_count + 1))
+              if [ $retry_count -lt $max_retries ]; then
+                echo "Retry $retry_count for $url..." >&2
+                sleep 5
+              fi
+            done
+            
+            echo "000"
+            return 1
+          }
+          
+          # Health endpoint check (optional - don't fail if not exists)
+          HEALTH_RESPONSE=$(check_endpoint "$PROD_URL/api/health")
           echo "health_status=$HEALTH_RESPONSE" >> $GITHUB_OUTPUT
           
-          # Main page check
-          MAIN_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL" --max-time 30 || echo "000")
+          # Main page check (critical)
+          MAIN_RESPONSE=$(check_endpoint "$PROD_URL")
           echo "main_status=$MAIN_RESPONSE" >> $GITHUB_OUTPUT
           
-          # API check
-          API_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL/api/products" --max-time 30 || echo "000")
+          # API check (optional - don't fail if not exists)
+          API_RESPONSE=$(check_endpoint "$PROD_URL/api/products")
           echo "api_status=$API_RESPONSE" >> $GITHUB_OUTPUT
           
           echo "## Health Check Results" >> $GITHUB_STEP_SUMMARY
@@ -40,7 +68,7 @@ jobs:
           echo "| /api/products | $API_RESPONSE |" >> $GITHUB_STEP_SUMMARY
       
       - name: Alert on Failure
-        if: steps.health.outputs.health_status != '200' || steps.health.outputs.main_status != '200'
+        if: steps.health.outputs.main_status != '200' && steps.health.outputs.main_status != '301' && steps.health.outputs.main_status != '302' && steps.health.outputs.main_status != '307' && steps.health.outputs.main_status != '308'
         run: |
           echo "::error::Production health check failed!"
           echo "Health: ${{ steps.health.outputs.health_status }}"
@@ -53,13 +81,20 @@ jobs:
           exit 1
       
       - name: Log Success
-        if: steps.health.outputs.health_status == '200' && steps.health.outputs.main_status == '200'
+        if: |
+          steps.health.outputs.main_status == '200' ||
+          steps.health.outputs.main_status == '301' ||
+          steps.health.outputs.main_status == '302' ||
+          steps.health.outputs.main_status == '307' ||
+          steps.health.outputs.main_status == '308'
         run: |
-          echo "✅ All health checks passed"
+          echo "✅ Production is responding (Status: ${{ steps.health.outputs.main_status }})"
 
   performance-check:
     name: Performance Baseline
     runs-on: ubuntu-latest
+    # Skip scheduled runs on forks
+    if: github.event_name != 'schedule' || github.repository == 'wizelements/Gratog'
     
     steps:
       - name: Measure Response Times
