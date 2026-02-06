@@ -127,5 +127,6 @@
     "tailwindcss": "^3.4.0",
     "typescript": "^5",
     "vitest": "^2.0.0"
-  }
+  },
+  "description": "Premium e-commerce platform for gratitude-based gifts with Square payments, cron-based campaigns, and multi-currency support"
 }
