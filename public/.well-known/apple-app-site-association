@@ -1,0 +1,21 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TVPB97SSEC.com.tasteofgratitude.app",
+        "paths": [
+          "/",
+          "/products/*",
+          "/orders/*",
+          "/account/*"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "TVPB97SSEC.com.tasteofgratitude.app"
+    ]
+  }
+}

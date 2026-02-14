@@ -29,6 +29,14 @@ export const metadata = {
   creator: 'Taste of Gratitude',
   publisher: 'Taste of Gratitude',
   manifest: '/manifest.json',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    minimumScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+    viewportFit: 'cover'
+  },
   formatDetection: {
     email: false,
     address: false,
@@ -79,15 +87,30 @@ export default function RootLayout({ children }) {
          {/* PWA & App Manifest */}
          <link rel="manifest" href="/manifest.json" />
          <meta name="theme-color" content="#1f2937" />
+         
+         {/* iOS App Configuration */}
          <meta name="mobile-web-app-capable" content="yes" />
          <meta name="apple-mobile-web-app-capable" content="yes" />
          <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
          <meta name="apple-mobile-web-app-title" content="Gratog" />
+         <meta name="apple-itunes-app" content="app-id=12345678" />
          
-         {/* Icons */}
+         {/* iOS Splash Screens & Icons */}
+         <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+         <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="152x152" />
+         <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="120x120" />
+         
+         {/* Prevent toolbar from covering content on iOS */}
+         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=yes, maximum-scale=5" />
+         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+         
+         {/* Search Engine Optimization */}
+         <link rel="canonical" href="https://tasteofgratitude.shop" />
+         
+         {/* Icons for different platforms */}
          <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+         <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="32x32" />
+         <link rel="shortcut icon" href="/favicon.ico" />
          <link rel="preconnect" href="https://web.squarecdn.com" crossOrigin="anonymous" />
          <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
          <link rel="preconnect" href="https://items-images-production.s3.us-west-2.amazonaws.com" crossOrigin="anonymous" />

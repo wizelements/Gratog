@@ -51,6 +51,26 @@
     }
   ],
   "categories": ["shopping", "lifestyle"],
+  "protocol_handlers": [
+    {
+      "protocol": "web+gratog",
+      "url": "/?product=%s"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/open-order",
+      "accept": {
+        "application/json": [".json"]
+      },
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.svg",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
   "shortcuts": [
     {
       "name": "Browse Products",
