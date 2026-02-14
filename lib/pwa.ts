@@ -13,7 +13,7 @@ let serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
 /**
  * Register service worker and enable PWA features
  */
-export async function initializePWA(config: PWAConfig = {}) {
+export async function initializePWA(config: PWAConfig = {}): Promise<ServiceWorkerRegistration | null> {
   const {
     enableAutoUpdate = true,
     updateCheckInterval = 3600000, // 1 hour
@@ -22,8 +22,15 @@ export async function initializePWA(config: PWAConfig = {}) {
 
   // Check if service workers are supported
   if (!('serviceWorker' in navigator)) {
-    console.log('Service Workers not supported');
-    return;
+    console.warn('⚠️ Service Workers not supported in this browser');
+    return null;
+  }
+
+  // Check if HTTPS (required for SW, except localhost)
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  if (!isLocalhost && window.location.protocol !== 'https:') {
+    console.warn('⚠️ Service Workers require HTTPS');
+    return null;
   }
 
   try {
@@ -34,7 +41,7 @@ export async function initializePWA(config: PWAConfig = {}) {
     });
 
     serviceWorkerRegistration = registration;
-    console.log('Service Worker registered successfully');
+    console.log('✅ Service Worker registered successfully');
 
     // Check for updates periodically
     if (enableAutoUpdate) {
@@ -66,8 +73,10 @@ export async function initializePWA(config: PWAConfig = {}) {
     // Set up message listener for SW
     navigator.serviceWorker.addEventListener('message', handleSWMessage);
 
+    return registration;
   } catch (error) {
-    console.error('Service Worker registration failed:', error);
+    console.error('❌ Service Worker registration failed:', error);
+    return null;
   }
 }
 

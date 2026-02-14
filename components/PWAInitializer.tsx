@@ -6,28 +6,54 @@ import { initializePWA, isAppInstalled, isPersistentStorageGranted, requestPersi
 export function PWAInitializer() {
   useEffect(() => {
     const init = async () => {
-      // Initialize PWA
-      initializePWA({
-        enableAutoUpdate: true,
-        updateCheckInterval: 3600000, // 1 hour
-        enableNotifications: true
-      });
+      try {
+        // Initialize PWA
+        await initializePWA({
+          enableAutoUpdate: true,
+          updateCheckInterval: 3600000, // 1 hour
+          enableNotifications: true
+        });
 
-      // Check if persistent storage is available
-      const isPersistent = await isPersistentStorageGranted();
-      if (!isPersistent) {
-        await requestPersistentStorage();
+        // Check if persistent storage is available
+        const isPersistent = await isPersistentStorageGranted();
+        if (!isPersistent) {
+          try {
+            await requestPersistentStorage();
+          } catch (err) {
+            console.log('Persistent storage request denied');
+          }
+        }
+
+        // Log app status
+        const status = {
+          installed: isAppInstalled(),
+          persistent: await isPersistentStorageGranted(),
+          online: navigator.onLine,
+          swSupported: 'serviceWorker' in navigator,
+          timestamp: new Date().toISOString()
+        };
+        
+        console.log('🚀 PWA Ready:', status);
+        
+        // Store status in session storage for debugging
+        sessionStorage.setItem('pwa-status', JSON.stringify(status));
+      } catch (error) {
+        console.error('❌ PWA initialization error:', error);
       }
-
-      // Log app status
-      console.log('PWA Status:', {
-        installed: isAppInstalled(),
-        persistent: await isPersistentStorageGranted(),
-        online: navigator.onLine
-      });
     };
 
-    init();
+    // Defer initialization to next frame
+    if (typeof window !== 'undefined') {
+      window.addEventListener('load', init, { once: true });
+      // Also try immediately in case load already fired
+      if (document.readyState === 'complete') {
+        init();
+      }
+    }
+
+    return () => {
+      window.removeEventListener('load', init);
+    };
   }, []);
 
   return null;

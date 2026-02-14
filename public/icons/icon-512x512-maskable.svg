@@ -1,0 +1,12 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .bg { fill: #1f2937; }
+      .accent { fill: #667eea; }
+      .text { fill: #fbbf24; font-weight: bold; font-family: system-ui; }
+    </style>
+  </defs>
+  <circle cx="256" cy="256" r="256" class="bg"/>
+  <text x="256" y="332.8" font-size="256" text-anchor="middle" class="text">G</text>
+  <circle cx="384" cy="128" r="76.8" class="accent" opacity="0.8"/>
+</svg>

@@ -11,6 +11,7 @@ import MusicProviderWrapper from '@/components/MusicProviderWrapper';
 import { PWAInitializer } from '@/components/PWAInitializer';
 import { PWAPrompt } from '@/components/PWAPrompt';
 import { PWAUpdateNotifier } from '@/components/PWAUpdateNotifier';
+import { PWADiagnostics } from '@/components/PWADiagnostics';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -75,7 +76,18 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-         {/* Preconnect hints for external resources - improves LCP */}
+         {/* PWA & App Manifest */}
+         <link rel="manifest" href="/manifest.json" />
+         <meta name="theme-color" content="#1f2937" />
+         <meta name="mobile-web-app-capable" content="yes" />
+         <meta name="apple-mobile-web-app-capable" content="yes" />
+         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+         <meta name="apple-mobile-web-app-title" content="Gratog" />
+         
+         {/* Icons */}
+         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
          <link rel="preconnect" href="https://web.squarecdn.com" crossOrigin="anonymous" />
          <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
          <link rel="preconnect" href="https://items-images-production.s3.us-west-2.amazonaws.com" crossOrigin="anonymous" />
@@ -105,6 +117,7 @@ export default function RootLayout({ children }) {
         </MusicProviderWrapper>
         <PWAPrompt />
         <PWAUpdateNotifier />
+        <PWADiagnostics />
           <Suspense fallback={null}>
             <CookieConsent />
           </Suspense>
