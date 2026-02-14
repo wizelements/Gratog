@@ -8,6 +8,9 @@ import { BackgroundMusic } from '@/components/BackgroundMusic';
 import { MusicControls } from '@/components/MusicControls';
 import { CookieConsent } from '@/components/CookieConsent';
 import MusicProviderWrapper from '@/components/MusicProviderWrapper';
+import { PWAInitializer } from '@/components/PWAInitializer';
+import { PWAPrompt } from '@/components/PWAPrompt';
+import { PWAUpdateNotifier } from '@/components/PWAUpdateNotifier';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -90,6 +93,7 @@ export default function RootLayout({ children }) {
          />
        </head>
       <body className={inter.className}>
+        <PWAInitializer />
         <MusicProviderWrapper>
           <AdminLayoutWrapper>
             <CustomerLayout>{children}</CustomerLayout>
@@ -98,6 +102,9 @@ export default function RootLayout({ children }) {
           <Suspense fallback={<div className="fixed bottom-6 left-6 z-[9999] w-12 h-12 rounded-full bg-gray-800/90 shadow-lg flex items-center justify-center text-white backdrop-blur-sm">🎵</div>}>
             <MusicControls />
           </Suspense>
+        </MusicProviderWrapper>
+        <PWAPrompt />
+        <PWAUpdateNotifier />
           <Suspense fallback={null}>
             <CookieConsent />
           </Suspense>
