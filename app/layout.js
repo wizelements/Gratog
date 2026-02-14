@@ -141,11 +141,10 @@ export default function RootLayout({ children }) {
         <PWAPrompt />
         <PWAUpdateNotifier />
         <PWADiagnostics />
-          <Suspense fallback={null}>
-            <CookieConsent />
-          </Suspense>
-          <Toaster position="top-right" richColors />
-        </MusicProviderWrapper>
+        <Suspense fallback={null}>
+          <CookieConsent />
+        </Suspense>
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );
