@@ -32,10 +32,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
-      
+
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --non-interactive
       
       - name: Build app
         run: yarn build

@@ -32,10 +32,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
-      
+
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --non-interactive
       
       - name: Run quick scan
         run: node .vorax/vorax-cli.js quick
@@ -62,10 +61,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
-      
+
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --non-interactive
       
       - name: Build application
         run: yarn build
@@ -171,10 +169,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
-      
+
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --non-interactive
       
       - name: Run nano agents
         run: node .vorax/vorax-cli.js nano
@@ -190,10 +187,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
-      
+
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --non-interactive
       
       - name: Run npm audit
         run: npm audit --audit-level=high
