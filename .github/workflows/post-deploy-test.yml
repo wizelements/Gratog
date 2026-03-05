@@ -2,7 +2,6 @@ name: Post-Deploy Tests
 
 on:
   deployment_status:
-    types: [created]
 
 jobs:
   test-production:
