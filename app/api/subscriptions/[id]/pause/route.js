@@ -3,9 +3,14 @@ import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { sendEmail } from '@/lib/email';
 import { logger } from '@/lib/logger';
+import { verifySubscriptionAccessToken } from '@/lib/subscription-access';
 
 export async function POST(request, { params }) {
   try {
+    if (process.env.FEATURE_SUBSCRIPTIONS_ENABLED !== 'true') {
+      return NextResponse.json({ error: 'Subscriptions are disabled' }, { status: 503 });
+    }
+
     const { id } = await params;
     const { months = 1 } = await request.json();
 
@@ -22,6 +27,12 @@ export async function POST(request, { params }) {
 
     if (!subscription) {
       return NextResponse.json({ error: 'Subscription not found' }, { status: 404 });
+    }
+
+    const token = request.nextUrl.searchParams.get('token') || request.headers.get('x-subscription-token');
+    const tokenData = verifySubscriptionAccessToken(token);
+    if (!tokenData || tokenData.email !== String(subscription.email || '').toLowerCase()) {
+      return NextResponse.json({ error: 'Unauthorized subscription action' }, { status: 401 });
     }
 
     const pauseUntilDate = new Date();

@@ -5,6 +5,13 @@ export async function POST() {
   try {
     let response = NextResponse.json({ success: true, message: 'Logged out successfully' });
     response = clearAdminCookie(response);
+    response.cookies.set('admin_csrf', '', {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 0,
+    });
     return response;
   } catch (error) {
     console.error('Logout error:', error);

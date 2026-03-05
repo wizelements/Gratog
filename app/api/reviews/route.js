@@ -3,6 +3,7 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import { sendReviewConfirmation } from '@/lib/resend-email';
 import { verifyToken } from '@/lib/auth';
 import { logger } from '@/lib/logger';
+import { RateLimit } from '@/lib/redis';
 
 const REVIEW_POINTS = 10;
 
@@ -52,6 +53,11 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
+    const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    if (!RateLimit.check(`review_submit:${clientIp}`, 20, 60 * 60)) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    }
+
     const { productId, productName, name, email, rating, title, comment, images } = await request.json();
 
     if (!productId || !productName || !name || !email || !rating || !title || !comment) {

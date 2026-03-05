@@ -17,7 +17,7 @@ async function hashPassword(password: string): Promise<string> {
  * POST /api/admin/emergency-init
  * Body: { 
  *   "emergencySecret": "your-emergency-secret",
- *   "email": "admin@tasteofgratitude.net",
+ *   "email": "admin@tasteofgratitude.shop",
  *   "password": "your-password"
  * }
  */

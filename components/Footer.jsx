@@ -158,7 +158,7 @@ export default function Footer() {
                 <Instagram className="h-5 w-5 group-hover:scale-110 transition-transform" />
               </a>
               <a
-                href="mailto:hello@tasteofgratitude.net"
+                href="mailto:hello@tasteofgratitude.shop"
                 className="w-10 h-10 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white transition-all flex items-center justify-center group"
                 aria-label="Email"
               >

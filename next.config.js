@@ -2,14 +2,12 @@ const nextConfig = {
   // Removed 'standalone' output for Vercel compatibility
   // Vercel uses its own build output optimization
   
-  // ESLint - Don't fail build on warnings
+  // Keep production builds safe: do not ignore lint/type errors
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
-  
-  // TypeScript - Don't fail build on errors during production build
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   
   // Production performance optimizations
@@ -66,33 +64,6 @@ const nextConfig = {
         poll: 3000, // Increased interval to reduce CPU
         aggregateTimeout: 500,
         ignored: ['**/node_modules', '**/.git', '**/logs'],
-      };
-    } else {
-      // Production optimizations
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          minSize: 20000,
-          maxSize: 200000,
-          cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              chunks: 'all',
-              priority: 10,
-            },
-            common: {
-              name: 'common',
-              minChunks: 2,
-              chunks: 'all',
-              priority: 5,
-            },
-          },
-        },
-        concatenateModules: true,
-        usedExports: true,
-        sideEffects: false,
       };
     }
     
@@ -152,10 +123,10 @@ const nextConfig = {
       {
         source: "/api/:path*",
         headers: [
-          { key: "Access-Control-Allow-Origin", value: process.env.CORS_ORIGINS || "*" },
+          { key: "Access-Control-Allow-Origin", value: process.env.CORS_ORIGINS || "https://tasteofgratitude.shop" },
           { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, OPTIONS" },
           { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization" },
-          { key: "Access-Control-Allow-Credentials", value: "true" },
+          { key: "Access-Control-Allow-Credentials", value: "false" },
         ],
       },
       {

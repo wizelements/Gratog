@@ -171,7 +171,7 @@ export default function AdminSetupPage() {
                   <p>
                     <strong>Email:</strong>{' '}
                     <code className="bg-blue-100 px-2 py-1 rounded">
-                      {process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@tasteofgratitude.net'}
+                      {process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@tasteofgratitude.shop'}
                     </code>
                   </p>
                   <p>

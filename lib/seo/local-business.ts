@@ -27,7 +27,7 @@ export function getLocalBusinessSchema(location: MarketLocation, baseUrl: string
     description: location.description,
     url: baseUrl,
     telephone: '+1-470-555-0123',
-    email: 'info@tasteofgratitude.net',
+    email: 'info@tasteofgratitude.shop',
     image: `${baseUrl}/images/market-${location.name.toLowerCase().replace(/\s+/g, '-')}.jpg`,
     
     address: {
@@ -229,8 +229,8 @@ export function getNAPCitation() {
   return {
     name: 'Taste of Gratitude',
     phone: '+1-470-555-0123',
-    email: 'info@tasteofgratitude.net',
-    website: 'https://tasteofgratitude.net',
+    email: 'info@tasteofgratitude.shop',
+    website: 'https://tasteofgratitude.shop',
     address: 'Atlanta, GA',
     hours: 'Saturday: 9:00 AM - 6:00 PM',
   };

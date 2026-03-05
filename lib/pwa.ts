@@ -175,7 +175,7 @@ export async function subscribeToPush(publicKey: string): Promise<PushSubscripti
     const registration = await navigator.serviceWorker.ready;
     return registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(publicKey)
+      applicationServerKey: urlBase64ToUint8Array(publicKey) as unknown as BufferSource,
     });
   } catch (error) {
     console.error('Failed to subscribe to push:', error);
@@ -212,7 +212,7 @@ export function isOnline(): boolean {
 /**
  * Handle messages from service worker
  */
-function handleSWMessage(event: ExtendableMessageEvent) {
+function handleSWMessage(event: MessageEvent) {
   const { type, data } = event.data;
 
   switch (type) {

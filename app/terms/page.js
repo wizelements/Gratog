@@ -136,7 +136,7 @@ export default function TermsPage() {
               <h3 className="font-semibold mb-2">Satisfaction Guarantee</h3>
               <p className="text-sm">
                 We stand behind the quality of our products. If you're not completely satisfied, 
-                please contact us at hello@tasteofgratitude.net within 24 hours of receipt.
+                please contact us at hello@tasteofgratitude.shop within 24 hours of receipt.
               </p>
             </div>
           </CardContent>
@@ -212,7 +212,7 @@ export default function TermsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2 text-sm">
-              <p><strong>Email:</strong> hello@tasteofgratitude.net</p>
+              <p><strong>Email:</strong> hello@tasteofgratitude.shop</p>
               <p><strong>Phone:</strong> (404) 555-1234</p>
               <p><strong>Address:</strong> Serenbe Farmers Market, Chattahoochee Hills, GA 30268</p>
             </div>

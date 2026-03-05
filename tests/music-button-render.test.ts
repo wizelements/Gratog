@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import React from 'react';
+import path from 'path';
 
 const isBrowser = typeof document !== 'undefined';
+const PROJECT_ROOT = process.cwd();
 
 type RenderResult = {
   container: HTMLElement;
@@ -55,7 +57,7 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
     
     // Check that it's marked as client component (has the marker) using fs
     const fs = await import('fs').then(m => m.promises);
-    const wrapperPath = '/data/data/com.termux/files/home/projects/apps/gratog/components/MusicProviderWrapper.tsx';
+    const wrapperPath = path.join(PROJECT_ROOT, 'components/MusicProviderWrapper.tsx');
     const contentString = await fs.readFile(wrapperPath, 'utf-8');
     
     expect(contentString).toContain("'use client'");
@@ -64,7 +66,7 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
   // Test 3: Verify Suspense fallback exists in layout
   it('should have Suspense with fallback in layout.js', async () => {
     const fs = await import('fs').then(m => m.promises);
-    const layoutPath = '/data/data/com.termux/files/home/projects/apps/gratog/app/layout.js';
+    const layoutPath = path.join(PROJECT_ROOT, 'app/layout.js');
     
     const content = await fs.readFile(layoutPath, 'utf-8');
     
@@ -79,7 +81,7 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
   // Test 4: Verify MusicControls doesn't have duplicate Suspense
   it('should not have redundant Suspense wrapper in MusicControls', async () => {
     const fs = await import('fs').then(m => m.promises);
-    const componentPath = '/data/data/com.termux/files/home/projects/apps/gratog/components/MusicControls.tsx';
+    const componentPath = path.join(PROJECT_ROOT, 'components/MusicControls.tsx');
     
     const content = await fs.readFile(componentPath, 'utf-8');
     
@@ -94,7 +96,7 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
   // Test 5: Verify proper Server/Client boundary
   it('should not directly import use-client component into server component', async () => {
     const fs = await import('fs').then(m => m.promises);
-    const layoutPath = '/data/data/com.termux/files/home/projects/apps/gratog/app/layout.js';
+    const layoutPath = path.join(PROJECT_ROOT, 'app/layout.js');
     
     const content = await fs.readFile(layoutPath, 'utf-8');
     
@@ -112,7 +114,7 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
   // Test 6: Verify MusicControls is marked as client component
   it('should mark MusicControls as use client', async () => {
     const fs = await import('fs').then(m => m.promises);
-    const componentPath = '/data/data/com.termux/files/home/projects/apps/gratog/components/MusicControls.tsx';
+    const componentPath = path.join(PROJECT_ROOT, 'components/MusicControls.tsx');
     
     const content = await fs.readFile(componentPath, 'utf-8');
     
@@ -200,7 +202,7 @@ describe('Music Button Rendering - Root Cause Prevention', () => {
   // Test 10: Verify z-index is high enough for visibility
   it('should have high z-index for proper visibility above other widgets', async () => {
     const fs = await import('fs').then(m => m.promises);
-    const componentPath = '/data/data/com.termux/files/home/projects/apps/gratog/components/MusicControls.tsx';
+    const componentPath = path.join(PROJECT_ROOT, 'components/MusicControls.tsx');
     
     const content = await fs.readFile(componentPath, 'utf-8');
     
@@ -214,7 +216,7 @@ describe('Music Button Integration - Full Render Path', () => {
   // Test 11: Verify layout properly wraps component
   it('should wrap MusicControls in layout with Suspense and fallback', async () => {
     const fs = await import('fs').then(m => m.promises);
-    const layoutPath = '/data/data/com.termux/files/home/projects/apps/gratog/app/layout.js';
+    const layoutPath = path.join(PROJECT_ROOT, 'app/layout.js');
     
     const content = await fs.readFile(layoutPath, 'utf-8');
     
@@ -230,7 +232,7 @@ describe('Music Button Integration - Full Render Path', () => {
   // Test 12: Component tree should have proper nesting
   it('should have proper component nesting: Layout > Provider > Suspense > MusicControls', async () => {
     const fs = await import('fs').then(m => m.promises);
-    const layoutPath = '/data/data/com.termux/files/home/projects/apps/gratog/app/layout.js';
+    const layoutPath = path.join(PROJECT_ROOT, 'app/layout.js');
     
     const content = await fs.readFile(layoutPath, 'utf-8');
     
@@ -252,7 +254,7 @@ describe('Music Button Integration - Full Render Path', () => {
   // Test 13: Suspense fallback should be visible element
   it('should have visible fallback element, not just null or empty string', async () => {
     const fs = await import('fs').then(m => m.promises);
-    const layoutPath = '/data/data/com.termux/files/home/projects/apps/gratog/app/layout.js';
+    const layoutPath = path.join(PROJECT_ROOT, 'app/layout.js');
     
     const content = await fs.readFile(layoutPath, 'utf-8');
     

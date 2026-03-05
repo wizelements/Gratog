@@ -25,13 +25,6 @@ export const OrganizationSchema = {
     contactType: 'Customer Service',
     availableLanguage: 'English'
   },
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '4.9',
-    reviewCount: '847',
-    bestRating: '5',
-    worstRating: '1'
-  },
   priceRange: '$$',
   foundingDate: '2020',
   slogan: 'Wildcrafted Sea Moss Wellness Journey'
@@ -317,13 +310,61 @@ export function validateSchema(schema) {
 
 // Helper function to inject schema into page
 export function injectSchema(schema) {
-  if (typeof window === 'undefined') {
-    return (
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-      />
-    );
-  }
-  return null;
+  return JSON.stringify(schema);
+}
+
+export function buildHomepageOrganizationSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Taste of Gratitude',
+    description: 'Premium wildcrafted sea moss gel and wellness products with 92 essential minerals',
+    url: 'https://tasteofgratitude.shop',
+    logo: 'https://tasteofgratitude.shop/logo.png',
+    sameAs: [
+      'https://www.instagram.com/tasteofgratitude',
+      'https://www.facebook.com/tasteofgratitude'
+    ]
+  };
+}
+
+export function buildHomepageFaqSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'What is sea moss and what are its benefits?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Sea moss (Chondrus crispus), also known as Irish moss, is a species of red algae that contains 92 of the 102 essential minerals our bodies need. It supports immune function, thyroid health, digestive wellness, and provides natural energy.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'How do I use sea moss gel?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Take 1-2 tablespoons daily. Add it to smoothies, teas, soups, or consume directly. It can also be applied topically for skin health. Store refrigerated and use within 3-4 weeks.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Is your sea moss wildcrafted or pool-grown?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'All our sea moss is 100% wildcrafted from pristine ocean waters. We never use pool-grown or farmed sea moss, ensuring maximum mineral content and authenticity.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'What makes Taste of Gratitude sea moss different?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'We hand-craft every jar with wildcrafted sea moss, test for purity, and infuse unique flavors like elderberry and lemonade. Our products are 100% natural, vegan, non-GMO, and made with gratitude.'
+        }
+      }
+    ]
+  };
 }

@@ -50,7 +50,9 @@ const PRE_PAYMENT_STATES = ['pending', 'payment_failed'];
 
 export async function POST(request: NextRequest) {
   const ctx = new RequestContext();
-  
+  const json = (payload: Record<string, unknown>, status = 200) =>
+    NextResponse.json({ ...payload, traceId: ctx.traceId }, { status });
+
   try {
     const body = await request.json();
     const { 
@@ -69,24 +71,15 @@ export async function POST(request: NextRequest) {
     // VALIDATION: Required fields
     // ========================================================================
     if (!sourceId) {
-      return NextResponse.json(
-        { success: false, error: 'Payment source ID (token) is required' },
-        { status: 400 }
-      );
+      return json({ success: false, error: 'Payment source ID (token) is required' }, 400);
     }
     
     if (!amountCents || amountCents <= 0) {
-      return NextResponse.json(
-        { success: false, error: 'Valid amount is required' },
-        { status: 400 }
-      );
+      return json({ success: false, error: 'Valid amount is required' }, 400);
     }
-    
+
     if (!orderId) {
-      return NextResponse.json(
-        { success: false, error: 'Order ID is required for payment processing' },
-        { status: 400 }
-      );
+      return json({ success: false, error: 'Order ID is required for payment processing' }, 400);
     }
     
     logger.debug('API', 'Payment request received', {
@@ -112,14 +105,13 @@ export async function POST(request: NextRequest) {
         tags: { api: 'payments', stage: 'db_connect' }
       });
       
-      return NextResponse.json(
+      return json(
         { 
           success: false, 
           error: 'Payment system temporarily unavailable. Please try again in a moment.',
-          code: 'DB_UNAVAILABLE',
-          traceId: ctx.traceId
+          code: 'DB_UNAVAILABLE'
         },
-        { status: 503 }
+        500
       );
     }
     
@@ -140,9 +132,8 @@ export async function POST(request: NextRequest) {
           existingPaymentId: existingPayment.squarePaymentId
         });
         
-        return NextResponse.json({
+        return json({
           success: true,
-          traceId: ctx.traceId,
           payment: {
             id: existingPayment.squarePaymentId,
             status: existingPayment.status,
@@ -183,14 +174,13 @@ export async function POST(request: NextRequest) {
         extra: { orderId, traceId: ctx.traceId }
       });
       
-      return NextResponse.json(
+      return json(
         { 
           success: false, 
           error: 'Order not found. Please refresh and try again, or contact support if the issue persists.',
-          code: 'ORDER_NOT_FOUND',
-          traceId: ctx.traceId
+          code: 'ORDER_NOT_FOUND'
         },
-        { status: 404 }
+        404
       );
     }
     
@@ -212,17 +202,16 @@ export async function POST(request: NextRequest) {
         existingPaymentId: order.squarePaymentId
       });
       
-      return NextResponse.json(
+      return json(
         { 
           success: false, 
           error: errorMessage,
           alreadyPaid: isPaid,
           orderStatus: order.status,
           orderId,
-          existingPaymentId: order.squarePaymentId,
-          traceId: ctx.traceId
+          existingPaymentId: order.squarePaymentId
         },
-        { status: 409 }
+        409
       );
     }
     
@@ -273,15 +262,14 @@ export async function POST(request: NextRequest) {
           orderId
         });
         
-        return NextResponse.json(
+        return json(
           { 
             success: false, 
             error: 'This order has already been paid.',
             alreadyPaid: true,
-            orderId,
-            traceId: ctx.traceId
+            orderId
           },
-          { status: 409 }
+          409
         );
       }
       
@@ -291,14 +279,13 @@ export async function POST(request: NextRequest) {
           orderId
         });
         
-        return NextResponse.json(
+        return json(
           { 
             success: false, 
             error: 'Payment is currently being processed. Please wait a moment.',
-            code: 'PAYMENT_IN_PROGRESS',
-            traceId: ctx.traceId
+            code: 'PAYMENT_IN_PROGRESS'
           },
-          { status: 409 }
+          409
         );
       }
     }
@@ -340,14 +327,13 @@ export async function POST(request: NextRequest) {
           { $set: { status: 'pending', paymentStatus: 'pending', updatedAt: new Date().toISOString() } }
         );
         
-        return NextResponse.json(
+        return json(
           { 
             success: false, 
             error: 'Order total mismatch. Please refresh the page and try again.',
-            code: 'AMOUNT_MISMATCH',
-            traceId: ctx.traceId
+            code: 'AMOUNT_MISMATCH'
           },
-          { status: 409 }
+          409
         );
       }
       
@@ -507,14 +493,13 @@ export async function POST(request: NextRequest) {
 
       const userMessage = getPaymentErrorMessage(errorCode, errorDetail);
 
-      return NextResponse.json(
+      return json(
         { 
           success: false, 
           error: userMessage, 
-          code: errorCode, 
-          traceId: ctx.traceId 
+          code: errorCode
         },
-        { status: 400 }
+        400
       );
     }
 
@@ -741,9 +726,8 @@ export async function POST(request: NextRequest) {
     // ========================================================================
     // SUCCESS RESPONSE
     // ========================================================================
-    return NextResponse.json({
+    return json({
       success: true,
-      traceId: ctx.traceId,
       payment: {
         id: payment.id,
         status: payment.status,
@@ -773,44 +757,41 @@ export async function POST(request: NextRequest) {
       error: error instanceof Error ? error.message : String(error)
     });
     
-    return NextResponse.json(
+    return json(
       {
         success: false,
         error: 'Payment processing failed. Please try again.',
-        details: error instanceof Error ? error.message : 'Unknown error',
-        traceId: ctx.traceId
+        details: error instanceof Error ? error.message : 'Unknown error'
       },
-      { status: 500 }
+      500
     );
   }
 }
 
 // GET endpoint to retrieve payment status
 export async function GET(request: NextRequest) {
+  const ctx = new RequestContext();
+  const json = (payload: Record<string, unknown>, status = 200) =>
+    NextResponse.json({ ...payload, traceId: ctx.traceId }, { status });
+
   try {
     const { searchParams } = new URL(request.url);
     const paymentId = searchParams.get('paymentId');
     const orderId = searchParams.get('orderId');
     
     if (!paymentId && !orderId) {
-      return NextResponse.json(
-        { error: 'Payment ID or Order ID is required' },
-        { status: 400 }
-      );
+      return json({ error: 'Payment ID or Order ID is required' }, 400);
     }
-    
+
     if (paymentId) {
       const result = await getSquarePayment(paymentId);
       if (!result.success) {
-        return NextResponse.json(
-          { error: 'Payment not found' },
-          { status: 404 }
-        );
+        return json({ error: 'Payment not found' }, 404);
       }
-      
+
       const payment = result.data?.payment;
-      return NextResponse.json({ 
-        success: true, 
+      return json({
+        success: true,
         payment: {
           id: payment?.id,
           status: payment?.status,
@@ -828,14 +809,11 @@ export async function GET(request: NextRequest) {
       const order = await db.collection('orders').findOne({ id: orderId });
       
       if (!order) {
-        return NextResponse.json(
-          { error: 'Order not found' },
-          { status: 404 }
-        );
+        return json({ error: 'Order not found' }, 404);
       }
-      
-      return NextResponse.json({ 
-        success: true, 
+
+      return json({
+        success: true,
         order: {
           id: order.id,
           orderNumber: order.orderNumber,
@@ -850,10 +828,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('[Payment GET] Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to retrieve payment status' },
-      { status: 500 }
-    );
+    return json({ error: 'Failed to retrieve payment status' }, 500);
   }
 }
 

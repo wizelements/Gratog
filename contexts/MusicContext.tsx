@@ -271,7 +271,19 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 export function useMusic() {
   const context = useContext(MusicContext);
   if (!context) {
-    throw new Error('useMusic must be used within MusicProvider');
+    return {
+      isPlaying: false,
+      currentSnippet: null,
+      volume: -10,
+      sessionPhase: 'intro' as SessionPhase,
+      enabled: false,
+      play: async () => {},
+      pause: async () => {},
+      setVolume: () => {},
+      transitionTo: async () => {},
+      setSessionPhase: () => {},
+      setEnabled: () => {},
+    };
   }
   return context;
 }

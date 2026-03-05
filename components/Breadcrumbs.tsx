@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ChevronRight, Home } from 'lucide-react';
 import Script from 'next/script';
+import { usePathname } from 'next/navigation';
 
 export interface BreadcrumbItem {
   name: string;
@@ -10,20 +11,61 @@ export interface BreadcrumbItem {
 }
 
 interface BreadcrumbsProps {
-  items: BreadcrumbItem[];
+  items?: BreadcrumbItem[];
   className?: string;
 }
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop';
+const BREADCRUMB_LABELS: Record<string, string> = {
+  '': 'Home',
+  catalog: 'Catalog',
+  product: 'Product',
+  about: 'About',
+  contact: 'Contact',
+  explore: 'Explore',
+  rewards: 'Rewards',
+  login: 'Login',
+  register: 'Register',
+  profile: 'Profile',
+  checkout: 'Checkout',
+  order: 'Order',
+  community: 'Community',
+  markets: 'Markets',
+  ingredients: 'Ingredients',
+  games: 'Games',
+  learn: 'Learn',
+  showcase: 'Showcase',
+  faq: 'FAQ',
+  privacy: 'Privacy',
+  terms: 'Terms',
+  policies: 'Policies',
+};
 
 /**
  * Breadcrumbs component with JSON-LD structured data
  * Provides visual navigation and SEO-friendly BreadcrumbList schema
  */
 export default function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
+  const pathname = usePathname();
+
+  if (!items && (pathname === '/' || pathname?.startsWith('/admin'))) {
+    return null;
+  }
+
+  const autoItems = (pathname || '/')
+    .split('/')
+    .filter(Boolean)
+    .slice(0, 4)
+    .map((segment, idx, allSegments) => {
+      const href = '/' + allSegments.slice(0, idx + 1).join('/');
+      const fallbackLabel = segment.replace(/-/g, ' ');
+      const label = BREADCRUMB_LABELS[segment] || `${fallbackLabel.charAt(0).toUpperCase()}${fallbackLabel.slice(1)}`;
+      return { name: label, path: href };
+    });
+
   const allItems: BreadcrumbItem[] = [
     { name: 'Home', path: '/' },
-    ...items,
+    ...(items || autoItems),
   ];
 
   const breadcrumbSchema = {

@@ -134,7 +134,7 @@ export default function LiveChatWidget() {
       addBotResponse(matchedResponse.answer);
     } else {
       addBotResponse(
-        'Thanks for your question! For personalized assistance, please email us at support@tasteofgratitude.net or call us during business hours. In the meantime, feel free to browse our FAQ topics above!'
+        'Thanks for your question! For personalized assistance, please email us at support@tasteofgratitude.shop or call us during business hours. In the meantime, feel free to browse our FAQ topics above!'
       );
     }
   };

@@ -4,17 +4,23 @@ import { getSquareWebhookSignatureKey } from '@/lib/square';
 import { sendEmail } from '@/lib/email';
 import { logger } from '@/lib/logger';
 import { getNextRetryDate } from '@/lib/subscription-tiers';
+import { generateSubscriptionAccessToken } from '@/lib/subscription-access';
+import { SITE_URL } from '@/lib/site-config';
 import crypto from 'crypto';
 
 function verifySignature(signatureHeader, body, url) {
   try {
+    if (!signatureHeader) return false;
     const signatureKey = getSquareWebhookSignatureKey();
     const payload = url + body;
     const expectedSignature = crypto
       .createHmac('sha256', signatureKey)
       .update(payload)
       .digest('base64');
-    return signatureHeader === expectedSignature;
+    const headerBuffer = Buffer.from(signatureHeader);
+    const expectedBuffer = Buffer.from(expectedSignature);
+    if (headerBuffer.length !== expectedBuffer.length) return false;
+    return crypto.timingSafeEqual(headerBuffer, expectedBuffer);
   } catch {
     return false;
   }
@@ -22,9 +28,13 @@ function verifySignature(signatureHeader, body, url) {
 
 export async function POST(request) {
   try {
+    if (process.env.FEATURE_SUBSCRIPTIONS_ENABLED !== 'true') {
+      return NextResponse.json({ error: 'Subscriptions are disabled' }, { status: 503 });
+    }
+
     const rawBody = await request.text();
     const signatureHeader = request.headers.get('x-square-hmacsha256-signature');
-    const requestUrl = request.url;
+    const requestUrl = process.env.SQUARE_SUBSCRIPTIONS_WEBHOOK_URL || `${SITE_URL}/api/subscriptions/webhook`;
 
     if (!verifySignature(signatureHeader, rawBody, requestUrl)) {
       logger.error('Subscriptions', 'Webhook signature verification failed');
@@ -34,6 +44,21 @@ export async function POST(request) {
     const event = JSON.parse(rawBody);
     const eventType = event.type;
     const { db } = await connectToDatabase();
+
+    await db.collection('subscription_webhook_events').createIndex({ eventId: 1 }, { unique: true });
+    const eventId = event.event_id || event.id;
+
+    if (eventId) {
+      const existing = await db.collection('subscription_webhook_events').findOne({ eventId });
+      if (existing) {
+        return NextResponse.json({ success: true, deduped: true, received: eventType });
+      }
+      await db.collection('subscription_webhook_events').insertOne({
+        eventId,
+        eventType,
+        receivedAt: new Date(),
+      });
+    }
 
     logger.info('Subscriptions', 'Webhook received', { type: eventType });
 
@@ -79,6 +104,11 @@ export async function POST(request) {
           if (subscription) {
             const nextChargeDate = new Date();
             nextChargeDate.setDate(nextChargeDate.getDate() + 30);
+            const manageToken = generateSubscriptionAccessToken({
+              email: subscription.email,
+              subscriptionId: subscription._id.toString(),
+            });
+            const manageUrl = `${SITE_URL}/account/subscriptions/${subscription._id}?token=${encodeURIComponent(manageToken)}`;
 
             await db.collection('subscription_payments').insertOne({
               subscriptionId: subscription._id.toString(),
@@ -141,7 +171,7 @@ export async function POST(request) {
                     <strong>❌ Your ${subscription.planName} subscription has been canceled</strong>
                     <p>After 4 payment retry attempts, your subscription was automatically canceled.</p>
                   </div>
-                  <p><a href="https://tasteofgratitude.shop/account" style="background:#059669;color:white;padding:12px 24px;border-radius:4px;text-decoration:none;display:inline-block;">Manage My Account</a></p>
+                  <p><a href="${manageUrl}" style="background:#059669;color:white;padding:12px 24px;border-radius:4px;text-decoration:none;display:inline-block;">Manage Subscription</a></p>
                 </div>`,
               });
             } else {
@@ -169,7 +199,7 @@ export async function POST(request) {
                     <strong>⚠️ Payment Failed (Attempt ${attemptCount} of 4)</strong>
                     <p>We couldn't charge your card for your ${subscription.planName} subscription.</p>
                   </div>
-                  <p><a href="https://tasteofgratitude.shop/account/subscriptions/${subscription._id}" style="background:#059669;color:white;padding:12px 24px;border-radius:4px;text-decoration:none;display:inline-block;">Update Payment Method</a></p>
+                  <p><a href="${manageUrl}" style="background:#059669;color:white;padding:12px 24px;border-radius:4px;text-decoration:none;display:inline-block;">Update Payment Method</a></p>
                 </div>`,
               });
             }

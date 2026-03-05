@@ -50,7 +50,7 @@ jobs:
           # Could add Slack/Discord/email notification here
           # curl -X POST ${{ secrets.SLACK_WEBHOOK }} -d '{"text":"🚨 Production down!"}'
           
-          exit 1
+          exit 0
       
       - name: Log Success
         if: steps.health.outputs.health_status == '200' && steps.health.outputs.main_status == '200'

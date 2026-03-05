@@ -29,14 +29,6 @@ export const metadata = {
   creator: 'Taste of Gratitude',
   publisher: 'Taste of Gratitude',
   manifest: '/manifest.json',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    minimumScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-    viewportFit: 'cover'
-  },
   formatDetection: {
     email: false,
     address: false,
@@ -75,9 +67,15 @@ export const metadata = {
       'max-snippet': -1,
     },
   },
-  alternates: {
-    canonical: process.env.NEXT_PUBLIC_BASE_URL || 'https://tasteofgratitude.shop',
-  },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover'
 };
 
 export default function RootLayout({ children }) {
@@ -100,13 +98,6 @@ export default function RootLayout({ children }) {
          <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="152x152" />
          <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="120x120" />
          
-         {/* Prevent toolbar from covering content on iOS */}
-         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=yes, maximum-scale=5" />
-         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-         
-         {/* Search Engine Optimization */}
-         <link rel="canonical" href="https://tasteofgratitude.shop" />
-         
          {/* Icons for different platforms */}
          <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
          <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="32x32" />
@@ -119,13 +110,6 @@ export default function RootLayout({ children }) {
          <link rel="dns-prefetch" href="https://images.unsplash.com" />
          <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
          
-         {/* Square Web Payments SDK - loaded with high priority */}
-         <link rel="preload" as="script" href="https://web.squarecdn.com/v1/square.js" />
-         <script 
-           type="text/javascript" 
-           src="https://web.squarecdn.com/v1/square.js"
-           async
-         />
        </head>
       <body className={inter.className}>
         <PWAInitializer />

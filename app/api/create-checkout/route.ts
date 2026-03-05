@@ -52,22 +52,20 @@ const CheckoutRequestSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+  const traceId = randomUUID();
+  const json = (payload: Record<string, unknown>, status = 200) =>
+    NextResponse.json({ ...payload, traceId }, { status });
+
   try {
     // Check feature flag
     if (FEATURE_CHECKOUT_V2 === 'off') {
-      return NextResponse.json(
-        { error: 'Checkout is temporarily unavailable' },
-        { status: 503 }
-      )
+      return json({ error: 'Checkout is temporarily unavailable' }, 503)
     }
 
     // Validate environment variables
     if (!SQUARE_ACCESS_TOKEN || !SQUARE_LOCATION_ID) {
       console.error('Square credentials not configured')
-      return NextResponse.json(
-        { error: 'Payment system not configured. Please contact support.' },
-        { status: 500 }
-      )
+      return json({ error: 'Payment system not configured. Please contact support.' }, 500)
     }
 
     // Parse and validate request body
@@ -76,12 +74,12 @@ export async function POST(request: NextRequest) {
 
     if (!validationResult.success) {
       console.error('Validation error:', validationResult.error.format())
-      return NextResponse.json(
+      return json(
         { 
           error: 'Invalid request data',
           details: validationResult.error.flatten().fieldErrors
         },
-        { status: 400 }
+        400
       )
     }
 
@@ -146,7 +144,7 @@ export async function POST(request: NextRequest) {
         }
       },
       pre_populate_buyer_email: contact?.email || undefined,
-      merchant_support_email: process.env.SENDGRID_FROM_EMAIL || 'hello@tasteofgratitude.net'
+      merchant_support_email: process.env.SENDGRID_FROM_EMAIL || 'hello@tasteofgratitude.shop'
     }
 
     logger.debug('API', 'Creating Square checkout session:', {
@@ -177,13 +175,13 @@ export async function POST(request: NextRequest) {
         errors: responseData.errors,
         data: responseData
       })
-      return NextResponse.json(
+      return json(
         { 
           error: 'Failed to create checkout session',
           details: responseData.errors || responseData,
           message: responseData.errors?.[0]?.detail || 'Please try again or contact support.'
         },
-        { status: response.status }
+        response.status
       )
     }
 
@@ -191,10 +189,7 @@ export async function POST(request: NextRequest) {
     
     if (!paymentLink || !paymentLink.url) {
       console.error('Invalid Square response - missing payment link')
-      return NextResponse.json(
-        { error: 'Invalid response from payment system' },
-        { status: 500 }
-      )
+      return json({ error: 'Invalid response from payment system' }, 500)
     }
 
     logger.debug('API', '✅ Square checkout created successfully:', {
@@ -210,7 +205,7 @@ export async function POST(request: NextRequest) {
       orderId
     })
 
-    return NextResponse.json({
+    return json({
       success: true,
       checkoutUrl: paymentLink.url,
       paymentLinkId: paymentLink.id,
@@ -222,22 +217,24 @@ export async function POST(request: NextRequest) {
     console.error('Checkout API error:', error)
     console.error('checkout_error', { error: error.message })
     
-    return NextResponse.json(
+    return json(
       { 
         error: 'Internal server error',
         message: 'An unexpected error occurred. Please try again.'
       },
-      { status: 500 }
+      500
     )
   }
 }
 
 // GET endpoint for health check
 export async function GET() {
+  const traceId = randomUUID();
   return NextResponse.json({
     service: 'Square Checkout API v2',
     configured: !!(SQUARE_ACCESS_TOKEN && SQUARE_LOCATION_ID),
     featureFlag: FEATURE_CHECKOUT_V2,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    traceId
   })
 }

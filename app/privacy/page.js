@@ -112,8 +112,8 @@ export default function PrivacyPage() {
             </ul>
             <p className="text-sm mt-4">
               To exercise these rights, contact us at{' '}
-              <a href="mailto:privacy@tasteofgratitude.net" className="text-[#D4AF37] hover:underline">
-                privacy@tasteofgratitude.net
+              <a href="mailto:privacy@tasteofgratitude.shop" className="text-[#D4AF37] hover:underline">
+                privacy@tasteofgratitude.shop
               </a>
             </p>
           </CardContent>
@@ -144,7 +144,7 @@ export default function PrivacyPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2 text-sm">
-              <p><strong>Email:</strong> privacy@tasteofgratitude.net</p>
+              <p><strong>Email:</strong> privacy@tasteofgratitude.shop</p>
               <p><strong>Phone:</strong> (404) 555-1234</p>
               <p><strong>Address:</strong> Serenbe Farmers Market, Chattahoochee Hills, GA 30268</p>
             </div>

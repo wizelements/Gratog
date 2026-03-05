@@ -8,6 +8,10 @@ on:
   schedule:
     - cron: '0 0,6,12,18 * * *'  # Every 6 hours
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   lighthouse-audit:
     runs-on: ubuntu-latest
@@ -54,13 +58,13 @@ jobs:
           const fs = require('fs');
           const path = require('path');
           
-          const resultsDir = './.lighthouseci/lhr-results';
+          const resultsDir = './.lighthouseci';
           if (!fs.existsSync(resultsDir)) {
             console.error('Lighthouse results not found');
             process.exit(1);
           }
           
-          const files = fs.readdirSync(resultsDir).filter(f => f.endsWith('.json'));
+          const files = fs.readdirSync(resultsDir).filter(f => f.startsWith('lhr-') && f.endsWith('.json'));
           const results = files.map(f => JSON.parse(fs.readFileSync(path.join(resultsDir, f), 'utf8')));
           
           // Average scores across runs
@@ -221,6 +225,7 @@ jobs:
       
       - name: Create performance issue
         if: failure()
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |

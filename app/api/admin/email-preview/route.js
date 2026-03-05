@@ -118,7 +118,7 @@ export async function GET(request) {
         templateName = 'Password Reset';
         html = passwordResetTemplate(
           order.customerName || 'Customer',
-          'https://tasteofgratitude.net/reset-password?token=sample_reset_token_abc123'
+          'https://tasteofgratitude.shop/reset-password?token=sample_reset_token_abc123'
         );
         break;
 

@@ -80,7 +80,7 @@ function UnsubscribeContent() {
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Unsubscribe Failed</h1>
             <p className="text-gray-600 mb-6">{message}</p>
             <p className="text-sm text-gray-500 mb-4">
-              If you continue to have issues, please contact support@tasteofgratitude.net
+              If you continue to have issues, please contact support@tasteofgratitude.shop
             </p>
             <Button 
               onClick={() => window.location.href = '/'}

@@ -308,8 +308,8 @@ export default function QuizResultsPage() {
           })}</p>
           <p className="mt-2">
             Questions? Contact us at{' '}
-            <a href="mailto:hello@tasteofgratitude.net" className="text-emerald-600 hover:underline">
-              hello@tasteofgratitude.net
+            <a href="mailto:hello@tasteofgratitude.shop" className="text-emerald-600 hover:underline">
+              hello@tasteofgratitude.shop
             </a>
           </p>
         </div>

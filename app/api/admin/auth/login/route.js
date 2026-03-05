@@ -3,6 +3,8 @@ import { getAdminUsers } from '@/lib/db-admin';
 import { verifyPassword } from '@/lib/auth';
 import { generateAdminToken, setAdminCookie } from '@/lib/admin-session';
 import { createLogger } from '@/lib/logger';
+import { RateLimit } from '@/lib/redis';
+import crypto from 'crypto';
 
 const logger = createLogger('ADMIN_LOGIN');
 
@@ -10,6 +12,11 @@ export async function POST(request) {
   logger.info('Login attempt started');
   
   try {
+    const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    if (!RateLimit.check(`admin_login:${clientIp}`, 8, 15 * 60)) {
+      return NextResponse.json({ error: 'Too many login attempts' }, { status: 429 });
+    }
+
     const { email, password } = await request.json();
     
     logger.debug('Credentials received', {
@@ -107,6 +114,13 @@ export async function POST(request) {
 
     // Set the admin cookie using the unified helper
     response = setAdminCookie(response, token);
+    response.cookies.set('admin_csrf', crypto.randomBytes(24).toString('hex'), {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+    });
 
     logger.info('Login successful', {
       userEmail: user.email,

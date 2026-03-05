@@ -8,9 +8,21 @@ import {
   validateCreatePayload,
   sanitizeString,
 } from '@/lib/subscription-tiers';
+import { RateLimit } from '@/lib/redis';
+import { generateSubscriptionAccessToken } from '@/lib/subscription-access';
+import { SITE_URL } from '@/lib/site-config';
 
 export async function POST(request) {
   try {
+    if (process.env.FEATURE_SUBSCRIPTIONS_ENABLED !== 'true') {
+      return NextResponse.json({ error: 'Subscriptions are temporarily unavailable' }, { status: 503 });
+    }
+
+    const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    if (!RateLimit.check(`subscription_create:${clientIp}`, 10, 60 * 60)) {
+      return NextResponse.json({ error: 'Too many subscription attempts. Please try later.' }, { status: 429 });
+    }
+
     const body = await request.json();
     const {
       customerId,
@@ -27,6 +39,13 @@ export async function POST(request) {
     if (!validation.valid) {
       return NextResponse.json(
         { error: 'Invalid request payload', details: validation.errors },
+        { status: 400 }
+      );
+    }
+
+    if (!cardNonce) {
+      return NextResponse.json(
+        { error: 'A valid payment method is required to create a subscription' },
         { status: 400 }
       );
     }
@@ -108,6 +127,9 @@ export async function POST(request) {
     };
 
     const result = await db.collection('subscriptions').insertOne(subscription);
+    const subscriptionId = result.insertedId.toString();
+    const accessToken = generateSubscriptionAccessToken({ email: customerEmail, subscriptionId });
+    const manageUrl = `${SITE_URL}/account/subscriptions/${subscriptionId}?token=${encodeURIComponent(accessToken)}`;
 
     // Send welcome email
     await sendEmail({
@@ -129,7 +151,7 @@ export async function POST(request) {
           </ul>
           <h3>Your Benefits</h3>
           ${tier.benefits.map(b => `<p style="background:white;padding:10px;margin:5px 0;border-left:4px solid #059669;">✓ ${b}</p>`).join('')}
-          <p><a href="https://tasteofgratitude.shop/account/subscriptions" style="background:#059669;color:white;padding:12px 24px;border-radius:4px;text-decoration:none;display:inline-block;margin-top:20px;">Manage Subscription</a></p>
+          <p><a href="${manageUrl}" style="background:#059669;color:white;padding:12px 24px;border-radius:4px;text-decoration:none;display:inline-block;margin-top:20px;">Manage Subscription</a></p>
           <p>With gratitude,<br>The Taste of Gratitude Team 🌿</p>
         </div>
       </div>`,

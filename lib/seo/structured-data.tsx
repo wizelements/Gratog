@@ -30,7 +30,7 @@ export function getOrganizationSchema(baseUrl: string) {
     url: baseUrl,
     logo: `${baseUrl}/images/logo.png`,
     description: 'Premium wildcrafted sea moss gel and natural wellness products. Hand-crafted with 92 essential minerals for optimal health.',
-    email: 'info@tasteofgratitude.net',
+    email: 'info@tasteofgratitude.shop',
     telephone: '+1-470-555-0123',
     address: {
       '@type': 'PostalAddress',
@@ -172,7 +172,7 @@ export function getLocalBusinessSchema(baseUrl: string) {
       longitude: -84.3880,
     },
     telephone: '+1-470-555-0123',
-    email: 'info@tasteofgratitude.net',
+    email: 'info@tasteofgratitude.shop',
     openingHours: 'Sa 09:00-13:00',
     priceRange: '$$',
     paymentAccepted: 'Cash, Credit Card, Apple Pay, Google Pay',

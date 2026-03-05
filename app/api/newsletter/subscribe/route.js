@@ -2,9 +2,15 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { sendNewsletterConfirmation } from '@/lib/resend-email';
 import { logger } from '@/lib/logger';
+import { RateLimit } from '@/lib/redis';
 
 export async function POST(request) {
   try {
+    const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    if (!RateLimit.check(`newsletter_subscribe:${clientIp}`, 10, 60 * 60)) {
+      return NextResponse.json({ error: 'Too many subscribe attempts. Please try again later.' }, { status: 429 });
+    }
+
     const { email, firstName } = await request.json();
 
     if (!email) {

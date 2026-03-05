@@ -23,7 +23,7 @@ export async function GET(request) {
     // Check environment variables
     diagnostics.environment = {
       RESEND_API_KEY: !!process.env.RESEND_API_KEY ? 'configured' : 'MISSING',
-      RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL || 'using default: hello@tasteofgratitude.net',
+      RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL || 'using default: hello@tasteofgratitude.shop',
       OPENAI_API_KEY: !!process.env.OPENAI_API_KEY ? 'configured' : 'MISSING',
       MONGODB_URI: !!process.env.MONGODB_URI ? 'configured' : 'MISSING',
       DATABASE_NAME: process.env.DATABASE_NAME || process.env.DB_NAME || 'using default',

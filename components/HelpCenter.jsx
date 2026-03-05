@@ -37,8 +37,8 @@ const QUICK_HELP = [
   {
     icon: Mail,
     title: 'Email',
-    description: 'hello@tasteofgratitude.net',
-    action: () => (window.location.href = 'mailto:hello@tasteofgratitude.net'),
+    description: 'hello@tasteofgratitude.shop',
+    action: () => (window.location.href = 'mailto:hello@tasteofgratitude.shop'),
   },
 ];
 

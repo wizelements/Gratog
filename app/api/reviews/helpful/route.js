@@ -2,9 +2,15 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import { ObjectId } from 'mongodb';
+import { RateLimit } from '@/lib/redis';
 
 export async function POST(request) {
   try {
+    const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    if (!RateLimit.check(`review_helpful:${clientIp}`, 30, 60 * 60)) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    }
+
     const { reviewId, helpful } = await request.json();
 
     if (!reviewId) {

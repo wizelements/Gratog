@@ -9,6 +9,7 @@ import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-cus
 import { logger } from '@/lib/logger';
 import { sanitizeErrorMessage, createSafeErrorResponse } from '@/lib/response-sanitizer';
 import { RequestContext } from '@/lib/request-context';
+import { RateLimit } from '@/lib/redis';
 import * as Sentry from '@sentry/nextjs';
 
 // Helper to validate Square catalog IDs (20+ char alphanumeric)
@@ -22,8 +23,15 @@ const isValidSquareCatalogId = (id?: string): boolean => {
  */
 export async function POST(request: NextRequest) {
    const ctx = new RequestContext();
-   
+   const json = (payload: Record<string, unknown>, status = 200) =>
+     NextResponse.json({ ...payload, traceId: ctx.traceId }, { status });
+
    try {
+     const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+     if (!RateLimit.check(`checkout_create:${clientIp}`, 30, 60 * 60)) {
+       return json({ error: 'Too many checkout attempts. Please try again later.' }, 429);
+     }
+
      const body = await request.json();
     const { 
       lineItems, 
@@ -37,26 +45,17 @@ export async function POST(request: NextRequest) {
     
     // Validate required fields
     if (!lineItems || !Array.isArray(lineItems) || lineItems.length === 0) {
-      return NextResponse.json(
-        { error: 'Line items array is required' },
-        { status: 400 }
-      );
+      return json({ error: 'Line items array is required' }, 400);
     }
     
     // Validate line items structure - quantity is required, catalogObjectId is optional
     for (const item of lineItems) {
       if (!item.quantity) {
-        return NextResponse.json(
-          { error: 'Each line item must have quantity' },
-          { status: 400 }
-        );
+        return json({ error: 'Each line item must have quantity' }, 400);
       }
       // Name is required for ad-hoc items without valid catalog IDs
       if (!isValidSquareCatalogId(item.catalogObjectId) && !item.name) {
-        return NextResponse.json(
-          { error: 'Each line item must have either a valid catalogObjectId or a name' },
-          { status: 400 }
-        );
+        return json({ error: 'Each line item must have either a valid catalogObjectId or a name' }, 400);
       }
     }
     
@@ -212,10 +211,7 @@ export async function POST(request: NextRequest) {
     
     if (!paymentLinkResponse.paymentLink) {
       console.error('Square Payment Link creation failed:', paymentLinkResponse);
-      return NextResponse.json(
-        { error: 'Failed to create payment link - no payment link returned' },
-        { status: 500 }
-      );
+      return json({ error: 'Failed to create payment link - no payment link returned' }, 500);
     }
     
     const paymentLink = paymentLinkResponse.paymentLink;
@@ -251,9 +247,8 @@ export async function POST(request: NextRequest) {
       // Don't fail the entire request if DB save fails
     }
     
-    return NextResponse.json({
+    return json({
        success: true,
-       traceId: ctx.traceId,
        paymentLink: {
          id: paymentLink.id,
          url: paymentLink.url,
@@ -295,53 +290,48 @@ export async function POST(request: NextRequest) {
     // Handle specific Square API errors
     if (error instanceof Error) {
       if (error.message.includes('CATALOG_OBJECT_NOT_FOUND')) {
-        return NextResponse.json(
-          { error: 'One or more products not found in Square catalog' },
-          { status: 400 }
-        );
+        return json({ error: 'One or more products not found in Square catalog' }, 400);
       }
-      
+
       if (error.message.includes('INVALID_LOCATION')) {
-        return NextResponse.json(
-          { error: 'Invalid location configuration' },
-          { status: 500 }
-        );
+        return json({ error: 'Invalid location configuration' }, 500);
       }
-      
+
       if (error.message.includes('UNAUTHORIZED')) {
         logSquareOperation('Checkout/Payment Link', false, { error: 'UNAUTHORIZED' });
-        
+
         if (!shouldAllowFallback()) {
           const failureResponse = getAuthFailureResponse(error);
-          return NextResponse.json(failureResponse, { status: 503 });
+          return json(failureResponse, 500);
         }
-        
+
         // Development fallback mode
-        return NextResponse.json(
-          { 
+        return json(
+          {
             error: 'Square API authentication failed',
             fallbackMode: true,
             warning: 'Development mode - no real checkout links generated'
           },
-          { status: 500 }
+          500
         );
       }
     }
-    
-    return NextResponse.json(
-       {
-         success: false,
-         traceId: ctx.traceId,
-         error: 'Failed to create checkout',
-         details: sanitizeErrorMessage(error instanceof Error ? error.message : 'Unknown error')
+
+    return json(
+      {
+        success: false,
+        error: 'Failed to create checkout',
+        details: sanitizeErrorMessage(error instanceof Error ? error.message : 'Unknown error')
       },
-      { status: 500 }
+      500
     );
   }
 }
 
 // GET endpoint for checkout status
 export async function GET(request: NextRequest) {
+  const ctx = new RequestContext();
+
   try {
     const { searchParams } = new URL(request.url);
     const paymentLinkId = searchParams.get('paymentLinkId');
@@ -349,12 +339,12 @@ export async function GET(request: NextRequest) {
     
     // If no parameters, return service status
     if (!paymentLinkId && !orderId) {
-      // Validate config exists but don't expose it
-      getSquareLocationId();
       return NextResponse.json({
         service: 'Square Checkout API',
         status: 'active',
-        timestamp: new Date().toISOString()
+        configured: Boolean(process.env.SQUARE_LOCATION_ID && process.env.SQUARE_ACCESS_TOKEN),
+        timestamp: new Date().toISOString(),
+        traceId: ctx.traceId
       });
     }
     
@@ -374,16 +364,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: result,
-      message: 'Status retrieved successfully'
+      message: 'Status retrieved successfully',
+      traceId: ctx.traceId
     });
-    
+
   } catch (error) {
     console.error('Get checkout status error:', error);
     return NextResponse.json(
       {
         success: false,
         error: 'Failed to retrieve status',
-        details: sanitizeErrorMessage(error instanceof Error ? error.message : 'Unknown error')
+        details: sanitizeErrorMessage(error instanceof Error ? error.message : 'Unknown error'),
+        traceId: ctx.traceId
       },
       { status: 500 }
     );

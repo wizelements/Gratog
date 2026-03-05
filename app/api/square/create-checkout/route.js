@@ -1,6 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
+import { logger } from '@/lib/logger';
 
 const SQUARE_ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -13,22 +14,20 @@ const SQUARE_API_BASE = SQUARE_ENVIRONMENT === 'production'
   : 'https://connect.squareupsandbox.com';
 
 export async function POST(request) {
+  const traceId = randomUUID();
+  const json = (payload, status = 200) =>
+    NextResponse.json({ ...payload, traceId }, { status });
+
   try {
     const body = await request.json();
     const { orderId, items, customer, total, subtotal } = body;
 
     if (!SQUARE_ACCESS_TOKEN || !SQUARE_LOCATION_ID) {
-      return NextResponse.json(
-        { error: 'Square credentials not configured' },
-        { status: 500 }
-      );
+      return json({ error: 'Square credentials not configured' }, 500);
     }
 
     if (!items || items.length === 0) {
-      return NextResponse.json(
-        { error: 'No items provided' },
-        { status: 400 }
-      );
+      return json({ error: 'No items provided' }, 400);
     }
 
     // Build line items for Square
@@ -69,10 +68,10 @@ export async function POST(request) {
         }
       },
       pre_populate_buyer_email: customer?.email || undefined,
-      merchant_support_email: process.env.SENDGRID_FROM_EMAIL || 'hello@tasteofgratitude.net'
+      merchant_support_email: process.env.SENDGRID_FROM_EMAIL || 'hello@tasteofgratitude.shop'
     };
 
-    debug('Creating Square checkout session:', {
+    logger.debug('SquareCheckout', 'Creating Square checkout session:', {
       orderId,
       items: lineItems.length,
       total: total
@@ -93,24 +92,24 @@ export async function POST(request) {
 
     if (!response.ok) {
       console.error('Square checkout creation failed:', responseData);
-      return NextResponse.json(
+      return json(
         { 
           error: 'Failed to create checkout session',
           details: responseData.errors || responseData
         },
-        { status: response.status }
+        response.status
       );
     }
 
     const paymentLink = responseData.payment_link;
     
-    debug('✅ Square checkout created:', {
+    logger.debug('SquareCheckout', '✅ Square checkout created:', {
       id: paymentLink.id,
       url: paymentLink.url,
       orderId: orderId
     });
 
-    return NextResponse.json({
+    return json({
       success: true,
       checkoutUrl: paymentLink.url,
       paymentLinkId: paymentLink.id,
@@ -120,20 +119,16 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('Square checkout error:', error);
-    return NextResponse.json(
-      { 
-        error: 'Internal server error',
-        message: error.message 
-      },
-      { status: 500 }
-    );
+    return json({ error: 'Internal server error', message: error.message }, 500);
   }
 }
 
 // GET endpoint for testing
 export async function GET() {
+  const traceId = randomUUID();
   return NextResponse.json({
     message: 'Square Checkout API',
-    configured: !!(SQUARE_ACCESS_TOKEN && SQUARE_LOCATION_ID)
+    configured: !!(SQUARE_ACCESS_TOKEN && SQUARE_LOCATION_ID),
+    traceId
   });
 }
