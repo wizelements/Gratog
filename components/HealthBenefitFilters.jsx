@@ -1,8 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { HEALTH_BENEFIT_FILTERS } from '@/lib/health-benefits';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, ChevronDown } from 'lucide-react';
+
+const INITIAL_VISIBLE = 5;
 
 const COLOR_CLASSES = {
   blue: 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200',
@@ -35,6 +38,18 @@ export default function HealthBenefitFilters({
   selectedBenefit = 'all',
   onBenefitChange
 }) {
+  const [showMore, setShowMore] = useState(false);
+
+  const hasMore = benefitCounts.length > INITIAL_VISIBLE;
+  const visibleBenefits = showMore ? benefitCounts : benefitCounts.slice(0, INITIAL_VISIBLE);
+  const hiddenCount = benefitCounts.length - INITIAL_VISIBLE;
+
+  // If the selected benefit is hidden, always show it
+  const selectedIsHidden = !showMore && benefitCounts.findIndex(b => b.id === selectedBenefit) >= INITIAL_VISIBLE;
+  const displayBenefits = selectedIsHidden
+    ? [...visibleBenefits, benefitCounts.find(b => b.id === selectedBenefit)]
+    : visibleBenefits;
+
   return (
     <div className="space-y-4">
       {/* Section Header */}
@@ -73,10 +88,9 @@ export default function HealthBenefitFilters({
         </Button>
         
         {/* Health Benefit Buttons - sorted by count (most popular first) */}
-        {benefitCounts.map((benefit, index) => {
+        {displayBenefits.map((benefit) => {
           const isSelected = selectedBenefit === benefit.id;
           const baseColor = benefit.color || 'blue';
-          const isPopular = index < 3;
           
           return (
             <Button
@@ -100,6 +114,20 @@ export default function HealthBenefitFilters({
           );
         })}
       </div>
+
+      {/* Show More / Show Less toggle */}
+      {hasMore && (
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => setShowMore(!showMore)}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
+          >
+            <ChevronDown className={`h-4 w-4 transition-transform ${showMore ? 'rotate-180' : ''}`} />
+            {showMore ? 'Show fewer goals' : `Show ${hiddenCount} more wellness goals`}
+          </button>
+        </div>
+      )}
       
       {/* Selected Benefit Description */}
       {selectedBenefit !== 'all' && HEALTH_BENEFIT_FILTERS[selectedBenefit] && (

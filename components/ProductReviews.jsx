@@ -6,10 +6,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import StarRating from '@/components/StarRating';
-import { MessageSquare, ThumbsUp, Award, Loader2, CheckCircle2 } from 'lucide-react';
+import { MessageSquare, ThumbsUp, ThumbsDown, Award, Loader2, CheckCircle2, ChevronDown, Star } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function ProductReviews({ productId, productName }) {
+export function RatingBadge({ avgRating, count, size = 'default' }) {
+  const sizes = { small: 12, default: 16, large: 20 };
+  const iconSize = sizes[size] || sizes.default;
+  return (
+    <div className={`flex items-center gap-1.5 ${size === 'small' ? 'text-xs' : size === 'large' ? 'text-base' : 'text-sm'}`}>
+      <StarRating rating={avgRating} readonly size={iconSize} />
+      <span className="font-semibold text-gray-900">{Number(avgRating).toFixed(1)}</span>
+      <span className="text-muted-foreground">({count})</span>
+    </div>
+  );
+}
+
+export default function ProductReviews({ productId, productName, compact = false }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -21,6 +33,8 @@ export default function ProductReviews({ productId, productName }) {
     title: '',
     comment: '',
   });
+
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
   useEffect(() => {
     fetchReviews();
@@ -86,6 +100,36 @@ export default function ProductReviews({ productId, productName }) {
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
     : 0;
 
+  const ratingBreakdown = [5, 4, 3, 2, 1].map(stars => ({
+    stars,
+    count: reviews.filter(r => r.rating === stars).length,
+    percent: reviews.length === 0 ? 0 : (reviews.filter(r => r.rating === stars).length / reviews.length) * 100,
+  }));
+
+  const sortedReviews = [...reviews].sort((a, b) => (b.helpful || 0) - (a.helpful || 0));
+  const topReviews = sortedReviews.slice(0, 3);
+  const remainingReviews = sortedReviews.slice(3);
+
+  const handleHelpfulVote = async (reviewId, isHelpful) => {
+    try {
+      const response = await fetch('/api/reviews/helpful', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewId, helpful: isHelpful }),
+      });
+      if (response.ok) {
+        toast.success(isHelpful ? 'Thanks for your feedback!' : 'Feedback recorded');
+        fetchReviews();
+      }
+    } catch {
+      toast.error('Could not submit feedback');
+    }
+  };
+
+  if (compact) {
+    return <RatingBadge avgRating={avgRating} count={reviews.length} />;
+  }
+
   return (
     <div className="space-y-6">
       {/* Reviews Summary */}
@@ -100,6 +144,21 @@ export default function ProductReviews({ productId, productName }) {
               </span>
               <span className="text-muted-foreground">({reviews.length} reviews)</span>
             </div>
+            {reviews.length > 0 && (
+              <div className="mt-3 space-y-1.5 w-full md:w-auto md:min-w-[200px]">
+                {ratingBreakdown.map(({ stars, count, percent }) => (
+                  <div key={stars} className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-600 w-8 text-right">{stars}★</span>
+                    <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden min-w-[80px]">
+                      <div className="h-full bg-yellow-400 rounded-full transition-all" style={{ width: `${percent}%` }} />
+                    </div>
+                    <span className="text-gray-500 w-10 text-right text-xs">
+                      {count > 0 ? `${Math.round(percent)}%` : ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <Button
             onClick={() => setShowForm(!showForm)}
@@ -223,44 +282,78 @@ export default function ProductReviews({ productId, productName }) {
         </div>
       ) : (
         <div className="space-y-4">
-          {reviews.map((review) => (
-            <div
-              key={review._id}
-              className="bg-white rounded-lg p-6 border border-gray-200 hover:border-emerald-200 transition-colors"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-gray-900">{review.name}</span>
-                    {review.verified && (
-                      <Badge variant="secondary" className="text-xs">
-                        <CheckCircle2 className="h-3 w-3 mr-1" />
-                        Verified
-                      </Badge>
-                    )}
-                  </div>
-                  <StarRating rating={review.rating} readonly size={16} />
-                </div>
-                <span className="text-sm text-muted-foreground">
-                  {new Date(review.createdAt).toLocaleDateString()}
-                </span>
-              </div>
+          <h3 className="text-xl font-bold text-gray-900">Top Reviews</h3>
+          {topReviews.map((review) => (
+            <ReviewCard key={review._id} review={review} onHelpfulVote={handleHelpfulVote} />
+          ))}
 
-              <h4 className="font-semibold text-gray-900 mb-2">{review.title}</h4>
-              <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+          {remainingReviews.length > 0 && (
+            <>
+              <button
+                onClick={() => setShowAllReviews(!showAllReviews)}
+                className="w-full flex items-center justify-center gap-2 py-3 text-emerald-600 font-semibold hover:bg-emerald-50 rounded-lg transition"
+              >
+                {showAllReviews ? 'Show Less' : `View All ${reviews.length} Reviews`}
+                <ChevronDown className={`h-5 w-5 transition-transform ${showAllReviews ? 'rotate-180' : ''}`} />
+              </button>
 
-              {review.helpful > 0 && (
-                <div className="mt-3 pt-3 border-t">
-                  <span className="text-sm text-muted-foreground">
-                    <ThumbsUp className="h-4 w-4 inline mr-1" />
-                    {review.helpful} people found this helpful
-                  </span>
+              {showAllReviews && (
+                <div className="space-y-4">
+                  {remainingReviews.map((review) => (
+                    <ReviewCard key={review._id} review={review} onHelpfulVote={handleHelpfulVote} />
+                  ))}
                 </div>
               )}
-            </div>
-          ))}
+            </>
+          )}
         </div>
       )}
+    </div>
+  );
+}
+
+function ReviewCard({ review, onHelpfulVote }) {
+  return (
+    <div className="bg-white rounded-lg p-6 border border-gray-200 hover:border-emerald-200 transition-colors">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-semibold text-gray-900">{review.name}</span>
+            {review.verified && (
+              <Badge variant="secondary" className="text-xs">
+                <CheckCircle2 className="h-3 w-3 mr-1" />
+                Verified
+              </Badge>
+            )}
+          </div>
+          <StarRating rating={review.rating} readonly size={16} />
+        </div>
+        <span className="text-sm text-muted-foreground">
+          {new Date(review.createdAt).toLocaleDateString()}
+        </span>
+      </div>
+
+      <h4 className="font-semibold text-gray-900 mb-2">{review.title}</h4>
+      <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+
+      <div className="mt-3 pt-3 border-t flex items-center gap-4">
+        <button
+          type="button"
+          onClick={() => onHelpfulVote(review._id, true)}
+          className="text-sm text-muted-foreground hover:text-emerald-600 transition inline-flex items-center gap-1"
+        >
+          <ThumbsUp className="h-4 w-4" />
+          Helpful{review.helpful > 0 ? ` (${review.helpful})` : ''}
+        </button>
+        <button
+          type="button"
+          onClick={() => onHelpfulVote(review._id, false)}
+          className="text-sm text-muted-foreground hover:text-red-500 transition inline-flex items-center gap-1"
+        >
+          <ThumbsDown className="h-4 w-4" />
+          Not Helpful
+        </button>
+      </div>
     </div>
   );
 }

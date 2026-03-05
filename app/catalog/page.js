@@ -13,7 +13,7 @@ import ProductCard from '@/components/ProductCard';
 import InfoBoardProductCard from '@/components/InfoBoardProductCard';
 import HealthBenefitFilters from '@/components/HealthBenefitFilters';
 import FitQuiz from '@/components/FitQuiz';
-import { Sparkles, Grid, List, Droplets, Heart, Award, Search, X, Info } from 'lucide-react';
+import { Sparkles, Grid, List, Droplets, Heart, Award, Search, X, Info, SlidersHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import AnalyticsSystem from '@/lib/analytics';
 import Link from 'next/link';
@@ -71,6 +71,7 @@ function CatalogContent() {
   // UI state
   const [showQuiz, setShowQuiz] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   
   const searchInputRef = useRef(null);
 
@@ -214,6 +215,7 @@ function CatalogContent() {
 
   // Derived: Check if any filters are active
   const hasActiveFilters = selectedCategory !== 'all' || selectedHealthBenefit !== 'all' || searchQuery || recommendedIds;
+  const activeFilterCount = Number(selectedCategory !== 'all') + Number(selectedHealthBenefit !== 'all') + Number(!!searchQuery) + Number(!!recommendedIds);
   const isSearchMode = searchQuery.trim().length >= 2;
   const displayCount = displayProducts.length;
 
@@ -526,18 +528,25 @@ function CatalogContent() {
             </div>
           </div>
 
-          {/* Results Status - only show when filtering/searching */}
-          {(isSearchMode || recommendedIds || displayCount === 0) && (
-            <div className="mb-6 p-4 bg-emerald-50 rounded-lg" aria-live="polite">
+          {/* Results Counter */}
+          {!loading && (hasActiveFilters || displayCount !== products.length) && (
+            <div className="mb-6 p-4 bg-emerald-50 rounded-lg flex items-center justify-between" aria-live="polite">
               <div className="text-sm text-emerald-700">
                 {recommendedIds ? (
-                  <span>✨ Showing your personalized recommendations</span>
+                  <span>✨ Showing <strong>{displayCount}</strong> personalized recommendations</span>
                 ) : isSearchMode ? (
-                  <span>Showing results for "{searchQuery}"</span>
+                  <span>Showing <strong>{displayCount}</strong> results for &ldquo;{searchQuery}&rdquo;</span>
+                ) : hasActiveFilters ? (
+                  <span>Showing <strong>{displayCount}</strong> of {products.length} products</span>
                 ) : displayCount === 0 ? (
                   <span>No products match your filters</span>
                 ) : null}
               </div>
+              {displayCount > 0 && displayCount <= 3 && hasActiveFilters && (
+                <span className="text-xs text-amber-600 font-medium">
+                  ⚠️ Only a few options — try adjusting filters
+                </span>
+              )}
             </div>
           )}
 
@@ -662,6 +671,98 @@ function CatalogContent() {
             </div>
           </div>
         </section>
+      )}
+
+      {/* Mobile Filter FAB */}
+      {!loading && (
+        <button
+          type="button"
+          onClick={() => setIsMobileFilterOpen(true)}
+          className="md:hidden fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 px-4 py-3 rounded-full bg-emerald-700 text-white shadow-lg hover:bg-emerald-800 transition-colors"
+          aria-label="Open filters"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          Filters
+          {activeFilterCount > 0 && (
+            <span className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-white px-1 text-xs font-bold text-emerald-700">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+      )}
+
+      {/* Mobile Bottom Sheet */}
+      {isMobileFilterOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-50 bg-black/40"
+          onClick={() => setIsMobileFilterOpen(false)}
+        >
+          <div
+            className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white p-5 animate-in slide-in-from-bottom"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-bold text-lg text-gray-900">Filters</h3>
+              <button
+                type="button"
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="p-2 text-gray-600 hover:text-gray-800"
+                aria-label="Close filters"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <p className="text-sm font-semibold text-gray-900 mb-3">Wellness Goal</p>
+                <HealthBenefitFilters
+                  benefitCounts={healthBenefitCounts}
+                  selectedBenefit={selectedHealthBenefit}
+                  onBenefitChange={(id) => {
+                    handleHealthBenefitChange(id);
+                  }}
+                />
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-gray-900 mb-3">Category</p>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => {
+                    handleCategoryChange(e.target.value);
+                  }}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
+                >
+                  {productCategories.map((category) => (
+                    <option key={`mobile-${category.id}`} value={category.id}>
+                      {category.icon ? `${category.icon} ` : ''}{category.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => {
+                    clearAllFilters();
+                    setIsMobileFilterOpen(false);
+                  }}
+                  variant="outline"
+                  className="flex-1 border-emerald-300 text-emerald-700"
+                >
+                  Clear All
+                </Button>
+                <Button
+                  onClick={() => setIsMobileFilterOpen(false)}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                >
+                  Show {displayCount} Results
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
