@@ -2,7 +2,7 @@ name: Smart Failure Notifications
 
 on:
   workflow_run:
-    workflows: [Quality Gate, Security Scanning, Test Coverage Analysis]
+    workflows: ["Quality Gate", "Security Scanning", "Test Coverage Analysis"]
     types: [completed]
 
 permissions:

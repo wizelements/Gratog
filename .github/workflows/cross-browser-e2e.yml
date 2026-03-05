@@ -59,13 +59,16 @@ jobs:
       - name: Generate E2E Report
         if: always()
         run: |
-          cat > e2e-${{ matrix.browser }}-${{ matrix.device }}.md << 'EOF'
+          STATUS="✅ PASSED"
+          if [ "${E2E_FAILED}" = "true" ]; then STATUS="❌ FAILED"; fi
+
+          cat > e2e-${{ matrix.browser }}-${{ matrix.device }}.md <<EOF
           # 🌐 E2E Test Report - ${{ matrix.browser }} (${{ matrix.device }})
-          
+
           **Browser:** ${{ matrix.browser }}
           **Device:** ${{ matrix.device }}
           **Date:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')
-          
+
           ## Test Coverage
           - ✅ Homepage load and render
           - ✅ Product catalog browsing
@@ -79,10 +82,9 @@ jobs:
           - ✅ Mobile responsiveness
           - ✅ Accessibility navigation
           - ✅ Performance metrics
-          
+
           ## Results
-          Status: ${{ env.E2E_FAILED == 'true' && '❌ FAILED' || '✅ PASSED' }}
-          
+          Status: ${STATUS}
           EOF
       
       - name: Upload test results
@@ -100,9 +102,9 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs');
+            const status = process.env.E2E_FAILED === 'true' ? '❌ FAILED' : '✅ PASSED';
             let comment = `## 🌐 E2E Tests - ${{ matrix.browser }} (${{ matrix.device }})\n\n`;
-            comment += `Status: ${{ env.E2E_FAILED == 'true' && '❌ FAILED' || '✅ PASSED' }}\n\n`;
+            comment += `Status: ${status}\n\n`;
             comment += `[View detailed report →](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
             
             github.rest.issues.createComment({

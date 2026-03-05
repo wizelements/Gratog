@@ -9,6 +9,8 @@ jobs:
   health-check:
     name: Monitor Production Health
     runs-on: ubuntu-latest
+    env:
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://tasteofgratitude.shop' }}
     
     steps:
       - uses: actions/checkout@v4
@@ -16,7 +18,7 @@ jobs:
       - name: Check Production Health
         id: health
         run: |
-          PROD_URL="${{ vars.PRODUCTION_URL || 'https://tasteofgratitude.shop' }}"
+          PROD_URL="$PRODUCTION_URL"
           
           echo "Checking: $PROD_URL"
           
@@ -60,11 +62,13 @@ jobs:
   performance-check:
     name: Performance Baseline
     runs-on: ubuntu-latest
+    env:
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://tasteofgratitude.shop' }}
     
     steps:
       - name: Measure Response Times
         run: |
-          PROD_URL="${{ vars.PRODUCTION_URL || 'https://tasteofgratitude.shop' }}"
+          PROD_URL="$PRODUCTION_URL"
           
           echo "## Performance Metrics" >> $GITHUB_STEP_SUMMARY
           echo "| Endpoint | Time (ms) |" >> $GITHUB_STEP_SUMMARY

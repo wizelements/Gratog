@@ -178,37 +178,47 @@ jobs:
       - name: Generate performance report
         if: always()
         run: |
-          cat > PERFORMANCE_REPORT.md << 'EOF'
+          perf_status=$([ "${PERFORMANCE_SCORE:-0}" -ge 85 ] 2>/dev/null && echo "✅" || echo "❌")
+          a11y_status=$([ "${ACCESSIBILITY_SCORE:-0}" -ge 95 ] 2>/dev/null && echo "✅" || echo "❌")
+          bp_status=$([ "${BEST_PRACTICES_SCORE:-0}" -ge 90 ] 2>/dev/null && echo "✅" || echo "❌")
+          seo_status=$([ "${SEO_SCORE:-0}" -ge 95 ] 2>/dev/null && echo "✅" || echo "❌")
+          pwa_status=$([ "${PWA_SCORE:-0}" -ge 80 ] 2>/dev/null && echo "✅" || echo "❌")
+          fcp_status=$(awk "BEGIN{exit !(${FCP:-0} < 1.8)}" && echo "✅" || echo "❌")
+          lcp_status=$(awk "BEGIN{exit !(${LCP:-0} < 2.5)}" && echo "✅" || echo "❌")
+          cls_status=$(awk "BEGIN{exit !(${CLS:-0} < 0.1)}" && echo "✅" || echo "❌")
+          fid_status=$([ "${FID:-0}" -lt 100 ] 2>/dev/null && echo "✅" || echo "❌")
+          RESULTS_URL="${{ steps.lighthouse.outputs.resultsUrl }}"
+
+          cat > PERFORMANCE_REPORT.md <<EOF
           # 📊 Performance Monitoring Report
-          
+
           **Date:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')
-          **Branch:** ${{ github.ref_name }}
-          **Commit:** ${{ github.sha }}
-          
+          **Branch:** ${GITHUB_REF_NAME}
+          **Commit:** ${GITHUB_SHA}
+
           ## Lighthouse Scores
-          
+
           | Metric | Score | Target | Status |
           |--------|-------|--------|--------|
-          | Performance | ${{ env.PERFORMANCE_SCORE }} | 85 | ${{ env.PERFORMANCE_SCORE >= 85 && '✅' || '❌' }} |
-          | Accessibility | ${{ env.ACCESSIBILITY_SCORE }} | 95 | ${{ env.ACCESSIBILITY_SCORE >= 95 && '✅' || '❌' }} |
-          | Best Practices | ${{ env.BEST_PRACTICES_SCORE }} | 90 | ${{ env.BEST_PRACTICES_SCORE >= 90 && '✅' || '❌' }} |
-          | SEO | ${{ env.SEO_SCORE }} | 95 | ${{ env.SEO_SCORE >= 95 && '✅' || '❌' }} |
-          | PWA | ${{ env.PWA_SCORE }} | 80 | ${{ env.PWA_SCORE >= 80 && '✅' || '❌' }} |
-          
+          | Performance | ${PERFORMANCE_SCORE} | 85 | ${perf_status} |
+          | Accessibility | ${ACCESSIBILITY_SCORE} | 95 | ${a11y_status} |
+          | Best Practices | ${BEST_PRACTICES_SCORE} | 90 | ${bp_status} |
+          | SEO | ${SEO_SCORE} | 95 | ${seo_status} |
+          | PWA | ${PWA_SCORE} | 80 | ${pwa_status} |
+
           ## Core Web Vitals
-          
+
           | Metric | Value | Budget | Status |
           |--------|-------|--------|--------|
-          | FCP | ${{ env.FCP }}s | < 1.8s | ${{ env.FCP < 1.8 && '✅' || '❌' }} |
-          | LCP | ${{ env.LCP }}s | < 2.5s | ${{ env.LCP < 2.5 && '✅' || '❌' }} |
-          | CLS | ${{ env.CLS }} | < 0.1 | ${{ env.CLS < 0.1 && '✅' || '❌' }} |
-          | FID | ${{ env.FID }}ms | < 100ms | ${{ env.FID < 100 && '✅' || '❌' }} |
-          
+          | FCP | ${FCP}s | < 1.8s | ${fcp_status} |
+          | LCP | ${LCP}s | < 2.5s | ${lcp_status} |
+          | CLS | ${CLS} | < 0.1 | ${cls_status} |
+          | FID | ${FID}ms | < 100ms | ${fid_status} |
+
           ## Detailed Report
-          [View full Lighthouse report →](${{ steps.lighthouse.outputs.resultsUrl }})
-          
+          [View full Lighthouse report →](${RESULTS_URL})
           EOF
-          
+
           cat PERFORMANCE_REPORT.md
       
       - name: Upload results
