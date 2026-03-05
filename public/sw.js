@@ -7,16 +7,20 @@ const IMAGE_CACHE = 'gratog-images-v1';
 const PRECACHE_URLS = [
   '/',
   '/offline.html',
-  '/css/main.css'
+  '/manifest.json',
+  '/icon-192x192.png',
+  '/icon-512x512.png'
 ];
 
 // Install event
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
+    caches.open(CACHE_NAME).then(async (cache) => {
       console.log('[SW] Caching precache URLs');
-      return cache.addAll(PRECACHE_URLS);
+      await Promise.allSettled(
+        PRECACHE_URLS.map((url) => cache.add(url))
+      );
     })
   );
   self.skipWaiting();
@@ -86,6 +90,12 @@ async function networkFirstStrategy(request) {
     const cached = await caches.match(request);
     if (cached) {
       return cached;
+    }
+    if (request.mode === 'navigate') {
+      const offlinePage = await caches.match('/offline.html');
+      if (offlinePage) {
+        return offlinePage;
+      }
     }
     return new Response('Offline - Content unavailable', {
       status: 503,
@@ -169,7 +179,7 @@ self.addEventListener('sync', (event) => {
 async function syncOrders() {
   try {
     const db = await openDB('GratogDB');
-    const orders = await db.getAll('pendingOrders');
+    const orders = await getAllFromStore(db, 'pendingOrders');
     
     for (const order of orders) {
       try {
@@ -180,8 +190,7 @@ async function syncOrders() {
         });
         
         if (response.ok) {
-          const db = await openDB('GratogDB');
-          await db.delete('pendingOrders', order.id);
+          await deleteFromStore(db, 'pendingOrders', order.id);
         }
       } catch (error) {
         console.log('[SW] Sync failed for order:', order.id);
@@ -204,6 +213,26 @@ function openDB(name) {
         db.createObjectStore('pendingOrders', { keyPath: 'id' });
       }
     };
+  });
+}
+
+function getAllFromStore(db, storeName) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function deleteFromStore(db, storeName, key) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const request = store.delete(key);
+    request.onsuccess = () => resolve(true);
+    request.onerror = () => reject(request.error);
   });
 }
 

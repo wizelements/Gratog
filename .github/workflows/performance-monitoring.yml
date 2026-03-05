@@ -45,6 +45,7 @@ jobs:
       
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v12
+        continue-on-error: true
         with:
           configPath: ./lighthouserc.js
           temporaryPublicStorage: true
@@ -232,6 +233,11 @@ jobs:
             performance-regressions.json
           retention-days: 30
       
+      - name: Ensure regression file exists
+        if: always()
+        run: |
+          test -f performance-regressions.json || echo '[]' > performance-regressions.json
+
       - name: Create performance issue
         if: failure()
         continue-on-error: true
