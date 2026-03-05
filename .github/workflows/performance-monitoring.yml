@@ -44,6 +44,9 @@ jobs:
           yarn start &
           sleep 10
       
+      - name: Validate PWA readiness
+        run: node scripts/check-pwa-readiness.js
+
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v12
         continue-on-error: true
