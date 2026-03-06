@@ -21,7 +21,14 @@ export function RatingBadge({ avgRating, count, size = 'default' }) {
   );
 }
 
-export default function ProductReviews({ productId, productName, compact = false }) {
+export default function ProductReviews({
+  productId,
+  productName,
+  compact = false,
+  autoOpenForm = false,
+  reviewHeading = 'Customer Reviews',
+  reviewSubheading = 'Share your thoughts about this product...'
+}) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -39,6 +46,12 @@ export default function ProductReviews({ productId, productName, compact = false
   useEffect(() => {
     fetchReviews();
   }, [productId]);
+
+  useEffect(() => {
+    if (autoOpenForm) {
+      setShowForm(true);
+    }
+  }, [autoOpenForm]);
 
   const fetchReviews = async () => {
     try {
@@ -136,7 +149,7 @@ export default function ProductReviews({ productId, productName, compact = false
       <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-6 border border-emerald-100">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h3 className="text-2xl font-bold text-emerald-900 mb-2">Customer Reviews</h3>
+            <h3 className="text-2xl font-bold text-emerald-900 mb-2">{reviewHeading}</h3>
             <div className="flex items-center gap-3">
               <StarRating rating={avgRating} readonly size={20} />
               <span className="text-lg font-semibold text-emerald-800">
@@ -233,7 +246,7 @@ export default function ProductReviews({ productId, productName, compact = false
                 onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
                 required
                 rows={4}
-                placeholder="Share your thoughts about this product..."
+                placeholder={reviewSubheading}
               />
             </div>
 

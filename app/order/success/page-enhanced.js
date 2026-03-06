@@ -391,7 +391,12 @@ export default function OrderSuccessPage() {
             <p className="text-emerald-700 mb-4">
               We've sent a confirmation email to <strong>{order.customer?.email}</strong>
             </p>
-            <div className="flex gap-4 justify-center">
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Link href="/reviews">
+                <Button variant="outline" className="border-amber-400 text-amber-700 hover:bg-amber-50">
+                  Share A Review
+                </Button>
+              </Link>
               <Link href="/catalog">
                 <Button variant="outline" className="border-emerald-600 text-emerald-700 hover:bg-emerald-50">
                   Continue Shopping

@@ -111,7 +111,18 @@ export default function Header() {
               }`} />
             </Link>
             <Link 
-              href="/rewards" 
+              href="/reviews"
+              className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
+                isActive('/reviews') ? 'text-[#D4AF37]' : ''
+              }`}
+            >
+              Reviews
+              <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
+                isActive('/reviews') ? 'w-full' : ''
+              }`} />
+            </Link>
+            <Link
+              href="/rewards"
               className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
                 isActive('/rewards') || isActive('/passport') ? 'text-[#D4AF37]' : ''
               }`}
@@ -193,6 +204,9 @@ export default function Header() {
               </Link>
               <Link href="/community" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
                 Community
+              </Link>
+              <Link href="/reviews" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+                Reviews
               </Link>
               <Link href="/rewards" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
                 Rewards

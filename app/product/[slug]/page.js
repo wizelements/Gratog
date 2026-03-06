@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,14 @@ import { toast } from 'sonner';
 import { addToCart } from '@/lib/cart-engine';
 import RecommendationsWidget from '@/components/RecommendationsWidget';
 import Breadcrumbs, { getProductBreadcrumbs } from '@/components/Breadcrumbs';
+import ProductReviews from '@/components/ProductReviews';
 import Script from 'next/script';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop';
 
 export default function ProductDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
@@ -28,6 +30,7 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [scrollY, setScrollY] = useState(0);
   const [activeStory, setActiveStory] = useState(0);
+  const [activeTab, setActiveTab] = useState('details');
   const storyRef = useRef(null);
   
   // Scroll effect for parallax
@@ -86,6 +89,13 @@ export default function ProductDetailPage() {
     
     fetchProduct();
   }, [params.slug]);
+
+  useEffect(() => {
+    const requestedTab = searchParams.get('tab');
+    if (['details', 'ingredients', 'reviews'].includes(requestedTab)) {
+      setActiveTab(requestedTab);
+    }
+  }, [searchParams]);
 
   if (isLoading) {
     return (
@@ -152,6 +162,7 @@ export default function ProductDetailPage() {
 
   const currentPrice = selectedVariation?.price || product.price || 0;
   const images = product.images?.length > 0 ? product.images : [product.image || '/images/sea-moss-default.svg'];
+  const shouldAutoOpenReviewForm = searchParams.get('review') === '1';
 
   // Enhanced structured data for SEO with rich snippets
   const productSchema = {
@@ -480,7 +491,7 @@ export default function ProductDetailPage() {
 
         {/* Tabs */}
         <div className="mt-16">
-          <Tabs defaultValue="details" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full max-w-md grid-cols-3">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
@@ -527,14 +538,12 @@ export default function ProductDetailPage() {
               </Card>
             </TabsContent>
             
-            <TabsContent value="reviews" className="mt-6">
-              <Card className="p-6">
-                <h3 className="text-xl font-bold mb-4">Customer Reviews</h3>
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>No reviews yet. Be the first to review this product!</p>
-                  <Button className="mt-4">Write a Review</Button>
-                </div>
-              </Card>
+            <TabsContent value="reviews" className="mt-6" id="product-reviews">
+              <ProductReviews
+                productId={product.id || product.slug}
+                productName={product.name}
+                autoOpenForm={shouldAutoOpenReviewForm}
+              />
             </TabsContent>
           </Tabs>
         </div>

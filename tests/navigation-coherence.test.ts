@@ -15,7 +15,16 @@ describe('Navigation Coherence', () => {
     expect(header).toContain('href="/markets"');
     expect(header).toContain('href="/explore"');
     expect(header).toContain('href="/community"');
+    expect(header).toContain('href="/reviews"');
     expect(header).toContain('href="/rewards"');
+  });
+
+  it('product detail reviews tab uses live review component', () => {
+    const productPage = read('app/product/[slug]/page.js');
+
+    expect(productPage).toContain("import ProductReviews from '@/components/ProductReviews'");
+    expect(productPage).toContain('<ProductReviews');
+    expect(productPage).not.toContain('No reviews yet. Be the first to review this product!');
   });
 
   it('FAQ destinations are consistent with dedicated FAQ route', () => {

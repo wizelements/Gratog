@@ -35,9 +35,9 @@ export default function CommunityPage() {
     {
       icon: Star,
       title: 'Product Reviews',
-      description: 'Share your experience and earn 10 reward points per review',
-      action: 'Write Review',
-      link: '/catalog',
+      description: 'Review any product or your full customer experience in our Review Studio',
+      action: 'Open Review Studio',
+      link: '/reviews',
       color: 'bg-yellow-100 text-yellow-600',
     },
     {
