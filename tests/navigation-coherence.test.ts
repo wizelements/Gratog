@@ -53,4 +53,23 @@ describe('Navigation Coherence', () => {
     expect(emailTemplates).toContain('/order/success?orderRef=');
     expect(emailTemplates).not.toContain('/order/${order.orderNumber}');
   });
+
+  it('homepage featured CTA keeps a concrete hash destination', () => {
+    const homeClient = read('components/home/HomePageClient.jsx');
+
+    expect(homeClient).toContain('href="/#featured"');
+    expect(homeClient).toContain('id="featured"');
+  });
+
+  it('menu hash links map to existing homepage anchor sections', () => {
+    const header = read('components/Header.jsx');
+    const megaMenu = read('components/MegaMenu.jsx');
+    const homeClient = read('components/home/HomePageClient.jsx');
+
+    expect(header).toContain('href="/#what-is-sea-moss"');
+    expect(megaMenu).toContain("href: '/#what-is-sea-moss'");
+    expect(megaMenu).toContain("href: '/#benefits'");
+    expect(homeClient).toContain('id="what-is-sea-moss"');
+    expect(homeClient).toContain('id="benefits"');
+  });
 });

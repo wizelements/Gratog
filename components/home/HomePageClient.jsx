@@ -29,6 +29,25 @@ export default function HomePageClient({
     const heroRef = useRef(null);
     const [scrollY, setScrollY] = useState(0);
 
+    const handleViewFeatured = (event) => {
+        const featuredSection = document.getElementById('featured');
+        if (!featuredSection) {
+            return;
+        }
+
+        // Keep hash navigation for deep-linking while preserving smooth in-page scroll.
+        event.preventDefault();
+        if (window.location.hash !== '#featured') {
+            window.history.replaceState(null, '', '/#featured');
+        }
+
+        try {
+            featuredSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch {
+            featuredSection.scrollIntoView();
+        }
+    };
+
     useEffect(() => {
         if (initialFeaturedProducts.length > 0) {
             return;
@@ -161,13 +180,10 @@ export default function HomePageClient({
                         <Button
                             size="lg"
                             variant="outline"
+                            asChild
                             className="h-14 px-8 text-lg border-2 border-white text-white hover:bg-white hover:text-emerald-600 shadow-2xl hover:scale-105 transition-all"
-                            onClick={() => {
-                                const element = document.getElementById('featured');
-                                element?.scrollIntoView({ behavior: 'smooth' });
-                            }}
                         >
-                            View Featured
+                            <Link href="/#featured" onClick={handleViewFeatured}>View Featured</Link>
                         </Button>
                     </div>
 
@@ -342,7 +358,7 @@ export default function HomePageClient({
                 </div>
             </section>
 
-            <section className="py-20 bg-white fade-in-section opacity-0 transition-all duration-1000">
+            <section id="benefits" className="py-20 bg-white fade-in-section opacity-0 transition-all duration-1000">
                 <div className="container">
                     <div className="grid md:grid-cols-3 gap-8">
                         {[
@@ -380,7 +396,7 @@ export default function HomePageClient({
                 </div>
             </section>
 
-            <section className="py-20 bg-gradient-to-b from-emerald-50 to-white fade-in-section opacity-0 transition-all duration-1000">
+            <section id="what-is-sea-moss" className="py-20 bg-gradient-to-b from-emerald-50 to-white fade-in-section opacity-0 transition-all duration-1000">
                 <div className="container max-w-5xl">
                     <div className="text-center mb-16">
                         <Badge className="mb-4 bg-emerald-600 text-white px-4 py-2">
