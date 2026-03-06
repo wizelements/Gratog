@@ -177,6 +177,28 @@ export default function Header() {
               <SearchBar placeholder="Search..." />
             </div>
 
+            {/* Main Section */}
+            <div className="border-b pb-3">
+              <p className="text-xs font-bold text-gray-600 uppercase tracking-wider px-4 py-2 mb-1">
+                Main
+              </p>
+              <Link href="/" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+                Home
+              </Link>
+              <Link href="/markets" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+                Markets
+              </Link>
+              <Link href="/explore" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+                Explore
+              </Link>
+              <Link href="/community" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+                Community
+              </Link>
+              <Link href="/rewards" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+                Rewards
+              </Link>
+            </div>
+
             {/* Shop Section */}
             <div className="border-b pb-3">
               <p className="text-xs font-bold text-gray-600 uppercase tracking-wider px-4 py-2 mb-1">
@@ -225,9 +247,6 @@ export default function Header() {
                   Login / Register
                 </Link>
               )}
-              <Link href="/rewards" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
-                Rewards Program
-              </Link>
             </div>
 
             {/* Help Section */}
@@ -235,7 +254,7 @@ export default function Header() {
               <p className="text-xs font-bold text-gray-600 uppercase tracking-wider px-4 py-2 mb-1">
                 Help
               </p>
-              <Link href="/#faq" className="block text-sm py-2 px-4 hover:bg-blue-50 hover:text-blue-600 rounded" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/faq" className="block text-sm py-2 px-4 hover:bg-blue-50 hover:text-blue-600 rounded" onClick={() => setIsMenuOpen(false)}>
                 FAQ
               </Link>
               <Link href="/contact" className="block text-sm py-2 px-4 hover:bg-blue-50 hover:text-blue-600 rounded" onClick={() => setIsMenuOpen(false)}>

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Sparkles, Leaf, Award, Users } from 'lucide-react';
+import { ChevronDown, Sparkles, Leaf } from 'lucide-react';
 
 const MENU_ITEMS = {
   Shop: {
@@ -46,28 +46,6 @@ const MENU_ITEMS = {
           { label: 'Explore Content', href: '/explore' },
           { label: 'Games & Quizzes', href: '/explore/games' },
           { label: 'Customer Stories', href: '/explore/showcase' },
-        ],
-      },
-    ],
-  },
-  Account: {
-    icon: Users,
-    sections: [
-      {
-        title: 'User',
-        items: [
-          { label: 'Login', href: '/login' },
-          { label: 'Register', href: '/register' },
-          { label: 'My Profile', href: '/profile' },
-          { label: 'My Orders', href: '/profile#orders' },
-        ],
-      },
-      {
-        title: 'Rewards',
-        items: [
-          { label: 'Rewards Program', href: '/rewards' },
-          { label: 'Loyalty Points', href: '/rewards#points' },
-          { label: 'Special Offers', href: '/rewards#offers' },
         ],
       },
     ],

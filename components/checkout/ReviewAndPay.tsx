@@ -103,9 +103,15 @@ export default function ReviewAndPay({
     });
     
     setTimeout(() => {
-      router.push(`/order/${orderId}?success=true`);
+      if (!orderId) {
+        router.push('/order/success?paid=true');
+        return;
+      }
+
+      const amountCents = Math.round(totals.total * 100);
+      router.push(`/order/success?orderRef=${orderId}&paid=true&amount=${amountCents}`);
     }, 2000);
-  }, [orderId, router]);
+  }, [orderId, router, totals.total]);
   
   const handlePaymentError = useCallback((error: string) => {
     toast.error(error);
