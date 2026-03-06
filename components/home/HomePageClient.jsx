@@ -179,9 +179,8 @@ export default function HomePageClient({
 
                         <Button
                             size="lg"
-                            variant="outline"
                             asChild
-                            className="h-14 px-8 text-lg border-2 border-white text-white hover:bg-white hover:text-emerald-600 shadow-2xl hover:scale-105 transition-all"
+                            className="h-14 px-8 text-lg bg-emerald-50 text-emerald-600 hover:bg-white hover:text-emerald-700 shadow-2xl hover:scale-105 transition-all font-semibold"
                         >
                             <Link href="/#featured" onClick={handleViewFeatured}>View Featured</Link>
                         </Button>
