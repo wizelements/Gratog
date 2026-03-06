@@ -18,6 +18,13 @@ import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('OrderPage');
 
+const DELIVERY_ENABLED = process.env.NEXT_PUBLIC_FULFILLMENT_DELIVERY === 'enabled';
+const DELIVERY_ZIP_WHITELIST = (process.env.NEXT_PUBLIC_DELIVERY_ZIP_WHITELIST || '')
+  .split(',')
+  .map((zip) => zip.trim())
+  .filter(Boolean);
+const DELIVERY_CONFIGURED = DELIVERY_ENABLED && DELIVERY_ZIP_WHITELIST.length > 0;
+
 export default function OrderPage() {
   const router = useRouter();
   const [cart, setCart] = useState([]);
@@ -61,6 +68,12 @@ export default function OrderPage() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (!DELIVERY_CONFIGURED && fulfillmentType === 'delivery') {
+      setFulfillmentType('pickup_market');
+    }
+  }, [fulfillmentType]);
 
   const { subtotal, totalItems } = getCartTotal();
   
@@ -114,6 +127,11 @@ export default function OrderPage() {
   };
 
   const validateForm = () => {
+    if (fulfillmentType === 'delivery' && !DELIVERY_CONFIGURED) {
+      toast.error('Home delivery is currently unavailable. Please select pickup.');
+      return false;
+    }
+
     // Validate minimum order amount - only for delivery, NOT pickup
     if (fulfillmentType === 'delivery' && subtotal < 30) {
       toast.error('Minimum order amount for delivery is $30');
@@ -521,9 +539,9 @@ export default function OrderPage() {
                     </div>
                     
                     {/* Home Delivery */}
-                    <div className="flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer hover:border-emerald-600 transition-all hover:shadow-md mt-3">
-                      <RadioGroupItem value="delivery" id="delivery" className="mt-1" />
-                      <Label htmlFor="delivery" className="flex-1 cursor-pointer">
+                    <div className={`flex items-start space-x-3 p-4 border-2 rounded-lg mt-3 transition-all ${DELIVERY_CONFIGURED ? 'cursor-pointer hover:border-emerald-600 hover:shadow-md' : 'opacity-60 cursor-not-allowed bg-gray-50 border-gray-200'}`}>
+                      <RadioGroupItem value="delivery" id="delivery" className="mt-1" disabled={!DELIVERY_CONFIGURED} />
+                      <Label htmlFor="delivery" className={`flex-1 ${DELIVERY_CONFIGURED ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
                         <div className="space-y-2">
                           <div className="flex items-start gap-3">
                             <div className="p-2 bg-orange-50 rounded-lg">
@@ -532,12 +550,13 @@ export default function OrderPage() {
                             <div className="flex-1">
                               <div className="font-semibold text-lg">🚚 Home Delivery</div>
                               <div className="text-sm text-orange-600 font-medium">
-                                {subtotal >= 100 ? '✨ FREE delivery (order over $100)' : 
+                                {!DELIVERY_CONFIGURED ? 'Temporarily unavailable' :
+                                 subtotal >= 100 ? '✨ FREE delivery (order over $100)' :
                                  subtotal >= 85 ? '✨ 10% off delivery (order over $85)' :
                                  subtotal >= 65 ? '✨ 5% off delivery (order over $65)' :
                                  'Distance-based • FREE 0-5 miles'}
-                              </div>
                             </div>
+                          </div>
                           </div>
                           
                           <div className="pl-14 text-sm text-gray-600">
@@ -555,6 +574,11 @@ export default function OrderPage() {
                               <div className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded p-2 mt-2">
                                 💰 Order Discounts: $65+ (5% off) • $85+ (10% off) • $100+ (FREE delivery)
                               </div>
+                              {!DELIVERY_CONFIGURED && (
+                                <div className="text-xs font-semibold text-orange-700 bg-orange-50 border border-orange-200 rounded p-2 mt-2">
+                                  Delivery is currently unavailable. Please choose one of the pickup options.
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
