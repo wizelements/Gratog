@@ -7,7 +7,6 @@ import {
   isValidDeliveryZip,
   isDeliveryWindowAvailable,
   getDeliveryConfig,
-  getDeliveryZipWhitelist,
   isFulfillmentEnabled,
   sanitizeTip
 } from '../fulfillment';
@@ -46,15 +45,6 @@ export function validateDeliveryFulfillment(data: {
     return { valid: false, errors };
   }
 
-  const deliveryZipWhitelist = getDeliveryZipWhitelist();
-  if (deliveryZipWhitelist.length === 0) {
-    errors.push({
-      field: 'fulfillmentType',
-      message: 'Home delivery is temporarily unavailable. Please choose Pickup or Shipping.'
-    });
-    return { valid: false, errors };
-  }
-  
   // Validate ZIP code
   if (!data.zip) {
     errors.push({

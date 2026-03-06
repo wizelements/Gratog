@@ -19,11 +19,7 @@ import { createLogger } from '@/lib/logger';
 const logger = createLogger('OrderPage');
 
 const DELIVERY_ENABLED = process.env.NEXT_PUBLIC_FULFILLMENT_DELIVERY === 'enabled';
-const DELIVERY_ZIP_WHITELIST = (process.env.NEXT_PUBLIC_DELIVERY_ZIP_WHITELIST || '')
-  .split(',')
-  .map((zip) => zip.trim())
-  .filter(Boolean);
-const DELIVERY_CONFIGURED = DELIVERY_ENABLED && DELIVERY_ZIP_WHITELIST.length > 0;
+const DELIVERY_CONFIGURED = DELIVERY_ENABLED;
 
 export default function OrderPage() {
   const router = useRouter();
@@ -81,9 +77,7 @@ export default function OrderPage() {
   const getDeliveryFee = () => {
     if (fulfillmentType !== 'delivery') return 0;
     
-    // Default pricing (will be calculated based on distance when address is entered)
-    // For display purposes, show base pricing structure
-    if (subtotal >= 100) return 0; // FREE over $100
+    // Default estimate shown before the backend calculates distance from ZIP 30331.
     if (subtotal >= 85) return 3.99 * 0.9; // 10% off
     if (subtotal >= 65) return 3.99 * 0.95; // 5% off
     return 3.99; // Base fee for 5-10 miles (example)
@@ -551,12 +545,11 @@ export default function OrderPage() {
                               <div className="font-semibold text-lg">🚚 Home Delivery</div>
                               <div className="text-sm text-orange-600 font-medium">
                                 {!DELIVERY_CONFIGURED ? 'Temporarily unavailable' :
-                                 subtotal >= 100 ? '✨ FREE delivery (order over $100)' :
                                  subtotal >= 85 ? '✨ 10% off delivery (order over $85)' :
                                  subtotal >= 65 ? '✨ 5% off delivery (order over $65)' :
-                                 'Distance-based • FREE 0-5 miles'}
+                                 'Distance-based • FREE within 5 miles of 30331'}
+                              </div>
                             </div>
-                          </div>
                           </div>
                           
                           <div className="pl-14 text-sm text-gray-600">
@@ -567,12 +560,12 @@ export default function OrderPage() {
                               </div>
                               <div className="text-xs text-gray-700 space-y-1 mt-2">
                                 <div className="font-medium">Distance-based pricing:</div>
-                                <div>• 0-5 miles: <span className="text-emerald-600 font-semibold">FREE</span></div>
+                                <div>• Within 5 miles of 30331: <span className="text-emerald-600 font-semibold">FREE</span></div>
                                 <div>• 5-10 miles: $3.99 • 10-15 miles: $7.99</div>
                                 <div>• 15-20 miles: $11.99 • 20-25 miles: $15.99</div>
                               </div>
                               <div className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded p-2 mt-2">
-                                💰 Order Discounts: $65+ (5% off) • $85+ (10% off) • $100+ (FREE delivery)
+                                💰 Order Discounts: $65+ (5% off) • $85+ (10% off)
                               </div>
                               {!DELIVERY_CONFIGURED && (
                                 <div className="text-xs font-semibold text-orange-700 bg-orange-50 border border-orange-200 rounded p-2 mt-2">
@@ -615,12 +608,12 @@ export default function OrderPage() {
                     <div className="mt-6 p-4 bg-emerald-50 rounded-lg space-y-4 animate-in slide-in-from-top duration-300">
                       <div className="flex items-center gap-2 text-emerald-800 font-semibold mb-3">
                         <MapPin className="h-4 w-4" />
-                        Delivery Address (Within 5 miles)
+                        Delivery Address
                       </div>
                       <Alert className="bg-blue-50 border-blue-200">
                         <AlertCircle className="h-4 w-4 text-blue-600" />
                         <AlertDescription className="text-blue-800 text-sm">
-                          Delivery available within 5 miles of Serenbe or Scotch Bonnet (Campbellton Rd area)
+                          Free delivery applies only to addresses within 5 miles of ZIP 30331. Other addresses use standard distance rates.
                         </AlertDescription>
                       </Alert>
                       <div>

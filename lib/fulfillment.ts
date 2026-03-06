@@ -27,6 +27,7 @@ export function getDeliveryZipWhitelist(): string[] {
 export function isValidDeliveryZip(zip: string): boolean {
   if (!zip) return false;
   const whitelist = getDeliveryZipWhitelist();
+  if (whitelist.length === 0) return true;
   const cleanZip = zip.trim().replace(/\D/g, '').slice(0, 5);
   return whitelist.includes(cleanZip);
 }

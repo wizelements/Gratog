@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { orderTracking } from '@/lib/enhanced-order-tracking';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { sendOrderConfirmationSMS } from '@/lib/sms';
-import { calculateDeliveryFee } from '@/lib/delivery-fees';
+import { calculateDeliveryFee, calculateDistanceBasedDeliveryFee } from '@/lib/delivery-fees';
 import { validateDeliveryFulfillment } from '@/lib/validation/fulfillment';
 import { validateCustomerData } from '@/lib/validation/customer';
 import { validateCart } from '@/lib/validation/cart';
@@ -12,6 +12,7 @@ import { randomUUID, createHash } from 'crypto';
 import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-customer';
 import { RateLimit } from '@/lib/redis';
 import { withIdempotency, getIdempotencyKeyFromHeaders } from '@/lib/idempotency';
+import { checkFreeDeliveryRadiusFrom30331 } from '@/lib/delivery-radius';
 
 const logger = createLogger('OrdersCreateAPI');
 
@@ -292,10 +293,38 @@ export async function POST(request) {
     
     // Calculate delivery fee if applicable
     let deliveryFee = 0;
+    let deliveryDistanceMiles = null;
+    let freeDeliveryEligible30331 = false;
     if (orderData.fulfillmentType === 'delivery') {
       const subtotal = orderData.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      deliveryFee = calculateDeliveryFee(subtotal);
-      logger.debug('Delivery fee calculated', { subtotal, deliveryFee });
+      const fullAddress = [
+        orderData.deliveryAddress?.street,
+        orderData.deliveryAddress?.city,
+        `${orderData.deliveryAddress?.state || 'GA'} ${orderData.deliveryAddress?.zip || ''}`.trim(),
+      ].filter(Boolean).join(', ');
+
+      if (fullAddress) {
+        const radiusCheck = await checkFreeDeliveryRadiusFrom30331(fullAddress);
+        freeDeliveryEligible30331 = Boolean(radiusCheck.eligible);
+        if (typeof radiusCheck.distance === 'number') {
+          deliveryDistanceMiles = radiusCheck.distance;
+        }
+      }
+
+      if (freeDeliveryEligible30331) {
+        deliveryFee = 0;
+      } else if (typeof deliveryDistanceMiles === 'number') {
+        deliveryFee = calculateDistanceBasedDeliveryFee(deliveryDistanceMiles, subtotal);
+      } else {
+        deliveryFee = calculateDeliveryFee(subtotal);
+      }
+
+      logger.debug('Delivery fee calculated', {
+        subtotal,
+        deliveryFee,
+        deliveryDistanceMiles,
+        freeDeliveryEligible30331,
+      });
     }
     
     // Generate order ID and number
@@ -330,7 +359,9 @@ export async function POST(request) {
         ip: request.headers.get('x-forwarded-for') || 'unknown',
         userAgent: request.headers.get('user-agent') || 'unknown',
         timestamp: new Date().toISOString(),
-        deliveryFee
+        deliveryFee,
+        deliveryDistanceMiles,
+        freeDeliveryEligible30331
       }
     };
     

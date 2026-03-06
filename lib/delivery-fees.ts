@@ -5,10 +5,44 @@
 
 import { getDeliveryConfig } from './fulfillment';
 
+const DISTANCE_TIERS = [
+  { maxMiles: 5, fee: 0 },
+  { maxMiles: 10, fee: 3.99 },
+  { maxMiles: 15, fee: 7.99 },
+  { maxMiles: 20, fee: 11.99 },
+  { maxMiles: 25, fee: 15.99 },
+];
+
+const DELIVERY_DISCOUNT_TIERS = [
+  { minSubtotal: 85, percentOff: 10 },
+  { minSubtotal: 65, percentOff: 5 },
+];
+
 // Calculate delivery fee based on subtotal
 export function calculateDeliveryFee(subtotal: number): number {
   const config = getDeliveryConfig();
   return subtotal >= config.freeThreshold ? 0 : config.baseFee;
+}
+
+export function calculateDistanceBasedDeliveryFee(distanceMiles: number, subtotal: number): number {
+  const roundedDistance = Number.isFinite(distanceMiles) ? distanceMiles : 999;
+  const matchingTier = DISTANCE_TIERS.find((tier) => roundedDistance <= tier.maxMiles);
+
+  if (!matchingTier) {
+    return DISTANCE_TIERS[DISTANCE_TIERS.length - 1].fee;
+  }
+
+  if (matchingTier.fee === 0) {
+    return 0;
+  }
+
+  const discountTier = DELIVERY_DISCOUNT_TIERS.find((tier) => subtotal >= tier.minSubtotal);
+  if (!discountTier) {
+    return matchingTier.fee;
+  }
+
+  const discountedFee = matchingTier.fee * (1 - discountTier.percentOff / 100);
+  return Math.round(discountedFee * 100) / 100;
 }
 
 // Calculate progress toward free delivery
