@@ -18,6 +18,13 @@ async function fetchBuffer(path) {
   return Buffer.from(await res.arrayBuffer());
 }
 
+async function assertAssetExists(path) {
+  const res = await fetch(`${BASE_URL}${path}`);
+  if (!res.ok) {
+    throw new Error(`Required asset missing: ${path} (HTTP ${res.status})`);
+  }
+}
+
 function parsePngDimensions(buffer) {
   // PNG IHDR chunk stores width/height at bytes 16-24
   const signature = '89504e470d0a1a0a';
@@ -68,6 +75,13 @@ async function main() {
   }
   if (!sw.includes("'/offline.html'")) {
     throw new Error('Service worker is missing offline fallback asset');
+  }
+
+  const swAssetMatches = [
+    ...sw.matchAll(/(?:icon|badge)\s*:\s*['"]([^'"]+)['"]/g),
+  ];
+  for (const [, path] of swAssetMatches) {
+    await assertAssetExists(path);
   }
 
   await fetchText('/offline.html');
