@@ -64,6 +64,20 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Redirect legacy public routes to their canonical destinations.
+  const legacyRouteRedirects: Record<string, string> = {
+    '/products': '/catalog',
+    '/cart': '/checkout',
+    '/account/orders': '/profile/orders',
+  };
+
+  const redirectDestination = legacyRouteRedirects[pathname];
+  if (redirectDestination) {
+    url.pathname = redirectDestination;
+    const redirectResponse = NextResponse.redirect(url, 301);
+    return addSecurityHeaders(redirectResponse);
+  }
+
   // Redirect old /delivery route to /order with tab param
   if (pathname === '/delivery') {
     url.pathname = '/order';
