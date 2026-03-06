@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { adminFetch } from '@/lib/admin-fetch';
 import { logger } from '@/lib/logger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,7 @@ export default function AdminSetupPage() {
 
   const checkAdminStatus = async () => {
     try {
-      const response = await fetch('/api/admin/setup');
+      const response = await adminFetch('/api/admin/setup');
       const data = await response.json();
       setAdminStatus(data);
     } catch (error) {
@@ -40,7 +41,7 @@ export default function AdminSetupPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/admin/setup', {
+      const response = await adminFetch('/api/admin/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ secret: setupSecret })

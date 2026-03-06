@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { adminFetch } from '@/lib/admin-fetch';
 import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,7 @@ export default function InventoryPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/admin/products');
+      const response = await adminFetch('/api/admin/products');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setProducts(data.products || []);
@@ -48,7 +49,7 @@ export default function InventoryPage() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/admin/inventory/${adjustingProduct.id}`, {
+      const response = await adminFetch(`/api/admin/inventory/${adjustingProduct.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -7,6 +7,7 @@ import { DollarSign, ShoppingCart, Package, TrendingUp, AlertCircle, CloudDownlo
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { adminFetch } from '@/lib/admin-fetch';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -30,7 +31,7 @@ export default function AdminDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch('/api/admin/products');
+      const response = await adminFetch('/api/admin/products');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       
@@ -52,7 +53,7 @@ export default function AdminDashboard() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('/api/admin/orders');
+      const response = await adminFetch('/api/admin/orders');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       
@@ -80,7 +81,7 @@ export default function AdminDashboard() {
 
   const fetchSyncStatus = async () => {
     try {
-      const response = await fetch('/api/admin/orders/sync');
+      const response = await adminFetch('/api/admin/orders/sync');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       if (data.lastSync) {
@@ -94,7 +95,7 @@ export default function AdminDashboard() {
   const syncFromSquare = async () => {
     setSyncing(true);
     try {
-      const response = await fetch('/api/admin/orders/sync', {
+      const response = await adminFetch('/api/admin/orders/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

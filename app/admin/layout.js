@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { adminFetch } from '@/lib/admin-fetch';
 import { logger } from '@/lib/logger';
 import {
   LayoutDashboard,
@@ -49,7 +50,7 @@ export default function AdminLayout({ children }) {
 
   useEffect(() => {
     if (pathname !== '/admin/login') {
-      fetch('/api/admin/auth/me')
+      adminFetch('/api/admin/auth/me')
         .then(res => {
           if (!res.ok) return null;
           return res.json();
@@ -65,7 +66,7 @@ export default function AdminLayout({ children }) {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/admin/auth/logout', { method: 'POST' });
+      await adminFetch('/api/admin/auth/logout', { method: 'POST' });
       toast.success('Logged out successfully');
       router.push('/admin/login');
       router.refresh();

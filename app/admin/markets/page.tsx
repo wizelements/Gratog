@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { adminFetch } from '@/lib/admin-fetch';
 import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -85,7 +86,7 @@ export default function MarketsPage() {
 
   const fetchMarkets = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/markets');
+      const res = await adminFetch('/api/admin/markets');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data.success) {
@@ -137,7 +138,7 @@ export default function MarketsPage() {
         ? { marketId: editingMarket.id, ...formData }
         : formData;
 
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -177,7 +178,7 @@ export default function MarketsPage() {
     );
 
     try {
-      const res = await fetch('/api/admin/markets', {
+      const res = await adminFetch('/api/admin/markets', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ marketId: market.id, isActive: newStatus }),
@@ -214,7 +215,7 @@ export default function MarketsPage() {
     setMarketToDelete(null);
 
     try {
-      const res = await fetch('/api/admin/markets', {
+      const res = await adminFetch('/api/admin/markets', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ marketId }),
@@ -239,7 +240,7 @@ export default function MarketsPage() {
     setSeeding(true);
 
     try {
-      const res = await fetch('/api/admin/markets/seed', {
+      const res = await adminFetch('/api/admin/markets/seed', {
         method: 'POST',
       });
 

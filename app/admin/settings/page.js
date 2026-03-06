@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Shield, Settings as SettingsIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { adminFetch } from '@/lib/admin-fetch';
 import { logger } from '@/lib/logger';
 
 export default function SettingsPage() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    fetch('/api/admin/auth/me')
+    adminFetch('/api/admin/auth/me')
       .then(res => res.json())
       .then(data => {
         if (data.user) {

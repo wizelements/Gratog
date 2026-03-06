@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { adminFetch } from '@/lib/admin-fetch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,7 +43,7 @@ export default function AdminInteractionsPage() {
 
   async function fetchInteractions() {
     try {
-      const response = await fetch('/api/admin/interactions?includeDrafts=true&limit=100');
+      const response = await adminFetch('/api/admin/interactions?includeDrafts=true&limit=100');
       const data = await response.json();
       if (!response.ok || !data.success) {
         throw new Error(data.error || 'Failed to load interactions');
@@ -60,7 +61,7 @@ export default function AdminInteractionsPage() {
     setSaving(true);
 
     try {
-      const response = await fetch('/api/admin/interactions', {
+      const response = await adminFetch('/api/admin/interactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
@@ -93,7 +94,7 @@ export default function AdminInteractionsPage() {
 
   async function toggleField(id, updates) {
     try {
-      const response = await fetch(`/api/admin/interactions/${id}`, {
+      const response = await adminFetch(`/api/admin/interactions/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates)
@@ -112,7 +113,7 @@ export default function AdminInteractionsPage() {
 
   async function removeInteraction(id) {
     try {
-      const response = await fetch(`/api/admin/interactions/${id}`, {
+      const response = await adminFetch(`/api/admin/interactions/${id}`, {
         method: 'DELETE'
       });
       const data = await response.json();

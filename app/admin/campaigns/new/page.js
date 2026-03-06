@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { adminFetch } from '@/lib/admin-fetch';
 import { clientLogger as logger } from '@/lib/client-logger';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -63,7 +64,7 @@ export default function NewCampaignPage() {
         if (value) params.append(key, value);
       });
 
-      const response = await fetch(`/api/admin/customers?${params}`, {
+      const response = await adminFetch(`/api/admin/customers?${params}`, {
         credentials: 'include'
       });
 
@@ -83,7 +84,7 @@ export default function NewCampaignPage() {
     
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/campaigns/test', {
+      const response = await adminFetch('/api/admin/campaigns/test', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -116,7 +117,7 @@ export default function NewCampaignPage() {
       setGenerating(true);
       toast.info('Generating newsletter with AI...');
 
-      const response = await fetch('/api/admin/campaigns/generate', {
+      const response = await adminFetch('/api/admin/campaigns/generate', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -171,7 +172,7 @@ export default function NewCampaignPage() {
 
       setLoading(true);
 
-      const response = await fetch('/api/admin/campaigns', {
+      const response = await adminFetch('/api/admin/campaigns', {
         method: 'POST',
         credentials: 'include',
         headers: {

@@ -10,6 +10,7 @@ import { Search, Package, DollarSign, Edit, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { adminFetch } from '@/lib/admin-fetch';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
@@ -23,7 +24,7 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/admin/products');
+      const response = await adminFetch('/api/admin/products');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setProducts(data.products || []);
@@ -38,7 +39,7 @@ export default function ProductsPage() {
   const handleSyncFromSquare = async () => {
     setSyncing(true);
     try {
-      const response = await fetch('/api/admin/products/sync', {
+      const response = await adminFetch('/api/admin/products/sync', {
         method: 'POST'
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);

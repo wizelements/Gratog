@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { adminFetch } from '@/lib/admin-fetch';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,7 +32,7 @@ export default function AdminCouponsPage() {
 
   const fetchCoupons = async () => {
     try {
-      const response = await fetch('/api/admin/coupons');
+      const response = await adminFetch('/api/admin/coupons');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       if (data.success) {
@@ -88,7 +89,7 @@ export default function AdminCouponsPage() {
     if (!confirm('Are you sure you want to delete this coupon?')) return;
     
     try {
-      const response = await fetch(`/api/admin/coupons/${couponId}`, {
+      const response = await adminFetch(`/api/admin/coupons/${couponId}`, {
         method: 'DELETE'
       });
 

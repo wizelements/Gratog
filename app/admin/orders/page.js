@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ShoppingCart, Package, Truck, DollarSign, Phone, Mail, RefreshCw, ChevronDown, CheckCircle2, CloudDownload } from 'lucide-react';
 import { toast } from 'sonner';
+import { adminFetch } from '@/lib/admin-fetch';
 
 const ORDER_STATUSES = [
   { value: 'pending', label: 'Pending', color: 'bg-gray-600' },
@@ -46,7 +47,7 @@ export default function OrdersPage() {
   const fetchOrders = useCallback(async (showRefresh = false) => {
     if (showRefresh) setRefreshing(true);
     try {
-      const response = await fetch('/api/admin/orders');
+      const response = await adminFetch('/api/admin/orders');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setOrders(data.orders || []);
@@ -70,7 +71,7 @@ export default function OrdersPage() {
 
   const fetchSyncStatus = async () => {
     try {
-      const response = await fetch('/api/admin/orders/sync', { credentials: 'include' });
+      const response = await adminFetch('/api/admin/orders/sync', { credentials: 'include' });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       if (data.lastSync) {
@@ -84,7 +85,7 @@ export default function OrdersPage() {
   const syncFromSquare = async () => {
     setSyncing(true);
     try {
-      const response = await fetch('/api/admin/orders/sync', {
+      const response = await adminFetch('/api/admin/orders/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -111,7 +112,7 @@ export default function OrdersPage() {
   const updateOrderStatus = async (orderId, newStatus) => {
     setUpdatingStatus(true);
     try {
-      const response = await fetch('/api/admin/orders/update-status', {
+      const response = await adminFetch('/api/admin/orders/update-status', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
