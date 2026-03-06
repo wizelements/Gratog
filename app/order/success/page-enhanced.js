@@ -139,6 +139,9 @@ export default function OrderSuccessPage() {
   // Use URL amount as fallback when order pricing isn't loaded yet
   const displayTotal = order?.pricing?.total || (amountFromUrl ? amountFromUrl / 100 : 0);
   const displaySubtotal = order?.pricing?.subtotal || displayTotal;
+  const orderTiming = order?.orderTiming || order?.fulfillment?.timing;
+  const scheduledFulfillmentAt = order?.fulfillment?.scheduledFulfillmentAt || orderTiming?.scheduledFulfillmentAt || order?.fulfillment?.pickupDate;
+  const isPreOrder = orderTiming?.mode === 'scheduled';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-12">
@@ -254,6 +257,12 @@ export default function OrderSuccessPage() {
                 <span className="text-gray-600">Subtotal</span>
                 <span className="font-semibold">{formatPrice(displaySubtotal)}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Fulfillment Timing</span>
+                <span className="font-semibold">
+                  {isPreOrder ? 'Pre-order' : 'ASAP'}
+                </span>
+              </div>
               {order.pricing?.deliveryFee > 0 && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">Delivery Fee</span>
@@ -313,6 +322,11 @@ export default function OrderSuccessPage() {
                     <p>
                       {order.deliveryAddress?.city}, {order.deliveryAddress?.state} {order.deliveryAddress?.zip}
                     </p>
+                    {scheduledFulfillmentAt && (
+                      <p className="text-emerald-700 font-medium mt-2">
+                        {isPreOrder ? 'Scheduled for:' : 'Expected by:'} {new Date(scheduledFulfillmentAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                      </p>
+                    )}
                   </div>
                 ) : (
                   <div className="text-sm">
@@ -320,6 +334,11 @@ export default function OrderSuccessPage() {
                     <Badge variant="outline" className="text-emerald-600 border-emerald-600">
                       Pickup Order
                     </Badge>
+                    {scheduledFulfillmentAt && (
+                      <p className="mt-2 text-emerald-700 font-medium">
+                        {isPreOrder ? 'Scheduled for:' : 'Pickup time:'} {new Date(scheduledFulfillmentAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -393,12 +412,14 @@ export default function OrderSuccessPage() {
                   )}
                 </div>
                 <h4 className="font-semibold text-emerald-900 mb-2">
-                  {order.fulfillmentType === 'delivery' ? 'Delivery Coming' : 'Ready for Pickup'}
+                  {order.fulfillmentType === 'delivery' ? (isPreOrder ? 'Scheduled Delivery' : 'Delivery Coming') : (isPreOrder ? 'Scheduled Pickup' : 'Ready for Pickup')}
                 </h4>
                 <p className="text-sm text-emerald-700">
-                  {order.fulfillmentType === 'delivery' 
-                    ? 'Your order will arrive within 2-3 business days' 
-                    : 'Bring your order confirmation email or ID'}
+                  {isPreOrder && scheduledFulfillmentAt
+                    ? `Reserved for ${new Date(scheduledFulfillmentAt).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}`
+                    : order.fulfillmentType === 'delivery'
+                      ? 'Your order will arrive within 2-3 business days'
+                      : 'Bring your order confirmation email or ID'}
                 </p>
               </div>
 

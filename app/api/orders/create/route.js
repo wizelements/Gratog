@@ -19,6 +19,7 @@ const logger = createLogger('OrdersCreateAPI');
 // Rate limiting configuration
 const ORDER_RATE_LIMIT = 10; // Max orders per window
 const ORDER_RATE_WINDOW = 300; // 5 minutes
+const MAX_PREORDER_DAYS = 60;
 
 // FIX M12: Atlanta/Eastern timezone for pickup date calculations
 const ATLANTA_TIMEZONE = 'America/New_York';
@@ -79,8 +80,74 @@ function getNextSaturday(time = '09:00') {
   return nextSat.toISOString();
 }
 
+function normalizeOrderTiming(input = {}) {
+  const mode = input?.mode === 'scheduled' ? 'scheduled' : 'asap';
+  return {
+    mode,
+    requestedDate: mode === 'scheduled' && input?.requestedDate ? String(input.requestedDate).trim() : null,
+    requestedTimeWindow: mode === 'scheduled' && input?.requestedTimeWindow
+      ? String(input.requestedTimeWindow).trim().slice(0, 80)
+      : null,
+    notes: mode === 'scheduled' && input?.notes
+      ? String(input.notes).trim().slice(0, 200)
+      : null,
+  };
+}
+
+function resolveScheduledFulfillmentAt(orderData) {
+  const timing = normalizeOrderTiming(orderData.orderTiming);
+  if (timing.mode !== 'scheduled' || !timing.requestedDate) {
+    return { valid: true, timing, scheduledFulfillmentAt: null };
+  }
+
+  const selectedDate = new Date(`${timing.requestedDate}T00:00:00`);
+  if (Number.isNaN(selectedDate.getTime())) {
+    return { valid: false, error: 'Invalid pre-order date provided.' };
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (selectedDate < today) {
+    return { valid: false, error: 'Pre-order date must be today or later.' };
+  }
+
+  const maxDate = new Date(today);
+  maxDate.setDate(maxDate.getDate() + MAX_PREORDER_DAYS);
+  if (selectedDate > maxDate) {
+    return { valid: false, error: `Pre-orders can be scheduled up to ${MAX_PREORDER_DAYS} days ahead.` };
+  }
+
+  if (orderData.fulfillmentType === 'pickup_market' && selectedDate.getDay() !== 6) {
+    return { valid: false, error: 'Serenbe pre-orders must be scheduled on Saturdays.' };
+  }
+
+  const defaultTimeMap = {
+    pickup_market: '09:00',
+    pickup_browns_mill: '15:00',
+    meetup_serenbe: '14:00',
+    delivery: '11:00',
+    shipping: '11:00',
+  };
+  const time = defaultTimeMap[orderData.fulfillmentType] || '09:00';
+
+  return {
+    valid: true,
+    timing,
+    scheduledFulfillmentAt: new Date(`${timing.requestedDate}T${time}:00`).toISOString()
+  };
+}
+
 function buildFulfillment(orderData) {
-  const { fulfillmentType, customer, deliveryAddress, shippingAddress, deliveryInstructions, pickup, meetUpDetails } = orderData;
+  const {
+    fulfillmentType,
+    customer,
+    deliveryAddress,
+    shippingAddress,
+    deliveryInstructions,
+    pickup,
+    orderTiming,
+    scheduledFulfillmentAt
+  } = orderData;
   
   // Pickup orders (Serenbe or Browns Mill)
   // NORMALIZED: pickup_market = Serenbe, pickup_browns_mill = Browns Mill
@@ -92,8 +159,9 @@ function buildFulfillment(orderData) {
     const isBrownsMill = fulfillmentType === 'pickup_browns_mill' || pickup?.locationId === 'browns_mill';
     // Normalize fulfillment type for consistency across all systems
     const normalizedType = isBrownsMill ? 'pickup_browns_mill' : 'pickup_market';
-    const pickupDate = getNextSaturday(isBrownsMill ? '15:00' : '09:00');
-    
+    const pickupDate = scheduledFulfillmentAt || getNextSaturday(isBrownsMill ? '15:00' : '09:00');
+    const preOrderText = orderTiming?.mode === 'scheduled' ? ` • PRE-ORDER FOR ${new Date(pickupDate).toLocaleDateString('en-US')}` : '';
+
     return [{
       type: 'PICKUP',
       state: 'PROPOSED',
@@ -103,8 +171,8 @@ function buildFulfillment(orderData) {
           phone_number: customer.phone
         },
         note: isBrownsMill
-          ? '📍 PICKUP: Browns Mill Community • Saturdays 3:00 PM - 6:00 PM • Show order number at pickup booth'
-          : '📍 PICKUP: Serenbe Farmers Market (Booth #12) • 10950 Hutcheson Ferry Rd, Palmetto, GA 30268 • Saturdays 9:00 AM - 1:00 PM',
+          ? `📍 PICKUP: Browns Mill Community • Saturdays 3:00 PM - 6:00 PM • Show order number at pickup booth${preOrderText}`
+          : `📍 PICKUP: Serenbe Farmers Market (Booth #12) • 10950 Hutcheson Ferry Rd, Palmetto, GA 30268 • Saturdays 9:00 AM - 1:00 PM${preOrderText}`,
         schedule_type: 'SCHEDULED',
         pickup_at: pickupDate
       },
@@ -116,6 +184,7 @@ function buildFulfillment(orderData) {
   
   // Delivery orders (local delivery)
   if (fulfillmentType === 'delivery') {
+    const expectedDeliveryDate = scheduledFulfillmentAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     return [{
       type: 'SHIPMENT',
       state: 'PROPOSED',
@@ -131,7 +200,7 @@ function buildFulfillment(orderData) {
           }
         },
         shipping_note: `🚚 LOCAL DELIVERY${deliveryInstructions ? ' - ' + deliveryInstructions : ''}`,
-        expected_shipped_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        expected_shipped_at: expectedDeliveryDate
       }
     }];
   }
@@ -139,6 +208,7 @@ function buildFulfillment(orderData) {
   // Shipping orders (nationwide shipping)
   if (fulfillmentType === 'shipping') {
     const addr = shippingAddress || deliveryAddress;
+    const expectedShipDate = scheduledFulfillmentAt || new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
     return [{
       type: 'SHIPMENT',
       state: 'PROPOSED',
@@ -154,7 +224,7 @@ function buildFulfillment(orderData) {
           }
         },
         shipping_note: '📦 USPS PRIORITY SHIPPING',
-        expected_shipped_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+        expected_shipped_at: expectedShipDate
       }
     }];
   }
@@ -259,6 +329,16 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+
+    const timingResolution = resolveScheduledFulfillmentAt(orderData);
+    if (!timingResolution.valid) {
+      return NextResponse.json(
+        { success: false, error: timingResolution.error },
+        { status: 400 }
+      );
+    }
+    orderData.orderTiming = timingResolution.timing;
+    orderData.scheduledFulfillmentAt = timingResolution.scheduledFulfillmentAt;
     
     // Validate delivery fulfillment
     if (orderData.fulfillmentType === 'delivery') {
@@ -343,7 +423,7 @@ export async function POST(request) {
     if (isPickup) {
       const isBrownsMill = orderData.fulfillmentType === 'pickup_browns_mill' || 
                            orderData.pickup?.locationId === 'browns_mill';
-      pickupDate = getNextSaturday(isBrownsMill ? '15:00' : '09:00');
+      pickupDate = orderData.scheduledFulfillmentAt || getNextSaturday(isBrownsMill ? '15:00' : '09:00');
       
       // Normalize fulfillment type for consistency
       orderData.fulfillmentType = isBrownsMill ? 'pickup_browns_mill' : 'pickup_market';
@@ -354,6 +434,7 @@ export async function POST(request) {
       ...orderData,
       deliveryFee,
       pickupDate, // Store pickup date for cron jobs
+      scheduledFulfillmentAt: orderData.scheduledFulfillmentAt,
       metadata: {
         ...orderData.metadata,
         ip: request.headers.get('x-forwarded-for') || 'unknown',
@@ -361,7 +442,8 @@ export async function POST(request) {
         timestamp: new Date().toISOString(),
         deliveryFee,
         deliveryDistanceMiles,
-        freeDeliveryEligible30331
+        freeDeliveryEligible30331,
+        orderTiming: orderData.orderTiming
       }
     };
     
@@ -470,7 +552,10 @@ export async function POST(request) {
               fulfillment_type: orderData.fulfillmentType,
               customer_email: orderData.customer.email,
               customer_name: orderData.customer.name,
-              customer_phone: orderData.customer.phone
+              customer_phone: orderData.customer.phone,
+              fulfillment_timing: orderData.orderTiming?.mode || 'asap',
+              requested_date: orderData.orderTiming?.requestedDate || '',
+              requested_time_window: orderData.orderTiming?.requestedTimeWindow || ''
             },
             fulfillments: buildFulfillment(orderData)
           }

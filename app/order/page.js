@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -48,6 +49,12 @@ export default function OrderPage() {
   const [meetUpDetails, setMeetUpDetails] = useState({
     location: '',
     phone: '',
+    notes: ''
+  });
+  const [orderTiming, setOrderTiming] = useState({
+    mode: 'asap',
+    requestedDate: '',
+    requestedTimeWindow: '',
     notes: ''
   });
 
@@ -181,6 +188,30 @@ export default function OrderPage() {
       }
     }
 
+    if (orderTiming.mode === 'scheduled') {
+      if (!orderTiming.requestedDate) {
+        toast.error('Please choose your pre-order date');
+        scrollToField('requested_date');
+        return false;
+      }
+
+      const selectedDate = new Date(`${orderTiming.requestedDate}T00:00:00`);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (Number.isNaN(selectedDate.getTime()) || selectedDate < today) {
+        toast.error('Pre-order date must be today or later');
+        scrollToField('requested_date');
+        return false;
+      }
+
+      if (fulfillmentType === 'pickup_market' && selectedDate.getDay() !== 6) {
+        toast.error('Serenbe pre-orders must be scheduled on a Saturday');
+        scrollToField('requested_date');
+        return false;
+      }
+    }
+
     return true;
   };
 
@@ -219,9 +250,15 @@ export default function OrderPage() {
           email: customer.email.trim(),
           phone: customer.phone.trim(),
         },
+        orderTiming: {
+          mode: orderTiming.mode,
+          requestedDate: orderTiming.mode === 'scheduled' ? orderTiming.requestedDate : undefined,
+          requestedTimeWindow: orderTiming.mode === 'scheduled' ? orderTiming.requestedTimeWindow?.trim() || undefined : undefined,
+          notes: orderTiming.mode === 'scheduled' ? orderTiming.notes?.trim() || undefined : undefined,
+        },
         fulfillmentType,
         ...(fulfillmentType === 'delivery' && { deliveryAddress }),
-        ...(fulfillmentType === 'meetup_serenbe' && { 
+        ...(fulfillmentType === 'meetup_serenbe' && {
           meetUpDetails: {
             location: 'Serenbe area',
             notes: meetUpDetails.notes
@@ -671,6 +708,84 @@ export default function OrderPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Badge className="bg-emerald-600">3</Badge>
+                    Order Timing
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <RadioGroup
+                    value={orderTiming.mode}
+                    onValueChange={(value) => setOrderTiming((prev) => ({ ...prev, mode: value }))}
+                    disabled={isSubmitting}
+                  >
+                    <div className="flex items-start gap-3 rounded-lg border p-3">
+                      <RadioGroupItem value="asap" id="timing_asap" className="mt-1" />
+                      <Label htmlFor="timing_asap" className="flex-1 cursor-pointer">
+                        <div className="font-medium">ASAP (Next Available Fulfillment)</div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          We'll place this into the next available {fulfillmentType === 'delivery' ? 'delivery route' : 'pickup window'}.
+                        </div>
+                      </Label>
+                    </div>
+                    <div className="flex items-start gap-3 rounded-lg border p-3 mt-3">
+                      <RadioGroupItem value="scheduled" id="timing_scheduled" className="mt-1" />
+                      <Label htmlFor="timing_scheduled" className="flex-1 cursor-pointer">
+                        <div className="font-medium">Pre-Order For A Specific Date</div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          Reserve your order ahead of time and choose your preferred date.
+                        </div>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+
+                  {orderTiming.mode === 'scheduled' && (
+                    <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 space-y-3">
+                      <div>
+                        <Label htmlFor="requested_date">Requested Date *</Label>
+                        <Input
+                          id="requested_date"
+                          type="date"
+                          value={orderTiming.requestedDate}
+                          min={new Date().toISOString().split('T')[0]}
+                          onChange={(e) => setOrderTiming((prev) => ({ ...prev, requestedDate: e.target.value }))}
+                          disabled={isSubmitting}
+                          required={orderTiming.mode === 'scheduled'}
+                        />
+                        {fulfillmentType === 'pickup_market' && (
+                          <p className="text-xs text-emerald-700 mt-2">
+                            Serenbe pickup pre-orders are scheduled on Saturdays.
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor="requested_window">Preferred Time Window (Optional)</Label>
+                        <Input
+                          id="requested_window"
+                          value={orderTiming.requestedTimeWindow}
+                          onChange={(e) => setOrderTiming((prev) => ({ ...prev, requestedTimeWindow: e.target.value }))}
+                          placeholder={fulfillmentType === 'delivery' ? 'e.g., Afternoon (2pm-5pm)' : 'e.g., Early afternoon'}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="timing_notes">Timing Notes (Optional)</Label>
+                        <Input
+                          id="timing_notes"
+                          value={orderTiming.notes}
+                          onChange={(e) => setOrderTiming((prev) => ({ ...prev, notes: e.target.value }))}
+                          placeholder="Any scheduling instructions for your order"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Payment Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Badge className="bg-emerald-600">4</Badge>
                     Payment
                   </CardTitle>
                 </CardHeader>
@@ -745,6 +860,14 @@ export default function OrderPage() {
                       <span className="text-gray-600">Subtotal ({totalItems} items)</span>
                       <span className="font-semibold">{formatPrice(subtotal)}</span>
                     </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Timing</span>
+                      <span className="font-semibold">
+                        {orderTiming.mode === 'scheduled' && orderTiming.requestedDate
+                          ? `Pre-order for ${new Date(`${orderTiming.requestedDate}T00:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                          : 'ASAP'}
+                      </span>
+                    </div>
                     {deliveryFee > 0 && (
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Delivery Fee</span>
@@ -810,6 +933,17 @@ export default function OrderPage() {
                       </>
                     )}
                   </Button>
+
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 space-y-2">
+                    <div className="font-semibold">First-Time Ordering?</div>
+                    <div>Thousands trust our secure Square checkout, with confirmation by email and text after payment.</div>
+                    <div className="grid grid-cols-2 gap-2 text-[11px]">
+                      <Link href="/faq" className="underline hover:text-amber-700">How ordering works</Link>
+                      <Link href="/policies" className="underline hover:text-amber-700">Refund & policy details</Link>
+                      <Link href="/markets" className="underline hover:text-amber-700">Pickup locations</Link>
+                      <Link href="/contact" className="underline hover:text-amber-700">Talk to us first</Link>
+                    </div>
+                  </div>
 
                   <p className="text-xs text-center text-gray-500">
                     🔒 Secure {paymentMethod === 'in-app' ? 'payment' : 'checkout'} powered by Square

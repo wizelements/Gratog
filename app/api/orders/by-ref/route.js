@@ -44,6 +44,10 @@ export async function GET(request) {
       orderNumber: order.orderNumber 
     });
     
+    const deliveryAddress = order.deliveryAddress || order.fulfillment?.deliveryAddress || null;
+    const fulfillmentType = order.fulfillmentType || order.fulfillment?.type || 'pickup_market';
+    const orderTiming = order.orderTiming || order.fulfillment?.timing || null;
+
     // Return order data (stateless)
     return NextResponse.json({
       orderRef: order.id,
@@ -57,15 +61,23 @@ export async function GET(request) {
       items: order.items,
       pricing: order.pricing,
       square: {
-        orderId: order.squareOrderId,
-        paymentId: order.squarePaymentId,
-        receiptUrl: order.receiptUrl
+        orderId: order.squareOrderId || order.payment?.squareOrderId,
+        paymentId: order.squarePaymentId || order.payment?.squarePaymentId,
+        receiptUrl: order.receiptUrl || order.payment?.receiptUrl
       },
+      payment: order.payment,
       createdAt: order.createdAt,
+      fulfillmentType,
+      deliveryAddress,
+      orderTiming,
       fulfillment: {
-        type: order.fulfillmentType,
-        address: order.deliveryAddress
-      }
+        ...(order.fulfillment || {}),
+        type: fulfillmentType,
+        address: deliveryAddress,
+        timing: orderTiming,
+      },
+      squareOrderId: order.squareOrderId || order.payment?.squareOrderId,
+      squarePaymentId: order.squarePaymentId || order.payment?.squarePaymentId
     });
     
   } catch (error) {
