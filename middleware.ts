@@ -78,6 +78,17 @@ export async function middleware(req: NextRequest) {
     return addSecurityHeaders(redirectResponse);
   }
 
+  // Keep historical order detail links working by routing to the canonical success page.
+  if (pathname.startsWith('/order/') && pathname !== '/order/success') {
+    const orderRef = pathname.replace('/order/', '');
+    if (orderRef) {
+      url.pathname = '/order/success';
+      url.searchParams.set('orderRef', orderRef);
+      const redirectResponse = NextResponse.redirect(url, 301);
+      return addSecurityHeaders(redirectResponse);
+    }
+  }
+
   // Redirect old /delivery route to /order with tab param
   if (pathname === '/delivery') {
     url.pathname = '/order';

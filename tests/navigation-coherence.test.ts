@@ -33,4 +33,15 @@ describe('Navigation Coherence', () => {
     expect(reviewAndPay).toContain('router.push(`/order/success?orderRef=${orderId}&paid=true&amount=${amountCents}`)');
     expect(reviewAndPay).not.toContain('router.push(`/order/${orderId}?success=true`)');
   });
+
+  it('legacy order detail links resolve to canonical order success route', () => {
+    const middleware = read('middleware.ts');
+    const emailTemplates = read('lib/email-templates.js');
+
+    expect(middleware).toContain("pathname.startsWith('/order/') && pathname !== '/order/success'");
+    expect(middleware).toContain("url.pathname = '/order/success'");
+    expect(middleware).toContain("url.searchParams.set('orderRef', orderRef)");
+    expect(emailTemplates).toContain('/order/success?orderRef=');
+    expect(emailTemplates).not.toContain('/order/${order.orderNumber}');
+  });
 });
