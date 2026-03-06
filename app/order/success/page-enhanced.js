@@ -140,7 +140,8 @@ export default function OrderSuccessPage() {
   const displayTotal = order?.pricing?.total || (amountFromUrl ? amountFromUrl / 100 : 0);
   const displaySubtotal = order?.pricing?.subtotal || displayTotal;
   const orderTiming = order?.orderTiming || order?.fulfillment?.timing;
-  const scheduledFulfillmentAt = order?.fulfillment?.scheduledFulfillmentAt || orderTiming?.scheduledFulfillmentAt || order?.fulfillment?.pickupDate;
+  const requestedPreOrderDate = orderTiming?.requestedDate;
+  const scheduledFulfillmentAt = order?.fulfillment?.scheduledFulfillmentAt || order?.fulfillment?.pickupDate;
   const isPreOrder = orderTiming?.mode === 'scheduled';
 
   return (
@@ -260,7 +261,7 @@ export default function OrderSuccessPage() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Fulfillment Timing</span>
                 <span className="font-semibold">
-                  {isPreOrder ? 'Pre-order' : 'ASAP'}
+                  {isPreOrder ? 'Pre-order request' : 'ASAP'}
                 </span>
               </div>
               {order.pricing?.deliveryFee > 0 && (
@@ -322,9 +323,15 @@ export default function OrderSuccessPage() {
                     <p>
                       {order.deliveryAddress?.city}, {order.deliveryAddress?.state} {order.deliveryAddress?.zip}
                     </p>
-                    {scheduledFulfillmentAt && (
+                    {isPreOrder && (
+                      <p className="text-amber-700 font-medium mt-2">
+                        Timeline confirmation pending. We will contact you with final delivery timing.
+                        {requestedPreOrderDate ? ` Requested date: ${new Date(`${requestedPreOrderDate}T00:00:00`).toLocaleDateString('en-US', { dateStyle: 'medium' })}.` : ''}
+                      </p>
+                    )}
+                    {!isPreOrder && scheduledFulfillmentAt && (
                       <p className="text-emerald-700 font-medium mt-2">
-                        {isPreOrder ? 'Scheduled for:' : 'Expected by:'} {new Date(scheduledFulfillmentAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                        Expected by: {new Date(scheduledFulfillmentAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
                       </p>
                     )}
                   </div>
@@ -334,9 +341,15 @@ export default function OrderSuccessPage() {
                     <Badge variant="outline" className="text-emerald-600 border-emerald-600">
                       Pickup Order
                     </Badge>
-                    {scheduledFulfillmentAt && (
+                    {isPreOrder && (
+                      <p className="mt-2 text-amber-700 font-medium">
+                        Timeline confirmation pending. We will contact you with your final pickup window.
+                        {requestedPreOrderDate ? ` Requested date: ${new Date(`${requestedPreOrderDate}T00:00:00`).toLocaleDateString('en-US', { dateStyle: 'medium' })}.` : ''}
+                      </p>
+                    )}
+                    {!isPreOrder && scheduledFulfillmentAt && (
                       <p className="mt-2 text-emerald-700 font-medium">
-                        {isPreOrder ? 'Scheduled for:' : 'Pickup time:'} {new Date(scheduledFulfillmentAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                        Pickup time: {new Date(scheduledFulfillmentAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
                       </p>
                     )}
                   </div>
@@ -412,11 +425,11 @@ export default function OrderSuccessPage() {
                   )}
                 </div>
                 <h4 className="font-semibold text-emerald-900 mb-2">
-                  {order.fulfillmentType === 'delivery' ? (isPreOrder ? 'Scheduled Delivery' : 'Delivery Coming') : (isPreOrder ? 'Scheduled Pickup' : 'Ready for Pickup')}
+                  {order.fulfillmentType === 'delivery' ? (isPreOrder ? 'Pre-Order Request Received' : 'Delivery Coming') : (isPreOrder ? 'Pre-Order Request Received' : 'Ready for Pickup')}
                 </h4>
                 <p className="text-sm text-emerald-700">
-                  {isPreOrder && scheduledFulfillmentAt
-                    ? `Reserved for ${new Date(scheduledFulfillmentAt).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}`
+                  {isPreOrder
+                    ? 'This is a pre-order request. We will confirm the exact timeline by phone or email.'
                     : order.fulfillmentType === 'delivery'
                       ? 'Your order will arrive within 2-3 business days'
                       : 'Bring your order confirmation email or ID'}

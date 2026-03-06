@@ -94,10 +94,10 @@ function normalizeOrderTiming(input = {}) {
   };
 }
 
-function resolveScheduledFulfillmentAt(orderData) {
+function resolveOrderTiming(orderData) {
   const timing = normalizeOrderTiming(orderData.orderTiming);
   if (timing.mode !== 'scheduled' || !timing.requestedDate) {
-    return { valid: true, timing, scheduledFulfillmentAt: null };
+    return { valid: true, timing, preOrderRequested: timing.mode === 'scheduled' };
   }
 
   const selectedDate = new Date(`${timing.requestedDate}T00:00:00`);
@@ -117,23 +117,10 @@ function resolveScheduledFulfillmentAt(orderData) {
     return { valid: false, error: `Pre-orders can be scheduled up to ${MAX_PREORDER_DAYS} days ahead.` };
   }
 
-  if (orderData.fulfillmentType === 'pickup_market' && selectedDate.getDay() !== 6) {
-    return { valid: false, error: 'Serenbe pre-orders must be scheduled on Saturdays.' };
-  }
-
-  const defaultTimeMap = {
-    pickup_market: '09:00',
-    pickup_browns_mill: '15:00',
-    meetup_serenbe: '14:00',
-    delivery: '11:00',
-    shipping: '11:00',
-  };
-  const time = defaultTimeMap[orderData.fulfillmentType] || '09:00';
-
   return {
     valid: true,
     timing,
-    scheduledFulfillmentAt: new Date(`${timing.requestedDate}T${time}:00`).toISOString()
+    preOrderRequested: true
   };
 }
 
@@ -145,8 +132,7 @@ function buildFulfillment(orderData) {
     shippingAddress,
     deliveryInstructions,
     pickup,
-    orderTiming,
-    scheduledFulfillmentAt
+    orderTiming
   } = orderData;
   
   // Pickup orders (Serenbe or Browns Mill)
@@ -159,8 +145,10 @@ function buildFulfillment(orderData) {
     const isBrownsMill = fulfillmentType === 'pickup_browns_mill' || pickup?.locationId === 'browns_mill';
     // Normalize fulfillment type for consistency across all systems
     const normalizedType = isBrownsMill ? 'pickup_browns_mill' : 'pickup_market';
-    const pickupDate = scheduledFulfillmentAt || getNextSaturday(isBrownsMill ? '15:00' : '09:00');
-    const preOrderText = orderTiming?.mode === 'scheduled' ? ` • PRE-ORDER FOR ${new Date(pickupDate).toLocaleDateString('en-US')}` : '';
+    const pickupDate = getNextSaturday(isBrownsMill ? '15:00' : '09:00');
+    const preOrderText = orderTiming?.mode === 'scheduled'
+      ? ` • PRE-ORDER REQUEST${orderTiming?.requestedDate ? ` (${orderTiming.requestedDate})` : ''} • TIMELINE WILL BE CONFIRMED`
+      : '';
 
     return [{
       type: 'PICKUP',
@@ -184,7 +172,10 @@ function buildFulfillment(orderData) {
   
   // Delivery orders (local delivery)
   if (fulfillmentType === 'delivery') {
-    const expectedDeliveryDate = scheduledFulfillmentAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const expectedDeliveryDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const preOrderSuffix = orderTiming?.mode === 'scheduled'
+      ? ` • PRE-ORDER REQUEST${orderTiming?.requestedDate ? ` (${orderTiming.requestedDate})` : ''} • TIMELINE WILL BE CONFIRMED`
+      : '';
     return [{
       type: 'SHIPMENT',
       state: 'PROPOSED',
@@ -199,7 +190,7 @@ function buildFulfillment(orderData) {
             postal_code: deliveryAddress?.zip || ''
           }
         },
-        shipping_note: `🚚 LOCAL DELIVERY${deliveryInstructions ? ' - ' + deliveryInstructions : ''}`,
+        shipping_note: `🚚 LOCAL DELIVERY${deliveryInstructions ? ' - ' + deliveryInstructions : ''}${preOrderSuffix}`,
         expected_shipped_at: expectedDeliveryDate
       }
     }];
@@ -208,7 +199,10 @@ function buildFulfillment(orderData) {
   // Shipping orders (nationwide shipping)
   if (fulfillmentType === 'shipping') {
     const addr = shippingAddress || deliveryAddress;
-    const expectedShipDate = scheduledFulfillmentAt || new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
+    const expectedShipDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
+    const shippingNote = orderTiming?.mode === 'scheduled'
+      ? `📦 USPS PRIORITY SHIPPING • PRE-ORDER REQUEST${orderTiming?.requestedDate ? ` (${orderTiming.requestedDate})` : ''} • TIMELINE WILL BE CONFIRMED`
+      : '📦 USPS PRIORITY SHIPPING';
     return [{
       type: 'SHIPMENT',
       state: 'PROPOSED',
@@ -223,7 +217,7 @@ function buildFulfillment(orderData) {
             postal_code: addr?.zip || ''
           }
         },
-        shipping_note: '📦 USPS PRIORITY SHIPPING',
+        shipping_note: shippingNote,
         expected_shipped_at: expectedShipDate
       }
     }];
@@ -330,7 +324,7 @@ export async function POST(request) {
       );
     }
 
-    const timingResolution = resolveScheduledFulfillmentAt(orderData);
+    const timingResolution = resolveOrderTiming(orderData);
     if (!timingResolution.valid) {
       return NextResponse.json(
         { success: false, error: timingResolution.error },
@@ -338,7 +332,7 @@ export async function POST(request) {
       );
     }
     orderData.orderTiming = timingResolution.timing;
-    orderData.scheduledFulfillmentAt = timingResolution.scheduledFulfillmentAt;
+    orderData.preOrderRequested = timingResolution.preOrderRequested;
     
     // Validate delivery fulfillment
     if (orderData.fulfillmentType === 'delivery') {
@@ -423,7 +417,7 @@ export async function POST(request) {
     if (isPickup) {
       const isBrownsMill = orderData.fulfillmentType === 'pickup_browns_mill' || 
                            orderData.pickup?.locationId === 'browns_mill';
-      pickupDate = orderData.scheduledFulfillmentAt || getNextSaturday(isBrownsMill ? '15:00' : '09:00');
+      pickupDate = getNextSaturday(isBrownsMill ? '15:00' : '09:00');
       
       // Normalize fulfillment type for consistency
       orderData.fulfillmentType = isBrownsMill ? 'pickup_browns_mill' : 'pickup_market';
@@ -434,7 +428,6 @@ export async function POST(request) {
       ...orderData,
       deliveryFee,
       pickupDate, // Store pickup date for cron jobs
-      scheduledFulfillmentAt: orderData.scheduledFulfillmentAt,
       metadata: {
         ...orderData.metadata,
         ip: request.headers.get('x-forwarded-for') || 'unknown',
@@ -443,7 +436,8 @@ export async function POST(request) {
         deliveryFee,
         deliveryDistanceMiles,
         freeDeliveryEligible30331,
-        orderTiming: orderData.orderTiming
+        orderTiming: orderData.orderTiming,
+        preOrderRequested: orderData.preOrderRequested
       }
     };
     

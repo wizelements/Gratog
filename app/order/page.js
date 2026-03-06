@@ -188,25 +188,13 @@ export default function OrderPage() {
       }
     }
 
-    if (orderTiming.mode === 'scheduled') {
-      if (!orderTiming.requestedDate) {
-        toast.error('Please choose your pre-order date');
-        scrollToField('requested_date');
-        return false;
-      }
-
+    if (orderTiming.mode === 'scheduled' && orderTiming.requestedDate) {
       const selectedDate = new Date(`${orderTiming.requestedDate}T00:00:00`);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
       if (Number.isNaN(selectedDate.getTime()) || selectedDate < today) {
         toast.error('Pre-order date must be today or later');
-        scrollToField('requested_date');
-        return false;
-      }
-
-      if (fulfillmentType === 'pickup_market' && selectedDate.getDay() !== 6) {
-        toast.error('Serenbe pre-orders must be scheduled on a Saturday');
         scrollToField('requested_date');
         return false;
       }
@@ -729,9 +717,9 @@ export default function OrderPage() {
                     <div className="flex items-start gap-3 rounded-lg border p-3 mt-3">
                       <RadioGroupItem value="scheduled" id="timing_scheduled" className="mt-1" />
                       <Label htmlFor="timing_scheduled" className="flex-1 cursor-pointer">
-                        <div className="font-medium">Pre-Order For A Specific Date</div>
+                        <div className="font-medium">Pre-Order Request (We Confirm Timeline)</div>
                         <div className="text-xs text-gray-600 mt-1">
-                          Reserve your order ahead of time and choose your preferred date.
+                          Share your preferred date and timing notes. We will confirm the final fulfillment timeline with you.
                         </div>
                       </Label>
                     </div>
@@ -740,7 +728,7 @@ export default function OrderPage() {
                   {orderTiming.mode === 'scheduled' && (
                     <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 space-y-3">
                       <div>
-                        <Label htmlFor="requested_date">Requested Date *</Label>
+                        <Label htmlFor="requested_date">Preferred Date (Optional)</Label>
                         <Input
                           id="requested_date"
                           type="date"
@@ -748,13 +736,10 @@ export default function OrderPage() {
                           min={new Date().toISOString().split('T')[0]}
                           onChange={(e) => setOrderTiming((prev) => ({ ...prev, requestedDate: e.target.value }))}
                           disabled={isSubmitting}
-                          required={orderTiming.mode === 'scheduled'}
                         />
-                        {fulfillmentType === 'pickup_market' && (
-                          <p className="text-xs text-emerald-700 mt-2">
-                            Serenbe pickup pre-orders are scheduled on Saturdays.
-                          </p>
-                        )}
+                        <p className="text-xs text-emerald-700 mt-2">
+                          This is a request. We’ll text/email you to confirm the final timeline.
+                        </p>
                       </div>
                       <div>
                         <Label htmlFor="requested_window">Preferred Time Window (Optional)</Label>
@@ -864,10 +849,15 @@ export default function OrderPage() {
                       <span className="text-gray-600">Timing</span>
                       <span className="font-semibold">
                         {orderTiming.mode === 'scheduled' && orderTiming.requestedDate
-                          ? `Pre-order for ${new Date(`${orderTiming.requestedDate}T00:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                          : 'ASAP'}
+                          ? `Pre-order request (${new Date(`${orderTiming.requestedDate}T00:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})`
+                          : orderTiming.mode === 'scheduled' ? 'Pre-order request' : 'ASAP'}
                       </span>
                     </div>
+                    {orderTiming.mode === 'scheduled' && (
+                      <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2">
+                        Requested timing is not final. We’ll confirm your exact timeline by phone/email.
+                      </div>
+                    )}
                     {deliveryFee > 0 && (
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Delivery Fee</span>
