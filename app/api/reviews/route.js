@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { sendReviewConfirmation } from '@/lib/resend-email';
-import { verifyToken } from '@/lib/auth';
+import { verifyAdminToken } from '@/lib/admin-session';
 import { logger } from '@/lib/logger';
 import { RateLimit } from '@/lib/redis';
 
@@ -20,8 +20,8 @@ export async function GET(request) {
     let showAll = false;
     if (includeUnapproved) {
       const token = request.cookies.get('admin_token')?.value;
-      const decoded = verifyToken(token);
-      if (decoded && (decoded.role === 'admin' || decoded.role === 'superadmin')) {
+      const decoded = token ? await verifyAdminToken(token) : null;
+      if (decoded && decoded.role === 'admin') {
         showAll = true;
       }
     }
@@ -58,11 +58,27 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 
-    const { productId, productName, name, email, rating, title, comment, images } = await request.json();
+    const payload = await request.json();
+    const productId = String(payload?.productId || '').trim();
+    const rawProductName = String(payload?.productName || '').trim();
+    const productName = rawProductName || productId || 'Taste of Gratitude Product';
+    const name = String(payload?.name || '').trim();
+    const email = String(payload?.email || '').trim().toLowerCase();
+    const rating = Number(payload?.rating);
+    const title = String(payload?.title || '').trim();
+    const comment = String(payload?.comment || '').trim();
+    const images = payload?.images;
 
-    if (!productId || !productName || !name || !email || !rating || !title || !comment) {
+    if (!productId || !name || !email || !title || !comment || !Number.isFinite(rating)) {
       return NextResponse.json(
         { error: 'All fields are required' },
+        { status: 400 }
+      );
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        { error: 'Please enter a valid email address' },
         { status: 400 }
       );
     }
@@ -82,7 +98,7 @@ export async function POST(request) {
     // Check if user already reviewed this product
     const existingReview = await db.collection('product_reviews').findOne({
       productId,
-      email: email.toLowerCase(),
+      email,
     });
 
     if (existingReview) {
@@ -99,7 +115,7 @@ export async function POST(request) {
       productId,
       productName,
       name,
-      email: email.toLowerCase(),
+      email,
       rating,
       title,
       comment,
@@ -112,7 +128,7 @@ export async function POST(request) {
       updatedAt: new Date(),
     };
 
-    await db.collection('product_reviews').insertOne(review);
+    const insertResult = await db.collection('product_reviews').insertOne(review);
 
     // Award points to customer's passport
     try {
@@ -158,12 +174,21 @@ export async function POST(request) {
       logger.error('API', 'Failed to award points', passportError);
     }
 
-    const emailResult = await sendReviewConfirmation(email, productName, REVIEW_POINTS);
-    if (!emailResult.success) {
-      logger.error('Reviews', 'Review confirmation email failed', {
+    let emailResult = { success: false, error: 'not-sent' };
+    try {
+      emailResult = await sendReviewConfirmation(email, productName, REVIEW_POINTS);
+      if (!emailResult.success) {
+        logger.error('Reviews', 'Review confirmation email failed', {
+          to: email,
+          productName,
+          error: emailResult.error,
+        });
+      }
+    } catch (emailError) {
+      logger.error('Reviews', 'Review confirmation email threw', {
         to: email,
         productName,
-        error: emailResult.error,
+        error: emailError.message,
       });
     }
 
@@ -174,7 +199,7 @@ export async function POST(request) {
       emailSent: emailResult.success,
       review: {
         ...review,
-        _id: review._id?.toString(),
+        _id: insertResult.insertedId?.toString(),
       },
     });
   } catch (error) {

@@ -56,7 +56,7 @@ export default function ProductReviews({
   const fetchReviews = async () => {
     try {
       const response = await fetch(`/api/reviews?productId=${productId}`);
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (response.ok) {
         setReviews(data.reviews || []);
       }
@@ -70,6 +70,23 @@ export default function ProductReviews({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!productId) {
+      toast.error('Could not determine which product to review. Please refresh and try again.');
+      return;
+    }
+
+    const sanitized = {
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      title: formData.title.trim(),
+      comment: formData.comment.trim(),
+    };
+
+    if (!sanitized.name || !sanitized.email || !sanitized.title || !sanitized.comment) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
     if (formData.rating === 0) {
       toast.error('Please select a star rating');
       return;
@@ -82,13 +99,14 @@ export default function ProductReviews({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
+          ...sanitized,
+          rating: formData.rating,
           productId,
           productName,
         }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (response.ok) {
         toast.success(
@@ -99,7 +117,10 @@ export default function ProductReviews({
         setShowForm(false);
         fetchReviews();
       } else {
-        toast.error(data.error || 'Failed to submit review');
+        const fallbackMessage = response.status === 429
+          ? 'Too many attempts. Please wait before submitting again.'
+          : 'Failed to submit review';
+        toast.error(data.error || fallbackMessage);
       }
     } catch (error) {
       console.error('Review submission error:', error);
