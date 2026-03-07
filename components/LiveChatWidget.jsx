@@ -85,6 +85,27 @@ export default function LiveChatWidget() {
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return undefined;
+    }
+
+    const handleOverlayChange = () => {
+      if (document.body.getAttribute('data-overlay-open') === 'true') {
+        setIsOpen(false);
+      }
+    };
+
+    const observer = new MutationObserver(handleOverlayChange);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['data-overlay-open']
+    });
+    handleOverlayChange();
+
+    return () => observer.disconnect();
+  }, []);
+
   const addBotResponse = (response) => {
     setTimeout(() => {
       setMessages((prev) => [
@@ -142,7 +163,10 @@ export default function LiveChatWidget() {
   return (
     <>
       {/* Chat Toggle Button - positioned above the cart button */}
-      <div className="fixed bottom-24 right-6 z-50" data-widget="live-chat">
+      <div
+        className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-50 sm:bottom-24 sm:right-6"
+        data-widget="live-chat"
+      >
         <Button
           onClick={() => setIsOpen(!isOpen)}
           className={`h-14 w-14 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 ${
@@ -163,7 +187,8 @@ export default function LiveChatWidget() {
 
       {/* Chat Panel */}
       <div
-        className={`fixed bottom-44 right-6 z-50 w-[360px] max-w-[calc(100vw-3rem)] transform transition-all duration-300 ease-out ${
+        data-widget="live-chat-panel"
+        className={`fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom))] right-4 z-50 w-[min(360px,calc(100vw-2rem))] transform transition-all duration-300 ease-out sm:bottom-44 sm:right-6 ${
           isOpen
             ? 'translate-y-0 opacity-100 scale-100'
             : 'translate-y-4 opacity-0 scale-95 pointer-events-none'

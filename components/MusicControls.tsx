@@ -158,6 +158,27 @@ function MusicControlsContent() {
     };
   }, [isExpanded]);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return undefined;
+    }
+
+    const handleOverlayChange = () => {
+      if (document.body.getAttribute('data-overlay-open') === 'true') {
+        setIsExpanded(false);
+      }
+    };
+
+    const observer = new MutationObserver(handleOverlayChange);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['data-overlay-open'],
+    });
+    handleOverlayChange();
+
+    return () => observer.disconnect();
+  }, []);
+
   const handleTogglePlay = () => {
     if (music.isPlaying) {
       void music.pause();
@@ -191,7 +212,7 @@ function MusicControlsContent() {
   return (
     <div 
       ref={containerRef}
-      className="fixed z-[9999] bottom-6 left-6"
+      className="fixed z-[9999] bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 sm:bottom-6 sm:left-6"
       data-widget="music-controls"
     >
       {/* Floating Music Button */}
@@ -236,8 +257,9 @@ function MusicControlsContent() {
       {isExpanded && isMounted && panelPosition && createPortal(
         <div 
           id="music-controls-panel"
+          data-widget="music-controls-panel"
           className="fixed rounded-3xl overflow-hidden z-[10000] animate-scale-in"
-          style={{ 
+          style={{
             bottom: panelPosition.bottom,
             left: panelPosition.left,
             width: 360,

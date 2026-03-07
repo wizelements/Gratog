@@ -447,6 +447,17 @@ textarea:focus-visible {
   z-index: 9999;
 }
 
+/* Prevent floating widgets from competing with blocking dialogs/sheets. */
+body[data-overlay-open="true"] [data-widget="floating-cart"],
+body[data-overlay-open="true"] [data-widget="live-chat"],
+body[data-overlay-open="true"] [data-widget="live-chat-panel"],
+body[data-overlay-open="true"] [data-widget="music-controls"],
+body[data-overlay-open="true"] [data-widget="music-controls-panel"] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   button:focus-visible,

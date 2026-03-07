@@ -65,12 +65,29 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
   );
   const [isAdding, setIsAdding] = useState(false);
   const sizeButtonsRef = useRef([]);
+  const closeTimerRef = useRef(null);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+      setIsAdding(false);
+      return;
+    }
+
     setQuantity(1);
     setSelectedVariation(normalizedVariations[0] || null);
   }, [isOpen, normalizedVariations]);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleSizeKeyDown = useCallback((e, index) => {
     const buttons = sizeButtonsRef.current.filter(Boolean);
@@ -101,6 +118,11 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
 
   const handleDialogOpenChange = (open) => {
     if (!open) {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+      setIsAdding(false);
       onClose();
     }
   };
@@ -124,9 +146,14 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
       }
     });
     
-    setTimeout(() => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+    }
+
+    closeTimerRef.current = setTimeout(() => {
       setIsAdding(false);
       setQuantity(1);
+      closeTimerRef.current = null;
       onClose();
     }, 1500);
   };
@@ -144,7 +171,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-1rem)] max-w-4xl max-h-[calc(100dvh-2rem)] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="sr-only">{product.name}</DialogTitle>
           <DialogDescription className="sr-only">
@@ -152,7 +179,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
           </DialogDescription>
         </DialogHeader>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           {/* Left: Image */}
           <div>
             <div className="relative aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50 group">
