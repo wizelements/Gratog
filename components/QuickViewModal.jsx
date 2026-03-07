@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef, useCallback } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,11 @@ import { addToCart } from '@/lib/cart-engine';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
+function toPriceNumber(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 export default function QuickViewModal({ product, isOpen, onClose }) {
   // Normalize variations from different possible product structures
   const normalizedVariations = useMemo(() => {
@@ -17,7 +22,12 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
     
     // If product already has variations array, use it
     if (product.variations && Array.isArray(product.variations) && product.variations.length > 0) {
-      return product.variations.filter(v => v.price && v.price > 0);
+      return product.variations
+        .map((variation) => ({
+          ...variation,
+          price: toPriceNumber(variation.price)
+        }))
+        .filter((variation) => variation.price > 0);
     }
     
     // Otherwise, construct variations from priceMini/price and sizes
@@ -28,13 +38,13 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
       variations.push({
         id: `${product.id}-mini`,
         name: product.sizes[0] || '4oz',
-        price: product.priceMini
+        price: toPriceNumber(product.priceMini)
       });
       if (product.price && product.price !== product.priceMini) {
         variations.push({
           id: `${product.id}-regular`,
           name: product.sizes[1] || '16oz',
-          price: product.price
+          price: toPriceNumber(product.price)
         });
       }
     } else if (product.price) {
@@ -42,7 +52,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
       variations.push({
         id: product.id,
         name: product.size || 'Regular',
-        price: product.price
+        price: toPriceNumber(product.price)
       });
     }
     
@@ -55,6 +65,12 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
   );
   const [isAdding, setIsAdding] = useState(false);
   const sizeButtonsRef = useRef([]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setQuantity(1);
+    setSelectedVariation(normalizedVariations[0] || null);
+  }, [isOpen, normalizedVariations]);
 
   const handleSizeKeyDown = useCallback((e, index) => {
     const buttons = sizeButtonsRef.current.filter(Boolean);
@@ -89,7 +105,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
     }
   };
 
-  const currentPrice = selectedVariation?.price || product.price || 0;
+  const currentPrice = selectedVariation?.price || toPriceNumber(product.price);
 
   const handleAddToCart = () => {
     setIsAdding(true);
