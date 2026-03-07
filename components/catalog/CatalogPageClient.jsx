@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import EnhancedProductCard from '@/components/EnhancedProductCard';
 import ProductCard from '@/components/ProductCard';
 import InfoBoardProductCard from '@/components/InfoBoardProductCard';
@@ -686,7 +687,8 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
         <button
           type="button"
           onClick={() => setIsMobileFilterOpen(true)}
-          className="md:hidden fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 px-4 py-3 rounded-full bg-emerald-700 text-white shadow-lg hover:bg-emerald-800 transition-colors"
+          className="md:hidden fixed bottom-[calc(9rem+env(safe-area-inset-bottom))] right-4 z-50 inline-flex items-center gap-2 rounded-full bg-emerald-700 px-4 py-3 text-white shadow-lg transition-colors hover:bg-emerald-800"
+          data-widget="catalog-filters"
           aria-label="Open filters"
         >
           <SlidersHorizontal className="h-4 w-4" />
@@ -700,78 +702,75 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
       )}
 
       {/* Mobile Bottom Sheet */}
-      {isMobileFilterOpen && (
-        <div
-          className="md:hidden fixed inset-0 z-50 bg-black/40"
-          onClick={() => setIsMobileFilterOpen(false)}
+      <Sheet open={isMobileFilterOpen} onOpenChange={setIsMobileFilterOpen}>
+        <SheetContent
+          side="bottom"
+          hideClose
+          className="md:hidden h-auto max-h-[85dvh] overflow-y-auto rounded-t-2xl p-5"
+          data-widget="catalog-filters-panel"
         >
-          <div
-            className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white p-5 animate-in slide-in-from-bottom"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-bold text-lg text-gray-900">Filters</h3>
-              <button
-                type="button"
-                onClick={() => setIsMobileFilterOpen(false)}
-                className="p-2 text-gray-600 hover:text-gray-800"
-                aria-label="Close filters"
-              >
-                <X className="h-5 w-5" />
-              </button>
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-lg font-bold text-gray-900">Filters</h3>
+            <button
+              type="button"
+              onClick={() => setIsMobileFilterOpen(false)}
+              className="p-2 text-gray-600 hover:text-gray-800"
+              aria-label="Close filters"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="space-y-5">
+            <div>
+              <p className="mb-3 text-sm font-semibold text-gray-900">Wellness Goal</p>
+              <HealthBenefitFilters
+                benefitCounts={healthBenefitCounts}
+                selectedBenefit={selectedHealthBenefit}
+                onBenefitChange={(id) => {
+                  handleHealthBenefitChange(id);
+                }}
+              />
             </div>
 
-            <div className="space-y-5">
-              <div>
-                <p className="text-sm font-semibold text-gray-900 mb-3">Wellness Goal</p>
-                <HealthBenefitFilters
-                  benefitCounts={healthBenefitCounts}
-                  selectedBenefit={selectedHealthBenefit}
-                  onBenefitChange={(id) => {
-                    handleHealthBenefitChange(id);
-                  }}
-                />
-              </div>
+            <div>
+              <p className="mb-3 text-sm font-semibold text-gray-900">Category</p>
+              <select
+                value={selectedCategory}
+                onChange={(e) => {
+                  handleCategoryChange(e.target.value);
+                }}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
+              >
+                {productCategories.map((category) => (
+                  <option key={`mobile-${category.id}`} value={category.id}>
+                    {category.icon ? `${category.icon} ` : ''}{category.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-              <div>
-                <p className="text-sm font-semibold text-gray-900 mb-3">Category</p>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => {
-                    handleCategoryChange(e.target.value);
-                  }}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
-                >
-                  {productCategories.map((category) => (
-                    <option key={`mobile-${category.id}`} value={category.id}>
-                      {category.icon ? `${category.icon} ` : ''}{category.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => {
-                    clearAllFilters();
-                    setIsMobileFilterOpen(false);
-                  }}
-                  variant="outline"
-                  className="flex-1 border-emerald-300 text-emerald-700"
-                >
-                  Clear All
-                </Button>
-                <Button
-                  onClick={() => setIsMobileFilterOpen(false)}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
-                >
-                  Show {displayCount} Results
-                </Button>
-              </div>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  clearAllFilters();
+                  setIsMobileFilterOpen(false);
+                }}
+                variant="outline"
+                className="flex-1 border-emerald-300 text-emerald-700"
+              >
+                Clear All
+              </Button>
+              <Button
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+              >
+                Show {displayCount} Results
+              </Button>
             </div>
           </div>
-        </div>
-      )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

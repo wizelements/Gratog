@@ -451,6 +451,7 @@ textarea:focus-visible {
 body[data-overlay-open="true"] [data-widget="floating-cart"],
 body[data-overlay-open="true"] [data-widget="live-chat"],
 body[data-overlay-open="true"] [data-widget="live-chat-panel"],
+body[data-overlay-open="true"] [data-widget="catalog-filters"],
 body[data-overlay-open="true"] [data-widget="music-controls"],
 body[data-overlay-open="true"] [data-widget="music-controls-panel"] {
   opacity: 0;
