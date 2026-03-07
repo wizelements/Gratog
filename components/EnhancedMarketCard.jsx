@@ -82,10 +82,29 @@ function formatTime(time24) {
   return `${hour12}:${minutes} ${period}`;
 }
 
-export default function EnhancedMarketCard({ marketName, className = '' }) {
-  const market = MARKET_DATA[marketName];
-  
-  if (!market) {
+function parseHours(hours = '') {
+  const [startTime = '09:00', endTime = '13:00'] = String(hours).split('-');
+  return { startTime, endTime };
+}
+
+export default function EnhancedMarketCard({ marketName, market, className = '' }) {
+  const resolvedName = market?.name || marketName;
+
+  const marketData = market
+    ? {
+      address: [market.address, market.city, market.state, market.zip].filter(Boolean).join(', '),
+      description: market.description || 'Visit us at this market location for fresh sea moss products.',
+      features: ['Fresh Samples', 'Wellness Consultations', 'Passport Rewards'],
+      phone: '(470) 555-MOSS',
+      mapsUrl: market.mapsUrl || `https://maps.google.com?q=${encodeURIComponent(market.name)}`,
+      image: '/images/markets/serenbe-market.jpg',
+      specialties: ['Sea Moss Gels', 'Lemonades', 'Wellness Shots'],
+      dayOfWeek: typeof market.dayOfWeek === 'number' ? market.dayOfWeek : 6,
+      ...parseHours(market.hours)
+    }
+    : MARKET_DATA[marketName];
+
+  if (!marketData) {
     return (
       <Card className={className}>
         <CardContent className="p-6 text-center">
@@ -95,12 +114,12 @@ export default function EnhancedMarketCard({ marketName, className = '' }) {
     );
   }
 
-  const nextDate = getNextMarketDate(market.dayOfWeek, market.startTime);
-  const dayName = getDayName(market.dayOfWeek);
+  const nextDate = getNextMarketDate(marketData.dayOfWeek, marketData.startTime);
+  const dayName = getDayName(marketData.dayOfWeek);
   
   const handleGetDirections = () => {
-    AnalyticsSystem.trackMarketDirections(marketName);
-    window.open(market.mapsUrl, '_blank');
+    AnalyticsSystem.trackMarketDirections(resolvedName);
+    window.open(marketData.mapsUrl, '_blank');
   };
 
   const isToday = () => {
@@ -130,8 +149,8 @@ export default function EnhancedMarketCard({ marketName, className = '' }) {
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="text-xl">{marketName}</CardTitle>
-            <CardDescription className="mt-1">{market.description}</CardDescription>
+            <CardTitle className="text-xl">{resolvedName}</CardTitle>
+            <CardDescription className="mt-1">{marketData.description}</CardDescription>
           </div>
           {isToday() && (
             <Badge className="bg-emerald-100 text-emerald-700 border-emerald-300">
@@ -147,7 +166,7 @@ export default function EnhancedMarketCard({ marketName, className = '' }) {
           <Clock className="w-5 h-5 text-emerald-600 flex-shrink-0" />
           <div>
             <div className="font-medium text-emerald-800">
-              {dayName}s, {formatTime(market.startTime)} - {formatTime(market.endTime)}
+              {dayName}s, {formatTime(marketData.startTime)} - {formatTime(marketData.endTime)}
             </div>
             <div className="text-sm text-emerald-600">
               Next visit: {getDateLabel()}
@@ -159,7 +178,7 @@ export default function EnhancedMarketCard({ marketName, className = '' }) {
         <div className="flex items-start gap-3">
           <MapPin className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-gray-600">
-            {market.address}
+            {marketData.address}
           </div>
         </div>
 
@@ -167,7 +186,7 @@ export default function EnhancedMarketCard({ marketName, className = '' }) {
         <div>
           <h4 className="font-medium text-gray-800 mb-2">Featured Products</h4>
           <div className="flex flex-wrap gap-2">
-            {market.specialties.map((specialty) => (
+            {marketData.specialties.map((specialty) => (
               <Badge key={specialty} variant="outline" className="text-xs">
                 {specialty}
               </Badge>
@@ -179,7 +198,7 @@ export default function EnhancedMarketCard({ marketName, className = '' }) {
         <div>
           <h4 className="font-medium text-gray-800 mb-2">Market Features</h4>
           <div className="grid grid-cols-1 gap-1">
-            {market.features.map((feature) => (
+            {marketData.features.map((feature) => (
               <div key={feature} className="flex items-center gap-2 text-sm text-gray-600">
                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
                 {feature}
@@ -199,11 +218,11 @@ export default function EnhancedMarketCard({ marketName, className = '' }) {
           </Button>
           
           <AddToCalendarButton
-            marketName={marketName}
+            marketName={resolvedName}
             date={nextDate}
-            startTime={market.startTime}
-            endTime={market.endTime}
-            address={market.address}
+            startTime={marketData.startTime}
+            endTime={marketData.endTime}
+            address={marketData.address}
             className="w-full"
             variant="outline"
           />
@@ -212,7 +231,7 @@ export default function EnhancedMarketCard({ marketName, className = '' }) {
         {/* Contact */}
         <div className="flex items-center justify-center gap-2 pt-2 border-t border-gray-100">
           <Phone className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-500">{market.phone}</span>
+          <span className="text-sm text-gray-500">{marketData.phone}</span>
         </div>
 
         {/* Can't Make It CTA */}

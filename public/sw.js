@@ -64,7 +64,11 @@ self.addEventListener('fetch', (event) => {
 
   // API requests - Network first, fallback to cache
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(apiStrategy(request));
+    if (shouldBypassApiCache(url.pathname)) {
+      event.respondWith(networkOnlyApi(request));
+    } else {
+      event.respondWith(apiStrategy(request));
+    }
   }
   // Image requests - Cache first, fallback to network
   else if (isImageRequest(request)) {
@@ -104,6 +108,31 @@ async function networkFirstStrategy(request) {
         'Content-Type': 'text/plain'
       })
     });
+  }
+}
+
+function shouldBypassApiCache(pathname) {
+  return pathname.startsWith('/api/products') ||
+    pathname.startsWith('/api/markets') ||
+    pathname.startsWith('/api/admin/products/sync') ||
+    pathname.startsWith('/api/admin/markets');
+}
+
+// Network-only for critical freshness paths.
+async function networkOnlyApi(request) {
+  try {
+    return await fetch(request, { cache: 'no-store' });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: 'API unavailable offline' }),
+      {
+        status: 503,
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store'
+        })
+      }
+    );
   }
 }
 

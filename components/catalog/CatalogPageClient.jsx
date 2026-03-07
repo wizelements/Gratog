@@ -88,7 +88,10 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 8000); // 8sec timeout
         
-        const response = await fetch('/api/products', { signal: controller.signal });
+        const response = await fetch('/api/products', {
+          signal: controller.signal,
+          cache: 'no-store'
+        });
         clearTimeout(timeout);
         const data = await response.json();
         

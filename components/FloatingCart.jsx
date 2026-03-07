@@ -337,13 +337,6 @@ export default function FloatingCart() {
           )}
         </div>
       </div>
-
-      {isOpen && (
-        <div
-          onClick={() => setIsOpen(false)}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300"
-        />
-      )}
     </>
   );
 }

@@ -14,6 +14,25 @@ import {
 
 const logger = createLogger('ProductsAPI');
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+const NO_STORE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0'
+};
+
+function createNoStoreJsonResponse(payload, init = {}) {
+  return NextResponse.json(payload, {
+    ...init,
+    headers: {
+      ...NO_STORE_HEADERS,
+      ...(init.headers || {})
+    }
+  });
+}
+
 /**
  * GET /api/products
  * Fetch products from unified collection with intelligent categorization
@@ -126,7 +145,7 @@ export async function GET(request) {
           dbError: dbError?.message
         });
         
-        return NextResponse.json({
+        return createNoStoreJsonResponse({
           success: true, // API request succeeded - returning usable demo data
           hadDbError: !!dbError, // Signal DB issue for admin diagnostics
           products: demoProducts,
@@ -156,7 +175,7 @@ export async function GET(request) {
         ...imageStats
       });
       
-      return NextResponse.json({
+      return createNoStoreJsonResponse({
         success: true,
         products: enhancedProducts,
         categories,
@@ -225,7 +244,7 @@ export async function GET(request) {
       count: products.length 
     });
     
-    return NextResponse.json({
+    return createNoStoreJsonResponse({
       success: true,
       products,
       count: products.length,
@@ -248,7 +267,7 @@ export async function GET(request) {
       count: demoProducts.length 
     });
     
-    return NextResponse.json({
+    return createNoStoreJsonResponse({
       success: true,
       products: demoProducts,
       categories: demoCategories,

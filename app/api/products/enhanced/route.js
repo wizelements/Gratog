@@ -9,6 +9,25 @@ import { applyInventorySnapshot } from '@/lib/custom-inventory';
 
 const logger = createLogger('EnhancedProductsAPI');
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+const NO_STORE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0'
+};
+
+function createNoStoreJsonResponse(payload, init = {}) {
+  return NextResponse.json(payload, {
+    ...init,
+    headers: {
+      ...NO_STORE_HEADERS,
+      ...(init.headers || {})
+    }
+  });
+}
+
 /**
  * GET /api/products/enhanced
  * Enhanced products API with image prioritization and beautiful placeholders
@@ -54,7 +73,7 @@ export async function GET(request) {
       const demoProducts = getDemoProducts(filters);
       const demoCategories = getDemoCategories();
       
-      return NextResponse.json({
+      return createNoStoreJsonResponse({
         success: true,
         products: demoProducts,
         categories: demoCategories,
@@ -71,7 +90,7 @@ export async function GET(request) {
     
     logger.info(`Returning ${enhancedProducts.length} enhanced products`, imageStats);
     
-    return NextResponse.json({
+    return createNoStoreJsonResponse({
       success: true,
       products: enhancedProducts,
       categories,
@@ -90,7 +109,7 @@ export async function GET(request) {
     const demoProducts = getDemoProducts();
     const demoCategories = getDemoCategories();
     
-    return NextResponse.json({
+    return createNoStoreJsonResponse({
       success: true,
       products: demoProducts,
       categories: demoCategories,

@@ -71,7 +71,10 @@ export default function HomePageClient({
                     setTimeout(() => controller.abort(), 8000);
                 }
                 
-                const response = await fetch('/api/products', fetchOptions);
+                const response = await fetch('/api/products', {
+                    ...fetchOptions,
+                    cache: 'no-store'
+                });
                 clearTimeout(timeoutId);
                 const data = await response.json();
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import EnhancedMarketCard from '@/components/EnhancedMarketCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,10 +14,32 @@ const MARKETS = [
 ];
 
 export default function MarketsPage() {
+  const [markets, setMarkets] = useState([]);
+
   useEffect(() => {
     // Initialize analytics
     AnalyticsSystem.initPostHog();
+
+    const fetchMarkets = async () => {
+      try {
+        const response = await fetch('/api/markets', { cache: 'no-store' });
+        const data = await response.json();
+
+        if (data?.success && Array.isArray(data.markets)) {
+          setMarkets(data.markets);
+        }
+      } catch (error) {
+        // Keep static fallback market cards if API is unavailable.
+        console.error('Failed to load markets:', error);
+      }
+    };
+
+    fetchMarkets();
   }, []);
+
+  const marketCards = markets.length > 0
+    ? markets
+    : MARKETS.map((name) => ({ id: name, name }));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 py-12 px-4">
@@ -54,8 +76,12 @@ export default function MarketsPage() {
 
         {/* Market Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {MARKETS.map((marketName) => (
-            <EnhancedMarketCard key={marketName} marketName={marketName} />
+          {marketCards.map((market) => (
+            <EnhancedMarketCard
+              key={market.id || market.name}
+              market={market}
+              marketName={market.name}
+            />
           ))}
         </div>
 
