@@ -5,10 +5,11 @@ import { getCategoriesWithCounts } from '@/lib/ingredient-taxonomy';
 import { getDemoProducts, getDemoCategories } from '@/lib/demo-products';
 import { createLogger } from '@/lib/logger';
 import { enhanceProductCatalog } from '@/lib/product-enhancements';
-import { 
-  filterOutSandboxProducts, 
+import { applyInventorySnapshot } from '@/lib/custom-inventory';
+import {
+  filterOutSandboxProducts,
   sanitizeProductForClient,
-  validateNoSandboxProducts 
+  validateNoSandboxProducts
 } from '@/lib/sandbox-detection';
 
 const logger = createLogger('ProductsAPI');
@@ -70,15 +71,20 @@ export async function GET(request) {
       // SAFETY: Filter out any sandbox products that somehow made it through
       const filteredRaw = filterOutSandboxProducts(rawProducts);
       
+      const { db } = await connectToDatabase();
+
       // Transform products to expose variationId at top level for cart compatibility
       const products = filteredRaw.map(product => ({
         ...product,
         variationId: product.squareData?.variationId || product.variations?.[0]?.id || product.id,
         catalogObjectId: product.squareData?.variationId || product.variations?.[0]?.id || product.id
       }));
-      
+
+      // Attach first-party inventory state (our source of stock truth).
+      const inventoryAwareProducts = await applyInventorySnapshot(db, products);
+
       // Enhance with beautiful placeholders and sort by image priority
-      const enhancedProducts = enhanceProductCatalog(products);
+      const enhancedProducts = enhanceProductCatalog(inventoryAwareProducts);
       
       // SAFETY: Validate no sandbox products in final response
       try {

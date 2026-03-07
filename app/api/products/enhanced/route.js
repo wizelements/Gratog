@@ -4,6 +4,8 @@ import { getCategoriesWithCounts } from '@/lib/ingredient-taxonomy';
 import { getDemoProducts, getDemoCategories } from '@/lib/demo-products';
 import { createLogger } from '@/lib/logger';
 import { enhanceProductCatalog } from '@/lib/product-enhancements';
+import { connectToDatabase } from '@/lib/db-optimized';
+import { applyInventorySnapshot } from '@/lib/custom-inventory';
 
 const logger = createLogger('EnhancedProductsAPI');
 
@@ -31,6 +33,7 @@ export async function GET(request) {
     
     logger.debug('Fetching enhanced products', { filters });
     const rawProducts = await getUnifiedProducts(filters);
+    const { db } = await connectToDatabase();
     
     // Transform products
     const productsWithVariations = rawProducts.map(product => ({
@@ -40,7 +43,8 @@ export async function GET(request) {
     }));
     
     // Enhance with placeholders and sort by image priority
-    const enhancedProducts = enhanceProductCatalog(productsWithVariations);
+    const inventoryAwareProducts = await applyInventorySnapshot(db, productsWithVariations);
+    const enhancedProducts = enhanceProductCatalog(inventoryAwareProducts);
     
     const categories = getCategoriesWithCounts(enhancedProducts);
     

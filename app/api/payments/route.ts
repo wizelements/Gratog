@@ -12,6 +12,7 @@ import {
 } from '@/lib/critical-operations';
 import { rewardsSystem } from '@/lib/enhanced-rewards';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
+import { consumeInventoryForPaidOrder } from '@/lib/custom-inventory';
 
 /**
  * Square Payments API - Web Payments SDK Integration
@@ -598,6 +599,39 @@ export async function POST(request: NextRequest) {
       Sentry.captureException(updateError, {
         tags: { api: 'payments', severity: 'high', issue: 'order_update_failed' },
         extra: { paymentId: payment.id, orderId }
+      });
+    }
+
+    // ========================================================================
+    // FIRST-PARTY INVENTORY DECREMENT
+    // Keep inventory in sync with successful payments (idempotent by orderId)
+    // ========================================================================
+    try {
+      if (isCompleted) {
+        const inventoryResult = await consumeInventoryForPaidOrder(db, {
+          orderId,
+          orderNumber: order.orderNumber,
+          items: order.items || [],
+          actor: 'payment_capture',
+        });
+
+        logger.info('API', 'Inventory updated after payment', {
+          orderId,
+          paymentId: payment.id,
+          debited: inventoryResult.debited,
+          skipped: inventoryResult.skipped,
+        });
+      }
+    } catch (inventoryError) {
+      logger.error('API', 'Inventory decrement failed after successful payment', {
+        orderId,
+        paymentId: payment.id,
+        error: inventoryError instanceof Error ? inventoryError.message : String(inventoryError),
+      });
+
+      Sentry.captureException(inventoryError, {
+        tags: { api: 'payments', severity: 'high', issue: 'inventory_decrement_failed' },
+        extra: { paymentId: payment.id, orderId },
       });
     }
     

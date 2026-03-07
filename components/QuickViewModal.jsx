@@ -83,6 +83,12 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
 
   if (!product) return null;
 
+  const handleDialogOpenChange = (open) => {
+    if (!open) {
+      onClose();
+    }
+  };
+
   const currentPrice = selectedVariation?.price || product.price || 0;
 
   const handleAddToCart = () => {
@@ -121,7 +127,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="sr-only">{product.name}</DialogTitle>

@@ -4,6 +4,8 @@ import { sendOrderStatusEmail } from '@/lib/resend-email';
 import { sendOrderUpdateSMS } from '@/lib/sms';
 import { createLogger } from '@/lib/logger';
 import { requireAdmin } from '@/lib/admin-session';
+import { connectToDatabase } from '@/lib/db-optimized';
+import { restockInventoryForCancelledOrder } from '@/lib/custom-inventory';
 
 const logger = createLogger('OrderStatusUpdateAPI');
 
@@ -40,14 +42,17 @@ export async function POST(request) {
       );
     }
     
-    const order = await orderTracking.getOrder(orderId);
-    
-    if (!order) {
+    const orderLookup = await orderTracking.getOrder(orderId);
+    const order = orderLookup?.order || orderLookup;
+
+    if (!order?.id) {
       return NextResponse.json(
         { success: false, error: 'Order not found' },
         { status: 404 }
       );
     }
+
+    const previousStatus = order.status;
     
     const result = await orderTracking.updateOrderStatus(orderId, status);
     
@@ -60,7 +65,31 @@ export async function POST(request) {
     
     const updatedOrder = result.order;
     
-    logger.info('Order status updated', { orderId, oldStatus: order.status, newStatus: status });
+    logger.info('Order status updated', { orderId, oldStatus: previousStatus, newStatus: status });
+
+    // Restock on cancellation only if the order had already been paid.
+    if (status === 'cancelled' && (order.paymentStatus === 'paid' || order.status === 'paid')) {
+      try {
+        const { db } = await connectToDatabase();
+        const restockResult = await restockInventoryForCancelledOrder(db, {
+          orderId,
+          orderNumber: order.orderNumber,
+          items: order.items || [],
+          actor: admin.email,
+        });
+
+        logger.info('Order cancellation restock complete', {
+          orderId,
+          restocked: restockResult.restocked,
+          skipped: restockResult.skipped,
+        });
+      } catch (restockError) {
+        logger.error('Order cancellation restock failed', {
+          orderId,
+          error: restockError.message,
+        });
+      }
+    }
     
     // Send automated notifications using new system
     try {
@@ -68,11 +97,11 @@ export async function POST(request) {
       const { notifyStaffStatusChange } = await import('@/lib/staff-notifications');
       
       // Notify customer
-      await notifyOrderStatusChange(updatedOrder, order.status, status);
+      await notifyOrderStatusChange(updatedOrder, previousStatus, status);
       logger.info('Customer notifications sent', { orderId, status });
       
       // Notify staff
-      await notifyStaffStatusChange(updatedOrder, order.status, status);
+      await notifyStaffStatusChange(updatedOrder, previousStatus, status);
       logger.info('Staff notifications sent', { orderId, status });
       
     } catch (notificationError) {

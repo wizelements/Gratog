@@ -147,9 +147,15 @@ export default function IngredientDeepDiveModal({ ingredient, isOpen, onClose })
   const ingredientKey = ingredient?.name?.toLowerCase() || '';
   const ingredientData = INGREDIENT_DATABASE[ingredientKey] || null;
 
+  const handleDialogOpenChange = (open) => {
+    if (!open) {
+      onClose();
+    }
+  };
+
   if (!ingredientData) {
     return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Ingredient Information</DialogTitle>
@@ -172,7 +178,7 @@ export default function IngredientDeepDiveModal({ ingredient, isOpen, onClose })
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh]">
         <ScrollArea className="max-h-[80vh] pr-4">
           <DialogHeader className="mb-6">

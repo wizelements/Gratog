@@ -219,11 +219,6 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
             e.stopPropagation();
             setShowQuickView(true);
           }}
-          onTouchEnd={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setShowQuickView(true);
-          }}
           variant="outline"
           className="flex-1 border-emerald-600 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-700 active:bg-emerald-100 transition-colors"
           type="button"
