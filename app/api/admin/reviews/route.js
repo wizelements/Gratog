@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { requireAdminAuth } from '@/lib/admin-auth-middleware';
 import { createLogger } from '@/lib/logger';
@@ -15,8 +16,10 @@ async function handleGet(request) {
     const productId = searchParams.get('productId');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const parsedPage = Number.parseInt(searchParams.get('page') || '1', 10);
+    const parsedLimit = Number.parseInt(searchParams.get('limit') || '20', 10);
+    const page = Number.isFinite(parsedPage) ? Math.max(parsedPage, 1) : 1;
+    const limit = Number.isFinite(parsedLimit) ? Math.min(Math.max(parsedLimit, 1), 100) : 20;
     const skip = (page - 1) * limit;
 
     const { db } = await connectToDatabase();
@@ -27,6 +30,7 @@ async function handleGet(request) {
     if (status === 'pending') {
       query.approved = { $ne: true };
       query.rejected = { $ne: true };
+      query.hidden = { $ne: true };
     } else if (status === 'approved') {
       query.approved = true;
     } else if (status === 'rejected') {
@@ -39,8 +43,26 @@ async function handleGet(request) {
 
     if (startDate || endDate) {
       query.createdAt = {};
-      if (startDate) query.createdAt.$gte = new Date(startDate);
-      if (endDate) query.createdAt.$lte = new Date(endDate);
+      if (startDate) {
+        const parsedStart = new Date(startDate);
+        if (Number.isNaN(parsedStart.getTime())) {
+          return NextResponse.json(
+            { error: 'Invalid startDate value' },
+            { status: 400 }
+          );
+        }
+        query.createdAt.$gte = parsedStart;
+      }
+      if (endDate) {
+        const parsedEnd = new Date(endDate);
+        if (Number.isNaN(parsedEnd.getTime())) {
+          return NextResponse.json(
+            { error: 'Invalid endDate value' },
+            { status: 400 }
+          );
+        }
+        query.createdAt.$lte = parsedEnd;
+      }
     }
 
     // Get reviews with pagination
@@ -63,7 +85,7 @@ async function handleGet(request) {
           pending: {
             $sum: {
               $cond: [
-                { $and: [{ $ne: ['$approved', true] }, { $ne: ['$rejected', true] }] },
+                { $and: [{ $ne: ['$approved', true] }, { $ne: ['$rejected', true] }, { $ne: ['$hidden', true] }] },
                 1,
                 0
               ]
@@ -120,22 +142,34 @@ async function handlePatch(request) {
       );
     }
 
+    const objectIds = [];
+    for (const id of reviewIds) {
+      if (typeof id !== 'string' || !ObjectId.isValid(id)) {
+        return NextResponse.json(
+          { error: `Invalid review ID: ${id}` },
+          { status: 400 }
+        );
+      }
+      objectIds.push(new ObjectId(id));
+    }
+
     const { db } = await connectToDatabase();
-    const { ObjectId } = await import('mongodb');
 
-    const objectIds = reviewIds.map(id => new ObjectId(id));
-
-    let update = { $set: { updatedAt: new Date() } };
+    const update = { $set: { updatedAt: new Date() } };
 
     switch (action) {
       case 'approve':
         update.$set.approved = true;
         update.$set.rejected = false;
         update.$set.hidden = false;
+        update.$set.approvedAt = new Date();
+        update.$set.approvedBy = request.user?.email;
         break;
       case 'reject':
         update.$set.rejected = true;
         update.$set.approved = false;
+        update.$set.rejectedAt = new Date();
+        update.$set.rejectedBy = request.user?.email;
         break;
       case 'hide':
         update.$set.hidden = true;

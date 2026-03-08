@@ -3,6 +3,7 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import { getDemoProducts } from '@/lib/demo-products';
 import { getUnifiedProducts } from '@/lib/product-sync-engine';
 import { logger } from '@/lib/logger';
+import { PUBLIC_REVIEW_FILTER } from '@/lib/review-visibility';
 import { buildHomepageFaqSchema, buildHomepageOrganizationSchema } from '@/seo/schemas';
 
 export const revalidate = 300;
@@ -34,7 +35,7 @@ async function getSocialProof() {
 
     const [reviewAggregate, uniqueCustomerCount] = await Promise.all([
       db.collection('product_reviews').aggregate([
-        { $match: { approved: true, hidden: false } },
+        { $match: { ...PUBLIC_REVIEW_FILTER } },
         {
           $group: {
             _id: null,

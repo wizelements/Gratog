@@ -21,7 +21,8 @@ import {
   Ticket,
   ExternalLink,
   MapPin,
-  Video
+  Video,
+  MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -32,6 +33,7 @@ const navigation = [
   { name: 'Customers', href: '/admin/customers', icon: Users },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Products', href: '/admin/products', icon: Package },
+  { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare },
   { name: 'Markets', href: '/admin/markets', icon: MapPin },
   { name: 'Inventory', href: '/admin/inventory', icon: Warehouse },
   { name: 'Coupons', href: '/admin/coupons', icon: Ticket },

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
+import { PUBLIC_REVIEW_FILTER } from '@/lib/review-visibility';
 
 export async function GET(request) {
   try {
@@ -8,7 +9,7 @@ export async function GET(request) {
 
     const { db } = await connectToDatabase();
 
-    const matchStage = { approved: true, hidden: false };
+    const matchStage = { ...PUBLIC_REVIEW_FILTER };
     if (productId) matchStage.productId = productId;
 
     const pipeline = [
@@ -76,7 +77,7 @@ export async function GET(request) {
 
     // Overall stats
     const overallStats = await db.collection('product_reviews').aggregate([
-      { $match: { approved: true, hidden: false } },
+      { $match: { ...PUBLIC_REVIEW_FILTER } },
       {
         $group: {
           _id: null,

@@ -253,6 +253,9 @@ export default function AdminDashboard() {
           <Button asChild variant="outline">
             <Link href="/admin/inventory">Update Inventory</Link>
           </Button>
+          <Button asChild variant="outline">
+            <Link href="/admin/reviews">Moderate Reviews</Link>
+          </Button>
           <Button asChild variant="outline" className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white">
             <Link href="/admin/coupons">🎡 Manage Coupons</Link>
           </Button>

@@ -6,16 +6,31 @@ import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('AdminReviewDetail');
 
+function parseReviewId(id) {
+  if (typeof id !== 'string' || !ObjectId.isValid(id)) {
+    return null;
+  }
+  return new ObjectId(id);
+}
+
 /**
  * GET - Get single review details
  */
 async function handleGet(request, { params }) {
   try {
     const { id } = await params;
+    const reviewObjectId = parseReviewId(id);
+    if (!reviewObjectId) {
+      return NextResponse.json(
+        { error: 'Invalid review ID' },
+        { status: 400 }
+      );
+    }
+
     const { db } = await connectToDatabase();
 
     const review = await db.collection('product_reviews').findOne({
-      _id: new ObjectId(id)
+      _id: reviewObjectId
     });
 
     if (!review) {
@@ -58,6 +73,14 @@ async function handleGet(request, { params }) {
 async function handlePatch(request, { params }) {
   try {
     const { id } = await params;
+    const reviewObjectId = parseReviewId(id);
+    if (!reviewObjectId) {
+      return NextResponse.json(
+        { error: 'Invalid review ID' },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const { action, hidden, approved, rejected, adminNote } = body;
 
@@ -82,8 +105,19 @@ async function handlePatch(request, { params }) {
     } else {
       // Direct field updates
       if (typeof hidden === 'boolean') update.$set.hidden = hidden;
-      if (typeof approved === 'boolean') update.$set.approved = approved;
-      if (typeof rejected === 'boolean') update.$set.rejected = rejected;
+      if (typeof approved === 'boolean') {
+        update.$set.approved = approved;
+        if (approved) {
+          update.$set.rejected = false;
+          update.$set.hidden = false;
+        }
+      }
+      if (typeof rejected === 'boolean') {
+        update.$set.rejected = rejected;
+        if (rejected) {
+          update.$set.approved = false;
+        }
+      }
     }
 
     if (adminNote) {
@@ -91,7 +125,7 @@ async function handlePatch(request, { params }) {
     }
 
     const result = await db.collection('product_reviews').updateOne(
-      { _id: new ObjectId(id) },
+      { _id: reviewObjectId },
       update
     );
 
@@ -134,11 +168,19 @@ async function handlePatch(request, { params }) {
 async function handleDelete(request, { params }) {
   try {
     const { id } = await params;
+    const reviewObjectId = parseReviewId(id);
+    if (!reviewObjectId) {
+      return NextResponse.json(
+        { error: 'Invalid review ID' },
+        { status: 400 }
+      );
+    }
+
     const { db } = await connectToDatabase();
 
     // Get review before deletion for logging
     const review = await db.collection('product_reviews').findOne({
-      _id: new ObjectId(id)
+      _id: reviewObjectId
     });
 
     if (!review) {
@@ -149,7 +191,7 @@ async function handleDelete(request, { params }) {
     }
 
     await db.collection('product_reviews').deleteOne({
-      _id: new ObjectId(id)
+      _id: reviewObjectId
     });
 
     // Log admin action

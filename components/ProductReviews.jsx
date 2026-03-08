@@ -42,6 +42,7 @@ export default function ProductReviews({
   });
 
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [votingReviewId, setVotingReviewId] = useState(null);
 
   useEffect(() => {
     fetchReviews();
@@ -55,7 +56,7 @@ export default function ProductReviews({
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch(`/api/reviews?productId=${productId}`);
+      const response = await fetch(`/api/reviews?productId=${encodeURIComponent(productId)}`);
       const data = await response.json().catch(() => ({}));
       if (response.ok) {
         setReviews(data.reviews || []);
@@ -109,8 +110,12 @@ export default function ProductReviews({
       const data = await response.json().catch(() => ({}));
 
       if (response.ok) {
+        const pointsEarned = Number.isFinite(data.pointsEarned) ? data.pointsEarned : 10;
+        const pendingCopy = data.reviewStatus === 'pending_moderation'
+          ? 'It will appear after approval.'
+          : 'It may take a moment to appear publicly.';
         toast.success(
-          `🎉 Review submitted! You earned ${data.pointsEarned} reward points!`,
+          `🎉 Review submitted! ${pendingCopy} You earned ${pointsEarned} reward points!`,
           { duration: 5000 }
         );
         setFormData({ name: '', email: '', rating: 0, title: '', comment: '' });
@@ -145,18 +150,40 @@ export default function ProductReviews({
   const remainingReviews = sortedReviews.slice(3);
 
   const handleHelpfulVote = async (reviewId, isHelpful) => {
+    if (!reviewId) {
+      toast.error('This review is unavailable for feedback.');
+      return;
+    }
+
+    if (votingReviewId === reviewId) {
+      return;
+    }
+
+    setVotingReviewId(reviewId);
+
     try {
       const response = await fetch('/api/reviews/helpful', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reviewId, helpful: isHelpful }),
       });
+
+      const data = await response.json().catch(() => ({}));
+
       if (response.ok) {
         toast.success(isHelpful ? 'Thanks for your feedback!' : 'Feedback recorded');
-        fetchReviews();
+        await fetchReviews();
+        return;
       }
+
+      const fallbackMessage = response.status === 429
+        ? 'Too many votes right now. Please wait and try again.'
+        : 'Could not submit feedback';
+      toast.error(data.error || fallbackMessage);
     } catch {
       toast.error('Could not submit feedback');
+    } finally {
+      setVotingReviewId((current) => (current === reviewId ? null : current));
     }
   };
 
@@ -313,12 +340,18 @@ export default function ProductReviews({
           <MessageSquare className="h-12 w-12 mx-auto text-gray-400 mb-3" />
           <p className="text-lg font-medium text-gray-600">No reviews yet</p>
           <p className="text-muted-foreground">Be the first to share your experience!</p>
+          <p className="text-xs text-gray-500 mt-2">Recently submitted reviews can take a short moderation window before they appear publicly.</p>
         </div>
       ) : (
         <div className="space-y-4">
           <h3 className="text-xl font-bold text-gray-900">Top Reviews</h3>
           {topReviews.map((review) => (
-            <ReviewCard key={review._id} review={review} onHelpfulVote={handleHelpfulVote} />
+            <ReviewCard
+              key={review._id}
+              review={review}
+              onHelpfulVote={handleHelpfulVote}
+              isVoting={votingReviewId === review._id}
+            />
           ))}
 
           {remainingReviews.length > 0 && (
@@ -334,7 +367,12 @@ export default function ProductReviews({
               {showAllReviews && (
                 <div className="space-y-4">
                   {remainingReviews.map((review) => (
-                    <ReviewCard key={review._id} review={review} onHelpfulVote={handleHelpfulVote} />
+                    <ReviewCard
+                      key={review._id}
+                      review={review}
+                      onHelpfulVote={handleHelpfulVote}
+                      isVoting={votingReviewId === review._id}
+                    />
                   ))}
                 </div>
               )}
@@ -346,14 +384,16 @@ export default function ProductReviews({
   );
 }
 
-function ReviewCard({ review, onHelpfulVote }) {
+function ReviewCard({ review, onHelpfulVote, isVoting }) {
+  const isVerified = Boolean(review.verifiedPurchase || review.verified);
+
   return (
     <div className="bg-white rounded-lg p-6 border border-gray-200 hover:border-emerald-200 transition-colors">
       <div className="flex items-start justify-between mb-3">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="font-semibold text-gray-900">{review.name}</span>
-            {review.verified && (
+            {isVerified && (
               <Badge variant="secondary" className="text-xs">
                 <CheckCircle2 className="h-3 w-3 mr-1" />
                 Verified
@@ -374,18 +414,20 @@ function ReviewCard({ review, onHelpfulVote }) {
         <button
           type="button"
           onClick={() => onHelpfulVote(review._id, true)}
+          disabled={isVoting}
           className="text-sm text-muted-foreground hover:text-emerald-600 transition inline-flex items-center gap-1"
         >
           <ThumbsUp className="h-4 w-4" />
-          Helpful{review.helpful > 0 ? ` (${review.helpful})` : ''}
+          {isVoting ? 'Submitting...' : `Helpful${review.helpful > 0 ? ` (${review.helpful})` : ''}`}
         </button>
         <button
           type="button"
           onClick={() => onHelpfulVote(review._id, false)}
+          disabled={isVoting}
           className="text-sm text-muted-foreground hover:text-red-500 transition inline-flex items-center gap-1"
         >
           <ThumbsDown className="h-4 w-4" />
-          Not Helpful
+          {isVoting ? 'Submitting...' : 'Not Helpful'}
         </button>
       </div>
     </div>

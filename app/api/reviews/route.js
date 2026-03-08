@@ -4,31 +4,59 @@ import { sendReviewConfirmation } from '@/lib/resend-email';
 import { verifyAdminToken } from '@/lib/admin-session';
 import { logger } from '@/lib/logger';
 import { RateLimit } from '@/lib/redis';
+import { PUBLIC_REVIEW_FILTER } from '@/lib/review-visibility';
 
 const REVIEW_POINTS = 10;
+
+function getClientIp(request) {
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  if (forwardedFor) {
+    const [firstHop] = forwardedFor.split(',');
+    const normalized = firstHop?.trim();
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return request.headers.get('x-real-ip') || 'unknown';
+}
+
+async function hasAdminSession(request, contextLabel) {
+  const token = request.cookies.get('admin_token')?.value;
+  if (!token) {
+    return false;
+  }
+
+  try {
+    const decoded = await verifyAdminToken(token);
+    return decoded?.role === 'admin';
+  } catch (tokenError) {
+    logger.warn('Reviews', `Invalid admin token for ${contextLabel}`, {
+      error: tokenError.message,
+    });
+    return false;
+  }
+}
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('productId');
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const requestedLimit = Number.parseInt(searchParams.get('limit') || '50', 10);
+    const limit = Number.isFinite(requestedLimit)
+      ? Math.min(Math.max(requestedLimit, 1), 100)
+      : 50;
     const includeUnapproved = searchParams.get('includeUnapproved') === 'true';
 
     const { db } = await connectToDatabase();
 
     // Check if admin requesting all reviews
-    let showAll = false;
-    if (includeUnapproved) {
-      const token = request.cookies.get('admin_token')?.value;
-      const decoded = token ? await verifyAdminToken(token) : null;
-      if (decoded && decoded.role === 'admin') {
-        showAll = true;
-      }
-    }
+    const showAll = includeUnapproved
+      ? await hasAdminSession(request, 'includeUnapproved request')
+      : false;
 
-    const query = { hidden: false };
+    const query = showAll ? { hidden: { $ne: true } } : { ...PUBLIC_REVIEW_FILTER };
     if (productId) query.productId = productId;
-    if (!showAll) query.approved = true;
 
     const reviews = await db
       .collection('product_reviews')
@@ -53,12 +81,19 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    if (!RateLimit.check(`review_submit:${clientIp}`, 20, 60 * 60)) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    const payload = await request.json();
+    const qaBypassRequested = payload?.qaBypassRateLimit === true;
+    const isAdminQaSubmission = qaBypassRequested
+      ? await hasAdminSession(request, 'qa bypass review submission')
+      : false;
+
+    if (!isAdminQaSubmission) {
+      const clientIp = getClientIp(request);
+      if (!RateLimit.check(`review_submit:${clientIp}`, 20, 60 * 60)) {
+        return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+      }
     }
 
-    const payload = await request.json();
     const productId = String(payload?.productId || '').trim();
     const rawProductName = String(payload?.productName || '').trim();
     const productName = rawProductName || productId || 'Taste of Gratitude Product';
@@ -174,29 +209,37 @@ export async function POST(request) {
       logger.error('API', 'Failed to award points', passportError);
     }
 
+    const suppressConfirmationEmail =
+      isAdminQaSubmission && payload?.suppressConfirmationEmail === true;
     let emailResult = { success: false, error: 'not-sent' };
-    try {
-      emailResult = await sendReviewConfirmation(email, productName, REVIEW_POINTS);
-      if (!emailResult.success) {
-        logger.error('Reviews', 'Review confirmation email failed', {
+    if (!suppressConfirmationEmail) {
+      try {
+        emailResult = await sendReviewConfirmation(email, productName, REVIEW_POINTS);
+        if (!emailResult.success) {
+          logger.error('Reviews', 'Review confirmation email failed', {
+            to: email,
+            productName,
+            error: emailResult.error,
+          });
+        }
+      } catch (emailError) {
+        logger.error('Reviews', 'Review confirmation email threw', {
           to: email,
           productName,
-          error: emailResult.error,
+          error: emailError.message,
         });
       }
-    } catch (emailError) {
-      logger.error('Reviews', 'Review confirmation email threw', {
-        to: email,
-        productName,
-        error: emailError.message,
-      });
     }
 
     return NextResponse.json({
       success: true,
       message: 'Review submitted successfully. It will be visible after approval.',
+      reviewStatus: 'pending_moderation',
+      isPublic: false,
+      qaBypassRateLimit: isAdminQaSubmission,
       pointsEarned: REVIEW_POINTS,
       emailSent: emailResult.success,
+      emailSuppressed: suppressConfirmationEmail,
       review: {
         ...review,
         _id: insertResult.insertedId?.toString(),
@@ -227,7 +270,7 @@ async function checkVerifiedPurchase(db, email, productId) {
 
 async function getReviewAnalytics(db, productId = null) {
   try {
-    const matchStage = { approved: true, hidden: false };
+    const matchStage = { ...PUBLIC_REVIEW_FILTER };
     if (productId) matchStage.productId = productId;
 
     const analytics = await db.collection('product_reviews').aggregate([

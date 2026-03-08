@@ -1,27 +1,43 @@
 import { NextResponse } from 'next/server';
+import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
+import { requireAdminAuth } from '@/lib/admin-auth-middleware';
+import { logger } from '@/lib/logger';
+
+function parseReviewId(id) {
+  if (typeof id !== 'string' || !ObjectId.isValid(id)) {
+    return null;
+  }
+  return new ObjectId(id);
+}
 
 // Admin endpoint to hide/show reviews
-export async function PUT(request, { params }) {
+async function handlePut(request, { params }) {
   try {
-    const { id } = params;
-    const { hidden, adminKey } = await request.json();
-
-    // Simple admin authentication (in production, use proper auth)
-    if (adminKey !== process.env.ADMIN_API_KEY) {
+    const { id } = await params;
+    const reviewObjectId = parseReviewId(id);
+    if (!reviewObjectId) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: 'Invalid review ID' },
+        { status: 400 }
+      );
+    }
+
+    const { hidden } = await request.json();
+    if (typeof hidden !== 'boolean') {
+      return NextResponse.json(
+        { error: 'hidden must be true or false' },
+        { status: 400 }
       );
     }
 
     const { db } = await connectToDatabase();
 
     const result = await db.collection('product_reviews').updateOne(
-      { _id: id },
+      { _id: reviewObjectId },
       {
         $set: {
-          hidden: hidden === true,
+          hidden,
           updatedAt: new Date(),
         },
       }
@@ -39,7 +55,7 @@ export async function PUT(request, { params }) {
       message: hidden ? 'Review hidden' : 'Review visible',
     });
   } catch (error) {
-    console.error('Failed to update review:', { error: error.message, stack: error.stack });
+    logger.error('API', 'Failed to update review', error);
     return NextResponse.json(
       { error: 'Failed to update review' },
       { status: 500 }
@@ -48,23 +64,20 @@ export async function PUT(request, { params }) {
 }
 
 // Admin endpoint to delete reviews
-export async function DELETE(request, { params }) {
+async function handleDelete(request, { params }) {
   try {
-    const { id } = params;
-    const { searchParams } = new URL(request.url);
-    const adminKey = searchParams.get('adminKey');
-
-    // Simple admin authentication
-    if (adminKey !== process.env.ADMIN_API_KEY) {
+    const { id } = await params;
+    const reviewObjectId = parseReviewId(id);
+    if (!reviewObjectId) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: 'Invalid review ID' },
+        { status: 400 }
       );
     }
 
     const { db } = await connectToDatabase();
 
-    const result = await db.collection('product_reviews').deleteOne({ _id: id });
+    const result = await db.collection('product_reviews').deleteOne({ _id: reviewObjectId });
 
     if (result.deletedCount === 0) {
       return NextResponse.json(
@@ -78,10 +91,13 @@ export async function DELETE(request, { params }) {
       message: 'Review deleted',
     });
   } catch (error) {
-    console.error('Failed to delete review:', { error: error.message, stack: error.stack });
+    logger.error('API', 'Failed to delete review', error);
     return NextResponse.json(
       { error: 'Failed to delete review' },
       { status: 500 }
     );
   }
 }
+
+export const PUT = requireAdminAuth(handlePut);
+export const DELETE = requireAdminAuth(handleDelete);
