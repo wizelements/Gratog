@@ -139,10 +139,11 @@ export default function HomePageClient({
             <section ref={heroRef} className="relative h-[600px] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <Image
-                        src="https://images.unsplash.com/photo-1505944270255-72b8c68c6a70?w=1920&h=600&fit=crop"
+                        src="/images/gratog-bg.PNG?v=20260309-2"
                         alt="Wildcrafted Sea Moss from Pristine Ocean Waters"
                         fill
                         priority
+                        unoptimized
                         quality={85}
                         sizes="100vw"
                         className="object-cover"

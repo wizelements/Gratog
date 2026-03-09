@@ -9,6 +9,12 @@ export interface PWAConfig {
 }
 
 let serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
+let updateCheckTimer: ReturnType<typeof setInterval> | null = null;
+let hasServiceWorkerMessageListener = false;
+let hasControllerChangeListener = false;
+let reloadingForServiceWorkerUpdate = false;
+const SERVICE_WORKER_VERSION = '20260309-2';
+const SERVICE_WORKER_URL = `/sw.js?v=${SERVICE_WORKER_VERSION}`;
 
 /**
  * Register service worker and enable PWA features
@@ -33,9 +39,13 @@ export async function initializePWA(config: PWAConfig = {}): Promise<ServiceWork
     return null;
   }
 
+  if (serviceWorkerRegistration) {
+    return serviceWorkerRegistration;
+  }
+
   try {
     // Register service worker
-    const registration = await navigator.serviceWorker.register('/sw.js', {
+    const registration = await navigator.serviceWorker.register(SERVICE_WORKER_URL, {
       scope: '/',
       updateViaCache: 'none'
     });
@@ -45,11 +55,18 @@ export async function initializePWA(config: PWAConfig = {}): Promise<ServiceWork
 
     // Check for updates periodically
     if (enableAutoUpdate) {
-      setInterval(() => {
+      if (updateCheckTimer) {
+        clearInterval(updateCheckTimer);
+      }
+      updateCheckTimer = setInterval(() => {
         registration.update().catch(err => {
           console.log('Update check failed:', err);
         });
       }, updateCheckInterval);
+    }
+
+    if (registration.waiting) {
+      notifyUpdateAvailable();
     }
 
     // Listen for updates
@@ -65,13 +82,27 @@ export async function initializePWA(config: PWAConfig = {}): Promise<ServiceWork
       }
     });
 
+    if (!hasControllerChangeListener) {
+      hasControllerChangeListener = true;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloadingForServiceWorkerUpdate) {
+          return;
+        }
+        reloadingForServiceWorkerUpdate = true;
+        window.location.reload();
+      });
+    }
+
     // Request notification permission if enabled
     if (enableNotifications && 'Notification' in window && Notification.permission === 'default') {
       requestNotificationPermission();
     }
 
     // Set up message listener for SW
-    navigator.serviceWorker.addEventListener('message', handleSWMessage);
+    if (!hasServiceWorkerMessageListener) {
+      navigator.serviceWorker.addEventListener('message', handleSWMessage);
+      hasServiceWorkerMessageListener = true;
+    }
 
     return registration;
   } catch (error) {
@@ -88,10 +119,34 @@ export async function unregisterSW() {
     try {
       await serviceWorkerRegistration.unregister();
       console.log('Service Worker unregistered');
+      serviceWorkerRegistration = null;
+      if (updateCheckTimer) {
+        clearInterval(updateCheckTimer);
+        updateCheckTimer = null;
+      }
     } catch (error) {
       console.error('Failed to unregister Service Worker:', error);
     }
   }
+}
+
+/**
+ * Ask a waiting service worker to activate immediately.
+ */
+export async function activateServiceWorkerUpdate(): Promise<boolean> {
+  if (!('serviceWorker' in navigator)) {
+    return false;
+  }
+
+  const registration = serviceWorkerRegistration || await navigator.serviceWorker.getRegistration('/');
+  const waitingWorker = registration?.waiting;
+
+  if (!waitingWorker) {
+    return false;
+  }
+
+  waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+  return true;
 }
 
 /**
@@ -213,6 +268,10 @@ export function isOnline(): boolean {
  * Handle messages from service worker
  */
 function handleSWMessage(event: MessageEvent) {
+  if (!event.data || typeof event.data !== 'object') {
+    return;
+  }
+
   const { type, data } = event.data;
 
   switch (type) {
