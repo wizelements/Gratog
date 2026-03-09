@@ -12,7 +12,6 @@ let serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
 let updateCheckTimer: ReturnType<typeof setInterval> | null = null;
 let hasServiceWorkerMessageListener = false;
 let hasControllerChangeListener = false;
-let reloadingForServiceWorkerUpdate = false;
 const SERVICE_WORKER_VERSION = '20260309-2';
 const SERVICE_WORKER_URL = `/sw.js?v=${SERVICE_WORKER_VERSION}`;
 
@@ -85,11 +84,9 @@ export async function initializePWA(config: PWAConfig = {}): Promise<ServiceWork
     if (!hasControllerChangeListener) {
       hasControllerChangeListener = true;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (reloadingForServiceWorkerUpdate) {
-          return;
-        }
-        reloadingForServiceWorkerUpdate = true;
-        window.location.reload();
+        // Avoid automatic reload loops on browsers that emit repeated controller changes.
+        // Manual update flow still reloads explicitly via the update notifier action.
+        console.log('Service worker controller changed');
       });
     }
 
