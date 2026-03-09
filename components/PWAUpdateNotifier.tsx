@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { X, RefreshCw } from 'lucide-react';
+import { activateServiceWorkerUpdate } from '@/lib/pwa';
 
 export function PWAUpdateNotifier() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     // Listen for update available event
@@ -19,8 +21,19 @@ export function PWAUpdateNotifier() {
     };
   }, []);
 
-  const handleUpdate = () => {
-    window.location.reload();
+  const handleUpdate = async () => {
+    setUpdating(true);
+
+    try {
+      const activated = await activateServiceWorkerUpdate();
+
+      // Fallback for browsers that don't trigger controllerchange quickly.
+      setTimeout(() => {
+        window.location.reload();
+      }, activated ? 1200 : 0);
+    } catch {
+      window.location.reload();
+    }
   };
 
   const handleDismiss = () => {
@@ -44,9 +57,10 @@ export function PWAUpdateNotifier() {
             <div className="flex gap-2 mt-3">
               <button
                 onClick={handleUpdate}
+                disabled={updating}
                 className="bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-blue-700 transition-colors"
               >
-                Update Now
+                {updating ? 'Updating...' : 'Update Now'}
               </button>
               <button
                 onClick={handleDismiss}

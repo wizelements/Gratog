@@ -149,30 +149,6 @@ export default function CustomerLayout({ children }) {
         </A11yAnnouncerProvider>
       </AuthProvider>
       
-      <ErrorBoundary>
-        <ServiceWorkerRegistration />
-      </ErrorBoundary>
     </>
   );
-}
-
-function ServiceWorkerRegistration() {
-  useEffect(() => {
-    try {
-      if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
-        navigator.serviceWorker.register('/sw.js')
-          .then((registration) => {
-            console.log('✅ PWA: Service Worker registered');
-            setInterval(() => { registration.update(); }, 3600000);
-          })
-          .catch((error) => {
-            console.error('❌ PWA: Service Worker registration failed:', error);
-          });
-      }
-    } catch (e) {
-      // Silently fail - SW is not critical
-    }
-  }, []);
-  
-  return null;
 }
