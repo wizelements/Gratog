@@ -5,6 +5,10 @@
       "schedule": "*/5 * * * *"
     },
     {
+      "path": "/api/cron/square-catalog-sync",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/cron/scheduled-campaigns",
       "schedule": "*/5 * * * *"
     },

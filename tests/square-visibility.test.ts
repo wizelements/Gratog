@@ -54,4 +54,48 @@ describe('square-visibility', () => {
     expect(flags.hasAssignedChannel).toBe(true);
     expect(isSquareProductVisibleOnStorefront({ channels: ['SITE_CHANNEL'] })).toBe(true);
   });
+
+  it('hides products not present at configured Square location', () => {
+    const flags = extractSquareVisibilityFlags(
+      {
+        present_at_all_locations: false,
+        present_at_location_ids: ['LOCATION_A'],
+      },
+      { locationId: 'LOCATION_B' }
+    );
+
+    expect(flags.hiddenByLocationAssignment).toBe(true);
+    expect(flags.shouldHideFromStorefront).toBe(true);
+    expect(
+      isSquareProductVisibleOnStorefront(
+        {
+          present_at_all_locations: false,
+          present_at_location_ids: ['LOCATION_A'],
+        },
+        { locationId: 'LOCATION_B' }
+      )
+    ).toBe(false);
+  });
+
+  it('hides products explicitly absent at configured Square location', () => {
+    const flags = extractSquareVisibilityFlags(
+      {
+        present_at_all_locations: true,
+        absent_at_location_ids: ['LOCATION_B'],
+      },
+      { locationId: 'LOCATION_B' }
+    );
+
+    expect(flags.hiddenByLocationAssignment).toBe(true);
+    expect(flags.shouldHideFromStorefront).toBe(true);
+    expect(
+      isSquareProductVisibleOnStorefront(
+        {
+          present_at_all_locations: true,
+          absent_at_location_ids: ['LOCATION_B'],
+        },
+        { locationId: 'LOCATION_B' }
+      )
+    ).toBe(false);
+  });
 });
