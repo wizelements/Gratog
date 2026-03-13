@@ -3,6 +3,8 @@
  * Helps search engines understand your content
  */
 
+import { CONTACT_EMAIL, CONTACT_PHONE_TEL, HAS_PUBLIC_PHONE } from '@/lib/site-config';
+
 export interface Product {
   id: string;
   name: string;
@@ -30,8 +32,8 @@ export function getOrganizationSchema(baseUrl: string) {
     url: baseUrl,
     logo: `${baseUrl}/images/logo.png`,
     description: 'Premium wildcrafted sea moss gel and natural wellness products. Hand-crafted with 92 essential minerals for optimal health.',
-    email: 'info@tasteofgratitude.shop',
-    telephone: '+1-470-555-0123',
+    email: CONTACT_EMAIL,
+    ...(HAS_PUBLIC_PHONE ? { telephone: CONTACT_PHONE_TEL } : {}),
     address: {
       '@type': 'PostalAddress',
       addressLocality: 'Atlanta',
@@ -171,8 +173,8 @@ export function getLocalBusinessSchema(baseUrl: string) {
       latitude: 33.7490,
       longitude: -84.3880,
     },
-    telephone: '+1-470-555-0123',
-    email: 'info@tasteofgratitude.shop',
+    ...(HAS_PUBLIC_PHONE ? { telephone: CONTACT_PHONE_TEL } : {}),
+    email: CONTACT_EMAIL,
     openingHours: 'Sa 09:00-13:00',
     priceRange: '$$',
     paymentAccepted: 'Cash, Credit Card, Apple Pay, Google Pay',

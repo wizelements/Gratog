@@ -453,7 +453,8 @@ body[data-overlay-open="true"] [data-widget="live-chat"],
 body[data-overlay-open="true"] [data-widget="live-chat-panel"],
 body[data-overlay-open="true"] [data-widget="catalog-filters"],
 body[data-overlay-open="true"] [data-widget="music-controls"],
-body[data-overlay-open="true"] [data-widget="music-controls-panel"] {
+body[data-overlay-open="true"] [data-widget="music-controls-panel"],
+body[data-overlay-open="true"] [data-widget="pwa-install-prompt"] {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;

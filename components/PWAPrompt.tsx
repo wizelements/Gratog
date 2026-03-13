@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { X, Download } from 'lucide-react';
-import { promptInstall, getInstallPrompt } from '@/lib/pwa';
+import { promptInstall } from '@/lib/pwa';
 
 export function PWAPrompt() {
   const [isVisible, setIsVisible] = useState(false);
@@ -51,7 +51,10 @@ export function PWAPrompt() {
 
   if (isIOS) {
     return (
-      <div className="fixed bottom-4 left-4 right-4 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-4 sm:max-w-sm mx-auto">
+      <div
+        data-widget="pwa-install-prompt"
+        className="fixed left-1/2 -translate-x-1/2 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] sm:bottom-4 z-[10020] w-[min(24rem,calc(100vw-2rem))] bg-white border border-gray-200 rounded-lg shadow-lg p-4"
+      >
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             <h3 className="font-semibold text-gray-900 text-sm">Install App</h3>
@@ -71,7 +74,10 @@ export function PWAPrompt() {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg shadow-lg p-4 sm:max-w-sm mx-auto text-white">
+    <div
+      data-widget="pwa-install-prompt"
+      className="fixed left-1/2 -translate-x-1/2 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] sm:bottom-4 z-[10020] w-[min(24rem,calc(100vw-2rem))] bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg shadow-lg p-4 text-white"
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-1">
           <Download size={24} className="flex-shrink-0" />

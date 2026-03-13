@@ -385,6 +385,97 @@ function checkSecurityHeaders() {
 }
 
 // =============================================================================
+// CHECK 10: Storefront Integrity Guardrails
+// =============================================================================
+function checkStorefrontIntegrityGuardrails() {
+  info('Checking storefront integrity guardrails...');
+
+  const productsRoutePath = path.join(WORKSPACE, 'app/api/products/route.js');
+  const marketsRoutePath = path.join(WORKSPACE, 'app/api/markets/route.ts');
+  const fallbackImagePath = path.join(WORKSPACE, 'public/images/product-image-unavailable.svg');
+
+  if (!fs.existsSync(fallbackImagePath)) {
+    error('Missing fallback image asset: public/images/product-image-unavailable.svg');
+  }
+
+  if (!fs.existsSync(productsRoutePath)) {
+    error('Missing critical storefront route: app/api/products/route.js');
+  } else {
+    const productsRoute = fs.readFileSync(productsRoutePath, 'utf8');
+
+    if (!productsRoute.includes('validateStorefrontProducts')) {
+      error('app/api/products/route.js: validateStorefrontProducts guardrail is missing');
+    }
+
+    if (!productsRoute.includes('PRODUCT_IMAGE_FALLBACK_SRC')) {
+      error('app/api/products/route.js: PRODUCT_IMAGE_FALLBACK_SRC is not wired for storefront safety');
+    }
+
+    if (!productsRoute.includes("'Cache-Control': 'no-store")) {
+      error('app/api/products/route.js: no-store response header guardrail is missing');
+    }
+
+    if (!productsRoute.includes('ALLOW_DEMO_STOREFRONT_FALLBACK')) {
+      error('app/api/products/route.js: demo fallback environment guardrail is missing');
+    }
+  }
+
+  if (!fs.existsSync(marketsRoutePath)) {
+    error('Missing critical storefront route: app/api/markets/route.ts');
+  } else {
+    const marketsRoute = fs.readFileSync(marketsRoutePath, 'utf8');
+
+    if (!marketsRoute.includes('getCanonicalMarketDirectionsUrl')) {
+      error('app/api/markets/route.ts: canonical directions URL helper is missing');
+    }
+
+    if (!marketsRoute.includes('validateMarketDirectionsConsistency')) {
+      error('app/api/markets/route.ts: market directions integrity validation is missing');
+    }
+
+    if (!marketsRoute.includes("'Cache-Control': 'no-store")) {
+      error('app/api/markets/route.ts: no-store response header guardrail is missing');
+    }
+  }
+
+  const contactSensitiveFiles = [
+    'components/HelpCenter.jsx',
+    'components/ContactInfo.jsx',
+    'app/contact/page.js',
+    'app/faq/page.js',
+    'app/privacy/page.js',
+    'app/terms/page.js',
+    'lib/seo.js',
+    'lib/seo/local-business.ts',
+    'lib/seo/structured-data.tsx',
+    'lib/email.js',
+    'lib/resend-email.js',
+  ];
+
+  const placeholderPatterns = [
+    /\(404\)\s*555/i,
+    /\+1-470-555/i,
+    /\+1404555/i,
+    /\b555[-\s]?\d{4}\b/i,
+  ];
+
+  for (const relativePath of contactSensitiveFiles) {
+    const absolutePath = path.join(WORKSPACE, relativePath);
+    if (!fs.existsSync(absolutePath)) {
+      continue;
+    }
+
+    const content = fs.readFileSync(absolutePath, 'utf8');
+    const hasPlaceholderPhone = placeholderPatterns.some((pattern) => pattern.test(content));
+    if (hasPlaceholderPhone) {
+      error(`${relativePath}: placeholder/fake phone number detected`);
+    }
+  }
+
+  success('Storefront integrity guardrails check complete');
+}
+
+// =============================================================================
 // MAIN
 // =============================================================================
 async function main() {
@@ -417,6 +508,9 @@ async function main() {
   console.log('');
   
   checkSecurityHeaders();
+  console.log('');
+
+  checkStorefrontIntegrityGuardrails();
   console.log('');
   
   // Summary

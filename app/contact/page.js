@@ -8,6 +8,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  CONTACT_PHONE_DISPLAY,
+  CONTACT_PHONE_HREF,
+  HAS_PUBLIC_PHONE,
+  MARKET_LOCATION_LABEL,
+  SUPPORT_EMAIL,
+  SUPPORT_HOURS_LABEL,
+} from '@/lib/site-config';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -62,10 +70,10 @@ export default function ContactPage() {
               </div>
               <h3 className="font-semibold mb-2">Email</h3>
               <a
-                href="mailto:hello@tasteofgratitude.shop"
+                href={`mailto:${SUPPORT_EMAIL}`}
                 className="text-sm text-muted-foreground hover:text-[#D4AF37] transition-colors"
               >
-                hello@tasteofgratitude.shop
+                {SUPPORT_EMAIL}
               </a>
             </CardContent>
           </Card>
@@ -76,12 +84,22 @@ export default function ContactPage() {
                 <Phone className="h-6 w-6 text-[#D4AF37]" />
               </div>
               <h3 className="font-semibold mb-2">Phone</h3>
-              <a
-                href="tel:+14045551234"
-                className="text-sm text-muted-foreground hover:text-[#D4AF37] transition-colors"
-              >
-                (404) 555-1234
-              </a>
+              {HAS_PUBLIC_PHONE ? (
+                <a
+                  href={CONTACT_PHONE_HREF}
+                  className="text-sm text-muted-foreground hover:text-[#D4AF37] transition-colors"
+                >
+                  {CONTACT_PHONE_DISPLAY}
+                </a>
+              ) : (
+                <a
+                  href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Phone Support Request')}`}
+                  className="text-sm text-muted-foreground hover:text-[#D4AF37] transition-colors"
+                >
+                  Request a callback by email
+                </a>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">{SUPPORT_HOURS_LABEL}</p>
             </CardContent>
           </Card>
 
@@ -92,7 +110,7 @@ export default function ContactPage() {
               </div>
               <h3 className="font-semibold mb-2">Location</h3>
               <p className="text-sm text-muted-foreground">
-                Atlanta, GA
+                {MARKET_LOCATION_LABEL}
               </p>
             </CardContent>
           </Card>

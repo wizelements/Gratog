@@ -3,6 +3,22 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChevronDown, HelpCircle, ShoppingCart, Package, Truck, CreditCard, Leaf, Heart } from 'lucide-react';
+import {
+  CONTACT_PHONE_DISPLAY,
+  CONTACT_PHONE_HREF,
+  HAS_PUBLIC_PHONE,
+  SUPPORT_EMAIL,
+  SUPPORT_HOURS_LABEL,
+  WHOLESALE_EMAIL,
+} from '@/lib/site-config';
+
+const PHONE_SUPPORT_LINK = HAS_PUBLIC_PHONE
+  ? CONTACT_PHONE_HREF
+  : `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Phone Support Request')}`;
+
+const PHONE_SUPPORT_LABEL = HAS_PUBLIC_PHONE
+  ? CONTACT_PHONE_DISPLAY
+  : 'Request a callback by email';
 
 const faqCategories = [
   {
@@ -51,11 +67,11 @@ const faqCategories = [
       },
       {
         question: 'Can I modify or cancel my order?',
-        answer: 'You can modify or cancel orders within 2 hours of placing them by contacting us at hello@tasteofgratitude.shop. Once orders are being prepared or in transit, modifications may not be possible.'
+        answer: `You can modify or cancel orders within 2 hours of placing them by contacting us at ${SUPPORT_EMAIL}. Once orders are being prepared or in transit, modifications may not be possible.`
       },
       {
         question: 'Do you offer bulk or wholesale pricing?',
-        answer: 'Yes! We offer special pricing for bulk orders (10+ items) and wholesale opportunities for retailers, wellness centers, and health practitioners. Contact us at wholesale@tasteofgratitude.shop for pricing details.'
+        answer: `Yes! We offer special pricing for bulk orders (10+ items) and wholesale opportunities for retailers, wellness centers, and health practitioners. Contact us at ${WHOLESALE_EMAIL} for pricing details.`
       },
       {
         question: 'How do I use a coupon code?',
@@ -132,7 +148,7 @@ const faqCategories = [
       },
       {
         question: 'Can I share my sea moss journey on your platform?',
-        answer: 'Absolutely! We love hearing wellness stories. Share your photos, videos, and testimonials by tagging us on Instagram (@tasteofgratitude), submitting through our UGC challenge pages, or emailing hello@tasteofgratitude.shop. You might be featured!'
+        answer: `Absolutely! We love hearing wellness stories. Share your photos, videos, and testimonials by tagging us on Instagram (@tasteofgratitude), submitting through our UGC challenge pages, or emailing ${SUPPORT_EMAIL}. You might be featured!`
       },
       {
         question: 'Do you offer wellness workshops or events?',
@@ -147,7 +163,9 @@ const faqCategories = [
     questions: [
       {
         question: 'How can I contact customer support?',
-        answer: 'Email: hello@tasteofgratitude.shop, Phone: (404) 555-0123, Hours: Monday-Friday 9 AM-6 PM EST. We respond to emails within 24 hours. For urgent order issues, please call during business hours.'
+        answer: HAS_PUBLIC_PHONE
+          ? `Email: ${SUPPORT_EMAIL}, Phone: ${CONTACT_PHONE_DISPLAY}, Hours: ${SUPPORT_HOURS_LABEL}. We respond to emails within 24 hours. For urgent order issues, please call during business hours.`
+          : `Email: ${SUPPORT_EMAIL}. Phone support is available by callback request during ${SUPPORT_HOURS_LABEL}. We respond to emails within 24 hours.`
       },
       {
         question: 'What is your return and refund policy?',
@@ -267,10 +285,10 @@ export default function FAQPage() {
                     Response within 24 hours
                   </p>
                   <a
-                    href="mailto:hello@tasteofgratitude.shop"
+                    href={`mailto:${SUPPORT_EMAIL}`}
                     className="text-sm text-[#D4AF37] hover:underline font-medium"
                   >
-                    hello@tasteofgratitude.shop
+                    {SUPPORT_EMAIL}
                   </a>
                 </CardContent>
               </Card>
@@ -280,15 +298,15 @@ export default function FAQPage() {
                   <div className="w-12 h-12 rounded-full bg-[#D4AF37]/20 flex items-center justify-center mx-auto mb-4">
                     📞
                   </div>
-                  <h3 className="font-semibold mb-2">Call Us</h3>
+                  <h3 className="font-semibold mb-2">Phone Support</h3>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Mon-Fri, 9 AM - 6 PM EST
+                    {HAS_PUBLIC_PHONE ? SUPPORT_HOURS_LABEL : 'Callback requests handled within support hours'}
                   </p>
                   <a
-                    href="tel:+14045550123"
+                    href={PHONE_SUPPORT_LINK}
                     className="text-sm text-[#D4AF37] hover:underline font-medium"
                   >
-                    (404) 555-0123
+                    {PHONE_SUPPORT_LABEL}
                   </a>
                 </CardContent>
               </Card>

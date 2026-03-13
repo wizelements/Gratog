@@ -4,24 +4,39 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mail, Phone, Clock, MapPin, Instagram, Facebook, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
+import {
+  CONTACT_PHONE_DISPLAY,
+  CONTACT_PHONE_HREF,
+  HAS_PUBLIC_PHONE,
+  MARKET_LOCATION_LABEL,
+  SUPPORT_EMAIL,
+  SUPPORT_HOURS_LABEL,
+} from '@/lib/site-config';
 
 const contactDetails = [
   {
     icon: Mail,
     label: 'Email',
-    value: 'support@tasteofgratitude.shop',
-    href: 'mailto:support@tasteofgratitude.shop',
+    value: SUPPORT_EMAIL,
+    href: `mailto:${SUPPORT_EMAIL}`,
   },
-  {
-    icon: Phone,
-    label: 'Phone',
-    value: '(404) 555-MOSS',
-    href: 'tel:+14045556677',
-  },
+  HAS_PUBLIC_PHONE
+    ? {
+      icon: Phone,
+      label: 'Phone',
+      value: CONTACT_PHONE_DISPLAY,
+      href: CONTACT_PHONE_HREF,
+    }
+    : {
+      icon: Phone,
+      label: 'Phone',
+      value: 'Available by callback request',
+      href: `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Phone Support Request')}`,
+    },
   {
     icon: MapPin,
     label: 'Location',
-    value: 'Atlanta, Georgia',
+    value: MARKET_LOCATION_LABEL,
     href: null,
   },
 ];
@@ -119,7 +134,7 @@ export default function ContactInfo() {
                 ))}
               </div>
               <p className="text-sm text-muted-foreground mt-4">
-                Response time: Within 24 hours on business days
+                Response time: Within 24 hours on business days. Support hours: {SUPPORT_HOURS_LABEL}.
               </p>
             </CardContent>
           </Card>

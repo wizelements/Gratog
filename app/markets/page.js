@@ -1,45 +1,52 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import EnhancedMarketCard from '@/components/EnhancedMarketCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, Heart, QrCode } from 'lucide-react';
 import AnalyticsSystem from '@/lib/analytics';
 
-const MARKETS = [
-  'Serenbe',
-  'East Atlanta Village',
-  'Ponce City Market'
-];
-
 export default function MarketsPage() {
   const [markets, setMarkets] = useState([]);
+  const [isLoadingMarkets, setIsLoadingMarkets] = useState(true);
+  const [marketsError, setMarketsError] = useState('');
+
+  const fetchMarkets = useCallback(async () => {
+    setIsLoadingMarkets(true);
+
+    try {
+      const response = await fetch('/api/markets', { cache: 'no-store' });
+      if (!response.ok) {
+        throw new Error(`Market API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data?.success && Array.isArray(data.markets)) {
+        setMarkets(data.markets);
+        setMarketsError('');
+        return;
+      }
+
+      throw new Error('Invalid market payload');
+    } catch (error) {
+      console.error('Failed to load markets:', error);
+      setMarkets([]);
+      setMarketsError('Market locations are temporarily unavailable. Please check back shortly.');
+    } finally {
+      setIsLoadingMarkets(false);
+    }
+  }, []);
 
   useEffect(() => {
     // Initialize analytics
     AnalyticsSystem.initPostHog();
 
-    const fetchMarkets = async () => {
-      try {
-        const response = await fetch('/api/markets', { cache: 'no-store' });
-        const data = await response.json();
-
-        if (data?.success && Array.isArray(data.markets)) {
-          setMarkets(data.markets);
-        }
-      } catch (error) {
-        // Keep static fallback market cards if API is unavailable.
-        console.error('Failed to load markets:', error);
-      }
-    };
-
     fetchMarkets();
-  }, []);
+  }, [fetchMarkets]);
 
-  const marketCards = markets.length > 0
-    ? markets
-    : MARKETS.map((name) => ({ id: name, name }));
+  const hasMarkets = markets.length > 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 py-12 px-4">
@@ -76,7 +83,39 @@ export default function MarketsPage() {
 
         {/* Market Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {marketCards.map((market) => (
+          {isLoadingMarkets && (
+            <Card className="md:col-span-2 lg:col-span-3">
+              <CardContent className="p-6 text-center text-muted-foreground">
+                Loading market locations...
+              </CardContent>
+            </Card>
+          )}
+
+          {!isLoadingMarkets && marketsError && (
+            <Card className="md:col-span-2 lg:col-span-3 border-amber-300 bg-amber-50">
+              <CardContent className="p-6 text-center text-amber-900 space-y-4">
+                <p>{marketsError}</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-amber-400 text-amber-900 hover:bg-amber-100"
+                  onClick={fetchMarkets}
+                >
+                  Retry Markets Feed
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {!isLoadingMarkets && !marketsError && !hasMarkets && (
+            <Card className="md:col-span-2 lg:col-span-3 border-slate-200 bg-white/80">
+              <CardContent className="p-6 text-center text-slate-700">
+                No active market listings are published right now. Please check back soon for updated schedule details.
+              </CardContent>
+            </Card>
+          )}
+
+          {!isLoadingMarkets && !marketsError && markets.map((market) => (
             <EnhancedMarketCard
               key={market.id || market.name}
               market={market}

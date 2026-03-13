@@ -4,6 +4,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { HelpCircle, MessageCircle, Phone, Mail, X } from 'lucide-react';
 import Link from 'next/link';
+import {
+  CONTACT_PHONE_DISPLAY,
+  CONTACT_PHONE_HREF,
+  HAS_PUBLIC_PHONE,
+  SUPPORT_EMAIL,
+  SUPPORT_HOURS_LABEL,
+} from '@/lib/site-config';
 
 const QUICK_HELP = [
   {
@@ -18,12 +25,26 @@ const QUICK_HELP = [
     },
     link: '/#faq',
   },
-  {
-    icon: Phone,
-    title: 'Call Us',
-    description: '(404) 555-1234',
-    action: () => (window.location.href = 'tel:+14045551234'),
-  },
+  HAS_PUBLIC_PHONE
+    ? {
+      icon: Phone,
+      title: 'Call Us',
+      description: CONTACT_PHONE_DISPLAY,
+      action: () => {
+        if (CONTACT_PHONE_HREF) {
+          window.location.href = CONTACT_PHONE_HREF;
+        }
+      },
+    }
+    : {
+      icon: Phone,
+      title: 'Request Callback',
+      description: 'Phone support by request',
+      action: () => {
+        const subject = encodeURIComponent('Phone Support Request');
+        window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}`;
+      },
+    },
   {
     icon: MessageCircle,
     title: 'Chat',
@@ -37,8 +58,8 @@ const QUICK_HELP = [
   {
     icon: Mail,
     title: 'Email',
-    description: 'hello@tasteofgratitude.shop',
-    action: () => (window.location.href = 'mailto:hello@tasteofgratitude.shop'),
+    description: SUPPORT_EMAIL,
+    action: () => (window.location.href = `mailto:${SUPPORT_EMAIL}`),
   },
 ];
 
@@ -140,9 +161,11 @@ export default function HelpCenter() {
           {/* Info Box */}
           <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-xs text-blue-900 leading-relaxed">
-              <strong>Response times:</strong> Phone calls answered 9am-5pm ET.
-              Chat available during business hours. Email responses within 24
-              hours.
+              <strong>Response times:</strong>{' '}
+              {HAS_PUBLIC_PHONE
+                ? `Phone calls answered during ${SUPPORT_HOURS_LABEL}.`
+                : `Phone support is available by callback request during ${SUPPORT_HOURS_LABEL}.`}{' '}
+              Chat available during business hours. Email responses within 24 hours.
             </p>
           </div>
         </div>

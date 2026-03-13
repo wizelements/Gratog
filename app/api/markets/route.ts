@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getActiveMarkets } from '@/lib/markets/repository';
 import { logger } from '@/lib/logger';
+import {
+  buildMarketAddressLine,
+  getCanonicalMarketDirectionsUrl,
+  validateMarketDirectionsConsistency,
+} from '@/lib/storefront-integrity';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,13 +17,32 @@ const NO_STORE_HEADERS = {
   Expires: '0'
 };
 
+function normalizePublicMarket(market: Record<string, any>) {
+  const canonicalMapsUrl = getCanonicalMarketDirectionsUrl(market);
+  const addressLine = buildMarketAddressLine(market);
+  const directionsIntegrity = validateMarketDirectionsConsistency({
+    ...market,
+    mapsUrl: canonicalMapsUrl,
+  });
+
+  return {
+    ...market,
+    mapsUrl: canonicalMapsUrl,
+    addressLine,
+    directionsIntegrity: {
+      isValid: directionsIntegrity.isValid,
+      warnings: directionsIntegrity.warnings,
+    },
+  };
+}
+
 /**
  * GET /api/markets
  * Public markets feed consumed by storefront pages.
  */
 export async function GET() {
   try {
-    const markets = await getActiveMarkets();
+    const markets = (await getActiveMarkets()).map((market) => normalizePublicMarket(market));
 
     return NextResponse.json(
       {

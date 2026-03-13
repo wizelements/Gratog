@@ -38,6 +38,112 @@ async function hasAdminSession(request, contextLabel) {
   }
 }
 
+async function upsertPendingCustomerFromReview(db, { name, email, productId, productName }) {
+  const now = new Date();
+
+  try {
+    const result = await db.collection('pending_customers').updateOne(
+      { email },
+      {
+        $setOnInsert: {
+          email,
+          source: 'review_submission',
+          status: 'pending_signup',
+          firstSeenAt: now,
+        },
+        $set: {
+          name,
+          updatedAt: now,
+          lastReviewAt: now,
+          lastReviewedProductId: productId,
+          lastReviewedProductName: productName,
+        },
+        $inc: {
+          reviewSubmissionCount: 1,
+        },
+        $addToSet: {
+          reviewedProductIds: productId,
+        },
+      },
+      { upsert: true }
+    );
+
+    return {
+      captured: true,
+      signupSuggested: true,
+      created: Boolean(result?.upsertedId),
+    };
+  } catch (error) {
+    logger.error('Reviews', 'Failed to capture pending customer from review', {
+      email,
+      productId,
+      error: error.message,
+    });
+
+    return { captured: false, signupSuggested: true, created: false };
+  }
+}
+
+function buildSignupPrompt({ shouldSuggestSignup, name, email }) {
+  if (!shouldSuggestSignup) {
+    return {
+      recommended: false,
+      registerHref: null,
+    };
+  }
+
+  const params = new URLSearchParams({
+    from: 'review',
+    intent: 'claim-rewards',
+    name,
+    email,
+  });
+
+  return {
+    recommended: true,
+    reason: 'review_without_verified_purchase',
+    registerHref: `/register?${params.toString()}`,
+  };
+}
+
+function buildReviewSummary(reviews) {
+  const safeReviews = Array.isArray(reviews) ? reviews : [];
+  const ratingDistribution = {
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0
+  };
+
+  let ratingTotal = 0;
+  let verifiedCount = 0;
+
+  for (const review of safeReviews) {
+    const rating = Number(review?.rating || 0);
+    if (rating >= 1 && rating <= 5) {
+      ratingDistribution[rating] += 1;
+      ratingTotal += rating;
+    }
+
+    if (review?.verifiedPurchase === true) {
+      verifiedCount += 1;
+    }
+  }
+
+  const reviewCount = safeReviews.length;
+  const averageRating = reviewCount > 0
+    ? Number((ratingTotal / reviewCount).toFixed(1))
+    : 0;
+
+  return {
+    averageRating,
+    reviewCount,
+    ratingDistribution,
+    verifiedCount
+  };
+}
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -58,17 +164,27 @@ export async function GET(request) {
     const query = showAll ? { hidden: { $ne: true } } : { ...PUBLIC_REVIEW_FILTER };
     if (productId) query.productId = productId;
 
-    const reviews = await db
-      .collection('product_reviews')
-      .find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .toArray();
+    const [reviews, summarySourceReviews] = await Promise.all([
+      db
+        .collection('product_reviews')
+        .find(query)
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .toArray(),
+      db
+        .collection('product_reviews')
+        .find(query)
+        .toArray()
+    ]);
+
+    const summary = buildReviewSummary(summarySourceReviews);
 
     return NextResponse.json({
       success: true,
       reviews,
       count: reviews.length,
+      totalCount: summary.reviewCount,
+      summary,
     });
   } catch (error) {
     logger.error('API', 'Failed to fetch reviews', error);
@@ -165,6 +281,15 @@ export async function POST(request) {
 
     const insertResult = await db.collection('product_reviews').insertOne(review);
 
+    const pendingCustomer = !verifiedPurchase
+      ? await upsertPendingCustomerFromReview(db, { name, email, productId, productName })
+      : { captured: false, signupSuggested: false };
+    const signupPrompt = buildSignupPrompt({
+      shouldSuggestSignup: pendingCustomer.signupSuggested === true,
+      name,
+      email,
+    });
+
     // Award points to customer's passport
     try {
       const passport = await db.collection('passports').findOne({ email: email.toLowerCase() });
@@ -240,6 +365,9 @@ export async function POST(request) {
       pointsEarned: REVIEW_POINTS,
       emailSent: emailResult.success,
       emailSuppressed: suppressConfirmationEmail,
+      pendingCustomerCaptured: pendingCustomer.captured,
+      pendingCustomer,
+      signupPrompt,
       review: {
         ...review,
         _id: insertResult.insertedId?.toString(),

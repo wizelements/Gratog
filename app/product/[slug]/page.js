@@ -15,8 +15,39 @@ import RecommendationsWidget from '@/components/RecommendationsWidget';
 import Breadcrumbs, { getProductBreadcrumbs } from '@/components/Breadcrumbs';
 import ProductReviews from '@/components/ProductReviews';
 import Script from 'next/script';
+import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop';
+
+const DEFAULT_REVIEW_SUMMARY = {
+  averageRating: 0,
+  reviewCount: 0,
+  ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+  verifiedCount: 0,
+};
+
+function normalizeReviewSummary(summary) {
+  const source = summary && typeof summary === 'object' ? summary : {};
+
+  return {
+    averageRating: Number.isFinite(Number(source.averageRating))
+      ? Number(source.averageRating)
+      : DEFAULT_REVIEW_SUMMARY.averageRating,
+    reviewCount: Number.isFinite(Number(source.reviewCount))
+      ? Number(source.reviewCount)
+      : DEFAULT_REVIEW_SUMMARY.reviewCount,
+    ratingDistribution: {
+      1: Number(source.ratingDistribution?.[1] || 0),
+      2: Number(source.ratingDistribution?.[2] || 0),
+      3: Number(source.ratingDistribution?.[3] || 0),
+      4: Number(source.ratingDistribution?.[4] || 0),
+      5: Number(source.ratingDistribution?.[5] || 0),
+    },
+    verifiedCount: Number.isFinite(Number(source.verifiedCount))
+      ? Number(source.verifiedCount)
+      : DEFAULT_REVIEW_SUMMARY.verifiedCount,
+  };
+}
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -31,6 +62,7 @@ export default function ProductDetailPage() {
   const [scrollY, setScrollY] = useState(0);
   const [activeStory, setActiveStory] = useState(0);
   const [activeTab, setActiveTab] = useState('details');
+  const [reviewSummary, setReviewSummary] = useState(DEFAULT_REVIEW_SUMMARY);
   const storyRef = useRef(null);
   
   // Scroll effect for parallax
@@ -89,6 +121,42 @@ export default function ProductDetailPage() {
     
     fetchProduct();
   }, [params.slug]);
+
+  useEffect(() => {
+    const resolvedProductId = product?.id || product?.slug;
+    if (!resolvedProductId) {
+      setReviewSummary(DEFAULT_REVIEW_SUMMARY);
+      return;
+    }
+
+    let isCancelled = false;
+
+    async function fetchReviewSummary() {
+      try {
+        const response = await fetch(
+          `/api/reviews?productId=${encodeURIComponent(resolvedProductId)}&limit=1`,
+          { cache: 'no-store' }
+        );
+        const data = await response.json().catch(() => ({}));
+
+        if (!isCancelled) {
+          setReviewSummary(response.ok ? normalizeReviewSummary(data.summary) : DEFAULT_REVIEW_SUMMARY);
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setReviewSummary(DEFAULT_REVIEW_SUMMARY);
+        }
+
+        console.error('[GratOG] Failed to fetch review summary:', error);
+      }
+    }
+
+    fetchReviewSummary();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [product?.id, product?.slug]);
 
   useEffect(() => {
     const requestedTab = searchParams.get('tab');
@@ -161,8 +229,14 @@ export default function ProductDetailPage() {
   };
 
   const currentPrice = selectedVariation?.price || product.price || 0;
-  const images = product.images?.length > 0 ? product.images : [product.image || '/images/sea-moss-default.svg'];
+  const images = product.images?.length > 0 ? product.images : [product.image || PRODUCT_IMAGE_FALLBACK_SRC];
   const shouldAutoOpenReviewForm = searchParams.get('review') === '1';
+  const reviewCount = Number(reviewSummary.reviewCount || 0);
+  const canonicalAverageRating = Number(reviewSummary.averageRating || 0);
+  const hasPublicReviews = reviewCount > 0;
+  const ratingDisplayText = hasPublicReviews
+    ? `${canonicalAverageRating.toFixed(1)} (${reviewCount} ${reviewCount === 1 ? 'review' : 'reviews'})`
+    : 'No public reviews yet';
 
   // Enhanced structured data for SEO with rich snippets
   const productSchema = {
@@ -210,15 +284,18 @@ export default function ProductDetailPage() {
         name: 'Taste of Gratitude'
       },
       priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '124',
-      bestRating: '5',
-      worstRating: '1'
     }
   };
+
+  if (hasPublicReviews) {
+    productSchema.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: canonicalAverageRating.toFixed(1),
+      reviewCount: String(reviewCount),
+      bestRating: '5',
+      worstRating: '1'
+    };
+  }
 
   // Storytelling data based on product type
   const getProductStory = () => {
@@ -362,7 +439,7 @@ export default function ProductDetailPage() {
                   <Star key={i} className="h-5 w-5 text-yellow-500 fill-yellow-500" />
                 ))}
               </div>
-              <span className="text-muted-foreground">4.8 (124 reviews)</span>
+              <span className="text-muted-foreground">{ratingDisplayText}</span>
             </div>
             
             {/* Price */}
@@ -708,10 +785,16 @@ export default function ProductDetailPage() {
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="h-6 w-6 text-yellow-500 fill-yellow-500" />
               ))}
-              <span className="text-xl font-bold text-gray-900 ml-2">4.8</span>
-              <span className="text-gray-600">/ 5.0</span>
+              {hasPublicReviews ? (
+                  <>
+                    <span className="text-xl font-bold text-gray-900 ml-2">{canonicalAverageRating.toFixed(1)}</span>
+                    <span className="text-gray-600">/ 5.0</span>
+                  </>
+                ) : (
+                  <span className="text-gray-600 ml-2">New Product</span>
+                )}
+              </div>
             </div>
-          </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {[

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +20,7 @@ import {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { register, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -37,6 +38,22 @@ export default function RegisterPage() {
   const [fieldValidation, setFieldValidation] = useState({});
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const fromReview = searchParams.get('from') === 'review';
+
+  useEffect(() => {
+    const prefillName = searchParams.get('name') || '';
+    const prefillEmail = searchParams.get('email') || '';
+
+    if (!prefillName && !prefillEmail) {
+      return;
+    }
+
+    setFormData((current) => ({
+      ...current,
+      name: current.name || prefillName,
+      email: current.email || prefillEmail,
+    }));
+  }, [searchParams]);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -224,6 +241,11 @@ export default function RegisterPage() {
             <CardDescription>Join the Taste of Gratitude family</CardDescription>
           </CardHeader>
           <CardContent>
+            {fromReview && (
+              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900">
+                Your review was submitted successfully. Create your account to manage rewards and future reviews.
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               {fieldErrors.submit && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm flex items-center gap-2">

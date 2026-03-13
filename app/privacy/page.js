@@ -1,5 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { generateMetadata, generateViewport } from '@/lib/seo';
+import {
+  CONTACT_PHONE_DISPLAY,
+  HAS_PUBLIC_PHONE,
+  MARKET_LOCATION_LABEL,
+  PRIVACY_EMAIL,
+  SUPPORT_EMAIL,
+} from '@/lib/site-config';
 
 export const metadata = generateMetadata({
   title: "Privacy Policy | Taste of Gratitude",
@@ -112,8 +119,8 @@ export default function PrivacyPage() {
             </ul>
             <p className="text-sm mt-4">
               To exercise these rights, contact us at{' '}
-              <a href="mailto:privacy@tasteofgratitude.shop" className="text-[#D4AF37] hover:underline">
-                privacy@tasteofgratitude.shop
+              <a href={`mailto:${PRIVACY_EMAIL}`} className="text-[#D4AF37] hover:underline">
+                {PRIVACY_EMAIL}
               </a>
             </p>
           </CardContent>
@@ -144,9 +151,14 @@ export default function PrivacyPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2 text-sm">
-              <p><strong>Email:</strong> privacy@tasteofgratitude.shop</p>
-              <p><strong>Phone:</strong> (404) 555-1234</p>
-              <p><strong>Address:</strong> Serenbe Farmers Market, Chattahoochee Hills, GA 30268</p>
+              <p><strong>Email:</strong> {PRIVACY_EMAIL}</p>
+              <p>
+                <strong>Phone:</strong>{' '}
+                {HAS_PUBLIC_PHONE
+                  ? CONTACT_PHONE_DISPLAY
+                  : `Phone support is available by callback request via ${SUPPORT_EMAIL}`}
+              </p>
+              <p><strong>Address:</strong> {MARKET_LOCATION_LABEL}</p>
             </div>
             <p className="text-sm mt-4">
               We will respond to privacy inquiries within 30 days of receipt.

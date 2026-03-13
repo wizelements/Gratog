@@ -3,6 +3,8 @@
  * Critical for local search rankings
  */
 
+import { CONTACT_EMAIL, CONTACT_PHONE_TEL, HAS_PUBLIC_PHONE, SITE_URL } from '@/lib/site-config';
+
 export interface MarketLocation {
   name: string;
   address: string;
@@ -26,8 +28,8 @@ export function getLocalBusinessSchema(location: MarketLocation, baseUrl: string
     name: `Taste of Gratitude - ${location.name}`,
     description: location.description,
     url: baseUrl,
-    telephone: '+1-470-555-0123',
-    email: 'info@tasteofgratitude.shop',
+    ...(HAS_PUBLIC_PHONE ? { telephone: CONTACT_PHONE_TEL } : {}),
+    email: CONTACT_EMAIL,
     image: `${baseUrl}/images/market-${location.name.toLowerCase().replace(/\s+/g, '-')}.jpg`,
     
     address: {
@@ -228,9 +230,9 @@ export const atlantaMarkets: MarketLocation[] = [
 export function getNAPCitation() {
   return {
     name: 'Taste of Gratitude',
-    phone: '+1-470-555-0123',
-    email: 'info@tasteofgratitude.shop',
-    website: 'https://tasteofgratitude.shop',
+    ...(HAS_PUBLIC_PHONE ? { phone: CONTACT_PHONE_TEL } : {}),
+    email: CONTACT_EMAIL,
+    website: SITE_URL,
     address: 'Atlanta, GA',
     hours: 'Saturday: 9:00 AM - 6:00 PM',
   };

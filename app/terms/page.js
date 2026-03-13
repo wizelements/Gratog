@@ -1,5 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { generateMetadata, generateViewport } from '@/lib/seo';
+import {
+  CONTACT_PHONE_DISPLAY,
+  HAS_PUBLIC_PHONE,
+  MARKET_LOCATION_LABEL,
+  SUPPORT_EMAIL,
+} from '@/lib/site-config';
 
 export const metadata = generateMetadata({
   title: "Terms of Service | Taste of Gratitude",
@@ -136,7 +142,7 @@ export default function TermsPage() {
               <h3 className="font-semibold mb-2">Satisfaction Guarantee</h3>
               <p className="text-sm">
                 We stand behind the quality of our products. If you're not completely satisfied, 
-                please contact us at hello@tasteofgratitude.shop within 24 hours of receipt.
+                please contact us at {SUPPORT_EMAIL} within 24 hours of receipt.
               </p>
             </div>
           </CardContent>
@@ -212,9 +218,14 @@ export default function TermsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2 text-sm">
-              <p><strong>Email:</strong> hello@tasteofgratitude.shop</p>
-              <p><strong>Phone:</strong> (404) 555-1234</p>
-              <p><strong>Address:</strong> Serenbe Farmers Market, Chattahoochee Hills, GA 30268</p>
+              <p><strong>Email:</strong> {SUPPORT_EMAIL}</p>
+              <p>
+                <strong>Phone:</strong>{' '}
+                {HAS_PUBLIC_PHONE
+                  ? CONTACT_PHONE_DISPLAY
+                  : `Phone support is available by callback request via ${SUPPORT_EMAIL}`}
+              </p>
+              <p><strong>Address:</strong> {MARKET_LOCATION_LABEL}</p>
             </div>
             <p className="text-sm mt-4">
               For questions about these terms, please contact us using the information above.

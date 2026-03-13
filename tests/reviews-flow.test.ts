@@ -98,6 +98,7 @@ function applyUpdate(document: RecordMap, update: RecordMap): void {
   const increment = (update.$inc || {}) as Record<string, number>;
   const setValues = (update.$set || {}) as Record<string, unknown>;
   const pushValues = (update.$push || {}) as Record<string, unknown>;
+  const addToSetValues = (update.$addToSet || {}) as Record<string, unknown>;
 
   for (const [key, amount] of Object.entries(increment)) {
     const current = Number(document[key] || 0);
@@ -113,16 +114,27 @@ function applyUpdate(document: RecordMap, update: RecordMap): void {
     list.push(value);
     document[key] = list;
   }
+
+  for (const [key, value] of Object.entries(addToSetValues)) {
+    const list = Array.isArray(document[key]) ? (document[key] as unknown[]) : [];
+    const alreadyIncluded = list.some((existing) => valuesMatch(existing, value));
+    if (!alreadyIncluded) {
+      list.push(value);
+    }
+    document[key] = list;
+  }
 }
 
 function createMemoryDb(seed: {
   reviews?: RecordMap[];
   orders?: RecordMap[];
   passports?: RecordMap[];
+  pendingCustomers?: RecordMap[];
 } = {}) {
   const reviews = [...(seed.reviews || [])];
   const orders = [...(seed.orders || [])];
   const passports = [...(seed.passports || [])];
+  const pendingCustomers = [...(seed.pendingCustomers || [])];
 
   const db = {
     collection(name: string) {
@@ -199,11 +211,63 @@ function createMemoryDb(seed: {
         };
       }
 
+      if (name === 'pending_customers') {
+        return {
+          async findOne(query: RecordMap) {
+            return pendingCustomers.find((customer) => matchesQuery(customer, query)) || null;
+          },
+          async updateOne(filter: RecordMap, update: RecordMap, options?: { upsert?: boolean }) {
+            const matchIndex = pendingCustomers.findIndex((customer) => matchesQuery(customer, filter));
+            if (matchIndex === -1) {
+              if (options?.upsert !== true) {
+                return { matchedCount: 0, modifiedCount: 0 };
+              }
+
+              const newDocument: RecordMap = {
+                _id: new ObjectId(),
+                ...((update.$setOnInsert || {}) as RecordMap),
+              };
+              applyUpdate(newDocument, update);
+              pendingCustomers.push(newDocument);
+
+              return {
+                matchedCount: 0,
+                modifiedCount: 0,
+                upsertedId: newDocument._id,
+                upsertedCount: 1,
+              };
+            }
+
+            applyUpdate(pendingCustomers[matchIndex], update);
+            return { matchedCount: 1, modifiedCount: 1, upsertedCount: 0, upsertedId: null };
+          },
+          async insertOne(document: RecordMap) {
+            const insertedId = new ObjectId();
+            pendingCustomers.push({ ...document, _id: insertedId });
+            return { insertedId };
+          },
+        };
+      }
+
+      if (name === 'customers') {
+        return {
+          async findOne() {
+            return null;
+          },
+          async updateOne() {
+            return { matchedCount: 0, modifiedCount: 0 };
+          },
+          async insertOne() {
+            return { matchedCount: 0, modifiedCount: 0 };
+          },
+        };
+      }
+
       throw new Error(`Unsupported collection in test database: ${name}`);
     },
   };
 
-  return { db, reviews, passports, orders };
+  return { db, reviews, passports, orders, pendingCustomers };
 }
 
 function createRequest({
@@ -283,6 +347,8 @@ describe('Review System End-To-End Flow (Mocked Backend)', () => {
     expect(submitBody.reviewStatus).toBe('pending_moderation');
     expect(submitBody.isPublic).toBe(false);
     expect(submitBody.pointsEarned).toBe(10);
+    expect(submitBody.pendingCustomerCaptured).toBe(false);
+    expect(submitBody.signupPrompt?.recommended).toBe(false);
 
     const duplicateResponse = await reviewsRoute.POST(
       createRequest({
@@ -421,6 +487,96 @@ describe('Review System End-To-End Flow (Mocked Backend)', () => {
     expect(body.reviews[0].email).toBe('legacy@example.com');
   });
 
+  it('returns summary and totalCount from the full matched public set even when list results are limited', async () => {
+    const now = Date.now();
+    const { db } = createMemoryDb({
+      reviews: [
+        {
+          _id: new ObjectId(),
+          productId: 'summary-product',
+          name: 'Newest Public',
+          email: 'newest@example.com',
+          rating: 5,
+          title: 'Newest',
+          comment: 'Latest approved review',
+          approved: true,
+          hidden: false,
+          verifiedPurchase: true,
+          createdAt: new Date(now),
+          updatedAt: new Date(now),
+        },
+        {
+          _id: new ObjectId(),
+          productId: 'summary-product',
+          name: 'Older Public',
+          email: 'older@example.com',
+          rating: 4,
+          title: 'Older',
+          comment: 'Older approved review',
+          approved: true,
+          hidden: false,
+          verifiedPurchase: false,
+          createdAt: new Date(now - 1000),
+          updatedAt: new Date(now - 1000),
+        },
+        {
+          _id: new ObjectId(),
+          productId: 'summary-product',
+          name: 'Oldest Public',
+          email: 'oldest@example.com',
+          rating: 2,
+          title: 'Oldest',
+          comment: 'Oldest approved review',
+          approved: true,
+          hidden: false,
+          verifiedPurchase: true,
+          createdAt: new Date(now - 2000),
+          updatedAt: new Date(now - 2000),
+        },
+        {
+          _id: new ObjectId(),
+          productId: 'summary-product',
+          name: 'Hidden Review',
+          email: 'hidden@example.com',
+          rating: 1,
+          title: 'Hidden',
+          comment: 'Should not be public',
+          approved: true,
+          hidden: true,
+          verifiedPurchase: false,
+          createdAt: new Date(now - 3000),
+          updatedAt: new Date(now - 3000),
+        },
+      ],
+    });
+
+    connectToDatabaseMock.mockResolvedValue({ db });
+
+    const reviewsRoute = await import('@/app/api/reviews/route');
+    const response = await reviewsRoute.GET(
+      createRequest({
+        url: 'http://localhost/api/reviews?productId=summary-product&limit=1',
+      }) as never
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.reviews).toHaveLength(1);
+    expect(body.reviews[0].email).toBe('newest@example.com');
+    expect(body.count).toBe(1);
+    expect(body.totalCount).toBe(3);
+    expect(body.summary.reviewCount).toBe(3);
+    expect(body.summary.averageRating).toBe(3.7);
+    expect(body.summary.verifiedCount).toBe(2);
+    expect(body.summary.ratingDistribution).toEqual({
+      1: 0,
+      2: 1,
+      3: 0,
+      4: 1,
+      5: 1,
+    });
+  });
+
   it('covers validation and rate-limit error paths for submission and helpful voting', async () => {
     const { db } = createMemoryDb({
       reviews: [
@@ -541,5 +697,66 @@ describe('Review System End-To-End Flow (Mocked Backend)', () => {
     expect(body.emailSent).toBe(false);
     expect(rateLimitCheckMock).not.toHaveBeenCalled();
     expect(sendReviewConfirmationMock).not.toHaveBeenCalled();
+  });
+
+  it('captures non-verified reviewers as pending customers and suggests signup', async () => {
+    const { db, pendingCustomers } = createMemoryDb();
+    connectToDatabaseMock.mockResolvedValue({ db });
+
+    const reviewsRoute = await import('@/app/api/reviews/route');
+
+    const response = await reviewsRoute.POST(
+      createRequest({
+        url: 'http://localhost/api/reviews',
+        body: {
+          productId: 'guest-review-product',
+          productName: 'Guest Review Product',
+          name: 'Guest Reviewer',
+          email: 'guest-reviewer@example.com',
+          rating: 5,
+          title: 'Loved it',
+          comment: 'Great quality and taste.',
+        },
+      }) as never
+    );
+
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.review.verifiedPurchase).toBe(false);
+    expect(body.pendingCustomerCaptured).toBe(true);
+    expect(body.pendingCustomer?.captured).toBe(true);
+    expect(body.pendingCustomer?.signupSuggested).toBe(true);
+    expect(body.signupPrompt?.recommended).toBe(true);
+    expect(body.signupPrompt?.registerHref).toContain('/register?');
+    expect(pendingCustomers).toHaveLength(1);
+    expect(pendingCustomers[0].email).toBe('guest-reviewer@example.com');
+    expect(pendingCustomers[0].status).toBe('pending_signup');
+    expect(pendingCustomers[0].reviewSubmissionCount).toBe(1);
+
+    const secondResponse = await reviewsRoute.POST(
+      createRequest({
+        url: 'http://localhost/api/reviews',
+        body: {
+          productId: 'guest-review-product-2',
+          productName: 'Guest Review Product 2',
+          name: 'Guest Reviewer',
+          email: 'guest-reviewer@example.com',
+          rating: 4,
+          title: 'Second review',
+          comment: 'Sharing another product experience.',
+        },
+      }) as never
+    );
+
+    const secondBody = await secondResponse.json();
+    expect(secondResponse.status).toBe(200);
+    expect(secondBody.success).toBe(true);
+    expect(pendingCustomers).toHaveLength(1);
+    expect(pendingCustomers[0].reviewSubmissionCount).toBe(2);
+    expect(pendingCustomers[0].reviewedProductIds).toEqual(
+      expect.arrayContaining(['guest-review-product', 'guest-review-product-2'])
+    );
   });
 });

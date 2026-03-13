@@ -3,48 +3,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Clock, Navigation, Phone } from 'lucide-react';
+import { MapPin, Clock, Navigation } from 'lucide-react';
 import AddToCalendarButton from './AddToCalendarButton';
 import AnalyticsSystem from '@/lib/analytics';
-
-const MARKET_DATA = {
-  'Serenbe': {
-    address: 'Serenbe Farmers Market, 10950 Hutcheson Ferry Rd, Palmetto, GA 30268',
-    description: 'Nestled in the heart of Serenbe, our market booth offers the full Taste of Gratitude experience.',
-    features: ['Full Product Line', 'Samples Available', 'Wellness Consultations'],
-    phone: '(470) 555-MOSS',
-    mapsUrl: 'https://maps.google.com?q=Serenbe+Farmers+Market,+Palmetto,+GA',
-    image: '/images/markets/serenbe-market.jpg',
-    specialties: ['Holy Grail Gel', 'Elderberry Moss', 'Fresh Lemonades'],
-    dayOfWeek: 6, // Saturday
-    startTime: '09:00',
-    endTime: '13:00'
-  },
-  'East Atlanta Village': {
-    address: 'East Atlanta Village Market, East Atlanta, GA',
-    description: 'Join us in the vibrant EAV community for locally-crafted sea moss wellness.',
-    features: ['Community Hub', 'Live Demos', 'Seasonal Specials'],
-    phone: '(470) 555-MOSS',
-    mapsUrl: 'https://maps.google.com?q=East+Atlanta+Village+Market',
-    image: '/images/markets/eav-market.jpg',
-    specialties: ['Spicy Bloom Shots', 'Blue Lotus Gel', 'Grateful Greens'],
-    dayOfWeek: 0, // Sunday
-    startTime: '11:00',
-    endTime: '16:00'
-  },
-  'Ponce City Market': {
-    address: 'Ponce City Market, 675 Ponce De Leon Ave NE, Atlanta, GA 30308',
-    description: 'Experience Taste of Gratitude in Atlanta\'s premier food hall destination.',
-    features: ['Premium Location', 'Tourist Friendly', 'Gift Packaging'],
-    phone: '(470) 555-MOSS',
-    mapsUrl: 'https://maps.google.com?q=Ponce+City+Market+Atlanta',
-    image: '/images/markets/ponce-market.jpg',
-    specialties: ['Starter Trio Bundle', 'Floral Tide', 'Market Exclusive Flavors'],
-    dayOfWeek: 6, // Saturday
-    startTime: '10:00',
-    endTime: '18:00'
-  }
-};
+import {
+  buildMarketAddressLine,
+  getCanonicalMarketDirectionsUrl,
+  validateMarketDirectionsConsistency
+} from '@/lib/storefront-integrity';
 
 function getNextMarketDate(dayOfWeek, startTime) {
   const today = new Date();
@@ -88,27 +54,32 @@ function parseHours(hours = '') {
 }
 
 export default function EnhancedMarketCard({ marketName, market, className = '' }) {
-  const resolvedName = market?.name || marketName;
+  const resolvedName = market?.name || marketName || 'Market Location';
+  const address = buildMarketAddressLine(market);
+  const schedule = parseHours(market?.hours);
+  const canonicalMapsUrl = market?.mapsUrl || getCanonicalMarketDirectionsUrl(market);
+  const directionsIntegrity = validateMarketDirectionsConsistency({
+    ...(market || {}),
+    mapsUrl: canonicalMapsUrl
+  });
 
   const marketData = market
     ? {
-      address: [market.address, market.city, market.state, market.zip].filter(Boolean).join(', '),
+      address,
       description: market.description || 'Visit us at this market location for fresh sea moss products.',
       features: ['Fresh Samples', 'Wellness Consultations', 'Passport Rewards'],
-      phone: '(470) 555-MOSS',
-      mapsUrl: market.mapsUrl || `https://maps.google.com?q=${encodeURIComponent(market.name)}`,
-      image: '/images/markets/serenbe-market.jpg',
+      mapsUrl: canonicalMapsUrl,
       specialties: ['Sea Moss Gels', 'Lemonades', 'Wellness Shots'],
       dayOfWeek: typeof market.dayOfWeek === 'number' ? market.dayOfWeek : 6,
-      ...parseHours(market.hours)
+      ...schedule,
     }
-    : MARKET_DATA[marketName];
+    : null;
 
   if (!marketData) {
     return (
       <Card className={className}>
         <CardContent className="p-6 text-center">
-          <p className="text-muted-foreground">Market information not available</p>
+          <p className="text-muted-foreground">Live market data is currently unavailable.</p>
         </CardContent>
       </Card>
     );
@@ -119,7 +90,9 @@ export default function EnhancedMarketCard({ marketName, market, className = '' 
   
   const handleGetDirections = () => {
     AnalyticsSystem.trackMarketDirections(resolvedName);
-    window.open(marketData.mapsUrl, '_blank');
+    if (marketData.mapsUrl) {
+      window.open(marketData.mapsUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const isToday = () => {
@@ -178,7 +151,7 @@ export default function EnhancedMarketCard({ marketName, market, className = '' 
         <div className="flex items-start gap-3">
           <MapPin className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-gray-600">
-            {marketData.address}
+            {marketData.address || 'Address is being updated. Check the directions link for the latest location details.'}
           </div>
         </div>
 
@@ -211,6 +184,7 @@ export default function EnhancedMarketCard({ marketName, market, className = '' 
         <div className="flex flex-col gap-3 pt-2">
           <Button 
             onClick={handleGetDirections}
+            disabled={!marketData.mapsUrl}
             className="w-full bg-emerald-600 hover:bg-emerald-700"
           >
             <Navigation className="w-4 h-4 mr-2" />
@@ -228,11 +202,11 @@ export default function EnhancedMarketCard({ marketName, market, className = '' 
           />
         </div>
 
-        {/* Contact */}
-        <div className="flex items-center justify-center gap-2 pt-2 border-t border-gray-100">
-          <Phone className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-500">{marketData.phone}</span>
-        </div>
+        {!directionsIntegrity.isValid && (
+          <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            Directions are generated directly from the displayed address to keep location details consistent while we verify this listing.
+          </div>
+        )}
 
         {/* Can't Make It CTA */}
         <div className="text-center p-3 bg-gray-50 rounded-lg">
