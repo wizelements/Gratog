@@ -14,6 +14,7 @@ import {
   filterOutSandboxProducts,
   validateNoSandboxProducts
 } from '@/lib/sandbox-detection';
+import { isSquareProductVisibleOnStorefront } from '@/lib/square-visibility';
 
 const logger = createLogger('ProductsAPI');
 
@@ -272,11 +273,21 @@ async function getUnifiedCatalogPayload({ filters, startTime }) {
 async function getLegacyCatalogPayload({ startTime }) {
   const { db } = await connectToDatabase();
 
-  const items = await db
+  const rawItems = await db
     .collection('square_catalog_items')
     .find({})
     .sort({ name: 1 })
     .toArray();
+
+  const items = rawItems.filter((item) => isSquareProductVisibleOnStorefront(item));
+
+  if (rawItems.length !== items.length) {
+    logger.info('Filtered hidden/archived products in legacy catalog path', {
+      total: rawItems.length,
+      visible: items.length,
+      hidden: rawItems.length - items.length
+    });
+  }
 
   const legacyProducts = items.map((item) => {
     const mainVariation = item.variations?.[0] || null;
