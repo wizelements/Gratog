@@ -21,6 +21,18 @@ export async function GET(request) {
         address: 'Serenbe Farmers Market, 10950 Hutcheson Ferry Rd, Palmetto, GA 30268',
         description: 'Visit us at Serenbe Farmers Market for fresh sea moss products'
       },
+      serenbe: {
+        address: 'Serenbe Farmers Market, 10950 Hutcheson Ferry Rd, Palmetto, GA 30268',
+        description: 'Visit us at Serenbe Farmers Market for fresh sea moss products'
+      },
+      browns_mill: {
+        address: 'DHA Dunwoody Farmers Market, Brook Run Park, 4770 N Peachtree Rd, Dunwoody, GA 30338',
+        description: 'Visit us at DHA Dunwoody Farmers Market for fresh sea moss products'
+      },
+      'DHA Dunwoody Farmers Market': {
+        address: 'DHA Dunwoody Farmers Market, Brook Run Park, 4770 N Peachtree Rd, Dunwoody, GA 30338',
+        description: 'Visit us at DHA Dunwoody Farmers Market for fresh sea moss products'
+      },
       'East Atlanta Village': {
         address: 'East Atlanta Village Market, East Atlanta, GA',
         description: 'Find us at the EAV Market with our full product lineup'

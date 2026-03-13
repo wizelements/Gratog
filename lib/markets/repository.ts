@@ -10,24 +10,54 @@ import type { AdminMarket, MarketDocument, MarketLocation } from './types';
 
 const COLLECTION_NAME = 'markets';
 
-function documentToAdminMarket(doc: MarketDocument): AdminMarket {
+const LEGACY_BROWNS_MILL_PATTERN = /browns\s*mill/i;
+
+const DHA_DUNWOODY_MARKET: MarketLocation = {
+  name: 'DHA Dunwoody Farmers Market',
+  address: '4770 N Peachtree Rd',
+  city: 'Dunwoody',
+  state: 'GA',
+  zip: '30338',
+  lat: 33.9354,
+  lng: -84.2943,
+  hours: '09:00-12:00',
+  dayOfWeek: 6,
+  description:
+    'Community market hosted at Brook Run Park in Dunwoody with local wellness vendors and fresh seasonal goods.',
+  mapsUrl: 'https://maps.google.com/?q=Brook+Run+Park+4770+N+Peachtree+Rd+Dunwoody+GA+30338',
+};
+
+function normalizeLegacyMarketDocument(doc: MarketDocument): MarketDocument {
+  if (!LEGACY_BROWNS_MILL_PATTERN.test(doc.name || '')) {
+    return doc;
+  }
+
   return {
-    id: doc._id.toString(),
-    name: doc.name,
-    address: doc.address,
-    city: doc.city,
-    state: doc.state,
-    zip: doc.zip,
-    lat: doc.lat,
-    lng: doc.lng,
-    hours: doc.hours,
-    dayOfWeek: doc.dayOfWeek,
-    description: doc.description,
-    mapsUrl: doc.mapsUrl,
-    isActive: doc.isActive !== false,
-    featured: !!doc.featured,
-    createdAt: doc.createdAt?.toISOString?.() ?? new Date().toISOString(),
-    updatedAt: doc.updatedAt?.toISOString?.() ?? new Date().toISOString(),
+    ...doc,
+    ...DHA_DUNWOODY_MARKET,
+  };
+}
+
+function documentToAdminMarket(doc: MarketDocument): AdminMarket {
+  const normalized = normalizeLegacyMarketDocument(doc);
+
+  return {
+    id: normalized._id.toString(),
+    name: normalized.name,
+    address: normalized.address,
+    city: normalized.city,
+    state: normalized.state,
+    zip: normalized.zip,
+    lat: normalized.lat,
+    lng: normalized.lng,
+    hours: normalized.hours,
+    dayOfWeek: normalized.dayOfWeek,
+    description: normalized.description,
+    mapsUrl: normalized.mapsUrl,
+    isActive: normalized.isActive !== false,
+    featured: !!normalized.featured,
+    createdAt: normalized.createdAt?.toISOString?.() ?? new Date().toISOString(),
+    updatedAt: normalized.updatedAt?.toISOString?.() ?? new Date().toISOString(),
   };
 }
 
@@ -263,18 +293,18 @@ export async function seedDefaultMarkets(): Promise<{ seeded: number }> {
         updatedAt: now,
       },
       {
-        name: 'Browns Mill Community Market',
-        address: 'Browns Mill Recreation Center',
-        city: 'Atlanta',
+        name: 'DHA Dunwoody Farmers Market',
+        address: '4770 N Peachtree Rd',
+        city: 'Dunwoody',
         state: 'GA',
-        zip: '30354',
-        lat: 33.65,
-        lng: -84.41,
-        hours: '15:00-18:00',
+        zip: '30338',
+        lat: 33.9354,
+        lng: -84.2943,
+        hours: '09:00-12:00',
         dayOfWeek: 6,
         description:
-          'Community-focused market bringing wellness to South Atlanta. Featured products and special promotions available.',
-        mapsUrl: 'https://maps.google.com/?q=Browns+Mill+Recreation+Center+Atlanta',
+          'Community market hosted at Brook Run Park in Dunwoody with local wellness vendors and fresh seasonal goods.',
+        mapsUrl: 'https://maps.google.com/?q=Brook+Run+Park+4770+N+Peachtree+Rd+Dunwoody+GA+30338',
         isActive: true,
         featured: false,
         createdAt: now,

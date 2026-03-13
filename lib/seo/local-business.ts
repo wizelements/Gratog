@@ -211,15 +211,15 @@ export const atlantaMarkets: MarketLocation[] = [
     description: 'Our flagship location featuring the full product line. Look for the gold Taste of Gratitude banners at Booth #12.',
   },
   {
-    name: 'Browns Mill Community Market',
-    address: 'Browns Mill Recreation Center',
-    city: 'Atlanta',
+    name: 'DHA Dunwoody Farmers Market',
+    address: '4770 N Peachtree Rd',
+    city: 'Dunwoody',
     state: 'GA',
-    zip: '30354',
-    lat: 33.6500,
-    lng: -84.4100,
-    hours: '15:00-18:00',
-    description: 'Community-focused market bringing wellness to South Atlanta. Featured products and special promotions available.',
+    zip: '30338',
+    lat: 33.9354,
+    lng: -84.2943,
+    hours: '09:00-12:00',
+    description: 'Community market hosted at Brook Run Park in Dunwoody with local wellness vendors and fresh seasonal goods.',
   },
 ];
 

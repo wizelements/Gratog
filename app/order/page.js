@@ -488,7 +488,7 @@ export default function OrderPage() {
                       </Label>
                     </div>
                     
-                    {/* Browns Mill Community Pickup */}
+                    {/* DHA Dunwoody Farmers Market Pickup */}
                     <div className="flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer hover:border-emerald-600 transition-all hover:shadow-md mt-3">
                       <RadioGroupItem value="pickup_browns_mill" id="pickup_browns_mill" className="mt-1" />
                       <Label htmlFor="pickup_browns_mill" className="flex-1 cursor-pointer">
@@ -498,26 +498,23 @@ export default function OrderPage() {
                               <Package className="h-5 w-5 text-blue-600" />
                             </div>
                             <div className="flex-1">
-                              <div className="font-semibold text-lg">🏘️ Browns Mill Community</div>
-                              <div className="text-sm text-blue-600 font-medium">FREE Pickup • Flexible Hours</div>
+                              <div className="font-semibold text-lg">🏘️ DHA Dunwoody Farmers Market</div>
+                              <div className="text-sm text-blue-600 font-medium">FREE Pickup • Brook Run Park</div>
                             </div>
                           </div>
                           
                           <div className="pl-14 space-y-2 text-sm text-gray-600">
                             <div className="flex items-center gap-2">
                               <MapPin className="h-4 w-4 text-gray-400" />
-                              <span>Browns Mill Recreation Center, Atlanta, GA</span>
+                              <span>Brook Run Park, 4770 N Peachtree Rd, Dunwoody, GA 30338</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Clock className="h-4 w-4 text-gray-400" />
-                              <div className="font-medium text-gray-900">
-                                <div>Wed-Fri: Before 12pm or 12pm-6pm</div>
-                                <div>Sun-Mon: After 10:30am</div>
-                              </div>
+                              <span className="font-medium text-gray-900">Saturdays: 9:00 AM - 12:00 PM</span>
                             </div>
                             <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-2">
-                              <div className="text-xs font-semibold text-blue-800 mb-1">📞 Time Coordination:</div>
-                              <div className="text-xs text-blue-700">We'll <strong>confirm your pickup time</strong> via Square dashboard and contact you to finalize the exact time within the available windows.</div>
+                              <div className="text-xs font-semibold text-blue-800 mb-1">✨ What to Expect:</div>
+                              <div className="text-xs text-blue-700">Find us at <strong>Brook Run Park</strong> during the DHA market. Your order will be ready by <strong>9:30 AM Saturday</strong>.</div>
                             </div>
                           </div>
                         </div>

@@ -79,9 +79,9 @@ export async function POST(request) {
     for (const order of pickupOrders) {
       try {
         const isSerenbe = order.fulfillment.type === 'pickup_market';
-        const location = isSerenbe ? 'Serenbe Farmers Market' : 'Browns Mill Community';
-        const hours = isSerenbe ? '9:00 AM - 1:00 PM' : '3:00 PM - 6:00 PM';
-        const readyBy = isSerenbe ? '9:30 AM' : '3:30 PM';
+        const location = isSerenbe ? 'Serenbe Farmers Market' : 'DHA Dunwoody Farmers Market';
+        const hours = isSerenbe ? '9:00 AM - 1:00 PM' : '9:00 AM - 12:00 PM';
+        const readyBy = '9:30 AM';
         
         const message = SMS_TEMPLATES.PICKUP_DAY_BEFORE_REMINDER({
           customerName: order.customer.name.split(' ')[0], // First name only

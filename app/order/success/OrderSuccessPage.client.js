@@ -241,10 +241,10 @@ export default function OrderSuccessPage() {
                       <div className="text-center">
                         <div className="text-2xl mb-2">{order.fulfillment.type === 'pickup_browns_mill' ? '🏘️' : '🏪'}</div>
                         <h3 className="text-lg font-bold text-gray-900 mb-1">
-                          {order.fulfillment.type === 'pickup_browns_mill' ? 'Browns Mill Community' : 'Serenbe Farmers Market'}
+                          {order.fulfillment.type === 'pickup_browns_mill' ? 'DHA Dunwoody Farmers Market' : 'Serenbe Farmers Market'}
                         </h3>
                         <p className="text-sm text-gray-600">
-                          {order.fulfillment.type === 'pickup_browns_mill' ? 'Browns Mill Recreation Center, Atlanta, GA' : '10950 Hutcheson Ferry Rd, Palmetto, GA 30268'}
+                          {order.fulfillment.type === 'pickup_browns_mill' ? 'Brook Run Park, 4770 N Peachtree Rd, Dunwoody, GA 30338' : '10950 Hutcheson Ferry Rd, Palmetto, GA 30268'}
                         </p>
                       </div>
                       
@@ -252,10 +252,10 @@ export default function OrderSuccessPage() {
                         <div className="text-sm font-semibold mb-1">⏰ PICKUP TIME</div>
                         <div className="text-xl font-bold mb-1">This Saturday</div>
                         <div className="text-lg">
-                          {order.fulfillment.type === 'pickup_browns_mill' ? '3:00 PM - 6:00 PM' : '9:00 AM - 1:00 PM'}
+                          {order.fulfillment.type === 'pickup_browns_mill' ? '9:00 AM - 12:00 PM' : '9:00 AM - 1:00 PM'}
                         </div>
                         <div className="text-sm mt-2 bg-black/20 py-2 px-3 rounded">
-                          ✨ Your order will be ready by {order.fulfillment.type === 'pickup_browns_mill' ? '3:30 PM' : '9:30 AM'}
+                          ✨ Your order will be ready by 9:30 AM
                         </div>
                       </div>
                       
@@ -264,11 +264,11 @@ export default function OrderSuccessPage() {
                         <div className="space-y-2 text-sm">
                           <div className="flex items-start gap-2">
                             <div className="bg-white rounded-full p-1 text-xs font-bold w-5 h-5 flex items-center justify-center flex-shrink-0">1</div>
-                            <span className="text-gray-700">Drive to {order.fulfillment.type === 'pickup_browns_mill' ? 'Browns Mill Recreation Center' : 'Serenbe Farmers Market'}</span>
+                            <span className="text-gray-700">Drive to {order.fulfillment.type === 'pickup_browns_mill' ? 'Brook Run Park in Dunwoody' : 'Serenbe Farmers Market'}</span>
                           </div>
                           <div className="flex items-start gap-2">
                             <div className="bg-white rounded-full p-1 text-xs font-bold w-5 h-5 flex items-center justify-center flex-shrink-0">2</div>
-                            <span className="text-gray-700">Look for {order.fulfillment.type === 'pickup_browns_mill' ? 'us at the community event area' : 'the gold "Taste of Gratitude" booth (#12)'}</span>
+                            <span className="text-gray-700">Look for {order.fulfillment.type === 'pickup_browns_mill' ? 'the Taste of Gratitude setup at DHA Dunwoody Farmers Market' : 'the gold "Taste of Gratitude" booth (#12)'}</span>
                           </div>
                           <div className="flex items-start gap-2">
                             <div className="bg-white rounded-full p-1 text-xs font-bold w-5 h-5 flex items-center justify-center flex-shrink-0">3</div>
@@ -287,7 +287,7 @@ export default function OrderSuccessPage() {
                           size="sm"
                           onClick={() => {
                             const mapUrl = order.fulfillment.type === 'pickup_browns_mill'
-                              ? 'https://maps.google.com/?q=Browns+Mill+Recreation+Center+Atlanta+GA'
+                              ? 'https://maps.google.com/?q=Brook+Run+Park+4770+N+Peachtree+Rd+Dunwoody+GA+30338'
                               : 'https://maps.google.com/?q=10950+Hutcheson+Ferry+Rd+Palmetto+GA+30268';
                             window.open(mapUrl, '_blank');
                           }}
@@ -371,8 +371,8 @@ export default function OrderSuccessPage() {
                     
                     {order?.fulfillment?.type === 'pickup_browns_mill' && (
                       <div className="text-muted-foreground">
-                        Browns Mill Community<br />
-                        Saturdays 3:00 PM - 6:00 PM
+                        DHA Dunwoody Farmers Market<br />
+                        Saturdays 9:00 AM - 12:00 PM
                       </div>
                     )}
                   </div>
