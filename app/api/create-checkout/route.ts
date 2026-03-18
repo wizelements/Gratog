@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import { z } from 'zod'
+import { appendOrderAccessToken, generateOrderAccessToken } from '@/lib/order-access-token'
 
 // Environment variables
 const SQUARE_ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN
@@ -115,6 +116,15 @@ export async function POST(request: NextRequest) {
 
     // Calculate totals
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    const orderAccessToken = generateOrderAccessToken({
+      orderId,
+      customerEmail: contact?.email || null,
+      ttlMs: 7 * 24 * 60 * 60 * 1000,
+    })
+    const redirectUrl = appendOrderAccessToken(
+      `${BASE_URL}/order/success?orderRef=${encodeURIComponent(orderId)}`,
+      orderAccessToken
+    )
 
     // Create checkout request for Square Payment Links API
     const checkoutData = {
@@ -132,7 +142,7 @@ export async function POST(request: NextRequest) {
         }
       },
       checkout_options: {
-        redirect_url: `${BASE_URL}/order/success?orderId=${orderId}`,
+        redirect_url: redirectUrl,
         ask_for_shipping_address: fulfillment?.type === 'shipping',
         enable_coupon: false,
         enable_loyalty: false,

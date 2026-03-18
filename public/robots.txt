@@ -2,7 +2,9 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /admin/*
 Disallow: /api
+Disallow: /api/*
 Disallow: /test-auth
 Disallow: /diagnostic
 
@@ -10,7 +12,9 @@ Disallow: /diagnostic
 User-agent: Googlebot
 Allow: /
 Disallow: /admin
+Disallow: /admin/*
 Disallow: /api
+Disallow: /api/*
 
 # Host
 Host: https://tasteofgratitude.shop

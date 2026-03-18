@@ -11,6 +11,7 @@ import { sanitizeErrorMessage, createSafeErrorResponse } from '@/lib/response-sa
 import { RequestContext } from '@/lib/request-context';
 import { RateLimit } from '@/lib/redis';
 import * as Sentry from '@sentry/nextjs';
+import { appendOrderAccessToken, generateOrderAccessToken } from '@/lib/order-access-token';
 
 // Helper to validate Square catalog IDs (20+ char alphanumeric)
 const isValidSquareCatalogId = (id?: string): boolean => {
@@ -42,6 +43,15 @@ export async function POST(request: NextRequest) {
       fulfillmentType,
       deliveryAddress 
     } = body;
+
+    const effectiveOrderId = orderId || randomUUID();
+    const rawRedirectUrl = redirectUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?orderId=${encodeURIComponent(effectiveOrderId)}`;
+    const orderAccessToken = generateOrderAccessToken({
+      orderId: effectiveOrderId,
+      customerEmail: customer?.email || null,
+      ttlMs: 7 * 24 * 60 * 60 * 1000,
+    });
+    const secureRedirectUrl = appendOrderAccessToken(rawRedirectUrl, orderAccessToken);
     
     // Validate required fields
     if (!lineItems || !Array.isArray(lineItems) || lineItems.length === 0) {
@@ -134,7 +144,7 @@ export async function POST(request: NextRequest) {
         autoApplyDiscounts: true
       },
       metadata: {
-        orderId: orderId || randomUUID(),
+        orderId: effectiveOrderId,
         source: 'website',
         fulfillmentType: fulfillmentType || 'pickup',
         customerEmail: customer?.email || '',
@@ -146,7 +156,7 @@ export async function POST(request: NextRequest) {
     
     // Prepare checkout options
     const checkoutOptions: any = {
-      redirectUrl: redirectUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success`,
+      redirectUrl: secureRedirectUrl,
       askForShippingAddress: fulfillmentType === 'delivery'
     };
     
@@ -193,7 +203,7 @@ export async function POST(request: NextRequest) {
           autoApplyDiscounts: true
         },
         metadata: {
-          orderId: orderId || randomUUID(),
+          orderId: effectiveOrderId,
           source: 'website',
           fulfillmentType: fulfillmentType || 'pickup',
           customerEmail: customer?.email || '',
@@ -204,7 +214,7 @@ export async function POST(request: NextRequest) {
       },
       idempotencyKey: randomUUID(),
       checkoutOptions: {
-        redirectUrl: redirectUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success`,
+        redirectUrl: secureRedirectUrl,
         askForShippingAddress: fulfillmentType === 'delivery'
       }
     });
@@ -226,7 +236,7 @@ export async function POST(request: NextRequest) {
     try {
       const { db } = await connectToDatabase();
       const preOrder = {
-        id: orderId || randomUUID(),
+        id: effectiveOrderId,
         squareOrderId: paymentLink.orderId,  // Order ID from payment link
         paymentLinkId: paymentLink.id,
         paymentLinkUrl: paymentLink.url,

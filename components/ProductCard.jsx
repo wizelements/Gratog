@@ -5,28 +5,32 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { ShoppingCart, Star, Leaf, Sparkles } from 'lucide-react';
+import { Star, Leaf } from 'lucide-react';
 import Link from 'next/link';
 import QuickAddButton from './QuickAddButton';
 import VariantSelector from './VariantSelector';
+import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 
 export default function ProductCard({ product, onCheckout, variant = 'default' }) {
   const [imageError, setImageError] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState(null);
   
-  const fallbackImage = '/images/sea-moss-default.svg';
+  const fallbackImage = PRODUCT_IMAGE_FALLBACK_SRC;
   
   const getProductImage = () => {
-    if (product.images?.length > 0 && product.images[0] && !product.images[0].startsWith('data:')) {
+    if (product.images?.length > 0 && typeof product.images[0] === 'string' && product.images[0].trim()) {
       return product.images[0];
     }
-    if (product.image && !product.image.startsWith('data:image/svg')) {
+    if (typeof product.image === 'string' && product.image.trim()) {
       return product.image;
     }
-    return null;
+
+    return fallbackImage;
   };
-  
+
   const productImage = getProductImage();
+  const resolvedImage = imageError ? fallbackImage : productImage;
+  const usesInlineImage = Boolean(resolvedImage?.startsWith('data:'));
   const hasMultipleVariants = product.variations && product.variations.length > 1;
   
   const displayPrice = selectedVariant?.price 
@@ -50,22 +54,23 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
     >
       <Link href={`/product/${product.slug || product.id}`}>
         <div className="relative h-64 overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50">
-          {productImage ? (
+          {usesInlineImage ? (
+            <img
+              src={resolvedImage}
+              alt={`${product.name} - Premium wildcrafted sea moss product`}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              onError={() => setImageError(true)}
+              loading="lazy"
+            />
+          ) : (
             <Image
-              src={imageError ? fallbackImage : productImage}
+              src={resolvedImage}
               alt={`${product.name} - Premium wildcrafted sea moss product`}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               onError={() => setImageError(true)}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-emerald-100 via-teal-50 to-emerald-50">
-              <div className="w-20 h-20 rounded-full bg-white/80 flex items-center justify-center shadow-sm">
-                <Sparkles className="h-10 w-10 text-emerald-500" />
-              </div>
-              <span className="mt-3 text-sm text-emerald-600/70 font-medium">Premium Product</span>
-            </div>
           )}
           
           {product.featured && (

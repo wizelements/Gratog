@@ -9,6 +9,8 @@ import {
   isValidIdempotencyKey 
 } from '@/lib/idempotency';
 
+const INTERNAL_REWARDS_TOKEN = process.env.MASTER_API_KEY || process.env.ADMIN_API_KEY || '';
+
 export async function POST(request) {
   try {
     const orderData = await request.json();
@@ -150,10 +152,18 @@ export async function POST(request) {
 
 // Helper function to award reward points with retry
 async function awardRewardPointsWithRetry(order) {
+  if (!INTERNAL_REWARDS_TOKEN) {
+    console.warn('Skipping reward points award: missing internal rewards token');
+    return { skipped: true };
+  }
+
   return retrySquareApi(async () => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rewards/add-points`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${INTERNAL_REWARDS_TOKEN}`
+      },
       body: JSON.stringify({
         email: order.customerEmail,
         points: order.rewardPointsEarned,

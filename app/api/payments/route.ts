@@ -13,6 +13,11 @@ import {
 import { rewardsSystem } from '@/lib/enhanced-rewards';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { consumeInventoryForPaidOrder } from '@/lib/custom-inventory';
+import { verifyRequestAuthentication } from '@/lib/rewards-security';
+import {
+  generateOrderAccessToken,
+  verifyOrderAccessToken,
+} from '@/lib/order-access-token';
 
 /**
  * Square Payments API - Web Payments SDK Integration
@@ -49,6 +54,35 @@ const FINAL_STATUSES = [...PAID_STATUSES, 'refunded', 'cancelled'];
 // Pre-payment states that are valid for starting a new payment
 const PRE_PAYMENT_STATES = ['pending', 'payment_failed'];
 
+const ORDER_ACCESS_TOKEN_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+function isInternalPrincipal(auth: any): boolean {
+  if (!auth?.authenticated) {
+    return false;
+  }
+
+  return (
+    auth.authType === 'master_key' ||
+    auth.authType === 'admin_key' ||
+    auth.userId === 'system' ||
+    auth.userId === 'admin'
+  );
+}
+
+function canAccessOrder(auth: any, order: any): boolean {
+  if (!auth?.authenticated || !order) {
+    return false;
+  }
+
+  if (isInternalPrincipal(auth)) {
+    return true;
+  }
+
+  const orderEmail = String(order.customer?.email || order.customerEmail || '').trim().toLowerCase();
+  const userEmail = String(auth.userEmail || '').trim().toLowerCase();
+  return orderEmail.length > 0 && orderEmail === userEmail;
+}
+
 export async function POST(request: NextRequest) {
   const ctx = new RequestContext();
   const json = (payload: Record<string, unknown>, status = 200) =>
@@ -62,11 +96,17 @@ export async function POST(request: NextRequest) {
       currency = 'USD',
       orderId,
       squareOrderId: existingSquareOrderId,
+      orderAccessToken: orderAccessTokenFromBody,
+      token: orderAccessTokenAlias,
       customer,
       lineItems = [],
       idempotencyKey: clientIdempotencyKey,
       metadata = {}
     } = body;
+    const orderAccessTokenInput = String(
+      orderAccessTokenFromBody || orderAccessTokenAlias || ''
+    ).trim();
+    const auth = (await verifyRequestAuthentication(request, { allowPublic: true })) as any;
     
     // ========================================================================
     // VALIDATION: Required fields
@@ -81,6 +121,17 @@ export async function POST(request: NextRequest) {
 
     if (!orderId) {
       return json({ success: false, error: 'Order ID is required for payment processing' }, 400);
+    }
+
+    if (!orderAccessTokenInput && !auth?.authenticated) {
+      return json(
+        {
+          success: false,
+          error: 'Unauthorized',
+          code: 'UNAUTHORIZED_PAYMENT_ACCESS',
+        },
+        401
+      );
     }
     
     logger.debug('API', 'Payment request received', {
@@ -117,46 +168,6 @@ export async function POST(request: NextRequest) {
     }
     
     // ========================================================================
-    // FIX #2: CHECK FOR EXISTING SUCCESSFUL PAYMENT
-    // Prevents double-charges if previous attempt succeeded but response failed
-    // ========================================================================
-    try {
-      const existingPayment = await db.collection('payments').findOne({
-        'metadata.orderId': orderId,
-        status: { $in: ['COMPLETED', 'APPROVED'] }
-      });
-      
-      if (existingPayment) {
-        logger.info('API', 'Returning existing successful payment (idempotency protection)', {
-          traceId: ctx.traceId,
-          orderId,
-          existingPaymentId: existingPayment.squarePaymentId
-        });
-        
-        return json({
-          success: true,
-          payment: {
-            id: existingPayment.squarePaymentId,
-            status: existingPayment.status,
-            amountCents: existingPayment.amountCents,
-            currency: existingPayment.currency || 'USD',
-            receiptUrl: existingPayment.receiptUrl,
-            cardLast4: existingPayment.cardLast4,
-            cardBrand: existingPayment.cardBrand
-          },
-          orderId,
-          message: 'Payment already completed for this order',
-          _cached: true
-        });
-      }
-    } catch (paymentLookupError) {
-      // Non-blocking - continue with payment attempt
-      logger.warn('API', 'Payment lookup failed, continuing', { 
-        error: paymentLookupError instanceof Error ? paymentLookupError.message : String(paymentLookupError) 
-      });
-    }
-    
-    // ========================================================================
     // FIX #3: FETCH ORDER (fail fast if not found)
     // No more orphan payments - order MUST exist
     // ========================================================================
@@ -183,6 +194,91 @@ export async function POST(request: NextRequest) {
         },
         404
       );
+    }
+
+    const resolvedOrderId = String(order.id || orderId);
+    const tokenClaims = verifyOrderAccessToken(orderAccessTokenInput, {
+      expectedOrderId: resolvedOrderId,
+      expectedEmail: order.customer?.email || order.customerEmail || null,
+    });
+
+    if (!tokenClaims && !canAccessOrder(auth, order)) {
+      logger.warn('API', 'Unauthorized payment attempt blocked', {
+        traceId: ctx.traceId,
+        orderId: resolvedOrderId,
+        authType: auth?.authType || 'public',
+        hasToken: Boolean(orderAccessTokenInput),
+      });
+      return json(
+        {
+          success: false,
+          error: 'Unauthorized',
+          code: 'UNAUTHORIZED_PAYMENT_ACCESS',
+        },
+        401
+      );
+    }
+
+    // ========================================================================
+    // FIX #2: CHECK FOR EXISTING SUCCESSFUL PAYMENT
+    // Prevents double-charges if previous attempt succeeded but response failed
+    // ========================================================================
+    try {
+      let existingPayment = await db.collection('payment_records').findOne({
+        'metadata.orderId': resolvedOrderId,
+        status: { $in: ['COMPLETED', 'APPROVED'] }
+      });
+
+      // Migration fallback for historical records.
+      if (!existingPayment) {
+        existingPayment = await db.collection('payments').findOne({
+          'metadata.orderId': resolvedOrderId,
+          status: { $in: ['COMPLETED', 'APPROVED'] }
+        });
+      }
+
+      if (existingPayment) {
+        logger.info('API', 'Returning existing successful payment (idempotency protection)', {
+          traceId: ctx.traceId,
+          orderId: resolvedOrderId,
+          existingPaymentId: existingPayment.squarePaymentId
+        });
+
+        const existingOrderAccessToken = generateOrderAccessToken({
+          orderId: resolvedOrderId,
+          customerEmail:
+            order.customer?.email ||
+            order.customerEmail ||
+            existingPayment.metadata?.customerEmail ||
+            customer?.email,
+          ttlMs: ORDER_ACCESS_TOKEN_TTL_MS,
+        });
+
+        return json({
+          success: true,
+          payment: {
+            id: existingPayment.squarePaymentId,
+            status: existingPayment.status,
+            amountCents: existingPayment.amountCents,
+            currency: existingPayment.currency || 'USD',
+            receiptUrl: existingPayment.receiptUrl,
+            cardLast4: existingPayment.cardLast4,
+            cardBrand: existingPayment.cardBrand
+          },
+          orderId: resolvedOrderId,
+          orderAccessToken: existingOrderAccessToken,
+          orderAccessTokenExpiresAt: existingOrderAccessToken
+            ? new Date(Date.now() + ORDER_ACCESS_TOKEN_TTL_MS).toISOString()
+            : null,
+          message: 'Payment already completed for this order',
+          _cached: true
+        });
+      }
+    } catch (paymentLookupError) {
+      // Non-blocking - continue with payment attempt
+      logger.warn('API', 'Payment lookup failed, continuing', {
+        error: paymentLookupError instanceof Error ? paymentLookupError.message : String(paymentLookupError)
+      });
     }
     
     // ========================================================================
@@ -760,6 +856,12 @@ export async function POST(request: NextRequest) {
     // ========================================================================
     // SUCCESS RESPONSE
     // ========================================================================
+    const orderAccessToken = generateOrderAccessToken({
+      orderId,
+      customerEmail: customerInfo?.email || order.customer?.email,
+      ttlMs: ORDER_ACCESS_TOKEN_TTL_MS,
+    });
+
     return json({
       success: true,
       payment: {
@@ -774,6 +876,10 @@ export async function POST(request: NextRequest) {
       },
       orderId,
       orderNumber: order.orderNumber,
+      orderAccessToken,
+      orderAccessTokenExpiresAt: orderAccessToken
+        ? new Date(Date.now() + ORDER_ACCESS_TOKEN_TTL_MS).toISOString()
+        : null,
       message: 'Payment processed successfully'
     });
     
@@ -812,12 +918,19 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const paymentId = searchParams.get('paymentId');
     const orderId = searchParams.get('orderId');
+    const orderAccessToken = searchParams.get('token');
     
     if (!paymentId && !orderId) {
       return json({ error: 'Payment ID or Order ID is required' }, 400);
     }
 
+    const auth = await verifyRequestAuthentication(request, { allowPublic: true });
+
     if (paymentId) {
+      if (!isInternalPrincipal(auth)) {
+        return json({ error: 'Unauthorized' }, 401);
+      }
+
       const result = await getSquarePayment(paymentId);
       if (!result.success) {
         return json({ error: 'Payment not found' }, 404);
@@ -846,6 +959,29 @@ export async function GET(request: NextRequest) {
         return json({ error: 'Order not found' }, 404);
       }
 
+      const tokenClaims = verifyOrderAccessToken(orderAccessToken, {
+        expectedOrderId: orderId,
+        expectedEmail: order.customer?.email || null,
+      });
+
+      const authorized = Boolean(tokenClaims) || canAccessOrder(auth, order);
+      if (!authorized) {
+        return json({ error: 'Unauthorized' }, 401);
+      }
+
+      let paymentRecord = await db.collection('payment_records').findOne(
+        { 'metadata.orderId': orderId },
+        { sort: { createdAt: -1 } }
+      );
+
+      // Migration fallback for older records.
+      if (!paymentRecord) {
+        paymentRecord = await db.collection('payments').findOne(
+          { 'metadata.orderId': orderId },
+          { sort: { createdAt: -1 } }
+        );
+      }
+
       return json({
         success: true,
         order: {
@@ -853,10 +989,23 @@ export async function GET(request: NextRequest) {
           orderNumber: order.orderNumber,
           status: order.status,
           paymentStatus: order.paymentStatus,
-          squarePaymentId: order.squarePaymentId,
           paidAt: order.paidAt,
-          receiptUrl: order.receiptUrl
-        }
+          receiptUrl:
+            order.receiptUrl ||
+            paymentRecord?.receiptUrl ||
+            order.payment?.receiptUrl ||
+            null,
+        },
+        payment: paymentRecord
+          ? {
+              status: paymentRecord.status,
+              amountCents: paymentRecord.amountCents,
+              currency: paymentRecord.currency || 'USD',
+              receiptUrl: paymentRecord.receiptUrl,
+              cardLast4: paymentRecord.cardLast4,
+              cardBrand: paymentRecord.cardBrand,
+            }
+          : undefined,
       });
     }
 

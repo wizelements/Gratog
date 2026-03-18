@@ -4,8 +4,13 @@ module.exports = {
   generateRobotsTxt: true,
   generateIndexSitemap: true,
   exclude: [
+    '/admin',
     '/admin/*',
+    '/api',
     '/api/*',
+    '/robots.txt',
+    '/sitemap.xml',
+    '/server-sitemap.xml',
     '/test-auth',
     '/diagnostic'
   ],
@@ -14,12 +19,12 @@ module.exports = {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin', '/api', '/test-auth', '/diagnostic'],
+        disallow: ['/admin', '/admin/*', '/api', '/api/*', '/test-auth', '/diagnostic'],
       },
       {
         userAgent: 'Googlebot',
         allow: '/',
-        disallow: ['/admin', '/api'],
+        disallow: ['/admin', '/admin/*', '/api', '/api/*'],
         crawlDelay: 0,
       },
     ],

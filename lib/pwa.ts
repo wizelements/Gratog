@@ -12,7 +12,7 @@ let serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
 let updateCheckTimer: ReturnType<typeof setInterval> | null = null;
 let hasServiceWorkerMessageListener = false;
 let hasControllerChangeListener = false;
-const SERVICE_WORKER_VERSION = '20260309-2';
+const SERVICE_WORKER_VERSION = '20260310-1';
 const SERVICE_WORKER_URL = `/sw.js?v=${SERVICE_WORKER_VERSION}`;
 
 /**

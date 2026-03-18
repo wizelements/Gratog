@@ -56,6 +56,11 @@ console.log('-' .repeat(60));
 
 const layoutPath = path.join(projectRoot, 'app/layout.js');
 const layoutContent = fs.readFileSync(layoutPath, 'utf-8');
+const hasLegacyFallbackPosition = layoutContent.match(/fallback\s*=\s*{[^}]*bottom-4.*right-4.*z-50/);
+const hasSafeAreaFallbackPosition =
+  layoutContent.includes('bottom-[calc(1rem+env(safe-area-inset-bottom))]') &&
+  layoutContent.includes('left-4') &&
+  (layoutContent.includes('z-[9999]') || layoutContent.includes('z-50'));
 
 check(
   'MusicProvider is NOT directly imported',
@@ -82,9 +87,9 @@ check(
 );
 
 check(
-  'Suspense fallback has bottom-4 right-4 z-50',
-  layoutContent.match(/fallback\s*=\s*{[^}]*bottom-4.*right-4.*z-50/),
-  'Fallback should have bottom-4, right-4, z-50 classes'
+  'Suspense fallback has anchored positioning + z-index',
+  hasLegacyFallbackPosition || hasSafeAreaFallbackPosition,
+  'Fallback should use either legacy bottom-4/right-4/z-50 or safe-area left anchor + high z-index classes'
 );
 
 check(
@@ -183,24 +188,35 @@ check(
 console.log('\n🎨 Button Styling Checks');
 console.log('-' .repeat(60));
 
-const hasFixedPositioning = musicControlsContent.includes('fixed bottom-4 right-4 z-50');
+const hasLegacyFixedPositioning = musicControlsContent.includes('fixed bottom-4 right-4 z-50');
+const hasSafeAreaFixedPositioning =
+  musicControlsContent.includes('className="fixed') &&
+  musicControlsContent.includes('bottom-[calc(1rem+env(safe-area-inset-bottom))]') &&
+  musicControlsContent.includes('left-4') &&
+  (musicControlsContent.includes('z-[9999]') || musicControlsContent.includes('z-50'));
+const hasHighZIndex = musicControlsContent.includes('z-[9999]') || musicControlsContent.includes('z-50');
+const hasLegacyColorStyling =
+  musicControlsContent.includes('bg-green-500') || musicControlsContent.includes('bg-blue-500');
+const hasGradientColorStyling =
+  musicControlsContent.includes('currentTrack.gradient') &&
+  musicControlsContent.includes('from-gray-800 to-gray-900');
 
 check(
   'Music button has fixed positioning',
-  hasFixedPositioning,
-  'Main button should have className="fixed bottom-4 right-4 z-50"'
+  hasLegacyFixedPositioning || hasSafeAreaFixedPositioning,
+  'Main button should be fixed with anchored positioning (legacy right anchor or safe-area left anchor)'
 );
 
 check(
-  'Button has z-50 to avoid overlap',
-  musicControlsContent.includes('z-50'),
-  'z-50 in Tailwind prevents being hidden by other elements'
+  'Button has high z-index to avoid overlap',
+  hasHighZIndex,
+  'Music controls should include z-50 or z-[9999] to stay above page content'
 );
 
 check(
-  'Button has proper colors',
-  musicControlsContent.includes('bg-green-500') || musicControlsContent.includes('bg-blue-500'),
-  'Should have conditional styling: bg-green-500 (playing) or bg-blue-500 (paused)'
+  'Button has state-based colors',
+  hasLegacyColorStyling || hasGradientColorStyling,
+  'Should have distinct visual states for playing/idle (legacy solid colors or gradient track theme + idle gradient)'
 );
 
 // ==================== CHECK 7: Accessibility ====================

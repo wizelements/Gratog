@@ -17,6 +17,8 @@ export interface OrderResponse {
     paymentStatus?: string;
     squareOrderId?: string;
     squareCustomerId?: string;
+    orderAccessToken?: string | null;
+    orderAccessTokenExpiresAt?: string | null;
     pricing: {
       subtotal: number;
       deliveryFee: number;

@@ -13,12 +13,27 @@
  */
 
 const results = [];
+const STRICT_PAYMENT_VALIDATION =
+  process.env.CI === 'true' || process.env.REQUIRE_PAYMENT_SECRETS === 'true';
 
 function log(result) {
   results.push(result);
   const icon = result.status === 'pass' ? '✓' : result.status === 'fail' ? '✗' : '⚠';
   const color = result.status === 'pass' ? '\x1b[32m' : result.status === 'fail' ? '\x1b[31m' : '\x1b[33m';
   console.log(`${color}${icon}\x1b[0m ${result.check}: ${result.message}`);
+}
+
+function logMissingCredential(check, description) {
+  if (STRICT_PAYMENT_VALIDATION) {
+    log({ check, status: 'fail', message: `Missing! ${description} is required`, fatal: true });
+    return;
+  }
+
+  log({
+    check,
+    status: 'warn',
+    message: `Missing in local environment. Set ${check} (or REQUIRE_PAYMENT_SECRETS=true) to enforce full credential validation.`,
+  });
 }
 
 function validateEnvironmentVariables() {
@@ -37,7 +52,7 @@ function validateEnvironmentVariables() {
   for (const v of requiredVars) {
     const value = process.env[v.name];
     if (!value) {
-      log({ check: v.name, status: 'fail', message: `Missing! ${v.description} is required`, fatal: true });
+      logMissingCredential(v.name, v.description);
     } else {
       log({ check: v.name, status: 'pass', message: `Set (${value.slice(0, 8)}...)` });
     }
@@ -101,7 +116,15 @@ async function validateSquareConnectivity() {
   const envSetting = process.env.SQUARE_ENVIRONMENT || 'production';
 
   if (!accessToken || !locationId) {
-    log({ check: 'API Connectivity', status: 'fail', message: 'Cannot test - missing credentials', fatal: true });
+    if (STRICT_PAYMENT_VALIDATION) {
+      log({ check: 'API Connectivity', status: 'fail', message: 'Cannot test - missing credentials', fatal: true });
+    } else {
+      log({
+        check: 'API Connectivity',
+        status: 'warn',
+        message: 'Skipped in local environment because payment credentials are not set.',
+      });
+    }
     return;
   }
 
@@ -169,7 +192,15 @@ function validateWebPaymentsSetup() {
   const applicationId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID;
   
   if (!applicationId) {
-    log({ check: 'Web SDK Setup', status: 'fail', message: 'Missing NEXT_PUBLIC_SQUARE_APPLICATION_ID', fatal: true });
+    if (STRICT_PAYMENT_VALIDATION) {
+      log({ check: 'Web SDK Setup', status: 'fail', message: 'Missing NEXT_PUBLIC_SQUARE_APPLICATION_ID', fatal: true });
+    } else {
+      log({
+        check: 'Web SDK Setup',
+        status: 'warn',
+        message: 'Skipped in local environment because NEXT_PUBLIC_SQUARE_APPLICATION_ID is not set.',
+      });
+    }
     return;
   }
 
@@ -229,6 +260,11 @@ async function main() {
   console.log('\n' + '='.repeat(60));
   console.log('🔍 PRE-DEPLOYMENT PAYMENT VALIDATION');
   console.log('='.repeat(60));
+
+  if (!STRICT_PAYMENT_VALIDATION) {
+    console.log('ℹ️  Running in local mode (missing payment credentials are warnings).');
+    console.log('   Set REQUIRE_PAYMENT_SECRETS=true to enforce strict credential checks.\n');
+  }
 
   validateEnvironmentVariables();
   validateCredentialFormats();

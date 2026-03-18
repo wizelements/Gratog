@@ -1,5 +1,4 @@
-import { NextResponse } from 'next/server';
-import RewardsSystem from '@/lib/rewards';
+import SecureRewardsSystem from '@/lib/rewards-secure';
 import { connectToDatabase } from '@/lib/db-optimized';
 import {
   verifyRequestAuthentication,
@@ -10,6 +9,7 @@ import {
   createSecureResponse,
   checkStampRateLimit,
   generateIdempotencyKey,
+  resolveCsrfSessionId,
   verifyCsrfToken
 } from '@/lib/rewards-security';
 import { FraudDetectionSystem } from '@/lib/rewards-fraud-detection';
@@ -51,14 +51,19 @@ export async function POST(request) {
     // 1.5 CSRF PROTECTION - Verify CSRF token
     // ====================================================================
     const csrfToken = request.headers.get('x-csrf-token');
-    const cookies = request.headers.get('cookie') || '';
-    const sessionMatch = cookies.match(/(?:next-auth\.session-token|customer_email)=([^;]+)/);
-    const sessionId = sessionMatch 
-      ? decodeURIComponent(sessionMatch[1]).substring(0, 32)
-      : request.headers.get('x-forwarded-for')?.split(',')[0] || 'anonymous';
+    const sessionId = resolveCsrfSessionId(request, auth);
     
-    // CSRF is optional in development but required in production for POST requests
-    if (process.env.NODE_ENV === 'production' && csrfToken) {
+    if (process.env.NODE_ENV === 'production' && !csrfToken) {
+      await AuditLogger.logSecurityEvent('csrf_missing', { userEmail });
+      return createErrorResponse(
+        'CSRF token required - please refresh and try again',
+        403,
+        new Error('Missing CSRF token')
+      );
+    }
+
+    // CSRF is optional in development but validated whenever provided.
+    if (csrfToken) {
       if (!verifyCsrfToken(csrfToken, sessionId)) {
         await AuditLogger.logSecurityEvent('csrf_invalid', { userEmail });
         return createErrorResponse(
@@ -91,7 +96,7 @@ export async function POST(request) {
       );
     }
 
-    const { email, passportId, marketName, activityType, idempotencyKey } =
+    const { email, marketName, activityType, idempotencyKey } =
       validation.data;
 
     // ====================================================================
@@ -161,44 +166,43 @@ export async function POST(request) {
     const { db } = await connectToDatabase();
     let passport = await db.collection('passports').findOne({ customerEmail: stampEmail });
 
+    // Legacy fallback while older documents are migrated.
     if (!passport) {
-      // Create new passport if doesn't exist
-      const newPassport = {
-        id: generateIdempotencyKey(),
-        customerEmail: stampEmail,
-        customerName: null,
-        stamps: [],
-        totalStamps: 0,
-        vouchers: [],
-        level: 'Explorer',
-        xpPoints: 0,
-        createdAt: new Date(),
-        lastActivity: new Date()
-      };
+      passport = await db.collection('passports').findOne({ email: stampEmail });
+    }
 
-      await db.collection('passports').insertOne(newPassport);
-      passport = newPassport;
+    if (!passport) {
+      passport = await SecureRewardsSystem.createPassport(
+        stampEmail,
+        null,
+        `passport_${stampEmail}_${Date.now()}`
+      );
     }
 
     // ====================================================================
     // 6. ADD STAMP - Use secure transaction-safe method
     // ====================================================================
-    const result = await RewardsSystem.addStamp(
-      passport.id,
+    const passportIdentifier = passport?._id?.toString?.() || passport?.id;
+    if (!passportIdentifier) {
+      return createErrorResponse('Passport record is invalid', 500, new Error('Missing passport identifier'));
+    }
+
+    const result = await SecureRewardsSystem.addStamp(
+      passportIdentifier,
       marketName,
-      activityType
+      activityType,
+      idempotencyKey
     );
 
-    // Award any new vouchers
-    if (result.rewards && result.rewards.length > 0) {
-      const vouchers = await RewardsSystem.awardVouchers(passport.id, result.rewards);
-      result.newVouchers = vouchers;
-      
+    if (result.awardedVouchers && result.awardedVouchers.length > 0) {
       // Log voucher issuance
-      for (const voucher of vouchers) {
+      for (const voucher of result.awardedVouchers) {
         await AuditLogger.logVoucherIssued(userEmail, voucher.type, voucher.code);
       }
     }
+
+    const refreshedPassport = await SecureRewardsSystem.getPassportByEmail(stampEmail);
+    const safePassport = refreshedPassport || result.passport;
 
     // Log successful stamp
     await AuditLogger.logStampCreated(userEmail, marketName, result.stamp.xpValue);
@@ -228,10 +232,10 @@ export async function POST(request) {
         expiresAt: r.expiresAt
       })),
       passport: {
-        totalStamps: result.passport.totalStamps,
-        xpPoints: result.passport.xpPoints,
-        level: result.passport.level,
-        vouchersCount: result.passport.vouchers.length
+        totalStamps: safePassport.totalStamps,
+        xpPoints: safePassport.xpPoints,
+        level: safePassport.level,
+        vouchersCount: Array.isArray(safePassport.vouchers) ? safePassport.vouchers.length : 0
       },
       rateLimitInfo: {
         remaining: rateLimit.remainingToday,

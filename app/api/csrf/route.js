@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
-import { generateCsrfToken, verifyRequestAuthentication } from '@/lib/rewards-security';
+import {
+  generateCsrfToken,
+  resolveCsrfSessionId,
+  verifyRequestAuthentication,
+} from '@/lib/rewards-security';
 
 /**
  * GET /api/csrf - Get a new CSRF token for authenticated users
@@ -11,15 +15,8 @@ import { generateCsrfToken, verifyRequestAuthentication } from '@/lib/rewards-se
  */
 export async function GET(request) {
   try {
-    // Get session identifier (cookie-based for consistency)
-    const cookies = request.headers.get('cookie') || '';
-    const sessionMatch = cookies.match(/(?:next-auth\.session-token|customer_email)=([^;]+)/);
-    
-    // Allow CSRF token generation even without auth (for forms before login)
-    // But include session binding when available
-    const sessionId = sessionMatch 
-      ? decodeURIComponent(sessionMatch[1]).substring(0, 32)
-      : request.headers.get('x-forwarded-for')?.split(',')[0] || 'anonymous';
+    const auth = await verifyRequestAuthentication(request, { allowPublic: true });
+    const sessionId = resolveCsrfSessionId(request, auth);
     
     const csrfToken = generateCsrfToken(sessionId);
     

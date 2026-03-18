@@ -9,9 +9,19 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 
+const MAX_ORDER_FETCH_ATTEMPTS = 12;
+const PENDING_ORDER_STATUSES = new Set(['DRAFT', 'PENDING', 'pending', 'payment_processing', 'processing']);
+
+function getRetryDelayMs(attempt) {
+  const baseDelay = 1200;
+  const exponent = Math.min(attempt, 6);
+  return Math.min(Math.round(baseDelay * (1.5 ** exponent)), 10000);
+}
+
 export default function OrderSuccessPage() {
   const searchParams = useSearchParams();
   const orderRef = searchParams.get('orderRef') || searchParams.get('orderId'); // Support both for backward compatibility
+  const orderAccessToken = searchParams.get('token');
   const isPaidFromUrl = searchParams.get('paid') === 'true';
   const amountFromUrl = searchParams.get('amount') ? parseInt(searchParams.get('amount'), 10) : null;
   
@@ -27,47 +37,58 @@ export default function OrderSuccessPage() {
       setError('No order reference provided');
       setLoading(false);
     }
-  }, [orderRef]);
+  }, [orderRef, orderAccessToken]);
 
   const fetchOrderDetails = async (attempt = 0) => {
     try {
+      const requestParams = new URLSearchParams({ orderRef });
+      if (orderAccessToken) {
+        requestParams.set('token', orderAccessToken);
+      }
+
       // Use stateless orderRef endpoint (no cookies required)
-      const response = await fetch(`/api/orders/by-ref?orderRef=${orderRef}`, {
+      const response = await fetch(`/api/orders/by-ref?${requestParams.toString()}`, {
         credentials: 'omit' // Explicitly no cookies
       });
       
       if (!response.ok) {
-        if (response.status === 404 && attempt < 5) {
-          // Webhook race condition - poll for order (reduced from 10 to 5)
-          console.log(`Order not found yet, polling... (attempt ${attempt + 1}/5)`);
-          setPollAttempts(attempt + 1);
-          setTimeout(() => fetchOrderDetails(attempt + 1), 2000);
+        if (response.status === 401) {
+          throw new Error('Order access token is missing, invalid, or expired');
+        }
+
+        if (response.status === 404 && attempt < MAX_ORDER_FETCH_ATTEMPTS - 1) {
+          const nextAttempt = attempt + 1;
+          setPollAttempts(nextAttempt);
+          setTimeout(() => fetchOrderDetails(nextAttempt), getRetryDelayMs(nextAttempt));
           return;
         }
+
         throw new Error(`HTTP ${response.status}: Order not found`);
       }
       
       const data = await response.json();
       
-      // If order is still DRAFT/PENDING, poll for completion (webhook race) - reduced from 20 to 3
-      if (['DRAFT', 'PENDING', 'pending'].includes(data.status) && attempt < 3) {
-        console.log(`Order status: ${data.status}, polling for completion... (attempt ${attempt + 1}/3)`);
-        setPollAttempts(attempt + 1);
+      // Poll for status transitions while Square settlement/webhooks finalize.
+      if (PENDING_ORDER_STATUSES.has(data.status) && attempt < MAX_ORDER_FETCH_ATTEMPTS - 1) {
+        const nextAttempt = attempt + 1;
+        setPollAttempts(nextAttempt);
         setOrder(data); // Show what we have so far
-        setTimeout(() => fetchOrderDetails(attempt + 1), 2500);
+        setTimeout(() => fetchOrderDetails(nextAttempt), getRetryDelayMs(nextAttempt));
         return;
       }
       
       setOrder(data);
+      setError(null);
       setLoading(false);
       
     } catch (err) {
       console.error('Order fetch error:', err);
       
-      // Retry on network errors (reduced from 5 to 3)
-      if (attempt < 3) {
-        console.log(`Network error, retrying... (attempt ${attempt + 1}/3)`);
-        setTimeout(() => fetchOrderDetails(attempt + 1), 2500);
+      // Retry transient failures with backoff to avoid false negatives during delayed settlement.
+      if (attempt < MAX_ORDER_FETCH_ATTEMPTS - 1) {
+        const nextAttempt = attempt + 1;
+        setPollAttempts(nextAttempt);
+        setTimeout(() => fetchOrderDetails(nextAttempt), getRetryDelayMs(nextAttempt));
         return;
       }
       
@@ -86,7 +107,7 @@ export default function OrderSuccessPage() {
           </p>
           {pollAttempts > 0 && (
             <p className="text-sm text-gray-500">
-              Processing payment confirmation ({pollAttempts}/20)
+              Processing payment confirmation ({pollAttempts}/{MAX_ORDER_FETCH_ATTEMPTS})
             </p>
           )}
         </div>

@@ -9,21 +9,25 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import QuickAddButton from '@/components/QuickAddButton';
 import { ArrowRight, Sparkles, Star, Shield, Zap, TrendingUp, Heart, Leaf, Droplets, Award, Users, CheckCircle, ChevronDown } from 'lucide-react';
-import { toast } from 'sonner';
-import { getDemoProducts } from '@/lib/demo-products';
 import { ProductImage } from '@/components/OptimizedImage';
+import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
+import { getCanonicalProductCategoryIcon, getCanonicalProductCategoryLabel } from '@/lib/storefront-query';
 import ProductBundles from '@/components/ProductBundles';
 import WhyUsComparison from '@/components/WhyUsComparison';
 import { JsonLd } from '@/components/JsonLd';
 
 export default function HomePageClient({
     initialFeaturedProducts = [],
+    initialCatalogCount = null,
     organizationSchema,
     faqSchema,
     socialProof = { customers: 'Growing Daily', reviews: 'Fresh Feedback', averageRating: '4.9 / 5.0' }
 }) {
     const router = useRouter();
     const [featuredProducts, setFeaturedProducts] = useState(initialFeaturedProducts);
+    const [catalogProductCount, setCatalogProductCount] = useState(
+        typeof initialCatalogCount === 'number' ? initialCatalogCount : null
+    );
     const [loading, setLoading] = useState(initialFeaturedProducts.length === 0);
     const [activeAccordion, setActiveAccordion] = useState(null);
     const heroRef = useRef(null);
@@ -56,11 +60,11 @@ export default function HomePageClient({
         const fetchProducts = async () => {
             // Set a 10 second timeout to prevent infinite loading
             const timeoutId = setTimeout(() => {
-                console.warn('Products API timeout - using fallback');
+                console.warn('Products API timeout - showing temporary empty state');
                 setLoading(false);
-                const demoProducts = getDemoProducts();
-                setFeaturedProducts(demoProducts.slice(0, 6));
-            }, 10000);
+                setCatalogProductCount(0);
+                setFeaturedProducts([]);
+              }, 10000);
 
             try {
                 // Create abort signal with fallback for older browsers
@@ -80,17 +84,24 @@ export default function HomePageClient({
 
                 if (data.success && data.products) {
                     setFeaturedProducts(data.products.slice(0, 6));
+                    const hasDemoSource = typeof data.source === 'string' && data.source.includes('demo');
+                    if (hasDemoSource) {
+                        setCatalogProductCount(null);
+                    } else if (typeof data.count === 'number') {
+                        setCatalogProductCount(data.count);
+                    } else {
+                        setCatalogProductCount(data.products.length || null);
+                    }
                 }
             } catch (error) {
                 clearTimeout(timeoutId);
                 console.error('Failed to fetch products:', error);
-                // Use demo products as fallback instead of showing error
-                const demoProducts = getDemoProducts();
-                setFeaturedProducts(demoProducts.slice(0, 6));
-            } finally {
+                setCatalogProductCount(0);
+                setFeaturedProducts([]);
+              } finally {
                 setLoading(false);
             }
-        };
+          };
 
         fetchProducts();
     }, [initialFeaturedProducts]);
@@ -131,6 +142,19 @@ export default function HomePageClient({
         return () => observer.disconnect();
     }, [loading]);
 
+    const hasLiveCatalogCount = Number.isFinite(catalogProductCount) && catalogProductCount > 0;
+    const heroCatalogBadge = hasLiveCatalogCount
+        ? `${catalogProductCount} Premium Products Available`
+        : 'Premium Wellness Collection';
+    const viewAllProductsLabel = hasLiveCatalogCount
+        ? `View All ${catalogProductCount} Products`
+        : 'View All Products';
+
+    const averageRatingText = typeof socialProof?.averageRating === 'string'
+        ? socialProof.averageRating
+        : '4.9 / 5.0';
+    const primaryAverageRating = averageRatingText.split('/')[0].trim();
+
     return (
         <div className="flex flex-col min-h-screen">
             <JsonLd id="home-organization-schema" data={organizationSchema} />
@@ -155,7 +179,7 @@ export default function HomePageClient({
                 <div className="relative z-10 container text-center text-white animate-fade-in text-on-gradient">
                     <Badge className="mb-6 bg-white/20 backdrop-blur-sm text-white border-white/30 px-6 py-2 text-lg">
                         <Sparkles className="mr-2 h-5 w-5" />
-                        29 Premium Products Available
+                        {heroCatalogBadge}
                     </Badge>
 
                     <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white">
@@ -247,28 +271,27 @@ export default function HomePageClient({
 
                     {!loading && featuredProducts.length > 0 && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                            {featuredProducts.map((product) => (
-                                <Card
-                                    key={product.id}
-                                    className="group overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-emerald-300"
-                                >
-                                    <CardContent className="p-0">
-                                        <Link href={`/product/${product.slug || product.id}`} className="block">
-                                            <div className="relative h-64 bg-gradient-to-br from-emerald-100 to-teal-100 overflow-hidden">
-                                                {product.image || product.images?.[0] ? (
+                            {featuredProducts.map((product, index) => {
+                                const cardImage = product.image || PRODUCT_IMAGE_FALLBACK_SRC;
+                                const categoryLabel = getCanonicalProductCategoryLabel(product, 'Premium Product');
+                                const categoryIcon = getCanonicalProductCategoryIcon(product, '🌿');
+
+                                return (
+                                    <Card
+                                        key={product.id}
+                                        className="group overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-emerald-300"
+                                    >
+                                        <CardContent className="p-0">
+                                            <Link href={`/product/${product.slug || product.id}`} className="block">
+                                                <div className="relative h-64 bg-gradient-to-br from-emerald-100 to-teal-100 overflow-hidden">
                                                     <ProductImage
-                                                        src={product.image || product.images[0]}
+                                                        src={cardImage}
                                                         alt={product.name}
                                                         fill
-                                                        priority={featuredProducts.indexOf(product) < 3}
+                                                        priority={index < 3}
                                                         className="group-hover:scale-110 group-hover:rotate-2 transition-all duration-500"
                                                         objectFit="cover"
                                                     />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center">
-                                                        <Sparkles className="h-16 w-16 text-emerald-600 group-hover:scale-125 transition-transform" />
-                                                    </div>
-                                                )}
 
                                                 {/* Hover Overlay */}
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -276,12 +299,9 @@ export default function HomePageClient({
                                                         <p className="text-sm font-semibold mb-2">Quick View</p>
                                                         <div className="flex gap-2">
                                                             <Badge className="bg-white/20 backdrop-blur-sm border-white/40">View Details</Badge>
-                                                            {product.category && (
+                                                            {categoryLabel && (
                                                                 <Badge className="bg-white/20 backdrop-blur-sm border-white/40">
-                                                                    {product.category === 'gel' ? '🥄 Sea Moss Gel' :
-                                                                        product.category === 'lemonade' ? '🍋 Lemonade' :
-                                                                            product.category === 'shot' ? '💪 Wellness Shot' :
-                                                                                product.category === 'juice' ? '🧃 Juice' : product.category}
+                                                                    {categoryIcon} {categoryLabel}
                                                                 </Badge>
                                                             )}
                                                         </div>
@@ -293,15 +313,11 @@ export default function HomePageClient({
                                                     Best Seller
                                                 </Badge>
                                             </div>
-                                        </Link>
+                                            </Link>
 
-                                        <div className="p-6">
+                                            <div className="p-6">
                                             <p className="text-sm text-emerald-600 font-medium mb-2">
-                                                {product.category === 'gel' ? 'Sea Moss Gel' :
-                                                    product.category === 'lemonade' ? 'Lemonade' :
-                                                        product.category === 'shot' ? 'Wellness Shot' :
-                                                            product.category === 'juice' ? 'Juice' :
-                                                                'Premium Product'}
+                                                {categoryLabel}
                                             </p>
 
                                             <Link href={`/product/${product.slug || product.id}`}>
@@ -311,7 +327,7 @@ export default function HomePageClient({
                                             </Link>
 
                                             <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                                                {product.description || 'Premium wildcrafted sea moss product, rich in essential minerals for optimal wellness.'}
+                                                {product.description || 'Product details are being updated.'}
                                             </p>
 
                                             <div className="flex items-center gap-1 mb-4">
@@ -321,7 +337,6 @@ export default function HomePageClient({
                                                         className="h-4 w-4 text-yellow-500 fill-yellow-500"
                                                     />
                                                 ))}
-                                                <span className="text-sm text-gray-600 ml-1">(124)</span>
                                             </div>
 
                                             <div className="flex items-center justify-between">
@@ -333,10 +348,11 @@ export default function HomePageClient({
 
                                                 <QuickAddButton product={product} />
                                             </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
                         </div>
                     )}
 
@@ -346,7 +362,7 @@ export default function HomePageClient({
                             size="lg"
                             className="h-14 px-8 text-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg hover:shadow-xl hover:scale-105 transition-all"
                         >
-                            View All {!loading ? '29' : ''} Products
+                            {viewAllProductsLabel}
                             <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
                     </div>
@@ -520,8 +536,8 @@ export default function HomePageClient({
                             {[...Array(5)].map((_, i) => (
                                 <Star key={i} className="h-6 w-6 text-yellow-500 fill-yellow-500" />
                             ))}
-                            <span className="text-xl font-bold text-gray-900 ml-2">4.9</span>
-                            <span className="text-gray-600">/ 5.0 (verified customer reviews)</span>
+                            <span className="text-xl font-bold text-gray-900 ml-2">{primaryAverageRating}</span>
+                            <span className="text-gray-600">/ 5.0 (customer feedback)</span>
                         </div>
                     </div>
 

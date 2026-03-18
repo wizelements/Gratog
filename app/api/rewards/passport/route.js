@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
 import SecureRewardsSystem from '@/lib/rewards-secure';
+import { connectToDatabase } from '@/lib/db-optimized';
+import { rewardsSystem } from '@/lib/enhanced-rewards';
 import {
   verifyRequestAuthentication,
   PassportCreateSchema,
@@ -7,6 +8,71 @@ import {
   createErrorResponse,
   createSecureResponse
 } from '@/lib/rewards-security';
+
+function normalizeVoucher(voucher) {
+  return {
+    id: voucher?.id,
+    type: voucher?.type,
+    title: voucher?.title,
+    description: voucher?.description,
+    code: voucher?.code,
+    used: voucher?.used === true,
+    usedAt: voucher?.usedAt || null,
+    expiresAt: voucher?.expiresAt || null,
+    awardedAt: voucher?.awardedAt || null,
+    discountPercent: voucher?.discountPercent || null,
+    value: voucher?.value || null,
+  };
+}
+
+async function getUnifiedPassport(db, userEmail) {
+  const [passport, customerPassport] = await Promise.all([
+    db.collection('passports').findOne({ customerEmail: userEmail }),
+    db.collection('customer_passports').findOne({ email: userEmail }),
+  ]);
+
+  if (!passport && !customerPassport) {
+    return null;
+  }
+
+  const vouchers = Array.isArray(passport?.vouchers)
+    ? passport.vouchers.map(normalizeVoucher)
+    : [];
+  const activeVouchers = vouchers.filter((voucher) => {
+    if (voucher.used) {
+      return false;
+    }
+
+    if (!voucher.expiresAt) {
+      return true;
+    }
+
+    return new Date(voucher.expiresAt) > new Date();
+  });
+
+  return {
+    id: passport?._id?.toString() || customerPassport?.id || customerPassport?._id?.toString() || null,
+    email: userEmail,
+    customerEmail: userEmail,
+    name: passport?.customerName || customerPassport?.name || null,
+    customerName: passport?.customerName || customerPassport?.name || null,
+    level: passport?.level || customerPassport?.level || 'Explorer',
+    totalStamps: Number(passport?.totalStamps || 0),
+    xpPoints: Number(passport?.xpPoints || passport?.xp || 0),
+    points: Number(customerPassport?.points || 0),
+    totalPointsEarned: Number(customerPassport?.totalPointsEarned || customerPassport?.points || 0),
+    stamps: Array.isArray(passport?.stamps) ? passport.stamps : [],
+    vouchers,
+    vouchersCount: activeVouchers.length,
+    vouchersAvailable: activeVouchers.length,
+    vouchersTotal: vouchers.length,
+    recentActivities: Array.isArray(customerPassport?.activities)
+      ? customerPassport.activities.slice(-10)
+      : [],
+    createdAt: passport?.createdAt || customerPassport?.createdAt || null,
+    lastActivity: passport?.lastActivity || customerPassport?.updatedAt || null,
+  };
+}
 
 /**
  * CREATE PASSPORT - Secure Endpoint
@@ -52,14 +118,21 @@ export async function POST(request) {
       );
     }
 
-    // ====================================================================
-    // 4. CREATE PASSPORT - Use secure transaction-safe method
-    // ====================================================================
-    const passport = await SecureRewardsSystem.createPassport(
+    await SecureRewardsSystem.createPassport(
       userEmail,
       name,
       `passport_${userEmail}_${Date.now()}`
     );
+
+    // Keep enhanced passport model aligned while migration remains in flight.
+    await rewardsSystem.createOrGetPassport(userEmail, name || null, true);
+
+    const { db } = await connectToDatabase();
+    const unifiedPassport = await getUnifiedPassport(db, userEmail);
+
+    if (!unifiedPassport) {
+      return createErrorResponse('Failed to create passport', 500);
+    }
 
     // ====================================================================
     // 5. RETURN SECURE RESPONSE
@@ -67,12 +140,7 @@ export async function POST(request) {
     return createSecureResponse({
       success: true,
       message: 'Passport created successfully',
-      passport: {
-        totalStamps: passport.totalStamps,
-        xpPoints: passport.xpPoints,
-        level: passport.level,
-        vouchersCount: passport.vouchers.length
-      }
+      passport: unifiedPassport
     });
   } catch (error) {
     console.error('Passport creation error:', {
@@ -99,29 +167,16 @@ export async function GET(request) {
 
     const userEmail = auth.userEmail;
 
-    // ====================================================================
-    // 2. GET PASSPORT
-    // ====================================================================
-    const passport = await SecureRewardsSystem.getPassportByEmail(userEmail);
+    const { db } = await connectToDatabase();
+    const unifiedPassport = await getUnifiedPassport(db, userEmail);
 
-    if (!passport) {
+    if (!unifiedPassport) {
       return createErrorResponse('Passport not found', 404);
     }
 
-    // ====================================================================
-    // 3. RETURN SECURE RESPONSE
-    // ====================================================================
     return createSecureResponse({
       success: true,
-      passport: {
-        totalStamps: passport.totalStamps,
-        xpPoints: passport.xpPoints,
-        level: passport.level,
-        vouchersAvailable: passport.vouchers.filter(
-          v => !v.used && (!v.expiresAt || v.expiresAt > new Date())
-        ).length,
-        vouchersTotal: passport.vouchers.length
-      }
+      passport: unifiedPassport
     });
   } catch (error) {
     console.error('Get passport error:', error);

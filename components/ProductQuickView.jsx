@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { X, ShoppingCart, Check, Sparkles } from 'lucide-react';
+import { X, ShoppingCart, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cart-engine';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 
 /**
  * 🔍 Product Quick View Modal - Now using unified cart-engine
@@ -16,6 +17,9 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
   const [added, setAdded] = useState(false);
 
   if (!isOpen || !product) return null;
+
+  const modalImage = product.image || product.images?.[0] || PRODUCT_IMAGE_FALLBACK_SRC;
+  const displayPrice = typeof product.price === 'number' ? product.price : parseFloat(product.price || 0);
 
   const handleAddToCart = async () => {
     setIsAdding(true);
@@ -75,17 +79,11 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
             <div className="grid md:grid-cols-2 gap-8">
               {/* Product Image */}
               <div className="relative aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100">
-                {product.image ? (
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Sparkles className="h-24 w-24 text-emerald-600" />
-                  </div>
-                )}
+                <img
+                  src={modalImage}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               {/* Product Details */}
@@ -99,7 +97,7 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
                   </p>
                 )}
                 <p className="text-4xl font-bold text-emerald-600 mb-6">
-                  ${product.price.toFixed(2)}
+                  ${displayPrice.toFixed(2)}
                 </p>
 
                 {product.description && (

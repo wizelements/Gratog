@@ -1,26 +1,58 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
+import {
+  buildCatalogRoute,
+  getCategoryLabelById,
+  normalizeStorefrontText,
+  resolveCategoryAlias
+} from '@/lib/storefront-query';
 
 const POPULAR_SEARCHES = [
   { query: 'Sea Moss Gel', category: 'Products', trending: true, volume: '2.3k searches' },
   { query: 'Elderberry Blend', category: 'Products', trending: true, volume: '1.8k searches' },
-  { query: 'How to use sea moss', category: 'Learn', trending: true, volume: '890 searches' },
-  { query: 'Benefits of sea moss', category: 'Learn', trending: false, volume: '650 searches' },
-  { query: 'Shipping information', category: 'Help', trending: false, volume: null },
+  { query: 'How to use sea moss', category: 'Learn', trending: true, volume: '890 searches', href: '/explore/learn' },
+  { query: 'Benefits of sea moss', category: 'Learn', trending: false, volume: '650 searches', href: '/explore' },
+  { query: 'Shipping information', category: 'Help', trending: false, volume: null, href: '/contact' },
 ];
+
+const CATEGORY_SHORTCUTS = [
+  { category: 'sea moss gels', trending: false },
+  { category: 'lemonades and juices', trending: false },
+  { category: 'wellness shots', trending: false },
+];
+
+const DEFAULT_SUGGESTIONS = [
+  ...POPULAR_SEARCHES,
+  ...CATEGORY_SHORTCUTS.map((shortcut) => {
+    const label = getCategoryLabelById(shortcut.category, 'Products');
+    return {
+      query: `Browse ${label}`,
+      category: 'Category',
+      catalogCategory: resolveCategoryAlias(shortcut.category),
+      trending: shortcut.trending,
+      volume: null
+    };
+  })
+].slice(0, 7);
 
 export default function SearchBar({ placeholder = 'Search products, benefits, guides...' }) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions, setSuggestions] = useState(() => DEFAULT_SUGGESTIONS);
   const inputRef = useRef(null);
   const containerRef = useRef(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const currentSearch = (searchParams?.get('search') || searchParams?.get('q') || '').trim();
+    setQuery(currentSearch);
+  }, [searchParams]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -35,24 +67,41 @@ export default function SearchBar({ placeholder = 'Search products, benefits, gu
   const handleInputChange = (e) => {
     const value = e.target.value;
     setQuery(value);
+    const normalizedValue = normalizeStorefrontText(value);
 
-    if (value.length > 0) {
-      const filtered = POPULAR_SEARCHES.filter(
-        (item) =>
-          item.query.toLowerCase().includes(value.toLowerCase()) ||
-          item.category.toLowerCase().includes(value.toLowerCase())
+    if (normalizedValue.length > 0) {
+      const filtered = DEFAULT_SUGGESTIONS.filter(
+        (item) => {
+          const searchable = normalizeStorefrontText(`${item.query} ${item.category} ${item.catalogCategory || ''}`);
+          return searchable.includes(normalizedValue);
+        }
       );
       setSuggestions(filtered);
     } else {
-      setSuggestions(POPULAR_SEARCHES.slice(0, 5));
+      setSuggestions(DEFAULT_SUGGESTIONS);
     }
+
     setIsOpen(true);
   };
 
-  const handleSearch = (searchQuery) => {
-    const encoded = encodeURIComponent(searchQuery);
-    router.push(`/catalog?search=${encoded}`);
+  const handleSearch = (searchQuery, category = 'all') => {
+    router.push(buildCatalogRoute({ search: searchQuery, category }));
     setIsOpen(false);
+  };
+
+  const handleSuggestionSelect = (item) => {
+    if (item.href) {
+      router.push(item.href);
+      setIsOpen(false);
+      return;
+    }
+
+    if (item.catalogCategory) {
+      handleSearch('', item.catalogCategory);
+      return;
+    }
+
+    handleSearch(item.query, 'all');
   };
 
   const handleSubmit = (e) => {
@@ -64,7 +113,7 @@ export default function SearchBar({ placeholder = 'Search products, benefits, gu
 
   const clearQuery = () => {
     setQuery('');
-    setSuggestions(POPULAR_SEARCHES.slice(0, 5));
+    setSuggestions(DEFAULT_SUGGESTIONS);
     inputRef.current?.focus();
   };
 
@@ -81,7 +130,12 @@ export default function SearchBar({ placeholder = 'Search products, benefits, gu
           placeholder={placeholder}
           value={query}
           onChange={handleInputChange}
-          onFocus={() => setIsOpen(true)}
+          onFocus={() => {
+            if (!query.trim()) {
+              setSuggestions(DEFAULT_SUGGESTIONS);
+            }
+            setIsOpen(true);
+          }}
           className="pl-10 pr-10 py-2 text-sm"
           role="combobox"
           aria-label="Search products and content"
@@ -114,7 +168,7 @@ export default function SearchBar({ placeholder = 'Search products, benefits, gu
                 {suggestions.map((item, idx) => (
                   <button
                     key={idx}
-                    onClick={() => handleSearch(item.query)}
+                    onClick={() => handleSuggestionSelect(item)}
                     className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b last:border-b-0 transition-colors flex justify-between items-center group"
                     role="option"
                     aria-selected="false"
@@ -146,7 +200,9 @@ export default function SearchBar({ placeholder = 'Search products, benefits, gu
               </>
             ) : (
               <div className="px-4 py-6 text-center text-gray-500 text-sm">
-                No results for "{query}"
+                {query
+                  ? `No popular suggestions for "${query}". Press Enter to search the catalog.`
+                  : 'Try a popular search'}
               </div>
             )}
           </div>

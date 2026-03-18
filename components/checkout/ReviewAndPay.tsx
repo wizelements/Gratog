@@ -32,6 +32,8 @@ interface PaymentResult {
   receiptUrl?: string;
   cardLast4?: string;
   cardBrand?: string;
+  orderAccessToken?: string | null;
+  orderAccessTokenExpiresAt?: string | null;
 }
 
 export default function ReviewAndPay({
@@ -47,6 +49,7 @@ export default function ReviewAndPay({
   const [step, setStep] = useState<PaymentStep>('review');
   const [orderId, setOrderId] = useState<string | null>(null);
   const [squareOrderId, setSquareOrderId] = useState<string | null>(null);
+  const [orderAccessToken, setOrderAccessToken] = useState<string | null>(null);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
   const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(null);
@@ -69,6 +72,7 @@ export default function ReviewAndPay({
       
       setOrderId(orderResponse.order.id);
       setSquareOrderId(orderResponse.order.squareOrderId);
+      setOrderAccessToken(orderResponse.order.orderAccessToken || null);
       setStep('payment');
       track('order_created', { orderId: orderResponse.order.id });
     } catch (error) {
@@ -109,7 +113,17 @@ export default function ReviewAndPay({
       }
 
       const amountCents = Math.round(totals.total * 100);
-      router.push(`/order/success?orderRef=${orderId}&paid=true&amount=${amountCents}`);
+      const params = new URLSearchParams({
+        orderRef: orderId,
+        paid: 'true',
+        amount: String(amountCents),
+      });
+
+      if (result.orderAccessToken) {
+        params.set('token', result.orderAccessToken);
+      }
+
+      router.push(`/order/success?${params.toString()}`);
     }, 2000);
   }, [orderId, router, totals.total]);
   
@@ -350,6 +364,7 @@ export default function ReviewAndPay({
               amountCents={Math.round(totals.total * 100)}
               orderId={orderId}
               squareOrderId={squareOrderId || undefined}
+              orderAccessToken={orderAccessToken || undefined}
               customer={{
                 email: contact.email,
                 name: `${contact.firstName} ${contact.lastName}`,

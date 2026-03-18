@@ -73,7 +73,25 @@ function valuesMatch(actual: unknown, expected: unknown): boolean {
 }
 
 function matchesQuery(document: RecordMap, query: RecordMap): boolean {
+  if (Array.isArray(query.$and)) {
+    const andClauses = query.$and as RecordMap[];
+    if (!andClauses.every((clause) => matchesQuery(document, clause))) {
+      return false;
+    }
+  }
+
+  if (Array.isArray(query.$or)) {
+    const orClauses = query.$or as RecordMap[];
+    if (!orClauses.some((clause) => matchesQuery(document, clause))) {
+      return false;
+    }
+  }
+
   return Object.entries(query).every(([key, expected]) => {
+    if (key === '$and' || key === '$or') {
+      return true;
+    }
+
     const actual = key.includes('.') ? getByPath(document, key) : document[key];
 
     if (expected && typeof expected === 'object' && !Array.isArray(expected)) {
@@ -87,6 +105,12 @@ function matchesQuery(document: RecordMap, query: RecordMap): boolean {
 
       if ('$ne' in expected) {
         return !valuesMatch(actual, (expected as { $ne: unknown }).$ne);
+      }
+
+      if ('$exists' in expected) {
+        const shouldExist = Boolean((expected as { $exists: unknown }).$exists);
+        const exists = actual !== undefined;
+        return shouldExist ? exists : !exists;
       }
     }
 

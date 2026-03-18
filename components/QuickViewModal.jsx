@@ -9,6 +9,7 @@ import { ShoppingCart, Star } from 'lucide-react';
 import { addToCart } from '@/lib/cart-engine';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 
 function toPriceNumber(value) {
   const parsed = Number(value);
@@ -128,6 +129,9 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
   };
 
   const currentPrice = selectedVariation?.price || toPriceNumber(product.price);
+  const reviewCount = Number(product.reviewSummary?.reviewCount || product.reviewCount || 0);
+  const averageRating = Number(product.reviewSummary?.averageRating || product.rating || 0);
+  const hasReviews = reviewCount > 0 && averageRating > 0;
 
   const handleAddToCart = () => {
     setIsAdding(true);
@@ -166,7 +170,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
     if (product.image && !product.image.startsWith('data:image/svg')) {
       return product.image;
     }
-    return '/images/sea-moss-default.svg';
+    return PRODUCT_IMAGE_FALLBACK_SRC;
   };
 
   return (
@@ -221,8 +225,12 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
                   <Star key={i} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                 ))}
               </div>
-              <span className="text-sm text-muted-foreground">4.8 (124)</span>
-            </div>
+              <span className="text-sm text-muted-foreground">
+                  {hasReviews
+                    ? `${averageRating.toFixed(1)} (${reviewCount})`
+                    : 'No public reviews yet'}
+                </span>
+              </div>
             
             <div className="text-3xl font-bold text-emerald-600 mb-4">
               ${currentPrice.toFixed(2)}

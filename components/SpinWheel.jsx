@@ -314,23 +314,6 @@ export default function SpinWheel({ onWin, customerEmail, disabled = false }) {
     setLastSpinResult(null);
 
     try {
-      // Award points for spinning via API
-      try {
-        await fetch('/api/rewards/add-points', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: customerEmail,
-            points: 5,
-            activityType: 'spin_wheel',
-            activityData: { timestamp: new Date() }
-          })
-        });
-      } catch (pointsError) {
-        console.warn('Failed to award spin points:', pointsError);
-        // Don't block the spin for points failure
-      }
-
       // Select winning segment
       const winningSegment = selectRandomSegment();
       

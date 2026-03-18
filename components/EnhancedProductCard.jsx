@@ -5,13 +5,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { ShoppingCart, Star, Sparkles, Eye } from 'lucide-react';
+import { Star, Eye } from 'lucide-react';
 import Link from 'next/link';
 import QuickAddButton from './QuickAddButton';
 import QuickViewModal from './QuickViewModal';
 import VariantSelector from './VariantSelector';
 import WishlistButton from './WishlistButton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 
 export default function EnhancedProductCard({ product, onCheckout, variant = 'default' }) {
   const [imageError, setImageError] = useState(false);
@@ -23,20 +24,23 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
     setIsClient(true);
   }, []);
   
-  const fallbackImage = '/images/sea-moss-default.svg';
+  const fallbackImage = PRODUCT_IMAGE_FALLBACK_SRC;
   const hasIngredientData = product.ingredients && product.ingredients.length > 0;
   
   const getProductImage = () => {
-    if (product.images?.length > 0 && product.images[0] && !product.images[0].startsWith('data:')) {
+    if (product.images?.length > 0 && typeof product.images[0] === 'string' && product.images[0].trim()) {
       return product.images[0];
     }
-    if (product.image && !product.image.startsWith('data:image/svg')) {
+    if (typeof product.image === 'string' && product.image.trim()) {
       return product.image;
     }
-    return null;
+
+    return fallbackImage;
   };
-  
+
   const productImage = getProductImage();
+  const resolvedImage = imageError ? fallbackImage : productImage;
+  const usesInlineImage = Boolean(resolvedImage?.startsWith('data:'));
   const hasMultipleVariants = product.variations && product.variations.length > 1;
   
   const displayPrice = selectedVariant?.price 
@@ -63,22 +67,23 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
     >
       <Link href={`/product/${product.slug || product.id}`}>
         <div className="relative h-64 overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50">
-          {productImage ? (
+          {usesInlineImage ? (
+            <img
+              src={resolvedImage}
+              alt={`${product.name} - ${product.benefitStory || 'Premium wellness product'}`}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              onError={() => setImageError(true)}
+              loading="lazy"
+            />
+          ) : (
             <Image
-              src={imageError ? fallbackImage : productImage}
+              src={resolvedImage}
               alt={`${product.name} - ${product.benefitStory || 'Premium wellness product'}`}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               onError={() => setImageError(true)}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-emerald-100 via-teal-50 to-emerald-50">
-              <div className="w-24 h-24 rounded-full bg-white/90 flex items-center justify-center shadow-md">
-                <Sparkles className="h-12 w-12 text-emerald-500" />
-              </div>
-              <span className="mt-4 text-sm text-emerald-600/80 font-medium">Premium Product</span>
-            </div>
           )}
           
           <div className="absolute top-3 right-3 z-10">

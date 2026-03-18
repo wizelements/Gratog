@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, Suspense, startTransition } from 'react';
+import { useState, useEffect, useRef, useMemo, Suspense, startTransition, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
@@ -25,6 +25,14 @@ import {
   filterProductsByHealthBenefit,
   getHealthBenefitCounts 
 } from '@/lib/health-benefits';
+import { hasRealImage, sortProductsByImagePriority } from '@/lib/product-enhancements';
+import {
+  getCategoryLabelById,
+  getProductSearchText,
+  normalizeStorefrontText,
+  productMatchesCategory,
+  resolveCategoryAlias
+} from '@/lib/storefront-query';
 
 export default function CatalogPage({ initialProducts = [], initialCategories = [] }) {
   return (
@@ -57,16 +65,22 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const infoMode = searchParams?.get('mode') === 'info';
-  
+  const urlSearchQuery = (searchParams?.get('search') || searchParams?.get('q') || '').trim();
+  const urlCategory = resolveCategoryAlias(searchParams?.get('category') || searchParams?.get('type') || 'all');
+  const hydratedInitialProducts = useMemo(
+    () => sortProductsByImagePriority((initialProducts || []).map(enrichProductWithHealthBenefits)),
+    [initialProducts]
+  );
+
   // Core state - minimal and clean
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState(hydratedInitialProducts);
   const [categories, setCategories] = useState(initialCategories);
   const [loading, setLoading] = useState(initialProducts.length === 0);
   
   // Filter inputs (single source of truth)
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState(urlCategory || 'all');
   const [selectedHealthBenefit, setSelectedHealthBenefit] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
   const [recommendedIds, setRecommendedIds] = useState(null);
   
   // UI state
@@ -75,6 +89,19 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   
   const searchInputRef = useRef(null);
+
+  useEffect(() => {
+    setProducts(hydratedInitialProducts);
+    setCategories(initialCategories);
+  }, [hydratedInitialProducts, initialCategories]);
+
+  useEffect(() => {
+    setSearchQuery(urlSearchQuery);
+  }, [urlSearchQuery]);
+
+  useEffect(() => {
+    setSelectedCategory(urlCategory || 'all');
+  }, [urlCategory]);
 
   // Fetch products once on mount with timeout
   useEffect(() => {
@@ -97,7 +124,9 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
         const data = await response.json();
         
         if (data.success && data.products) {
-          const enrichedProducts = data.products.map(enrichProductWithHealthBenefits);
+          const enrichedProducts = sortProductsByImagePriority(
+            data.products.map(enrichProductWithHealthBenefits)
+          );
           startTransition(() => {
             setProducts(enrichedProducts);
             setCategories(data.categories || []);
@@ -133,6 +162,8 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
     if (!products.length) return [];
 
     let result = products;
+    const normalizedSearchTerm = normalizeStorefrontText(searchQuery);
+    const termTokens = normalizedSearchTerm.split(' ').filter(Boolean);
 
     // Quiz recommendations take priority
     if (recommendedIds) {
@@ -145,45 +176,62 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
 
       // Category filter
       if (selectedCategory !== 'all') {
-        result = result.filter(p => p.intelligentCategory === selectedCategory);
+        result = result.filter((product) => productMatchesCategory(product, selectedCategory));
       }
     }
 
     // Search filter (works on top of other filters)
-    const term = searchQuery.toLowerCase().trim();
-    if (term.length >= 2) {
+    if (normalizedSearchTerm.length >= 2) {
       result = result.filter(product => {
-        const name = (product.name || '').toLowerCase();
-        const description = (product.description || '').toLowerCase();
-        const category = (product.intelligentCategory || product.category || '').toLowerCase();
-        const ingredients = (product.ingredients || [])
-          .map(i => typeof i === 'string' ? i.toLowerCase() : (i.name || '').toLowerCase())
-          .join(' ');
-        const benefits = (product.benefits || []).join(' ').toLowerCase();
+        const searchableText = getProductSearchText(product);
+        if (!searchableText) {
+          return false;
+        }
 
-        return (
-          name.includes(term) ||
-          description.includes(term) ||
-          category.includes(term) ||
-          ingredients.includes(term) ||
-          benefits.includes(term)
-        );
+        if (searchableText.includes(normalizedSearchTerm)) {
+          return true;
+        }
+
+        return termTokens.every((token) => searchableText.includes(token));
       });
 
       // Sort search results by relevance
-      result.sort((a, b) => {
-        const aName = (a.name || '').toLowerCase();
-        const bName = (b.name || '').toLowerCase();
+      result = [...result].sort((a, b) => {
+        const aName = normalizeStorefrontText(a.name || '');
+        const bName = normalizeStorefrontText(b.name || '');
 
-        if (aName === term) return -1;
-        if (bName === term) return 1;
-        if (aName.startsWith(term) && !bName.startsWith(term)) return -1;
-        if (!aName.startsWith(term) && bName.startsWith(term)) return 1;
+        const getRelevanceScore = (productName, product) => {
+          let score = 0;
+          const searchableText = getProductSearchText(product);
 
-        const aHasImage = a.image && !a.image.startsWith('data:');
-        const bHasImage = b.image && !b.image.startsWith('data:');
-        if (aHasImage && !bHasImage) return -1;
-        if (!aHasImage && bHasImage) return 1;
+          if (productName === normalizedSearchTerm) {
+            score += 100;
+          } else if (productName.startsWith(normalizedSearchTerm)) {
+            score += 70;
+          } else if (productName.includes(normalizedSearchTerm)) {
+            score += 40;
+          }
+
+          score += termTokens.reduce(
+            (tokenScore, token) => (searchableText.includes(token) ? tokenScore + 8 : tokenScore),
+            0
+          );
+
+          if (hasRealImage(product)) {
+            score += 12;
+          }
+
+          if (product.inStock !== false) {
+            score += 4;
+          }
+
+          return score;
+        };
+
+        const scoreDelta = getRelevanceScore(bName, b) - getRelevanceScore(aName, a);
+        if (scoreDelta !== 0) {
+          return scoreDelta;
+        }
 
         return aName.localeCompare(bName);
       });
@@ -203,35 +251,145 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
     }
     
     if (categories.length > 0) {
+      const dedupedCategories = new Map();
+
+      categories.forEach((category) => {
+        const id = resolveCategoryAlias(category.name);
+        const existing = dedupedCategories.get(id);
+        if (existing) {
+          existing.count = (existing.count || 0) + (category.count || 0);
+          return;
+        }
+
+        dedupedCategories.set(id, {
+          id,
+          label: getCategoryLabelById(id, category.name),
+          count: category.count,
+          icon: category.icon
+        });
+      });
+
       return [
         { id: 'all', label: 'All Products', count: products.length, icon: '✨' },
-        ...categories.map(cat => ({
-          id: cat.name,
-          label: cat.name,
-          count: cat.count,
-          icon: cat.icon
-        }))
+        ...Array.from(dedupedCategories.values())
       ];
     }
-    
+
+    const fallbackCounts = new Map();
+
+    products.forEach((product) => {
+      const categoryId = resolveCategoryAlias(
+        product.intelligentCategory ||
+        product.categoryData?.name ||
+        product.category ||
+        'Other'
+      );
+
+      const current = fallbackCounts.get(categoryId) || { count: 0, icon: '📦' };
+      fallbackCounts.set(categoryId, {
+        ...current,
+        count: current.count + 1
+      });
+    });
+
     return [
       { id: 'all', label: 'All Products', count: products.length },
-      { id: 'gels', label: 'Sea Moss Gels', count: products.filter(p => p.category === 'gel').length },
-      { id: 'lemonades', label: 'Lemonades', count: products.filter(p => p.category === 'lemonade').length },
-      { id: 'shots', label: 'Wellness Shots', count: products.filter(p => p.category === 'shot').length },
+      ...Array.from(fallbackCounts.entries())
+        .map(([id, data]) => ({
+          id,
+          label: getCategoryLabelById(id, id),
+          count: data.count,
+          icon: data.icon
+        }))
+        .sort((a, b) => b.count - a.count)
     ];
   }, [categories, products, loading]);
 
+  const selectedCategoryLabel = useMemo(() => {
+    if (selectedCategory === 'all') {
+      return 'All Products';
+    }
+
+    return productCategories.find(category => category.id === selectedCategory)?.label || selectedCategory;
+  }, [productCategories, selectedCategory]);
+
   // Derived: Check if any filters are active
-  const hasActiveFilters = selectedCategory !== 'all' || selectedHealthBenefit !== 'all' || searchQuery || recommendedIds;
-  const activeFilterCount = Number(selectedCategory !== 'all') + Number(selectedHealthBenefit !== 'all') + Number(!!searchQuery) + Number(!!recommendedIds);
-  const isSearchMode = searchQuery.trim().length >= 2;
+  const trimmedSearchQuery = searchQuery.trim();
+  const hasSearchFilter = normalizeStorefrontText(trimmedSearchQuery).length >= 2;
+  const hasActiveFilters = selectedCategory !== 'all' || selectedHealthBenefit !== 'all' || hasSearchFilter || recommendedIds;
+  const activeFilterCount = Number(selectedCategory !== 'all') + Number(selectedHealthBenefit !== 'all') + Number(hasSearchFilter) + Number(!!recommendedIds);
+  const isSearchMode = hasSearchFilter;
   const displayCount = displayProducts.length;
+
+  const updateCatalogUrl = useCallback((updater) => {
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    updater(params);
+
+    const nextQuery = params.toString();
+    const currentQuery = searchParams?.toString() || '';
+
+    if (nextQuery === currentQuery) {
+      return;
+    }
+
+    router.replace(nextQuery ? `/catalog?${nextQuery}` : '/catalog', { scroll: false });
+  }, [router, searchParams]);
+
+  useEffect(() => {
+    const legacySearch = searchParams?.get('q');
+    const legacyCategory = searchParams?.get('type');
+
+    if (!legacySearch && !legacyCategory) {
+      return;
+    }
+
+    updateCatalogUrl((params) => {
+      if (legacySearch && !params.get('search')) {
+        params.set('search', legacySearch);
+      }
+
+      if (legacyCategory && !params.get('category')) {
+        params.set('category', resolveCategoryAlias(legacyCategory));
+      }
+
+      params.delete('q');
+      params.delete('type');
+    });
+  }, [searchParams, updateCatalogUrl]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const trimmed = searchQuery.trim();
+
+      updateCatalogUrl((params) => {
+        params.delete('q');
+
+        if (trimmed.length >= 2) {
+          params.set('search', trimmed);
+          return;
+        }
+
+        params.delete('search');
+      });
+    }, 250);
+
+    return () => clearTimeout(timeout);
+  }, [searchQuery, updateCatalogUrl]);
 
   // Handlers - clean and simple
   const handleCategoryChange = (categoryId) => {
     setSelectedCategory(categoryId);
     setRecommendedIds(null);
+
+    updateCatalogUrl((params) => {
+      params.delete('type');
+      if (categoryId === 'all') {
+        params.delete('category');
+        return;
+      }
+
+      params.set('category', categoryId);
+    });
   };
 
   const handleHealthBenefitChange = (benefitId) => {
@@ -245,6 +403,12 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
 
   const clearSearch = () => {
     setSearchQuery('');
+
+    updateCatalogUrl((params) => {
+      params.delete('search');
+      params.delete('q');
+    });
+
     searchInputRef.current?.focus();
   };
 
@@ -253,6 +417,13 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
     setSelectedHealthBenefit('all');
     setSearchQuery('');
     setRecommendedIds(null);
+
+    updateCatalogUrl((params) => {
+      params.delete('search');
+      params.delete('q');
+      params.delete('category');
+      params.delete('type');
+    });
   };
 
   const handleQuizRecommendations = (recommendations) => {
@@ -403,6 +574,11 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                   </button>
                 )}
               </div>
+              {trimmedSearchQuery.length === 1 && (
+                <p className="mt-2 text-center text-xs text-gray-500">
+                  Type at least 2 characters to search
+                </p>
+              )}
             </div>
           </div>
           
@@ -428,7 +604,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                   
                   {selectedCategory !== 'all' && !recommendedIds && (
                     <Badge className="bg-emerald-200 text-emerald-800 flex items-center gap-1">
-                      {selectedCategory}
+                      {selectedCategoryLabel}
                       <button
                         onClick={() => handleCategoryChange('all')}
                         className="ml-1 hover:text-emerald-600"
@@ -452,7 +628,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                     </Badge>
                   )}
                   
-                  {searchQuery && (
+                  {hasSearchFilter && (
                     <Badge className="bg-purple-200 text-purple-800 flex items-center gap-1">
                       "{searchQuery}"
                       <button
@@ -640,8 +816,8 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                   <Heart className="h-6 w-6 text-purple-600" aria-hidden="true" />
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-gray-900">15,000+ Customers</p>
-                  <p className="text-sm text-gray-600">4.9★ Average Rating</p>
+                  <p className="font-semibold text-gray-900">Community Trusted</p>
+                  <p className="text-sm text-gray-600">Positive Customer Feedback</p>
                 </div>
               </div>
             </div>

@@ -5,8 +5,14 @@ import { verifyAdminToken } from '@/lib/admin-session';
 import { logger } from '@/lib/logger';
 import { RateLimit } from '@/lib/redis';
 import { PUBLIC_REVIEW_FILTER } from '@/lib/review-visibility';
+import { ObjectId } from 'mongodb';
+import { randomUUID } from 'crypto';
 
 const REVIEW_POINTS = 10;
+const MAX_REVIEW_IMAGES = 3;
+const REVIEW_MEDIA_URL_REGEX = /^\/api\/reviews\/media\/([a-f0-9]{24})$/i;
+const LEGACY_REVIEW_UPLOAD_URL_REGEX = /^\/uploads\/reviews\/[a-zA-Z0-9._-]{1,180}$/;
+const VERIFIED_PURCHASE_STATUSES = ['paid', 'completed', 'delivered', 'fulfilled', 'payment_completed', 'COMPLETED'];
 
 function getClientIp(request) {
   const forwardedFor = request.headers.get('x-forwarded-for');
@@ -144,6 +150,72 @@ function buildReviewSummary(reviews) {
   };
 }
 
+function sanitizeReviewImageCandidates(images) {
+  if (!Array.isArray(images)) {
+    return [];
+  }
+
+  const unique = [];
+  const seen = new Set();
+
+  for (const candidate of images) {
+    const value = String(candidate || '').trim();
+    if (!value || seen.has(value)) {
+      continue;
+    }
+
+    if (!REVIEW_MEDIA_URL_REGEX.test(value) && !LEGACY_REVIEW_UPLOAD_URL_REGEX.test(value)) {
+      continue;
+    }
+
+    seen.add(value);
+    unique.push(value);
+
+    if (unique.length >= MAX_REVIEW_IMAGES) {
+      break;
+    }
+  }
+
+  return unique;
+}
+
+async function normalizeReviewImageUrls(db, images) {
+  const candidates = sanitizeReviewImageCandidates(images);
+  if (candidates.length === 0) {
+    return [];
+  }
+
+  const mediaIds = candidates
+    .map((url) => url.match(REVIEW_MEDIA_URL_REGEX)?.[1] || null)
+    .filter(Boolean);
+
+  if (mediaIds.length === 0) {
+    return candidates;
+  }
+
+  const existingMedia = await db.collection('review_media')
+    .find(
+      {
+        _id: {
+          $in: mediaIds.filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id))
+        },
+        deletedAt: { $exists: false }
+      },
+      { projection: { _id: 1 } }
+    )
+    .toArray();
+  const existingIdSet = new Set(existingMedia.map((doc) => String(doc._id).toLowerCase()));
+
+  return candidates.filter((url) => {
+    const mediaMatch = url.match(REVIEW_MEDIA_URL_REGEX);
+    if (!mediaMatch) {
+      return true;
+    }
+
+    return existingIdSet.has(mediaMatch[1].toLowerCase());
+  });
+}
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -241,10 +313,9 @@ export async function POST(request) {
       );
     }
 
-    // Validate images array
-    const reviewImages = Array.isArray(images) ? images.slice(0, 3) : [];
-
     const { db } = await connectToDatabase();
+
+    const reviewImages = await normalizeReviewImageUrls(db, images);
 
     // Check if user already reviewed this product
     const existingReview = await db.collection('product_reviews').findOne({
@@ -292,44 +363,72 @@ export async function POST(request) {
 
     // Award points to customer's passport
     try {
-      const passport = await db.collection('passports').findOne({ email: email.toLowerCase() });
+      const normalizedEmail = email.toLowerCase();
+      const now = new Date();
 
-      if (passport) {
-        await db.collection('passports').updateOne(
-          { email: email.toLowerCase() },
+      await Promise.all([
+        db.collection('passports').updateOne(
+          { customerEmail: normalizedEmail },
           {
-            $inc: { xp: REVIEW_POINTS },
+            $setOnInsert: {
+              customerEmail: normalizedEmail,
+              customerName: name,
+              stamps: [],
+              totalStamps: 0,
+              vouchers: [],
+              level: 'Explorer',
+              xpPoints: 0,
+              createdAt: now,
+            },
+            $set: {
+              customerName: name,
+              updatedAt: now,
+              lastActivity: now,
+            },
+            $inc: {
+              xpPoints: REVIEW_POINTS,
+            },
+          },
+          { upsert: true }
+        ),
+        db.collection('customer_passports').updateOne(
+          { email: normalizedEmail },
+          {
+            $setOnInsert: {
+              id: randomUUID(),
+              email: normalizedEmail,
+              name,
+              points: 0,
+              totalPointsEarned: 0,
+              level: 'EXPLORER',
+              activities: [],
+              redeemedRewards: [],
+              createdAt: now,
+            },
+            $set: {
+              name,
+              updatedAt: now,
+            },
+            $inc: {
+              points: REVIEW_POINTS,
+              totalPointsEarned: REVIEW_POINTS,
+            },
             $push: {
-              timeline: {
-                action: 'product_review',
+              activities: {
+                id: randomUUID(),
+                type: 'review',
                 points: REVIEW_POINTS,
-                productName,
-                timestamp: new Date(),
+                data: {
+                  productId,
+                  productName,
+                },
+                timestamp: now,
               },
             },
-            $set: { updatedAt: new Date() },
-          }
-        );
-      } else {
-        await db.collection('passports').insertOne({
-          email: email.toLowerCase(),
-          name,
-          xp: REVIEW_POINTS,
-          level: 1,
-          stamps: [],
-          vouchers: [],
-          timeline: [
-            {
-              action: 'product_review',
-              points: REVIEW_POINTS,
-              productName,
-              timestamp: new Date(),
-            },
-          ],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-      }
+          },
+          { upsert: true }
+        )
+      ]);
     } catch (passportError) {
       logger.error('API', 'Failed to award points', passportError);
     }
@@ -384,10 +483,35 @@ export async function POST(request) {
 
 async function checkVerifiedPurchase(db, email, productId) {
   try {
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const normalizedProductId = String(productId || '').trim();
+
+    if (!normalizedEmail || !normalizedProductId) {
+      return false;
+    }
+
     const order = await db.collection('orders').findOne({
-      'customer.email': email,
-      'items.productId': productId,
-      status: { $in: ['completed', 'delivered', 'fulfilled'] }
+      $and: [
+        {
+          $or: [
+            { 'customer.email': normalizedEmail },
+            { customerEmail: normalizedEmail },
+          ]
+        },
+        {
+          $or: [
+            { 'items.productId': normalizedProductId },
+            { 'items.id': normalizedProductId },
+            { 'items.slug': normalizedProductId },
+          ]
+        },
+        {
+          $or: [
+            { status: { $in: VERIFIED_PURCHASE_STATUSES } },
+            { paymentStatus: { $in: VERIFIED_PURCHASE_STATUSES } },
+          ]
+        }
+      ]
     });
     return !!order;
   } catch (error) {

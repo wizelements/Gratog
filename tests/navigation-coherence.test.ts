@@ -72,4 +72,12 @@ describe('Navigation Coherence', () => {
     expect(homeClient).toContain('id="what-is-sea-moss"');
     expect(homeClient).toContain('id="benefits"');
   });
+
+  it('review submission UX includes a non-blocking signup prompt for guest reviewers', () => {
+    const productReviews = read('components/ProductReviews.jsx');
+
+    expect(productReviews).toContain('Create Free Account');
+    expect(productReviews).toContain('setSignupPrompt');
+    expect(productReviews).toContain('data.signupPrompt?.recommended');
+  });
 });

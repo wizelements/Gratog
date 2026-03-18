@@ -13,13 +13,84 @@ import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-cus
 import { RateLimit } from '@/lib/redis';
 import { withIdempotency, getIdempotencyKeyFromHeaders } from '@/lib/idempotency';
 import { checkFreeDeliveryRadiusFrom30331 } from '@/lib/delivery-radius';
+import { verifyRequestAuthentication } from '@/lib/rewards-security';
+import { generateOrderAccessToken, verifyOrderAccessToken } from '@/lib/order-access-token';
 
 const logger = createLogger('OrdersCreateAPI');
+const ORDER_ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
 
 // Rate limiting configuration
 const ORDER_RATE_LIMIT = 10; // Max orders per window
 const ORDER_RATE_WINDOW = 300; // 5 minutes
 const MAX_PREORDER_DAYS = 60;
+
+function shouldAllowSquareFallback() {
+  const configured = process.env.SQUARE_FALLBACK_MODE;
+  if (configured === 'true') {
+    return true;
+  }
+  if (configured === 'false') {
+    return false;
+  }
+
+  // Keep production strict while allowing local incident probes without Square credentials.
+  const runningOnVercel = Boolean(process.env.VERCEL || process.env.VERCEL_ENV);
+  return process.env.NODE_ENV !== 'production' && !runningOnVercel;
+}
+
+function isInternalPrincipal(auth) {
+  return (
+    auth?.authenticated && (
+      auth.authType === 'master_key' ||
+      auth.authType === 'admin_key' ||
+      auth.userId === 'system' ||
+      auth.userId === 'admin'
+    )
+  );
+}
+
+function canAccessOrder(auth, order) {
+  if (!auth?.authenticated || !order) {
+    return false;
+  }
+
+  if (isInternalPrincipal(auth)) {
+    return true;
+  }
+
+  const orderEmail = String(order.customer?.email || order.customerEmail || '').trim().toLowerCase();
+  const userEmail = String(auth.userEmail || '').trim().toLowerCase();
+  return orderEmail.length > 0 && orderEmail === userEmail;
+}
+
+function sanitizeOrder(order) {
+  return {
+    id: order.id,
+    orderNumber: order.orderNumber,
+    status: order.status,
+    paymentStatus: order.paymentStatus,
+    createdAt: order.createdAt,
+    paidAt: order.paidAt || null,
+    customer: {
+      name: order.customer?.name,
+      email: order.customer?.email,
+      phone: order.customer?.phone,
+    },
+    items: order.items,
+    pricing: order.pricing,
+    fulfillment: order.fulfillment,
+    fulfillmentType: order.fulfillmentType || order.fulfillment?.type || null,
+    deliveryAddress: order.deliveryAddress || order.fulfillment?.deliveryAddress || null,
+    orderTiming: order.orderTiming || order.fulfillment?.timing || null,
+    payment: {
+      status: order.payment?.status || order.paymentStatus || order.status,
+      receiptUrl: order.receiptUrl || order.payment?.receiptUrl || null,
+      cardBrand: order.cardBrand || order.payment?.cardBrand || null,
+      cardLast4: order.cardLast4 || order.payment?.cardLast4 || null,
+      receiptNumber: order.payment?.receiptNumber || null,
+    },
+  };
+}
 
 // FIX M12: Atlanta/Eastern timezone for pickup date calculations
 const ATLANTA_TIMEZONE = 'America/New_York';
@@ -444,7 +515,7 @@ export async function POST(request) {
     // CRITICAL: Create Square Customer FIRST, then Order
     let squareOrderId = null;
     let squareCustomerId = null;
-    const ALLOW_FALLBACK = process.env.SQUARE_FALLBACK_MODE === 'true';
+    const ALLOW_FALLBACK = shouldAllowSquareFallback();
     
     const SQUARE_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
     const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -632,6 +703,12 @@ export async function POST(request) {
       squareOrderId,
       paymentStatus: order.paymentStatus || 'pending'
     });
+
+    const orderAccessToken = generateOrderAccessToken({
+      orderId: order.id,
+      customerEmail: order.customer?.email || order.customerEmail || null,
+      ttlMs: ORDER_ACCESS_TOKEN_TTL_MS,
+    });
     
     // IMPORTANT: Do NOT send confirmations until payment is verified
     // Confirmations are sent by the payment API after successful payment
@@ -650,6 +727,10 @@ export async function POST(request) {
         fulfillment: order.fulfillment,
         squareOrderId,
         squareCustomerId,
+        orderAccessToken,
+        orderAccessTokenExpiresAt: orderAccessToken
+          ? new Date(Date.now() + ORDER_ACCESS_TOKEN_TTL_MS).toISOString()
+          : null,
         note: '⚠️ Order created but payment is still pending. Confirmations will be sent after payment.'
       }
     };
@@ -681,6 +762,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const orderId = searchParams.get('id');
+    const orderAccessToken = searchParams.get('token');
     
     if (!orderId) {
       return NextResponse.json(
@@ -688,6 +770,8 @@ export async function GET(request) {
         { status: 400 }
       );
     }
+
+    const auth = await verifyRequestAuthentication(request, { allowPublic: true });
     
     const trackingResult = await orderTracking.getOrder(orderId);
     
@@ -710,12 +794,37 @@ export async function GET(request) {
         { status: 404 }
       );
     }
-    
-    return NextResponse.json({
-      success: true,
-      order,
-      isFallback
+
+    const resolvedOrderId = order.id || order.orderId || orderId;
+    const tokenClaims = verifyOrderAccessToken(orderAccessToken, {
+      expectedOrderId: resolvedOrderId,
+      expectedEmail: order.customer?.email || order.customerEmail || null,
     });
+
+    if (!tokenClaims && !canAccessOrder(auth, order)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        {
+          status: 401,
+          headers: {
+            'Cache-Control': 'no-store',
+          },
+        }
+      );
+    }
+    
+    return NextResponse.json(
+      {
+        success: true,
+        order: sanitizeOrder(order),
+        isFallback
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store'
+        }
+      }
+    );
     
   } catch (error) {
     logger.error('Order retrieval error', { error: error.message });

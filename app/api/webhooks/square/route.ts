@@ -52,35 +52,28 @@ function verifyWebhookSignature(signatureHeader: string, requestUrl: string, req
   }
   
   try {
-    // Parse Square signature format: "v1,signature"
-    const parts = signatureHeader.split(',');
-    if (parts.length !== 2) {
-      logger.error('Webhook', 'Invalid signature format');
+    // Square signs notificationUrl + rawBody and sends the base64 signature directly.
+    const normalizedSignature = signatureHeader.trim();
+    if (!normalizedSignature) {
+      logger.error('Webhook', 'Empty signature header');
       return false;
     }
-    
-    const [version, signature] = parts;
-    const [versionKey, versionValue] = version.split('=');
-    const [signatureKey, signatureValue] = signature.split('=');
-    
-    if (versionKey !== 'v' || signatureKey !== 't') {
-      logger.error('Webhook', 'Invalid signature header format');
-      return false;
-    }
-    
-    // Create the string to sign: URL + request body
+
     const stringToSign = requestUrl + requestBody;
     
     // Calculate HMAC
     const hmac = crypto.createHmac('sha256', webhookKey);
     hmac.update(stringToSign);
     const calculatedSignature = hmac.digest('base64');
-    
+
+    const calculatedBuffer = Buffer.from(calculatedSignature);
+    const providedBuffer = Buffer.from(normalizedSignature);
+    if (calculatedBuffer.length !== providedBuffer.length) {
+      return false;
+    }
+
     // Compare signatures securely
-    return crypto.timingSafeEqual(
-      Buffer.from(calculatedSignature),
-      Buffer.from(signatureValue)
-    );
+    return crypto.timingSafeEqual(calculatedBuffer, providedBuffer);
   } catch (error) {
     logger.error('Webhook', 'Webhook signature verification error:', error);
     return false;
@@ -118,13 +111,19 @@ async function findLocalOrder(db: any, payment: any): Promise<any | null> {
     }
   }
   
-  // Strategy 3: Check payments collection for mapping
+  // Strategy 3: Check payment records for local order mapping
   if (payment.id) {
-    const paymentRecord = await db.collection('payments').findOne({ squarePaymentId: payment.id });
+    let paymentRecord = await db.collection('payment_records').findOne({ squarePaymentId: payment.id });
+
+    // Migration fallback for older records.
+    if (!paymentRecord) {
+      paymentRecord = await db.collection('payments').findOne({ squarePaymentId: payment.id });
+    }
+
     if (paymentRecord?.metadata?.orderId) {
       const order = await db.collection('orders').findOne({ id: paymentRecord.metadata.orderId });
       if (order) {
-        logger.debug('Webhook', 'Found order via payments collection', { 
+        logger.debug('Webhook', 'Found order via payment record mapping', { 
           orderId: order.id, 
           paymentId: payment.id 
         });
@@ -216,13 +215,23 @@ export async function POST(request: NextRequest) {
     const requestBody = await request.text();
     const requestUrl = request.url;
     
-    // Get the Square-Signature header
-    const signatureHeader = request.headers.get('Square-Signature');
+    // Square signature header
+    const signatureHeader =
+      request.headers.get('x-square-hmacsha256-signature') ||
+      request.headers.get('X-Square-HmacSha256-Signature');
     
     // Verify webhook signature in production
     const isDevelopment = process.env.NODE_ENV === 'development' && !process.env.VERCEL;
     const skipVerification = isDevelopment && process.env.SQUARE_SKIP_WEBHOOK_VERIFICATION === 'true';
     
+    if (!skipVerification && !signatureHeader) {
+      logger.error('Webhook', 'Missing Square signature header - rejecting');
+      return NextResponse.json(
+        { error: 'Missing signature' },
+        { status: 401 }
+      );
+    }
+
     if (!skipVerification && signatureHeader) {
       const isSignatureValid = verifyWebhookSignature(
         signatureHeader,

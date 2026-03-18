@@ -1,26 +1,25 @@
 import HomePageClient from '@/components/home/HomePageClient';
 import { connectToDatabase } from '@/lib/db-optimized';
-import { getDemoProducts } from '@/lib/demo-products';
-import { getUnifiedProducts } from '@/lib/product-sync-engine';
+import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 import { logger } from '@/lib/logger';
 import { PUBLIC_REVIEW_FILTER } from '@/lib/review-visibility';
 import { buildHomepageFaqSchema, buildHomepageOrganizationSchema } from '@/seo/schemas';
 
 export const revalidate = 300;
 
-async function getFeaturedProducts() {
-  try {
-    const products = await getUnifiedProducts({});
-    if (Array.isArray(products) && products.length > 0) {
-      return products.slice(0, 6);
-    }
-  } catch (error) {
-    logger.warn('HomePage', 'Failed to fetch featured products for server render', {
-      error: error instanceof Error ? error.message : String(error)
+async function getHomepageCatalogData() {
+  const snapshot = await getStorefrontCatalogSnapshot({});
+
+  if (snapshot.isFallback) {
+    logger.warn('HomePage', 'Homepage is using demo fallback products for initial render', {
+      source: snapshot.source
     });
   }
 
-  return getDemoProducts().slice(0, 6);
+  return {
+    featuredProducts: snapshot.products.slice(0, 6),
+    initialCatalogCount: snapshot.isFallback ? null : snapshot.totalCount
+  };
 }
 
 async function getSocialProof() {
@@ -68,14 +67,15 @@ async function getSocialProof() {
 }
 
 export default async function HomePage() {
-  const [featuredProducts, socialProof] = await Promise.all([
-    getFeaturedProducts(),
+  const [{ featuredProducts, initialCatalogCount }, socialProof] = await Promise.all([
+    getHomepageCatalogData(),
     getSocialProof()
   ]);
 
   return (
     <HomePageClient
       initialFeaturedProducts={featuredProducts}
+      initialCatalogCount={initialCatalogCount}
       socialProof={socialProof}
       organizationSchema={buildHomepageOrganizationSchema()}
       faqSchema={buildHomepageFaqSchema()}

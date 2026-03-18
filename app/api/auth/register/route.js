@@ -3,6 +3,34 @@ import { createUser, initializeUserRewards, initializeUserChallenge } from '@/li
 import { hashPassword, generateToken } from '@/lib/auth/jwt';
 import { sendWelcomeEmail } from '@/lib/email/service';
 import { validateRegistration } from '@/lib/auth/validation';
+import { connectToDatabase } from '@/lib/db-optimized';
+
+async function reconcilePendingCustomerAfterSignup(user) {
+  const email = String(user?.email || '').trim().toLowerCase();
+  if (!email || !user?.id) {
+    return;
+  }
+
+  try {
+    const { db } = await connectToDatabase();
+    await db.collection('pending_customers').updateOne(
+      { email },
+      {
+        $set: {
+          status: 'converted',
+          convertedAt: new Date(),
+          convertedUserId: user.id,
+          convertedName: user.name || null,
+          convertedSource: 'auth_register',
+          updatedAt: new Date(),
+        },
+      }
+    );
+  } catch (reconciliationError) {
+    // Registration should not fail if lead reconciliation is unavailable.
+    console.warn('Pending customer reconciliation failed:', reconciliationError);
+  }
+}
 
 export async function POST(request) {
   try {
@@ -51,6 +79,8 @@ export async function POST(request) {
       passwordHash,
       phone: phone ? phone.trim() : null
     });
+
+    await reconcilePendingCustomerAfterSignup(user);
 
     // Initialize user features in parallel
     try {

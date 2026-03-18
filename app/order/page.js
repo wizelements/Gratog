@@ -316,7 +316,17 @@ export default function OrderPage() {
     const amountCents = paymentData.amountCents || Math.round(total * 100);
     toast.success('Payment successful! 🎉', { duration: 3000 });
     setTimeout(() => {
-      router.push(`/order/success?orderRef=${orderRef}&paid=true&amount=${amountCents}`);
+      const params = new URLSearchParams({
+        orderRef: String(orderRef || ''),
+        paid: 'true',
+        amount: String(amountCents),
+      });
+
+      if (paymentData.orderAccessToken) {
+        params.set('token', paymentData.orderAccessToken);
+      }
+
+      router.push(`/order/success?${params.toString()}`);
     }, 1500);
   };
 
@@ -358,6 +368,7 @@ export default function OrderPage() {
             orderId={orderCreated.id}
             amountCents={Math.round(total * 100)}
             squareOrderId={orderCreated.squareOrderId}
+            orderAccessToken={orderCreated.orderAccessToken}
             customer={{
               email: customer.email,
               name: customer.name,

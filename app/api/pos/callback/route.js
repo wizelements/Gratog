@@ -2,6 +2,14 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 
+const INTERNAL_REWARDS_TOKEN = process.env.MASTER_API_KEY || process.env.ADMIN_API_KEY || '';
+
+const debug = (...args) => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[SquarePOSCallback]', ...args);
+  }
+};
+
 /**
  * Square Point of Sale API Web Callback Handler
  * 
@@ -117,25 +125,32 @@ export async function GET(request) {
       // Award reward points for purchase
       if (data.customerEmail && data.amount) {
         try {
-          const points = Math.floor(parseInt(data.amount) / 100); // $1 = 1 point
-          
-          await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rewards/add-points`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: data.customerEmail,
-              points: points,
-              activityType: 'purchase',
-              activityData: {
-                orderId: data.orderId,
-                transactionId: data.transactionId,
-                amount: data.amount,
-                paymentMethod: 'square_pos'
-              }
-            })
-          });
-          
-          debug(`✅ Awarded ${points} reward points`);
+          if (!INTERNAL_REWARDS_TOKEN) {
+            console.warn('Skipping rewards award from POS callback: missing internal rewards token');
+          } else {
+            const points = Math.floor(parseInt(data.amount) / 100); // $1 = 1 point
+            
+            await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rewards/add-points`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${INTERNAL_REWARDS_TOKEN}`
+              },
+              body: JSON.stringify({
+                email: data.customerEmail,
+                points: points,
+                activityType: 'purchase',
+                activityData: {
+                  orderId: data.orderId,
+                  transactionId: data.transactionId,
+                  amount: data.amount,
+                  paymentMethod: 'square_pos'
+                }
+              })
+            });
+            
+            debug(`✅ Awarded ${points} reward points`);
+          }
         } catch (pointsError) {
           console.error('Failed to award points:', pointsError);
         }

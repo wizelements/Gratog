@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { Sparkles, Leaf, Heart, Droplets } from 'lucide-react';
 import { HEALTH_BENEFIT_FILTERS } from '@/lib/health-benefits';
+import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 
 /**
  * Info Board Product Card
@@ -19,19 +20,22 @@ import { HEALTH_BENEFIT_FILTERS } from '@/lib/health-benefits';
 export default function InfoBoardProductCard({ product }) {
   const [imageError, setImageError] = useState(false);
   
-  const fallbackImage = '/images/sea-moss-default.svg';
+  const fallbackImage = PRODUCT_IMAGE_FALLBACK_SRC;
   
   const getProductImage = () => {
-    if (product.images?.length > 0 && product.images[0] && !product.images[0].startsWith('data:')) {
+    if (product.images?.length > 0 && typeof product.images[0] === 'string' && product.images[0].trim()) {
       return product.images[0];
     }
-    if (product.image && !product.image.startsWith('data:image/svg')) {
+    if (typeof product.image === 'string' && product.image.trim()) {
       return product.image;
     }
-    return null;
+
+    return fallbackImage;
   };
-  
+
   const productImage = getProductImage();
+  const resolvedImage = imageError ? fallbackImage : productImage;
+  const usesInlineImage = Boolean(resolvedImage?.startsWith('data:'));
   
   // Get visible ingredients (up to 4)
   const visibleIngredients = (product.ingredients || []).slice(0, 4);
@@ -50,21 +54,23 @@ export default function InfoBoardProductCard({ product }) {
     >
       {/* Product Image */}
       <div className="relative h-56 overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50">
-        {productImage ? (
+        {usesInlineImage ? (
+          <img
+            src={resolvedImage}
+            alt={product.name}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={() => setImageError(true)}
+            loading="lazy"
+          />
+        ) : (
           <Image
-            src={imageError ? fallbackImage : productImage}
+            src={resolvedImage}
             alt={product.name}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             onError={() => setImageError(true)}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center">
-            <div className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center shadow-md">
-              <Sparkles className="h-10 w-10 text-emerald-500" />
-            </div>
-          </div>
         )}
         
         {/* Category Badge */}

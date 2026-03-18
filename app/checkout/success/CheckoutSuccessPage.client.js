@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { logger } from '@/lib/logger';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -23,7 +22,6 @@ function SuccessContent() {
   const searchParams = useSearchParams();
   const [orderDetails, setOrderDetails] = useState(null);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
-  const [pointsAwarded, setPointsAwarded] = useState(false);
   const [userStats, setUserStats] = useState(null);
   const [spinsEarnedThisOrder, setSpinsEarnedThisOrder] = useState(0);
   
@@ -126,12 +124,10 @@ function SuccessContent() {
   };
   
   useEffect(() => {
-    // Award reward points for purchase
-    if (orderDetails && orderDetails.customer?.email && !pointsAwarded) {
-      awardPurchasePoints();
+    if (orderDetails && orderDetails.customer?.email) {
       loadUserStats();
     }
-  }, [orderDetails, pointsAwarded]);
+  }, [orderDetails]);
   
   const loadUserStats = async () => {
     if (!orderDetails?.customer?.email) return;
@@ -145,36 +141,6 @@ function SuccessContent() {
       }
     } catch (error) {
       console.error('Failed to load user stats:', error);
-    }
-  };
-  
-  const awardPurchasePoints = async () => {
-    try {
-      const total = orderDetails.total || parseFloat(amount) / 100;
-      const points = Math.floor(total); // $1 = 1 point
-      
-      const response = await fetch('/api/rewards/add-points', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: orderDetails.customer.email,
-          points: points,
-          activityType: 'purchase',
-          activityData: {
-            orderId: orderId || orderDetails.id,
-            transactionId: transactionId,
-            total: total,
-            items: orderDetails.cart?.length || 0
-          }
-        })
-      });
-      
-      if (response.ok) {
-        setPointsAwarded(true);
-        debug(`✅ Awarded ${points} reward points for purchase`);
-      }
-    } catch (error) {
-      console.error('Failed to award points:', error);
     }
   };
   
@@ -345,23 +311,6 @@ function SuccessContent() {
                       {userStats?.availableSpins > 0 
                         ? `You have ${userStats.availableSpins} total spins available`
                         : 'Spin now for a discount on your next order!'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Reward Points Earned */}
-            {pointsAwarded && orderDetails && (
-              <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-lg border border-yellow-200">
-                <div className="flex items-center gap-3">
-                  <Trophy className="w-8 h-8 text-yellow-600" />
-                  <div>
-                    <div className="font-semibold text-yellow-800">
-                      You earned {Math.floor(orderDetails.total)} reward points!
-                    </div>
-                    <div className="text-sm text-yellow-700">
-                      Keep shopping to level up and unlock exclusive rewards
                     </div>
                   </div>
                 </div>

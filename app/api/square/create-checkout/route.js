@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { logger } from '@/lib/logger';
+import { appendOrderAccessToken, generateOrderAccessToken } from '@/lib/order-access-token';
 
 const SQUARE_ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -42,6 +43,16 @@ export async function POST(request) {
     }));
 
     // Create checkout request
+    const orderAccessToken = generateOrderAccessToken({
+      orderId,
+      customerEmail: customer?.email || null,
+      ttlMs: 7 * 24 * 60 * 60 * 1000,
+    });
+    const redirectUrl = appendOrderAccessToken(
+      `${BASE_URL}/order/success?orderRef=${encodeURIComponent(orderId)}`,
+      orderAccessToken
+    );
+
     const checkoutData = {
       idempotency_key: randomUUID(),
       order: {
@@ -56,7 +67,7 @@ export async function POST(request) {
         }
       },
       checkout_options: {
-        redirect_url: `${BASE_URL}/order/success?orderId=${orderId}`,
+        redirect_url: redirectUrl,
         ask_for_shipping_address: false,
         enable_coupon: false,
         enable_loyalty: false,

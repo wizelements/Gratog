@@ -25,6 +25,7 @@ interface SquarePaymentFormProps {
   amountCents: number;
   orderId: string;
   squareOrderId?: string;
+  orderAccessToken?: string;
   customer: {
     email: string;
     name: string;
@@ -42,12 +43,15 @@ interface PaymentResult {
   cardLast4?: string;
   cardBrand?: string;
   amountCents?: number;
+  orderAccessToken?: string | null;
+  orderAccessTokenExpiresAt?: string | null;
 }
 
 export default function SquarePaymentForm({
   amountCents,
   orderId,
   squareOrderId,
+  orderAccessToken,
   customer,
   onSuccess,
   onError,
@@ -221,6 +225,7 @@ export default function SquarePaymentForm({
         currency: 'USD',
         orderId,
         squareOrderId,
+        orderAccessToken,
         customer,
         idempotencyKey: generateIdempotencyKey()
       })
@@ -238,9 +243,11 @@ export default function SquarePaymentForm({
       receiptUrl: data.payment.receiptUrl,
       cardLast4: data.payment.cardLast4,
       cardBrand: data.payment.cardBrand,
-      amountCents: data.payment.amountCents || amountCents
+      amountCents: data.payment.amountCents || amountCents,
+      orderAccessToken: data.orderAccessToken || null,
+      orderAccessTokenExpiresAt: data.orderAccessTokenExpiresAt || null,
     });
-  }, [amountCents, orderId, squareOrderId, customer, onSuccess]);
+  }, [amountCents, orderId, squareOrderId, orderAccessToken, customer, onSuccess]);
 
   const handleCardPayment = useCallback(async () => {
     if (!cardRef.current || isProcessing) return;

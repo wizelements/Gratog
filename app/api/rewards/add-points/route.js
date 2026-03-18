@@ -1,8 +1,28 @@
 import { NextResponse } from 'next/server';
 import { rewardsSystem } from '@/lib/enhanced-rewards';
+import { verifyRequestAuthentication } from '@/lib/rewards-security';
+
+function isInternalPrincipal(auth) {
+  return (
+    auth?.authenticated && (
+      auth.authType === 'master_key' ||
+      auth.authType === 'admin_key' ||
+      auth.userId === 'system' ||
+      auth.userId === 'admin'
+    )
+  );
+}
 
 export async function POST(request) {
   try {
+    const auth = await verifyRequestAuthentication(request, { allowPublic: true });
+    if (!isInternalPrincipal(auth)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const { email, points, activityType, activityData = {} } = await request.json();
     
     if (!email) {
@@ -44,33 +64,25 @@ export async function POST(request) {
     
   } catch (error) {
     console.error('Add points error:', { error: error.message, stack: error.stack });
-    
-    // Attempt to store in localStorage as emergency fallback
-    try {
-      const { email, points, activityType, activityData } = await request.json();
-      rewardsSystem.storePendingActivity(email, points, activityType, activityData);
-      
-      return NextResponse.json({
-        success: true,
-        pointsAdded: points,
-        isFallback: true,
-        isEmergencyFallback: true,
-        message: `Points queued for sync (${points} pts for ${activityType})`,
-        warning: 'System temporarily offline - points will sync when restored'
-      });
-    } catch (fallbackError) {
-      console.error('Emergency fallback failed:', { error: fallbackError.message, stack: fallbackError.stack });
-      return NextResponse.json(
-        { success: false, error: 'Failed to add points' },
-        { status: 500 }
-      );
-    }
+
+    return NextResponse.json(
+      { success: false, error: 'Failed to add points' },
+      { status: 500 }
+    );
   }
 }
 
 // GET endpoint to sync pending activities
 export async function GET(request) {
   try {
+    const auth = await verifyRequestAuthentication(request, { allowPublic: true });
+    if (!isInternalPrincipal(auth)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const email = searchParams.get('email');
     const action = searchParams.get('action');
