@@ -97,7 +97,7 @@ export async function POST(request) {
     if (!result.success) {
       logger.error('Contact', 'Failed to send contact form email', { error: result.error });
       return NextResponse.json(
-        { error: 'Unable to send your message right now. Please try again.', debug_error: result.error },
+        { error: 'Unable to send your message right now. Please try again.' },
         { status: 500 }
       );
     }
@@ -202,11 +202,7 @@ export async function POST(request) {
 
     logger.info('Contact', 'Contact form message sent', { to: CONTACT_INBOX, from: email });
 
-    return NextResponse.json({
-      success: true,
-      provider: result.provider,
-      messageId: result.messageId,
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
     logger.error('Contact', 'Contact form error', {
       error: error instanceof Error ? error.message : String(error),
