@@ -202,7 +202,11 @@ export async function POST(request) {
 
     logger.info('Contact', 'Contact form message sent', { to: CONTACT_INBOX, from: email });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      provider: result.provider,
+      messageId: result.messageId,
+    });
   } catch (error) {
     logger.error('Contact', 'Contact form error', {
       error: error instanceof Error ? error.message : String(error),
