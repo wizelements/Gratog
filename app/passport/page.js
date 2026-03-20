@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, Suspense } from 'react';
 import MarketPassport from '@/components/MarketPassport';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,20 +9,12 @@ import { Label } from '@/components/ui/label';
 import { MapPin, QrCode } from 'lucide-react';
 
 function PassportContent() {
-  const searchParams = useSearchParams();
   const [customerData, setCustomerData] = useState({
-    email: searchParams?.get('email') || '',
-    name: searchParams?.get('name') || ''
+    email: '',
+    name: ''
   });
   const [showPassport, setShowPassport] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    // Auto-show passport if email is in URL
-    if (customerData.email) {
-      setShowPassport(true);
-    }
-  }, [customerData.email]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

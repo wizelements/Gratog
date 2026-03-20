@@ -116,6 +116,53 @@ export default function OrderSuccessPage() {
   }
 
   if (error || !order) {
+    if (isPaidFromUrl) {
+      return (
+        <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-12">
+          <div className="container max-w-4xl">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
+                <CheckCircle className="w-12 h-12 text-green-600" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Received! ✓</h1>
+              <p className="text-gray-600">
+                Your payment{amountFromUrl ? ` of $${(amountFromUrl / 100).toFixed(2)}` : ''} was confirmed.
+              </p>
+              <p className="text-gray-500 text-sm mt-2">
+                Your order details are being finalized. You&apos;ll receive a confirmation email shortly.
+              </p>
+            </div>
+            <Card className="max-w-md mx-auto">
+              <CardContent className="p-8 text-center space-y-4">
+                {orderRef && (
+                  <p className="text-xs text-gray-400 font-mono">
+                    Ref: {orderRef}
+                  </p>
+                )}
+                <Button
+                  onClick={() => {
+                    setLoading(true);
+                    setError(null);
+                    setPollAttempts(0);
+                    fetchOrderDetails(0);
+                  }}
+                  variant="outline"
+                  className="w-full"
+                >
+                  🔄 Check Order Status
+                </Button>
+                <Link href="/catalog">
+                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
+                    Continue Shopping
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-emerald-50 to-white">
         <Card className="max-w-md mx-auto">

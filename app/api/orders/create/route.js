@@ -13,6 +13,7 @@ import { findOrCreateSquareCustomer, createCustomerNote } from '@/lib/square-cus
 import { RateLimit } from '@/lib/redis';
 import { withIdempotency, getIdempotencyKeyFromHeaders } from '@/lib/idempotency';
 import { checkFreeDeliveryRadiusFrom30331 } from '@/lib/delivery-radius';
+import { getSquareClient } from '@/lib/square';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';
 import { generateOrderAccessToken, verifyOrderAccessToken } from '@/lib/order-access-token';
 
@@ -23,6 +24,223 @@ const ORDER_ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
 const ORDER_RATE_LIMIT = 10; // Max orders per window
 const ORDER_RATE_WINDOW = 300; // 5 minutes
 const MAX_PREORDER_DAYS = 60;
+const DEFAULT_SCHEDULE_TIME_BY_FULFILLMENT = Object.freeze({
+  pickup: '09:00',
+  pickup_serenbe: '09:00',
+  pickup_market: '09:00',
+  pickup_browns_mill: '09:00',
+  meetup_serenbe: '09:00',
+  delivery: '14:00',
+  shipping: '12:00'
+});
+
+function isValidSquareCatalogId(id) {
+  return typeof id === 'string' && id.length >= 20 && /^[A-Z0-9]+$/i.test(id);
+}
+
+function resolveCartVariationId(item = {}) {
+  const candidates = [
+    item.variationId,
+    item.catalogObjectId,
+    item.squareVariationId,
+    item.productId,
+    item.id,
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate === undefined || candidate === null) {
+      continue;
+    }
+
+    const normalized = String(candidate).trim();
+    if (normalized.length > 0) {
+      return normalized;
+    }
+  }
+
+  return null;
+}
+
+function normalizeQuantity(quantity) {
+  const parsed = Number(quantity);
+  if (!Number.isFinite(parsed)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.trunc(parsed));
+}
+
+function normalizeClientPrice(price) {
+  const parsed = Number(price);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 0;
+  }
+
+  return Math.round(parsed * 100) / 100;
+}
+
+function buildIdempotencyCartFingerprint(cartItems = []) {
+  const quantityByVariation = new Map();
+  const rawItems = Array.isArray(cartItems) ? cartItems : [];
+
+  for (const item of rawItems) {
+    const variationId = resolveCartVariationId(item);
+    const quantity = normalizeQuantity(item?.quantity);
+    if (!variationId || quantity <= 0) {
+      continue;
+    }
+
+    quantityByVariation.set(variationId, (quantityByVariation.get(variationId) || 0) + quantity);
+  }
+
+  if (quantityByVariation.size > 0) {
+    return Array.from(quantityByVariation.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([variationId, qty]) => ({ variationId, qty }));
+  }
+
+  return rawItems.map((item, index) => ({
+    fallbackKey: String(item?.name || `item_${index}`).trim().toLowerCase(),
+    qty: normalizeQuantity(item?.quantity)
+  }));
+}
+
+function parseSquarePriceCents(catalogObject) {
+  const variationData = catalogObject?.itemVariationData || catalogObject?.item_variation_data;
+  const priceMoney = variationData?.priceMoney || variationData?.price_money;
+  const amount = priceMoney?.amount;
+  if (amount === undefined || amount === null) {
+    return null;
+  }
+
+  const cents = Number(amount);
+  if (!Number.isFinite(cents) || cents < 0) {
+    return null;
+  }
+
+  return cents;
+}
+
+async function applyServerAuthoritativePricing(orderData, { allowFallback = false } = {}) {
+  const rawCart = Array.isArray(orderData.cart) ? orderData.cart : [];
+  const normalizedItems = rawCart.map((item, index) => ({
+    index,
+    item,
+    variationId: resolveCartVariationId(item),
+    quantity: normalizeQuantity(item?.quantity),
+  }));
+
+  const missingIdentifiers = normalizedItems.filter(line => !line.variationId);
+  if (missingIdentifiers.length > 0) {
+    return {
+      valid: false,
+      statusCode: 400,
+      error: 'Cart items are missing product identifiers. Please refresh your cart and try again.'
+    };
+  }
+
+  const invalidQuantities = normalizedItems.filter(line => line.quantity <= 0);
+  if (invalidQuantities.length > 0) {
+    return {
+      valid: false,
+      statusCode: 400,
+      error: 'Cart contains invalid quantity values. Please refresh your cart and try again.'
+    };
+  }
+
+  const uniqueVariationIds = Array.from(new Set(normalizedItems.map(line => line.variationId)));
+  const squareVariationIds = uniqueVariationIds.filter(isValidSquareCatalogId);
+  const nonSquareVariationIds = uniqueVariationIds.filter(id => !isValidSquareCatalogId(id));
+
+  if (nonSquareVariationIds.length > 0 && !allowFallback) {
+    return {
+      valid: false,
+      statusCode: 400,
+      error: 'Unable to verify one or more cart items. Please refresh your cart and try again.'
+    };
+  }
+
+  const authoritativePriceByVariation = new Map();
+
+  if (squareVariationIds.length > 0) {
+    try {
+      const square = getSquareClient();
+      const catalogResponse = await square.catalog.batchGet({
+        objectIds: squareVariationIds,
+        includeRelatedObjects: false,
+      });
+
+      const catalogObjects = Array.isArray(catalogResponse?.objects) ? catalogResponse.objects : [];
+      for (const catalogObject of catalogObjects) {
+        const priceCents = parseSquarePriceCents(catalogObject);
+        if (priceCents === null) {
+          continue;
+        }
+
+        const variationData = catalogObject?.itemVariationData || catalogObject?.item_variation_data;
+        authoritativePriceByVariation.set(catalogObject.id, {
+          priceCents,
+          variationName: variationData?.name || null,
+        });
+      }
+    } catch (error) {
+      if (!allowFallback) {
+        return {
+          valid: false,
+          statusCode: 503,
+          error: 'Unable to verify live catalog pricing right now. Please try again in a moment.'
+        };
+      }
+
+      logger.warn('Catalog repricing failed in fallback mode', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  const unresolvedSquareIds = squareVariationIds.filter(id => !authoritativePriceByVariation.has(id));
+  if (unresolvedSquareIds.length > 0 && !allowFallback) {
+    return {
+      valid: false,
+      statusCode: 400,
+      error: 'One or more items are no longer available at checkout pricing. Please refresh your cart.'
+    };
+  }
+
+  let pricingOverrides = 0;
+  const repricedCart = normalizedItems.map(({ item, variationId, quantity }) => {
+    const authoritative = authoritativePriceByVariation.get(variationId);
+    const unitPrice = authoritative
+      ? authoritative.priceCents / 100
+      : normalizeClientPrice(item?.price);
+
+    const originalPrice = normalizeClientPrice(item?.price);
+    if (authoritative && Math.abs(originalPrice - unitPrice) > 0.009) {
+      pricingOverrides += 1;
+    }
+
+    return {
+      ...item,
+      id: item?.id || item?.productId || variationId,
+      productId: item?.productId || item?.id || variationId,
+      variationId,
+      catalogObjectId: variationId,
+      name: String(item?.name || authoritative?.variationName || 'Product').trim().slice(0, 120),
+      quantity,
+      price: unitPrice,
+    };
+  });
+
+  const subtotal = repricedCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  return {
+    valid: true,
+    cart: repricedCart,
+    subtotal,
+    source: authoritativePriceByVariation.size > 0 ? 'square_catalog' : 'fallback_client_price',
+    pricingOverrides,
+  };
+}
 
 function shouldAllowSquareFallback() {
   const configured = process.env.SQUARE_FALLBACK_MODE;
@@ -151,6 +369,161 @@ function getNextSaturday(time = '09:00') {
   return nextSat.toISOString();
 }
 
+function isPickupFulfillmentType(fulfillmentType) {
+  return fulfillmentType === 'pickup' ||
+    fulfillmentType === 'pickup_serenbe' ||
+    fulfillmentType === 'pickup_market' ||
+    fulfillmentType === 'pickup_browns_mill' ||
+    fulfillmentType === 'meetup_serenbe';
+}
+
+function getDefaultScheduleTime(fulfillmentType) {
+  return DEFAULT_SCHEDULE_TIME_BY_FULFILLMENT[fulfillmentType] || '09:00';
+}
+
+function parseRequestedTimeWindow(windowText, fallbackTime) {
+  const raw = typeof windowText === 'string' ? windowText.trim() : '';
+  if (!raw) {
+    return fallbackTime;
+  }
+
+  const match = raw.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+  if (!match) {
+    return fallbackTime;
+  }
+
+  let hour = Number(match[1]);
+  const minute = Number(match[2] || '0');
+  const meridiem = match[3]?.toLowerCase();
+
+  if (!Number.isFinite(hour) || !Number.isFinite(minute) || minute < 0 || minute > 59) {
+    return fallbackTime;
+  }
+
+  if (meridiem === 'pm' && hour < 12) {
+    hour += 12;
+  }
+  if (meridiem === 'am' && hour === 12) {
+    hour = 0;
+  }
+
+  if (hour < 0 || hour > 23) {
+    return fallbackTime;
+  }
+
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
+function getTimeZoneOffsetMinutes(date, timeZone) {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+
+  const parts = formatter.formatToParts(date);
+  const getPart = (type) => Number(parts.find(part => part.type === type)?.value || '0');
+  const asUTC = Date.UTC(
+    getPart('year'),
+    getPart('month') - 1,
+    getPart('day'),
+    getPart('hour'),
+    getPart('minute'),
+    getPart('second'),
+  );
+
+  return (asUTC - date.getTime()) / (60 * 1000);
+}
+
+function toTimeZoneISOString(dateInput, timeInput, timeZone = ATLANTA_TIMEZONE) {
+  const dateMatch = String(dateInput || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!dateMatch) {
+    return null;
+  }
+
+  const [hourPart = '09', minutePart = '00'] = String(timeInput || '09:00').split(':');
+  const year = Number(dateMatch[1]);
+  const month = Number(dateMatch[2]);
+  const day = Number(dateMatch[3]);
+  const hour = Number(hourPart);
+  const minute = Number(minutePart);
+
+  if (![year, month, day, hour, minute].every(Number.isFinite)) {
+    return null;
+  }
+
+  const utcGuess = Date.UTC(year, month - 1, day, hour, minute, 0);
+  const offsetMinutes = getTimeZoneOffsetMinutes(new Date(utcGuess), timeZone);
+  const correctedUtc = utcGuess - (offsetMinutes * 60 * 1000);
+
+  return new Date(correctedUtc).toISOString();
+}
+
+function deriveAutoScheduledFulfillmentAt(fulfillmentType) {
+  if (isPickupFulfillmentType(fulfillmentType)) {
+    return getNextSaturday('09:00');
+  }
+
+  if (fulfillmentType === 'delivery') {
+    return new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  }
+
+  if (fulfillmentType === 'shipping') {
+    return new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
+  }
+
+  return new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+}
+
+function buildFulfillmentSchedule({ fulfillmentType, timing }) {
+  const nowIso = new Date().toISOString();
+  const scheduledMode = timing?.mode === 'scheduled';
+  const requestedDate = scheduledMode ? timing?.requestedDate || null : null;
+  const requestedTimeWindow = scheduledMode ? timing?.requestedTimeWindow || null : null;
+  const requestedNotes = scheduledMode ? timing?.notes || null : null;
+  const defaultTime = getDefaultScheduleTime(fulfillmentType);
+  const preferredTime = scheduledMode
+    ? parseRequestedTimeWindow(requestedTimeWindow, defaultTime)
+    : defaultTime;
+
+  const scheduledFulfillmentAt = scheduledMode && requestedDate
+    ? toTimeZoneISOString(requestedDate, preferredTime, ATLANTA_TIMEZONE) || deriveAutoScheduledFulfillmentAt(fulfillmentType)
+    : deriveAutoScheduledFulfillmentAt(fulfillmentType);
+
+  if (scheduledMode) {
+    return {
+      status: 'requested',
+      requestedDate,
+      requestedTimeWindow,
+      requestedNotes,
+      requestedAt: nowIso,
+      scheduledFulfillmentAt,
+      confirmedFulfillmentAt: null,
+      confirmedTimeWindow: null,
+      confirmedBy: null,
+      confirmedAt: null,
+    };
+  }
+
+  return {
+    status: 'auto_assigned',
+    requestedDate: null,
+    requestedTimeWindow: null,
+    requestedNotes: null,
+    requestedAt: null,
+    scheduledFulfillmentAt,
+    confirmedFulfillmentAt: scheduledFulfillmentAt,
+    confirmedTimeWindow: null,
+    confirmedBy: 'system',
+    confirmedAt: nowIso,
+  };
+}
+
 function normalizeOrderTiming(input = {}) {
   const mode = input?.mode === 'scheduled' ? 'scheduled' : 'asap';
   return {
@@ -167,8 +540,12 @@ function normalizeOrderTiming(input = {}) {
 
 function resolveOrderTiming(orderData) {
   const timing = normalizeOrderTiming(orderData.orderTiming);
-  if (timing.mode !== 'scheduled' || !timing.requestedDate) {
-    return { valid: true, timing, preOrderRequested: timing.mode === 'scheduled' };
+  if (timing.mode !== 'scheduled') {
+    return { valid: true, timing, preOrderRequested: false };
+  }
+
+  if (!timing.requestedDate) {
+    return { valid: false, error: 'Pre-order date is required when selecting scheduled fulfillment.' };
   }
 
   const selectedDate = new Date(`${timing.requestedDate}T00:00:00`);
@@ -203,23 +580,30 @@ function buildFulfillment(orderData) {
     shippingAddress,
     deliveryInstructions,
     pickup,
-    orderTiming
+    orderTiming,
+    fulfillmentSchedule
   } = orderData;
+
+  const schedule = fulfillmentSchedule || {};
+  const scheduledFulfillmentAt =
+    schedule.scheduledFulfillmentAt ||
+    orderData.scheduledFulfillmentAt ||
+    deriveAutoScheduledFulfillmentAt(fulfillmentType);
+  const requestedDate = schedule.requestedDate || orderTiming?.requestedDate || null;
+  const requestedWindow = schedule.requestedTimeWindow || orderTiming?.requestedTimeWindow || null;
+  const pendingScheduleNote = schedule.status === 'requested'
+    ? ` • PRE-ORDER REQUEST${requestedDate ? ` (${requestedDate})` : ''}${requestedWindow ? ` • WINDOW REQUEST: ${requestedWindow}` : ''} • TIMELINE WILL BE CONFIRMED`
+    : '';
   
   // Pickup orders (Serenbe or DHA Dunwoody)
   // NORMALIZED: pickup_market = Serenbe, pickup_browns_mill = DHA Dunwoody
   // Also handle legacy 'meetup_serenbe' type
-  const isPickupOrder = fulfillmentType === 'pickup' || fulfillmentType === 'pickup_serenbe' || 
-                        fulfillmentType === 'pickup_market' || fulfillmentType === 'pickup_browns_mill' ||
-                        fulfillmentType === 'meetup_serenbe';
+  const isPickupOrder = isPickupFulfillmentType(fulfillmentType);
   if (isPickupOrder) {
     const isBrownsMill = fulfillmentType === 'pickup_browns_mill' || pickup?.locationId === 'browns_mill';
     // Normalize fulfillment type for consistency across all systems
     const normalizedType = isBrownsMill ? 'pickup_browns_mill' : 'pickup_market';
-    const pickupDate = getNextSaturday('09:00');
-    const preOrderText = orderTiming?.mode === 'scheduled'
-      ? ` • PRE-ORDER REQUEST${orderTiming?.requestedDate ? ` (${orderTiming.requestedDate})` : ''} • TIMELINE WILL BE CONFIRMED`
-      : '';
+    const pickupDate = scheduledFulfillmentAt || getNextSaturday('09:00');
 
     return [{
       type: 'PICKUP',
@@ -230,8 +614,8 @@ function buildFulfillment(orderData) {
           phone_number: customer.phone
         },
         note: isBrownsMill
-          ? `📍 PICKUP: DHA Dunwoody Farmers Market • Brook Run Park, 4770 N Peachtree Rd, Dunwoody, GA 30338 • Saturdays 9:00 AM - 12:00 PM • Show order number at pickup booth${preOrderText}`
-          : `📍 PICKUP: Serenbe Farmers Market (Booth #12) • 10950 Hutcheson Ferry Rd, Palmetto, GA 30268 • Saturdays 9:00 AM - 1:00 PM${preOrderText}`,
+          ? `📍 PICKUP: DHA Dunwoody Farmers Market • Brook Run Park, 4770 N Peachtree Rd, Dunwoody, GA 30338 • Saturdays 9:00 AM - 12:00 PM • Show order number at pickup booth${pendingScheduleNote}`
+          : `📍 PICKUP: Serenbe Farmers Market (Booth #12) • 10950 Hutcheson Ferry Rd, Palmetto, GA 30268 • Saturdays 9:00 AM - 1:00 PM${pendingScheduleNote}`,
         schedule_type: 'SCHEDULED',
         pickup_at: pickupDate
       },
@@ -243,10 +627,7 @@ function buildFulfillment(orderData) {
   
   // Delivery orders (local delivery)
   if (fulfillmentType === 'delivery') {
-    const expectedDeliveryDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-    const preOrderSuffix = orderTiming?.mode === 'scheduled'
-      ? ` • PRE-ORDER REQUEST${orderTiming?.requestedDate ? ` (${orderTiming.requestedDate})` : ''} • TIMELINE WILL BE CONFIRMED`
-      : '';
+    const expectedDeliveryDate = scheduledFulfillmentAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     return [{
       type: 'SHIPMENT',
       state: 'PROPOSED',
@@ -261,7 +642,7 @@ function buildFulfillment(orderData) {
             postal_code: deliveryAddress?.zip || ''
           }
         },
-        shipping_note: `🚚 LOCAL DELIVERY${deliveryInstructions ? ' - ' + deliveryInstructions : ''}${preOrderSuffix}`,
+        shipping_note: `🚚 LOCAL DELIVERY${deliveryInstructions ? ' - ' + deliveryInstructions : ''}${pendingScheduleNote}`,
         expected_shipped_at: expectedDeliveryDate
       }
     }];
@@ -270,9 +651,9 @@ function buildFulfillment(orderData) {
   // Shipping orders (nationwide shipping)
   if (fulfillmentType === 'shipping') {
     const addr = shippingAddress || deliveryAddress;
-    const expectedShipDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
-    const shippingNote = orderTiming?.mode === 'scheduled'
-      ? `📦 USPS PRIORITY SHIPPING • PRE-ORDER REQUEST${orderTiming?.requestedDate ? ` (${orderTiming.requestedDate})` : ''} • TIMELINE WILL BE CONFIRMED`
+    const expectedShipDate = scheduledFulfillmentAt || new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
+    const shippingNote = schedule.status === 'requested'
+      ? `📦 USPS PRIORITY SHIPPING${pendingScheduleNote}`
       : '📦 USPS PRIORITY SHIPPING';
     return [{
       type: 'SHIPMENT',
@@ -330,6 +711,8 @@ export async function POST(request) {
       );
     }
     
+    const ALLOW_FALLBACK = shouldAllowSquareFallback();
+    
     // IDEMPOTENCY: Generate key from order data to prevent duplicate orders
     // Check for client-provided idempotency key first
     let idempotencyKey = getIdempotencyKeyFromHeaders(request.headers);
@@ -339,7 +722,7 @@ export async function POST(request) {
       const orderHash = createHash('sha256')
         .update(JSON.stringify({
           email: orderData.customer.email,
-          cart: orderData.cart?.map(i => ({ id: i.id, qty: i.quantity })),
+          cart: buildIdempotencyCartFingerprint(orderData.cart),
           fulfillmentType: orderData.fulfillmentType,
           // Include timestamp bucket (5-minute window) to allow genuine re-orders
           timeBucket: Math.floor(Date.now() / (5 * 60 * 1000))
@@ -404,6 +787,26 @@ export async function POST(request) {
     }
     orderData.orderTiming = timingResolution.timing;
     orderData.preOrderRequested = timingResolution.preOrderRequested;
+    
+    const pricingResolution = await applyServerAuthoritativePricing(orderData, {
+      allowFallback: ALLOW_FALLBACK,
+    });
+    if (!pricingResolution.valid) {
+      return NextResponse.json(
+        { success: false, error: pricingResolution.error },
+        { status: pricingResolution.statusCode || 400 }
+      );
+    }
+
+    orderData.cart = pricingResolution.cart;
+    orderData.pricingSource = pricingResolution.source;
+    orderData.pricingOverrides = pricingResolution.pricingOverrides;
+
+    orderData.fulfillmentSchedule = buildFulfillmentSchedule({
+      fulfillmentType: orderData.fulfillmentType,
+      timing: orderData.orderTiming,
+    });
+    orderData.scheduledFulfillmentAt = orderData.fulfillmentSchedule.scheduledFulfillmentAt;
     
     // Validate delivery fulfillment
     if (orderData.fulfillmentType === 'delivery') {
@@ -480,16 +883,15 @@ export async function POST(request) {
     
     // Calculate pickup date for pickup orders (for cron job filtering)
     let pickupDate = null;
-    const isPickup = orderData.fulfillmentType === 'pickup' || 
-                     orderData.fulfillmentType === 'pickup_serenbe' || 
-                     orderData.fulfillmentType === 'pickup_market' || 
-                     orderData.fulfillmentType === 'pickup_browns_mill' ||
-                     orderData.fulfillmentType === 'meetup_serenbe';
+    const isPickup = isPickupFulfillmentType(orderData.fulfillmentType);
     if (isPickup) {
       const isBrownsMill = orderData.fulfillmentType === 'pickup_browns_mill' || 
                            orderData.pickup?.locationId === 'browns_mill';
-      pickupDate = getNextSaturday('09:00');
-      
+      const scheduleStatus = orderData.fulfillmentSchedule?.status;
+      pickupDate = scheduleStatus === 'requested'
+        ? null
+        : (orderData.scheduledFulfillmentAt || getNextSaturday('09:00'));
+
       // Normalize fulfillment type for consistency
       orderData.fulfillmentType = isBrownsMill ? 'pickup_browns_mill' : 'pickup_market';
     }
@@ -497,7 +899,11 @@ export async function POST(request) {
     // Add metadata
     const enhancedOrderData = {
       ...orderData,
+      id: orderId,
+      orderNumber,
       deliveryFee,
+      scheduledFulfillmentAt: orderData.scheduledFulfillmentAt,
+      fulfillmentSchedule: orderData.fulfillmentSchedule,
       pickupDate, // Store pickup date for cron jobs
       metadata: {
         ...orderData.metadata,
@@ -508,15 +914,17 @@ export async function POST(request) {
         deliveryDistanceMiles,
         freeDeliveryEligible30331,
         orderTiming: orderData.orderTiming,
-        preOrderRequested: orderData.preOrderRequested
+        preOrderRequested: orderData.preOrderRequested,
+        pricingSource: orderData.pricingSource || 'unknown',
+        pricingOverrides: orderData.pricingOverrides || 0,
+        fulfillmentSchedule: orderData.fulfillmentSchedule,
       }
     };
     
     // CRITICAL: Create Square Customer FIRST, then Order
     let squareOrderId = null;
     let squareCustomerId = null;
-    const ALLOW_FALLBACK = shouldAllowSquareFallback();
-    
+
     const SQUARE_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
     const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID;
     const SQUARE_ENV = process.env.SQUARE_ENVIRONMENT || 'production';
@@ -569,12 +977,6 @@ export async function POST(request) {
         // STEP 2: Create Square Order with customer link
         logger.info('Creating Square Order', { orderId, customerId: squareCustomerId });
         
-        // Helper to check if a catalog ID looks valid for Square
-        // Square IDs are 20+ char alphanumeric (e.g., "Y4CVHHOK55IJ727SWK4QTP5A")
-        const isValidSquareCatalogId = (id) => {
-          return id && typeof id === 'string' && id.length >= 20 && /^[A-Z0-9]+$/i.test(id);
-        };
-        
         const orderPayload = {
           idempotency_key: `order_${orderId}_${Date.now()}`,
           order: {
@@ -620,11 +1022,14 @@ export async function POST(request) {
               customer_phone: orderData.customer.phone,
               fulfillment_timing: orderData.orderTiming?.mode || 'asap',
               requested_date: orderData.orderTiming?.requestedDate || '',
-              requested_time_window: orderData.orderTiming?.requestedTimeWindow || ''
-            },
-            fulfillments: buildFulfillment(orderData)
-          }
-        };
+              requested_time_window: orderData.orderTiming?.requestedTimeWindow || '',
+              schedule_status: orderData.fulfillmentSchedule?.status || 'auto_assigned',
+              scheduled_fulfillment_at: orderData.fulfillmentSchedule?.scheduledFulfillmentAt || '',
+              pricing_source: orderData.pricingSource || 'unknown'
+              },
+              fulfillments: buildFulfillment(orderData)
+            }
+          };
         
         // FIXED: Use current stable Square API version (was future date 2025-10-16)
         const SQUARE_VERSION = '2024-01-18';

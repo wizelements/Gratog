@@ -147,6 +147,13 @@ export async function POST(request) {
           continue;
         }
 
+        if (buffer.length > 2 * 1024 * 1024) {
+          console.warn('[ReviewUpload] Large image stored in MongoDB document', {
+            size: buffer.length,
+            name: file.name,
+          });
+        }
+
         const sha256 = crypto.createHash('sha256').update(buffer).digest('hex');
         const existingMedia = await db.collection('review_media').findOne(
           {

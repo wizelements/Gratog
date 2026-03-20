@@ -235,6 +235,13 @@ export async function POST(request: NextRequest) {
           'metadata.orderId': resolvedOrderId,
           status: { $in: ['COMPLETED', 'APPROVED'] }
         });
+        if (existingPayment) {
+          logger.warn('API', 'Payment found in legacy "payments" collection — migration incomplete', {
+            traceId: ctx.traceId,
+            orderId: resolvedOrderId,
+            paymentId: existingPayment.squarePaymentId,
+          });
+        }
       }
 
       if (existingPayment) {
@@ -980,6 +987,12 @@ export async function GET(request: NextRequest) {
           { 'metadata.orderId': orderId },
           { sort: { createdAt: -1 } }
         );
+        if (paymentRecord) {
+          logger.warn('API', 'Payment found in legacy "payments" collection (GET) — migration incomplete', {
+            traceId: ctx.traceId,
+            orderId,
+          });
+        }
       }
 
       return json({

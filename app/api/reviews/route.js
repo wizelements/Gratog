@@ -503,6 +503,8 @@ async function checkVerifiedPurchase(db, email, productId) {
             { 'items.productId': normalizedProductId },
             { 'items.id': normalizedProductId },
             { 'items.slug': normalizedProductId },
+            { 'items.catalogObjectId': normalizedProductId },
+            { 'items.variationId': normalizedProductId },
           ]
         },
         {

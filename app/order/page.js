@@ -21,6 +21,7 @@ const logger = createLogger('OrderPage');
 
 const DELIVERY_ENABLED = process.env.NEXT_PUBLIC_FULFILLMENT_DELIVERY === 'enabled';
 const DELIVERY_CONFIGURED = DELIVERY_ENABLED;
+const MAX_PREORDER_DAYS = 60;
 
 export default function OrderPage() {
   const router = useRouter();
@@ -188,13 +189,27 @@ export default function OrderPage() {
       }
     }
 
-    if (orderTiming.mode === 'scheduled' && orderTiming.requestedDate) {
+    if (orderTiming.mode === 'scheduled') {
+      if (!orderTiming.requestedDate) {
+        toast.error('Please select your requested pre-order date');
+        scrollToField('requested_date');
+        return false;
+      }
+
       const selectedDate = new Date(`${orderTiming.requestedDate}T00:00:00`);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
       if (Number.isNaN(selectedDate.getTime()) || selectedDate < today) {
         toast.error('Pre-order date must be today or later');
+        scrollToField('requested_date');
+        return false;
+      }
+
+      const maxDate = new Date(today);
+      maxDate.setDate(maxDate.getDate() + MAX_PREORDER_DAYS);
+      if (selectedDate > maxDate) {
+        toast.error(`Pre-orders can be scheduled up to ${MAX_PREORDER_DAYS} days ahead`);
         scrollToField('requested_date');
         return false;
       }
@@ -313,7 +328,10 @@ export default function OrderPage() {
     
     // Redirect to success page with orderRef and amount (stateless pattern)
     const orderRef = orderCreated?.id; // Our orderId IS the orderRef
-    const amountCents = paymentData.amountCents || Math.round(total * 100);
+    const serverAmountCents = typeof orderCreated?.pricing?.total === 'number'
+      ? Math.round(orderCreated.pricing.total * 100)
+      : Math.round(total * 100);
+    const amountCents = paymentData.amountCents || serverAmountCents;
     toast.success('Payment successful! 🎉', { duration: 3000 });
     setTimeout(() => {
       const params = new URLSearchParams({
@@ -356,17 +374,21 @@ export default function OrderPage() {
 
   // Show payment form if order created
   if (orderCreated) {
+    const orderCreatedTotal = typeof orderCreated?.pricing?.total === 'number'
+      ? orderCreated.pricing.total
+      : total;
+
     return (
       <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-12">
         <div className="container max-w-2xl">
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Complete Payment</h1>
-            <p className="text-gray-600">Order #{orderCreated.orderNumber} - Total: ${total.toFixed(2)}</p>
+            <p className="text-gray-600">Order #{orderCreated.orderNumber} - Total: ${orderCreatedTotal.toFixed(2)}</p>
           </div>
 
           <SquarePaymentForm
             orderId={orderCreated.id}
-            amountCents={Math.round(total * 100)}
+            amountCents={Math.round(orderCreatedTotal * 100)}
             squareOrderId={orderCreated.squareOrderId}
             orderAccessToken={orderCreated.orderAccessToken}
             customer={{
@@ -736,19 +758,21 @@ export default function OrderPage() {
                   {orderTiming.mode === 'scheduled' && (
                     <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 space-y-3">
                       <div>
-                        <Label htmlFor="requested_date">Preferred Date (Optional)</Label>
+                        <Label htmlFor="requested_date">Preferred Date (Required)</Label>
                         <Input
                           id="requested_date"
                           type="date"
                           value={orderTiming.requestedDate}
                           min={new Date().toISOString().split('T')[0]}
+                          max={new Date(Date.now() + MAX_PREORDER_DAYS * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                           onChange={(e) => setOrderTiming((prev) => ({ ...prev, requestedDate: e.target.value }))}
-                          disabled={isSubmitting}
-                        />
+                            required
+                            disabled={isSubmitting}
+                          />
                         <p className="text-xs text-emerald-700 mt-2">
-                          This is a request. We’ll text/email you to confirm the final timeline.
-                        </p>
-                      </div>
+                            This is required for pre-orders. We’ll text/email to confirm the final timeline after review.
+                          </p>
+                        </div>
                       <div>
                         <Label htmlFor="requested_window">Preferred Time Window (Optional)</Label>
                         <Input
