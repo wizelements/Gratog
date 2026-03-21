@@ -1,6 +1,6 @@
 // AUTO-UPDATE: This version string is replaced at build time by next.config.js headers.
 // The browser byte-compares sw.js on every registration check — any change triggers update.
-const CACHE_VERSION = 'v5-20260321-1';
+const CACHE_VERSION = 'v6-20260321-2';
 const CACHE_PREFIX = 'gratog';
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${CACHE_VERSION}`;
@@ -118,9 +118,11 @@ async function navigationStrategy(event, request) {
   try {
     const preloadResponse = await event.preloadResponse;
     if (preloadResponse && preloadResponse.ok) {
-      const cache = await caches.open(RUNTIME_CACHE);
-      await cache.put(request, preloadResponse.clone());
-      await trimCache(RUNTIME_CACHE, MAX_RUNTIME_ENTRIES);
+      if (shouldCacheRuntimeRequest(new URL(request.url))) {
+        const cache = await caches.open(RUNTIME_CACHE);
+        await cache.put(request, preloadResponse.clone());
+        await trimCache(RUNTIME_CACHE, MAX_RUNTIME_ENTRIES);
+      }
       return preloadResponse;
     }
 
