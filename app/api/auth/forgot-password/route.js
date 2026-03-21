@@ -142,7 +142,7 @@ export async function POST(request) {
     if (!emailResult.success) {
       logger.error('Failed to send reset email', { email: normalizedEmail, error: emailResult.error, provider: emailResult.provider });
       return NextResponse.json(
-        { error: 'Unable to send reset email. Please try again.', debug: emailResult.error, provider: emailResult.provider },
+        { error: 'Unable to send reset email. Please try again.' },
         { status: 500 }
       );
     }
