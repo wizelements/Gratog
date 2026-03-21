@@ -109,7 +109,21 @@ export default function RootLayout({ children }) {
          <link rel="dns-prefetch" href="https://web.squarecdn.com" />
          <link rel="dns-prefetch" href="https://images.unsplash.com" />
          <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-         
+
+         {/* Inline SW auto-reload: runs independent of bundled JS so even stale PWA picks it up */}
+         <script dangerouslySetInnerHTML={{ __html: `
+           if('serviceWorker' in navigator){
+             var _swReloaded=false;
+             navigator.serviceWorker.addEventListener('controllerchange',function(){
+               if(!_swReloaded){_swReloaded=true;window.location.reload();}
+             });
+             navigator.serviceWorker.addEventListener('message',function(e){
+               if(e.data&&e.data.type==='SW_ACTIVATED'&&!_swReloaded){
+                 _swReloaded=true;window.location.reload();
+               }
+             });
+           }
+         `}} />
        </head>
       <body className={inter.className}>
         <PWAInitializer />

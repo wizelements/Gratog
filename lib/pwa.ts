@@ -42,9 +42,6 @@ export async function initializePWA(config: PWAConfig = {}): Promise<ServiceWork
     return serviceWorkerRegistration;
   }
 
-  // Clear reload guard from previous SW update
-  sessionStorage.removeItem('sw-reloading');
-
   try {
     // Register service worker
     const registration = await navigator.serviceWorker.register(SERVICE_WORKER_URL, {
@@ -279,11 +276,7 @@ function handleSWMessage(event: MessageEvent) {
       break;
     case 'SW_ACTIVATED':
       console.log('[PWA] New SW version activated:', data?.version || 'unknown');
-      // Auto-reload to pick up new assets — guard against reload loops
-      if (!sessionStorage.getItem('sw-reloading')) {
-        sessionStorage.setItem('sw-reloading', '1');
-        window.location.reload();
-      }
+      // Reload handled by inline script in layout.js head — no action needed here
       break;
     case 'UPDATE_AVAILABLE':
       notifyUpdateAvailable();
