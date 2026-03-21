@@ -90,7 +90,7 @@ export async function POST(request) {
       subject: `[Contact] ${subject}`,
       html,
       text,
-      replyTo: 'nook@tasteofgratitude.shop',
+      replyTo: 'nook@tasteofgratitude.net',
       emailType: 'contact_form',
     });
 
@@ -172,7 +172,7 @@ export async function POST(request) {
         subject: `Thanks for reaching out, ${name}! — Taste of Gratitude`,
         html: confirmationHtml,
         text: confirmationText,
-        replyTo: 'nook@tasteofgratitude.shop',
+        replyTo: 'nook@tasteofgratitude.net',
         emailType: 'contact_form',
       });
       logger.info('Contact', 'Confirmation email sent to submitter', { to: email });
