@@ -29,8 +29,12 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
 // Routes that don't require admin auth (within admin paths)
 const ADMIN_PUBLIC_ROUTES = [
   '/admin/login',
+  '/admin/forgot-password',
+  '/admin/reset-password',
   '/api/admin/auth/login',
   '/api/admin/auth/logout',
+  '/api/admin/auth/forgot-password',
+  '/api/admin/auth/reset-password',
   '/api/admin/setup', // Protected by secret, not token
   '/api/admin/init',  // Protected by secret, not token
   '/api/admin/emergency-init', // Protected by secret, not token

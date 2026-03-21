@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -100,6 +101,14 @@ export default function AdminLoginPage() {
                 'Login'
               )}
             </Button>
+            <div className="text-center">
+              <Link
+                href="/admin/forgot-password"
+                className="text-sm text-[#D4AF37] hover:text-[#B8941F] hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
           </form>
           <div className="mt-6 text-center text-xs text-muted-foreground">
             <p>Contact your administrator for access credentials.</p>
