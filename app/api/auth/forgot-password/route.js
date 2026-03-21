@@ -131,7 +131,7 @@ export async function POST(request) {
       "If you didn't request this, you can safely ignore this email. Your password will remain unchanged."
     ].join('\n');
 
-    await sendEmail({
+    const emailResult = await sendEmail({
       to: normalizedEmail,
       emailType: 'password_reset',
       subject: 'Password Reset - Taste of Gratitude',
@@ -139,7 +139,15 @@ export async function POST(request) {
       text: textContent
     });
 
-    logger.info('User password reset email sent', { email: normalizedEmail });
+    if (!emailResult.success) {
+      logger.error('Failed to send reset email', { email: normalizedEmail, error: emailResult.error });
+      return NextResponse.json(
+        { error: 'Unable to send reset email. Please try again.' },
+        { status: 500 }
+      );
+    }
+
+    logger.info('User password reset email sent', { email: normalizedEmail, messageId: emailResult.messageId });
 
     return NextResponse.json({
       success: true,
