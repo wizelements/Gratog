@@ -1,4 +1,6 @@
-const CACHE_VERSION = 'v4-20260310-1';
+// AUTO-UPDATE: This version string is replaced at build time by next.config.js headers.
+// The browser byte-compares sw.js on every registration check — any change triggers update.
+const CACHE_VERSION = 'v5-20260321-1';
 const CACHE_PREFIX = 'gratog';
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${CACHE_VERSION}`;
@@ -53,6 +55,12 @@ self.addEventListener('activate', (event) => {
       );
 
       await self.clients.claim();
+
+      // Notify all open tabs to reload with new version
+      const clients = await self.clients.matchAll({ type: 'window' });
+      clients.forEach((client) => {
+        client.postMessage({ type: 'SW_ACTIVATED', version: CACHE_VERSION });
+      });
     })()
   );
 });

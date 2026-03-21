@@ -12,7 +12,7 @@ let serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
 let updateCheckTimer: ReturnType<typeof setInterval> | null = null;
 let hasServiceWorkerMessageListener = false;
 let hasControllerChangeListener = false;
-const SERVICE_WORKER_VERSION = '20260310-1';
+const SERVICE_WORKER_VERSION = '20260321-1';
 const SERVICE_WORKER_URL = `/sw.js?v=${SERVICE_WORKER_VERSION}`;
 
 /**
@@ -21,7 +21,7 @@ const SERVICE_WORKER_URL = `/sw.js?v=${SERVICE_WORKER_VERSION}`;
 export async function initializePWA(config: PWAConfig = {}): Promise<ServiceWorkerRegistration | null> {
   const {
     enableAutoUpdate = true,
-    updateCheckInterval = 3600000, // 1 hour
+    updateCheckInterval = 60000, // 1 minute — catch deploys fast
     enableNotifications = true
   } = config;
 
@@ -41,6 +41,9 @@ export async function initializePWA(config: PWAConfig = {}): Promise<ServiceWork
   if (serviceWorkerRegistration) {
     return serviceWorkerRegistration;
   }
+
+  // Clear reload guard from previous SW update
+  sessionStorage.removeItem('sw-reloading');
 
   try {
     // Register service worker
@@ -64,18 +67,19 @@ export async function initializePWA(config: PWAConfig = {}): Promise<ServiceWork
       }, updateCheckInterval);
     }
 
+    // Auto-activate waiting worker immediately
     if (registration.waiting) {
-      notifyUpdateAvailable();
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
     }
 
-    // Listen for updates
+    // Listen for updates — auto-activate new workers
     registration.addEventListener('updatefound', () => {
       const newWorker = registration.installing;
       if (newWorker) {
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // New version available
-            notifyUpdateAvailable();
+            // Auto-activate: skip waiting immediately
+            newWorker.postMessage({ type: 'SKIP_WAITING' });
           }
         });
       }
@@ -84,8 +88,6 @@ export async function initializePWA(config: PWAConfig = {}): Promise<ServiceWork
     if (!hasControllerChangeListener) {
       hasControllerChangeListener = true;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        // Avoid automatic reload loops on browsers that emit repeated controller changes.
-        // Manual update flow still reloads explicitly via the update notifier action.
         console.log('Service worker controller changed');
       });
     }
@@ -274,6 +276,14 @@ function handleSWMessage(event: MessageEvent) {
   switch (type) {
     case 'NOTIFICATION_CLICK':
       handleNotificationClick(data);
+      break;
+    case 'SW_ACTIVATED':
+      console.log('[PWA] New SW version activated:', data?.version || 'unknown');
+      // Auto-reload to pick up new assets — guard against reload loops
+      if (!sessionStorage.getItem('sw-reloading')) {
+        sessionStorage.setItem('sw-reloading', '1');
+        window.location.reload();
+      }
       break;
     case 'UPDATE_AVAILABLE':
       notifyUpdateAvailable();

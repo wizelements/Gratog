@@ -10,7 +10,7 @@ export function PWAInitializer() {
         // Initialize PWA
         await initializePWA({
           enableAutoUpdate: true,
-          updateCheckInterval: 3600000, // 1 hour
+          updateCheckInterval: 60000, // 1 minute — catch deploys fast
           enableNotifications: true
         });
 
