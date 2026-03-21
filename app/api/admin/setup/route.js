@@ -66,7 +66,7 @@ export async function POST(request) {
     const finalPassword = adminPassword || 'dev-password-change-me';
 
     // Check if admin already exists
-    const existingAdmin = await db.collection('users').findOne({ 
+    const existingAdmin = await db.collection('admin_users').findOne({ 
       email: finalEmail.toLowerCase() 
     });
 
@@ -84,7 +84,7 @@ export async function POST(request) {
     const hashedPassword = await bcrypt.hash(finalPassword, 12);
 
     // Create admin user
-    const result = await db.collection('users').insertOne({
+    const result = await db.collection('admin_users').insertOne({
       email: finalEmail.toLowerCase(),
       passwordHash: hashedPassword,
       name: 'Admin User',
@@ -136,7 +136,7 @@ export async function GET() {
 
     const { db } = await connectToDatabase();
     
-    const adminCount = await db.collection('users').countDocuments({ 
+    const adminCount = await db.collection('admin_users').countDocuments({ 
       role: 'admin' 
     });
 

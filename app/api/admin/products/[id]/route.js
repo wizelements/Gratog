@@ -12,7 +12,7 @@ export async function GET(request, { params }) {
     const admin = await requireAdmin(request);
 
     const { db } = await connectToDatabase();
-    const productId = params.id;
+    const { id: productId } = await params;
 
     // Get from unified products (has all enriched data)
     const product = await db.collection('unified_products')
@@ -53,7 +53,7 @@ export async function PUT(request, { params }) {
     const admin = await requireAdmin(request);
 
     const { db } = await connectToDatabase();
-    const productId = params.id;
+    const { id: productId } = await params;
     const { updates } = await request.json();
 
     // Prepare update object

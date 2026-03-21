@@ -102,9 +102,7 @@ export default function AdminLoginPage() {
             </Button>
           </form>
           <div className="mt-6 text-center text-xs text-muted-foreground">
-            <p>Default credentials:</p>
-            <p className="font-mono mt-1">admin@tasteofgratitude.shop</p>
-            <p className="font-mono">TasteOfGratitude2025!</p>
+            <p>Contact your administrator for access credentials.</p>
           </div>
         </CardContent>
       </Card>

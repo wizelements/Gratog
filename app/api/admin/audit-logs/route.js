@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
-import { requireAdminAuth, getAuditLogs } from '@/lib/admin-auth-middleware';
+import { requireAdmin } from '@/lib/admin-session';
+import { getAuditLogs } from '@/lib/admin-auth-middleware';
 import { logger } from '@/lib/logger';
 
-async function handleGet(request) {
+export async function GET(request) {
   try {
+    await requireAdmin(request);
+
     const { searchParams } = new URL(request.url);
     
     const filters = {};
@@ -35,6 +38,12 @@ async function handleGet(request) {
     
     return NextResponse.json(result);
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('API', 'Error fetching audit logs', error);
     return NextResponse.json(
       { error: 'Failed to fetch audit logs' },
@@ -42,5 +51,3 @@ async function handleGet(request) {
     );
   }
 }
-
-export const GET = requireAdminAuth(handleGet);

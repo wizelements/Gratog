@@ -7,7 +7,7 @@ export async function DELETE(request, { params }) {
   try {
     const admin = await requireAdmin(request);
     
-    const { id } = params;
+    const { id } = await params;
     
     if (!id) {
       return NextResponse.json(
@@ -54,7 +54,7 @@ export async function PUT(request, { params }) {
   try {
     const admin = await requireAdmin(request);
     
-    const { id } = params;
+    const { id } = await params;
     const updates = await request.json();
     
     if (!id) {

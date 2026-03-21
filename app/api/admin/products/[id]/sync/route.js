@@ -13,7 +13,7 @@ export async function POST(request, { params }) {
     const admin = await requireAdmin(request);
 
     const { db } = await connectToDatabase();
-    const productId = params.id;
+    const { id: productId } = await params;
     const { updates, direction } = await request.json();
 
     // Initialize Square client

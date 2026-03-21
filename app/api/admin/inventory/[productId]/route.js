@@ -7,7 +7,7 @@ export async function PATCH(request, { params }) {
   try {
     const admin = await requireAdmin(request);
 
-    const { productId } = params;
+    const { productId } = await params;
     const { adjustment, reason } = await request.json();
 
     if (typeof adjustment !== 'number') {

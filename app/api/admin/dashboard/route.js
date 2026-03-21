@@ -13,12 +13,13 @@ export async function GET(request) {
     
     const { db } = await connectToDatabase();
     
-    // Get counts from various collections
+    // Get counts and revenue in parallel using aggregation
     const [
       productsCount,
       ordersCount,
       customersCount,
-      recentOrders
+      recentOrders,
+      revenueResult
     ] = await Promise.all([
       db.collection('unified_products').countDocuments(),
       db.collection('orders').countDocuments(),
@@ -27,14 +28,20 @@ export async function GET(request) {
         .find({})
         .sort({ createdAt: -1 })
         .limit(5)
-        .toArray()
+        .toArray(),
+      db.collection('orders').aggregate([
+        {
+          $group: {
+            _id: null,
+            totalRevenue: {
+              $sum: { $ifNull: ['$total', { $ifNull: ['$totalAmount', 0] }] }
+            }
+          }
+        }
+      ]).toArray()
     ]);
     
-    // Calculate revenue from orders
-    const orders = await db.collection('orders').find({}).toArray();
-    const totalRevenue = orders.reduce((sum, order) => {
-      return sum + (order.total || order.totalAmount || 0);
-    }, 0);
+    const totalRevenue = revenueResult[0]?.totalRevenue || 0;
     
     return NextResponse.json({
       success: true,

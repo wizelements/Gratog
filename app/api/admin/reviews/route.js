@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
-import { requireAdminAuth } from '@/lib/admin-auth-middleware';
+import { requireAdmin } from '@/lib/admin-session';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('AdminReviews');
@@ -9,8 +9,10 @@ const logger = createLogger('AdminReviews');
 /**
  * GET - List all reviews with filters (admin only)
  */
-async function handleGet(request) {
+export async function GET(request) {
   try {
+    await requireAdmin(request);
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status'); // pending, approved, rejected
     const productId = searchParams.get('productId');
@@ -112,6 +114,12 @@ async function handleGet(request) {
       stats: stats[0] || { total: 0, pending: 0, approved: 0, rejected: 0, avgRating: 0 }
     });
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('Failed to fetch admin reviews', { error: error.message });
     return NextResponse.json(
       { error: 'Failed to fetch reviews' },
@@ -123,8 +131,10 @@ async function handleGet(request) {
 /**
  * PATCH - Bulk update reviews (approve/reject multiple)
  */
-async function handlePatch(request) {
+export async function PATCH(request) {
   try {
+    const admin = await requireAdmin(request);
+
     const body = await request.json();
     const { reviewIds, action } = body;
 
@@ -163,13 +173,13 @@ async function handlePatch(request) {
         update.$set.rejected = false;
         update.$set.hidden = false;
         update.$set.approvedAt = new Date();
-        update.$set.approvedBy = request.user?.email;
+        update.$set.approvedBy = admin.email;
         break;
       case 'reject':
         update.$set.rejected = true;
         update.$set.approved = false;
         update.$set.rejectedAt = new Date();
-        update.$set.rejectedBy = request.user?.email;
+        update.$set.rejectedBy = admin.email;
         break;
       case 'hide':
         update.$set.hidden = true;
@@ -187,7 +197,7 @@ async function handlePatch(request) {
     logger.info('Bulk review update', { 
       action, 
       count: result.modifiedCount,
-      user: request.user?.email 
+      user: admin.email 
     });
 
     return NextResponse.json({
@@ -196,6 +206,12 @@ async function handlePatch(request) {
       modifiedCount: result.modifiedCount
     });
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('Failed to bulk update reviews', { error: error.message });
     return NextResponse.json(
       { error: 'Failed to update reviews' },
@@ -203,6 +219,3 @@ async function handlePatch(request) {
     );
   }
 }
-
-export const GET = requireAdminAuth(handleGet);
-export const PATCH = requireAdminAuth(handlePatch);

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
-import { requireAdminAuth, logAdminAction } from '@/lib/admin-auth-middleware';
+import { requireAdmin } from '@/lib/admin-session';
+import { logAdminAction } from '@/lib/admin-auth-middleware';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('AdminReviewDetail');
@@ -16,8 +17,10 @@ function parseReviewId(id) {
 /**
  * GET - Get single review details
  */
-async function handleGet(request, { params }) {
+export async function GET(request, { params }) {
   try {
+    await requireAdmin(request);
+
     const { id } = await params;
     const reviewObjectId = parseReviewId(id);
     if (!reviewObjectId) {
@@ -59,6 +62,12 @@ async function handleGet(request, { params }) {
       }
     });
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('Failed to fetch review', { error: error.message });
     return NextResponse.json(
       { error: 'Failed to fetch review' },
@@ -70,8 +79,10 @@ async function handleGet(request, { params }) {
 /**
  * PATCH - Update review (approve, reject, hide, edit)
  */
-async function handlePatch(request, { params }) {
+export async function PATCH(request, { params }) {
   try {
+    const admin = await requireAdmin(request);
+
     const { id } = await params;
     const reviewObjectId = parseReviewId(id);
     if (!reviewObjectId) {
@@ -96,12 +107,12 @@ async function handlePatch(request, { params }) {
       update.$set.rejected = false;
       update.$set.hidden = false;
       update.$set.approvedAt = new Date();
-      update.$set.approvedBy = request.user?.email;
+      update.$set.approvedBy = admin.email;
     } else if (action === 'reject') {
       update.$set.rejected = true;
       update.$set.approved = false;
       update.$set.rejectedAt = new Date();
-      update.$set.rejectedBy = request.user?.email;
+      update.$set.rejectedBy = admin.email;
     } else {
       // Direct field updates
       if (typeof hidden === 'boolean') update.$set.hidden = hidden;
@@ -137,7 +148,7 @@ async function handlePatch(request, { params }) {
     }
 
     // Log admin action
-    await logAdminAction(request.user, 'review_update', {
+    await logAdminAction(admin, 'review_update', {
       reviewId: id,
       action: action || 'field_update',
       changes: update.$set
@@ -146,7 +157,7 @@ async function handlePatch(request, { params }) {
     logger.info('Review updated', { 
       reviewId: id, 
       action,
-      by: request.user?.email 
+      by: admin.email 
     });
 
     return NextResponse.json({
@@ -154,6 +165,12 @@ async function handlePatch(request, { params }) {
       modifiedCount: result.modifiedCount
     });
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('Failed to update review', { error: error.message });
     return NextResponse.json(
       { error: 'Failed to update review' },
@@ -165,8 +182,10 @@ async function handlePatch(request, { params }) {
 /**
  * DELETE - Remove review permanently
  */
-async function handleDelete(request, { params }) {
+export async function DELETE(request, { params }) {
   try {
+    const admin = await requireAdmin(request);
+
     const { id } = await params;
     const reviewObjectId = parseReviewId(id);
     if (!reviewObjectId) {
@@ -195,7 +214,7 @@ async function handleDelete(request, { params }) {
     });
 
     // Log admin action
-    await logAdminAction(request.user, 'review_delete', {
+    await logAdminAction(admin, 'review_delete', {
       reviewId: id,
       productId: review.productId,
       email: review.email
@@ -203,7 +222,7 @@ async function handleDelete(request, { params }) {
 
     logger.info('Review deleted', { 
       reviewId: id,
-      by: request.user?.email 
+      by: admin.email 
     });
 
     return NextResponse.json({
@@ -211,6 +230,12 @@ async function handleDelete(request, { params }) {
       deleted: true
     });
   } catch (error) {
+    if (error.name === 'AdminAuthError') {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.statusCode || 401 }
+      );
+    }
     logger.error('Failed to delete review', { error: error.message });
     return NextResponse.json(
       { error: 'Failed to delete review' },
@@ -218,7 +243,3 @@ async function handleDelete(request, { params }) {
     );
   }
 }
-
-export const GET = requireAdminAuth(handleGet);
-export const PATCH = requireAdminAuth(handlePatch);
-export const DELETE = requireAdminAuth(handleDelete);

@@ -22,7 +22,7 @@ export async function POST(request) {
     // Attempt login
     const result = await loginAdmin(email, password);
 
-    debug(`✅ Admin login successful: ${email}`);
+    console.log(`✅ Admin login successful: ${email}`);
 
     return NextResponse.json({
       success: true,
