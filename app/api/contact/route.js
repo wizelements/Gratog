@@ -97,7 +97,7 @@ export async function POST(request) {
     if (!result.success) {
       logger.error('Contact', 'Failed to send contact form email', { error: result.error });
       return NextResponse.json(
-        { error: 'Unable to send your message right now. Please try again.' },
+        { error: 'Unable to send your message right now. Please try again.', _debug: result.error },
         { status: 500 }
       );
     }
