@@ -1,6 +1,6 @@
 // AUTO-UPDATE: This version string is replaced at build time by next.config.js headers.
 // The browser byte-compares sw.js on every registration check — any change triggers update.
-const CACHE_VERSION = 'v6-20260321-2';
+const CACHE_VERSION = 'v7-20260321-3';
 const CACHE_PREFIX = 'gratog';
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${CACHE_VERSION}`;
@@ -51,6 +51,20 @@ self.addEventListener('activate', (event) => {
           }
 
           return Promise.resolve();
+        })
+      );
+
+      // Purge any stale /admin entries from surviving caches
+      const allCaches = await caches.keys();
+      await Promise.all(
+        allCaches.map(async (name) => {
+          const cache = await caches.open(name);
+          const requests = await cache.keys();
+          await Promise.all(
+            requests
+              .filter((req) => new URL(req.url).pathname.startsWith('/admin'))
+              .map((req) => cache.delete(req))
+          );
         })
       );
 
