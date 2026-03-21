@@ -90,14 +90,14 @@ export async function POST(request) {
       subject: `[Contact] ${subject}`,
       html,
       text,
-      replyTo: 'nook@tasteofgratitude.net',
+      replyTo: 'nook@tasteofgratitude.shop',
       emailType: 'contact_form',
     });
 
     if (!result.success) {
       logger.error('Contact', 'Failed to send contact form email', { error: result.error });
       return NextResponse.json(
-        { error: 'Unable to send your message right now. Please try again.' },
+        { error: 'Unable to send your message right now. Please try again.', _debug: result.error },
         { status: 500 }
       );
     }
@@ -172,7 +172,7 @@ export async function POST(request) {
         subject: `Thanks for reaching out, ${name}! — Taste of Gratitude`,
         html: confirmationHtml,
         text: confirmationText,
-        replyTo: 'nook@tasteofgratitude.net',
+        replyTo: 'nook@tasteofgratitude.shop',
         emailType: 'contact_form',
       });
       logger.info('Contact', 'Confirmation email sent to submitter', { to: email });
