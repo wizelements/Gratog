@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { requireAdmin } from '@/lib/admin-session';
 import { logger } from '@/lib/logger';
@@ -98,6 +99,19 @@ export async function PUT(request, { params }) {
     );
 
     logger.info('API', `Product ${productId} updated by ${admin.email}`);
+
+    // Revalidate storefront so changes appear instantly
+    try {
+      revalidatePath('/catalog');
+      revalidatePath('/');
+      const slug = (updates.name || '')
+        .toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      if (slug) {
+        revalidatePath(`/product/${slug}`);
+      }
+    } catch (revalError) {
+      logger.warn('API', 'Revalidation after product update failed (non-critical)', revalError);
+    }
 
     return NextResponse.json({
       success: true,

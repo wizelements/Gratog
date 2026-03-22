@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { requireAdmin } from '@/lib/admin-session';
 import { Client, Environment } from 'square';
@@ -108,6 +109,17 @@ async function syncToSquare(db, client, productId, updates, admin) {
         }
       }
     );
+
+    // Revalidate storefront pages for instant visibility
+    try {
+      revalidatePath('/catalog');
+      revalidatePath('/');
+      const slug = (updates.name || '')
+        .toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      if (slug) revalidatePath(`/product/${slug}`);
+    } catch (revalError) {
+      logger.warn('API', 'Revalidation after sync failed (non-critical)', revalError);
+    }
 
     return NextResponse.json({
       success: true,

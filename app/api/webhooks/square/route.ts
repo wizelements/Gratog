@@ -4,6 +4,8 @@ import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { getSquareWebhookSignatureKey } from '@/lib/square';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
+import { syncSingleCatalogItem } from '@/lib/square/syncSingleItem';
+import { revalidatePath } from 'next/cache';
 import * as Sentry from '@sentry/nextjs';
 
 // Force Node.js runtime for crypto operations and raw body access
@@ -612,23 +614,70 @@ async function handleInventoryUpdate(db: any, inventoryChange: any) {
       }
     }
   );
+
+  // Revalidate storefront so inventory changes reflect instantly
+  try {
+    revalidatePath('/catalog');
+  } catch (revalError: any) {
+    logger.warn('Webhook', 'Inventory revalidation failed (non-critical)', {
+      error: revalError.message
+    });
+  }
 }
 
 async function handleCatalogUpdate(db: any, catalogObject: any) {
-  logger.debug('Webhook', 'Processing catalog update', {
-    objectType: catalogObject.type,
-    objectId: catalogObject.id
+  const objectId = catalogObject.catalog_version?.updated_at
+    ? null // catalog.version.updated has no single object ID — do full list of changed IDs
+    : catalogObject.id;
+
+  // catalog.version.updated events include updated_object_ids listing what changed
+  const updatedIds: string[] = catalogObject.updated_object_ids
+    || (objectId ? [objectId] : []);
+
+  if (updatedIds.length === 0) {
+    logger.warn('Webhook', 'Catalog update event with no object IDs to sync');
+    return;
+  }
+
+  logger.info('Webhook', `⚡ Instant catalog sync for ${updatedIds.length} object(s)`, {
+    objectIds: updatedIds.slice(0, 10)
   });
-  
-  await db.collection('square_sync_queue').insertOne({
-    objectId: catalogObject.id || 'unknown',
-    objectType: catalogObject.type || 'UNKNOWN',
-    version: catalogObject.version,
-    action: 'sync_object',
-    status: 'pending',
-    createdAt: new Date(),
-    attempts: 0
-  });
+
+  // Sync each changed item directly from Square → MongoDB (no queue)
+  const results = [];
+  for (const id of updatedIds) {
+    try {
+      const result = await syncSingleCatalogItem(db, id);
+      results.push(result);
+      logger.info('Webhook', `✅ Instant synced: ${result.name || id} (${result.type || 'ITEM'})`);
+    } catch (error: any) {
+      logger.error('Webhook', `❌ Failed to instant-sync ${id}`, {
+        error: error.message
+      });
+      Sentry.captureException(error, {
+        tags: { webhook: true, action: 'instant_catalog_sync' },
+        extra: { objectId: id }
+      });
+    }
+  }
+
+  // Revalidate storefront pages so changes appear instantly
+  try {
+    revalidatePath('/catalog');
+    revalidatePath('/');
+    // Revalidate individual product pages for items that were synced
+    for (const r of results) {
+      if (r.name && r.type !== 'CATEGORY' && r.type !== 'IMAGE' && !r.skipped) {
+        const slug = r.name.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        revalidatePath(`/product/${slug}`);
+      }
+    }
+    logger.info('Webhook', '🔄 Storefront pages revalidated for instant visibility');
+  } catch (revalError: any) {
+    logger.warn('Webhook', 'Revalidation failed (non-critical)', {
+      error: revalError.message
+    });
+  }
 }
 
 // ============================================================================

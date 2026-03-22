@@ -23,6 +23,7 @@ export default function EditProductPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -125,6 +126,46 @@ export default function EditProductPage() {
     }
   };
 
+  const handlePublish = async () => {
+    setPublishing(true);
+    try {
+      // Step 1: Save to DB
+      const saveResponse = await fetch(`/api/admin/products/${productId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates: formData })
+      });
+      const saveData = await saveResponse.json();
+      if (!saveData.success) {
+        toast.error(saveData.error || 'Failed to save');
+        return;
+      }
+
+      // Step 2: Sync to Square (which also triggers revalidation)
+      const syncResponse = await fetch(`/api/admin/products/${productId}/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          updates: formData,
+          direction: 'to_square'
+        })
+      });
+      const syncData = await syncResponse.json();
+
+      if (syncData.success) {
+        toast.success('Published! Changes are live on the site.');
+        fetchProduct();
+      } else {
+        toast.warning('Saved locally but Square sync failed: ' + (syncData.error || 'Unknown error'));
+      }
+    } catch (error) {
+      logger.error('Admin', 'Publish error', error);
+      toast.error('Failed to publish');
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -173,23 +214,11 @@ export default function EditProductPage() {
         </div>
         <div className="flex gap-2">
           <Button
-            onClick={handleSyncToSquare}
-            disabled={syncing || saving}
+            onClick={handleSave}
+            disabled={saving || syncing || publishing}
             variant="outline"
+            size="sm"
           >
-            {syncing ? (
-              <>
-                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                Syncing...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Sync to Square
-              </>
-            )}
-          </Button>
-          <Button onClick={handleSave} disabled={saving || syncing}>
             {saving ? (
               <>
                 <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -198,7 +227,24 @@ export default function EditProductPage() {
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Save Changes
+                Save Draft
+              </>
+            )}
+          </Button>
+          <Button
+            onClick={handlePublish}
+            disabled={publishing || saving || syncing}
+            className="bg-[#D4AF37] hover:bg-[#B8941F] text-white"
+          >
+            {publishing ? (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                Publishing...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                Publish to Site
               </>
             )}
           </Button>
@@ -327,38 +373,37 @@ export default function EditProductPage() {
         </CardContent>
       </Card>
 
-      {/* Sync Information */}
+      {/* Publish Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Sync Information</CardTitle>
+          <CardTitle>How Publishing Works</CardTitle>
           <CardDescription>
-            Understand how changes are synced between admin, database, and Square
+            Changes go live on your site instantly
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5" />
+              <CheckCircle2 className="h-5 w-5 text-[#D4AF37] mt-0.5" />
               <div>
-                <p className="font-medium">Save Changes</p>
+                <p className="font-medium">Publish to Site</p>
                 <p className="text-sm text-muted-foreground">
-                  Updates the local database (unified_products collection) immediately
+                  Saves to database, syncs to Square, and refreshes the live site — all in one click. Changes appear instantly.
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-blue-600 mt-0.5" />
+              <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5" />
               <div>
-                <p className="font-medium">Sync to Square</p>
+                <p className="font-medium">Save Draft</p>
                 <p className="text-sm text-muted-foreground">
-                  Pushes changes to Square Catalog API and updates the catalog
+                  Saves changes locally without pushing to Square or the live site. Use for work-in-progress edits.
                 </p>
               </div>
             </div>
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-sm text-amber-900">
-                <strong>Note:</strong> Changes are saved locally first. Use "Sync to Square" to push updates to Square's catalog.
-                The app will automatically use the latest data from unified_products.
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <p className="text-sm text-emerald-900">
+                <strong>💡 Square Dashboard changes are also instant.</strong> Any product updates made directly in your Square Dashboard will automatically appear on your site within seconds via webhooks.
               </p>
             </div>
           </div>
