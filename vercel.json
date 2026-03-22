@@ -53,6 +53,9 @@
     "app/api/square-webhook/route.js": {
       "maxDuration": 60
     },
+    "app/api/webhooks/square/route.ts": {
+      "maxDuration": 60
+    },
     "app/api/subscriptions/**/route.js": {
       "maxDuration": 60
     },
