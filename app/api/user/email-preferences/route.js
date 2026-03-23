@@ -1,17 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth/middleware';
-import { MongoClient } from 'mongodb';
-
-const MONGO_URL = process.env.MONGODB_URI || process.env.MONGO_URL;
-let cachedDb = null;
-
-async function connectToDatabase() {
-  if (cachedDb) return cachedDb;
-  const client = await MongoClient.connect(MONGO_URL);
-  cachedDb = client.db();
-  return cachedDb;
-}
+import { connectToDatabase } from '@/lib/db-optimized';
 
 /**
  * Email Preferences API
@@ -22,7 +12,7 @@ async function connectToDatabase() {
 export async function GET(request) {
   try {
     const user = await requireAuth(request);
-    const db = await connectToDatabase();
+    const { db } = await connectToDatabase();
     
     const userData = await db.collection('users').findOne({ id: user.userId });
     
@@ -75,7 +65,7 @@ export async function PUT(request) {
       }
     }
 
-    const db = await connectToDatabase();
+    const { db } = await connectToDatabase();
     
     await db.collection('users').updateOne(
       { id: user.userId },

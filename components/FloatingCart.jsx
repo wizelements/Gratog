@@ -185,9 +185,12 @@ export default function FloatingCart() {
                               Size: {item.variantLabel || item.size}
                             </p>
                           )}
-                          <p className="text-emerald-600 font-bold text-lg mb-3">
+                          <p className="text-emerald-600 font-bold text-lg mb-1">
                             ${item.price.toFixed(2)}
                           </p>
+                          {item.isPreorder && (
+                            <p className="text-xs text-emerald-600 font-medium mb-2">Preorder — ships next batch</p>
+                          )}
 
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">

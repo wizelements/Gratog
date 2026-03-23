@@ -1,17 +1,7 @@
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
-import { MongoClient } from 'mongodb';
+import { connectToDatabase } from '@/lib/db-optimized';
 import { v4 as uuidv4 } from 'uuid';
-
-const MONGO_URL = process.env.MONGODB_URI || process.env.MONGO_URL;
-let cachedDb = null;
-
-async function connectToDatabase() {
-  if (cachedDb) return cachedDb;
-  const client = await MongoClient.connect(MONGO_URL);
-  cachedDb = client.db();
-  return cachedDb;
-}
 
 export async function POST(request) {
   try {
@@ -33,7 +23,7 @@ export async function POST(request) {
       );
     }
 
-    const db = await connectToDatabase();
+    const { db } = await connectToDatabase();
     const userId = decoded.userId;
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());

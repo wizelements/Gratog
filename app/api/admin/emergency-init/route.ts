@@ -82,7 +82,7 @@ export async function POST(request: Request) {
       createdAt: new Date(),
       createdBy: 'emergency-init',
       isActive: true,
-      mustChangePassword: false
+      mustChangePassword: true
     };
     
     await db.collection('admin_users').insertOne(adminUser);

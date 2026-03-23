@@ -33,7 +33,7 @@
   "product": {
     "addToCart": "Add to Cart",
     "addedToCart": "Added to Cart",
-    "outOfStock": "Out of Stock",
+    "outOfStock": "Available for Preorder",
     "inStock": "In Stock",
     "quantity": "Quantity",
     "price": "Price",

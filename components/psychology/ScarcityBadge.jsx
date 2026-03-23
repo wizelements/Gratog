@@ -24,12 +24,12 @@ export default function ScarcityBadge({ productId, stock = null }) {
     return null;
   }
 
-  // Out of stock
+  // Out of stock — show as available for preorder
   if (stock <= 0) {
     return (
-      <Badge className="bg-gray-100 text-gray-600 border-gray-300">
+      <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">
         <Package className="h-3 w-3 mr-1" />
-        Out of stock
+        Available for Preorder
       </Badge>
     );
   }

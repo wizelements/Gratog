@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { createLogger } from '@/lib/logger';
+import { getAdminSession } from '@/lib/admin-session';
 
 const logger = createLogger('DBHealth');
 
@@ -12,7 +13,12 @@ export const dynamic = 'force-dynamic';
  * Diagnostic endpoint to check MongoDB connection and collection counts
  * Use this to debug why products aren't showing on the live site
  */
-export async function GET() {
+export async function GET(request) {
+  const admin = await getAdminSession(request);
+  if (!admin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const startTime = Date.now();
   
   const diagnostics = {

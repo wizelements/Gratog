@@ -271,13 +271,7 @@ export async function POST(request: NextRequest) {
     console.error('Checkout API error:', error);
     
     // Capture error in Sentry with context
-    let itemCount = 0;
-    try {
-      const bodyData = await request.json();
-      itemCount = bodyData?.lineItems?.length || 0;
-    } catch {
-      // Could not parse body
-    }
+    const itemCount = 0;
     
     Sentry.captureException(error, {
        tags: {

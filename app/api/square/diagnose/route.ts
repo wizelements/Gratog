@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSquareClient, getSquareLocationId, getSquareApplicationId, validateSquareConfig } from '@/lib/square';
 import { logger } from '@/lib/logger';
+import { getAdminSession } from '@/lib/admin-session';
 
 /**
  * Square Authentication Diagnostic Endpoint
@@ -8,6 +9,11 @@ import { logger } from '@/lib/logger';
  */
 
 export async function GET(request: NextRequest) {
+  const admin = await getAdminSession(request);
+  if (!admin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const diagnostics: any = {
     timestamp: new Date().toISOString(),
     environment: process.env.SQUARE_ENVIRONMENT || 'sandbox',

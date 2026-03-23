@@ -1,16 +1,6 @@
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
-import { MongoClient } from 'mongodb';
-
-const MONGO_URL = process.env.MONGODB_URI || process.env.MONGO_URL;
-let cachedDb = null;
-
-async function connectToDatabase() {
-  if (cachedDb) return cachedDb;
-  const client = await MongoClient.connect(MONGO_URL);
-  cachedDb = client.db();
-  return cachedDb;
-}
+import { connectToDatabase } from '@/lib/db-optimized';
 
 export async function GET(request) {
   try {
@@ -32,7 +22,7 @@ export async function GET(request) {
       );
     }
 
-    const db = await connectToDatabase();
+    const { db } = await connectToDatabase();
     const userId = decoded.userId;
 
     // Fetch user's challenge

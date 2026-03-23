@@ -103,7 +103,7 @@ export function generateProductMeta(product: ProductMeta): Metadata {
     other: {
       'product:price:amount': product.price.toString(),
       'product:price:currency': 'USD',
-      'product:availability': product.availability === 'out_of_stock' ? 'oos' : 'instock',
+      'product:availability': product.availability === 'out_of_stock' ? 'preorder' : 'instock',
       'product:brand': product.brand || SITE_NAME,
       ...(product.sku && { 'product:retailer_item_id': product.sku }),
     },
@@ -316,7 +316,7 @@ export function generateProductJsonLd(product: ProductMeta & {
         price: variation.price.toFixed(2),
         priceCurrency: 'USD',
         availability: product.availability === 'out_of_stock'
-          ? 'https://schema.org/OutOfStock'
+          ? 'https://schema.org/PreOrder'
           : 'https://schema.org/InStock',
         url: productUrl,
         seller: {
@@ -330,7 +330,7 @@ export function generateProductJsonLd(product: ProductMeta & {
         price: product.price.toFixed(2),
         priceCurrency: 'USD',
         availability: product.availability === 'out_of_stock'
-          ? 'https://schema.org/OutOfStock'
+          ? 'https://schema.org/PreOrder'
           : 'https://schema.org/InStock',
         url: productUrl,
         seller: {

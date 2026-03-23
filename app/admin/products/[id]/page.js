@@ -403,7 +403,7 @@ export default function EditProductPage() {
             </div>
             <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
               <p className="text-sm text-emerald-900">
-                <strong>💡 Square Dashboard changes are also instant.</strong> Any product updates made directly in your Square Dashboard will automatically appear on your site within seconds via webhooks.
+                <strong>💡 Square Dashboard controls visibility.</strong> Archive or hide products in your Square Dashboard — changes sync to the site instantly via webhooks. No separate toggle needed.
               </p>
             </div>
           </div>

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { ShoppingCart, Star } from 'lucide-react';
 import { addToCart } from '@/lib/cart-engine';
+import { getAddToCartLabel, getAddedToCartMessage } from '@/lib/purchase-status';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
@@ -133,13 +134,17 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
   const averageRating = Number(product.reviewSummary?.averageRating || product.rating || 0);
   const hasReviews = reviewCount > 0 && averageRating > 0;
 
+  const isPreorder = product?.stock != null && product.stock <= 0;
+  const purchaseStatus = isPreorder ? 'preorder' : 'in_stock';
+
   const handleAddToCart = () => {
     setIsAdding(true);
     
     // Use the new cartUtils with variant object
     addToCart(product, quantity, selectedVariation);
     
-    toast.success(`Added ${quantity}x ${product.name} to cart!`, {
+    const variantText = selectedVariation ? ` (Size: ${selectedVariation.name})` : '';
+    toast.success(getAddedToCartMessage(`${quantity}x ${product.name}`, purchaseStatus, variantText), {
       description: selectedVariation ? `Size: ${selectedVariation.name}` : undefined,
       action: {
         label: 'View Cart',
@@ -235,6 +240,12 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
             <div className="text-3xl font-bold text-emerald-600 mb-4">
               ${currentPrice.toFixed(2)}
             </div>
+
+            {isPreorder && (
+              <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs mb-4">
+                Available for Preorder
+              </Badge>
+            )}
             
             {product.benefitStory && (
               <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-4 mb-4">
@@ -330,7 +341,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
                 ) : (
                   <>
                     <ShoppingCart className="mr-2 h-5 w-5" />
-                    Add to Cart
+                    {getAddToCartLabel(purchaseStatus)}
                   </>
                 )}
               </Button>

@@ -5,6 +5,7 @@ import { ShoppingCart, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cart-engine';
+import { getAddToCartLabel, getAddedToCartMessage } from '@/lib/purchase-status';
 import { motion } from 'framer-motion';
 
 /**
@@ -13,6 +14,9 @@ import { motion } from 'framer-motion';
 export default function QuickAddButton({ product, selectedVariant, variant = 'default', className = '' }) {
   const [isAdding, setIsAdding] = useState(false);
   const [added, setAdded] = useState(false);
+
+  const isPreorder = product?.stock != null && product.stock <= 0;
+  const purchaseStatus = isPreorder ? 'preorder' : 'in_stock';
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -32,7 +36,7 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
       setAdded(true);
       
       const variantText = selectedVariant ? ` (Size: ${selectedVariant.name})` : '';
-      toast.success(`Added ${product.name}${variantText} to cart`, {
+      toast.success(getAddedToCartMessage(product.name, purchaseStatus, variantText), {
         description: 'View cart to checkout',
         action: {
           label: 'View Cart',
@@ -76,7 +80,7 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
         ) : (
           <>
             <ShoppingCart className="h-4 w-4 mr-2" />
-            Add to Cart
+            {getAddToCartLabel(purchaseStatus)}
           </>
         )}
       </Button>

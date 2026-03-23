@@ -98,7 +98,7 @@ export function getProductSchema(product: Product, baseUrl: string) {
       price: product.price.toFixed(2),
       availability: product.availability === 'in_stock' 
         ? 'https://schema.org/InStock' 
-        : 'https://schema.org/OutOfStock',
+        : 'https://schema.org/PreOrder',
       seller: {
         '@type': 'Organization',
         name: 'Taste of Gratitude',

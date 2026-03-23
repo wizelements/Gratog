@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateToken, runScopeSmokeTests } from '@/lib/square-oauth-helper';
 import { logger } from '@/lib/logger';
+import { getAdminSession } from '@/lib/admin-session';
 
 /**
  * Square Token Validation Endpoint
@@ -13,6 +14,11 @@ import { logger } from '@/lib/logger';
  * - 403 FORBIDDEN: Valid token but missing required scope
  */
 export async function GET(request: NextRequest) {
+  const admin = await getAdminSession(request);
+  if (!admin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const comprehensive = searchParams.get('comprehensive') === 'true';
   
@@ -102,6 +108,11 @@ export async function GET(request: NextRequest) {
  * Body: { "accessToken": "...", "environment": "production" }
  */
 export async function POST(request: NextRequest) {
+  const admin = await getAdminSession(request);
+  if (!admin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { accessToken, environment = 'production' } = body;

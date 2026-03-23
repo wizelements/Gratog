@@ -23,11 +23,10 @@ export async function POST(request) {
   const startTime = Date.now();
   
   try {
-    const { searchParams } = new URL(request.url);
-    const key = searchParams.get('key');
+    const authHeader = request.headers.get('authorization');
+    const key = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
     
-    // SECURITY FIX: No more hardcoded fallback
-    if (key !== SYNC_SECRET) {
+    if (!key || key !== SYNC_SECRET) {
       return NextResponse.json({ error: 'Invalid key' }, { status: 401 });
     }
     

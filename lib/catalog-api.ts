@@ -221,9 +221,9 @@ export function formatAvailability(availability: string): {
       };
     case 'out':
       return {
-        label: 'Out of Stock',
-        color: 'text-red-600',
-        badgeVariant: 'destructive'
+        label: 'Available for Preorder',
+        color: 'text-emerald-600',
+        badgeVariant: 'secondary'
       };
     default:
       return {

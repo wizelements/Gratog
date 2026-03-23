@@ -97,7 +97,7 @@ export async function createOrderAtomic(orderData: any) {
       // Check for negative stock (optional: enforce stock limits)
       const newStock = inventoryResult.value.currentStock - item.quantity;
       if (newStock < 0) {
-        console.warn(`Product ${item.id} stock went negative: ${newStock}`);
+        console.info(`Product ${item.id} stock is ${newStock} (preorder fulfillment expected)`);
         // Optionally: throw error to rollback if out of stock
         // throw new Error(`Product ${item.id} is out of stock`);
       }

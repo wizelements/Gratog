@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { sendSMS } from '@/lib/sms-mock';
 import { sendEmail } from '@/lib/email-mock';
 import { SMS_TEMPLATES, EMAIL_TEMPLATES } from '@/lib/message-templates';
+import { getAdminSession } from '@/lib/admin-session';
 
 export async function POST(request) {
   try {
@@ -65,6 +66,14 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
+    const admin = await getAdminSession(request);
+    if (!admin) {
+      return NextResponse.json(
+        { error: 'Unauthorized - admin access required' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('productId');
     

@@ -238,6 +238,11 @@ export default function ProductDetailPage() {
     ? `${canonicalAverageRating.toFixed(1)} (${reviewCount} ${reviewCount === 1 ? 'review' : 'reviews'})`
     : 'No public reviews yet';
 
+  // Determine schema availability based on stock
+  const schemaAvailability = (product?.stock != null && product.stock <= 0)
+    ? 'https://schema.org/PreOrder'
+    : 'https://schema.org/InStock';
+
   // Enhanced structured data for SEO with rich snippets
   const productSchema = {
     '@context': 'https://schema.org',
@@ -258,14 +263,14 @@ export default function ProductDetailPage() {
       lowPrice: Math.min(...product.variations.filter(v => v.price > 0).map(v => v.price)).toFixed(2),
       highPrice: Math.max(...product.variations.filter(v => v.price > 0).map(v => v.price)).toFixed(2),
       priceCurrency: 'USD',
-      availability: 'https://schema.org/InStock',
+      availability: schemaAvailability,
       offerCount: product.variations.filter(v => v.price > 0).length,
       offers: product.variations.filter(v => v.price > 0).map(variation => ({
         '@type': 'Offer',
         name: variation.name,
         price: variation.price.toFixed(2),
         priceCurrency: 'USD',
-        availability: 'https://schema.org/InStock',
+        availability: schemaAvailability,
         url: `${BASE_URL}/product/${product?.slug}`,
         seller: {
           '@type': 'Organization',
@@ -277,7 +282,7 @@ export default function ProductDetailPage() {
       '@type': 'Offer',
       price: currentPrice.toFixed(2),
       priceCurrency: 'USD',
-      availability: 'https://schema.org/InStock',
+      availability: schemaAvailability,
       url: `${BASE_URL}/product/${product?.slug}`,
       seller: {
         '@type': 'Organization',
@@ -520,6 +525,13 @@ export default function ProductDetailPage() {
                 <span className="text-muted-foreground">Subtotal: ${(currentPrice * quantity).toFixed(2)}</span>
               </div>
             </div>
+
+            {product?.stock != null && product.stock <= 0 && (
+              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <p className="text-sm text-emerald-700 font-medium">Available for Preorder</p>
+                <p className="text-xs text-emerald-600 mt-1">This item is currently being prepared and will ship with our next batch.</p>
+              </div>
+            )}
             
             {/* Add to Cart Button */}
             <div className="flex gap-3 mb-8">
@@ -536,7 +548,7 @@ export default function ProductDetailPage() {
                 ) : (
                   <>
                     <ShoppingCart className="mr-2 h-5 w-5" />
-                    Add to Cart
+                    {product?.stock != null && product.stock <= 0 ? 'Preorder' : 'Add to Cart'}
                   </>
                 )}
               </Button>
