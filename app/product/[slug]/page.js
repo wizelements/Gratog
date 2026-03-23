@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ShoppingCart, Check, Loader2, Star, Heart, Share2, Truck, Shield, Package, Sparkles, Droplets, Award, Users, Quote, ChevronRight, Leaf, Sun, Zap } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Check, Loader2, Star, Heart, Share2, Truck, Shield, Package, Sparkles, Droplets, Award, Users, Quote, ChevronRight, Leaf, Sun, Zap, CheckCircle2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cart-engine';
@@ -63,6 +63,7 @@ export default function ProductDetailPage() {
   const [activeStory, setActiveStory] = useState(0);
   const [activeTab, setActiveTab] = useState('details');
   const [reviewSummary, setReviewSummary] = useState(DEFAULT_REVIEW_SUMMARY);
+  const [topReviews, setTopReviews] = useState([]);
   const storyRef = useRef(null);
   
   // Scroll effect for parallax
@@ -134,17 +135,26 @@ export default function ProductDetailPage() {
     async function fetchReviewSummary() {
       try {
         const response = await fetch(
-          `/api/reviews?productId=${encodeURIComponent(resolvedProductId)}&limit=1`,
+          `/api/reviews?productId=${encodeURIComponent(resolvedProductId)}`,
           { cache: 'no-store' }
         );
         const data = await response.json().catch(() => ({}));
 
         if (!isCancelled) {
           setReviewSummary(response.ok ? normalizeReviewSummary(data.summary) : DEFAULT_REVIEW_SUMMARY);
+          if (response.ok && Array.isArray(data.reviews)) {
+            const sorted = [...data.reviews]
+              .sort((a, b) => (b.helpful || 0) - (a.helpful || 0))
+              .slice(0, 3);
+            setTopReviews(sorted);
+          } else {
+            setTopReviews([]);
+          }
         }
       } catch (error) {
         if (!isCancelled) {
           setReviewSummary(DEFAULT_REVIEW_SUMMARY);
+          setTopReviews([]);
         }
 
         console.error('[GratOG] Failed to fetch review summary:', error);
@@ -783,97 +793,95 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Customer Stories - Testimonials */}
+        {/* Customer Stories - Real Reviews */}
         <div className="mt-20 fade-in-section opacity-0 transition-all duration-1000">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-emerald-600 text-white px-4 py-2">
               <Users className="mr-2 h-4 w-4" />
-              Real Stories, Real Results
+              Customer Stories
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Join Thousands of Happy Customers
+              What Our Customers Say
             </h2>
-            <div className="flex items-center justify-center gap-2 mb-4">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-6 w-6 text-yellow-500 fill-yellow-500" />
-              ))}
-              {hasPublicReviews ? (
-                  <>
-                    <span className="text-xl font-bold text-gray-900 ml-2">{canonicalAverageRating.toFixed(1)}</span>
-                    <span className="text-gray-600">/ 5.0</span>
-                  </>
-                ) : (
-                  <span className="text-gray-600 ml-2">New Product</span>
-                )}
+            {hasPublicReviews && (
+              <div className="flex items-center justify-center gap-2 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-6 w-6 ${i < Math.round(canonicalAverageRating) ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
+                  />
+                ))}
+                <span className="text-xl font-bold text-gray-900 ml-2">{canonicalAverageRating.toFixed(1)}</span>
+                <span className="text-gray-600">/ 5.0</span>
               </div>
-            </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Jessica Martinez",
-                role: "Wellness Coach",
-                location: "Los Angeles, CA",
-                story: "I've been using sea moss for 3 months and the difference is incredible! My energy levels are through the roof, my skin is glowing, and I feel healthier than ever. This is now a non-negotiable part of my morning routine.",
-                image: "👩‍💼",
-                result: "+300% Energy"
-              },
-              {
-                name: "David Chen",
-                role: "Fitness Enthusiast",
-                location: "Austin, TX",
-                story: "As an athlete, recovery is everything. Since adding this to my post-workout smoothies, I've noticed faster recovery times and better endurance. The 92 minerals really make a difference!",
-                image: "🏃‍♂️",
-                result: "50% Faster Recovery"
-              },
-              {
-                name: "Amanda Williams",
-                role: "Busy Mom of 3",
-                location: "Seattle, WA",
-                story: "Between work and kids, I needed something to support my immune system. This sea moss gel has been a game-changer! My whole family takes it now, and we've all noticed we're getting sick less often.",
-                image: "👩‍👧‍👦",
-                result: "Stronger Immunity"
-              }
-            ].map((testimonial, idx) => (
-              <Card key={idx} className="relative overflow-hidden hover:shadow-2xl transition-all duration-300 group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full -translate-y-1/2 translate-x-1/2 opacity-50" />
-                <CardContent className="p-8 relative">
-                  <Quote className="h-10 w-10 text-emerald-600 mb-4 opacity-20" />
-                  <p className="text-gray-700 leading-relaxed mb-6 italic">
-                    "{testimonial.story}"
-                  </p>
-                  
-                  <div className="border-t pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="text-4xl">{testimonial.image}</div>
-                        <div>
-                          <p className="font-bold text-gray-900">{testimonial.name}</p>
-                          <p className="text-sm text-gray-600">{testimonial.role}</p>
-                          <p className="text-xs text-gray-500">{testimonial.location}</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4 bg-emerald-50 rounded-lg px-4 py-2 inline-block">
-                      <p className="text-sm font-bold text-emerald-700">
-                        ✓ {testimonial.result}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-1 mt-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            )}
           </div>
 
+          {topReviews.length > 0 ? (
+            <div className="grid md:grid-cols-3 gap-8">
+              {topReviews.map((review) => (
+                <Card key={review._id} className="relative overflow-hidden hover:shadow-2xl transition-all duration-300 group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full -translate-y-1/2 translate-x-1/2 opacity-50" />
+                  <CardContent className="p-8 relative">
+                    <Quote className="h-10 w-10 text-emerald-600 mb-4 opacity-20" />
+                    <p className="text-gray-700 leading-relaxed mb-6 italic">
+                      &ldquo;{review.comment}&rdquo;
+                    </p>
+
+                    <div className="border-t pt-6">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-bold text-gray-900">{review.name}</p>
+                          {(review.verifiedPurchase || review.verified) && (
+                            <Badge variant="secondary" className="text-xs mt-1">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Verified Purchase
+                            </Badge>
+                          )}
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-1 mt-4">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
+                        />
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-gray-50 rounded-2xl">
+              <Quote className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+              <p className="text-lg font-medium text-gray-600">
+                No customer stories yet — be the first to share your experience!
+              </p>
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="mt-4 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+              >
+                <Link href={`/product/${params.slug}?tab=reviews&review=1`}>
+                  Write a Review
+                </Link>
+              </Button>
+            </div>
+          )}
+
           <div className="text-center mt-12">
-            <p className="text-gray-600 mb-4">Join 15,000+ customers who've transformed their wellness</p>
+            {hasPublicReviews ? (
+              <p className="text-gray-600 mb-4">Join our growing community of satisfied customers</p>
+            ) : (
+              <p className="text-gray-600 mb-4">Try it for yourself and let us know what you think</p>
+            )}
             <Button 
               onClick={handleAddToCart}
               size="lg"

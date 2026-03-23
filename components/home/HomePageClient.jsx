@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import QuickAddButton from '@/components/QuickAddButton';
-import { ArrowRight, Sparkles, Star, Shield, Zap, TrendingUp, Heart, Leaf, Droplets, Award, Users, CheckCircle, ChevronDown } from 'lucide-react';
+import { ArrowRight, Sparkles, Star, Shield, Zap, TrendingUp, Heart, Leaf, Droplets, Award, Users, CheckCircle, CheckCircle2, ChevronDown } from 'lucide-react';
 import { ProductImage } from '@/components/OptimizedImage';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 import { getCanonicalProductCategoryIcon, getCanonicalProductCategoryLabel } from '@/lib/storefront-query';
@@ -21,7 +21,8 @@ export default function HomePageClient({
     initialCatalogCount = null,
     organizationSchema,
     faqSchema,
-    socialProof = { customers: 'Growing Daily', reviews: 'Fresh Feedback', averageRating: '4.9 / 5.0' }
+    socialProof = { customers: 'Growing Daily', reviews: 'Fresh Feedback', averageRating: '4.9 / 5.0' },
+    featuredReviews = []
 }) {
     const router = useRouter();
     const [featuredProducts, setFeaturedProducts] = useState(initialFeaturedProducts);
@@ -542,38 +543,43 @@ export default function HomePageClient({
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-6 mb-12">
-                        {[
-                            {
-                                name: "Sarah M.",
-                                text: "This sea moss gel has transformed my energy levels! I add it to my morning smoothie and feel amazing all day.",
-                                location: "Atlanta, GA"
-                            },
-                            {
-                                name: "James T.",
-                                text: "Best quality sea moss I've found. You can taste the difference - truly wildcrafted and fresh.",
-                                location: "Miami, FL"
-                            },
-                            {
-                                name: "Michelle R.",
-                                text: "The elderberry blend is my go-to for immune support. My whole family loves it!",
-                                location: "Houston, TX"
-                            }
-                        ].map((review, index) => (
+                        {featuredReviews.length > 0 ? featuredReviews.map((review, index) => (
                             <Card key={index} className="hover:shadow-xl transition-shadow">
                                 <CardContent className="p-6">
                                     <div className="flex gap-1 mb-3">
                                         {[...Array(5)].map((_, i) => (
-                                            <Star key={i} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                                            <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} />
                                         ))}
                                     </div>
-                                    <p className="text-gray-700 mb-4 italic">"{review.text}"</p>
+                                    <p className="text-gray-700 mb-4 italic">&ldquo;{review.comment}&rdquo;</p>
                                     <div className="border-t pt-4">
-                                        <p className="font-bold text-gray-900">{review.name}</p>
-                                        <p className="text-sm text-gray-600">{review.location}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-bold text-gray-900">{review.name}</p>
+                                            {review.verifiedPurchase && (
+                                                <span className="inline-flex items-center text-xs text-emerald-600 font-medium">
+                                                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                                                    Verified
+                                                </span>
+                                            )}
+                                        </div>
+                                        {review.createdAt && (
+                                            <p className="text-sm text-gray-600">{new Date(review.createdAt).toLocaleDateString()}</p>
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>
-                        ))}
+                        )) : (
+                            <div className="col-span-full text-center py-12">
+                                <Star className="h-10 w-10 text-emerald-300 mx-auto mb-4" />
+                                <p className="text-lg text-gray-600 mb-4">Be the first to share your experience</p>
+                                <Link href="/reviews">
+                                    <Button variant="outline" className="border-emerald-600 text-emerald-600 hover:bg-emerald-50">
+                                        Write a Review
+                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </Link>
+                            </div>
+                        )}
                     </div>
 
                     <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-8 rounded-2xl">

@@ -61,14 +61,6 @@ export function getLocalBusinessSchema(location: MarketLocation, baseUrl: string
     
     hasMap: `https://www.google.com/maps?q=${location.lat},${location.lng}`,
     
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      reviewCount: '847',
-      bestRating: '5',
-      worstRating: '1',
-    },
-    
     sameAs: [
       'https://www.instagram.com/tasteofgratitude',
       'https://www.facebook.com/tasteofgratitude',

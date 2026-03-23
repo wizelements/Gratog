@@ -41,11 +41,6 @@ export function getRecipeSchema(recipe: {
       position: index + 1,
       text: step,
     })),
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '152',
-    },
     keywords: 'sea moss smoothie, healthy recipe, superfood, wellness drink',
   };
 }

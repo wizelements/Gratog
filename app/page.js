@@ -66,10 +66,36 @@ async function getSocialProof() {
   }
 }
 
+async function getFeaturedReviews() {
+  try {
+    const { db } = await connectToDatabase();
+    const reviews = await db.collection('product_reviews')
+      .find({ ...PUBLIC_REVIEW_FILTER })
+      .sort({ helpful: -1, createdAt: -1 })
+      .limit(3)
+      .project({ name: 1, rating: 1, comment: 1, verifiedPurchase: 1, createdAt: 1 })
+      .toArray();
+
+    return reviews.map(r => ({
+      name: r.name,
+      rating: r.rating,
+      comment: r.comment,
+      verifiedPurchase: r.verifiedPurchase || false,
+      createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : null
+    }));
+  } catch (error) {
+    logger.warn('HomePage', 'Failed to fetch featured reviews', {
+      error: error instanceof Error ? error.message : String(error)
+    });
+    return [];
+  }
+}
+
 export default async function HomePage() {
-  const [{ featuredProducts, initialCatalogCount }, socialProof] = await Promise.all([
+  const [{ featuredProducts, initialCatalogCount }, socialProof, featuredReviews] = await Promise.all([
     getHomepageCatalogData(),
-    getSocialProof()
+    getSocialProof(),
+    getFeaturedReviews()
   ]);
 
   return (
@@ -77,6 +103,7 @@ export default async function HomePage() {
       initialFeaturedProducts={featuredProducts}
       initialCatalogCount={initialCatalogCount}
       socialProof={socialProof}
+      featuredReviews={featuredReviews}
       organizationSchema={buildHomepageOrganizationSchema()}
       faqSchema={buildHomepageFaqSchema()}
     />

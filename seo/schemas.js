@@ -64,14 +64,9 @@ export function ProductSchema(product, reviews) {
   const lowPrice = Math.min(...prices);
   const highPrice = Math.max(...prices);
 
-  // Use real review data if provided, otherwise fall back to defaults
   const hasRealReviews = Array.isArray(reviews) && reviews.length > 0;
-  const avgRating = hasRealReviews
-    ? (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1)
-    : '4.8';
-  const reviewCount = hasRealReviews ? String(reviews.length) : '124';
 
-  return {
+  const schema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
@@ -103,11 +98,6 @@ export function ProductSchema(product, reviews) {
         name: 'Taste of Gratitude'
       }
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: avgRating,
-      reviewCount: reviewCount
-    },
     category: product.category || 'Health & Wellness',
     sku: product.sku || product.id,
     additionalProperty: [
@@ -128,6 +118,17 @@ export function ProductSchema(product, reviews) {
       }
     ]
   };
+
+  if (hasRealReviews) {
+    const avgRating = (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1);
+    schema.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: avgRating,
+      reviewCount: String(reviews.length)
+    };
+  }
+
+  return schema;
 }
 
 export function BreadcrumbSchema(items) {
