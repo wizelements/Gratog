@@ -5,7 +5,8 @@
 
 import { randomUUID } from 'crypto';
 
-const SQUARE_VERSION = '2024-01-18';
+// ISS-029 FIX: Standardized Square API version across all modules
+const SQUARE_VERSION = '2025-10-16';
 
 type SquareEnv = 'sandbox' | 'production';
 

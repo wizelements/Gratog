@@ -1031,8 +1031,8 @@ export async function POST(request) {
             }
           };
         
-        // FIXED: Use current stable Square API version (was future date 2025-10-16)
-        const SQUARE_VERSION = '2024-01-18';
+        // ISS-029 FIX: Standardized Square API version across all modules
+        const SQUARE_VERSION = '2025-10-16';
         
         const orderResponse = await fetch(`${SQUARE_BASE}/v2/orders`, {
           method: 'POST',

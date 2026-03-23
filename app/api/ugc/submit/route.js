@@ -1,10 +1,20 @@
 
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
+import { RateLimit } from '@/lib/redis';
 import { randomUUID } from 'crypto';
 
 export async function POST(request) {
   try {
+    // ISS-010 FIX: Rate limit UGC submissions (5 per hour per IP)
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (!RateLimit.check(`ugc_submit:${ip}`, 5, 3600)) {
+      return NextResponse.json(
+        { success: false, error: 'Too many submissions. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     const { 
       challenge, 
       customerName, 
@@ -42,21 +52,7 @@ export async function POST(request) {
     
     await db.collection('ugc_submissions').insertOne(submission);
     
-    // Award XP for UGC submission
-    try {
-      const passport = await db.collection('passports').findOne({ customerEmail });
-      if (passport) {
-        await db.collection('passports').updateOne(
-          { customerEmail },
-          { 
-            $inc: { xpPoints: 50 }, // UGC submission XP
-            $set: { lastActivity: new Date() }
-          }
-        );
-      }
-    } catch (passportError) {
-      debug('Passport XP update failed (non-critical):', passportError);
-    }
+    // ISS-010 FIX: XP is awarded on admin approval, not submission
     
     return NextResponse.json({
       success: true,

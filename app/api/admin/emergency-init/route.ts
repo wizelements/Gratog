@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { logger } from '@/lib/logger';
+import { RateLimit } from '@/lib/redis';
 
 async function hashPassword(password: string): Promise<string> {
   const salt = await bcrypt.genSalt(10);
@@ -24,6 +25,23 @@ async function hashPassword(password: string): Promise<string> {
 
 export async function POST(request: Request) {
   try {
+    // ISS-015 FIX: Rate limit brute-force attempts (5 attempts per 15 minutes)
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (!RateLimit.check(`emergency_init:${ip}`, 5, 900)) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Try again later.' },
+        { status: 429 }
+      );
+    }
+
+    // ISS-005 FIX: Allow disabling this endpoint entirely via env var
+    if (process.env.EMERGENCY_INIT_DISABLED === 'true') {
+      return NextResponse.json(
+        { error: 'Emergency initialization is disabled' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { emergencySecret, email, password, name } = body;
     

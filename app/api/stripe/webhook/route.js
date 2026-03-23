@@ -147,10 +147,7 @@ export async function POST(request) {
   }
 }
 
+// ISS-027 FIX: Don't leak configuration state
 export async function GET() {
-  return NextResponse.json({
-    status: 'ok',
-    endpoint: 'stripe-webhook',
-    configured: !!process.env.STRIPE_WEBHOOK_SECRET
-  });
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
 }

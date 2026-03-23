@@ -76,7 +76,7 @@
       "name": "Browse Products",
       "short_name": "Shop",
       "description": "Browse our gratitude gift collection",
-      "url": "/products?utm_source=pwa_shortcut",
+      "url": "/catalog?utm_source=pwa_shortcut",
       "icons": [
         {
           "src": "/icons/shortcut-shop-192x192.png",
@@ -88,7 +88,7 @@
       "name": "My Orders",
       "short_name": "Orders",
       "description": "View your orders",
-      "url": "/account/orders?utm_source=pwa_shortcut",
+      "url": "/profile/orders?utm_source=pwa_shortcut",
       "icons": [
         {
           "src": "/icons/shortcut-orders-192x192.png",

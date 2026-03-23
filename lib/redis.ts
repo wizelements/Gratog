@@ -75,15 +75,17 @@ export class RateLimit {
     rateLimitStore.delete(key);
   }
   
-  static getStatus(key: string): { count: number; remaining: number; resetTime: number } | null {
+  // ISS-003 FIX: getStatus now requires limit param instead of hardcoding 100
+  static getStatus(key: string, limit: number = 100): { count: number; remaining: number; resetTime: number } | null {
+    const now = Date.now();
     const bucket = rateLimitStore.get(key);
-    if (!bucket) {
-      return { count: 0, remaining: 100, resetTime: Date.now() + 60000 };
+    if (!bucket || now > bucket.resetTime) {
+      return { count: 0, remaining: limit, resetTime: Date.now() + 60000 };
     }
     
     return {
       count: bucket.count,
-      remaining: Math.max(0, 100 - bucket.count),
+      remaining: Math.max(0, limit - bucket.count),
       resetTime: bucket.resetTime
     };
   }

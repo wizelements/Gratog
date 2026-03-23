@@ -15,6 +15,30 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Sparkles, Send, Eye, Save, Users, ArrowLeft, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
+/**
+ * Sanitize HTML to prevent stored XSS in campaign preview.
+ * Strips dangerous tags, event handler attributes, and javascript: URLs.
+ */
+function sanitizeHtml(html) {
+  if (!html) return '';
+  let clean = html;
+  // Strip dangerous tags and their content
+  clean = clean.replace(/<script[\s>][\s\S]*?<\/script>/gi, '');
+  clean = clean.replace(/<iframe[\s>][\s\S]*?<\/iframe>/gi, '');
+  clean = clean.replace(/<object[\s>][\s\S]*?<\/object>/gi, '');
+  clean = clean.replace(/<embed[\s>][\s\S]*?<\/embed>/gi, '');
+  clean = clean.replace(/<form[\s>][\s\S]*?<\/form>/gi, '');
+  clean = clean.replace(/<style[\s>][\s\S]*?<\/style>/gi, '');
+  // Strip self-closing / void dangerous tags
+  clean = clean.replace(/<\/?(script|iframe|object|embed|form|link|style)\b[^>]*\/?>/gi, '');
+  // Strip event handler attributes (on*)
+  clean = clean.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+  // Strip javascript: URLs from href and src attributes
+  clean = clean.replace(/(href|src)\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/gi, '$1=""');
+  clean = clean.replace(/(href|src)\s*=\s*javascript:[^\s>]*/gi, '$1=""');
+  return clean;
+}
+
 export default function NewCampaignPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -536,10 +560,10 @@ export default function NewCampaignPage() {
             </div>
             <div className="p-6 bg-white">
               <p className="text-sm text-gray-500 mb-4">Subject: <strong>{campaignData.subject || '(No subject)'}</strong></p>
-              {/* SAFE: Admin-only email preview. Content is from authenticated admin, not user input */}
+              {/* Admin-only email preview. Sanitized to prevent stored XSS from compromised accounts */}
               <div 
                 className="prose max-w-none"
-                dangerouslySetInnerHTML={{ __html: campaignData.body || '<p>No content yet</p>' }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(campaignData.body || '<p>No content yet</p>') }}
               />
             </div>
             <div className="bg-gray-100 p-4 text-center text-sm text-gray-500 border-t">

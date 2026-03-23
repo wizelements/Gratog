@@ -117,7 +117,15 @@ export async function POST(request) {
  * GET /api/sync-trigger
  * Check sync status
  */
+// ISS-021 FIX: GET /api/sync-trigger requires auth — prevents leaking operational data
 export async function GET(request) {
+  const authHeader = request.headers.get('authorization');
+  const key = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+  if (!key || key !== SYNC_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const { db } = await connectToDatabase();
     
@@ -128,7 +136,6 @@ export async function GET(request) {
       db.collection('square_sync_metadata').findOne({ type: 'catalog_sync' })
     ]);
     
-    // Check for sandbox products
     const sandboxCount = await db.collection('unified_products').countDocuments({
       $or: [
         { source: 'sandbox_sync' },
@@ -147,9 +154,6 @@ export async function GET(request) {
       },
       lastSync: syncMeta?.lastSyncAt || null,
       syncStats: syncMeta?.stats || null,
-      action: sandboxCount > 0 
-        ? 'Sandbox products detected. POST with ?key=YOUR_SECRET to clean and sync.'
-        : 'POST with ?key=YOUR_SECRET to trigger fresh sync.'
     });
     
   } catch (error) {

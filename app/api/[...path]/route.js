@@ -1,11 +1,4 @@
 import { NextResponse } from 'next/server'
-import { v4 as uuidv4 } from 'uuid'
-import { 
-  connectToDatabase, 
-  getProductsOptimized, 
-  getProductByIdOptimized,
-  getCachedQuery 
-} from '@/lib/db-optimized'
 import { logger } from '@/lib/logger'
 
 // Helper function to handle CORS
@@ -25,56 +18,18 @@ export async function OPTIONS() {
 async function handleRoute(request, { params }) {
   const { path = [] } = params
   const route = `/${path.join('/')}`
-  const method = request.method
 
   try {
     // Root endpoint - GET /api/root (since /api/ is not accessible with catch-all)
-    if (route === '/root' && method === 'GET') {
+    if (route === '/root' && request.method === 'GET') {
       return handleCORS(NextResponse.json({ message: "Hello World" }))
     }
     // Root endpoint - GET /api/root (since /api/ is not accessible with catch-all)
-    if (route === '/' && method === 'GET') {
+    if (route === '/' && request.method === 'GET') {
       return handleCORS(NextResponse.json({ message: "Hello World" }))
     }
 
-    // Status endpoints need database connection
-    if (route === '/status') {
-      const { db } = await connectToDatabase()
-
-      // Status endpoints - POST /api/status
-      if (method === 'POST') {
-        const body = await request.json()
-        
-        if (!body.client_name) {
-          return handleCORS(NextResponse.json(
-            { error: "client_name is required" }, 
-            { status: 400 }
-          ))
-        }
-
-        const statusObj = {
-          id: uuidv4(),
-          client_name: body.client_name,
-          timestamp: new Date()
-        }
-
-        await db.collection('status_checks').insertOne(statusObj)
-        return handleCORS(NextResponse.json(statusObj))
-      }
-
-      // Status endpoints - GET /api/status
-      if (method === 'GET') {
-        const statusChecks = await db.collection('status_checks')
-          .find({})
-          .limit(1000)
-          .toArray()
-
-        // Remove MongoDB's _id field from response
-        const cleanedStatusChecks = statusChecks.map(({ _id, ...rest }) => rest)
-        
-        return handleCORS(NextResponse.json(cleanedStatusChecks))
-      }
-    }
+    // ISS-011 FIX: /api/status removed — was unauthenticated DB read/write endpoint
 
     // Route not found - return 404 for all undefined routes
     return handleCORS(NextResponse.json(

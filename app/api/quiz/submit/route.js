@@ -97,7 +97,7 @@ export async function POST(request) {
         emailData: {}
       });
       
-      debug('✅ Scheduled follow-up emails for quiz:', quizId);
+      console.log('✅ Scheduled follow-up emails for quiz:', quizId);
     } catch (scheduleError) {
       console.error('Error scheduling follow-up emails:', scheduleError);
       // Continue even if scheduling fails

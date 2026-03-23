@@ -23,7 +23,8 @@ export default function SubscriptionsLandingPage() {
             <ul className="mt-4 space-y-2 text-sm text-gray-700">
               {plan.benefits.map((benefit) => <li key={benefit}>• {benefit}</li>)}
             </ul>
-            <a href="/catalog" className="inline-block mt-6 text-emerald-700 font-semibold">Start This Plan</a>
+            <a href={`/contact?subject=${encodeURIComponent('Subscription: ' + plan.name)}`} className="inline-block mt-6 px-5 py-2 bg-emerald-700 text-white rounded-lg font-semibold hover:bg-emerald-800 transition-colors">Get Started</a>
+            <p className="mt-2 text-xs text-gray-500">Contact us to get started with your subscription.</p>
           </section>
         ))}
       </div>

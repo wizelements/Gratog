@@ -3,6 +3,7 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import bcrypt from 'bcryptjs';
 import { ADMIN_SETUP_SECRET } from '@/lib/auth-config';
 import { logger } from '@/lib/logger';
+import { RateLimit } from '@/lib/redis';
 
 /**
  * POST /api/admin/setup
@@ -13,6 +14,15 @@ import { logger } from '@/lib/logger';
  */
 export async function POST(request) {
   try {
+    // ISS-015 FIX: Rate limit brute-force attempts (5 attempts per 15 minutes)
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (!RateLimit.check(`admin_setup:${ip}`, 5, 900)) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Try again later.' },
+        { status: 429 }
+      );
+    }
+
     // Check if setup is disabled
     if (process.env.ADMIN_SETUP_DISABLED === 'true') {
       return NextResponse.json(
@@ -140,19 +150,8 @@ export async function GET() {
       role: 'admin' 
     });
 
-    // In production, only return whether setup is required
-    const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL;
-    
-    if (isProd) {
-      return NextResponse.json({
-        setupRequired: adminCount === 0
-      });
-    }
-
-    // In development, return more details
+    // ISS-022 FIX: Always return minimal boolean — never leak admin count or existence
     return NextResponse.json({
-      adminExists: adminCount > 0,
-      adminCount,
       setupRequired: adminCount === 0
     });
 

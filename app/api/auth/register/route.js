@@ -114,7 +114,7 @@ export async function POST(request) {
     });
 
     // Generate JWT token
-    const token = generateToken(user.id, user.email);
+    const token = await generateToken(user.id, user.email);
 
     // Create response with token in cookie
     const response = NextResponse.json(

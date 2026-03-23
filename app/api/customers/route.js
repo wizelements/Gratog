@@ -33,7 +33,7 @@ export async function GET(request) {
   try {
     // Admin only
     const token = request.cookies.get('admin_token')?.value;
-    const decoded = verifyToken(token);
+    const decoded = await verifyToken(token);
     
     if (!decoded) {
       return NextResponse.json(

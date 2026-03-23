@@ -34,7 +34,8 @@ export async function GET(request: Request) {
           headers: {
             'Authorization': `Bearer ${config.accessToken}`,
             'Content-Type': 'application/json',
-            'Square-Version': '2024-01-18',
+            // ISS-029 FIX: Standardized Square API version
+            'Square-Version': '2025-10-16',
           },
         });
         

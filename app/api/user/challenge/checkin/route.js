@@ -15,7 +15,7 @@ export async function POST(request) {
     }
 
     // Verify token
-    const decoded = verifyToken(token);
+    const decoded = await verifyToken(token);
     if (!decoded) {
       return NextResponse.json(
         { success: false, error: 'Invalid token' },

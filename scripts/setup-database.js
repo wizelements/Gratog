@@ -90,7 +90,7 @@ async function setupDatabase() {
     const existingAdmin = await db.collection('users').findOne({ email: adminEmail });
     
     if (!existingAdmin) {
-      const bcrypt = require('bcrypt');
+      const bcrypt = require('bcryptjs');
       const hashedPassword = await bcrypt.hash(adminPassword, 12);
       
       await db.collection('users').insertOne({

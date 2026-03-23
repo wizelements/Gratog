@@ -92,7 +92,8 @@ export async function POST(request) {
     const response = await fetch(`${SQUARE_API_BASE}/v2/online-checkout/payment-links`, {
       method: 'POST',
       headers: {
-        'Square-Version': '2024-10-17',
+        // ISS-029 FIX: Standardized Square API version
+          'Square-Version': '2025-10-16',
         'Authorization': `Bearer ${SQUARE_ACCESS_TOKEN}`,
         'Content-Type': 'application/json'
       },

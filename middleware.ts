@@ -16,7 +16,8 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
     "form-action 'self' https://*.squareup.com",
     "report-uri /api/security/csp-report",
   ].join('; ');
-  response.headers.set('Content-Security-Policy-Report-Only', csp);
+  // ISS-014 FIX: Enforce CSP instead of Report-Only
+  response.headers.set('Content-Security-Policy', csp);
   response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
@@ -68,11 +69,21 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // ISS-017 FIX: Block /diagnostic and /test-auth in production
+  if (isProd && (pathname === '/diagnostic' || pathname === '/test-auth')) {
+    return addSecurityHeaders(
+      NextResponse.json({ error: 'Not found' }, { status: 404 })
+    );
+  }
+
   // Redirect legacy public routes to their canonical destinations.
   const legacyRouteRedirects: Record<string, string> = {
     '/products': '/catalog',
-    '/cart': '/checkout',
+    '/cart': '/order', // ISS-009 FIX: /cart → /order (skip /checkout double redirect)
+    '/checkout': '/order', // ISS-009 FIX: /checkout is unused, redirect to active /order route
+    '/order-v2': '/order', // ISS-009 FIX: /order-v2 is unused re-export, redirect to active /order route
     '/account/orders': '/profile/orders',
+    '/account': '/profile', // ISS-016 FIX: /account 404 → redirect to /profile
   };
 
   const redirectDestination = legacyRouteRedirects[pathname];

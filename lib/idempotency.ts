@@ -4,8 +4,13 @@ const debug = (...args: unknown[]) => { if (DEBUG) console.log('[IDEMPOTENCY]', 
 /**
  * Idempotency key management for payment operations
  * 
- * CRITICAL: Uses external storage (Redis/Upstash) for production to survive cold starts.
- * Falls back to in-memory only for development with explicit warnings.
+ * Storage priority:
+ * 1. Upstash Redis (fastest, if UPSTASH_REDIS_REST_URL configured)
+ * 2. MongoDB (distributed, survives cold starts — uses existing connection)
+ * 3. In-memory (development only — does NOT survive cold starts)
+ * 
+ * ISS-004 FIX: Added MongoDB fallback so idempotency works across
+ * serverless instances without requiring a separate Redis service.
  */
 
 import { logger } from '@/lib/logger';
@@ -33,6 +38,22 @@ let warnedAboutMemoryMode = false;
  */
 function isRedisAvailable(): boolean {
   return !!(UPSTASH_URL && UPSTASH_TOKEN);
+}
+
+/**
+ * Check if MongoDB is available (always true when MONGODB_URI is set)
+ */
+function isMongoAvailable(): boolean {
+  return !!(process.env.MONGODB_URI || process.env.MONGO_URL);
+}
+
+/**
+ * Get MongoDB idempotency collection (lazy import to avoid circular deps)
+ */
+async function getIdempotencyCollection() {
+  const { connectToDatabase } = await import('@/lib/db-optimized');
+  const { db } = await connectToDatabase();
+  return db.collection('idempotency_keys');
 }
 
 /**
@@ -87,7 +108,28 @@ export async function getIdempotentResponse(key: string): Promise<any | null> {
       }
       return null;
     } catch (error) {
-      logger.error('Idempotency', 'Redis get failed, falling back to memory', { 
+      logger.error('Idempotency', 'Redis get failed, falling back to MongoDB', { 
+        key, 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  }
+  
+  // Try MongoDB (distributed, survives cold starts)
+  if (isMongoAvailable()) {
+    try {
+      const collection = await getIdempotencyCollection();
+      const record = await collection.findOne({ 
+        key, 
+        expiresAt: { $gt: new Date() } 
+      });
+      if (record) {
+        debug(`Cache hit (MongoDB) for key: ${key}`);
+        return record.response;
+      }
+      return null;
+    } catch (error) {
+      logger.error('Idempotency', 'MongoDB get failed, falling back to memory', { 
         key, 
         error: error instanceof Error ? error.message : String(error) 
       });
@@ -95,7 +137,7 @@ export async function getIdempotentResponse(key: string): Promise<any | null> {
   } else if (!warnedAboutMemoryMode) {
     warnedAboutMemoryMode = true;
     logger.warn('Idempotency', 
-      '⚠️ UPSTASH_REDIS not configured - using in-memory cache. ' +
+      '⚠️ No distributed storage configured - using in-memory cache. ' +
       'This is NOT safe for production as duplicate payments can occur on cold starts!'
     );
   }
@@ -134,7 +176,28 @@ export async function setIdempotentResponse(
       debug(`Stored in Redis: ${key}`);
       return;
     } catch (error) {
-      logger.error('Idempotency', 'Redis set failed, falling back to memory', { 
+      logger.error('Idempotency', 'Redis set failed, falling back to MongoDB', { 
+        key, 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  }
+  
+  // Try MongoDB (distributed, survives cold starts)
+  if (isMongoAvailable()) {
+    try {
+      const collection = await getIdempotencyCollection();
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + ttlSeconds * 1000);
+      await collection.updateOne(
+        { key },
+        { $set: { key, response, createdAt: now, expiresAt } },
+        { upsert: true }
+      );
+      debug(`Stored in MongoDB: ${key}`);
+      return;
+    } catch (error) {
+      logger.error('Idempotency', 'MongoDB set failed, falling back to memory', { 
         key, 
         error: error instanceof Error ? error.message : String(error) 
       });
@@ -240,14 +303,34 @@ export function cleanupExpiredKeys(): number {
  */
 export function getCacheStats(): {
   usingRedis: boolean;
+  usingMongo: boolean;
   memoryCacheSize: number;
   maxMemoryCacheSize: number;
 } {
   return {
     usingRedis: isRedisAvailable(),
+    usingMongo: isMongoAvailable(),
     memoryCacheSize: memoryCache.size,
     maxMemoryCacheSize: MAX_MEMORY_CACHE_SIZE,
   };
+}
+
+/**
+ * Ensure MongoDB TTL index exists for automatic expiration.
+ * Call once during app startup or first use — idempotent operation.
+ */
+export async function ensureIdempotencyIndexes(): Promise<void> {
+  if (!isMongoAvailable()) return;
+  try {
+    const collection = await getIdempotencyCollection();
+    await collection.createIndex({ key: 1 }, { unique: true });
+    await collection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+    debug('MongoDB TTL index ensured on idempotency_keys.expiresAt');
+  } catch (error) {
+    logger.error('Idempotency', 'Failed to create MongoDB indexes', {
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
 }
 
 // DO NOT use setInterval in serverless - it creates memory leaks

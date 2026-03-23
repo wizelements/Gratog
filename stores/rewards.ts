@@ -47,6 +47,7 @@ export interface RewardsState {
   getPointsToNextTier: () => { nextTier: RewardsTier | null; pointsNeeded: number; progress: number };
   getTierMultiplier: () => number;
   getAvailableRewards: () => AvailableReward[];
+  initFromServer: () => Promise<void>;
   reset: () => void;
 }
 
@@ -138,6 +139,20 @@ function persistState(state: Partial<RewardsState>) {
   }
 }
 
+async function syncToServer(action: string, data: Record<string, unknown>): Promise<void> {
+  try {
+    await fetch(`/api/rewards/${action}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  } catch {
+    // Fire-and-forget — client state is source of truth for UX
+  }
+}
+
+let serverSynced = false;
+
 export const useRewardsStore = create<RewardsState>((set, get) => {
   const initial = loadPersistedState();
   
@@ -185,6 +200,8 @@ export const useRewardsStore = create<RewardsState>((set, get) => {
         referralCount: state.referralCount
       });
       
+      syncToServer('add-points', { amount, description, type });
+      
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('rewardsUpdate', {
           detail: { points: newPoints, tier: newTier, action: 'add', amount: bonusAmount }
@@ -224,6 +241,8 @@ export const useRewardsStore = create<RewardsState>((set, get) => {
         referralCode: state.referralCode,
         referralCount: state.referralCount
       });
+      
+      syncToServer('redeem', { pointsCost: amount, rewardName });
       
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('rewardsUpdate', {
@@ -323,6 +342,27 @@ export const useRewardsStore = create<RewardsState>((set, get) => {
     
     getAvailableRewards: () => {
       return AVAILABLE_REWARDS.filter(r => r.pointsCost <= get().points);
+    },
+    
+    initFromServer: async () => {
+      if (serverSynced) return;
+      serverSynced = true;
+      
+      try {
+        const res = await fetch('/api/rewards/passport');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && typeof data.points === 'number') {
+          const tier = data.tier || calculateTier(data.lifetimePoints ?? data.points);
+          set({
+            points: data.points,
+            tier,
+            ...(typeof data.lifetimePoints === 'number' && { lifetimePoints: data.lifetimePoints }),
+          });
+        }
+      } catch {
+        // Server unavailable — continue with local state
+      }
     },
     
     reset: () => {

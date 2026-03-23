@@ -20,8 +20,10 @@ function isAuthorizedCronRequest(request) {
     return true;
   }
 
+  // ISS-007 FIX: Fail closed — reject all requests when CRON_SECRET is not configured
   if (!cronSecret) {
-    return true;
+    logger.error('CRON_SECRET not configured — rejecting request');
+    return false;
   }
 
   return authHeader === `Bearer ${cronSecret}`;

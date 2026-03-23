@@ -193,15 +193,8 @@ export async function POST(request) {
   }
 }
 
-// GET endpoint for health check
+// GET endpoint — Vercel Cron sends GET requests
+// ISS-030 FIX: Execute cleanup on GET (same as POST) since Vercel Cron uses GET
 export async function GET(request) {
-  return NextResponse.json({
-    name: 'cleanup-abandoned-orders',
-    schedule: 'Every 30 minutes',
-    thresholds: {
-      abandonAfterMinutes: ABANDON_AFTER_MINUTES,
-      deleteAfterDays: DELETE_AFTER_DAYS
-    },
-    status: 'active'
-  });
+  return POST(request);
 }

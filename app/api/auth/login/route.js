@@ -34,7 +34,7 @@ export async function POST(request) {
     }
 
     // Generate JWT token
-    const token = generateToken(user.id, user.email);
+    const token = await generateToken(user.id, user.email);
 
     // Remove password hash from response
     const { passwordHash: _, ...userWithoutPassword } = user;

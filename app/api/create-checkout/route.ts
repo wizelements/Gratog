@@ -17,8 +17,8 @@ const SQUARE_API_BASE = SQUARE_ENVIRONMENT === 'production'
   ? 'https://connect.squareup.com'
   : 'https://connect.squareupsandbox.com'
 
-// Consistent Square API version across all endpoints
-const SQUARE_VERSION = '2024-01-18'
+// ISS-029 FIX: Standardized Square API version across all modules
+const SQUARE_VERSION = '2025-10-16'
 
 // Helper to validate Square catalog IDs (20+ char alphanumeric)
 const isValidSquareCatalogId = (id?: string): boolean => {
