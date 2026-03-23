@@ -8,6 +8,16 @@ import { getAdminSession } from '@/lib/admin-session';
 
 export async function POST(request) {
   try {
+    // ISS-055 FIX: Rate limit waitlist signups (10 per hour per IP)
+    const { RateLimit } = await import('@/lib/redis');
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (!RateLimit.check(`waitlist:${ip}`, 10, 3600)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     const data = await request.json();
     
     if (!data.customer || !data.productId) {

@@ -3,8 +3,16 @@ import * as Sentry from '@sentry/nextjs';
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   
-  // Performance Monitoring
-  tracesSampleRate: 0.1,
+  // ISS-057 FIX: Use tracesSampler for higher sampling on payment/checkout routes
+  tracesSampler(samplingContext) {
+    const url = samplingContext?.request?.url || '';
+    // 100% sampling for payment-critical routes
+    if (url.includes('/api/payments') || url.includes('/api/checkout') || url.includes('/api/orders/create') || url.includes('/api/square-webhook')) {
+      return 1.0;
+    }
+    // 10% for everything else
+    return 0.1;
+  },
   
   // Environment
   environment: process.env.NODE_ENV || 'production',

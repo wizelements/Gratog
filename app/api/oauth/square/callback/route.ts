@@ -85,132 +85,19 @@ export async function GET(request: NextRequest) {
     logger.debug('API', 'Merchant ID:', merchantId);
     logger.debug('API', 'Token expires:', expiresAt);
     
-    // Display the token to the user so they can update .env
-    const resultHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Square OAuth Success</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      max-width: 800px;
-      margin: 50px auto;
-      padding: 20px;
-      background: #f5f5f5;
+    // ISS-052 FIX: Never render raw tokens in HTML. Log server-side and redirect
+    // to admin dashboard with success message. Tokens should be set via Vercel
+    // env vars or .env — not copy-pasted from a browser page.
+    logger.info('API', `Square OAuth success — merchant: ${merchantId}, expires: ${expiresAt}`);
+    logger.info('API', `Set SQUARE_ACCESS_TOKEN in Vercel env vars (token starts with: ${accessToken.substring(0, 8)}...)`);
+    if (refreshToken) {
+      logger.info('API', `Set SQUARE_REFRESH_TOKEN in Vercel env vars (token starts with: ${refreshToken.substring(0, 8)}...)`);
     }
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    h1 { color: #22c55e; }
-    .token-box {
-      background: #f9f9f9;
-      border: 2px solid #22c55e;
-      border-radius: 6px;
-      padding: 15px;
-      margin: 20px 0;
-      font-family: monospace;
-      word-break: break-all;
-    }
-    .instruction {
-      background: #fef3c7;
-      border-left: 4px solid #f59e0b;
-      padding: 15px;
-      margin: 20px 0;
-    }
-    .copy-btn {
-      background: #22c55e;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      margin-top: 10px;
-    }
-    .copy-btn:hover { background: #16a34a; }
-    code { background: #f3f4f6; padding: 2px 6px; border-radius: 3px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>✅ Square OAuth Authorization Successful!</h1>
-    
-    <p><strong>Merchant ID:</strong> ${merchantId}</p>
-    <p><strong>Environment:</strong> ${isProduction ? 'Production' : 'Sandbox'}</p>
-    <p><strong>Expires:</strong> ${expiresAt || 'Never (if long-lived)'}</p>
-    
-    <div class="instruction">
-      <strong>⚠️ IMPORTANT: Update Your Environment Variables</strong>
-      <p>Copy the tokens below and update your <code>.env</code> file:</p>
-    </div>
-    
-    <h3>Access Token:</h3>
-    <div class="token-box" id="access-token">${accessToken}</div>
-    <button class="copy-btn" onclick="copyToClipboard('access-token', 'Access Token')">📋 Copy Access Token</button>
-    
-    ${refreshToken ? `
-    <h3>Refresh Token:</h3>
-    <div class="token-box" id="refresh-token">${refreshToken}</div>
-    <button class="copy-btn" onclick="copyToClipboard('refresh-token', 'Refresh Token')">📋 Copy Refresh Token</button>
-    ` : ''}
-    
-    <div class="instruction">
-      <h3>📝 Next Steps:</h3>
-      <ol>
-        <li>Copy the Access Token above</li>
-        <li>Open <code>/app/.env</code> file</li>
-        <li>Update: <code>SQUARE_ACCESS_TOKEN=&lt;paste_token_here&gt;</code></li>
-        <li>Set: <code>SQUARE_ENVIRONMENT=${isProduction ? 'production' : 'sandbox'}</code></li>
-        <li>Set: <code>SQUARE_MOCK_MODE=false</code></li>
-        <li>Restart: <code>sudo supervisorctl restart nextjs</code></li>
-        <li>Test: <code>node test-square-credentials.js</code></li>
-        <li>Sync catalog: <code>node scripts/syncCatalog.js</code></li>
-      </ol>
-    </div>
-    
-    <div style="margin-top: 30px; padding: 15px; background: #dbeafe; border-radius: 6px;">
-      <strong>✨ What You Just Enabled:</strong>
-      <ul>
-        <li>✅ Read merchant profile and locations</li>
-        <li>✅ Read and manage catalog items</li>
-        <li>✅ Create and manage orders</li>
-        <li>✅ Process payments</li>
-        <li>✅ Read and manage customers</li>
-        <li>✅ Track inventory</li>
-      </ul>
-    </div>
-    
-    <p style="margin-top: 20px;">
-      <a href="/admin" style="color: #22c55e; text-decoration: none; font-weight: 600;">← Return to Admin Dashboard</a>
-    </p>
-  </div>
-  
-  <script>
-    function copyToClipboard(elementId, name) {
-      const element = document.getElementById(elementId);
-      const text = element.textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        alert(name + ' copied to clipboard!');
-      }).catch(err => {
-        console.error('Failed to copy:', err);
-        alert('Please manually select and copy the token');
-      });
-    }
-  </script>
-</body>
-</html>
-    `;
-    
-    return new NextResponse(resultHtml, {
-      status: 200,
-      headers: { 'Content-Type': 'text/html' }
-    });
+
+    const successUrl = new URL('/admin', process.env.NEXT_PUBLIC_BASE_URL);
+    successUrl.searchParams.set('oauth_success', 'true');
+    successUrl.searchParams.set('merchant', merchantId || '');
+    return NextResponse.redirect(successUrl.toString());
     
   } catch (error) {
     console.error('OAuth callback error:', error);

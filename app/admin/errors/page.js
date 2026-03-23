@@ -15,7 +15,8 @@ export default function ErrorsPage() {
     setLoading(true);
     try {
       // Get admin token from localStorage
-      const token = localStorage.getItem('admin_token') || 'admin123';
+      // ISS-051 FIX: No hardcoded fallback — require real admin token
+      const token = localStorage.getItem('admin_token');
       
       const response = await fetch('/api/error-report', {
         headers: {

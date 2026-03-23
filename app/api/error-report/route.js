@@ -12,6 +12,13 @@ const clientErrors = [];
 
 export async function POST(request) {
   try {
+    // ISS-056 FIX: Rate limit error reports (20 per minute per IP)
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const { RateLimit } = await import('@/lib/redis');
+    if (!RateLimit.check(`error_report:${ip}`, 20, 60)) {
+      return NextResponse.json({ success: false, error: 'Too many reports' }, { status: 429 });
+    }
+
     const body = await request.json();
     
     const errorReport = {
@@ -60,9 +67,13 @@ export async function POST(request) {
 }
 
 export async function GET(request) {
-  // Simple auth check - require admin token
+  // ISS-051 FIX: Fail closed — reject when ADMIN_SECRET is not configured
   const authHeader = request.headers.get('authorization');
-  const adminToken = process.env.ADMIN_SECRET || 'admin123';
+  const adminToken = process.env.ADMIN_SECRET;
+  
+  if (!adminToken) {
+    return NextResponse.json({ error: 'Not configured' }, { status: 503 });
+  }
   
   if (authHeader !== `Bearer ${adminToken}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
