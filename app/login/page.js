@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Leaf, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -20,9 +33,12 @@ export default function LoginPage() {
   });
   const [error, setError] = useState('');
 
+  // Respect ?redirect= param, default to /profile. Only allow local paths.
+  const redirectTo = (searchParams.get('redirect') || '/profile').replace(/^(?!\/)|[:\s]/g, '/profile');
+
   // Redirect if already logged in
   if (isAuthenticated) {
-    router.push('/profile');
+    router.push(redirectTo);
     return null;
   }
 
@@ -36,7 +52,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (result.success) {
-      router.push('/profile');
+      router.push(redirectTo);
     } else {
       setError(result.error || 'Login failed. Please check your credentials.');
     }

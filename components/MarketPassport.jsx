@@ -45,8 +45,8 @@ export default function MarketPassport({ customerEmail, customerName }) {
     try {
       setLoading(true);
       
-      // Try to get existing passport
-      let response = await fetch(`/api/rewards/passport?email=${encodeURIComponent(customerEmail)}`);
+      // Fetch passport via auth cookie (no email in URL)
+      let response = await fetch('/api/rewards/passport');
       
       if (!response.ok && response.status === 404) {
         // Create new passport
@@ -61,13 +61,8 @@ export default function MarketPassport({ customerEmail, customerName }) {
         const data = await response.json();
         setPassport(data.passport);
         
-        // Generate QR code for passport
-        const qrData = JSON.stringify({
-          type: 'market_passport',
-          passportId: data.passport.id,
-          customerEmail: data.passport.customerEmail
-        });
-        
+        // ISS-042 FIX: QR contains opaque passport scan URL — no PII
+        const qrData = `https://tasteofgratitude.shop/api/rewards/passport/scan?id=${encodeURIComponent(data.passport.id)}`;
         const qrUrl = await generateQRCode(qrData);
         setQrCodeUrl(qrUrl);
       } else {

@@ -55,12 +55,15 @@ export default function RegisterPage() {
     }));
   }, [searchParams]);
 
+  // Respect ?redirect= param, default to /profile. Only allow local paths.
+  const redirectTo = (searchParams.get('redirect') || '/profile').replace(/^(?!\/)|[:\s]/g, '/profile');
+
   // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/profile');
+      router.push(redirectTo);
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, redirectTo]);
 
   // Real-time validation
   useEffect(() => {
@@ -178,7 +181,7 @@ export default function RegisterPage() {
     setLoading(false);
 
     if (result.success) {
-      router.push('/profile');
+      router.push(redirectTo);
     } else if (result.error) {
       // Handle specific errors
       if (result.error.includes('Email')) {
