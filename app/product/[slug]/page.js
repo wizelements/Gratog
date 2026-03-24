@@ -369,12 +369,17 @@ export default function ProductDetailPage() {
               
               {/* Badges */}
               <div className="absolute top-4 left-4 flex flex-col gap-2">
+                {product.marketExclusive && (
+                  <Badge className="bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-md">
+                    🎪 Serenbe Markets Only
+                  </Badge>
+                )}
                 {product.intelligentCategory && (
-                  <Badge className="bg-emerald-600">
+                  <Badge className={product.marketExclusive ? "bg-purple-500" : "bg-emerald-600"}>
                     {product.categoryData?.icon} {product.intelligentCategory}
                   </Badge>
                 )}
-                {product.featured && (
+                {product.featured && !product.marketExclusive && (
                   <Badge className="bg-yellow-500">
                     <Star className="h-3 w-3 mr-1 fill-white" />
                     Featured
@@ -467,9 +472,23 @@ export default function ProductDetailPage() {
               )}
             </div>
             
+            {/* Market Exclusive Banner */}
+            {product.marketExclusive && (
+              <div className="bg-gradient-to-r from-purple-50 via-fuchsia-50 to-purple-50 border border-purple-200 rounded-xl p-4 mb-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">🎪</span>
+                  <span className="font-bold text-purple-800">Serenbe Farmers Market Exclusive</span>
+                </div>
+                <p className="text-sm text-purple-700">
+                  This handcrafted boba is made fresh at Serenbe Farmers Market every Saturday, 9 AM – 1 PM. 
+                  Order online to reserve yours for pickup, or come find us at the booth!
+                </p>
+              </div>
+            )}
+
             {/* Benefit Story */}
             {product.benefitStory && (
-              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-4 mb-6">
+              <div className={`rounded-lg p-4 mb-6 ${product.marketExclusive ? 'bg-gradient-to-br from-purple-50 to-fuchsia-50' : 'bg-gradient-to-br from-emerald-50 to-teal-50'}`}>
                 <p className="text-gray-700 leading-relaxed">{product.benefitStory}</p>
               </div>
             )}

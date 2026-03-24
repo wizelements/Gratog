@@ -90,7 +90,16 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
             <WishlistButton productId={product.id || product.slug} size="small" />
           </div>
           
-          {product.featured && (
+          {product.marketExclusive && (
+            <Badge 
+              className="absolute top-3 left-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white border-none shadow-md text-xs"
+              data-testid="market-exclusive-badge"
+            >
+              🎪 Serenbe Markets Only
+            </Badge>
+          )}
+          
+          {product.featured && !product.marketExclusive && (
             <Badge 
               className="absolute top-3 left-3 bg-yellow-500 text-white border-none shadow-sm"
               data-testid="featured-badge"
