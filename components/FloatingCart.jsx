@@ -192,7 +192,9 @@ export default function FloatingCart() {
                             <p className="text-xs text-emerald-600 font-medium mb-2">Preorder — ships next batch</p>
                           )}
                           {item.marketExclusive && (
-                            <p className="text-xs text-purple-600 font-medium mb-2">🎪 Market pickup</p>
+                            <p className="text-xs text-purple-600 font-medium mb-2 bg-purple-50 px-2 py-1 rounded">
+                              🎪 Saturdays 9AM–1PM at Serenbe Markets
+                            </p>
                           )}
 
                           <div className="flex items-center gap-3">

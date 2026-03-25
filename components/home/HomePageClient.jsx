@@ -379,38 +379,39 @@ export default function HomePageClient({
             </section>
 
             {/* Boba Market Exclusive Teaser */}
-            <section className="py-16 bg-white fade-in-section opacity-0 transition-all duration-1000">
-                <div className="container max-w-4xl">
-                    <div className="bg-gradient-to-r from-purple-50 via-fuchsia-50 to-purple-50 rounded-2xl border border-purple-200 p-8 md:p-10">
-                        <div className="flex flex-col md:flex-row items-center gap-6">
-                            <div className="flex-shrink-0 w-20 h-20 bg-gradient-to-br from-purple-600 to-fuchsia-600 rounded-full flex items-center justify-center shadow-lg">
-                                <span className="text-3xl">🧋</span>
-                            </div>
-                            <div className="flex-1 text-center md:text-left">
-                                <Badge className="mb-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white border-none">
-                                    🎪 Market Exclusive
-                                </Badge>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                                    Handcrafted Boba & Cream
-                                </h3>
-                                <p className="text-gray-600 mb-1">
-                                    Taro Boba • Strawberry Matcha • Brown Sugar • Vanilla Bean & more
-                                </p>
-                                <p className="text-sm text-purple-600 font-medium">
-                                    Made fresh every Saturday at Serenbe Farmers Market
-                                </p>
-                            </div>
-                            <Button
-                                onClick={() => router.push('/catalog?category=boba+and+cream')}
-                                className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all flex-shrink-0"
-                            >
-                                Preview the Boba Menu
-                                <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </section>
+             <section className="py-16 bg-white fade-in-section opacity-0 transition-all duration-1000">
+                 <div className="container max-w-4xl">
+                     <div className="bg-gradient-to-r from-purple-50 via-fuchsia-50 to-purple-50 rounded-2xl border border-purple-200 p-8 md:p-10">
+                         <div className="flex flex-col md:flex-row items-center gap-8">
+                             <div className="flex-shrink-0 w-24 h-24 bg-gradient-to-br from-purple-600 to-fuchsia-600 rounded-full flex items-center justify-center shadow-lg">
+                                 <span className="text-4xl">🧋</span>
+                             </div>
+                             <div className="flex-1">
+                                 <Badge className="mb-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white border-none">
+                                     🎪 Market Exclusive — Saturdays Only
+                                 </Badge>
+                                 <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                                     Handcrafted Boba & Cream
+                                 </h3>
+                                 <p className="text-gray-700 mb-3 font-medium">
+                                     Taro Boba • Strawberry Matcha • Brown Sugar • Vanilla Bean & more
+                                 </p>
+                                 <div className="space-y-2 mb-4 text-sm text-purple-700">
+                                   <p>✨ Made fresh every Saturday at Serenbe Farmers Market</p>
+                                   <p>⏰ 9AM–1PM • Limited quantities • Come early for best selection</p>
+                                 </div>
+                             </div>
+                             <Button
+                                 onClick={() => router.push('/markets')}
+                                 className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all flex-shrink-0 whitespace-nowrap"
+                             >
+                                 🎪 Find Us at Serenbe
+                                 <ArrowRight className="ml-2 h-4 w-4" />
+                             </Button>
+                         </div>
+                     </div>
+                 </div>
+             </section>
 
             <section id="benefits" className="py-20 bg-white fade-in-section opacity-0 transition-all duration-1000">
                 <div className="container">

@@ -138,13 +138,28 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
   const purchaseStatus = isPreorder ? 'preorder' : 'in_stock';
 
   const handleAddToCart = () => {
+    // For market-exclusive items, navigate to markets page instead of adding to cart
+    if (product.marketExclusive) {
+      const variantText = selectedVariation ? ` (Size: ${selectedVariation.name})` : '';
+      toast.info(getAddedToCartMessage(`${product.name}`, purchaseStatus, variantText, true), {
+        action: {
+          label: 'Visit Markets',
+          onClick: () => {
+            window.location.href = '/markets';
+            onClose();
+          }
+        }
+      });
+      return;
+    }
+
     setIsAdding(true);
     
     // Use the new cartUtils with variant object
     addToCart(product, quantity, selectedVariation);
     
     const variantText = selectedVariation ? ` (Size: ${selectedVariation.name})` : '';
-    toast.success(getAddedToCartMessage(`${quantity}x ${product.name}`, purchaseStatus, variantText), {
+    toast.success(getAddedToCartMessage(`${quantity}x ${product.name}`, purchaseStatus, variantText, false), {
       description: selectedVariation ? `Size: ${selectedVariation.name}` : undefined,
       action: {
         label: 'View Cart',
@@ -252,12 +267,18 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
             )}
 
             {product.marketExclusive && (
-              <div className="bg-gradient-to-r from-purple-50 to-fuchsia-50 border border-purple-200 rounded-lg p-3 mb-4">
-                <p className="text-sm text-purple-700 font-medium">
-                  🎪 Serenbe Farmers Market Exclusive — Saturdays 9AM-1PM
-                </p>
-              </div>
-            )}
+               <div className="bg-gradient-to-r from-purple-50 to-fuchsia-50 border border-purple-200 rounded-lg p-4 mb-4 space-y-2">
+                 <p className="text-sm font-semibold text-purple-700">
+                   🎪 Market Exclusive
+                 </p>
+                 <p className="text-sm text-purple-600">
+                   Available only at Serenbe Farmers Market, Saturdays 9AM–1PM
+                 </p>
+                 <p className="text-xs text-purple-600">
+                   Freshly handcrafted • Limited quantities • Come early for best selection
+                 </p>
+               </div>
+             )}
             
             {product.benefitStory && (
               <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-4 mb-4">
@@ -339,24 +360,37 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
             </div>
             
             <div className="space-y-3">
-              <Button
-                onClick={handleAddToCart}
-                disabled={isAdding}
-                autoFocus
-                className="w-full h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-              >
-                {isAdding ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Adding...
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="mr-2 h-5 w-5" />
-                    {getAddToCartLabel(purchaseStatus)}
-                  </>
-                )}
-              </Button>
+               <Button
+                 onClick={handleAddToCart}
+                 disabled={isAdding}
+                 autoFocus
+                 className={`w-full h-12 focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                   product.marketExclusive
+                     ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 focus-visible:ring-purple-500'
+                     : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 focus-visible:ring-emerald-500'
+                 }`}
+               >
+                 {isAdding ? (
+                   <>
+                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                     Loading...
+                   </>
+                 ) : (
+                   <>
+                     {product.marketExclusive ? (
+                       <>
+                         <span className="mr-2">🎪</span>
+                         {getAddToCartLabel(purchaseStatus, true)}
+                       </>
+                     ) : (
+                       <>
+                         <ShoppingCart className="mr-2 h-5 w-5" />
+                         {getAddToCartLabel(purchaseStatus, false)}
+                       </>
+                     )}
+                   </>
+                 )}
+               </Button>
               
               <Link href={`/product/${product.slug || product.id}`} className="block">
                 <Button variant="outline" className="w-full focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2" onClick={onClose}>
