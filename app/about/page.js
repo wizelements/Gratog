@@ -80,7 +80,7 @@ export default function AboutPage() {
               </div>
               <h3 className="font-semibold mb-2">Community Focus</h3>
               <p className="text-sm text-muted-foreground">
-                Supporting local farmers markets and wellness education
+                Supporting local farmers markets, handcrafted boba at Serenbe Markets, and wellness education
               </p>
             </CardContent>
           </Card>

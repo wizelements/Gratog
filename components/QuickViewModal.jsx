@@ -212,11 +212,15 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
                 </div>
               )}
               
-              {product.intelligentCategory && (
+              {product.marketExclusive ? (
+                <Badge className="absolute top-3 right-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white border-none shadow-md">
+                  🎪 Serenbe Markets Only
+                </Badge>
+              ) : product.intelligentCategory ? (
                 <Badge className="absolute top-3 right-3 bg-emerald-600">
                   {product.categoryData?.icon} {product.intelligentCategory}
                 </Badge>
-              )}
+              ) : null}
             </div>
           </div>
           
@@ -245,6 +249,14 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
               <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs mb-4">
                 Available for Preorder
               </Badge>
+            )}
+
+            {product.marketExclusive && (
+              <div className="bg-gradient-to-r from-purple-50 to-fuchsia-50 border border-purple-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-purple-700 font-medium">
+                  🎪 Serenbe Farmers Market Exclusive — Saturdays 9AM-1PM
+                </p>
+              </div>
             )}
             
             {product.benefitStory && (

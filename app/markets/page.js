@@ -124,6 +124,34 @@ export default function MarketsPage() {
           ))}
         </div>
 
+        {/* Market-Exclusive Boba Section */}
+        <Card className="mb-12 bg-gradient-to-r from-purple-50 via-fuchsia-50 to-purple-50 border-purple-200 overflow-hidden">
+          <CardContent className="p-8">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="flex-shrink-0 w-20 h-20 bg-gradient-to-br from-purple-600 to-fuchsia-600 rounded-full flex items-center justify-center">
+                <span className="text-3xl">🧋</span>
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  Market-Exclusive Boba & Cream
+                </h2>
+                <p className="text-gray-600 mb-1">
+                  Taro Boba • Strawberry Matcha • Brown Sugar • Vanilla Bean & more
+                </p>
+                <p className="text-sm text-purple-600 font-medium">
+                  Made fresh every Saturday at Serenbe Farmers Market. Kids, Medium & Large sizes available.
+                </p>
+              </div>
+              <Button 
+                onClick={() => window.location.href = '/catalog?category=boba+and+cream'}
+                className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white flex-shrink-0"
+              >
+                🎪 Preview the Boba Menu
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Market Passport CTA */}
         <Card className="bg-gradient-to-r from-emerald-100 to-teal-100 border-emerald-200">
           <CardHeader className="text-center">
@@ -200,6 +228,13 @@ export default function MarketsPage() {
                   <div>
                     <div className="font-medium">Fresh Products</div>
                     <div className="text-gray-600">Weekly small-batch, wildcrafted goods</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                  <div>
+                    <div className="font-medium">🧋 Fresh Boba & Cream</div>
+                    <div className="text-gray-600">Handcrafted boba drinks made fresh at the market</div>
                   </div>
                 </div>
               </div>

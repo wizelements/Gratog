@@ -52,6 +52,15 @@ export default function Footer() {
               </li>
               <li>
                 <Link 
+                  href="/catalog?category=boba+and+cream" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  🧋 Boba Menu
+                </Link>
+              </li>
+              <li>
+                <Link 
                   href="/markets" 
                   className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
                 >

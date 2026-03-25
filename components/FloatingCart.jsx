@@ -191,6 +191,9 @@ export default function FloatingCart() {
                           {item.isPreorder && (
                             <p className="text-xs text-emerald-600 font-medium mb-2">Preorder — ships next batch</p>
                           )}
+                          {item.marketExclusive && (
+                            <p className="text-xs text-purple-600 font-medium mb-2">🎪 Market pickup</p>
+                          )}
 
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
