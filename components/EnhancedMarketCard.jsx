@@ -69,7 +69,7 @@ export default function EnhancedMarketCard({ marketName, market, className = '' 
       description: market.description || 'Visit us at this market location for fresh sea moss products.',
       features: ['Fresh Samples', 'Wellness Consultations', 'Passport Rewards'],
       mapsUrl: canonicalMapsUrl,
-      specialties: ['Sea Moss Gels', 'Lemonades', 'Wellness Shots', 'Boba & Cream'],
+      specialties: ['Sea Moss Gels', 'Lemonades', 'Wellness Shots', 'Boba'],
       dayOfWeek: typeof market.dayOfWeek === 'number' ? market.dayOfWeek : 6,
       ...schedule,
     }

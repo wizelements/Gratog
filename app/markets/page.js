@@ -233,7 +233,7 @@ export default function MarketsPage() {
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
                   <div>
-                    <div className="font-medium">🧋 Fresh Boba & Cream</div>
+                    <div className="font-medium">🧋 Fresh Boba</div>
                     <div className="text-gray-600">Handcrafted boba drinks made fresh at the market</div>
                   </div>
                 </div>

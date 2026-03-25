@@ -161,7 +161,7 @@ export default function EnhancedHero() {
             <span className="text-purple-700 font-bold text-lg">Market Exclusive</span>
           </div>
           <div className="text-xl font-bold text-gray-800 mb-2">
-            Handcrafted Boba & Cream — Only at Serenbe
+            Handcrafted Boba — Only at Serenbe
           </div>
           <div className="text-gray-600 mb-1">
             Taro Boba • Strawberry Matcha • Brown Sugar • Vanilla Bean & more
