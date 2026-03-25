@@ -267,18 +267,18 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
             )}
 
             {product.marketExclusive && (
-               <div className="bg-gradient-to-r from-purple-50 to-fuchsia-50 border border-purple-200 rounded-lg p-4 mb-4 space-y-2">
-                 <p className="text-sm font-semibold text-purple-700">
-                   🎪 Market Exclusive
-                 </p>
-                 <p className="text-sm text-purple-600">
-                   Available only at Serenbe Farmers Market, Saturdays 9AM–1PM
-                 </p>
-                 <p className="text-xs text-purple-600">
-                   Freshly handcrafted • Limited quantities • Come early for best selection
-                 </p>
-               </div>
-             )}
+              <div className="bg-gradient-to-r from-purple-50 to-fuchsia-50 border border-purple-200 rounded-lg p-4 mb-4 space-y-2">
+                <p className="text-sm font-semibold text-purple-700">
+                  🎪 Market Exclusive
+                </p>
+                <p className="text-sm text-purple-600">
+                  Available only at Serenbe Farmers Market, Saturdays 9AM–1PM
+                </p>
+                <p className="text-xs text-purple-600">
+                  Freshly handcrafted • Limited quantities • Come early for best selection
+                </p>
+              </div>
+            )}
             
             {product.benefitStory && (
               <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-4 mb-4">
