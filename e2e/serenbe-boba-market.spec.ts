@@ -1,10 +1,10 @@
 /**
- * Serenbe Markets Only – Boba & Cream E2E Tests
+ * Serenbe Markets Only – Boba E2E Tests
  *
  * Validates the full "Serenbe Markets Only" creative marketing flow:
  * 1. API enrichment: boba products get marketExclusive flag
  * 2. Catalog: purple "🎪 Serenbe Markets Only" badge on boba cards
- * 3. Catalog: "Boba & Cream" category filter works
+ * 3. Catalog: "Boba" category filter works
  * 4. Product detail: "Serenbe Farmers Market Exclusive" banner + pickup info
  * 5. Homepage hero: Boba Market Exclusive teaser + CTA link
  * 6. Homepage hero: "🧋 Boba at the Market" rotating headline
@@ -17,7 +17,7 @@ const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 // Known boba product name substrings that the enrichment pipeline should flag
 const BOBA_PRODUCT_NAMES = [
   'Boba', 'Taro Boba', 'Strawberry Matcha', 'Strawberry Milk Tea',
-  'Taro Cream', 'Matcha Cream', 'Cream Topping'
+  'Brown Sugar', 'Vanilla Bean'
 ];
 
 // ─── API Enrichment ──────────────────────────────────────────────────────────
@@ -50,7 +50,7 @@ test.describe('API: Boba product enrichment', () => {
     }
   });
 
-  test('boba products are categorized as Boba & Cream', async ({ request }) => {
+  test('boba products are categorized as Boba', async ({ request }) => {
     const res = await request.get(`${BASE_URL}/api/products`);
     const data = await res.json();
 
@@ -64,7 +64,7 @@ test.describe('API: Boba product enrichment', () => {
       const category = (
         product.intelligentCategory || product.categoryData?.name || ''
       ).toLowerCase();
-      expect(category, `${product.name} category should be boba & cream`).toContain('boba');
+      expect(category, `${product.name} category should be boba`).toContain('boba');
     }
   });
 
@@ -86,14 +86,14 @@ test.describe('API: Boba product enrichment', () => {
     }
   });
 
-  test('categories list includes Boba & Cream', async ({ request }) => {
+  test('categories list includes Boba', async ({ request }) => {
     const res = await request.get(`${BASE_URL}/api/products`);
     const data = await res.json();
 
     const categoryNames = (data.categories || []).map((c: any) =>
       (c.name || '').toLowerCase()
     );
-    expect(categoryNames).toContain('boba & cream');
+    expect(categoryNames).toContain('boba');
   });
 });
 
@@ -124,8 +124,8 @@ test.describe('Catalog: Boba product cards', () => {
     await expect(featuredBadge).toHaveCount(0);
   });
 
-  test('Boba & Cream category filter shows only boba products', async ({ page }) => {
-    await page.goto(`${BASE_URL}/catalog?category=boba+and+cream`);
+  test('Boba category filter shows only boba products', async ({ page }) => {
+    await page.goto(`${BASE_URL}/catalog?category=boba`);
     await page.waitForLoadState('networkidle');
 
     const cards = page.locator('[data-testid^="enhanced-product-card-"]');
@@ -194,7 +194,7 @@ test.describe('Homepage Hero: Boba market teaser', () => {
 
     // Boba teaser section
     await expect(page.getByText('Market Exclusive')).toBeVisible();
-    await expect(page.getByText('Handcrafted Boba & Cream — Only at Serenbe')).toBeVisible();
+    await expect(page.getByText('Handcrafted Boba — Only at Serenbe')).toBeVisible();
 
     // Flavor callouts
     await expect(page.getByText(/Taro Boba/)).toBeVisible();
@@ -227,7 +227,7 @@ test.describe('Console: No critical errors on boba pages', () => {
       if (msg.type() === 'error') errors.push(msg.text());
     });
 
-    await page.goto(`${BASE_URL}/catalog?category=boba+and+cream`);
+    await page.goto(`${BASE_URL}/catalog?category=boba`);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
 

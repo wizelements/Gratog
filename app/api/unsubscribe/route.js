@@ -30,12 +30,13 @@ export async function POST(request) {
     }
 
     const { userId, email } = tokenData;
+    const normalizedEmail = email.toLowerCase();
 
     const { db } = await connectToDatabase();
 
     // Update user's email preferences
     const result = await db.collection('users').updateOne(
-      { $or: [{ id: userId }, { email: email.toLowerCase() }] },
+      { $or: [{ id: userId }, { email: normalizedEmail }] },
       {
         $set: {
           'emailPreferences.marketing': false,
@@ -45,15 +46,20 @@ export async function POST(request) {
       }
     );
 
+    await db.collection('unsubscribes').updateOne(
+      { email: normalizedEmail },
+      {
+        $set: {
+          email: normalizedEmail,
+          userId: userId || null,
+          unsubscribedAt: new Date(),
+          source: 'email_link'
+        }
+      },
+      { upsert: true }
+    );
+
     if (result.matchedCount === 0) {
-      // User not found - might be guest, create unsubscribe record
-      await db.collection('unsubscribes').insertOne({
-        email: email.toLowerCase(),
-        userId: userId || null,
-        unsubscribedAt: new Date(),
-        source: 'email_link'
-      });
-      
       logger.info('Unsubscribe', `Guest email unsubscribed: ${email}`);
     } else {
       logger.info('Unsubscribe', `User unsubscribed: ${email} (userId: ${userId})`);
@@ -61,12 +67,24 @@ export async function POST(request) {
 
     // Cancel any pending emails for this user
     await db.collection('email_queue').updateMany(
-      { 'recipient.email': email.toLowerCase(), status: 'pending' },
+      {
+        status: 'pending',
+        $or: [
+          { to: normalizedEmail },
+          { 'recipient.email': normalizedEmail }
+        ]
+      },
       { $set: { status: 'cancelled', cancelReason: 'user_unsubscribed', updatedAt: new Date() } }
     );
     
     await db.collection('scheduled_emails').updateMany(
-      { 'recipient.email': email.toLowerCase(), status: 'pending' },
+      {
+        status: 'pending',
+        $or: [
+          { to: normalizedEmail },
+          { 'recipient.email': normalizedEmail }
+        ]
+      },
       { $set: { status: 'cancelled', cancelReason: 'user_unsubscribed', updatedAt: new Date() } }
     );
 

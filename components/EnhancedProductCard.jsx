@@ -26,8 +26,12 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
   
   const fallbackImage = PRODUCT_IMAGE_FALLBACK_SRC;
   const hasIngredientData = product.ingredients && product.ingredients.length > 0;
+  const productAlt = product.imageAlt || `${product.name} - ${product.benefitStory || 'Premium wellness product'}`;
   
   const getProductImage = () => {
+    if (typeof product.displayImage === 'string' && product.displayImage.trim()) {
+      return product.displayImage;
+    }
     if (product.images?.length > 0 && typeof product.images[0] === 'string' && product.images[0].trim()) {
       return product.images[0];
     }
@@ -70,7 +74,7 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
           {usesInlineImage ? (
             <img
               src={resolvedImage}
-              alt={`${product.name} - ${product.benefitStory || 'Premium wellness product'}`}
+              alt={productAlt}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               onError={() => setImageError(true)}
               loading="lazy"
@@ -78,7 +82,7 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
           ) : (
             <Image
               src={resolvedImage}
-              alt={`${product.name} - ${product.benefitStory || 'Premium wellness product'}`}
+              alt={productAlt}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               onError={() => setImageError(true)}

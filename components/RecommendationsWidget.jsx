@@ -121,10 +121,10 @@ export default function RecommendationsWidget({
             >
               <div className="bg-white rounded-lg p-3 hover:shadow-lg transition-shadow">
                 <div className="relative h-32 mb-2 rounded-md overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100">
-                  {product.image ? (
+                  {product.displayImage || product.image ? (
                     <Image
-                      src={product.image}
-                      alt={product.name}
+                      src={product.displayImage || product.image}
+                      alt={product.imageAlt || product.name}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-300"
                     />

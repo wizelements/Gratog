@@ -21,8 +21,12 @@ export default function InfoBoardProductCard({ product }) {
   const [imageError, setImageError] = useState(false);
   
   const fallbackImage = PRODUCT_IMAGE_FALLBACK_SRC;
+  const productAlt = product.imageAlt || product.name;
   
   const getProductImage = () => {
+    if (typeof product.displayImage === 'string' && product.displayImage.trim()) {
+      return product.displayImage;
+    }
     if (product.images?.length > 0 && typeof product.images[0] === 'string' && product.images[0].trim()) {
       return product.images[0];
     }
@@ -57,7 +61,7 @@ export default function InfoBoardProductCard({ product }) {
         {usesInlineImage ? (
           <img
             src={resolvedImage}
-            alt={product.name}
+            alt={productAlt}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={() => setImageError(true)}
             loading="lazy"
@@ -65,7 +69,7 @@ export default function InfoBoardProductCard({ product }) {
         ) : (
           <Image
             src={resolvedImage}
-            alt={product.name}
+            alt={productAlt}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             onError={() => setImageError(true)}

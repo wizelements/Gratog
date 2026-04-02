@@ -33,6 +33,7 @@ export default function CheckoutRoot() {
     validation,
     setValidation,
     clearValidation,
+    couponCode,
   } = useCheckoutStore();
 
   const formContainerRef = useRef<HTMLDivElement>(null);
@@ -86,6 +87,11 @@ export default function CheckoutRoot() {
       if (!fulfillment.delivery?.address.street) errors['address.street'] = 'Street address is required';
       if (!fulfillment.delivery?.address.city) errors['address.city'] = 'City is required';
       if (!fulfillment.delivery?.address.zip) errors['address.zip'] = 'ZIP code is required';
+    } else if (fulfillment.type === 'shipping') {
+      if (!fulfillment.shipping?.address?.street) errors['address.street'] = 'Street address is required';
+      if (!fulfillment.shipping?.address?.city) errors['address.city'] = 'City is required';
+      if (!fulfillment.shipping?.address?.state) errors['address.state'] = 'State is required';
+      if (!fulfillment.shipping?.address?.zip) errors['address.zip'] = 'ZIP code is required';
     }
     
     if (Object.keys(errors).length > 0) {
@@ -237,6 +243,7 @@ export default function CheckoutRoot() {
                       contact={contact}
                       fulfillment={fulfillment}
                       tip={tip}
+                      couponCode={couponCode}
                       onBack={() => setStage('details')}
                     />
                   </motion.div>

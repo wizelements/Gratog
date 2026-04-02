@@ -76,7 +76,7 @@ export default function WishlistPage() {
       id: product.id,
       name: product.name,
       price: variant?.price || product.price || 0,
-      image: product.image || product.images?.[0],
+      image: product.displayImage || product.image || product.images?.[0],
       slug: product.slug,
       variationId: variant?.id,
       variationName: variant?.name
@@ -209,7 +209,11 @@ export default function WishlistPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence mode="popLayout">
-              {products.map((product) => (
+              {products.map((product) => {
+                const wishlistImage = product.displayImage || product.image || product.images?.[0];
+                const wishlistImageAlt = product.imageAlt || product.name;
+
+                return (
                 <motion.div
                   key={product.id}
                   layout
@@ -221,10 +225,10 @@ export default function WishlistPage() {
                   <Card className="overflow-hidden group hover:shadow-lg transition-shadow">
                     <div className="relative h-48 overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50">
                       <Link href={`/product/${product.slug || product.id}`}>
-                        {product.image || product.images?.[0] ? (
+                        {wishlistImage ? (
                           <Image
-                            src={product.image || product.images[0]}
-                            alt={product.name}
+                            src={wishlistImage}
+                            alt={wishlistImageAlt}
                             fill
                             className="object-cover transition-transform group-hover:scale-105"
                           />
@@ -283,7 +287,8 @@ export default function WishlistPage() {
                     </CardContent>
                   </Card>
                 </motion.div>
-              ))}
+                );
+              })}
             </AnimatePresence>
           </div>
         )}

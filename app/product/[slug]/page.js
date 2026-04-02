@@ -239,7 +239,18 @@ export default function ProductDetailPage() {
   };
 
   const currentPrice = selectedVariation?.price || product.price || 0;
-  const images = product.images?.length > 0 ? product.images : [product.image || PRODUCT_IMAGE_FALLBACK_SRC];
+  const displayImage = product.displayImage || product.image || PRODUCT_IMAGE_FALLBACK_SRC;
+  const images = [
+    displayImage,
+    ...(Array.isArray(product.images) ? product.images : []).filter((image) => image && image !== displayImage)
+  ];
+  const schemaImages = [
+    ...(Array.isArray(product.images) ? product.images : []),
+    ...(product.image ? [product.image] : [])
+  ].filter((image, index, allImages) => {
+    return typeof image === 'string' && image.trim() && !image.startsWith('data:') && allImages.indexOf(image) === index;
+  });
+  const imageAlt = product.imageAlt || product.name;
   const shouldAutoOpenReviewForm = searchParams.get('review') === '1';
   const reviewCount = Number(reviewSummary.reviewCount || 0);
   const canonicalAverageRating = Number(reviewSummary.averageRating || 0);
@@ -259,7 +270,6 @@ export default function ProductDetailPage() {
     '@type': 'Product',
     name: product?.name,
     description: product?.description || product?.benefitStory,
-    image: images.map(img => img.startsWith('http') ? img : `${BASE_URL}${img}`),
     url: `${BASE_URL}/product/${product?.slug}`,
     sku: product?.id || product?.slug,
     mpn: product?.id || product?.slug,
@@ -301,6 +311,10 @@ export default function ProductDetailPage() {
       priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     }
   };
+
+  if (schemaImages.length > 0) {
+    productSchema.image = schemaImages.map((img) => img.startsWith('http') ? img : `${BASE_URL}${img}`);
+  }
 
   if (hasPublicReviews) {
     productSchema.aggregateRating = {
@@ -361,7 +375,7 @@ export default function ProductDetailPage() {
             <div className="relative aspect-square mb-4 rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50 group">
               <Image
                 src={images[selectedImage]}
-                alt={product.name}
+                alt={imageAlt}
                 fill
                 className="object-cover group-hover:scale-110 transition-transform duration-500"
                 priority
@@ -423,7 +437,7 @@ export default function ProductDetailPage() {
                   >
                     <Image
                       src={img}
-                      alt={`${product.name} view ${idx + 1}`}
+                      alt={`${imageAlt} view ${idx + 1}`}
                       fill
                       className="object-cover"
                     />

@@ -40,9 +40,14 @@ describe('storefront-integrity', () => {
       expect.arrayContaining([
         'Missing explicit product description',
         'Missing explicit product benefit story',
-        'Missing canonical product image',
         'Missing canonical ingredients',
         'Missing positive product price',
+      ])
+    );
+    expect(result.invalidReports[0].warnings).toEqual(
+      expect.arrayContaining([
+        'Missing canonical product image',
+        'Primary image references a placeholder asset',
       ])
     );
   });

@@ -170,7 +170,7 @@ export default function EnhancedHero() {
             Made fresh at the market. Kids, Medium & Large sizes available.
           </div>
           <Button 
-            onClick={() => window.location.href = '/catalog?category=boba+and+cream'}
+            onClick={() => window.location.href = '/catalog?category=boba'}
             className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white"
           >
             🎪 Preview the Boba Menu

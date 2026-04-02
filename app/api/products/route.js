@@ -6,6 +6,7 @@ import { getDemoProducts, getDemoCategories } from '@/lib/demo-products';
 import { createLogger } from '@/lib/logger';
 import { enhanceProductCatalog } from '@/lib/product-enhancements';
 import { applyInventorySnapshot } from '@/lib/custom-inventory';
+import { enrichProductWithHealthBenefits } from '@/lib/health-benefits';
 import {
   PRODUCT_IMAGE_FALLBACK_SRC,
   validateStorefrontProducts
@@ -113,7 +114,7 @@ function buildDemoFallbackResponse({
   dbError = null,
   integrityReports = []
 }) {
-  const demoProducts = getDemoProducts(filters);
+  const demoProducts = enhanceProductCatalog(getDemoProducts(filters).map(enrichProductWithHealthBenefits));
   const demoCategories = getDemoCategories();
 
   return createNoStoreJsonResponse({
@@ -175,7 +176,9 @@ async function getUnifiedCatalogPayload({ filters, startTime }) {
     });
   }
 
-  const publishableProducts = enhanceProductCatalog(integrity.validProducts);
+  const publishableProducts = enhanceProductCatalog(
+    integrity.validProducts.map(enrichProductWithHealthBenefits)
+  );
 
   try {
     validateNoSandboxProducts(publishableProducts, '/api/products unified path');
@@ -340,7 +343,9 @@ async function getLegacyCatalogPayload({ startTime }) {
   });
 
   const integrity = validateStorefrontProducts(legacyProducts, { allowMissingBenefitStory: true });
-  const publishableProducts = enhanceProductCatalog(integrity.validProducts);
+  const publishableProducts = enhanceProductCatalog(
+    integrity.validProducts.map(enrichProductWithHealthBenefits)
+  );
 
   if (integrity.invalidReports.length > 0) {
     logger.warn('Filtered invalid legacy products for storefront response', {

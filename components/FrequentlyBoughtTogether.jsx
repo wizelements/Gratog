@@ -146,10 +146,10 @@ export default function FrequentlyBoughtTogether({ productId }) {
                 </div>
                 
                 <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden bg-emerald-50">
-                  {product.image ? (
+                  {product.displayImage || product.image ? (
                     <Image
-                      src={product.image}
-                      alt={product.name}
+                      src={product.displayImage || product.image}
+                      alt={product.imageAlt || product.name}
                       fill
                       className="object-cover"
                       sizes="96px"

@@ -266,10 +266,10 @@ export default function SearchEnhanced({
                 className="p-3 border border-gray-200 rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition group"
               >
                 <div className="flex gap-3">
-                  {product.image && (
+                  {(product.displayImage || product.image) && (
                     <img
-                      src={product.image}
-                      alt={product.name}
+                      src={product.displayImage || product.image}
+                      alt={product.imageAlt || product.name}
                       className="w-12 h-12 object-cover rounded flex-shrink-0"
                     />
                   )}

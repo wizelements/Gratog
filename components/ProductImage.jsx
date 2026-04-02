@@ -99,8 +99,8 @@ const ProductImage = ({
 export const ProductCardImage = ({ product, className = '' }) => {
   return (
     <ProductImage
-      src={product.image}
-      alt={product.name}
+      src={product.displayImage || product.image}
+      alt={product.imageAlt || product.name}
       width={400}
       height={300}
       className={`rounded-t-lg ${className}`}
@@ -113,8 +113,8 @@ export const ProductCardImage = ({ product, className = '' }) => {
 export const ProductHeroImage = ({ product, className = '' }) => {
   return (
     <ProductImage
-      src={product.image}
-      alt={product.name}
+      src={product.displayImage || product.image}
+      alt={product.imageAlt || product.name}
       width={600}
       height={400}
       className={`rounded-lg ${className}`}
@@ -127,8 +127,8 @@ export const ProductHeroImage = ({ product, className = '' }) => {
 export const ProductThumbnail = ({ product, className = '', size = 80 }) => {
   return (
     <ProductImage
-      src={product.image}
-      alt={product.name}
+      src={product.displayImage || product.image}
+      alt={product.imageAlt || product.name}
       width={size}
       height={size}
       className={`rounded-md ${className}`}

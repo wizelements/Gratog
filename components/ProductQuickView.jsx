@@ -18,7 +18,8 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
 
   if (!isOpen || !product) return null;
 
-  const modalImage = product.image || product.images?.[0] || PRODUCT_IMAGE_FALLBACK_SRC;
+  const modalImage = product.displayImage || product.image || product.images?.[0] || PRODUCT_IMAGE_FALLBACK_SRC;
+  const modalImageAlt = product.imageAlt || product.name;
   const displayPrice = typeof product.price === 'number' ? product.price : parseFloat(product.price || 0);
 
   const handleAddToCart = async () => {
@@ -81,7 +82,7 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
               <div className="relative aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100">
                 <img
                   src={modalImage}
-                  alt={product.name}
+                  alt={modalImageAlt}
                   className="w-full h-full object-cover"
                 />
               </div>

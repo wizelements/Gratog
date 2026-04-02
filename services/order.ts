@@ -197,7 +197,15 @@ export async function createOrder(
     // Optional fields
     couponCode: couponCode?.trim() || undefined,
     couponDiscount: sanitizedDiscount, // API expects dollars, not cents
-    source: 'checkout_v2'
+    source: 'checkout_v2',
+    
+    // Order timing - default to 'asap'; pickup with a date uses 'scheduled'
+    orderTiming: (fulfillment.type === 'pickup' && fulfillment.pickup?.date)
+      ? {
+          mode: 'scheduled' as const,
+          requestedDate: fulfillment.pickup.date.toISOString().split('T')[0],
+        }
+      : { mode: 'asap' as const }
   };
   
   // Add fulfillment-specific data with FLAT structure expected by API

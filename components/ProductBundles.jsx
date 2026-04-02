@@ -106,10 +106,10 @@ export default function ProductBundles({ showAll = false, limit = 3 }) {
                     className="relative w-16 h-16 rounded-full border-3 border-white bg-emerald-50 overflow-hidden shadow-md"
                     style={{ zIndex: bundle.productDetails.length - idx }}
                   >
-                    {product.image ? (
+                    {product.displayImage || product.image ? (
                       <Image
-                        src={product.image}
-                        alt={product.name}
+                        src={product.displayImage || product.image}
+                        alt={product.imageAlt || product.name}
                         fill
                         className="object-cover"
                         sizes="64px"

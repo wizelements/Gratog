@@ -249,11 +249,11 @@ export default function SearchAutocomplete({
                   role="option"
                   aria-selected={activeIndex === index}
                 >
-                  {product.image && (
+                  {(product.displayImage || product.image) && (
                     <div className="relative w-12 h-12 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
                       <Image
-                        src={product.image}
-                        alt={product.name}
+                        src={product.displayImage || product.image}
+                        alt={product.imageAlt || product.name}
                         fill
                         sizes="48px"
                         className="object-cover"

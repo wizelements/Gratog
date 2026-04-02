@@ -16,8 +16,12 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
   const [selectedVariant, setSelectedVariant] = useState(null);
   
   const fallbackImage = PRODUCT_IMAGE_FALLBACK_SRC;
+  const productAlt = product.imageAlt || `${product.name} - Premium wildcrafted sea moss product`;
   
   const getProductImage = () => {
+    if (typeof product.displayImage === 'string' && product.displayImage.trim()) {
+      return product.displayImage;
+    }
     if (product.images?.length > 0 && typeof product.images[0] === 'string' && product.images[0].trim()) {
       return product.images[0];
     }
@@ -57,7 +61,7 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
           {usesInlineImage ? (
             <img
               src={resolvedImage}
-              alt={`${product.name} - Premium wildcrafted sea moss product`}
+              alt={productAlt}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               onError={() => setImageError(true)}
               loading="lazy"
@@ -65,7 +69,7 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
           ) : (
             <Image
               src={resolvedImage}
-              alt={`${product.name} - Premium wildcrafted sea moss product`}
+              alt={productAlt}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               onError={() => setImageError(true)}

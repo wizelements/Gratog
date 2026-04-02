@@ -268,6 +268,15 @@ export default function ReviewAndPay({
                 {fulfillment.type === 'pickup' && fulfillment.pickup && (
                   <p>{fulfillment.pickup.date?.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
                 )}
+                {fulfillment.type === 'shipping' && fulfillment.shipping && (
+                  <>
+                    <p>{fulfillment.shipping.address.street}</p>
+                    <p>{fulfillment.shipping.address.city}, {fulfillment.shipping.address.state} {fulfillment.shipping.address.zip}</p>
+                    {fulfillment.shipping.methodId && (
+                      <p className="text-emerald-600">Method: {fulfillment.shipping.methodId}</p>
+                    )}
+                  </>
+                )}
               </div>
               <button type="button" onClick={onBack} className="text-sm text-emerald-600 hover:underline mt-3">
                 Edit details

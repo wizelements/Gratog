@@ -273,7 +273,8 @@ export default function HomePageClient({
                     {!loading && featuredProducts.length > 0 && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
                             {featuredProducts.map((product, index) => {
-                                const cardImage = product.image || PRODUCT_IMAGE_FALLBACK_SRC;
+                                const cardImage = product.displayImage || product.image || PRODUCT_IMAGE_FALLBACK_SRC;
+                                const cardImageAlt = product.imageAlt || product.name;
                                 const categoryLabel = getCanonicalProductCategoryLabel(product, 'Premium Product');
                                 const categoryIcon = getCanonicalProductCategoryIcon(product, '🌿');
 
@@ -287,7 +288,7 @@ export default function HomePageClient({
                                                 <div className="relative h-64 bg-gradient-to-br from-emerald-100 to-teal-100 overflow-hidden">
                                                     <ProductImage
                                                         src={cardImage}
-                                                        alt={product.name}
+                                                        alt={cardImageAlt}
                                                         fill
                                                         priority={index < 3}
                                                         className="group-hover:scale-110 group-hover:rotate-2 transition-all duration-500"

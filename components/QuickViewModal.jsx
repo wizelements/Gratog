@@ -136,6 +136,9 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
 
   const isPreorder = product?.stock != null && product.stock <= 0;
   const purchaseStatus = isPreorder ? 'preorder' : 'in_stock';
+  const modalImage = product.displayImage || product.images?.[0] || product.image || PRODUCT_IMAGE_FALLBACK_SRC;
+  const modalImageAlt = product.imageAlt || product.name;
+  const usesInlineImage = Boolean(modalImage?.startsWith('data:'));
 
   const handleAddToCart = () => {
     // For market-exclusive items, navigate to markets page instead of adding to cart
@@ -182,17 +185,6 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
     }, 1500);
   };
 
-  // Get best available image
-  const getProductImage = () => {
-    if (product.images?.length > 0 && product.images[0] && !product.images[0].startsWith('data:')) {
-      return product.images[0];
-    }
-    if (product.image && !product.image.startsWith('data:image/svg')) {
-      return product.image;
-    }
-    return PRODUCT_IMAGE_FALLBACK_SRC;
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="w-[calc(100vw-1rem)] max-w-4xl max-h-[calc(100dvh-2rem)] overflow-y-auto p-4 sm:p-6">
@@ -207,12 +199,21 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
           {/* Left: Image */}
           <div>
             <div className="relative aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50 group">
-              <Image
-                src={getProductImage()}
-                alt={product.name}
-                fill
-                className="object-cover group-hover:scale-110 transition-transform duration-500"
-              />
+              {usesInlineImage ? (
+                <img
+                  src={modalImage}
+                  alt={modalImageAlt}
+                  className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  loading="lazy"
+                />
+              ) : (
+                <Image
+                  src={modalImage}
+                  alt={modalImageAlt}
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+              )}
               
               {product.ingredientIcons && product.ingredientIcons.length > 0 && (
                 <div className="absolute top-3 left-3 flex gap-1">

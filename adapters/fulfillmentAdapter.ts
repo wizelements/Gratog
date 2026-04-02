@@ -25,16 +25,16 @@ export interface PickupLocation {
 
 const PICKUP_LOCATIONS: PickupLocation[] = [
   {
-    id: 'atl-main',
-    name: 'Atlanta Farmers Market',
-    address: '16 Forest Pkwy, Forest Park, GA 30297',
-    hours: 'Sat-Sun 9am-3pm'
+    id: 'serenbe',
+    name: 'Serenbe Farmers Market',
+    address: '10950 Hutcheson Ferry Rd, Palmetto, GA 30268 (Booth #12)',
+    hours: 'Sat 9am-1pm'
   },
   {
-    id: 'sf-market',
-    name: 'South Fulton Market',
-    address: '5600 Stonewall Tell Rd, College Park, GA 30349',
-    hours: 'Sat 10am-4pm'
+    id: 'browns_mill',
+    name: 'DHA Dunwoody Farmers Market',
+    address: '4770 N Peachtree Rd, Dunwoody, GA 30338 (Brook Run Park)',
+    hours: 'Sat 9am-12pm'
   }
 ];
 

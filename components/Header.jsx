@@ -227,7 +227,7 @@ export default function Header() {
               <Link href="/catalog?type=bundle" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
                 Bundles
               </Link>
-              <Link href="/catalog?category=boba+and+cream" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded font-medium" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/catalog?category=boba" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded font-medium" onClick={() => setIsMenuOpen(false)}>
                 🧋 Boba
                 <span className="ml-2 text-xs text-purple-600 font-semibold">Market Only</span>
               </Link>
