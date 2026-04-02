@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ShoppingCart, X, Plus, Minus, ChevronRight, Sparkles, Trash2, Undo2, PartyPopper } from 'lucide-react';
+import { ShoppingCart, X, Plus, Minus, ChevronRight, Sparkles, Trash2, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -120,11 +120,6 @@ export default function EnhancedFloatingCart() {
     setIsCheckingOut(true);
     window.location.href = '/order';
   };
-
-  // Free shipping calculation
-  const freeShippingThreshold = 60;
-  const shippingProgress = Math.min((subtotal / freeShippingThreshold) * 100, 100);
-  const needsForFreeShipping = Math.max(freeShippingThreshold - subtotal, 0);
 
   return (
     <>
@@ -332,40 +327,6 @@ export default function EnhancedFloatingCart() {
               {/* Footer */}
               {!isEmpty && (
                 <div className="border-t border-gray-200 p-6 space-y-4 bg-gray-50">
-                  {/* Free Shipping Progress */}
-                  <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        {shippingProgress >= 100 ? (
-                          <PartyPopper className="h-5 w-5 text-green-600" />
-                        ) : (
-                          <Sparkles className="h-5 w-5 text-yellow-600" />
-                        )}
-                        <p className="text-sm font-medium">
-                          {shippingProgress >= 100 ? (
-                            <span className="text-green-700">🎉 FREE shipping unlocked!</span>
-                          ) : (
-                            <span className="text-yellow-900">FREE shipping at ${freeShippingThreshold}</span>
-                          )}
-                        </p>
-                      </div>
-                      <span className="text-sm font-bold">${subtotal.toFixed(2)} / ${freeShippingThreshold}</span>
-                    </div>
-                    <div className="w-full bg-yellow-200 rounded-full h-2 overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${shippingProgress}%` }}
-                        transition={{ duration: 0.5, ease: 'easeOut' }}
-                        className="bg-gradient-to-r from-emerald-500 to-teal-600 h-full"
-                      />
-                    </div>
-                    {needsForFreeShipping > 0 && (
-                      <p className="text-xs text-yellow-700 mt-1">
-                        Just ${needsForFreeShipping.toFixed(2)} more to go!
-                      </p>
-                    )}
-                  </div>
-
                   <Button
                     onClick={handleCheckout}
                     disabled={isCheckingOut}

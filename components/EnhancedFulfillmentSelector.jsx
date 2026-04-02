@@ -49,7 +49,7 @@ export default function EnhancedFulfillmentSelector({
       icon: MapPin,
       benefits: [
         { icon: Zap, text: 'Fast 2-3 day delivery' },
-        { icon: Gift, text: 'Free shipping over $50' },
+        { icon: Gift, text: 'Insured packaging' },
         { icon: CheckCircle2, text: 'Track your package' }
       ],
       tagline: 'Delivered right to your door',
@@ -69,16 +69,6 @@ export default function EnhancedFulfillmentSelector({
     }
   };
 
-  const calculateShippingProgress = () => {
-    if (selectedType !== 'shipping' || subtotal >= 50) return null;
-    
-    const remaining = 50 - subtotal;
-    const percentage = (subtotal / 50) * 100;
-    
-    return { remaining, percentage };
-  };
-
-  const shippingProgress = calculateShippingProgress();
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -91,31 +81,6 @@ export default function EnhancedFulfillmentSelector({
           Select how you'd like to receive your sea moss wellness products
         </p>
       </div>
-
-      {/* Free Shipping Progress Banner */}
-      {shippingProgress && (
-        <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Gift className="h-5 w-5 text-green-600" />
-                <span className="text-sm font-semibold text-green-900">
-                  You're ${shippingProgress.remaining.toFixed(2)} away from FREE shipping!
-                </span>
-              </div>
-              <span className="text-xs text-green-700 font-medium">
-                {shippingProgress.percentage.toFixed(0)}%
-              </span>
-            </div>
-            <div className="w-full bg-green-200 rounded-full h-2.5 overflow-hidden">
-              <div 
-                className="bg-gradient-to-r from-green-500 to-emerald-600 h-2.5 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${Math.min(shippingProgress.percentage, 100)}%` }}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Fulfillment Options Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

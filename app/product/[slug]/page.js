@@ -604,8 +604,8 @@ export default function ProductDetailPage() {
             <div className="grid grid-cols-3 gap-4 py-6 border-y">
               <div className="text-center">
                 <Truck className="h-6 w-6 mx-auto mb-2 text-emerald-600" />
-                <p className="text-xs font-medium">Free Shipping</p>
-                <p className="text-xs text-muted-foreground">On orders $60+</p>
+                <p className="text-xs font-medium">Fast Shipping</p>
+                <p className="text-xs text-muted-foreground">2-3 business days</p>
               </div>
               <div className="text-center">
                 <Shield className="h-6 w-6 mx-auto mb-2 text-emerald-600" />
