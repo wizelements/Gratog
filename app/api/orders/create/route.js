@@ -1026,10 +1026,10 @@ export async function POST(request) {
               schedule_status: orderData.fulfillmentSchedule?.status || 'auto_assigned',
               scheduled_fulfillment_at: orderData.fulfillmentSchedule?.scheduledFulfillmentAt || '',
               pricing_source: orderData.pricingSource || 'unknown'
-              },
-              fulfillments: buildFulfillment(orderData)
-            }
-          };
+            },
+            fulfillments: buildFulfillment(orderData)
+          }
+        };
         
         // ISS-029 FIX: Standardized Square API version across all modules
         const SQUARE_VERSION = '2025-10-16';
