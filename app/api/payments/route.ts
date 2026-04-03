@@ -12,6 +12,7 @@ import {
 } from '@/lib/critical-operations';
 import { rewardsSystem } from '@/lib/enhanced-rewards';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
+import { notifyStaffPickupOrder } from '@/lib/staff-notifications';
 import { consumeInventoryForPaidOrder } from '@/lib/custom-inventory';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';
 import {
@@ -824,6 +825,36 @@ export async function POST(request: NextRequest) {
       logger.warn('API', 'Notification failed', { 
         orderId,
         error: notifyError instanceof Error ? notifyError.message : String(notifyError) 
+      });
+    }
+    
+    // ========================================================================
+    // STAFF NOTIFICATION — Alert merchant on new orders
+    // ========================================================================
+    try {
+      if (isCompleted) {
+        await notifyStaffPickupOrder({
+          orderNumber: order.orderNumber || orderId,
+          customer: {
+            name: customerInfo?.name || 'Customer',
+            email: customerInfo?.email || '',
+            phone: customerInfo?.phone || 'Not provided'
+          },
+          items: order.items || [],
+          pricing: order.pricing || { subtotal: validatedAmountCents / 100, total: validatedAmountCents / 100 },
+          fulfillmentType: order.fulfillment?.type || order.fulfillmentType || 'pickup_market',
+          fulfillment: order.fulfillment || {},
+          deliveryAddress: order.deliveryAddress || order.fulfillment?.deliveryAddress,
+          deliveryDistance: order.deliveryDistance,
+          meetUpDetails: order.meetUpDetails,
+          createdAt: order.createdAt || new Date().toISOString()
+        });
+        logger.info('API', 'Staff notification sent', { orderId });
+      }
+    } catch (staffNotifyError) {
+      logger.warn('API', 'Staff notification failed (non-critical)', {
+        orderId,
+        error: staffNotifyError instanceof Error ? staffNotifyError.message : String(staffNotifyError)
       });
     }
     
