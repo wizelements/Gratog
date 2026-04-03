@@ -101,6 +101,40 @@ async function squareRequest<T>(
 }
 
 // ============================================================================
+// RESPONSE NORMALIZATION (Square REST returns snake_case)
+// ============================================================================
+
+function normalizeCardDetails(raw: any): PaymentResult['cardDetails'] | undefined {
+  const cd = raw?.cardDetails ?? raw?.card_details;
+  if (!cd) return undefined;
+  const card = cd.card;
+  return {
+    card: {
+      cardBrand: card?.cardBrand ?? card?.card_brand,
+      last4: card?.last4 ?? card?.last_4,
+      expMonth: card?.expMonth ?? card?.exp_month,
+      expYear: card?.expYear ?? card?.exp_year,
+    },
+    status: cd.status,
+  };
+}
+
+function normalizePayment(raw: any): PaymentResult {
+  return {
+    id: raw.id,
+    status: raw.status,
+    amountMoney: raw.amountMoney ?? raw.amount_money,
+    totalMoney: raw.totalMoney ?? raw.total_money,
+    receiptUrl: raw.receiptUrl ?? raw.receipt_url,
+    receiptNumber: raw.receiptNumber ?? raw.receipt_number,
+    orderId: raw.orderId ?? raw.order_id,
+    customerId: raw.customerId ?? raw.customer_id,
+    cardDetails: normalizeCardDetails(raw),
+    createdAt: raw.createdAt ?? raw.created_at,
+  };
+}
+
+// ============================================================================
 // PAYMENTS API
 // ============================================================================
 
@@ -141,7 +175,7 @@ export async function createPayment(req: CreatePaymentRequest): Promise<SquareRe
   const idempotencyKey = req.idempotencyKey || randomUUID();
   const locationId = getLocationId();
   
-  return squareRequest('/v2/payments', 'POST', {
+  const result = await squareRequest<{ payment: any }>('/v2/payments', 'POST', {
     source_id: req.sourceId,
     idempotency_key: idempotencyKey,
     amount_money: {
@@ -156,10 +190,19 @@ export async function createPayment(req: CreatePaymentRequest): Promise<SquareRe
     buyer_email_address: req.buyerEmailAddress,
     autocomplete: true
   });
+
+  if (result.success && result.data?.payment) {
+    return { success: true, data: { payment: normalizePayment(result.data.payment) } };
+  }
+  return result as SquareResponse<{ payment: PaymentResult }>;
 }
 
 export async function getPayment(paymentId: string): Promise<SquareResponse<{ payment: PaymentResult }>> {
-  return squareRequest(`/v2/payments/${paymentId}`);
+  const result = await squareRequest<{ payment: any }>(`/v2/payments/${paymentId}`);
+  if (result.success && result.data?.payment) {
+    return { success: true, data: { payment: normalizePayment(result.data.payment) } };
+  }
+  return result as SquareResponse<{ payment: PaymentResult }>;
 }
 
 // ============================================================================

@@ -495,6 +495,29 @@ export async function POST(request: NextRequest) {
     // ========================================================================
     let squareOrderId = existingSquareOrderId || order.squareOrderId;
     
+    // Reject fallback Square order IDs — these are placeholders, not real Square orders
+    if (squareOrderId?.startsWith('fallback_')) {
+      logger.error('API', 'Rejecting fallback Square order ID', {
+        traceId: ctx.traceId,
+        orderId,
+        squareOrderId,
+      });
+      
+      await db.collection('orders').updateOne(
+        { id: orderId },
+        { $set: { status: 'pending', paymentStatus: 'pending', updatedAt: new Date().toISOString() } }
+      );
+      
+      return json(
+        {
+          success: false,
+          error: 'Order is not linked to a valid payment session. Please recreate your order.',
+          code: 'INVALID_SQUARE_ORDER_ID',
+        },
+        400
+      );
+    }
+    
     if (!squareOrderId) {
       const squareLineItems = lineItems.length > 0 
         ? lineItems.map((item: { catalogObjectId?: string; name?: string; quantity: number; priceInCents?: number }) => ({
