@@ -6,10 +6,10 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   const csp = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://web.squarecdn.com https://js.squareup.com https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://web.squarecdn.com",
+    "font-src 'self' https://fonts.gstatic.com https://square-fonts-production-f.squarecdn.com https://d1g145x70srn7h.cloudfront.net",
     "img-src 'self' data: blob: https://items-images-production.s3.us-west-2.amazonaws.com https://images.unsplash.com https://www.google-analytics.com",
-    "connect-src 'self' https://pci-connect.squareup.com https://web.squarecdn.com https://js.squareup.com https://www.google-analytics.com https://vercel.live wss://vercel.live",
+    "connect-src 'self' https://pci-connect.squareup.com https://web.squarecdn.com https://js.squareup.com https://www.google-analytics.com https://o160250.ingest.sentry.io https://vercel.live wss://vercel.live",
     "frame-src 'self' https://web.squarecdn.com https://js.squareup.com",
     "object-src 'none'",
     "base-uri 'self'",
