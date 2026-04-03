@@ -122,6 +122,67 @@ function parseSquarePriceCents(catalogObject) {
   return cents;
 }
 
+/**
+ * Resolve a catalog object from batchGet into a usable variation ID + price.
+ * Handles the case where a CatalogItem ID was sent instead of a CatalogItemVariation ID
+ * by extracting the single variation from the ITEM (stale cart recovery).
+ */
+function resolveSquareCatalogObject(catalogObject) {
+  if (!catalogObject) return null;
+
+  const objectType = catalogObject.type || catalogObject.objectType;
+
+  if (objectType === 'ITEM_VARIATION') {
+    const priceCents = parseSquarePriceCents(catalogObject);
+    if (priceCents === null) return null;
+    const variationData = catalogObject?.itemVariationData || catalogObject?.item_variation_data;
+    return {
+      requestedId: catalogObject.id,
+      resolvedVariationId: catalogObject.id,
+      priceCents,
+      variationName: variationData?.name || null,
+      repairedFromItem: false,
+    };
+  }
+
+  if (objectType === 'ITEM') {
+    const itemData = catalogObject.itemData || catalogObject.item_data;
+    const variations = Array.isArray(itemData?.variations) ? itemData.variations : [];
+
+    if (variations.length !== 1) {
+      logger.warn('Cannot auto-repair CatalogItem ID — product has multiple/no variations', {
+        requestedId: catalogObject.id,
+        variationCount: variations.length,
+      });
+      return { requestedId: catalogObject.id, error: 'ITEM_ID_REQUIRES_VARIATION_SELECTION' };
+    }
+
+    const firstVar = variations[0];
+    const varData = firstVar.itemVariationData || firstVar.item_variation_data;
+    const priceMoney = varData?.priceMoney || varData?.price_money;
+    const amount = priceMoney?.amount;
+    const cents = Number(amount);
+
+    if (!Number.isFinite(cents) || cents < 0) return null;
+
+    logger.warn('Auto-repaired CatalogItem ID to variation ID (stale cart)', {
+      requestedItemId: catalogObject.id,
+      resolvedVariationId: firstVar.id,
+      variationName: varData?.name,
+    });
+
+    return {
+      requestedId: catalogObject.id,
+      resolvedVariationId: firstVar.id,
+      priceCents: cents,
+      variationName: varData?.name || null,
+      repairedFromItem: true,
+    };
+  }
+
+  return null;
+}
+
 async function applyServerAuthoritativePricing(orderData, { allowFallback = false } = {}) {
   const rawCart = Array.isArray(orderData.cart) ? orderData.cart : [];
   const normalizedItems = rawCart.map((item, index) => ({
@@ -173,15 +234,21 @@ async function applyServerAuthoritativePricing(orderData, { allowFallback = fals
 
       const catalogObjects = Array.isArray(catalogResponse?.objects) ? catalogResponse.objects : [];
       for (const catalogObject of catalogObjects) {
-        const priceCents = parseSquarePriceCents(catalogObject);
-        if (priceCents === null) {
+        const resolved = resolveSquareCatalogObject(catalogObject);
+        if (!resolved || resolved.error) {
+          if (resolved?.error === 'ITEM_ID_REQUIRES_VARIATION_SELECTION') {
+            logger.error('Cart contains CatalogItem ID with multiple variations — cannot auto-repair', {
+              requestedId: resolved.requestedId,
+            });
+          }
           continue;
         }
 
-        const variationData = catalogObject?.itemVariationData || catalogObject?.item_variation_data;
-        authoritativePriceByVariation.set(catalogObject.id, {
-          priceCents,
-          variationName: variationData?.name || null,
+        authoritativePriceByVariation.set(resolved.requestedId, {
+          priceCents: resolved.priceCents,
+          variationName: resolved.variationName,
+          resolvedVariationId: resolved.resolvedVariationId,
+          repairedFromItem: resolved.repairedFromItem,
         });
       }
     } catch (error) {
@@ -220,12 +287,15 @@ async function applyServerAuthoritativePricing(orderData, { allowFallback = fals
       pricingOverrides += 1;
     }
 
+    // Use the canonical variation ID (handles ITEM→variation repair for stale carts)
+    const canonicalVariationId = authoritative?.resolvedVariationId || variationId;
+
     return {
       ...item,
-      id: item?.id || item?.productId || variationId,
-      productId: item?.productId || item?.id || variationId,
-      variationId,
-      catalogObjectId: variationId,
+      id: item?.id || item?.productId || canonicalVariationId,
+      productId: item?.productId || item?.id || canonicalVariationId,
+      variationId: canonicalVariationId,
+      catalogObjectId: canonicalVariationId,
       name: String(item?.name || authoritative?.variationName || 'Product').trim().slice(0, 120),
       quantity,
       price: unitPrice,
@@ -949,8 +1019,9 @@ export async function POST(request) {
         ? null
         : (orderData.scheduledFulfillmentAt || getNextSaturday('09:00'));
 
-      // Normalize fulfillment type for consistency
-      orderData.fulfillmentType = isBrownsMill ? 'pickup_browns_mill' : 'pickup_market';
+      // Normalize fulfillment type AFTER buildFulfillment captures originalFulfillmentType
+      // Store normalized type but preserve original for buildFulfillment
+      orderData._normalizedFulfillmentType = isBrownsMill ? 'pickup_browns_mill' : 'pickup_market';
     }
     
     // Add metadata
@@ -1044,30 +1115,30 @@ export async function POST(request) {
               // Find the best catalog ID candidate
               const catalogId = item.catalogObjectId || item.variationId || item.squareVariationId;
               
-              // Build line item - only include catalog_object_id if it's valid
-              const lineItem = {
+              if (isValidSquareCatalogId(catalogId)) {
+                // Catalog-backed line item: Square resolves name+price from catalog
+                // Do NOT send base_price_money with catalog_object_id
+                return {
+                  quantity: String(item.quantity),
+                  catalog_object_id: catalogId,
+                  note: item.name || ''
+                };
+              }
+              
+              // Ad-hoc line item: must have name + base_price_money
+              logger.debug('Using ad-hoc line item (no valid catalog ID)', { 
+                itemName: item.name, 
+                providedId: catalogId 
+              });
+              return {
                 quantity: String(item.quantity),
+                name: item.name || 'Product',
                 base_price_money: {
                   amount: Math.round((item.price || 0) * 100),
                   currency: 'USD'
                 },
-                note: item.name || '' // Product name visible in Square
+                note: item.name || ''
               };
-              
-              // CRITICAL FIX: Only add catalog_object_id if it's a valid Square ID
-              // Otherwise, Square API will reject with "catalog object not found"
-              if (isValidSquareCatalogId(catalogId)) {
-                lineItem.catalog_object_id = catalogId;
-              } else {
-                // Ad-hoc item - must have name for Square to accept it
-                lineItem.name = item.name || 'Product';
-                logger.debug('Using ad-hoc line item (no valid catalog ID)', { 
-                  itemName: item.name, 
-                  providedId: catalogId 
-                });
-              }
-              
-              return lineItem;
             }),
             customer_id: squareCustomerId || undefined, // ⭐ LINKS CUSTOMER TO ORDER
             metadata: sanitizeMetadata({
@@ -1088,7 +1159,7 @@ export async function POST(request) {
             fulfillments: buildFulfillment(orderData)
           }
         };
-        
+
         // ISS-029 FIX: Standardized Square API version across all modules
         const SQUARE_VERSION = '2025-10-16';
         
@@ -1105,11 +1176,22 @@ export async function POST(request) {
         const orderResponseData = await orderResponse.json();
         
         if (!orderResponse.ok) {
-          const errorDetail = orderResponseData.errors?.[0]?.detail || 'Square API error';
+          const sqErrors = orderResponseData.errors || [];
+          const errorDetail = sqErrors
+            .map(e => `${e.code || 'UNKNOWN'}${e.field ? ` @ ${e.field}` : ''}: ${e.detail || ''}`)
+            .join('; ') || 'Square API error';
           logger.error('Square Order creation failed', { 
             status: orderResponse.status,
             error: errorDetail,
-            errors: orderResponseData.errors
+            errors: sqErrors,
+            sentPayload: {
+              lineItemCount: orderPayload.order.line_items?.length,
+              lineItemSample: orderPayload.order.line_items?.[0],
+              fulfillmentType: orderPayload.order.fulfillments?.[0]?.type,
+              hasCatalogIds: orderPayload.order.line_items?.some(li => li.catalog_object_id),
+              hasCustomerId: !!orderPayload.order.customer_id,
+              locationId: orderPayload.order.location_id,
+            }
           });
           
           if (!ALLOW_FALLBACK) {
@@ -1143,6 +1225,13 @@ export async function POST(request) {
       }
     }
     
+    // Apply pickup type normalization for local storage
+    // (deferred until after buildFulfillment used the original type for meetup detection)
+    if (orderData._normalizedFulfillmentType) {
+      orderData.fulfillmentType = orderData._normalizedFulfillmentType;
+      enhancedOrderData.fulfillmentType = orderData._normalizedFulfillmentType;
+    }
+
     // Create local order (NO payment link generation - in-app payment only)
     // IMPORTANT: Order is created with status: 'pending' and paymentStatus: 'pending'
     // After payment succeeds, the payment API updates these statuses
