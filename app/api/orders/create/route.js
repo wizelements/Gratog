@@ -1148,12 +1148,8 @@ export async function POST(request) {
               fulfillment_type: orderData.fulfillmentType,
               customer_email: orderData.customer.email,
               customer_name: orderData.customer.name,
-              customer_phone: orderData.customer.phone,
               fulfillment_timing: orderData.orderTiming?.mode || 'asap',
-              requested_date: orderData.orderTiming?.requestedDate || undefined,
-              requested_time_window: orderData.orderTiming?.requestedTimeWindow || undefined,
               schedule_status: orderData.fulfillmentSchedule?.status || 'auto_assigned',
-              scheduled_fulfillment_at: orderData.fulfillmentSchedule?.scheduledFulfillmentAt || undefined,
               pricing_source: orderData.pricingSource || 'unknown'
             }),
             fulfillments: buildFulfillment(orderData)

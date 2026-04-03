@@ -41,10 +41,12 @@ function getLocationId(): string {
 export function sanitizeMetadata(metadata?: Record<string, string | undefined | null>): Record<string, string> | undefined {
   if (!metadata) return undefined;
   const cleaned: Record<string, string> = {};
-  for (const [key, value] of Object.entries(metadata)) {
+  const entries = Object.entries(metadata);
+  for (const [key, value] of entries) {
     if (value !== undefined && value !== null && value !== '') {
-      cleaned[key] = value;
+      cleaned[key.slice(0, 40)] = String(value).slice(0, 500);
     }
+    if (Object.keys(cleaned).length >= 10) break;
   }
   return Object.keys(cleaned).length > 0 ? cleaned : undefined;
 }
