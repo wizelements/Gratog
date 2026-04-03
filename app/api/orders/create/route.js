@@ -3,7 +3,7 @@ import { orderTracking } from '@/lib/enhanced-order-tracking';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { sendOrderConfirmationSMS } from '@/lib/sms';
 import { calculateDeliveryFee, calculateDistanceBasedDeliveryFee } from '@/lib/delivery-fees';
-import { validateDeliveryFulfillment } from '@/lib/validation/fulfillment';
+import { validateDeliveryFulfillment, validateShippingFulfillment } from '@/lib/validation/fulfillment';
 import { validateCustomerData } from '@/lib/validation/customer';
 import { validateCart } from '@/lib/validation/cart';
 import { sanitizeObject } from '@/lib/validation/sanitize';
@@ -14,6 +14,7 @@ import { RateLimit } from '@/lib/redis';
 import { withIdempotency, getIdempotencyKeyFromHeaders } from '@/lib/idempotency';
 import { checkFreeDeliveryRadiusFrom30331 } from '@/lib/delivery-radius';
 import { getSquareClient } from '@/lib/square';
+import { sanitizeMetadata } from '@/lib/square-api';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';
 import { generateOrderAccessToken, verifyOrderAccessToken } from '@/lib/order-access-token';
 
@@ -357,15 +358,22 @@ function getNextSaturday(time = '09:00') {
     }
   }
   
-  // Build the target date
+  // Build the target date in Atlanta timezone
   const nextSat = new Date(now.getTime() + daysUntilSaturday * 24 * 60 * 60 * 1000);
-  const [hours, minutes] = time.split(':');
-  
-  // Create ISO string for the Atlanta timezone date
-  // We use a simple approach: set the hours in UTC offset to approximate Atlanta time
-  // For precision, we'd use a library like date-fns-tz, but this is close enough
-  nextSat.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-  
+  const satFormatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: ATLANTA_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const satDateStr = satFormatter.format(nextSat); // YYYY-MM-DD in Atlanta tz
+
+  // Convert Atlanta local date+time to correct UTC instant
+  const iso = toTimeZoneISOString(satDateStr, time, ATLANTA_TIMEZONE);
+  if (iso) return iso;
+
+  // Fallback: approximate if toTimeZoneISOString fails
+  nextSat.setHours(parseInt(time.split(':')[0]), parseInt(time.split(':')[1]), 0, 0);
   return nextSat.toISOString();
 }
 
@@ -598,30 +606,36 @@ function buildFulfillment(orderData) {
   // Pickup orders (Serenbe or DHA Dunwoody)
   // NORMALIZED: pickup_market = Serenbe, pickup_browns_mill = DHA Dunwoody
   // Also handle legacy 'meetup_serenbe' type
+  const isMeetup = fulfillmentType === 'meetup_serenbe';
   const isPickupOrder = isPickupFulfillmentType(fulfillmentType);
   if (isPickupOrder) {
     const isBrownsMill = fulfillmentType === 'pickup_browns_mill' || pickup?.locationId === 'browns_mill';
-    // Normalize fulfillment type for consistency across all systems
-    const normalizedType = isBrownsMill ? 'pickup_browns_mill' : 'pickup_market';
     const pickupDate = scheduledFulfillmentAt || getNextSaturday('09:00');
+
+    let pickupNote;
+    if (isMeetup) {
+      const meetupNotes = orderData.meetUpDetails?.notes ? ` • NOTES: ${orderData.meetUpDetails.notes}` : '';
+      pickupNote = `🤝 MEET UP AFTER MARKET: Serenbe area • Saturdays after 1:00 PM (by arrangement)${meetupNotes}${pendingScheduleNote}`;
+    } else if (isBrownsMill) {
+      pickupNote = `📍 PICKUP: DHA Dunwoody Farmers Market • Brook Run Park, 4770 N Peachtree Rd, Dunwoody, GA 30338 • Saturdays 9:00 AM - 12:00 PM • Show order number at pickup booth${pendingScheduleNote}`;
+    } else {
+      pickupNote = `📍 PICKUP: Serenbe Farmers Market (Booth #12) • 10950 Hutcheson Ferry Rd, Palmetto, GA 30268 • Saturdays 9:00 AM - 1:00 PM${pendingScheduleNote}`;
+    }
 
     return [{
       type: 'PICKUP',
       state: 'PROPOSED',
+      uid: 'pickup_1',
       pickup_details: {
         recipient: {
           display_name: customer.name,
           phone_number: customer.phone
         },
-        note: isBrownsMill
-          ? `📍 PICKUP: DHA Dunwoody Farmers Market • Brook Run Park, 4770 N Peachtree Rd, Dunwoody, GA 30338 • Saturdays 9:00 AM - 12:00 PM • Show order number at pickup booth${pendingScheduleNote}`
-          : `📍 PICKUP: Serenbe Farmers Market (Booth #12) • 10950 Hutcheson Ferry Rd, Palmetto, GA 30268 • Saturdays 9:00 AM - 1:00 PM${pendingScheduleNote}`,
+        note: pickupNote.slice(0, 500),
         schedule_type: 'SCHEDULED',
-        pickup_at: pickupDate
-      },
-      // Store normalized type and pickup date for cron jobs
-      normalizedType,
-      pickupDate
+        pickup_at: pickupDate,
+        prep_time_duration: 'P1D'
+      }
     }];
   }
   
@@ -631,6 +645,7 @@ function buildFulfillment(orderData) {
     return [{
       type: 'SHIPMENT',
       state: 'PROPOSED',
+      uid: 'delivery_1',
       shipment_details: {
         recipient: {
           display_name: customer.name,
@@ -639,7 +654,8 @@ function buildFulfillment(orderData) {
             address_line_1: deliveryAddress?.street || '',
             locality: deliveryAddress?.city || '',
             administrative_district_level_1: deliveryAddress?.state || 'GA',
-            postal_code: deliveryAddress?.zip || ''
+            postal_code: deliveryAddress?.zip || '',
+            country: 'US'
           }
         },
         shipping_note: `🚚 LOCAL DELIVERY${deliveryInstructions ? ' - ' + deliveryInstructions : ''}${pendingScheduleNote}`,
@@ -658,6 +674,7 @@ function buildFulfillment(orderData) {
     return [{
       type: 'SHIPMENT',
       state: 'PROPOSED',
+      uid: 'shipping_1',
       shipment_details: {
         recipient: {
           display_name: customer.name,
@@ -666,7 +683,8 @@ function buildFulfillment(orderData) {
             address_line_1: addr?.street || '',
             locality: addr?.city || '',
             administrative_district_level_1: addr?.state || '',
-            postal_code: addr?.zip || ''
+            postal_code: addr?.zip || '',
+            country: 'US'
           }
         },
         shipping_note: shippingNote,
@@ -778,6 +796,17 @@ export async function POST(request) {
       );
     }
 
+    const SUPPORTED_FULFILLMENT_TYPES = [
+      'pickup', 'pickup_serenbe', 'pickup_market', 'pickup_browns_mill',
+      'meetup_serenbe', 'delivery', 'shipping'
+    ];
+    if (!SUPPORTED_FULFILLMENT_TYPES.includes(orderData.fulfillmentType)) {
+      return NextResponse.json(
+        { success: false, error: `Unsupported fulfillment type: ${orderData.fulfillmentType}` },
+        { status: 400 }
+      );
+    }
+
     const timingResolution = resolveOrderTiming(orderData);
     if (!timingResolution.valid) {
       return NextResponse.json(
@@ -839,6 +868,33 @@ export async function POST(request) {
       }
     }
     
+    // Validate shipping fulfillment
+    if (orderData.fulfillmentType === 'shipping') {
+      const addr = orderData.shippingAddress || orderData.deliveryAddress;
+      if (!addr?.street || !addr?.city || !addr?.state || !addr?.zip) {
+        return NextResponse.json(
+          { success: false, error: 'Complete shipping address is required' },
+          { status: 400 }
+        );
+      }
+      
+      const shippingValidation = validateShippingFulfillment({
+        street: addr.street,
+        city: addr.city,
+        state: addr.state,
+        zip: addr.zip
+      });
+      
+      if (!shippingValidation.valid) {
+        const errorMessage = shippingValidation.errors.map(e => e.message).join(', ');
+        logger.warn('Shipping validation failed', { errors: shippingValidation.errors });
+        return NextResponse.json(
+          { success: false, error: errorMessage },
+          { status: 400 }
+        );
+      }
+    }
+    
     // Calculate delivery fee if applicable
     let deliveryFee = 0;
     let deliveryDistanceMiles = null;
@@ -883,6 +939,7 @@ export async function POST(request) {
     
     // Calculate pickup date for pickup orders (for cron job filtering)
     let pickupDate = null;
+    const originalFulfillmentType = orderData.fulfillmentType;
     const isPickup = isPickupFulfillmentType(orderData.fulfillmentType);
     if (isPickup) {
       const isBrownsMill = orderData.fulfillmentType === 'pickup_browns_mill' || 
@@ -918,6 +975,7 @@ export async function POST(request) {
         pricingSource: orderData.pricingSource || 'unknown',
         pricingOverrides: orderData.pricingOverrides || 0,
         fulfillmentSchedule: orderData.fulfillmentSchedule,
+        originalFulfillmentType,
       }
     };
     
@@ -927,7 +985,7 @@ export async function POST(request) {
 
     const SQUARE_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
     const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID;
-    const SQUARE_ENV = process.env.SQUARE_ENVIRONMENT || 'production';
+    const SQUARE_ENV = process.env.SQUARE_ENVIRONMENT || 'sandbox';
     const SQUARE_BASE = SQUARE_ENV === 'production' 
       ? 'https://connect.squareup.com' 
       : 'https://connect.squareupsandbox.com';
@@ -1012,7 +1070,7 @@ export async function POST(request) {
               return lineItem;
             }),
             customer_id: squareCustomerId || undefined, // ⭐ LINKS CUSTOMER TO ORDER
-            metadata: {
+            metadata: sanitizeMetadata({
               source: 'website',
               local_order_id: orderId,
               order_number: orderNumber,
@@ -1021,12 +1079,12 @@ export async function POST(request) {
               customer_name: orderData.customer.name,
               customer_phone: orderData.customer.phone,
               fulfillment_timing: orderData.orderTiming?.mode || 'asap',
-              requested_date: orderData.orderTiming?.requestedDate || '',
-              requested_time_window: orderData.orderTiming?.requestedTimeWindow || '',
+              requested_date: orderData.orderTiming?.requestedDate || undefined,
+              requested_time_window: orderData.orderTiming?.requestedTimeWindow || undefined,
               schedule_status: orderData.fulfillmentSchedule?.status || 'auto_assigned',
-              scheduled_fulfillment_at: orderData.fulfillmentSchedule?.scheduledFulfillmentAt || '',
+              scheduled_fulfillment_at: orderData.fulfillmentSchedule?.scheduledFulfillmentAt || undefined,
               pricing_source: orderData.pricingSource || 'unknown'
-            },
+            }),
             fulfillments: buildFulfillment(orderData)
           }
         };
