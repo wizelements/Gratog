@@ -46,7 +46,7 @@ export async function POST(request) {
     
     // Find all pickup orders that were scheduled for today but NOT picked up
     const missedOrders = await db.collection('orders').find({
-      'fulfillment.type': { $in: ['pickup_market', 'pickup_browns_mill'] },
+      'fulfillment.type': { $in: ['pickup_market', 'pickup_dunwoody', 'pickup_browns_mill'] },
       // Orders that should have been picked up today but weren't
       status: { $in: ['pending', 'confirmed', 'preparing', 'ready'] },
       $or: [

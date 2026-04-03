@@ -171,7 +171,7 @@ test.describe('Fulfillment Radio Buttons', () => {
     await page.waitForLoadState('networkidle');
     
     // Click different fulfillment options
-    const options = ['pickup_market', 'pickup_browns_mill', 'meetup_serenbe', 'delivery'];
+    const options = ['pickup_market', 'pickup_dunwoody', 'meetup_serenbe', 'delivery'];
     
     for (const option of options) {
       await page.click(`label[for="${option}"]`);
@@ -195,7 +195,7 @@ test.describe('Fulfillment Radio Buttons', () => {
     
     // Use arrow keys to navigate
     await page.keyboard.press('ArrowDown');
-    await expect(page.locator('#pickup_browns_mill')).toBeChecked();
+    await expect(page.locator('#pickup_dunwoody')).toBeChecked();
     
     await page.keyboard.press('ArrowDown');
     await expect(page.locator('#meetup_serenbe')).toBeChecked();

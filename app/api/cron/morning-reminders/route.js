@@ -47,7 +47,7 @@ export async function POST(request) {
     
     // Find all pickup orders scheduled for TODAY (using pickupDate, not createdAt)
     const pickupOrders = await db.collection('orders').find({
-      'fulfillment.type': { $in: ['pickup_market', 'pickup_browns_mill'] },
+      'fulfillment.type': { $in: ['pickup_market', 'pickup_dunwoody', 'pickup_browns_mill'] },
       status: { $in: ['pending', 'confirmed', 'preparing', 'ready'] }, // Not picked up yet
       $or: [
         // New orders with pickupDate field

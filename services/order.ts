@@ -216,9 +216,9 @@ export async function createOrder(
       instructions: sanitizeString(fulfillment.pickup.instructions, 500)
     };
     
-    // Map locationId to fulfillment type if it's browns_mill
-    if (fulfillment.pickup.locationId === 'browns_mill') {
-      payload.fulfillmentType = 'pickup_browns_mill';
+    // Map locationId to fulfillment type if it's dunwoody (legacy: browns_mill)
+    if (fulfillment.pickup.locationId === 'browns_mill' || fulfillment.pickup.locationId === 'dunwoody') {
+      payload.fulfillmentType = 'pickup_dunwoody';
     } else {
       payload.fulfillmentType = 'pickup_market';
     }

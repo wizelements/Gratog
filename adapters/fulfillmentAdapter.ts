@@ -31,7 +31,7 @@ const PICKUP_LOCATIONS: PickupLocation[] = [
     hours: 'Sat 9am-1pm'
   },
   {
-    id: 'browns_mill',
+    id: 'dunwoody',
     name: 'DHA Dunwoody Farmers Market',
     address: '4770 N Peachtree Rd, Dunwoody, GA 30338 (Brook Run Park)',
     hours: 'Sat 9am-12pm'

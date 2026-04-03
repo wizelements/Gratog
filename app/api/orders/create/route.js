@@ -29,7 +29,7 @@ const DEFAULT_SCHEDULE_TIME_BY_FULFILLMENT = Object.freeze({
   pickup: '09:00',
   pickup_serenbe: '09:00',
   pickup_market: '09:00',
-  pickup_browns_mill: '09:00',
+  pickup_dunwoody: '09:00',
   meetup_serenbe: '09:00',
   delivery: '14:00',
   shipping: '12:00'
@@ -451,7 +451,7 @@ function isPickupFulfillmentType(fulfillmentType) {
   return fulfillmentType === 'pickup' ||
     fulfillmentType === 'pickup_serenbe' ||
     fulfillmentType === 'pickup_market' ||
-    fulfillmentType === 'pickup_browns_mill' ||
+    fulfillmentType === 'pickup_dunwoody' ||
     fulfillmentType === 'meetup_serenbe';
 }
 
@@ -674,19 +674,19 @@ function buildFulfillment(orderData) {
     : '';
   
   // Pickup orders (Serenbe or DHA Dunwoody)
-  // NORMALIZED: pickup_market = Serenbe, pickup_browns_mill = DHA Dunwoody
+  // NORMALIZED: pickup_market = Serenbe, pickup_dunwoody = DHA Dunwoody
   // Also handle legacy 'meetup_serenbe' type
   const isMeetup = fulfillmentType === 'meetup_serenbe';
   const isPickupOrder = isPickupFulfillmentType(fulfillmentType);
   if (isPickupOrder) {
-    const isBrownsMill = fulfillmentType === 'pickup_browns_mill' || pickup?.locationId === 'browns_mill';
+    const isDunwoody = fulfillmentType === 'pickup_dunwoody' || fulfillmentType === 'pickup_browns_mill';
     const pickupDate = scheduledFulfillmentAt || getNextSaturday('09:00');
 
     let pickupNote;
     if (isMeetup) {
       const meetupNotes = orderData.meetUpDetails?.notes ? ` • NOTES: ${orderData.meetUpDetails.notes}` : '';
       pickupNote = `🤝 MEET UP AFTER MARKET: Serenbe area • Saturdays after 1:00 PM (by arrangement)${meetupNotes}${pendingScheduleNote}`;
-    } else if (isBrownsMill) {
+    } else if (isDunwoody) {
       pickupNote = `📍 PICKUP: DHA Dunwoody Farmers Market • Brook Run Park, 4770 N Peachtree Rd, Dunwoody, GA 30338 • Saturdays 9:00 AM - 12:00 PM • Show order number at pickup booth${pendingScheduleNote}`;
     } else {
       pickupNote = `📍 PICKUP: Serenbe Farmers Market (Booth #12) • 10950 Hutcheson Ferry Rd, Palmetto, GA 30268 • Saturdays 9:00 AM - 1:00 PM${pendingScheduleNote}`;
@@ -867,7 +867,7 @@ export async function POST(request) {
     }
 
     const SUPPORTED_FULFILLMENT_TYPES = [
-      'pickup', 'pickup_serenbe', 'pickup_market', 'pickup_browns_mill',
+      'pickup', 'pickup_serenbe', 'pickup_market', 'pickup_dunwoody', 'pickup_browns_mill',
       'meetup_serenbe', 'delivery', 'shipping'
     ];
     if (!SUPPORTED_FULFILLMENT_TYPES.includes(orderData.fulfillmentType)) {
@@ -1012,8 +1012,7 @@ export async function POST(request) {
     const originalFulfillmentType = orderData.fulfillmentType;
     const isPickup = isPickupFulfillmentType(orderData.fulfillmentType);
     if (isPickup) {
-      const isBrownsMill = orderData.fulfillmentType === 'pickup_browns_mill' || 
-                           orderData.pickup?.locationId === 'browns_mill';
+      const isDunwoody = orderData.fulfillmentType === 'pickup_dunwoody' || orderData.fulfillmentType === 'pickup_browns_mill';
       const scheduleStatus = orderData.fulfillmentSchedule?.status;
       pickupDate = scheduleStatus === 'requested'
         ? null
@@ -1021,7 +1020,7 @@ export async function POST(request) {
 
       // Normalize fulfillment type AFTER buildFulfillment captures originalFulfillmentType
       // Store normalized type but preserve original for buildFulfillment
-      orderData._normalizedFulfillmentType = isBrownsMill ? 'pickup_browns_mill' : 'pickup_market';
+      orderData._normalizedFulfillmentType = isDunwoody ? 'pickup_dunwoody' : 'pickup_market';
     }
     
     // Add metadata

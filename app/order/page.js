@@ -523,8 +523,8 @@ export default function OrderPage() {
                     
                     {/* DHA Dunwoody Farmers Market Pickup */}
                     <div className="flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer hover:border-emerald-600 transition-all hover:shadow-md mt-3">
-                      <RadioGroupItem value="pickup_browns_mill" id="pickup_browns_mill" className="mt-1" />
-                      <Label htmlFor="pickup_browns_mill" className="flex-1 cursor-pointer">
+                      <RadioGroupItem value="pickup_dunwoody" id="pickup_dunwoody" className="mt-1" />
+                      <Label htmlFor="pickup_dunwoody" className="flex-1 cursor-pointer">
                         <div className="space-y-3">
                           <div className="flex items-start gap-3">
                             <div className="p-2 bg-blue-50 rounded-lg">
