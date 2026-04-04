@@ -9,6 +9,8 @@ import { Star, Leaf } from 'lucide-react';
 import Link from 'next/link';
 import QuickAddButton from './QuickAddButton';
 import VariantSelector from './VariantSelector';
+import ScarcityBadge from './psychology/ScarcityBadge';
+import SoldOutBadge, { PreorderNotice } from './psychology/SoldOutBadge';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 
 export default function ProductCard({ product, onCheckout, variant = 'default' }) {
@@ -95,6 +97,8 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
               {product.badge}
             </Badge>
           )}
+          
+          <SoldOutBadge stock={product.stock} />
         </div>
       </Link>
       
@@ -140,11 +144,8 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
             <span className="text-sm text-muted-foreground">/ {displaySize}</span>
           )}
         </div>
-        {product.stock != null && product.stock <= 0 && (
-          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs mb-3">
-            Available for Preorder
-          </Badge>
-        )}
+        <ScarcityBadge productId={product.id} stock={product.stock} threshold={product.lowStockThreshold} />
+        <PreorderNotice stock={product.stock} />
         
         {hasMultipleVariants && (
           <div className="mb-3">

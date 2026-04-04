@@ -16,6 +16,8 @@ import Breadcrumbs, { getProductBreadcrumbs } from '@/components/Breadcrumbs';
 import ProductReviews from '@/components/ProductReviews';
 import Script from 'next/script';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
+import SoldOutBadge, { PreorderNotice } from '@/components/psychology/SoldOutBadge';
+import ScarcityBadge from '@/components/psychology/ScarcityBadge';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop';
 
@@ -401,6 +403,8 @@ export default function ProductDetailPage() {
                 )}
               </div>
               
+              <SoldOutBadge stock={product.stock} />
+              
               {/* Actions */}
               <div className="absolute top-4 right-4 flex flex-col gap-2">
                 <Button
@@ -569,12 +573,8 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {product?.stock != null && product.stock <= 0 && (
-              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-                <p className="text-sm text-emerald-700 font-medium">Available for Preorder</p>
-                <p className="text-xs text-emerald-600 mt-1">This item is currently being prepared and will ship with our next batch.</p>
-              </div>
-            )}
+            <ScarcityBadge productId={product.id} stock={product.stock} threshold={product.lowStockThreshold} />
+            <PreorderNotice stock={product.stock} />
             
             {/* Add to Cart Button */}
             <div className="flex gap-3 mb-8">

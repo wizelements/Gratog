@@ -11,6 +11,8 @@ import QuickAddButton from './QuickAddButton';
 import QuickViewModal from './QuickViewModal';
 import VariantSelector from './VariantSelector';
 import WishlistButton from './WishlistButton';
+import ScarcityBadge from './psychology/ScarcityBadge';
+import SoldOutBadge, { PreorderNotice } from './psychology/SoldOutBadge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 
@@ -112,6 +114,8 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
               Featured
             </Badge>
           )}
+          
+          <SoldOutBadge stock={product.stock} />
         </div>
       </Link>
       
@@ -193,11 +197,8 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
             <span className="text-sm text-muted-foreground">/ {displaySize}</span>
           )}
         </div>
-        {product.stock != null && product.stock <= 0 && (
-          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs mb-3">
-            Available for Preorder
-          </Badge>
-        )}
+        <ScarcityBadge productId={product.id} stock={product.stock} threshold={product.lowStockThreshold} />
+        <PreorderNotice stock={product.stock} />
         
         {hasMultipleVariants && (
           <div className="mb-3">

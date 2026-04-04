@@ -581,6 +581,90 @@ async function handleRefundEvent(db: any, refund: any): Promise<{ success: boole
 // INVENTORY & CATALOG HANDLERS
 // ============================================================================
 
+async function reconcileStorefrontStock(db: any, variationId: string) {
+  const product = await db.collection('square_catalog_items').findOne({
+    'variations.id': variationId
+  });
+
+  if (!product) return null;
+
+  const variationIds = (product.variations || [])
+    .map((v: any) => v.id)
+    .filter(Boolean);
+
+  const inventoryDocs = await db.collection('square_inventory')
+    .find({
+      catalogObjectId: { $in: variationIds },
+      state: 'IN_STOCK',
+    })
+    .toArray();
+
+  const currentStock = inventoryDocs.reduce(
+    (sum: number, doc: any) => sum + Number(doc.quantity || 0),
+    0
+  );
+
+  const inStock = currentStock > 0;
+  const now = new Date();
+
+  const slug = product.name
+    ?.toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+
+  // Update the inventory collection (source of truth for frontend)
+  await db.collection('inventory').updateOne(
+    { productId: product.id },
+    {
+      $set: {
+        productName: product.name,
+        productSlug: slug || null,
+        squareId: product.id,
+        variationIds,
+        currentStock,
+        isActive: true,
+        updatedAt: now,
+        lastCatalogSyncAt: now,
+      },
+      $setOnInsert: {
+        productId: product.id,
+        createdAt: now,
+        source: 'square_webhook',
+        lowStockThreshold: 5,
+        stockHistory: [],
+        lastRestocked: now,
+      },
+    },
+    { upsert: true }
+  );
+
+  // Update unified_products (denormalized flag)
+  await db.collection('unified_products').updateOne(
+    { id: product.id },
+    {
+      $set: {
+        inStock,
+        updatedAt: now,
+      }
+    }
+  );
+
+  // Update square_catalog_items top-level
+  await db.collection('square_catalog_items').updateOne(
+    { id: product.id },
+    {
+      $set: {
+        inventoryCount: currentStock,
+        inStock,
+        lastInventoryUpdate: now,
+      }
+    }
+  );
+
+  return { productId: product.id, productName: product.name, productSlug: slug, currentStock, inStock };
+}
+
 async function handleInventoryUpdate(db: any, inventoryChange: any) {
   logger.debug('Webhook', 'Processing inventory update', {
     variationId: inventoryChange.catalog_object_id,
@@ -615,9 +699,28 @@ async function handleInventoryUpdate(db: any, inventoryChange: any) {
     }
   );
 
+  // Reconcile storefront stock from aggregated inventory
+  try {
+    const result = await reconcileStorefrontStock(db, inventoryChange.catalog_object_id);
+    if (result) {
+      logger.info('Webhook', `📦 Storefront stock reconciled: ${result.productName} → ${result.currentStock} (inStock: ${result.inStock})`);
+      
+      // Also revalidate the specific product page
+      if (result.productSlug) {
+        revalidatePath(`/product/${result.productSlug}`);
+      }
+    }
+  } catch (reconcileError: any) {
+    logger.warn('Webhook', 'Storefront stock reconciliation failed (non-critical)', {
+      error: reconcileError.message,
+      variationId: inventoryChange.catalog_object_id
+    });
+  }
+
   // Revalidate storefront so inventory changes reflect instantly
   try {
     revalidatePath('/catalog');
+    revalidatePath('/');
   } catch (revalError: any) {
     logger.warn('Webhook', 'Inventory revalidation failed (non-critical)', {
       error: revalError.message

@@ -11,6 +11,7 @@ import { getAddToCartLabel, getAddedToCartMessage } from '@/lib/purchase-status'
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
+import SoldOutBadge, { PreorderNotice } from './psychology/SoldOutBadge';
 
 function toPriceNumber(value) {
   const parsed = Number(value);
@@ -237,6 +238,8 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
                   {product.categoryData?.icon} {product.intelligentCategory}
                 </Badge>
               ) : null}
+              
+              <SoldOutBadge stock={product.stock} />
             </div>
           </div>
           
@@ -261,11 +264,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
               ${currentPrice.toFixed(2)}
             </div>
 
-            {isPreorder && (
-              <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs mb-4">
-                Available for Preorder
-              </Badge>
-            )}
+            <PreorderNotice stock={product.stock} />
 
             {product.marketExclusive && (
               <div className="bg-gradient-to-r from-purple-50 to-fuchsia-50 border border-purple-200 rounded-lg p-4 mb-4 space-y-2">
