@@ -68,7 +68,10 @@ export default function SquarePaymentForm({
   const initRef = useRef(false);
   
   // Generate idempotency key (Square limits to 45 chars)
-  const generateIdempotencyKey = () => `${orderId.slice(0, 32)}_${Date.now().toString(36)}`;
+  // CRITICAL FIX: Use stable idempotency key per order to prevent double-charging
+  // Square's idempotency key identifies a unique payment attempt
+  // Using timestamp created unique keys on retry, causing duplicate payments
+  const idempotencyKey = orderId.slice(0, 36); // Square limit: 45 chars
 
   // Fetch Square config from API
   useEffect(() => {
@@ -227,7 +230,7 @@ export default function SquarePaymentForm({
         squareOrderId,
         orderAccessToken,
         customer,
-        idempotencyKey: generateIdempotencyKey()
+        idempotencyKey // Stable key per order - prevents duplicate charges
       })
     });
 
