@@ -34,21 +34,21 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '🌊',
     category: 'active',
     origin: 'Sustainably harvested from Atlantic coastal waters',
-    shortDescription: 'Nature\'s mineral powerhouse with 92+ essential nutrients for cellular vitality.',
+    shortDescription: 'Nature\'s mineral-rich seaweed with 92+ essential nutrients.',
     color: 'from-teal-500 to-cyan-600',
     benefits: [
       {
         title: 'Immune System Support',
-        description: 'Bioactive polysaccharides and antioxidants help regulate immune function and support healthy inflammatory response.',
+        description: 'Bioactive polysaccharides and antioxidants help support healthy immune function.',
         citation: {
           title: 'Immunomodulatory properties of seaweed polysaccharides',
-          journal: 'Pediatric Health Research',
-          pubmedUrl: 'https://www.chop.edu/pediatric-health-chat/sea-moss-extract'
+          journal: 'Marine Drugs Research',
+          pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6266857/'
         }
       },
       {
         title: '92+ Essential Minerals',
-        description: 'Rich in iodine, calcium, potassium, magnesium, and iron that support thyroid function, bone health, and metabolic regulation.',
+        description: 'Rich in iodine, calcium, potassium, magnesium, and iron that support overall wellness.',
         citation: {
           title: 'Nutritional composition and mineral content of seaweed',
           journal: 'Journal of Marine Science',
@@ -56,17 +56,17 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
         }
       },
       {
-        title: 'Collagen & Skin Health',
-        description: 'Vitamin A and sulfur compounds support collagen synthesis, promoting skin elasticity and cellular repair.',
+        title: 'Skin Health Support',
+        description: 'Vitamin A and sulfur compounds support healthy skin appearance.',
         citation: {
-          title: 'Seaweed bioactives for skin health and wound healing',
+          title: 'Seaweed bioactives for skin health',
           journal: 'Marine Drugs',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8004118/'
         }
       },
       {
         title: 'Digestive Wellness',
-        description: 'Prebiotic fiber nourishes gut microbiota, supporting digestive health and nutrient absorption.',
+        description: 'Prebiotic fiber nourishes gut microbiota, supporting digestive health.',
         citation: {
           title: 'Dietary fiber from seaweeds and gut health',
           journal: 'Nutrition Research',

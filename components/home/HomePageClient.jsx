@@ -474,8 +474,14 @@ export default function HomePageClient({
                                 Overview & Scientific Classification
                             </h3>
                             <p className="text-gray-700 leading-relaxed mb-6">
-                                <strong>Sea moss</strong> (<em>Chondrus crispus</em>), also known as <strong>Irish moss</strong>, is a species of red algae that grows abundantly along the rocky Atlantic coastlines of North America, Europe, and the Caribbean. This marine superfood has been harvested for centuries, dating back to the Irish Potato Famine of the 1840s when it became a vital nutrition source.
+                                <strong>Sea moss</strong> (<em>Chondrus crispus</em>), also known as Irish moss, is a species of red algae that grows along the rocky Atlantic coastlines. This marine superfood has been used for centuries in traditional wellness practices, dating back to the Irish Potato Famine of the 1840s.
                             </p>
+                            
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                                <p className="text-sm text-amber-800">
+                                    <strong>Disclaimer:</strong> These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease. Consult your healthcare provider before use.
+                                </p>
+                            </div>
 
                             <div className="grid md:grid-cols-2 gap-6 my-8">
                                 <div className="bg-emerald-50 p-6 rounded-xl">
@@ -506,23 +512,23 @@ export default function HomePageClient({
                             <ul className="space-y-3 text-gray-700">
                                 <li className="flex items-start">
                                     <CheckCircle className="mr-3 h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                    <span><strong>Immune System Support:</strong> High vitamin and mineral content strengthens immune response and natural defenses</span>
+                                    <span><strong>Immune System Support:</strong> High vitamin and mineral content supports healthy immune response</span>
                                 </li>
                                 <li className="flex items-start">
                                     <CheckCircle className="mr-3 h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                    <span><strong>Thyroid Health:</strong> Natural iodine content supports healthy thyroid function and metabolism</span>
+                                    <span><strong>Thyroid Support:</strong> Natural iodine content supports healthy thyroid function</span>
                                 </li>
                                 <li className="flex items-start">
                                     <CheckCircle className="mr-3 h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                    <span><strong>Digestive Wellness:</strong> Prebiotic properties promote gut health and beneficial bacteria growth</span>
+                                    <span><strong>Digestive Wellness:</strong> Prebiotic properties promote gut health</span>
                                 </li>
                                 <li className="flex items-start">
                                     <CheckCircle className="mr-3 h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                    <span><strong>Skin & Joint Health:</strong> Collagen-supporting minerals improve skin elasticity and joint mobility</span>
+                                    <span><strong>Skin & Joint Health:</strong> Mineral-rich compounds support healthy skin and joint comfort</span>
                                 </li>
                                 <li className="flex items-start">
                                     <CheckCircle className="mr-3 h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                    <span><strong>Energy & Recovery:</strong> Rich mineral profile supports natural energy production and post-exercise recovery</span>
+                                    <span><strong>Natural Energy:</strong> Rich mineral profile supports natural vitality</span>
                                 </li>
                             </ul>
 

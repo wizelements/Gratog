@@ -177,8 +177,14 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="pt-8 border-t text-center">
-          <p className="text-sm text-muted-foreground">
+        {/* FDA Disclaimer */}
+        <div className="pt-8 border-t">
+          <p className="text-xs text-muted-foreground/70 text-center max-w-4xl mx-auto mb-4">
+            * These statements have not been evaluated by the Food and Drug Administration. 
+            This product is not intended to diagnose, treat, cure, or prevent any disease. 
+            Consult your healthcare provider before use, especially if pregnant, nursing, or have thyroid conditions.
+          </p>
+          <p className="text-sm text-muted-foreground text-center">
             &copy; {new Date().getFullYear()} Taste of Gratitude. Crafted with ❤️ for your wellness journey.
           </p>
         </div>
