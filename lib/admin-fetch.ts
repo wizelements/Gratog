@@ -85,9 +85,10 @@ export function clearCsrfToken(): void {
 // ADMIN FETCH
 // ============================================================================
 
-interface FetchOptions extends RequestInit {
+interface FetchOptions extends Omit<RequestInit, 'headers'> {
   skipCsrf?: boolean; // Skip CSRF for GET requests
   retryCount?: number;
+  headers?: Record<string, string>;
 }
 
 interface FetchResult<T> {
