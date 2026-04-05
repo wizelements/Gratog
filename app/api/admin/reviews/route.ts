@@ -142,7 +142,7 @@ export const GET = withAdminMiddleware(
       
       const statsData = stats[0] || { total: 0, pending: 0, approved: 0, rejected: 0, avgRating: 0 };
       
-      logger.info('Admin reviews fetched', { count: reviews.length, status });
+      logger.info('Admin reviews fetched', reviews.length, status);
       
       return NextResponse.json({
         success: true,
@@ -168,7 +168,7 @@ export const GET = withAdminMiddleware(
           { status: 401 }
         );
       }
-      logger.error('Failed to fetch admin reviews', { error: error instanceof Error ? error.message : 'Unknown' });
+      logger.error('Failed to fetch admin reviews', error instanceof Error ? error.message : 'Unknown');
       return NextResponse.json(
         { error: 'Failed to fetch reviews' },
         { status: 500 }
@@ -258,11 +258,7 @@ export const PATCH = withAdminMiddleware(
         update
       );
       
-      logger.info('Bulk review update', { 
-        action, 
-        count: result.modifiedCount,
-        user: admin.email,
-      });
+      logger.info('Bulk review update', action, result.modifiedCount, admin.email);
       
       return NextResponse.json({
         success: true,
@@ -276,7 +272,7 @@ export const PATCH = withAdminMiddleware(
           { status: 401 }
         );
       }
-      logger.error('Failed to bulk update reviews', { error: error instanceof Error ? error.message : 'Unknown' });
+      logger.error('Failed to bulk update reviews', error instanceof Error ? error.message : 'Unknown');
       return NextResponse.json(
         { error: 'Failed to update reviews' },
         { status: 500 }
@@ -350,10 +346,7 @@ export const DELETE = withAdminMiddleware(
         { _id: { $in: objectIds } }
       );
       
-      logger.info('Reviews deleted', { 
-        count: result.deletedCount,
-        user: admin.email,
-      });
+      logger.info('Reviews deleted', result.deletedCount, admin.email);
       
       return NextResponse.json({
         success: true,
