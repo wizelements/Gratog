@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -54,6 +54,12 @@ function normalizeReviewSummary(summary) {
 export default function ProductDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  
+  // Extract slug from pathname as fallback if useParams doesn't work
+  const pathnameSlug = pathname?.split('/').pop();
+  const slug = params?.slug || pathnameSlug;
+  
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
@@ -97,13 +103,24 @@ export default function ProductDetailPage() {
     async function fetchProduct() {
       try {
         setIsLoading(true);
-        console.log('[GratOG] Fetching product with slug:', params.slug);
+        
+        console.log('[GratOG] Fetching product with slug:', slug, 'params:', params, 'pathname:', pathname);
+        
+        if (!slug) {
+          console.error('[GratOG] No slug provided in params');
+          setProduct(null);
+          setIsLoading(false);
+          return;
+        }
         
         // Use the dedicated single product endpoint
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000);
         
-        const response = await fetch(`/api/products/${encodeURIComponent(params.slug)}`, { 
+        const apiUrl = `/api/products/${encodeURIComponent(slug)}`;
+        console.log('[GratOG] Fetching from URL:', apiUrl);
+        
+        const response = await fetch(apiUrl, { 
           cache: 'no-store',
           signal: controller.signal,
           headers: {
@@ -152,10 +169,18 @@ export default function ProductDetailPage() {
       }
     }
     
-    if (params.slug) {
-      fetchProduct();
-    }
-  }, [params.slug]);
+    // Add a small delay to ensure params is populated
+    const timer = setTimeout(() => {
+      if (slug) {
+        fetchProduct();
+      } else {
+        console.warn('[GratOG] Params not ready yet, retrying...');
+        setIsLoading(false);
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [slug]);
 
   useEffect(() => {
     const resolvedProductId = product?.id || product?.slug;
