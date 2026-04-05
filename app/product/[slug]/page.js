@@ -96,29 +96,53 @@ export default function ProductDetailPage() {
   useEffect(() => {
     async function fetchProduct() {
       try {
+        setIsLoading(true);
+        console.log('[GratOG] Fetching product with slug:', params.slug);
+        
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
         
         const response = await fetch('/api/products', { 
           cache: 'no-store',
-          signal: controller.signal
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+          }
         });
         
         clearTimeout(timeoutId);
+        
+        console.log('[GratOG] API response status:', response.status);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
+        console.log('[GratOG] API response data:', { 
+          success: data.success, 
+          productCount: data.products?.length,
+          categoriesCount: data.categories?.length
+        });
         
         if (data.success && data.products && data.products.length > 0) {
-          const foundProduct = data.products.find(p => 
-            p.slug === params.slug || 
-            p.id === params.slug ||
-            p.slug?.includes(params.slug) ||
-            params.slug?.includes(p.slug)
-          );
+          // Try exact match first
+          let foundProduct = data.products.find(p => p.slug === params.slug);
+          
+          // Try ID match
+          if (!foundProduct) {
+            foundProduct = data.products.find(p => p.id === params.slug);
+          }
+          
+          // Try partial match if exact match fails
+          if (!foundProduct) {
+            foundProduct = data.products.find(p => 
+              p.slug?.includes(params.slug) ||
+              params.slug?.includes(p.slug)
+            );
+          }
+          
+          console.log('[GratOG] Found product:', foundProduct ? foundProduct.name : 'No product found');
           
           if (foundProduct) {
             // Filter out variations with invalid prices
@@ -133,8 +157,14 @@ export default function ProductDetailPage() {
               setSelectedVariation(foundProduct.variations[0]);
             }
           } else {
-            console.warn('[GratOG] Product not found:', params.slug);
-            setProduct(null);
+            console.warn('[GratOG] Product not found for slug:', params.slug);
+            // Show demo product as fallback
+            const demoProduct = data.products[0];
+            console.log('[GratOG] Using fallback product:', demoProduct.name);
+            setProduct(demoProduct);
+            if (demoProduct?.variations?.length > 0) {
+              setSelectedVariation(demoProduct.variations[0]);
+            }
           }
         } else {
           console.warn('[GratOG] No products returned from API');
@@ -143,6 +173,7 @@ export default function ProductDetailPage() {
       } catch (error) {
         console.error('[GratOG] Failed to fetch product:', error);
         toast.error('Unable to load product. Please try refreshing the page.');
+        setProduct(null);
       } finally {
         setIsLoading(false);
       }
