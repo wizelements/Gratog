@@ -212,7 +212,7 @@ export const PUT = withAdminMiddleware(
       const { db } = await connectToDatabase();
       
       // Prepare update object with metadata
-      const updateData = {
+      const updateData: Record<string, unknown> = {
         ...sanitizedUpdates,
         updatedAt: new Date(),
         updatedBy: admin.email,
