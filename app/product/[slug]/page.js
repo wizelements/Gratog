@@ -99,10 +99,11 @@ export default function ProductDetailPage() {
         setIsLoading(true);
         console.log('[GratOG] Fetching product with slug:', params.slug);
         
+        // Use the dedicated single product endpoint
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000);
         
-        const response = await fetch('/api/products', { 
+        const response = await fetch(`/api/products/${encodeURIComponent(params.slug)}`, { 
           cache: 'no-store',
           signal: controller.signal,
           headers: {
@@ -121,53 +122,25 @@ export default function ProductDetailPage() {
         const data = await response.json();
         console.log('[GratOG] API response data:', { 
           success: data.success, 
-          productCount: data.products?.length,
-          categoriesCount: data.categories?.length
+          productName: data.product?.name
         });
         
-        if (data.success && data.products && data.products.length > 0) {
-          // Try exact match first
-          let foundProduct = data.products.find(p => p.slug === params.slug);
+        if (data.success && data.product) {
+          const foundProduct = data.product;
           
-          // Try ID match
-          if (!foundProduct) {
-            foundProduct = data.products.find(p => p.id === params.slug);
+          // Filter out variations with invalid prices
+          if (foundProduct?.variations?.length > 0) {
+            foundProduct.variations = foundProduct.variations.filter(v => v.price && v.price > 0);
           }
           
-          // Try partial match if exact match fails
-          if (!foundProduct) {
-            foundProduct = data.products.find(p => 
-              p.slug?.includes(params.slug) ||
-              params.slug?.includes(p.slug)
-            );
-          }
+          setProduct(foundProduct);
           
-          console.log('[GratOG] Found product:', foundProduct ? foundProduct.name : 'No product found');
-          
-          if (foundProduct) {
-            // Filter out variations with invalid prices
-            if (foundProduct?.variations?.length > 0) {
-              foundProduct.variations = foundProduct.variations.filter(v => v.price && v.price > 0);
-            }
-            
-            setProduct(foundProduct);
-            
-            // Set default variation to first valid one
-            if (foundProduct?.variations?.length > 0) {
-              setSelectedVariation(foundProduct.variations[0]);
-            }
-          } else {
-            console.warn('[GratOG] Product not found for slug:', params.slug);
-            // Show demo product as fallback
-            const demoProduct = data.products[0];
-            console.log('[GratOG] Using fallback product:', demoProduct.name);
-            setProduct(demoProduct);
-            if (demoProduct?.variations?.length > 0) {
-              setSelectedVariation(demoProduct.variations[0]);
-            }
+          // Set default variation to first valid one
+          if (foundProduct?.variations?.length > 0) {
+            setSelectedVariation(foundProduct.variations[0]);
           }
         } else {
-          console.warn('[GratOG] No products returned from API');
+          console.warn('[GratOG] No product returned from API');
           setProduct(null);
         }
       } catch (error) {
