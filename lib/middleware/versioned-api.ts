@@ -13,10 +13,10 @@ import { NextRequest, NextResponse } from 'next/server';
 // ============================================================================
 
 export const API_VERSIONS = {
-  CURRENT: 'v1',
-  SUPPORTED: ['v1'],
-  DEPRECATED: [],
-} as const;
+  CURRENT: 'v1' as const,
+  SUPPORTED: ['v1'] as const,
+  DEPRECATED: [] as string[],
+};
 
 export type ApiVersion = typeof API_VERSIONS.SUPPORTED[number];
 
