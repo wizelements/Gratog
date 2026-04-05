@@ -136,25 +136,22 @@ export default function MarketsPage() {
         ? { marketId: editingMarket.id, ...formData }
         : formData;
 
-      const res = await adminFetch(url, {
+      const result = await adminFetch<{ success: boolean; market: AdminMarket; error?: string }>(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Request failed');
+      if (!result.success) {
+        throw new Error(result.error || 'Request failed');
       }
 
-      if (editingMarket) {
+      if (editingMarket && result.data) {
         setMarkets((prev) =>
-          prev.map((m) => (m.id === editingMarket.id ? data.market : m))
+          prev.map((m) => (m.id === editingMarket.id ? result.data!.market : m))
         );
         toast.success('Market updated successfully');
-      } else {
-        setMarkets((prev) => [data.market, ...prev]);
+      } else if (result.data) {
+        setMarkets((prev) => [result.data!.market, ...prev]);
         toast.success('Market created successfully');
       }
 
@@ -176,16 +173,13 @@ export default function MarketsPage() {
     );
 
     try {
-      const res = await adminFetch('/api/admin/markets', {
+      const result = await adminFetch<{ success: boolean; error?: string }>('/api/admin/markets', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ marketId: market.id, isActive: newStatus }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Update failed');
+      if (!result.success) {
+        throw new Error(result.error || 'Update failed');
       }
 
       toast.success(`Market ${newStatus ? 'activated' : 'deactivated'}`);
@@ -213,16 +207,13 @@ export default function MarketsPage() {
     setMarketToDelete(null);
 
     try {
-      const res = await adminFetch('/api/admin/markets', {
+      const result = await adminFetch<{ success: boolean; error?: string }>('/api/admin/markets', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ marketId }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Delete failed');
+      if (!result.success) {
+        throw new Error(result.error || 'Delete failed');
       }
 
       toast.success('Market deleted successfully');
@@ -238,17 +229,15 @@ export default function MarketsPage() {
     setSeeding(true);
 
     try {
-      const res = await adminFetch('/api/admin/markets/seed', {
+      const result = await adminFetch<{ success: boolean; message?: string; error?: string }>('/api/admin/markets/seed', {
         method: 'POST',
       });
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Seed failed');
+      if (!result.success) {
+        throw new Error(result.error || 'Seed failed');
       }
 
-      toast.success(data.message);
+      toast.success(result.data?.message || 'Markets seeded successfully');
       await fetchMarkets();
     } catch (error: any) {
       logger.error('Admin', 'Seed markets failed', error);
