@@ -107,7 +107,7 @@ export const GET = withAdminMiddleware(
           id: product.id,
           name: product.name || 'Unnamed Product',
           description: product.description || '',
-          category: product.intelligentCategory || product.category || 'uncategorized',
+          category: (product as any).intelligentCategory || product.category || 'uncategorized',
           price: product.price || 0,
           variations: product.variations || [],
           images: product.images || [],
@@ -125,7 +125,7 @@ export const GET = withAdminMiddleware(
           stockStatus,
           // Sync status
           syncedAt: product.syncedAt || null,
-          manualCategoryOverride: product.manualCategoryOverride || false,
+          manualCategoryOverride: (product as any).manualCategoryOverride || false,
         };
       });
       

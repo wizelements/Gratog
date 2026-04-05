@@ -55,21 +55,18 @@ async function getRedisClient(): Promise<RedisClient | null> {
     // Dynamic import to avoid build-time issues
     const { createClient } = await import('redis');
     
-    redisClient = createClient({
+    const client = createClient({
       url: redisUrl,
-      socket: {
-        connectTimeout: 5000,
-        commandTimeout: 5000,
-      },
     });
     
-    await redisClient.connect();
+    await client.connect();
+    redisClient = client as unknown as RedisClient;
     redisAvailable = true;
     
     logger.info('REDIS', 'Redis client connected');
     
     // Handle disconnects
-    redisClient.on('error', (error: Error) => {
+    (client as any).on('error', (error: Error) => {
       logger.error('REDIS', 'Redis error', error);
       redisAvailable = false;
     });

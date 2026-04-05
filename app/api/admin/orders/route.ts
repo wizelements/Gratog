@@ -49,7 +49,7 @@ export const GET = withAdminMiddleware(
       
       // Date range filter
       if (startDate || endDate) {
-        const dateQuery: Record<string, string> = {};
+        const dateQuery: { $gte?: string; $lte?: string } = {};
         if (startDate) {
           const parsedStart = new Date(startDate);
           if (!isNaN(parsedStart.getTime())) {
