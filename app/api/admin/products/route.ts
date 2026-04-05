@@ -89,13 +89,17 @@ export const GET = withAdminMiddleware(
       
       // Transform to admin format with inventory data
       const adminProducts = products.map(product => {
-        const inv = inventoryMap.get(product.id) || {};
+        const inv = inventoryMap.get(product.id) as { 
+          currentStock?: number; 
+          lowStockThreshold?: number; 
+          lastRestocked?: string | null 
+        } | undefined;
         
         // Determine stock status
         let stockStatus = 'in_stock';
-        if (inv.currentStock === 0) {
+        if (inv?.currentStock === 0) {
           stockStatus = 'out_of_stock';
-        } else if (inv.currentStock <= (inv.lowStockThreshold || 5)) {
+        } else if (inv?.currentStock <= (inv?.lowStockThreshold || 5)) {
           stockStatus = 'low_stock';
         }
         
@@ -115,9 +119,9 @@ export const GET = withAdminMiddleware(
           createdAt: product.createdAt,
           updatedAt: product.updatedAt,
           // Inventory data
-          stock: inv.currentStock || 0,
-          lowStockThreshold: inv.lowStockThreshold || 5,
-          lastRestocked: inv.lastRestocked || null,
+          stock: inv?.currentStock || 0,
+          lowStockThreshold: inv?.lowStockThreshold || 5,
+          lastRestocked: inv?.lastRestocked || null,
           stockStatus,
           // Sync status
           syncedAt: product.syncedAt || null,

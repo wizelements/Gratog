@@ -49,18 +49,21 @@ export const GET = withAdminMiddleware(
       
       // Date range filter
       if (startDate || endDate) {
-        query.createdAt = {};
+        const dateQuery: Record<string, string> = {};
         if (startDate) {
           const parsedStart = new Date(startDate);
           if (!isNaN(parsedStart.getTime())) {
-            query.createdAt.$gte = parsedStart.toISOString();
+            dateQuery.$gte = parsedStart.toISOString();
           }
         }
         if (endDate) {
           const parsedEnd = new Date(endDate);
           if (!isNaN(parsedEnd.getTime())) {
-            query.createdAt.$lte = parsedEnd.toISOString();
+            dateQuery.$lte = parsedEnd.toISOString();
           }
+        }
+        if (Object.keys(dateQuery).length > 0) {
+          query.createdAt = dateQuery;
         }
       }
       
