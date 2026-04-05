@@ -67,18 +67,18 @@ export type SchemaVersion = keyof typeof SchemaRegistry;
 /**
  * Get schema for specific API version
  */
-export function getSchemaForVersion<T extends keyof typeof V1Schemas, K extends keyof typeof V1Schemas[T]>(
+export function getSchemaForVersion<T extends keyof typeof V1Schemas>(
   version: SchemaVersion,
   domain: T,
-  action: K
-): typeof V1Schemas[T][K] | null {
+  action: string
+): z.ZodTypeAny | null {
   const versionedSchemas = SchemaRegistry[version];
   if (!versionedSchemas) return null;
   
   const domainSchemas = versionedSchemas[domain];
   if (!domainSchemas) return null;
   
-  return domainSchemas[action] as typeof V1Schemas[T][K] || null;
+  return domainSchemas[action as keyof typeof domainSchemas] as z.ZodTypeAny || null;
 }
 
 /**
@@ -90,7 +90,7 @@ export function validateWithVersion<T>(
   domain: keyof typeof V1Schemas,
   action: string
 ): { success: true; data: T } | { success: false; error: string } {
-  const schema = getSchemaForVersion(version, domain, action as any);
+  const schema = getSchemaForVersion(version, domain, action);
   
   if (!schema) {
     return { success: false, error: `No schema found for ${version}/${domain}/${action}` };
