@@ -1,7 +1,13 @@
+/**
+ * Hardened Individual Product API
+ * 
+ * Security: RBAC, input validation, CSRF, rate limiting, audit logging
+ */
+
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { PERMISSIONS } from '@/lib/security';
-import { withAdminMiddleware, AuthenticatedRequest } from '@/lib/middleware/admin';
+import { withAdminMiddlewareWithContext, AuthenticatedRequest } from '@/lib/middleware/admin';
 import { ProductUpdateSchema, validateBody } from '@/lib/validation';
 import { logger } from '@/lib/logger';
 import { revalidatePath } from 'next/cache';
@@ -10,9 +16,10 @@ import { revalidatePath } from 'next/cache';
  * GET /api/admin/products/[id]
  * Get single product details for editing
  */
-export const GET = withAdminMiddleware(
+export const GET = withAdminMiddlewareWithContext(
   async (request: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
-    const { id: productId } = await context.params;
+    const params = await context.params;
+    const productId = params.id;
     
     try {
       // Validate productId
@@ -77,9 +84,10 @@ export const GET = withAdminMiddleware(
  * PUT /api/admin/products/[id]
  * Update a specific product
  */
-export const PUT = withAdminMiddleware(
+export const PUT = withAdminMiddlewareWithContext(
   async (request: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
-    const { id: productId } = await context.params;
+    const params = await context.params;
+    const productId = params.id;
     const admin = request.admin;
     
     try {
@@ -235,9 +243,10 @@ export const PUT = withAdminMiddleware(
  * DELETE /api/admin/products/[id]
  * Delete a product
  */
-export const DELETE = withAdminMiddleware(
+export const DELETE = withAdminMiddlewareWithContext(
   async (request: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
-    const { id: productId } = await context.params;
+    const params = await context.params;
+    const productId = params.id;
     const admin = request.admin;
     
     try {

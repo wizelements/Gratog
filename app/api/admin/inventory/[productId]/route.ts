@@ -1,18 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
+/**
+ * Hardened Inventory Admin API
+ * 
+ * Security: Atomic operations, RBAC, input validation, CSRF, rate limiting, audit logging
+ */
+
+import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
-import { getAdminSession } from '@/lib/admin-session';
-import { InventoryAdjustmentSchema, validateBody } from '@/lib/validation';
 import { PERMISSIONS } from '@/lib/security';
-import { withAdminMiddleware, AuthenticatedRequest } from '@/lib/middleware/admin';
+import { withAdminMiddlewareWithContext, AuthenticatedRequest } from '@/lib/middleware/admin';
+import { InventoryAdjustmentSchema, validateBody } from '@/lib/validation';
 import { logger } from '@/lib/logger';
 
 /**
  * GET /api/admin/inventory/[productId]
  * Get inventory details for a specific product
  */
-export const GET = withAdminMiddleware(
+export const GET = withAdminMiddlewareWithContext(
   async (request: AuthenticatedRequest, context: { params: Promise<{ productId: string }> }) => {
-    const { productId } = await context.params;
+    const params = await context.params;
+    const productId = params.productId;
     
     try {
       // Validate productId format
@@ -71,9 +77,10 @@ export const GET = withAdminMiddleware(
  * 
  * CRITICAL: This uses atomic MongoDB operations to prevent race conditions
  */
-export const PATCH = withAdminMiddleware(
+export const PATCH = withAdminMiddlewareWithContext(
   async (request: AuthenticatedRequest, context: { params: Promise<{ productId: string }> }) => {
-    const { productId } = await context.params;
+    const params = await context.params;
+    const productId = params.productId;
     const admin = request.admin;
     
     try {
@@ -223,57 +230,3 @@ export const PATCH = withAdminMiddleware(
     rateLimit: { maxRequests: 30, windowSeconds: 60 },
   }
 );
-
-/**
- * POST /api/admin/inventory/[productId]/restock
- * Explicit restock endpoint with transaction safety
- */
-export async function POST(
-  request: NextRequest,
-  context: { params: Promise<{ productId: string }> }
-) {
-  // Delegate to PATCH handler after validating this is a restock action
-  const { productId } = await context.params;
-  
-  try {
-    const admin = await getAdminSession(request);
-    
-    if (!admin) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-    
-    const body = await request.json();
-    const { quantity, reason } = body;
-    
-    if (!quantity || typeof quantity !== 'number' || quantity <= 0) {
-      return NextResponse.json(
-        { success: false, error: 'Valid positive quantity required' },
-        { status: 400 }
-      );
-    }
-    
-    // Convert to PATCH-style adjustment
-    const patchRequest = new Request(request.url, {
-      method: 'PATCH',
-      headers: request.headers,
-      body: JSON.stringify({
-        adjustment: quantity,
-        reason: reason || 'Restock',
-      }),
-    });
-    
-    // Call PATCH handler
-    const response = await PATCH(patchRequest as AuthenticatedRequest, context);
-    return response;
-    
-  } catch (error) {
-    logger.error('INVENTORY', 'Restock failed', { productId, error });
-    return NextResponse.json(
-      { success: false, error: 'Restock failed' },
-      { status: 500 }
-    );
-  }
-}

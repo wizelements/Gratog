@@ -1,28 +1,44 @@
+/**
+ * Hardened Reviews Admin API
+ * 
+ * Security: RBAC, input validation, CSRF, rate limiting, audit logging
+ */
+
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { PERMISSIONS } from '@/lib/security';
 import { withAdminMiddleware, AuthenticatedRequest } from '@/lib/middleware/admin';
-import { ReviewQuerySchema, ReviewBulkActionSchema, validateBody } from '@/lib/validation';
+import { ReviewBulkActionSchema, validateBody } from '@/lib/validation';
 import { logger } from '@/lib/logger';
+import { z } from 'zod';
 
-// ============================================================================
-// GET - List reviews with filtering
-// ============================================================================
+// Query validation schema
+const ReviewQuerySchema = z.object({
+  status: z.enum(['pending', 'approved', 'rejected']).optional(),
+  productId: z.string().optional(),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+}).strict();
 
+/**
+ * GET - List reviews with filters (admin only)
+ */
 export const GET = withAdminMiddleware(
   async (request: AuthenticatedRequest) => {
     const { searchParams } = new URL(request.url);
     
     // Validate query parameters
-    const validation = validateBody(
-      Object.fromEntries(searchParams.entries()),
-      ReviewQuerySchema
+    const validation = ReviewQuerySchema.safeParse(
+      Object.fromEntries(searchParams.entries())
     );
     
     if (!validation.success) {
+      const errorMessage = validation.error.errors.map(e => e.message).join('; ');
       return NextResponse.json(
-        { success: false, error: validation.error },
+        { success: false, error: errorMessage },
         { status: 400 }
       );
     }
@@ -36,20 +52,14 @@ export const GET = withAdminMiddleware(
       // Build query
       const query: Record<string, unknown> = {};
       
-      if (status) {
-        switch (status) {
-          case 'pending':
-            query.approved = { $ne: true };
-            query.rejected = { $ne: true };
-            query.hidden = { $ne: true };
-            break;
-          case 'approved':
-            query.approved = true;
-            break;
-          case 'rejected':
-            query.rejected = true;
-            break;
-        }
+      if (status === 'pending') {
+        query.approved = { $ne: true };
+        query.rejected = { $ne: true };
+        query.hidden = { $ne: true };
+      } else if (status === 'approved') {
+        query.approved = true;
+      } else if (status === 'rejected') {
+        query.rejected = true;
       }
       
       if (productId) {
@@ -63,14 +73,38 @@ export const GET = withAdminMiddleware(
         query.productId = productId;
       }
       
-      if (startDate || endDate) {
-        query.createdAt = {};
-        if (startDate) {
-          query.createdAt.$gte = new Date(startDate);
+      // Build date query with proper typing
+      interface DateQuery {
+        $gte?: Date;
+        $lte?: Date;
+      }
+      
+      const dateQuery: DateQuery = {};
+      
+      if (startDate) {
+        const parsedStart = new Date(startDate);
+        if (Number.isNaN(parsedStart.getTime())) {
+          return NextResponse.json(
+            { success: false, error: 'Invalid startDate value' },
+            { status: 400 }
+          );
         }
-        if (endDate) {
-          query.createdAt.$lte = new Date(endDate);
+        dateQuery.$gte = parsedStart;
+      }
+      
+      if (endDate) {
+        const parsedEnd = new Date(endDate);
+        if (Number.isNaN(parsedEnd.getTime())) {
+          return NextResponse.json(
+            { success: false, error: 'Invalid endDate value' },
+            { status: 400 }
+          );
         }
+        dateQuery.$lte = parsedEnd;
+      }
+      
+      if (Object.keys(dateQuery).length > 0) {
+        query.createdAt = dateQuery;
       }
       
       // Get reviews with pagination
@@ -85,8 +119,7 @@ export const GET = withAdminMiddleware(
       ]);
       
       // Get stats
-      const statsAgg = await db.collection('product_reviews').aggregate([
-        { $match: query },
+      const stats = await db.collection('product_reviews').aggregate([
         {
           $group: {
             _id: null,
@@ -94,11 +127,7 @@ export const GET = withAdminMiddleware(
             pending: {
               $sum: {
                 $cond: [
-                  { $and: [
-                    { $ne: ['$approved', true] },
-                    { $ne: ['$rejected', true] },
-                    { $ne: ['$hidden', true] },
-                  ]},
+                  { $and: [{ $ne: ['$approved', true] }, { $ne: ['$rejected', true] }, { $ne: ['$hidden', true] }] },
                   1,
                   0,
                 ],
@@ -111,32 +140,13 @@ export const GET = withAdminMiddleware(
         },
       ]).toArray();
       
-      const stats = statsAgg[0] || {
-        total: 0,
-        pending: 0,
-        approved: 0,
-        rejected: 0,
-        avgRating: 0,
-      };
+      const statsData = stats[0] || { total: 0, pending: 0, approved: 0, rejected: 0, avgRating: 0 };
       
-      // Sanitize reviews - remove PII for list view
-      const sanitizedReviews = reviews.map(review => ({
-        _id: review._id.toString(),
-        productId: review.productId,
-        rating: review.rating,
-        title: review.title,
-        content: review.content?.substring(0, 200), // Truncate long content
-        approved: review.approved,
-        rejected: review.rejected,
-        hidden: review.hidden,
-        createdAt: review.createdAt,
-        reviewerName: review.reviewerName?.substring(0, 50), // Limit name length
-        verifiedPurchase: review.verifiedPurchase,
-      }));
+      logger.info('Admin reviews fetched', { count: reviews.length, status });
       
       return NextResponse.json({
         success: true,
-        reviews: sanitizedReviews,
+        reviews,
         pagination: {
           page,
           limit,
@@ -144,18 +154,23 @@ export const GET = withAdminMiddleware(
           pages: Math.ceil(total / limit),
         },
         stats: {
-          total: stats.total,
-          pending: stats.pending,
-          approved: stats.approved,
-          rejected: stats.rejected,
-          avgRating: Math.round((stats.avgRating || 0) * 10) / 10,
+          total: statsData.total,
+          pending: statsData.pending,
+          approved: statsData.approved,
+          rejected: statsData.rejected,
+          avgRating: Math.round((statsData.avgRating || 0) * 10) / 10,
         },
       });
-      
     } catch (error) {
-      logger.error('REVIEWS', 'Failed to fetch reviews', error);
+      if (error instanceof Error && error.name === 'AdminAuthError') {
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: 401 }
+        );
+      }
+      logger.error('Failed to fetch admin reviews', { error: error instanceof Error ? error.message : 'Unknown' });
       return NextResponse.json(
-        { success: false, error: 'Failed to fetch reviews' },
+        { error: 'Failed to fetch reviews' },
         { status: 500 }
       );
     }
@@ -167,10 +182,9 @@ export const GET = withAdminMiddleware(
   }
 );
 
-// ============================================================================
-// PATCH - Bulk update reviews (approve/reject/hide)
-// ============================================================================
-
+/**
+ * PATCH - Bulk update reviews (approve/reject multiple)
+ */
 export const PATCH = withAdminMiddleware(
   async (request: AuthenticatedRequest) => {
     const admin = request.admin;
@@ -190,73 +204,81 @@ export const PATCH = withAdminMiddleware(
       
       const { reviewIds, action } = validation.data;
       
-      const { db } = await connectToDatabase();
+      const objectIds: ObjectId[] = [];
+      for (const id of reviewIds) {
+        objectIds.push(new ObjectId(id));
+      }
       
-      // Convert string IDs to ObjectIds
-      const objectIds = reviewIds.map(id => new ObjectId(id));
+      const { db } = await connectToDatabase();
       
       // Build update based on action
       const update: Record<string, unknown> = {
         $set: { updatedAt: new Date() },
-        $unset: {},
       };
       
       switch (action) {
         case 'approve':
-          update.$set.approved = true;
-          update.$set.rejected = false;
-          update.$set.hidden = false;
-          update.$set.approvedAt = new Date();
-          update.$set.approvedBy = admin.email;
+          update.$set = {
+            ...(update.$set as Record<string, unknown>),
+            approved: true,
+            rejected: false,
+            hidden: false,
+            approvedAt: new Date(),
+            approvedBy: admin.email,
+          };
           update.$unset = { rejectedAt: '', rejectedBy: '' };
           break;
-          
         case 'reject':
-          update.$set.rejected = true;
-          update.$set.approved = false;
-          update.$set.hidden = false;
-          update.$set.rejectedAt = new Date();
-          update.$set.rejectedBy = admin.email;
+          update.$set = {
+            ...(update.$set as Record<string, unknown>),
+            rejected: true,
+            approved: false,
+            hidden: false,
+            rejectedAt: new Date(),
+            rejectedBy: admin.email,
+          };
           update.$unset = { approvedAt: '', approvedBy: '' };
           break;
-          
         case 'hide':
-          update.$set.hidden = true;
+          update.$set = {
+            ...(update.$set as Record<string, unknown>),
+            hidden: true,
+          };
           break;
-          
         case 'unhide':
-          update.$set.hidden = false;
+          update.$set = {
+            ...(update.$set as Record<string, unknown>),
+            hidden: false,
+          };
           break;
       }
       
-      // Clean up empty $unset
-      if (Object.keys(update.$unset).length === 0) {
-        delete update.$unset;
-      }
-      
-      // Atomic update
       const result = await db.collection('product_reviews').updateMany(
         { _id: { $in: objectIds } },
         update
       );
       
-      // Log action
-      logger.info('REVIEWS', `Bulk ${action} reviews by ${admin.email}`, {
+      logger.info('Bulk review update', { 
+        action, 
         count: result.modifiedCount,
-        action,
+        user: admin.email,
       });
       
       return NextResponse.json({
         success: true,
         action,
         modifiedCount: result.modifiedCount,
-        matchedCount: result.matchedCount,
       });
-      
     } catch (error) {
-      logger.error('REVIEWS', 'Failed to bulk update reviews', error);
+      if (error instanceof Error && error.name === 'AdminAuthError') {
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: 401 }
+        );
+      }
+      logger.error('Failed to bulk update reviews', { error: error instanceof Error ? error.message : 'Unknown' });
       return NextResponse.json(
-        { success: false, error: 'Failed to update reviews' },
+        { error: 'Failed to update reviews' },
         { status: 500 }
       );
     }
@@ -269,10 +291,9 @@ export const PATCH = withAdminMiddleware(
   }
 );
 
-// ============================================================================
-// DELETE - Delete reviews
-// ============================================================================
-
+/**
+ * DELETE - Delete reviews
+ */
 export const DELETE = withAdminMiddleware(
   async (request: AuthenticatedRequest) => {
     const admin = request.admin;
@@ -283,24 +304,23 @@ export const DELETE = withAdminMiddleware(
       
       if (!Array.isArray(reviewIds) || reviewIds.length === 0) {
         return NextResponse.json(
-          { success: false, error: 'Review IDs array is required' },
+          { error: 'Review IDs array is required' },
           { status: 400 }
         );
       }
       
       if (reviewIds.length > 1000) {
         return NextResponse.json(
-          { success: false, error: 'Maximum 1000 reviews can be deleted at once' },
+          { error: 'Maximum 1000 reviews can be deleted at once' },
           { status: 400 }
         );
       }
       
-      // Validate all IDs
       const objectIds: ObjectId[] = [];
       for (const id of reviewIds) {
-        if (!ObjectId.isValid(id)) {
+        if (typeof id !== 'string' || !ObjectId.isValid(id)) {
           return NextResponse.json(
-            { success: false, error: `Invalid review ID: ${id}` },
+            { error: `Invalid review ID: ${id}` },
             { status: 400 }
           );
         }
@@ -326,13 +346,13 @@ export const DELETE = withAdminMiddleware(
         );
       }
       
-      // Delete
       const result = await db.collection('product_reviews').deleteMany(
         { _id: { $in: objectIds } }
       );
       
-      logger.info('REVIEWS', `Reviews deleted by ${admin.email}`, {
+      logger.info('Reviews deleted', { 
         count: result.deletedCount,
+        user: admin.email,
       });
       
       return NextResponse.json({
@@ -340,11 +360,16 @@ export const DELETE = withAdminMiddleware(
         deletedCount: result.deletedCount,
         archivedCount: reviewsToDelete.length,
       });
-      
     } catch (error) {
-      logger.error('REVIEWS', 'Failed to delete reviews', error);
+      if (error instanceof Error && error.name === 'AdminAuthError') {
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: 401 }
+        );
+      }
+      logger.error('Failed to delete reviews', { error: error instanceof Error ? error.message : 'Unknown' });
       return NextResponse.json(
-        { success: false, error: 'Failed to delete reviews' },
+        { error: 'Failed to delete reviews' },
         { status: 500 }
       );
     }

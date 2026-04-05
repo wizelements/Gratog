@@ -8,16 +8,17 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { PERMISSIONS } from '@/lib/security';
-import { withAdminMiddleware, AuthenticatedRequest } from '@/lib/middleware/admin';
+import { withAdminMiddlewareWithContext, AuthenticatedRequest } from '@/lib/middleware/admin';
 import { logger } from '@/lib/logger';
 
 /**
  * GET /api/admin/customers/[id]
  * Get customer details with full PII (requires explicit permission)
  */
-export const GET = withAdminMiddleware(
+export const GET = withAdminMiddlewareWithContext(
   async (request: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
-    const { id: customerId } = await context.params;
+    const params = await context.params;
+    const customerId = params.id;
     
     try {
       // Validate ID format

@@ -8,7 +8,7 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { PERMISSIONS } from '@/lib/security';
-import { withAdminMiddleware, AuthenticatedRequest } from '@/lib/middleware/admin';
+import { withAdminMiddlewareWithContext, AuthenticatedRequest } from '@/lib/middleware/admin';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
 
@@ -22,9 +22,10 @@ const CouponUpdateSchema = z.object({
  * GET /api/admin/coupons/[id]
  * Get coupon details
  */
-export const GET = withAdminMiddleware(
+export const GET = withAdminMiddlewareWithContext(
   async (request: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
-    const { id: couponId } = await context.params;
+    const params = await context.params;
+    const couponId = params.id;
     
     try {
       // Validate ID format
@@ -86,9 +87,10 @@ export const GET = withAdminMiddleware(
  * PATCH /api/admin/coupons/[id]
  * Update coupon (limited fields)
  */
-export const PATCH = withAdminMiddleware(
+export const PATCH = withAdminMiddlewareWithContext(
   async (request: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
-    const { id: couponId } = await context.params;
+    const params = await context.params;
+    const couponId = params.id;
     const admin = request.admin;
     
     try {
@@ -105,8 +107,9 @@ export const PATCH = withAdminMiddleware(
       const validation = CouponUpdateSchema.safeParse(body);
       
       if (!validation.success) {
+        const errorMessage = validation.error.errors.map(e => e.message).join('; ');
         return NextResponse.json(
-          { success: false, error: validation.error.errors.map(e => e.message).join('; ') },
+          { success: false, error: errorMessage },
           { status: 400 }
         );
       }
@@ -188,9 +191,10 @@ export const PATCH = withAdminMiddleware(
  * DELETE /api/admin/coupons/[id]
  * Delete single coupon
  */
-export const DELETE = withAdminMiddleware(
+export const DELETE = withAdminMiddlewareWithContext(
   async (request: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
-    const { id: couponId } = await context.params;
+    const params = await context.params;
+    const couponId = params.id;
     const admin = request.admin;
     
     try {
