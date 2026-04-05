@@ -298,7 +298,7 @@ export async function getAuditLogs(
     const { db } = await connectToDatabase();
     
     const [logs, total] = await Promise.all([
-      db.collection<AuditLogEntry>('audit_logs')
+      (db.collection('audit_logs') as any)
         .find(query)
         .sort({ timestamp: -1 })
         .skip(skip)
