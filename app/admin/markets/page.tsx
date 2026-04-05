@@ -86,13 +86,11 @@ export default function MarketsPage() {
 
   const fetchMarkets = useCallback(async () => {
     try {
-      const res = await adminFetch('/api/admin/markets');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (data.success) {
-        setMarkets(data.markets || []);
+      const result = await adminFetch<{ success: boolean; markets: AdminMarket[]; error?: string }>('/api/admin/markets', { skipCsrf: true });
+      if (result.success && result.data) {
+        setMarkets(result.data.markets || []);
       } else {
-        throw new Error(data.error || 'Failed to fetch markets');
+        throw new Error(result.error || 'Failed to fetch markets');
       }
     } catch (error) {
       logger.error('Admin', 'Failed to fetch markets', error);
