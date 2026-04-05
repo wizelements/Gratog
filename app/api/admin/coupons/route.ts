@@ -150,7 +150,7 @@ export const POST = withAdminMiddleware(
       
       if (!validation.success) {
         return NextResponse.json(
-          { success: false, error: validation.error },
+          { success: false, error: (validation as { success: false; error: string }).error },
           { status: 400 }
         );
       }
