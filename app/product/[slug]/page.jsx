@@ -87,20 +87,6 @@ export default async function ProductPage({ params }) {
   }
 }
 
-// Generate static params for common products at build time
-export async function generateStaticParams() {
-  try {
-    const { db } = await connectToDatabase();
-    const products = await db.collection('products')
-      .find({ status: { $ne: 'ARCHIVED' } })
-      .limit(20)
-      .toArray();
-    
-    return products.map(product => ({
-      slug: product.slug || product.id
-    }));
-  } catch (error) {
-    console.error('[Product SSR] Error generating static params:', error);
-    return [];
-  }
-}
+// Force dynamic rendering - fetch products at request time
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
