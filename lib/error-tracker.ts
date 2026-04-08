@@ -534,7 +534,7 @@ export function getError(errorId: string): ErrorContext | undefined {
   return errorStore.get(errorId);
 }
 
-export default {
+const errorTracker = {
   captureError,
   captureClientError,
   captureServerError,
@@ -545,3 +545,5 @@ export default {
   clearErrorStore,
   getError,
 };
+
+export default errorTracker;

@@ -191,9 +191,11 @@ export function stopHealthMonitoring(): void {
   }
 }
 
-export default {
+const healthMonitor = {
   performHealthCheck,
   monitorHealth,
   startHealthMonitoring,
   stopHealthMonitoring,
 };
+
+export default healthMonitor;
