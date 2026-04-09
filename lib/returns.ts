@@ -168,7 +168,6 @@ export async function createReturnRequest(request: ReturnRequest): Promise<{
     await sendEmail({
       to: request.customerEmail,
       from: process.env.RESEND_FROM_EMAIL || 'noreply@tasteofgratitude.shop',
-      from: process.env.RESEND_FROM_EMAIL || 'noreply@tasteofgratitude.shop',
       subject: `Return Request Received - ${returnId}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -345,6 +344,7 @@ export async function rejectReturn(returnId: string, reason: string): Promise<bo
       if (returnRecord) {
         await sendEmail({
           to: returnRecord.customerEmail,
+          from: process.env.RESEND_FROM_EMAIL || 'noreply@tasteofgratitude.shop',
           subject: `Return Request Update - ${returnId}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -354,7 +354,9 @@ export async function rejectReturn(returnId: string, reason: string): Promise<bo
               <p><strong>Reason:</strong> ${reason}</p>
               <p>If you have questions, please contact our support team.</p>
             </div>
-          `
+          `,
+          text: `Return Request Update - ${returnId}\n\nHi ${returnRecord.customerName},\n\nWe reviewed your return request and unfortunately cannot process it at this time.\n\nReason: ${reason}\n\nIf you have questions, please contact our support team.`,
+          listUnsubscribeUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/unsubscribe?email=${encodeURIComponent(returnRecord.customerEmail)}`
         });
       }
 
@@ -541,6 +543,7 @@ export async function processRefund(returnId: string): Promise<{
     // Send refund notification
     await sendEmail({
       to: returnRecord.customerEmail,
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@tasteofgratitude.shop',
       subject: `Refund Processed - ${returnId}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -551,7 +554,9 @@ export async function processRefund(returnId: string): Promise<{
           <p><strong>Refund Method:</strong> ${returnRecord.refundMethod === 'original_payment' ? 'Original Payment (5-10 business days)' : 'Store Credit (available now)'}</p>
           <p>Thank you for shopping with us!</p>
         </div>
-      `
+      `,
+      text: `Refund Processed - ${returnId}\n\nHi ${returnRecord.customerName},\n\nYour return has been processed and your refund is on its way!\n\nRefund Amount: $${finalRefundAmount.toFixed(2)}\nRefund Method: ${returnRecord.refundMethod === 'original_payment' ? 'Original Payment (5-10 business days)' : 'Store Credit (available now)'}\n\nThank you for shopping with us!`,
+      listUnsubscribeUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/unsubscribe?email=${encodeURIComponent(returnRecord.customerEmail)}`
     });
 
     logger.info('Returns', 'Processed refund', { 
