@@ -157,7 +157,7 @@ export function IngredientsShowcase({
           className="mt-16 text-center"
         >
           <div className="inline-flex items-center gap-2 text-rose-600 mb-3">
-            <Heart size={24} fill="currentColor" />
+            <Heart size={24} className="fill-current" />
           </div>
           <p className="text-lg font-medium text-foreground mb-2">
             Crafted with gratitude. Backed by science.
