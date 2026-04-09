@@ -227,8 +227,9 @@ describe('validateBody helper', () => {
     
     const result = validateBody(body, schema);
     expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error).toContain('Unknown fields');
-    }
+    expect(result).toEqual(expect.objectContaining({
+      success: false,
+      error: expect.stringContaining('Unknown fields')
+    }));
   });
 });

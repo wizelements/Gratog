@@ -9,6 +9,7 @@ declare module 'lucide-react' {
     color?: string;
     strokeWidth?: number;
     className?: string;
+    fill?: string;
   }
   
   type Icon = React.ComponentType<IconProps>;
@@ -646,4 +647,55 @@ declare module 'lucide-react' {
   export const BadgeZm2: Icon;
   export const BadgeZw2: Icon;
   export const BadgeZw3: Icon;
+  
+  // Additional icons that were missing
+  export const Users: Icon;
+  export const MessageCircle: Icon;
+  export const Camera: Icon;
+  export const Key: Icon;
+  export const Shield: Icon;
+  export const LayoutDashboard: Icon;
+  export const BarChart3: Icon;
+  export const Check: Icon;
+  export const DollarSign: Icon;
+  export const Lock: Icon;
+  export const LayoutGrid: Icon;
+  export const Package: Icon;
+  export const ShoppingBag: Icon;
+  export const FileText: Icon;
+  export const Settings: Icon;
+  export const Bell: Icon;
+  export const Search: Icon;
+  export const Filter: Icon;
+  export const Plus: Icon;
+  export const Minus: Icon;
+  export const Trash: Icon;
+  export const Edit: Icon;
+  export const Eye: Icon;
+  export const EyeOff: Icon;
+  export const Copy: Icon;
+  export const ExternalLink: Icon;
+  export const Download: Icon;
+  export const Upload: Icon;
+  export const RefreshCw: Icon;
+  export const RotateCcw: Icon;
+  export const Undo: Icon;
+  export const Redo: Icon;
+  export const Save: Icon;
+  export const Printer: Icon;
+  export const Share: Icon;
+  export const Send: Icon;
+  export const Mail: Icon;
+  export const Inbox: Icon;
+  export const Archive: Icon;
+  export const Folder: Icon;
+  export const File: Icon;
+  export const FilePlus: Icon;
+  export const FileMinus: Icon;
+  export const FileCheck: Icon;
+  export const FileX: Icon;
+  export const FolderOpen: Icon;
+  export const FolderPlus: Icon;
+  export const FolderMinus: Icon;
+  export const FolderTree: Icon;
 }
