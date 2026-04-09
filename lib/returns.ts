@@ -167,6 +167,8 @@ export async function createReturnRequest(request: ReturnRequest): Promise<{
     // Send confirmation email to customer
     await sendEmail({
       to: request.customerEmail,
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@tasteofgratitude.shop',
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@tasteofgratitude.shop',
       subject: `Return Request Received - ${returnId}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -284,6 +286,7 @@ export async function approveReturn(returnId: string, adminNotes?: string): Prom
       if (returnRecord) {
         await sendEmail({
           to: returnRecord.customerEmail,
+          from: process.env.RESEND_FROM_EMAIL || 'noreply@tasteofgratitude.shop',
           subject: `Return Approved - ${returnId}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -293,7 +296,9 @@ export async function approveReturn(returnId: string, adminNotes?: string): Prom
               <p>Your shipping label will be sent to you shortly, or you can download it from your return status page.</p>
               <p><a href="${process.env.NEXT_PUBLIC_BASE_URL}/returns/${returnId}" style="color: #059669;">View Return Status</a></p>
             </div>
-          `
+          `,
+          text: `Return Request Approved\n\nHi ${returnRecord.customerName},\n\nGreat news! Your return request has been approved.\n\nYour shipping label will be sent to you shortly, or you can download it from your return status page:\n${process.env.NEXT_PUBLIC_BASE_URL}/returns/${returnId}`,
+          listUnsubscribeUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/unsubscribe?email=${encodeURIComponent(returnRecord.customerEmail)}`
         });
       }
 

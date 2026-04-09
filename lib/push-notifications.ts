@@ -479,8 +479,11 @@ async function sendEmailNotification(email, type, notification, data) {
     
     await sendEmail({
       to: email,
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@tasteofgratitude.shop',
       subject,
-      html
+      html,
+      text: notification.body,
+      listUnsubscribeUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://tasteofgratitude.shop'}/unsubscribe?email=${encodeURIComponent(email)}`
     });
     
     return true;

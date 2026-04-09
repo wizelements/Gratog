@@ -23,7 +23,7 @@ export const SUBSCRIPTION_PLANS = {
     id: 'weekly_gel',
     name: 'Weekly Gel Club',
     description: 'One 16oz Sea Moss Gel delivered weekly',
-    billing cadence: 'WEEKLY',
+    billingCadence: 'WEEKLY',
     cadencePeriod: 1,
     price: 3000, // $30.00 (vs $35-38 retail = ~15% savings)
     retailValue: 3500,
