@@ -18,10 +18,11 @@ Sentry.init({
   
   // Integration
   integrations: [
-    Sentry.replayIntegration({
-      maskAllText: false,
-      blockAllMedia: false,
-    }),
+    // Session replay integration - disabled due to version compatibility
+    // Sentry.replayIntegration({
+    //   maskAllText: false,
+    //   blockAllMedia: false,
+    // }),
   ],
   
   // Filter out common noise

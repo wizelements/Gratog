@@ -374,7 +374,7 @@ export async function cleanupExpiredLocks(): Promise<{
     );
 
     // Get unique products affected
-    const productsAffected = [...new Set(expiredLocks.map(lock => lock.productId))];
+    const productsAffected = [...new Set(expiredLocks.map(lock => lock.productId))] as string[];
 
     // Invalidate cache for affected products
     productsAffected.forEach(productId => inventoryCache.invalidate(productId));

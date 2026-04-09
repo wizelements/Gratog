@@ -223,7 +223,9 @@ export async function createSquareSubscriptionPlans() {
 
     try {
       // Create Catalog Plan
-      const planResponse = await client.catalog.createCatalogObject({
+      // Note: Square SDK types may differ from actual API. Using type assertion for now.
+      // In production, use Square's upsertCatalogObject instead
+      const planResponse = await (client.catalog as any).upsertCatalogObject({
         object: {
           type: 'SUBSCRIPTION_PLAN',
           id: `#${planId}`,

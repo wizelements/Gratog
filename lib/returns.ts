@@ -195,7 +195,9 @@ export async function createReturnRequest(request: ReturnRequest): Promise<{
             <p>With gratitude,<br/>The Taste of Gratitude Team 🌿</p>
           </div>
         </div>
-      `
+      `,
+      text: `Return Request Received - ${returnId}\n\nHi ${request.customerName},\n\nWe've received your return request for order ${request.orderNumber}. Our team will review it within 1-2 business days.\n\nTotal Refund Amount: $${totalRefundAmount.toFixed(2)}\nRefund Method: ${request.refundMethod === 'original_payment' ? 'Original Payment Method' : 'Store Credit'}\n\nTrack your return: ${process.env.NEXT_PUBLIC_BASE_URL}/returns/${returnId}\n\nWith gratitude,\nThe Taste of Gratitude Team`,
+      listUnsubscribeUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/unsubscribe?email=${encodeURIComponent(request.customerEmail)}`
     });
 
     logger.info('Returns', 'Created return request', { 
