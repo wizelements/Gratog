@@ -40,18 +40,18 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: yarn install --non-interactive
+        run: npm ci
       
       - name: Install Playwright browsers
-        run: yarn playwright install --with-deps ${{ matrix.browser }}
+        run: npx playwright install --with-deps ${{ matrix.browser }}
       
       - name: Build app
-        run: yarn build
+        run: npm run build
       
       - name: Run E2E tests - ${{ matrix.browser }} (${{ matrix.device }})
         id: e2e
         run: |
-          yarn playwright test \
+          npx playwright test \
             --project=${{ matrix.browser }}-${{ matrix.device }} \
             --reporter=json \
             --reporter=html || echo "E2E_FAILED=true" >> $GITHUB_ENV

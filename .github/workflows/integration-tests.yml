@@ -29,10 +29,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
+          cache: 'npm'
       
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
       
       - name: Wait for MongoDB
         run: |
@@ -65,7 +65,7 @@ jobs:
           done
       
       - name: Build application
-        run: yarn build
+        run: npm run build
         env:
           MONGODB_URI: mongodb://localhost:27017/test_db
           MONGO_URL: mongodb://localhost:27017/test_db
@@ -136,7 +136,7 @@ jobs:
           done
       
       - name: Run integration tests
-        run: yarn vitest run --config vitest.integration.config.ts --reporter=verbose
+        run: npx vitest run --config vitest.integration.config.ts --reporter=verbose
         env:
           BASE_URL: http://localhost:3000
           MONGODB_URI: mongodb://localhost:27017/test_db
@@ -194,10 +194,10 @@ jobs:
          uses: actions/setup-node@v4
          with:
            node-version: '20'
-           cache: 'yarn'
+           cache: 'npm'
        
        - name: Install dependencies
-         run: yarn install --frozen-lockfile
+         run: npm ci
        
        - name: Wait for MongoDB
          run: |
@@ -212,7 +212,7 @@ jobs:
            done
        
        - name: Run database integration tests
-         run: yarn vitest run --config vitest.db.config.ts --reporter=verbose 2>&1 | tee db-test.log
+         run: npx vitest run --config vitest.db.config.ts --reporter=verbose 2>&1 | tee db-test.log
          env:
            MONGODB_URI: mongodb://localhost:27017/test_db
            MONGO_URL: mongodb://localhost:27017/test_db

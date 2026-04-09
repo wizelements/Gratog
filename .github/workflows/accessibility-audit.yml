@@ -35,10 +35,10 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: yarn install --non-interactive
+        run: npm ci
       
       - name: Build app
-        run: yarn build
+        run: npm run build
       
       - name: Start server
         run: |

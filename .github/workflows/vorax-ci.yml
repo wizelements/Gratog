@@ -35,7 +35,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: yarn install --non-interactive
+        run: npm ci
       
       - name: Run quick scan
         run: node .vorax/vorax-cli.js quick
@@ -64,10 +64,10 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: yarn install --non-interactive
+        run: npm ci
       
       - name: Build application
-        run: yarn build
+        run: npm run build
         env:
           SKIP_ENV_VALIDATION: true
       
@@ -172,7 +172,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: yarn install --non-interactive
+        run: npm ci
       
       - name: Run nano agents
         run: node .vorax/vorax-cli.js nano
@@ -190,7 +190,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: yarn install --non-interactive
+        run: npm ci
       
       - name: Run npm audit
         run: npm audit --audit-level=high
