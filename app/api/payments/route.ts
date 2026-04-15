@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { RequestContext } from '@/lib/request-context';
 import { NextRequest, NextResponse } from 'next/server';
-import { createPayment, getPayment as getSquarePayment, findOrCreateCustomer, createOrder as createSquareOrder, getSquareConfig } from '@/lib/square-api';
+import { createPayment, getPayment as getSquarePayment, findOrCreateCustomer, getSquareConfig } from '@/lib/square-api';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
 import * as Sentry from '@sentry/nextjs';
@@ -12,7 +12,7 @@ import {
 } from '@/lib/critical-operations';
 import { rewardsSystem } from '@/lib/enhanced-rewards';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
-import { notifyStaffPickupOrder } from '@/lib/staff-notifications';
+import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { consumeInventoryForPaidOrder } from '@/lib/custom-inventory';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';
 import {
@@ -494,7 +494,27 @@ export async function POST(request: NextRequest) {
     // ========================================================================
     // SQUARE ORDER CREATION (if not already provided)
     // ========================================================================
-    let squareOrderId = existingSquareOrderId || order.squareOrderId;
+    const storedSquareOrderId = order.squareOrderId || order.payment?.squareOrderId || order.metadata?.squareOrderId;
+
+    if (storedSquareOrderId && existingSquareOrderId && storedSquareOrderId !== existingSquareOrderId) {
+      logger.error('API', 'Square order ID mismatch', {
+        traceId: ctx.traceId,
+        orderId,
+        storedSquareOrderId,
+        requestSquareOrderId: existingSquareOrderId,
+      });
+
+      return json(
+        {
+          success: false,
+          error: 'Order payment session mismatch. Please recreate your order.',
+          code: 'SQUARE_ORDER_ID_MISMATCH',
+        },
+        409
+      );
+    }
+
+    let squareOrderId = storedSquareOrderId || existingSquareOrderId;
     
     // Reject fallback Square order IDs — these are placeholders, not real Square orders
     if (squareOrderId?.startsWith('fallback_')) {
@@ -520,52 +540,30 @@ export async function POST(request: NextRequest) {
     }
     
     if (!squareOrderId) {
-      const squareLineItems = lineItems.length > 0 
-        ? lineItems.map((item: { catalogObjectId?: string; name?: string; quantity: number; priceInCents?: number }) => ({
-            catalogObjectId: item.catalogObjectId && item.catalogObjectId.length > 20 ? item.catalogObjectId : undefined,
-            name: item.name || 'Item',
-            quantity: String(item.quantity || 1),
-            basePriceMoney: { amount: item.priceInCents || 0, currency }
-          }))
-        : [{
-            name: 'Order Payment',
-            quantity: '1',
-            basePriceMoney: { amount: validatedAmountCents, currency }
-          }];
+      logger.error('API', 'Missing Square order ID — cannot process payment safely', {
+        traceId: ctx.traceId,
+        orderId,
+      });
 
-      try {
-        const orderResult = await createSquareOrder({
-          referenceId: orderId,
-          customerId: squareCustomerId,
-          lineItems: squareLineItems,
-          metadata: {
-            localOrderId: orderId,
-            orderNumber: order.orderNumber || '',
-            customerEmail: customerInfo?.email || '',
-            source: 'gratog_web'
+      await db.collection('orders').updateOne(
+        { id: orderId },
+        {
+          $set: {
+            status: 'pending',
+            paymentStatus: 'pending',
+            updatedAt: new Date().toISOString(),
           },
-          idempotencyKey: orderIdempotencyKey
-        });
-
-        if (orderResult.success && orderResult.data?.order) {
-          squareOrderId = orderResult.data.order.id;
-          logger.debug('API', 'Square order created', { squareOrderId });
-          
-          // Store Square order ID for future reference
-          await db.collection('orders').updateOne(
-            { id: orderId },
-            { $set: { squareOrderId, updatedAt: new Date().toISOString() } }
-          );
-        } else {
-          logger.warn('API', 'Failed to create Square order, continuing', { 
-            errors: orderResult.errors 
-          });
         }
-      } catch (orderError) {
-        logger.warn('API', 'Square order creation failed, continuing', { 
-          error: orderError instanceof Error ? orderError.message : String(orderError) 
-        });
-      }
+      );
+
+      return json(
+        {
+          success: false,
+          error: 'Order is missing its payment link. Please recreate your order.',
+          code: 'MISSING_SQUARE_ORDER_ID',
+        },
+        409
+      );
     }
     
     // ========================================================================
@@ -829,11 +827,11 @@ export async function POST(request: NextRequest) {
     }
     
     // ========================================================================
-    // STAFF NOTIFICATION — Alert merchant on new orders
+    // STAFF NOTIFICATION — Alert merchant on new orders (dedup with staffNotifiedAt)
     // ========================================================================
     try {
-      if (isCompleted) {
-        await notifyStaffPickupOrder({
+      if (isCompleted && !order.staffNotifiedAt) {
+        const staffResult = await claimAndNotifyStaffOrder(db, orderId, {
           orderNumber: order.orderNumber || orderId,
           customer: {
             name: customerInfo?.name || 'Customer',
@@ -849,7 +847,12 @@ export async function POST(request: NextRequest) {
           meetUpDetails: order.meetUpDetails,
           createdAt: order.createdAt || new Date().toISOString()
         });
-        logger.info('API', 'Staff notification sent', { orderId });
+
+        if (staffResult.sent) {
+          logger.info('API', 'Staff notification sent', { orderId });
+        } else {
+          logger.debug('API', 'Staff notification already handled or in progress', { orderId });
+        }
       }
     } catch (staffNotifyError) {
       logger.warn('API', 'Staff notification failed (non-critical)', {

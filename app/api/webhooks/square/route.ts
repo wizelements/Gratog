@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { getSquareWebhookSignatureKey } from '@/lib/square';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
+import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { syncSingleCatalogItem } from '@/lib/square/syncSingleItem';
 import { revalidatePath } from 'next/cache';
 import * as Sentry from '@sentry/nextjs';
@@ -335,10 +336,7 @@ export async function POST(request: NextRequest) {
           
         case 'order.created':
         case 'order.updated':
-          // Log but don't process - we manage orders locally
-          logger.debug('Webhook', `Square order event: ${eventType}`, { 
-            orderId: eventData.object?.order?.id || eventData.object?.id 
-          });
+          processingResult = await handleOrderEvent(db, eventData.object?.order || eventData.object, eventType);
           break;
           
         default:
@@ -575,6 +573,65 @@ async function handleRefundEvent(db: any, refund: any): Promise<{ success: boole
   }
   
   return { success: true, message: 'Refund event processed' };
+}
+
+// ============================================================================
+// ORDER EVENT HANDLER — backup sync & staff notification
+// ============================================================================
+
+async function handleOrderEvent(db: any, squareOrder: any, eventType: string): Promise<{ success: boolean; message: string }> {
+  const squareOrderId = squareOrder?.id;
+  if (!squareOrderId) {
+    return { success: false, message: 'No order ID in event' };
+  }
+
+  logger.info('Webhook', `Processing ${eventType}`, { squareOrderId, state: squareOrder.state });
+
+  // Find local order linked to this Square order
+  const order = await db.collection('orders').findOne({ squareOrderId });
+  if (!order) {
+    logger.debug('Webhook', 'No local order for Square order (may be external)', { squareOrderId });
+    return { success: true, message: 'No matching local order' };
+  }
+
+  // Backup staff notification: if order is paid but staff wasn't notified yet
+  const isPaid =
+    order.status === 'paid'
+    || order.paymentStatus === 'paid'
+    || order.paymentStatus === 'COMPLETED'
+    || order.paymentStatus === 'APPROVED';
+
+  if (isPaid && !order.staffNotifiedAt) {
+    try {
+      const staffResult = await claimAndNotifyStaffOrder(db, order.id, {
+        orderNumber: order.orderNumber || order.id,
+        customer: {
+          name: order.customer?.name || 'Customer',
+          email: order.customer?.email || '',
+          phone: order.customer?.phone || 'Not provided',
+        },
+        items: order.items || [],
+        pricing: order.pricing || { subtotal: 0, total: 0 },
+        fulfillmentType: order.fulfillmentType || order.fulfillment?.type || 'pickup_market',
+        fulfillment: order.fulfillment || {},
+        deliveryAddress: order.deliveryAddress || order.fulfillment?.deliveryAddress,
+        deliveryDistance: order.deliveryDistance,
+        meetUpDetails: order.meetUpDetails,
+        createdAt: order.createdAt || new Date().toISOString(),
+      });
+
+      if (staffResult.sent) {
+        logger.info('Webhook', 'Backup staff notification sent', { orderId: order.id });
+      }
+    } catch (notifyErr) {
+      logger.warn('Webhook', 'Backup staff notification failed', {
+        orderId: order.id,
+        error: notifyErr instanceof Error ? notifyErr.message : String(notifyErr),
+      });
+    }
+  }
+
+  return { success: true, message: `${eventType} processed for ${order.id}` };
 }
 
 // ============================================================================

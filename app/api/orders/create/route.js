@@ -766,6 +766,19 @@ function buildFulfillment(orderData) {
   return undefined;
 }
 
+function humanReadableFulfillment(type) {
+  const map = {
+    pickup: 'Pickup',
+    pickup_serenbe: 'Pickup – Serenbe',
+    pickup_market: 'Pickup – Serenbe Market',
+    pickup_dunwoody: 'Pickup – Dunwoody',
+    meetup_serenbe: 'Meet-up – Serenbe',
+    delivery: 'Local Delivery',
+    shipping: 'Shipping',
+  };
+  return map[type] || 'Order';
+}
+
 export async function POST(request) {
   const startTime = Date.now();
   
@@ -1109,14 +1122,13 @@ export async function POST(request) {
           idempotency_key: `order_${orderId}_${Date.now()}`,
           order: {
             location_id: SQUARE_LOCATION_ID,
-            reference_id: orderNumber, // ⭐ THIS MAKES ORDER NUMBERS MATCH
+            reference_id: orderNumber,
+            ticket_name: `${humanReadableFulfillment(orderData.fulfillmentType)} · ${orderNumber}`,
+            source: { name: 'Taste of Gratitude' },
             line_items: orderData.cart.map(item => {
-              // Find the best catalog ID candidate
               const catalogId = item.catalogObjectId || item.variationId || item.squareVariationId;
               
               if (isValidSquareCatalogId(catalogId)) {
-                // Catalog-backed line item: Square resolves name+price from catalog
-                // Do NOT send base_price_money with catalog_object_id
                 return {
                   quantity: String(item.quantity),
                   catalog_object_id: catalogId,
@@ -1124,7 +1136,6 @@ export async function POST(request) {
                 };
               }
               
-              // Ad-hoc line item: must have name + base_price_money
               logger.debug('Using ad-hoc line item (no valid catalog ID)', { 
                 itemName: item.name, 
                 providedId: catalogId 
@@ -1139,14 +1150,12 @@ export async function POST(request) {
                 note: item.name || ''
               };
             }),
-            customer_id: squareCustomerId || undefined, // ⭐ LINKS CUSTOMER TO ORDER
+            customer_id: squareCustomerId || undefined,
             metadata: sanitizeMetadata({
               source: 'website',
               local_order_id: orderId,
               order_number: orderNumber,
               fulfillment_type: orderData.fulfillmentType,
-              customer_email: orderData.customer.email,
-              customer_name: orderData.customer.name,
               fulfillment_timing: orderData.orderTiming?.mode || 'asap',
               schedule_status: orderData.fulfillmentSchedule?.status || 'auto_assigned',
               pricing_source: orderData.pricingSource || 'unknown'
@@ -1232,6 +1241,7 @@ export async function POST(request) {
     // After payment succeeds, the payment API updates these statuses
     // See PAYMENT_FORM_AND_ORDER_FLOW_CRITICAL_ANALYSIS.md for details
     enhancedOrderData.metadata.squareOrderId = squareOrderId;
+    enhancedOrderData.squareOrderId = squareOrderId; // Top-level for payments route lookup
     
     const result = await orderTracking.createOrder(enhancedOrderData, true);
     
