@@ -76,6 +76,24 @@ export function validateStartupConfig(): StartupValidationResult {
     warnings.push('ADMIN_SECRET not configured - admin features may not work');
   }
   
+  // 6b. Security Secrets (must not use hardcoded fallbacks)
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret && isProduction) {
+    errors.push('JWT_SECRET not configured — subscription access and email unsubscribe tokens will fail');
+  } else if (jwtSecret && jwtSecret.length < 32) {
+    warnings.push('JWT_SECRET is shorter than 32 characters — consider a stronger secret');
+  }
+  
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret && isProduction) {
+    errors.push('CRON_SECRET not configured — cron jobs will reject all requests');
+  }
+  
+  const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!stripeWebhookSecret && isProduction) {
+    errors.push('STRIPE_WEBHOOK_SECRET not configured — Stripe webhooks will be rejected (fail-closed)');
+  }
+
   // 7. Feature Flags
   const checkoutV2 = process.env.FEATURE_CHECKOUT_V2;
   if (checkoutV2 !== 'on') {

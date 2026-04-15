@@ -23,7 +23,7 @@ const testUser = {
   },
   admin: {
     email: process.env.TEST_ADMIN_EMAIL || 'admin@test.com',
-    password: process.env.TEST_ADMIN_PASSWORD || 'admin123'
+    password: process.env.TEST_ADMIN_PASSWORD || `test-admin-${randomUUID().substring(0, 12)}`
   }
 };
 

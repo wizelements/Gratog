@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     // Get app credentials based on environment
     const clientId = env === 'production' 
       ? (process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || process.env.NEXT_PUBLIC_SQUARE_APP_ID)
-      : (process.env.NEXT_PUBLIC_SQUARE_SANDBOX_APPLICATION_ID || 'sandbox-sq0idb-yygbGJe58k9ZsmpZhJ6kjA');
+      : process.env.NEXT_PUBLIC_SQUARE_SANDBOX_APPLICATION_ID;
     
     if (!clientId || clientId === 'NOT_CONFIGURED') {
       return NextResponse.json(
