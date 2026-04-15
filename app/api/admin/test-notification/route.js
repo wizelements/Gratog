@@ -1,14 +1,32 @@
 import { NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin-session';
+import { getAdminSession } from '@/lib/admin-session';
+import { verifyRequestAuthentication } from '@/lib/rewards-security';
 import { notifyStaffPickupOrder } from '@/lib/staff-notifications';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('TestNotificationAPI');
 
+async function authenticateCaller(request) {
+  // Try admin session cookie first
+  const session = await getAdminSession(request);
+  if (session) return { email: session.email, via: 'admin_session' };
+
+  // Fall back to API key (ADMIN_API_KEY / MASTER_API_KEY)
+  const auth = await verifyRequestAuthentication(request, { allowPublic: false });
+  if (auth?.authenticated && (auth.authType === 'master_key' || auth.authType === 'admin_key')) {
+    return { email: auth.userEmail || 'admin@system', via: auth.authType };
+  }
+
+  return null;
+}
+
 export async function POST(request) {
   try {
-    const admin = await requireAdmin(request);
+    const caller = await authenticateCaller(request);
+    if (!caller) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const body = await request.json();
     const { type = 'staff' } = body;
@@ -19,8 +37,8 @@ export async function POST(request) {
       status: 'paid',
       fulfillmentType: body.fulfillmentType || 'pickup_market',
       customer: {
-        name: body.customerName || 'Test Customer',
-        email: body.customerEmail || admin.email,
+        name: body.customerName || 'Solo Wat',
+        email: body.customerEmail || 'silverwatkins@gmail.com',
         phone: body.customerPhone || '555-000-0000',
       },
       items: [
@@ -46,7 +64,8 @@ export async function POST(request) {
 
     logger.info('Sending test notification', {
       type,
-      adminEmail: admin.email,
+      callerEmail: caller.email,
+      callerVia: caller.via,
       fulfillmentType: testOrder.fulfillmentType,
     });
 
@@ -86,11 +105,6 @@ export async function POST(request) {
     });
   } catch (error) {
     logger.error('Test notification failed', { error: error.message });
-
-    if (error.name === 'AdminAuthError') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
