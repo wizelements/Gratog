@@ -1,13 +1,18 @@
 import { logger } from '@/lib/logger';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { 
-  validateSubscriptionAccessToken, 
+  verifySubscriptionAccessToken, 
   generateSubscriptionAccessToken,
-  SubscriptionAccessPayload 
 } from '@/lib/subscription-access';
 import { RateLimit } from '@/lib/redis';
 import { SUBSCRIPTION_TIERS } from '@/lib/subscription-tiers';
 import { NextRequest, NextResponse } from 'next/server';
+
+type SubscriptionAccessPayload = {
+  email: string;
+  subscriptionId: string | null;
+  permissions?: string[];
+};
 
 /**
  * GET /api/subscriptions
@@ -23,7 +28,7 @@ export async function GET(request: NextRequest) {
     let accessPayload: SubscriptionAccessPayload | null = null;
     
     if (token) {
-      accessPayload = validateSubscriptionAccessToken(token);
+      accessPayload = verifySubscriptionAccessToken(token);
       if (!accessPayload) {
         return NextResponse.json(
           { error: 'Invalid or expired access token' },
@@ -101,7 +106,7 @@ export async function GET(request: NextRequest) {
  * GET /api/subscriptions/plans
  * Get available subscription plans
  */
-export async function getPlans() {
+async function getPlans() {
   const plans = Object.entries(SUBSCRIPTION_TIERS).map(([id, tier]) => ({
     id,
     name: tier.name,

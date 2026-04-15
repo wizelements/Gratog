@@ -39,7 +39,10 @@ describe('Navigation Coherence', () => {
   it('checkout success redirect points to the implemented success page', () => {
     const reviewAndPay = read('components/checkout/ReviewAndPay.tsx');
 
-    expect(reviewAndPay).toContain('router.push(`/order/success?orderRef=${orderId}&paid=true&amount=${amountCents}`)');
+    expect(reviewAndPay).toContain("const params = new URLSearchParams({");
+    expect(reviewAndPay).toContain("orderRef: orderId,");
+    expect(reviewAndPay).toContain("paid: 'true',");
+    expect(reviewAndPay).toContain("router.push(`/order/success?${params.toString()}`);");
     expect(reviewAndPay).not.toContain('router.push(`/order/${orderId}?success=true`)');
   });
 

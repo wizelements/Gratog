@@ -115,10 +115,10 @@ export default function RootLayout({ children }) {
            if('serviceWorker' in navigator){
              var _swReloaded=false;
              navigator.serviceWorker.addEventListener('controllerchange',function(){
-               if(!_swReloaded){_swReloaded=true;window.location.reload();}
+               if(!_swReloaded&&typeof window!=='undefined'){_swReloaded=true;window.location.reload();}
              });
              navigator.serviceWorker.addEventListener('message',function(e){
-               if(e.data&&e.data.type==='SW_ACTIVATED'&&!_swReloaded){
+               if(e.data&&e.data.type==='SW_ACTIVATED'&&!_swReloaded&&typeof window!=='undefined'){
                  _swReloaded=true;window.location.reload();
                }
              });

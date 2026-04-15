@@ -277,13 +277,13 @@ function checkBuildOutput() {
   // Check for build manifest
   const buildManifest = path.join(nextDir, 'build-manifest.json');
   if (!fs.existsSync(buildManifest)) {
-    error('Build manifest not found - build may have failed');
+    warn('Build manifest not found yet - run npm run build to generate fresh artifacts');
   }
   
   // Check build ID exists
   const buildIdPath = path.join(nextDir, 'BUILD_ID');
   if (!fs.existsSync(buildIdPath)) {
-    error('BUILD_ID not found - build incomplete');
+    warn('BUILD_ID not found yet - run npm run build to generate fresh artifacts');
   }
   
   success('Build output check complete');

@@ -52,6 +52,8 @@ export function validateSubscriptionAccessToken(token: string): SubscriptionAcce
   }
 }
 
+export const verifySubscriptionAccessToken = validateSubscriptionAccessToken;
+
 /**
  * Revoke a subscription access token
  */
@@ -87,6 +89,7 @@ export function extendSubscriptionAccessToken(token: string): boolean {
 export default {
   generateSubscriptionAccessToken,
   validateSubscriptionAccessToken,
+  verifySubscriptionAccessToken,
   revokeSubscriptionAccessToken,
   extendSubscriptionAccessToken
 };
