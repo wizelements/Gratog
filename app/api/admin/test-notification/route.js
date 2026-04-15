@@ -18,6 +18,14 @@ async function authenticateCaller(request) {
     return { email: auth.userEmail || 'admin@system', via: auth.authType };
   }
 
+  // Fall back to STAFF_NOTIFICATION_TEST_KEY (for CLI testing)
+  const testKey = process.env.STAFF_NOTIFICATION_TEST_KEY;
+  const authHeader = request.headers.get('authorization') || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : '';
+  if (testKey && token && token === testKey) {
+    return { email: 'cli-test@system', via: 'test_key' };
+  }
+
   return null;
 }
 
