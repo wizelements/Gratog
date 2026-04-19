@@ -184,49 +184,56 @@ export default function HomePageClient({
                     </Badge>
 
                     <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white">
-                        Wildcrafted Sea Moss
+                        92 Essential Minerals
                         <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-300">
-                            Wellness Journey
+                            One Daily Scoop
                         </span>
                     </h1>
 
                     <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto">
-                        Hand-crafted, nutrient-rich sea moss products. From our ocean to your table with 92 essential minerals.
+                        Wildcrafted sea moss gel packed with everything your body needs. Hand-crafted from pristine ocean waters to support your immune system, thyroid health, and natural energy.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                         <Button
                             onClick={() => router.push('/catalog')}
                             size="lg"
-                            className="h-14 px-8 text-lg bg-white text-emerald-600 hover:bg-emerald-50 shadow-2xl hover:scale-105 transition-all"
+                            className="h-16 px-10 text-lg bg-white text-emerald-700 hover:bg-emerald-50 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all font-bold"
                         >
                             <Sparkles className="mr-2 h-5 w-5" />
-                            Shop All Products
+                            Shop Sea Moss Now
                             <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
 
                         <Button
                             size="lg"
                             asChild
-                            className="h-14 px-8 text-lg bg-emerald-50 text-emerald-600 hover:bg-white hover:text-emerald-700 shadow-2xl hover:scale-105 transition-all font-semibold"
+                            className="h-16 px-10 text-lg bg-emerald-600/80 text-white hover:bg-emerald-600 hover:text-white shadow-2xl hover:shadow-3xl hover:scale-105 transition-all font-semibold border-2 border-white/30"
                         >
-                            <Link href="/#featured" onClick={handleViewFeatured}>View Featured</Link>
+                            <Link href="/product/golden-glow-gel" onClick={(e) => { e.preventDefault(); router.push('/product/golden-glow-gel'); }}&gt;
+                                View Best Seller
+                            </Link>
                         </Button>
                     </div>
 
-                    <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm">
-                        <div className="flex items-center gap-2">
+                    {/* Trust Signals Bar - Real Data */}
+                    <div className="mt-12 flex flex-wrap justify-center gap-6 md:gap-10 text-sm md:text-base">
+                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
                             <Shield className="h-5 w-5 text-emerald-300" />
-                            <span>100% Natural</span>
+                            <span className="font-medium">100% Wildcrafted</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
                             <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-                            <span>Premium Quality</span>
+                            <span className="font-medium">{socialProof.averageRating} Rating</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Zap className="h-5 w-5 text-emerald-300" />
-                            <span>Fast Shipping</span>
+                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
+                            <Users className="h-5 w-5 text-emerald-300" />
+                            <span className="font-medium">{socialProof.customers} Customers</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
+                            <CheckCircle className="h-5 w-5 text-emerald-300" />
+                            <span className="font-medium">92 Essential Minerals</span>
                         </div>
                     </div>
                 </div>
