@@ -327,7 +327,7 @@ export default function SquarePaymentForm({
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
           <div className="text-sm text-amber-800">
-            <strong>Test Mode</strong> – Use card: 4532 0155 0016 4662
+            <strong>Test Mode</strong> - Use card: 4532 0155 0016 4662
           </div>
         </div>
       )}
