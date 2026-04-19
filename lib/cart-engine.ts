@@ -401,6 +401,10 @@ export function formatPrice(price: number): string {
   return `$${price.toFixed(2)}`;
 }
 
+export function formatPriceCents(priceCents: number): string {
+  return `$${(priceCents / 100).toFixed(2)}`;
+}
+
 /**
  * 🎯 GET CART SUMMARY FOR UI
  */
@@ -425,10 +429,10 @@ export { normalizeProduct as migrateCartItemLabels };
  * Provides a callback-based subscription for cart changes
  * Returns an unsubscribe function
  */
-export function subscribeToCart(callback: (detail: { itemCount: number }) => void): () => void {
+export function subscribeToCart(callback: (detail: { count: number }) => void): () => void {
   const handler = () => {
     const { totalItems } = getCartTotal();
-    callback({ itemCount: totalItems });
+    callback({ count: totalItems });
   };
   
   if (typeof window !== 'undefined') {
