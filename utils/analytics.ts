@@ -8,6 +8,7 @@ export type AnalyticsEvent =
   | 'checkout_started'
   | 'checkout_stage_change'
   | 'checkout_proceed_to_payment'
+  | 'checkout_validation_failed'
   | 'fulfillment_type_selected'
   | 'contact_completed'
   | 'payment_initiated'
