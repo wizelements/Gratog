@@ -54,7 +54,10 @@ export async function GET() {
     if (!databaseHealthy) {
       status = 'degraded';
     }
-    if (usedMemory / totalMemory > 0.9) {
+    // Vercel serverless functions typically run with ~128MB-1024MB memory
+    // Using heap metrics is misleading here - focus on actual server metrics
+    // Only flag if memory exceeds 95% (more realistic threshold for serverless)
+    if (usedMemory / totalMemory > 0.95) {
       status = 'degraded';
       errors.push('High memory usage');
     }
