@@ -36,14 +36,14 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
   },
   
-  // Next.js 15.5.4 compatible configuration
-  serverExternalPackages: ['mongodb', 'mongoose'], // Moved from experimental
+  // Next.js 14.2.35 compatible configuration
   experimental: {
     // Production optimizations
     optimizeCss: true,
     gzipSize: true,
     // Memory optimizations
     esmExternals: true,
+    serverComponentsExternalPackages: ['mongodb', 'mongoose'],
   },
   
   webpack(config, { dev, isServer }) {
