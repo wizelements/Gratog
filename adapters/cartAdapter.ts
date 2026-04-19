@@ -16,6 +16,9 @@ import {
 } from '@/lib/cartUtils';
 import type { CartItem } from '@/lib/cart-engine';
 
+// Re-export CartItem for consumers
+export type { CartItem };
+
 export interface CartTotals {
   subtotal: number;
   itemCount: number;
