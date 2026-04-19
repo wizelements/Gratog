@@ -211,7 +211,7 @@ export default function HomePageClient({
                             asChild
                             className="h-16 px-10 text-lg bg-emerald-600/80 text-white hover:bg-emerald-600 hover:text-white shadow-2xl hover:shadow-3xl hover:scale-105 transition-all font-semibold border-2 border-white/30"
                         >
-                            <Link href="/product/golden-glow-gel" onClick={(e) => { e.preventDefault(); router.push('/product/golden-glow-gel'); }}&gt;
+                            <Link href="/product/golden-glow-gel">
                                 View Best Seller
                             </Link>
                         </Button>
