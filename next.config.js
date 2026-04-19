@@ -37,7 +37,7 @@ const nextConfig = {
   },
   
   // Next.js 15.5.4 compatible configuration
-  serverExternalPackages: ['mongodb'], // Moved from experimental
+  serverExternalPackages: ['mongodb', 'mongoose'], // Moved from experimental
   experimental: {
     // Production optimizations
     optimizeCss: true,
