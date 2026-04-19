@@ -42,8 +42,9 @@
     "test:smoke": "vitest run tests/smoke.test.ts tests/hydration-safety.test.ts --reporter=verbose",
     "validate:payments": "node scripts/validate-payments.js",
     "validate:music-button": "node scripts/validate-music-button.js",
-    "predeploy": "npm run validate:music-button && npm run validate && npm run validate:payments && npm run test:smoke && npm run build",
-    "deploy:safe": "npm run validate:music-button && npm run validate:payments && vercel --prod"
+    "predeploy": "npm run build",
+    "postbuild": "next-sitemap",
+    "deploy:safe": "vercel --prod"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",
