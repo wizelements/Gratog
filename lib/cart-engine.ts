@@ -419,3 +419,26 @@ export function getCartSummary() {
 
 // Legacy exports for backward compatibility
 export { normalizeProduct as migrateCartItemLabels };
+
+/**
+ * 🎯 SUBSCRIBE TO CART UPDATES
+ * Provides a callback-based subscription for cart changes
+ * Returns an unsubscribe function
+ */
+export function subscribeToCart(callback: (detail: { itemCount: number }) => void): () => void {
+  const handler = () => {
+    const { totalItems } = getCartTotal();
+    callback({ itemCount: totalItems });
+  };
+  
+  if (typeof window !== 'undefined') {
+    window.addEventListener('cart-updated', handler);
+  }
+  
+  // Return unsubscribe function
+  return () => {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('cart-updated', handler);
+    }
+  };
+}
