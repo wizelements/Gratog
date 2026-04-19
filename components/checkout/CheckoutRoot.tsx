@@ -281,12 +281,12 @@ export default function CheckoutRoot() {
                 cart={cart}
                 totals={totals}
                 onUpdateQuantity={(id, qty) => {
-                  const updated = CartAPI.updateQuantity(id, qty);
-                  updateCart(updated);
+                  CartAPI.updateQuantity(id, qty);
+                  updateCart(CartAPI.getCart());
                 }}
                 onRemoveItem={(id) => {
-                  const updated = CartAPI.removeItem(id);
-                  updateCart(updated);
+                  CartAPI.removeItem(id);
+                  updateCart(CartAPI.getCart());
                 }}
                 collapsible={stage !== 'cart'}
               />
