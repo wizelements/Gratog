@@ -7,13 +7,14 @@ import { CartItem } from '@/adapters/cartAdapter';
 import { OrderTotals, formatCurrency } from '@/adapters/totalsAdapter';
 import { ContactInfo, FulfillmentData } from '@/stores/checkout';
 import Image from 'next/image';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { createOrder, OrderCreationError } from '@/services/order';
 import { toast } from 'sonner';
 import { track } from '@/utils/analytics';
 import SquarePaymentForm from './SquarePaymentForm';
 import { useRouter } from 'next/navigation';
 import { addOrderToQueue, shouldUseQueue, getQueueRedirectUrl } from '@/lib/queue-integration';
+import { validateCartForFulfillment } from '@/lib/cart-engine';
 
 interface ReviewAndPayProps {
   cart: CartItem[];
@@ -55,7 +56,25 @@ export default function ReviewAndPay({
   const [orderError, setOrderError] = useState<string | null>(null);
   const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(null);
   
+  // 🎯 CONVERSION PSYCHOLOGY: Validate cart before proceeding
+  // Prevents frustration from failed orders at payment step
+  const validationResult = useMemo(() => {
+    const marketId = fulfillment.pickup?.locationId || fulfillment.type;
+    return validateCartForFulfillment(cart as any, fulfillment.type, marketId);
+  }, [cart, fulfillment]);
+  
   const handleProceedToPayment = async () => {
+    // Pre-validate before API call
+    if (!validationResult.valid) {
+      setOrderError(validationResult.error || 'Cart validation failed');
+      toast.error(validationResult.error || 'Please check your cart');
+      track('checkout_validation_failed', { 
+        error: validationResult.error,
+        code: validationResult.code 
+      });
+      return;
+    }
+    
     setIsCreatingOrder(true);
     setOrderError(null);
     track('checkout_proceed_to_payment', { fulfillmentType: fulfillment.type });
@@ -336,6 +355,33 @@ export default function ReviewAndPay({
               </div>
             </div>
             
+            {/* 🎯 CONVERSION PSYCHOLOGY: Pre-validation error with clear CTA */}
+            {!validationResult.valid && !orderError && (
+              <motion.div
+                className="bg-amber-50 border border-amber-200 rounded-xl p-4"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className="flex items-start gap-3">
+                  <Store className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h4 className="font-medium text-amber-800">Market Pickup Required</h4>
+                    <p className="text-sm text-amber-700 mt-1">{validationResult.error}</p>
+                    <div className="mt-3 flex gap-2">
+                      <Button
+                        onClick={onBack}
+                        variant="outline"
+                        size="sm"
+                        className="border-amber-300 text-amber-700 hover:bg-amber-100"
+                      >
+                        Change to Market Pickup
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {/* Order Error */}
             {orderError && (
               <motion.div
@@ -365,8 +411,8 @@ export default function ReviewAndPay({
             {/* Proceed to Payment Button */}
             <Button
               onClick={handleProceedToPayment}
-              disabled={isCreatingOrder}
-              className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+              disabled={isCreatingOrder || !validationResult.valid}
+              className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isCreatingOrder ? (
                 <div className="flex items-center gap-2">

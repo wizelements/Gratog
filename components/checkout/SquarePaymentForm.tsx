@@ -1,17 +1,16 @@
 'use client';
 
 /**
- * SquarePaymentForm - Based on working TOG implementation
+ * SquarePaymentForm - Production-hardened payment form with progress feedback
  * 
- * Key principles:
- * - Always render card-container in DOM (Square needs it to attach)
- * - Simple loading state with spinner overlay
- * - No complex state machine - just straightforward flow
+ * 🎯 CONVERSION PSYCHOLOGY: Eliminate payment anxiety with clear progress steps
+ * Users fear the "black box" of payment processing - show them what's happening
  */
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { CreditCard, Loader2, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { CreditCard, Lock, AlertCircle, CheckCircle, Shield } from 'lucide-react';
 import { formatCurrency } from '@/adapters/totalsAdapter';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { SquareCard, SquareCardOptions, SquarePayments, SquareTokenResult } from '@/types/square';
 
 interface SquareConfig {
@@ -47,6 +46,32 @@ interface PaymentResult {
   orderAccessTokenExpiresAt?: string | null;
 }
 
+type PaymentStep = 'idle' | 'tokenizing' | 'processing' | 'success' | 'error';
+
+interface StepConfig {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}
+
+const STEP_CONFIG: Record<Exclude<PaymentStep, 'idle' | 'error'>, StepConfig> = {
+  tokenizing: {
+    icon: <Shield className="w-5 h-5" />,
+    title: 'Securing your card...',
+    description: 'Encrypting your payment information'
+  },
+  processing: {
+    icon: <CreditCard className="w-5 h-5" />,
+    title: 'Processing payment...',
+    description: 'Connecting to your bank'
+  },
+  success: {
+    icon: <CheckCircle className="w-5 h-5 text-emerald-600" />,
+    title: 'Payment confirmed!',
+    description: 'Redirecting to your order...'
+  }
+};
+
 export default function SquarePaymentForm({
   amountCents,
   orderId,
@@ -60,41 +85,53 @@ export default function SquarePaymentForm({
   const [config, setConfig] = useState<SquareConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCardReady, setIsCardReady] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentStep, setPaymentStep] = useState<PaymentStep>('idle');
   const [cardError, setCardError] = useState<string | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
   
   const cardRef = useRef<SquareCard | null>(null);
   const initRef = useRef(false);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Generate idempotency key (Square limits to 45 chars)
-  // CRITICAL FIX: Use stable idempotency key per order to prevent double-charging
-  // Square's idempotency key identifies a unique payment attempt
-  // Using timestamp created unique keys on retry, causing duplicate payments
-  const idempotencyKey = orderId.slice(0, 36); // Square limit: 45 chars
+  // Stable idempotency key per order (prevents duplicate charges)
+  const idempotencyKey = orderId.slice(0, 36);
 
-  // Fetch Square config from API
+  // 🎯 CONVERSION PSYCHOLOGY: Progress animation reduces perceived wait time
+  const startProgressAnimation = useCallback((targetProgress: number, duration: number = 2000) => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+    }
+    
+    const startProgress = progress;
+    const increment = (targetProgress - startProgress) / (duration / 50);
+    
+    progressIntervalRef.current = setInterval(() => {
+      setProgress(prev => {
+        const next = prev + increment;
+        if (next >= targetProgress) {
+          if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+          return targetProgress;
+        }
+        return next;
+      });
+    }, 50);
+  }, [progress]);
+
+  // Fetch Square config
   useEffect(() => {
     const fetchConfig = async () => {
       try {
         const res = await fetch('/api/square/config');
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || 'Failed to fetch payment config');
-        }
+        if (!res.ok) throw new Error('Failed to fetch payment config');
         const data = await res.json();
         if (!data.applicationId || !data.locationId) {
           throw new Error('Invalid payment configuration');
         }
-        console.log('[Square] Config loaded:', {
-          appId: data.applicationId.slice(0, 12) + '...',
-          locationId: data.locationId,
-          environment: data.environment
-        });
         setConfig(data);
       } catch (err) {
         console.error('[Square] Config error:', err);
-        setInitError(err instanceof Error ? err.message : 'Configuration error');
+        setInitError('Payment system temporarily unavailable');
         onError('Payment system unavailable. Please try again later.');
       } finally {
         setIsLoading(false);
@@ -103,88 +140,58 @@ export default function SquarePaymentForm({
     fetchConfig();
   }, [onError]);
 
-  // Initialize Square SDK and attach card
+  // Initialize Square SDK
   useEffect(() => {
     if (!config || initRef.current) return;
     initRef.current = true;
 
     let isMounted = true;
-    let timeoutId: NodeJS.Timeout | null = null;
-    let intervalId: NodeJS.Timeout | null = null;
-
-    const loadScript = (): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        if (window.Square) {
-          resolve();
-          return;
-        }
-
-        const existingScript = document.querySelector(`script[src="${config.sdkUrl}"]`);
-        if (existingScript) {
-          // Script exists, wait for it to load
-          intervalId = setInterval(() => {
-            if (window.Square) {
-              if (intervalId) clearInterval(intervalId);
-              if (isMounted) resolve();
-            }
-          }, 100);
-          timeoutId = setTimeout(() => {
-            if (intervalId) clearInterval(intervalId);
-            if (isMounted) reject(new Error('SDK load timeout'));
-          }, 15000);
-          return;
-        }
-
-        const script = document.createElement('script');
-        script.src = config.sdkUrl;
-        script.async = true;
-        script.onload = () => {
-          // Give SDK a moment to initialize
-          timeoutId = setTimeout(() => {
-            if (window.Square && isMounted) resolve();
-            else if (isMounted) reject(new Error('SDK loaded but Square not available'));
-          }, 100);
-        };
-        script.onerror = () => {
-          if (isMounted) reject(new Error('Failed to load Square SDK'));
-        };
-        document.head.appendChild(script);
-      });
-    };
 
     const initializePayments = async () => {
       try {
-        console.log('[Square] Loading SDK...');
-        await loadScript();
-        console.log('[Square] SDK loaded');
-
         if (!window.Square) {
-          throw new Error('Square SDK not available');
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = config.sdkUrl || 'https://web.squarecdn.com/v1/square.js';
+            script.async = true;
+            script.onload = resolve;
+            script.onerror = () => reject(new Error('Failed to load Square SDK'));
+            document.body.appendChild(script);
+          });
         }
 
-        console.log('[Square] Initializing payments...');
-        const payments = await window.Square.payments(config.applicationId, config.locationId);
-        console.log('[Square] Payments initialized');
+        if (!isMounted) return;
 
-        const card = await payments.card({
+        const payments = window.Square.payments(config.applicationId, config.locationId);
+        
+        const cardOptions: SquareCardOptions = {
           style: {
-            '.input-container': { borderColor: '#d1d5db', borderRadius: '8px' },
-            '.input-container.is-focus': { borderColor: '#10b981' },
-            '.input-container.is-error': { borderColor: '#ef4444' },
-            'input': { fontSize: '16px', fontFamily: 'sans-serif', color: '#1f2937' },
-            'input::placeholder': { color: '#9ca3af' }
+            input: {
+              backgroundColor: '#ffffff',
+              color: '#1f2937',
+              fontSize: '16px',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+            },
+            '.input-container': {
+              borderColor: '#d1d5db',
+              borderRadius: '8px',
+              borderWidth: '1px',
+            },
+            '.input-container.is-focus': {
+              borderColor: '#10b981',
+            },
+            '.input-container.is-error': {
+              borderColor: '#ef4444',
+            }
           }
-        });
+        };
 
-        // Wait for DOM to be ready
+        const card = await payments.card(cardOptions);
+        
         const cardContainer = document.getElementById('card-container');
-        if (!cardContainer) {
-          throw new Error('Card container not found in DOM');
-        }
+        if (!cardContainer) throw new Error('Card container not found');
 
-        console.log('[Square] Attaching card to container...');
         await card.attach('#card-container');
-        console.log('[Square] Card attached successfully');
 
         card.addEventListener('cardBrandChanged', () => setCardError(null));
         card.addEventListener('errorClassAdded', () => setCardError('Please check your card details'));
@@ -193,24 +200,18 @@ export default function SquarePaymentForm({
 
         cardRef.current = card;
         setIsCardReady(true);
-
       } catch (err) {
         console.error('[Square] Initialization failed:', err);
-        const errorMsg = err instanceof Error ? err.message : 'Unknown error';
-        setInitError(errorMsg);
-        onError(`Payment form error: ${errorMsg}`);
+        setInitError('Could not initialize payment form');
+        onError('Payment form error. Please refresh and try again.');
       }
     };
 
-    // Small delay to ensure DOM is ready
-    const startTimeout = setTimeout(initializePayments, 100);
+    setTimeout(initializePayments, 100);
 
     return () => {
       isMounted = false;
-      clearTimeout(startTimeout);
-      if (timeoutId) clearTimeout(timeoutId);
-      if (intervalId) clearInterval(intervalId);
-      
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
       if (cardRef.current) {
         cardRef.current.destroy().catch(console.error);
         cardRef.current = null;
@@ -230,7 +231,7 @@ export default function SquarePaymentForm({
         squareOrderId,
         orderAccessToken,
         customer,
-        idempotencyKey // Stable key per order - prevents duplicate charges
+        idempotencyKey
       })
     });
 
@@ -240,7 +241,7 @@ export default function SquarePaymentForm({
       throw new Error(data.error || 'Payment processing failed');
     }
 
-    onSuccess({
+    return {
       paymentId: data.payment.id,
       status: data.payment.status,
       receiptUrl: data.payment.receiptUrl,
@@ -249,35 +250,59 @@ export default function SquarePaymentForm({
       amountCents: data.payment.amountCents || amountCents,
       orderAccessToken: data.orderAccessToken || null,
       orderAccessTokenExpiresAt: data.orderAccessTokenExpiresAt || null,
-    });
-  }, [amountCents, orderId, squareOrderId, orderAccessToken, customer, onSuccess]);
+    };
+  }, [amountCents, orderId, squareOrderId, orderAccessToken, customer, idempotencyKey]);
 
   const handleCardPayment = useCallback(async () => {
-    if (!cardRef.current || isProcessing) return;
+    if (!cardRef.current || paymentStep !== 'idle') return;
 
-    setIsProcessing(true);
+    setPaymentStep('tokenizing');
     setCardError(null);
+    startProgressAnimation(33, 1500);
 
     try {
+      // Step 1: Tokenize (3-5 seconds typically)
       const result = await cardRef.current.tokenize();
 
       if (result.status !== 'OK' || !result.token) {
-        const errorMsg = result.errors?.[0]?.message || 'Card tokenization failed';
+        const errorMsg = result.errors?.[0]?.message || 'Please check your card details';
         setCardError(errorMsg);
+        setPaymentStep('idle');
+        setProgress(0);
         return;
       }
 
-      await processPayment(result.token);
+      // Step 2: Process payment
+      setPaymentStep('processing');
+      startProgressAnimation(90, 2000);
+
+      const paymentResult = await processPayment(result.token);
+      
+      // Step 3: Success
+      setProgress(100);
+      setPaymentStep('success');
+      
+      // Small delay to show success state before redirect
+      setTimeout(() => {
+        onSuccess(paymentResult);
+      }, 800);
+      
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Payment failed';
       setCardError(errorMsg);
+      setPaymentStep('error');
+      setProgress(0);
       onError(errorMsg);
-    } finally {
-      setIsProcessing(false);
+      
+      // Reset to idle after showing error
+      setTimeout(() => {
+        setPaymentStep('idle');
+        setCardError(null);
+      }, 3000);
     }
-  }, [isProcessing, processPayment, onError]);
+  }, [paymentStep, processPayment, onSuccess, onError, startProgressAnimation]);
 
-  // Show error state if initialization failed
+  // Error state
   if (initError && !isCardReady) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
@@ -294,9 +319,11 @@ export default function SquarePaymentForm({
     );
   }
 
+  const isProcessing = paymentStep === 'tokenizing' || paymentStep === 'processing';
+
   return (
     <div className="space-y-6">
-      {/* Sandbox Mode Warning */}
+      {/* Sandbox warning */}
       {config?.environment === 'sandbox' && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
@@ -306,7 +333,7 @@ export default function SquarePaymentForm({
         </div>
       )}
 
-      {/* Card Form - ALWAYS render so Square can attach */}
+      {/* Card Form */}
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -317,72 +344,204 @@ export default function SquarePaymentForm({
               id="card-container"
               className={`min-h-[50px] p-3 border rounded-lg transition-colors ${
                 cardError ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
-              }`}
+              } ${isProcessing ? 'opacity-50' : ''}`}
             />
+            
             {/* Loading overlay */}
             {(isLoading || (!isCardReady && !initError)) && (
-              <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
+              <div className="absolute inset-0 bg-white/90 flex items-center justify-center rounded-lg">
                 <div className="flex items-center gap-2 text-gray-500">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span className="text-sm">Loading payment form...</span>
+                  <div className="w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm">Loading secure form...</span>
                 </div>
               </div>
             )}
           </div>
-          {cardError && (
-            <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
-              <AlertCircle className="w-3.5 h-3.5" />
-              {cardError}
-            </p>
+          
+          {/* Card error */}
+          <AnimatePresence>
+            {cardError && paymentStep === 'idle' && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mt-2 flex items-center gap-2 text-sm text-red-600"
+              >
+                <AlertCircle className="w-4 h-4" />
+                {cardError}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* 🎯 CONVERSION PSYCHOLOGY: Progress indicator with steps */}
+        <AnimatePresence mode="wait">
+          {isProcessing && (
+            <motion.div
+              key="processing"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-emerald-50 rounded-lg p-4 space-y-3"
+            >
+              {/* Progress bar */}
+              <div className="relative h-2 bg-emerald-200 rounded-full overflow-hidden">
+                <motion.div
+                  className="absolute inset-y-0 left-0 bg-emerald-600 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
+              
+              {/* Step indicator */}
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0"
+                >
+                  <motion.div
+                    animate={{ rotate: paymentStep === 'tokenizing' ? 360 : 0 }}
+                    transition={{ duration: 2, repeat: paymentStep === 'tokenizing' ? Infinity : 0, ease: 'linear' }}
+                  >
+                    {STEP_CONFIG[paymentStep]?.icon || <CreditCard className="w-4 h-4 text-emerald-600" />}
+                  </motion.div>
+                </div>
+                <div>
+                  <p className="font-medium text-emerald-800">
+                    {STEP_CONFIG[paymentStep]?.title || 'Processing...'}
+                  </p>
+                  <p className="text-sm text-emerald-600">
+                    {STEP_CONFIG[paymentStep]?.description || 'Please wait...'}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Security badges */}
+              <div className="flex items-center gap-4 text-xs text-emerald-700 pt-2 border-t border-emerald-200">
+                <div className="flex items-center gap-1">
+                  <Lock className="w-3 h-3" />
+                  <span>256-bit encryption</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Shield className="w-3 h-3" />
+                  <span>PCI compliant</span>
+                </div>
+              </div>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
 
-        {/* Pay Button */}
-        <button
-          type="button"
-          onClick={handleCardPayment}
-          disabled={!isCardReady || isProcessing}
-          className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
-        >
-          {isProcessing ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            <>
-              <CreditCard className="w-5 h-5" />
-              Pay {formatCurrency(amountCents / 100)}
-            </>
+        {/* Success state */}
+        <AnimatePresence>
+          {paymentStep === 'success' && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-center"
+            >
+              <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <CheckCircle className="w-6 h-6 text-emerald-600" />
+              </div>
+              <p className="font-semibold text-emerald-800">Payment confirmed!</p>
+              <p className="text-sm text-emerald-600">Redirecting to your order...\u003c/p>
+            </motion.div>
           )}
-        </button>
-      </div>
+        </AnimatePresence>
 
-      {/* Security Badges */}
-      <div className="flex items-center justify-center gap-4 text-xs text-gray-500 pt-2">
-        <div className="flex items-center gap-1">
-          <Lock className="w-3 h-3" />
-          <span>256-bit encryption</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <CheckCircle className="w-3 h-3" />
-          <span>PCI compliant</span>
-        </div>
-        <span className="text-gray-300">|</span>
-        <span>Powered by Square</span>
-      </div>
+        {/* Error state */}
+        <AnimatePresence>
+          {paymentStep === 'error' && cardError && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="bg-red-50 border border-red-200 rounded-lg p-4 text-center"
+            >
+              <AlertCircle className="w-6 h-6 text-red-500 mx-auto mb-2" />
+              <p className="text-red-700 font-medium">{cardError}\u003c/p>
+              <p className="text-sm text-red-600 mt-1">Please check your details and try again\u003c/p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Cancel Button */}
-      {onCancel && (
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={isProcessing}
-          className="w-full text-sm text-gray-500 hover:text-gray-700 py-2"
-        >
-          Cancel and go back
-        </button>
-      )}
+        {/* Action buttons */}
+        <div className="flex gap-3">
+          {onCancel && paymentStep === 'idle' && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isProcessing}
+              className="flex-1"
+            >
+              Back
+            </Button>
+          )}
+          
+          <Button
+            type="button"
+            onClick={handleCardPayment}
+            disabled={!isCardReady || isProcessing}
+            className={`flex-1 h-12 text-base font-semibold transition-all ${
+              paymentStep === 'success'
+                ? 'bg-emerald-600 hover:bg-emerald-700'
+                : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700'
+            }`}
+          >
+            {paymentStep === 'idle' && (
+              <>
+                <Lock className="w-4 h-4 mr-2" />
+                Pay {formatCurrency(amountCents / 100)}
+              </>
+            )}
+            {paymentStep === 'tokenizing' && 'Securing...'}
+            {paymentStep === 'processing' && 'Processing...'}
+            {paymentStep === 'success' && 'Confirmed!'}
+            {paymentStep === 'error' && 'Try Again'}
+          </Button>
+        </div>
+
+        {/* Security footer */}
+        <div className="flex items-center justify-center gap-4 text-xs text-gray-500 pt-2">
+          <div className="flex items-center gap-1">
+            <Lock className="w-3 h-3" />
+            <span>Secure SSL</span>
+          </div>
+          <span>•\u003c/span>
+          <div className="flex items-center gap-1">
+            <Shield className="w-3 h-3" />
+            <span>PCI Compliant</span>
+          </div>
+          <span>•\u003c/span>
+          <span>🔒 Square\u003c/span>
+        </div>
+      </div>
     </div>
+  );
+}
+
+// Button component (local to avoid import issues)
+function Button({ 
+  children, 
+  variant = 'primary', 
+  className = '', 
+  ...props 
+}: { 
+  children: React.ReactNode; 
+  variant?: 'primary' | 'outline'; 
+  className?: string;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const baseStyles = 'inline-flex items-center justify-center rounded-lg px-4 py-2 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+  const variants = {
+    primary: 'bg-emerald-600 text-white hover:bg-emerald-700',
+    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+  };
+  
+  return (
+    <button 
+      className={`${baseStyles} ${variants[variant]} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
   );
 }
