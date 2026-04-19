@@ -3,18 +3,14 @@
  * Ensures cart data is valid before payment processing
  */
 
+import type { CartItem as EngineCartItem } from '@/lib/cart-engine';
+
+// Re-export CartItem for this module
+export type CartItem = EngineCartItem;
+
 export interface ValidationResult {
   valid: boolean;
   error?: string;
-}
-
-export interface CartItem {
-  productId?: string;
-  variationId?: string;
-  catalogObjectId?: string;
-  name?: string;
-  price?: number;
-  quantity?: number;
 }
 
 /**
