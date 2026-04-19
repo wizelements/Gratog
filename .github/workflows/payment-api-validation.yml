@@ -18,10 +18,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
+          cache: 'npm'
       
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
       
       - name: Validate Square API usage
         run: |
@@ -71,7 +71,7 @@ jobs:
           echo "### Mock Payment Flow Test" >> $GITHUB_STEP_SUMMARY
           
           # Run payment-related tests
-          yarn vitest run tests/api/square-payment-flow.spec.ts --reporter=verbose 2>&1 | tail -5 >> $GITHUB_STEP_SUMMARY || true
+          npm run vitest run tests/api/square-payment-flow.spec.ts --reporter=verbose 2>&1 | tail -5 >> $GITHUB_STEP_SUMMARY || true
           echo "✅ Payment flow tests executed" >> $GITHUB_STEP_SUMMARY
 
   payment-security:

@@ -25,17 +25,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
+          cache: 'npm'
       
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
       
       - name: Build app
-        run: yarn build
+        run: npm run build
       
       - name: Start server
         run: |
-          yarn start &
+          npm run start &
           sleep 10
       
       - name: Download baseline screenshots (main branch)
@@ -112,7 +112,7 @@ jobs:
       - name: Compare with baseline
         if: github.event_name == 'pull_request'
         run: |
-          yarn add -D pixelmatch jpeg-js pngjs
+          npm install -D pixelmatch jpeg-js pngjs
           
           cat > compare-screenshots.js << 'EOF'
           const fs = require('fs-extra');

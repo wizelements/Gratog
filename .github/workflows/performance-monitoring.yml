@@ -34,14 +34,14 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: yarn install --non-interactive
+        run: npm install --non-interactive
       
       - name: Build app
-        run: yarn build
+        run: npm run build
       
       - name: Start server
         run: |
-          yarn start &
+          npm run start &
           sleep 10
       
       - name: Validate PWA readiness

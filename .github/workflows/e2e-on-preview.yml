@@ -11,8 +11,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'yarn'
-      - run: yarn install
+          cache: 'npm'
+      - run: npm install
       - run: npx playwright install --with-deps
       - name: E2E against Preview
         env:
@@ -22,7 +22,7 @@ jobs:
           SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
           SQUARE_SECRET: ${{ secrets.SQUARE_SECRET }}
           WEBHOOK_SIGNATURE_KEY: ${{ secrets.WEBHOOK_SIGNATURE_KEY }}
-        run: yarn test:e2e:headless
+        run: npm run test:e2e:headless
       - uses: actions/upload-artifact@v4
         if: always()
         with:

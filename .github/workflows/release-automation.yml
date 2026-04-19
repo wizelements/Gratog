@@ -24,10 +24,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
+          cache: 'npm'
       
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
       
       - name: Generate changelog
         run: |
@@ -56,26 +56,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
+          cache: 'npm'
       
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
       
       - name: Final deployment checks
         run: |
           echo "## Deployment Readiness" >> $GITHUB_STEP_SUMMARY
           
           # TypeScript check
-          yarn tsc --noEmit --skipLibCheck && echo "✅ TypeScript" >> $GITHUB_STEP_SUMMARY || echo "❌ TypeScript" >> $GITHUB_STEP_SUMMARY
+          npx tsc --noEmit --skipLibCheck && echo "✅ TypeScript" >> $GITHUB_STEP_SUMMARY || echo "❌ TypeScript" >> $GITHUB_STEP_SUMMARY
           
           # Linting
-          yarn lint && echo "✅ Linting" >> $GITHUB_STEP_SUMMARY || echo "❌ Linting" >> $GITHUB_STEP_SUMMARY
+          npm run lint && echo "✅ Linting" >> $GITHUB_STEP_SUMMARY || echo "❌ Linting" >> $GITHUB_STEP_SUMMARY
           
           # Tests
-          yarn vitest run --reporter=dot && echo "✅ Tests" >> $GITHUB_STEP_SUMMARY || echo "❌ Tests" >> $GITHUB_STEP_SUMMARY
+          npx vitest run --reporter=dot && echo "✅ Tests" >> $GITHUB_STEP_SUMMARY || echo "❌ Tests" >> $GITHUB_STEP_SUMMARY
           
           # Build
-          yarn build && echo "✅ Build" >> $GITHUB_STEP_SUMMARY || echo "❌ Build" >> $GITHUB_STEP_SUMMARY
+          npm run build && echo "✅ Build" >> $GITHUB_STEP_SUMMARY || echo "❌ Build" >> $GITHUB_STEP_SUMMARY
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**All systems ready for deployment** 🎉" >> $GITHUB_STEP_SUMMARY

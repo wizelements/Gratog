@@ -23,14 +23,14 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: yarn install --non-interactive
+        run: npm install --non-interactive
       
       - name: Check for vulnerabilities
         run: |
           echo "## Security Scan Results" >> $GITHUB_STEP_SUMMARY
           
           # npm audit for vulnerabilities
-          yarn audit --level moderate 2>&1 | tee audit.log || true
+          npm audit --level moderate 2>&1 | tee audit.log || true
           
           # Parse results
           if grep -q "found.*vulnerabilities" audit.log; then
@@ -56,7 +56,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: yarn install --non-interactive
+        run: npm install --non-interactive
       
       - name: Detect secrets
         run: |

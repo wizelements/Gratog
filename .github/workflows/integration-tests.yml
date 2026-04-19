@@ -79,7 +79,7 @@ jobs:
       - name: Start server in background
         run: |
           echo "Starting Next.js server..."
-          yarn start > server.log 2>&1 &
+          npm run start > server.log 2>&1 &
           echo $! > server.pid
           echo "Server PID: $(cat server.pid)"
           sleep 3
@@ -124,7 +124,7 @@ jobs:
               tail -50 server.log || echo "No server logs available"
               echo ""
               echo "Process info:"
-              ps aux | grep -E "node|yarn|next" || echo "No processes found"
+              ps aux | grep -E "node|npm|next" || echo "No processes found"
               exit 1
             fi
             
@@ -150,7 +150,7 @@ jobs:
           echo "=== Server Output ===" >> integration-test-debug.log
           cat server.log >> integration-test-debug.log 2>/dev/null || echo "No server logs" >> integration-test-debug.log
           echo "=== Process Info ===" >> integration-test-debug.log
-          ps aux | grep -E "node|yarn|next" >> integration-test-debug.log 2>/dev/null || true
+          ps aux | grep -E "node|npm|next" >> integration-test-debug.log 2>/dev/null || true
       
       - name: Stop server
         if: always()

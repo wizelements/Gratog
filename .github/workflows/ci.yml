@@ -23,13 +23,13 @@ jobs:
         run: npm ci
       
       - name: TypeScript check (strict)
-        run: yarn tsc --noEmit --skipLibCheck
+        run: npx tsc --noEmit --skipLibCheck
       
       - name: Run ESLint (strict)
-        run: yarn lint
+        run: npm run lint
       
       - name: Build
-        run: yarn build
+        run: npm run build
         env:
           MONGO_URL: ${{ secrets.MONGO_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}

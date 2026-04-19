@@ -42,14 +42,14 @@ jobs:
       
       - name: Start server
         run: |
-          yarn start &
+          npm run start &
           sleep 10
         continue-on-error: true
       
       - name: Run accessibility tests with axe
         id: accessibility
         run: |
-          yarn add -D axe-playwright
+          npm install -D axe-playwright
           
           cat > a11y-test.js << 'EOF'
           const { chromium } = require('playwright');
