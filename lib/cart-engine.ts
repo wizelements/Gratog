@@ -11,6 +11,33 @@
 
 import { createLogger } from './logger';
 
+// Type definitions
+export interface CartItem {
+  id: string;
+  productId: string;
+  variationId: string;
+  catalogObjectId: string;
+  name: string;
+  slug: string;
+  image: string;
+  category?: string;
+  price: number;
+  priceCents: number;
+  quantity: number;
+  variantLabel?: string;
+  size?: string;
+  addedAt: string;
+  isPreorder?: boolean;
+  marketExclusive?: boolean;
+  fulfillmentType?: string;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  error?: string;
+  code?: string;
+}
+
 const logger = createLogger('CartEngine');
 
 export const CART_KEY = 'tog_cart_engine_v1';
@@ -66,34 +93,6 @@ function getSafeLocalStorage() {
     return null;
   }
 }
-
-/**
- * @typedef {Object} CartItem
- * @property {string} id
- * @property {string} productId
- * @property {string} variationId
- * @property {string} catalogObjectId
- * @property {string} name
- * @property {string} slug
- * @property {string} image
- * @property {string} [category]
- * @property {number} price
- * @property {number} priceCents
- * @property {number} quantity
- * @property {string} [variantLabel]
- * @property {string} [size]
- * @property {string} addedAt
- * @property {boolean} [isPreorder]
- * @property {boolean} [marketExclusive]
- * @property {string} [fulfillmentType]
- */
-
-/**
- * @typedef {Object} ValidationResult
- * @property {boolean} valid
- * @property {string} [error]
- * @property {string} [code]
- */
 
 /**
  * 🎯 DETERMINE IF PRODUCT IS MARKET-EXCLUSIVE
