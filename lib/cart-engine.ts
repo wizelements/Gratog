@@ -30,6 +30,15 @@ export interface CartItem {
   isPreorder?: boolean;
   marketExclusive?: boolean;
   fulfillmentType?: string;
+  // Legacy compatibility
+  variant?: {
+    id: string;
+    name: string;
+    price: number;
+    sku?: string;
+  } | null;
+  rewardPoints?: number;
+  squareProductUrl?: string;
 }
 
 export interface ValidationResult {
