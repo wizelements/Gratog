@@ -14,27 +14,7 @@ import {
   createCartItem,
   CART_STORAGE_KEY
 } from '@/lib/cartUtils';
-
-export interface CartItem {
-  id: string;
-  productId: string;
-  variationId: string;
-  slug: string;
-  name: string;
-  price: number;
-  size: string;
-  quantity: number;
-  image: string;
-  category: string;
-  rewardPoints?: number;
-  squareProductUrl?: string;
-  variant?: {
-    id: string;
-    name: string;
-    price: number;
-    sku?: string;
-  } | null;
-}
+import type { CartItem } from '@/lib/cart-engine';
 
 export interface CartTotals {
   subtotal: number;

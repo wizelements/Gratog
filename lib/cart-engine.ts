@@ -445,3 +445,6 @@ export function subscribeToCart(callback: (detail: { count: number }) => void): 
     }
   };
 }
+
+// Export normalizeProduct as createCartItem for adapter compatibility
+export { normalizeProduct as createCartItem };
