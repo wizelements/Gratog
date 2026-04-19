@@ -19,7 +19,7 @@ import { verifyRequestAuthentication } from '@/lib/rewards-security';
 import { generateOrderAccessToken, verifyOrderAccessToken } from '@/lib/order-access-token';
 
 const logger = createLogger('OrdersCreateAPI');
-const ORDER_ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
+const ORDER_ACCESS_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days for customer convenience
 
 // Rate limiting configuration
 const ORDER_RATE_LIMIT = 10; // Max orders per window

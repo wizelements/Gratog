@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { track } from '@/utils/analytics';
 import SquarePaymentForm from './SquarePaymentForm';
 import { useRouter } from 'next/navigation';
+import { addOrderToQueue, shouldUseQueue, getQueueRedirectUrl } from '@/lib/queue-integration';
 
 interface ReviewAndPayProps {
   cart: CartItem[];
@@ -96,7 +97,7 @@ export default function ReviewAndPay({
     }
   };
   
-  const handlePaymentSuccess = useCallback((result: PaymentResult) => {
+  const handlePaymentSuccess = useCallback(async (result: PaymentResult) => {
     setPaymentResult(result);
     setStep('success');
     toast.success('Payment successful!');
@@ -106,12 +107,54 @@ export default function ReviewAndPay({
       cardBrand: result.cardBrand 
     });
     
-    setTimeout(() => {
+    setTimeout(async () => {
       if (!orderId) {
         router.push('/order/success?paid=true');
         return;
       }
 
+      // 🎯 CONVERSION PSYCHOLOGY: Market pickup → Live queue (immediate gratification loop)
+      // This creates a dopamine hit: pay → see position → anticipation builds
+      const isMarketPickup = shouldUseQueue(fulfillment.type, { 
+        marketId: fulfillment.pickup?.locationId 
+      });
+      
+      if (isMarketPickup) {
+        try {
+          // Add to queue silently - user doesn't need to wait for this
+          const queueResult = await addOrderToQueue({
+            id: orderId,
+            orderRef: orderId.slice(-6).toUpperCase(),
+            marketId: fulfillment.pickup?.locationId || 'unknown',
+            marketName: fulfillment.pickup?.locationId?.includes('serenbe') ? 'Serenbe Farmers Market' : 
+                        fulfillment.pickup?.locationId?.includes('dunwoody') ? 'Dunwoody Market' : 
+                        'Market Pickup',
+            customer: {
+              name: `${contact.firstName} ${contact.lastName}`,
+              email: contact.email,
+              phone: contact.phone
+            },
+            cart: cart.map(item => ({
+              name: item.name,
+              quantity: item.quantity,
+              customizations: item.variantLabel ? [{ name: 'Variant', value: item.variantLabel }] : undefined
+            }))
+          });
+          
+          if (queueResult) {
+            track('queue_joined', { orderId, marketId: fulfillment.pickup?.locationId });
+            // Redirect to queue page - immediate feedback loop
+            router.push(getQueueRedirectUrl(orderId));
+            return;
+          }
+        } catch (queueError) {
+          // Silent fail - don't block order success if queue fails
+          console.error('Queue join failed:', queueError);
+          track('queue_join_failed', { orderId, error: queueError.message });
+        }
+      }
+
+      // Standard flow for non-pickup orders
       const amountCents = Math.round(totals.total * 100);
       const params = new URLSearchParams({
         orderRef: orderId,
@@ -125,7 +168,7 @@ export default function ReviewAndPay({
 
       router.push(`/order/success?${params.toString()}`);
     }, 2000);
-  }, [orderId, router, totals.total]);
+  }, [orderId, router, totals.total, fulfillment, contact, cart]);
   
   const handlePaymentError = useCallback((error: string) => {
     toast.error(error);

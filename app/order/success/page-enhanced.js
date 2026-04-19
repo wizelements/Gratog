@@ -20,7 +20,7 @@ function getRetryDelayMs(attempt) {
 
 export default function OrderSuccessPage() {
   const searchParams = useSearchParams();
-  const orderRef = searchParams.get('orderRef') || searchParams.get('orderId'); // Support both for backward compatibility
+  const orderRef = searchParams.get('orderRef') || searchParams.get('orderId');
   const orderAccessToken = searchParams.get('token');
   const isPaidFromUrl = searchParams.get('paid') === 'true';
   const amountFromUrl = searchParams.get('amount') ? parseInt(searchParams.get('amount'), 10) : null;
@@ -46,14 +46,13 @@ export default function OrderSuccessPage() {
         requestParams.set('token', orderAccessToken);
       }
 
-      // Use stateless orderRef endpoint (no cookies required)
       const response = await fetch(`/api/orders/by-ref?${requestParams.toString()}`, {
-        credentials: 'omit' // Explicitly no cookies
+        credentials: 'omit'
       });
       
       if (!response.ok) {
         if (response.status === 401) {
-          throw new Error('Order access token is missing, invalid, or expired');
+          throw new Error('LINK_EXPIRED');
         }
 
         if (response.status === 404 && attempt < MAX_ORDER_FETCH_ATTEMPTS - 1) {
@@ -68,11 +67,10 @@ export default function OrderSuccessPage() {
       
       const data = await response.json();
       
-      // Poll for status transitions while Square settlement/webhooks finalize.
       if (PENDING_ORDER_STATUSES.has(data.status) && attempt < MAX_ORDER_FETCH_ATTEMPTS - 1) {
         const nextAttempt = attempt + 1;
         setPollAttempts(nextAttempt);
-        setOrder(data); // Show what we have so far
+        setOrder(data);
         setTimeout(() => fetchOrderDetails(nextAttempt), getRetryDelayMs(nextAttempt));
         return;
       }
@@ -84,8 +82,7 @@ export default function OrderSuccessPage() {
     } catch (err) {
       console.error('Order fetch error:', err);
       
-      // Retry transient failures with backoff to avoid false negatives during delayed settlement.
-      if (attempt < MAX_ORDER_FETCH_ATTEMPTS - 1) {
+      if (attempt < MAX_ORDER_FETCH_ATTEMPTS - 1 && err.message !== 'LINK_EXPIRED') {
         const nextAttempt = attempt + 1;
         setPollAttempts(nextAttempt);
         setTimeout(() => fetchOrderDetails(nextAttempt), getRetryDelayMs(nextAttempt));
@@ -111,6 +108,66 @@ export default function OrderSuccessPage() {
             </p>
           )}
         </div>
+      </div>
+    );
+  }
+
+  // 🎯 CONVERSION PSYCHOLOGY: Replace technical error with human-friendly recovery
+  if (error === 'LINK_EXPIRED' || error?.includes?.('LINK_EXPIRED')) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-emerald-50 to-white p-4">
+        <Card className="max-w-md mx-auto">
+          <CardContent className="p-8 text-center space-y-6">
+            {/* Security icon - reframes as protection, not failure */}
+            <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto">
+              <svg className="w-10 h-10 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Link Expired for Security</h2>
+              <p className="text-gray-600">
+                Your order was placed successfully! For your protection, order links expire after 7 days.
+              </p>
+            </div>
+            
+            {orderRef && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-500 mb-1">Order Reference</p>
+                <p className="text-lg font-mono font-semibold text-emerald-700">{orderRef.slice(-6).toUpperCase()}</p>
+                <p className="text-xs text-gray-400 mt-2">Show this at pickup or mention it when calling</p>
+              </div>
+            )}
+            
+            <div className="space-y-3">
+              <a href="mailto:hello@tasteofgratitude.com" className="block">
+                <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
+                  <Mail className="w-4 h-4 mr-2" />
+                  Email for Fresh Link
+                </Button>
+              </a>
+              
+              <a href="tel:+14047899960">
+                <Button variant="outline" className="w-full">
+                  <Phone className="w-4 h-4 mr-2" />
+                  Call/Text (404) 789-9960
+                </Button>
+              </a>
+            </div>
+            
+            <div className="text-sm text-gray-500 pt-4 border-t">
+              <p>Your confirmation email has your full order details.</p>
+              <p className="mt-1">Check your inbox (and spam folder).</p>
+            </div>
+            
+            <Link href="/catalog">
+              <Button variant="ghost" className="w-full text-emerald-600">
+                Continue Shopping
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -204,7 +261,6 @@ export default function OrderSuccessPage() {
 
   const formatPrice = (price) => `$${parseFloat(price || 0).toFixed(2)}`;
   
-  // Use URL amount as fallback when order pricing isn't loaded yet
   const displayTotal = order?.pricing?.total || (amountFromUrl ? amountFromUrl / 100 : 0);
   const displaySubtotal = order?.pricing?.subtotal || displayTotal;
   const orderTiming = order?.orderTiming || order?.fulfillment?.timing;
@@ -217,327 +273,246 @@ export default function OrderSuccessPage() {
       <div className="container max-w-4xl">
         {/* Success Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4 animate-bounce">
-            <CheckCircle className="w-12 h-12 text-green-600" />
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-100 rounded-full mb-4 animate-bounce">
+            <CheckCircle className="w-12 h-12 text-emerald-600" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Order Confirmed! 🎉</h1>
-          <p className="text-xl text-gray-600">Thank you for your order, {order.customer?.name}!</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {isPreOrder ? 'Pre-Order Confirmed!' : 'Order Confirmed!'}
+          </h1>
+          <p className="text-gray-600">
+            Thank you{order?.customer?.firstName ? `, ${order.customer.firstName}` : ''}! 
+            {isPreOrder 
+              ? " We've received your pre-order and will prepare it for your selected date."
+              : " We've received your order and are preparing it with gratitude."}
+          </p>
+          
+          {/* 🎯 CONVERSION PSYCHOLOGY: Clear next steps */}
+          {order?.fulfillment?.type?.includes('pickup') && (
+            <div className="mt-4 inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-4 py-2">
+              <Clock className="w-4 h-4 text-amber-600" />
+              <span className="text-sm text-amber-800">
+                <Link href={`/order/${order.id}/queue`} className="font-semibold underline">
+                  View live queue position
+                </Link>
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Order Details Card */}
-        <Card className="mb-6">
-          <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="text-2xl mb-2">Order #{order.orderNumber}</CardTitle>
-                <p className="text-emerald-100 text-sm">
-                  {new Date(order.createdAt).toLocaleString('en-US', {
-                    dateStyle: 'long',
-                    timeStyle: 'short'
-                  })}
-                </p>
-              </div>
-              <Badge className="bg-white/20 text-white border-white/40">
-                {order.status?.toUpperCase() || 'PENDING'}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="p-6">
-            {/* Payment Information */}
-            {(isPaidFromUrl || order.paymentStatus === 'COMPLETED' || order.payment?.status === 'completed' || order.status === 'paid') && (
-              <div className="mb-6 p-4 bg-green-50 rounded-lg border-2 border-green-200">
-                <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="font-semibold text-green-900">Payment Confirmed</span>
-                </div>
-                <div className="space-y-2 text-sm">
-                  {order.payment?.cardBrand && order.payment?.cardLast4 && (
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="w-4 h-4 text-green-600" />
-                      <span className="text-green-800">{order.payment.cardBrand} ending in {order.payment.cardLast4}</span>
-                    </div>
-                  )}
-                  {order.payment?.receiptNumber && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-green-700">Receipt #: <code className="font-mono">{order.payment.receiptNumber}</code></span>
-                    </div>
-                  )}
-                  {order.squarePaymentId && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-green-700 text-xs">Payment ID: <code className="font-mono">{order.squarePaymentId}</code></span>
-                    </div>
-                  )}
-                  {order.payment?.receiptUrl && (
-                    <div className="mt-2">
-                      <a 
-                        href={order.payment.receiptUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-green-600 hover:text-green-700 font-medium underline flex items-center gap-1"
-                      >
-                        View Square Receipt
-                        <ArrowRight className="w-3 h-3" />
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Square Order ID */}
-            {order.squareOrderId && (
-              <div className="mb-6 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                <div className="flex items-center gap-2 mb-2">
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Order Details */}
+          <div className="md:col-span-2 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Package className="w-5 h-5 text-emerald-600" />
-                  <span className="font-semibold text-emerald-900">Square Order ID</span>
+                  Order Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center pb-4 border-b">
+                  <div>
+                    <p className="text-sm text-gray-500">Order Reference</p>
+                    <p className="text-lg font-mono font-semibold">{order.id?.slice(-6).toUpperCase()}</p>
+                  </div>
+                  <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>
+                    {order.status}
+                  </Badge>
                 </div>
-                <code className="text-sm text-emerald-700 font-mono">
-                  {order.squareOrderId}
-                </code>
-              </div>
-            )}
 
-            {/* Items Ordered */}
-            <div className="mb-6">
-              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                Items Ordered
-              </h3>
-              <div className="space-y-3">
-                {order.items?.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <div className="flex-1">
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                {/* Items */}
+                <div className="space-y-3">
+                  {(order.cart || order.items || []).map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-start">
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                      </div>
+                      <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
                     </div>
-                    <p className="font-semibold text-emerald-600">
-                      {formatPrice(item.subtotal || item.price * item.quantity)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <Separator className="my-6" />
-
-            {/* Pricing Summary */}
-            <div className="space-y-2 mb-6">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Subtotal</span>
-                <span className="font-semibold">{formatPrice(displaySubtotal)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Fulfillment Timing</span>
-                <span className="font-semibold">
-                  {isPreOrder ? 'Pre-order request' : 'ASAP'}
-                </span>
-              </div>
-              {order.pricing?.deliveryFee > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Delivery Fee</span>
-                  <span className="font-semibold">{formatPrice(order.pricing.deliveryFee)}</span>
+                  ))}
                 </div>
-              )}
-              {order.pricing?.tip > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tip</span>
-                  <span className="font-semibold">{formatPrice(order.pricing.tip)}</span>
-                </div>
-              )}
-              {order.pricing?.couponDiscount > 0 && (
-                <div className="flex justify-between text-green-600">
-                  <span>Discount</span>
-                  <span className="font-semibold">-{formatPrice(order.pricing.couponDiscount)}</span>
-                </div>
-              )}
-              <Separator />
-              <div className="flex justify-between text-lg">
-                <span className="font-bold">Total</span>
-                <span className="font-bold text-emerald-600">
-                  {formatPrice(displayTotal)}
-                </span>
-              </div>
-            </div>
 
-            {/* Customer & Fulfillment Info */}
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Contact Information */}
-              <div>
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  Contact Information
-                </h4>
+                <Separator />
+
+                {/* Pricing */}
                 <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-gray-400" />
-                    <span>{order.customer?.email}</span>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span>{formatPrice(displaySubtotal)}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-gray-400" />
-                    <span>{order.customer?.phone}</span>
+                  {order?.pricing?.deliveryFee > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Delivery Fee</span>
+                      <span>{formatPrice(order.pricing.deliveryFee)}</span>
+                    </div>
+                  )}
+                  {order?.pricing?.tip > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Tip</span>
+                      <span>{formatPrice(order.pricing.tip)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Tax</span>
+                    <span>{formatPrice(order?.pricing?.tax)}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t font-semibold text-lg">
+                    <span>Total</span>
+                    <span className="text-emerald-600">{formatPrice(displayTotal)}</span>
                   </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              {/* Fulfillment Details */}
-              <div>
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  {order.fulfillmentType === 'delivery' ? <MapPin className="w-4 h-4" /> : <Package className="w-4 h-4" />}
-                  {order.fulfillmentType === 'delivery' ? 'Delivery Address' : 'Pickup Details'}
-                </h4>
-                {order.fulfillmentType === 'delivery' ? (
-                  <div className="text-sm space-y-1">
-                    <p>{order.deliveryAddress?.street}</p>
-                    <p>
-                      {order.deliveryAddress?.city}, {order.deliveryAddress?.state} {order.deliveryAddress?.zip}
+            {/* Fulfillment Details */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  {order?.fulfillment?.type?.includes('pickup') ? (
+                    <Clock className="w-5 h-5 text-emerald-600" />
+                  ) : (
+                    <MapPin className="w-5 h-5 text-emerald-600" />
+                  )}
+                  {order?.fulfillment?.type?.includes('pickup') ? 'Pickup Details' : 
+                   order?.fulfillment?.type === 'delivery' ? 'Delivery Details' : 'Shipping Details'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {order?.fulfillment?.type?.includes('pickup') && (
+                  <div className="space-y-2">
+                    <p className="font-medium">
+                      {order.fulfillment.pickup?.locationId?.includes('serenbe') ? 'Serenbe Farmers Market' : 
+                       order.fulfillment.pickup?.locationId?.includes('dunwoody') ? 'Dunwoody Market' : 
+                       'Market Pickup'}
                     </p>
-                    {isPreOrder && (
-                      <p className="text-amber-700 font-medium mt-2">
-                        Timeline confirmation pending. We will contact you with final delivery timing.
-                        {requestedPreOrderDate ? ` Requested date: ${new Date(`${requestedPreOrderDate}T00:00:00`).toLocaleDateString('en-US', { dateStyle: 'medium' })}.` : ''}
+                    {scheduledFulfillmentAt && (
+                      <p className="text-gray-600">
+                        {new Date(scheduledFulfillmentAt).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit'
+                        })}
                       </p>
                     )}
-                    {!isPreOrder && scheduledFulfillmentAt && (
-                      <p className="text-emerald-700 font-medium mt-2">
-                        Expected by: {new Date(scheduledFulfillmentAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-                      </p>
-                    )}
+                    
+                    {/* 🎯 CONVERSION PSYCHOLOGY: Queue CTA for pickup orders */}
+                    <Link href={`/order/${order.id}/queue`}>
+                      <Button className="mt-4 w-full bg-amber-500 hover:bg-amber-600 text-white">
+                        <Clock className="w-4 h-4 mr-2" />
+                        Check Live Queue Position
+                      </Button>
+                    </Link>
                   </div>
-                ) : (
-                  <div className="text-sm">
-                    <p className="mb-2">Pickup at location</p>
-                    <Badge variant="outline" className="text-emerald-600 border-emerald-600">
-                      Pickup Order
-                    </Badge>
-                    {isPreOrder && (
-                      <p className="mt-2 text-amber-700 font-medium">
-                        Timeline confirmation pending. We will contact you with your final pickup window.
-                        {requestedPreOrderDate ? ` Requested date: ${new Date(`${requestedPreOrderDate}T00:00:00`).toLocaleDateString('en-US', { dateStyle: 'medium' })}.` : ''}
-                      </p>
-                    )}
-                    {!isPreOrder && scheduledFulfillmentAt && (
-                      <p className="mt-2 text-emerald-700 font-medium">
-                        Pickup time: {new Date(scheduledFulfillmentAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-                      </p>
+                )}
+
+                {order?.fulfillment?.type === 'delivery' && order.fulfillment.delivery && (
+                  <div className="space-y-1">
+                    <p className="font-medium">Delivery Address</p>
+                    <p className="text-gray-600">{order.fulfillment.delivery.address?.street}</p>
+                    <p className="text-gray-600">
+                      {order.fulfillment.delivery.address?.city}, {order.fulfillment.delivery.address?.state} {order.fulfillment.delivery.address?.zip}
+                    </p>
+                    {order.fulfillment.delivery.window && (
+                      <p className="text-emerald-600 mt-2">Window: {order.fulfillment.delivery.window}</p>
                     )}
                   </div>
                 )}
-              </div>
-            </div>
 
-            {/* Checkout URL if available */}
-            {order.checkoutUrl && (
-              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="font-semibold text-yellow-900 mb-2">Complete Your Payment</p>
-                    <p className="text-sm text-yellow-700 mb-3">
-                      Click the button below to complete your payment securely through Square.
+                {order?.fulfillment?.type === 'shipping' && order.fulfillment.shipping && (
+                  <div className="space-y-1">
+                    <p className="font-medium">Shipping Address</p>
+                    <p className="text-gray-600">{order.fulfillment.shipping.address?.street}</p>
+                    <p className="text-gray-600">
+                      {order.fulfillment.shipping.address?.city}, {order.fulfillment.shipping.address?.state} {order.fulfillment.shipping.address?.zip}
                     </p>
-                    <Button 
-                      onClick={() => window.location.href = order.checkoutUrl}
-                      className="bg-yellow-600 hover:bg-yellow-700"
-                    >
-                      Complete Payment
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </Button>
                   </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Contact Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Contact Information</CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm">
+                <p className="font-medium">{order?.customer?.firstName} {order?.customer?.lastName}</p>
+                <p className="text-gray-600">{order?.customer?.email}</p>
+                {order?.customer?.phone && <p className="text-gray-600">{order.customer.phone}</p>}
+              </CardContent>
+            </Card>
+
+            {/* Support Card */}
+            <Card className="bg-emerald-50 border-emerald-200">
+              <CardContent className="p-4">
+                <h4 className="font-semibold text-emerald-800 mb-2">Need Help?</h4>
+                <p className="text-sm text-emerald-700 mb-3">
+                  Questions about your order? We&apos;re here to help!
+                </p>
+                <div className="space-y-2">
+                  <a href="mailto:hello@tasteofgratitude.com">
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Mail className="w-4 h-4 mr-2" />
+                      Email Support
+                    </Button>
+                  </a>
+                  <a href="tel:+14047899960">
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Phone className="w-4 h-4 mr-2" />
+                      (404) 789-9960
+                    </Button>
+                  </a>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+
+            {/* 🎯 CONVERSION PSYCHOLOGY: Spin Wheel - OPT-IN version */}
+            {order?.pricing?.total >= 15 && (
+              <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+                <CardContent className="p-4 text-center">
+                  <Sparkles className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+                  <h4 className="font-semibold text-purple-800">Bonus Spins Earned!</h4>
+                  <p className="text-sm text-purple-700 mb-3">
+                    You earned {order?.pricing?.total >= 20 ? Math.floor(order.pricing.total / 20) : 1} spin{order?.pricing?.total >= 40 ? 's' : ''} for this order.
+                  </p>
+                  <Link href={`/profile/rewards?highlight=spin`}>
+                    <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                      <Star className="w-4 h-4 mr-2" />
+                      Spin for Rewards
+                    </Button>
+                  </Link>
+                  <p className="text-xs text-purple-600 mt-2">
+                    Or skip and{' '}
+                    <Link href="/catalog" className="underline">
+                      continue shopping
+                    </Link>
+                  </p>
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
 
-        {/* Confirmation Message */}
-        <Card className="bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200">
-          <CardContent className="p-6 text-center">
-            <Mail className="w-12 h-12 text-emerald-600 mx-auto mb-3" />
-            <h3 className="font-semibold text-lg text-emerald-900 mb-2">
-              Confirmation Email Sent!
-            </h3>
-            <p className="text-emerald-700 mb-4">
-              We've sent a confirmation email to <strong>{order.customer?.email}</strong>
-            </p>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Link href="/reviews">
-                <Button variant="outline" className="border-amber-400 text-amber-700 hover:bg-amber-50">
-                  Share A Review
-                </Button>
-              </Link>
+            {/* Actions */}
+            <div className="space-y-2">
               <Link href="/catalog">
-                <Button variant="outline" className="border-emerald-600 text-emerald-700 hover:bg-emerald-50">
+                <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
                   Continue Shopping
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
-              <Link href="/">
-                <Button className="bg-emerald-600 hover:bg-emerald-700">
-                  Back to Home
+              <Link href={order?.id ? `/order/${order.id}` : '/profile/orders'}>
+                <Button variant="outline" className="w-full">
+                  View Full Order Details
                 </Button>
               </Link>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Post-Purchase Reinforcement */}
-        <Card className="mt-6 border-emerald-200">
-          <CardContent className="p-6">
-            <h3 className="font-bold text-xl text-gray-900 mb-6 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-emerald-600" />
-              What's Next?
-            </h3>
-            
-            <div className="grid md:grid-cols-3 gap-6">
-              {/* Step 1: Fulfillment */}
-              <div className="text-center p-4 bg-emerald-50 rounded-lg">
-                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  {order.fulfillmentType === 'delivery' ? (
-                    <MapPin className="w-6 h-6 text-emerald-600" />
-                  ) : (
-                    <Package className="w-6 h-6 text-emerald-600" />
-                  )}
-                </div>
-                <h4 className="font-semibold text-emerald-900 mb-2">
-                  {order.fulfillmentType === 'delivery' ? (isPreOrder ? 'Pre-Order Request Received' : 'Delivery Coming') : (isPreOrder ? 'Pre-Order Request Received' : 'Ready for Pickup')}
-                </h4>
-                <p className="text-sm text-emerald-700">
-                  {isPreOrder
-                    ? 'This is a pre-order request. We will confirm the exact timeline by phone or email.'
-                    : order.fulfillmentType === 'delivery'
-                      ? 'Your order will arrive within 2-3 business days'
-                      : 'Bring your order confirmation email or ID'}
-                </p>
-              </div>
-
-              {/* Step 2: Usage Tips */}
-              <div className="text-center p-4 bg-teal-50 rounded-lg">
-                <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Heart className="w-6 h-6 text-teal-600" />
-                </div>
-                <h4 className="font-semibold text-teal-900 mb-2">How to Use</h4>
-                <p className="text-sm text-teal-700">
-                  Take 1-2 tablespoons daily, preferably in the morning. Refrigerate after opening & shake before use.
-                </p>
-              </div>
-
-              {/* Step 3: Community */}
-              <div className="text-center p-4 bg-amber-50 rounded-lg">
-                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Star className="w-6 h-6 text-amber-600" />
-                </div>
-                <h4 className="font-semibold text-amber-900 mb-2">Join the Challenge</h4>
-                <p className="text-sm text-amber-700 mb-3">
-                  Track your wellness journey with our 14-Day Sea Moss Challenge
-                </p>
-                <Link href="/challenge">
-                  <Button size="sm" variant="outline" className="border-amber-500 text-amber-700 hover:bg-amber-100">
-                    Start Challenge
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
