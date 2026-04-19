@@ -264,7 +264,7 @@ export default function SquarePaymentForm({
           ) : paymentStep === 'success' ? (
             'Payment Complete'
           ) : (
-            `Pay ${formatCurrency(amountCents, 'USD')}`
+            `Pay ${formatCurrency(amountCents / 100)}`
           )}
         </button>
 
