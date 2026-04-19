@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
+import { UNIFIED_PRODUCTS_COLLECTION } from '@/lib/product-sync-engine';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,14 +17,20 @@ export async function GET(request, { params }) {
 
     const { db } = await connectToDatabase();
     
-    // Find product by slug
-    const product = await db.collection('products').findOne({
+    const slugFilter = {
       $or: [
         { slug: slug },
         { slug: { $regex: slug, $options: 'i' } },
         { id: slug }
       ]
-    });
+    };
+    
+    // Try unified_products first (where catalog sync writes), then fall back to products
+    let product = await db.collection(UNIFIED_PRODUCTS_COLLECTION).findOne(slugFilter);
+    
+    if (!product) {
+      product = await db.collection('products').findOne(slugFilter);
+    }
 
     if (!product) {
       return NextResponse.json(

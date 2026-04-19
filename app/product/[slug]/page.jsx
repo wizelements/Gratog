@@ -1,6 +1,27 @@
 import { notFound } from 'next/navigation';
 import { connectToDatabase } from '@/lib/db-optimized';
+import { UNIFIED_PRODUCTS_COLLECTION } from '@/lib/product-sync-engine';
 import ProductDetailClient from './ProductDetailClient';
+
+function buildSlugFilter(slug) {
+  return {
+    $or: [
+      { slug: slug },
+      { slug: { $regex: slug, $options: 'i' } },
+      { id: slug }
+    ]
+  };
+}
+
+async function findProductBySlug(db, slug) {
+  const filter = buildSlugFilter(slug);
+  // Try unified_products first (where catalog sync writes), then fall back to products
+  let product = await db.collection(UNIFIED_PRODUCTS_COLLECTION).findOne(filter);
+  if (!product) {
+    product = await db.collection('products').findOne(filter);
+  }
+  return product;
+}
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }) {
@@ -8,13 +29,7 @@ export async function generateMetadata({ params }) {
   
   try {
     const { db } = await connectToDatabase();
-    const product = await db.collection('products').findOne({
-      $or: [
-        { slug: slug },
-        { slug: { $regex: slug, $options: 'i' } },
-        { id: slug }
-      ]
-    });
+    const product = await findProductBySlug(db, slug);
     
     if (!product) {
       return {
@@ -52,14 +67,8 @@ export default async function ProductPage({ params }) {
   try {
     const { db } = await connectToDatabase();
     
-    // Fetch product from database
-    const product = await db.collection('products').findOne({
-      $or: [
-        { slug: slug },
-        { slug: { $regex: slug, $options: 'i' } },
-        { id: slug }
-      ]
-    });
+    // Fetch product from database (unified_products first, then products)
+    const product = await findProductBySlug(db, slug);
     
     if (!product) {
       console.log(`[Product SSR] Product not found for slug: ${slug}`);
