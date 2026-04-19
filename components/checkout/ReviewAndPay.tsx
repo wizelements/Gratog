@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, AlertCircle, RefreshCw, CheckCircle, Package, MapPin, Clock } from 'lucide-react';
+import { Lock, AlertCircle, RefreshCw, CheckCircle, Package, MapPin, Clock, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CartItem } from '@/adapters/cartAdapter';
 import { OrderTotals, formatCurrency } from '@/adapters/totalsAdapter';
