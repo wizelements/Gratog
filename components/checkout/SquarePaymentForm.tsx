@@ -10,7 +10,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { CreditCard, Lock, AlertCircle, CheckCircle, Shield } from 'lucide-react';
 import { formatCurrency } from '@/adapters/totalsAdapter';
-import { motion, AnimatePresence } from 'framer-motion';
 import type { SquareCard, SquareCardOptions, SquarePayments, SquareTokenResult } from '@/types/square';
 
 interface SquareConfig {
