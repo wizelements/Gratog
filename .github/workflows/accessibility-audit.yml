@@ -1,13 +1,16 @@
 name: Accessibility Audit
 
+# DISABLED: Requires production API keys and database
+# To re-enable, configure secrets in GitHub repository settings
+
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+  # push:
+  #   branches: [main, develop]
+  # pull_request:
+  #   branches: [main, develop]
+  # schedule:
+  #   - cron: '0 3 * * *'  # Daily at 3 AM
   workflow_dispatch:
-  schedule:
-    - cron: '0 3 * * *'  # Daily at 3 AM
 
 permissions:
   contents: read

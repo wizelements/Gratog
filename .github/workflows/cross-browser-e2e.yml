@@ -1,13 +1,16 @@
 name: Cross-Browser E2E Tests
 
+# DISABLED: Requires production API keys and database
+# To re-enable, configure secrets in GitHub repository settings
+
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+  # push:
+  #   branches: [main, develop]
+  # pull_request:
+  #   branches: [main, develop]
+  # schedule:
+  #   - cron: '0 2 * * *'  # Daily 2 AM UTC
   workflow_dispatch:
-  schedule:
-    - cron: '0 2 * * *'  # Daily 2 AM UTC
 
 permissions:
   contents: read

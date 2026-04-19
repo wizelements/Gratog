@@ -1,13 +1,16 @@
 name: Performance Monitoring
 
+# DISABLED: Requires production API keys and database
+# To re-enable, configure secrets in GitHub repository settings
+
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+  # push:
+  #   branches: [main, develop]
+  # pull_request:
+  #   branches: [main, develop]
+  # schedule:
+  #   - cron: '0 0,6,12,18 * * *'  # Every 6 hours
   workflow_dispatch:
-  schedule:
-    - cron: '0 0,6,12,18 * * *'  # Every 6 hours
 
 permissions:
   contents: read
