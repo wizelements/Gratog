@@ -166,7 +166,7 @@ export default function CheckoutRoot() {
                         updateCart(CartAPI.getCart());
                       }}
                       onRemoveItem={(id) => {
-                        CartAPI.removeFromCart(id);
+                        CartAPI.removeItem(id);
                         updateCart(CartAPI.getCart());
                       }}
                       collapsible={false}
