@@ -10,6 +10,7 @@ import Link from 'next/link';
 import QuickAddButton from './QuickAddButton';
 import VariantSelector from './VariantSelector';
 import ScarcityBadge from './psychology/ScarcityBadge';
+import InventoryBadge from './InventoryBadge';
 import SoldOutBadge, { PreorderNotice } from './psychology/SoldOutBadge';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 
@@ -138,11 +139,19 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
       </CardHeader>
       
       <CardContent className="pt-0">
-        <div className="flex items-baseline gap-2 mb-3">
+        <div className="flex items-baseline gap-2 mb-2">
           <span className="text-2xl font-bold text-emerald-600">${displayPrice.toFixed(2)}</span>
           {displaySize && (
             <span className="text-sm text-muted-foreground">/ {displaySize}</span>
           )}
+        </div>
+        <div className="mb-3">
+          <InventoryBadge 
+            stock={product.stock} 
+            threshold={product.lowStockThreshold || 10}
+            isPreorder={product.isPreorder}
+            isSellingFast={product.isSellingFast}
+          />
         </div>
         <ScarcityBadge productId={product.id} stock={product.stock} threshold={product.lowStockThreshold} />
         <PreorderNotice stock={product.stock} />

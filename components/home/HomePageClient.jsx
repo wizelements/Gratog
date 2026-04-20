@@ -14,6 +14,7 @@ import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 import { getCanonicalProductCategoryIcon, getCanonicalProductCategoryLabel } from '@/lib/storefront-query';
 import ProductBundles from '@/components/ProductBundles';
 import WhyUsComparison from '@/components/WhyUsComparison';
+import GuaranteeBadge from '@/components/GuaranteeBadge';
 import { JsonLd } from '@/components/JsonLd';
 
 export default function HomePageClient({
@@ -215,6 +216,11 @@ export default function HomePageClient({
                                 View Best Seller
                             </Link>
                         </Button>
+                    </div>
+
+                    {/* Money-Back Guarantee */}
+                    <div className="mt-6 flex justify-center">
+                        <GuaranteeBadge size="md" variant="pill" days={90} />
                     </div>
 
                     {/* Trust Signals Bar - Real Data */}

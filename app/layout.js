@@ -12,6 +12,7 @@ import { PWAInitializer } from '@/components/PWAInitializer';
 import { PWAPrompt } from '@/components/PWAPrompt';
 import { PWAUpdateNotifier } from '@/components/PWAUpdateNotifier';
 import { PWADiagnostics } from '@/components/PWADiagnostics';
+import ExitIntentModal from '@/components/ExitIntentModal';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -142,6 +143,7 @@ export default function RootLayout({ children }) {
         <Suspense fallback={null}>
           <CookieConsent />
         </Suspense>
+        <ExitIntentModal />
         <Toaster position="top-right" richColors />
       </body>
     </html>
