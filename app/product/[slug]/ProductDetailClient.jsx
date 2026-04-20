@@ -17,6 +17,7 @@ import Script from 'next/script';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 import SoldOutBadge, { PreorderNotice } from '@/components/psychology/SoldOutBadge';
 import ScarcityBadge from '@/components/psychology/ScarcityBadge';
+import SubscriptionSelector from '@/components/SubscriptionSelector';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop';
 
@@ -388,6 +389,17 @@ export default function ProductDetailClient({ product, slug }) {
               >
                 <Share2 className="w-5 h-5" />
               </Button>
+            </div>
+
+            {/* Subscription Option */}
+            <div className="mt-4">
+              <SubscriptionSelector
+                product={product}
+                selectedVariation={selectedVariation}
+                quantity={quantity}
+                onAddToCart={handleAddToCart}
+                isAdding={isAdding}
+              />
             </div>
 
             {/* Benefits */}
