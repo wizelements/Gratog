@@ -12,6 +12,7 @@ import { FulfillmentType } from '@/stores/checkout';
 interface FulfillmentTabsProps {
   selected: FulfillmentType;
   onChange: (type: FulfillmentType) => void;
+  hasPreorderItems?: boolean;
 }
 
 const TABS = [
@@ -20,8 +21,9 @@ const TABS = [
   { value: 'shipping' as FulfillmentType, label: 'Shipping', icon: Package, description: 'Ship to address' }
 ];
 
-export default function FulfillmentTabs({ selected, onChange }: FulfillmentTabsProps) {
+export default function FulfillmentTabs({ selected, onChange, hasPreorderItems = false }: FulfillmentTabsProps) {
   return (
+    <>
     <div className="grid grid-cols-3 gap-3 p-1 bg-gray-100 rounded-xl">
       {TABS.map((tab) => {
         const Icon = tab.icon;
@@ -67,5 +69,11 @@ export default function FulfillmentTabs({ selected, onChange }: FulfillmentTabsP
         );
       })}
     </div>
+    {hasPreorderItems && selected !== 'pickup' && (
+      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 mt-3">
+        ⏳ Your cart includes preorder items that require market pickup. Please select &quot;Pickup&quot; for these items.
+      </p>
+    )}
+    </>
   );
 }

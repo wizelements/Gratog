@@ -192,6 +192,7 @@ export default function CheckoutRoot() {
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">Fulfillment Method</h3>
                       <FulfillmentTabs
                         selected={fulfillment.type}
+                        hasPreorderItems={cart.some(item => item.isPreorder)}
                         onChange={(type) => {
                           setFulfillment({ type });
                           track('fulfillment_type_selected', { type });

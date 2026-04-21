@@ -264,6 +264,11 @@ export default function ReviewAndPay({
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm text-gray-900 truncate">{item.name}</h4>
                         <p className="text-xs text-gray-500">Qty: {item.quantity} • {item.size}</p>
+                        {item.isPreorder && (
+                          <span className="inline-flex items-center gap-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 mt-0.5">
+                            ⏳ Preorder
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm font-semibold text-gray-900">
                         {formatCurrency(item.price * item.quantity)}
@@ -308,6 +313,22 @@ export default function ReviewAndPay({
                 </div>
               </div>
             </div>
+
+            {/* Preorder Notice */}
+            {cart.some(item => item.isPreorder) && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <Clock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-amber-800">Preorder items in your cart</h4>
+                    <p className="text-sm text-amber-700 mt-1">
+                      Preorder items will be freshly prepared for your selected pickup date. 
+                      You'll receive a confirmation text when your order is ready.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {/* Fulfillment Details */}
             <div className="bg-gray-50 rounded-lg p-4">

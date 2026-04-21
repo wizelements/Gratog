@@ -6,7 +6,7 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Plus, Minus, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, X, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -113,6 +113,11 @@ export default function CartSummary({
                         {item.name}
                       </h4>
                       <p className="text-xs text-gray-500 mt-0.5">{item.size}</p>
+                      {item.isPreorder && (
+                        <span className="inline-flex items-center gap-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 mt-1">
+                          ⏳ Preorder
+                        </span>
+                      )}
                       <p className="text-sm font-semibold text-emerald-600 mt-1">
                         {formatCurrency(item.price)}
                       </p>
@@ -216,6 +221,17 @@ export default function CartSummary({
                 </div>
               )}
             </div>
+
+            {cart.some(item => item.isPreorder) && (
+              <div className="px-4 pb-4">
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm">
+                  <p className="font-medium text-amber-800">⏳ Preorder items included</p>
+                  <p className="text-xs text-amber-700 mt-1">
+                    Preorder items are made fresh and ready for your selected pickup date.
+                  </p>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
