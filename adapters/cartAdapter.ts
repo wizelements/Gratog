@@ -68,14 +68,13 @@ export const CartAPI = {
   
   // Subscribe to cart changes
   subscribe: (callback: (cart: CartItem[]) => void) => {
-    const handler = (event: Event) => {
-      const customEvent = event as CustomEvent<{ cart: CartItem[] }>;
-      callback(customEvent.detail.cart);
+    const handler = () => {
+      callback(loadCart());
     };
     
     if (typeof window !== 'undefined') {
-      window.addEventListener('cartUpdated', handler as EventListener);
-      return () => window.removeEventListener('cartUpdated', handler as EventListener);
+      window.addEventListener('cart-updated', handler);
+      return () => window.removeEventListener('cart-updated', handler);
     }
     
     return () => {};

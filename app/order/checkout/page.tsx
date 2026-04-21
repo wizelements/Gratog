@@ -3,18 +3,13 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 
-/**
- * LEGACY CHECKOUT REDIRECT
- * 🎯 CONVERSION PSYCHOLOGY: Single entry point reduces decision paralysis
- * Redirects to modern checkout to ensure consistent experience
- */
-export default function OrderPage() {
+export default function LegacyCheckoutRedirect() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   useEffect(() => {
     const params = searchParams.toString();
-    router.push(params ? `/checkout?${params}` : '/checkout');
+    router.replace(params ? `/checkout?${params}` : '/checkout');
   }, [router, searchParams]);
 
   return (
