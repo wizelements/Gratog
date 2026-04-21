@@ -46,8 +46,8 @@ export function computeTotals(input: TotalsInput): OrderTotals {
   const { cart, fulfillmentType, tip = 0, couponDiscount = 0, shippingFee = 0 } = input;
   
   // Calculate subtotal
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const subtotal = cart.reduce((sum, item) => sum + ((Number(item.price) || 0) * (Number(item.quantity) || 1)), 0);
+  const itemCount = cart.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
   
   // Calculate delivery fee
   let deliveryFee = 0;

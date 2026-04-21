@@ -271,7 +271,7 @@ export default function ReviewAndPay({
                         )}
                       </div>
                       <p className="text-sm font-semibold text-gray-900">
-                        {formatCurrency(item.price * item.quantity)}
+                        {formatCurrency((Number(item.price) || 0) * (Number(item.quantity) || 1))}
                       </p>
                     </div>
                   ))}

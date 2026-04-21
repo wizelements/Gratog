@@ -132,19 +132,21 @@ export default function SquarePaymentForm({
 
       setPaymentStep('processing');
       
-      const res = await fetch('/api/square/payments', {
+      const res = await fetch('/api/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sourceId: result.token,
-          amount: amountCents,
+          amountCents,
           orderId,
           squareOrderId,
           orderAccessToken,
           idempotencyKey,
-          buyerEmail: customer.email,
-          buyerName: customer.name,
-          buyerPhone: customer.phone,
+          customer: {
+            email: customer.email,
+            name: customer.name,
+            phone: customer.phone,
+          },
         }),
       });
       
