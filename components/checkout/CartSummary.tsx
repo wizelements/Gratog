@@ -227,7 +227,7 @@ export default function CartSummary({
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm">
                   <p className="font-medium text-amber-800">⏳ Preorder items included</p>
                   <p className="text-xs text-amber-700 mt-1">
-                    Preorder items are made fresh and ready for your selected pickup date.
+                    These items will be made fresh and ready for your selected pickup date.
                   </p>
                 </div>
               </div>

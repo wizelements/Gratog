@@ -190,7 +190,7 @@ export default function FloatingCart() {
                             ${(Number(item.price) || 0).toFixed(2)}
                           </p>
                           {item.isPreorder && (
-                            <p className="text-xs text-emerald-600 font-medium mb-2">Preorder — ships next batch</p>
+                            <p className="text-xs text-emerald-600 font-medium mb-2">Preorder — ready at your next market pickup</p>
                           )}
                           {item.marketExclusive && (
                             <p className="text-xs text-purple-600 font-medium mb-2 bg-purple-50 px-2 py-1 rounded">

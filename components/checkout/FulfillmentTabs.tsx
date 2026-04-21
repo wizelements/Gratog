@@ -89,7 +89,7 @@ export default function FulfillmentTabs({ selected, onChange, hasPreorderItems =
 
     {hasPreorderItems && selected !== 'pickup' && (
       <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 mt-3">
-        ⏳ Your cart includes preorder items that require market pickup. Please select &quot;Pickup&quot; for these items.
+        ⏳ Your cart has preorder items — these are made fresh and can only be collected at a market. Please select &quot;Pickup&quot;.
       </p>
     )}
     </>

@@ -322,8 +322,8 @@ export default function ReviewAndPay({
                   <div>
                     <h4 className="font-medium text-amber-800">Preorder items in your cart</h4>
                     <p className="text-sm text-amber-700 mt-1">
-                      Preorder items will be freshly prepared for your selected pickup date. 
-                      You'll receive a confirmation text when your order is ready.
+                      These items will be freshly prepared for your selected pickup date. 
+                      You&apos;ll receive a text when your order is ready to collect.
                     </p>
                   </div>
                 </div>
