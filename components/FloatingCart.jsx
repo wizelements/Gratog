@@ -187,7 +187,7 @@ export default function FloatingCart() {
                             </p>
                           )}
                           <p className="text-emerald-600 font-bold text-lg mb-1">
-                            ${item.price.toFixed(2)}
+                            ${(Number(item.price) || 0).toFixed(2)}
                           </p>
                           {item.isPreorder && (
                             <p className="text-xs text-emerald-600 font-medium mb-2">Preorder — ships next batch</p>
@@ -235,7 +235,7 @@ export default function FloatingCart() {
                         <div className="text-right">
                           <p className="text-sm text-gray-500">Total</p>
                           <p className="text-lg font-bold text-gray-900">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            ${((Number(item.price) || 0) * (Number(item.quantity) || 1)).toFixed(2)}
                           </p>
                         </div>
                       </div>

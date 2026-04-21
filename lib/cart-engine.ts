@@ -195,8 +195,14 @@ export function normalizeProduct(product: any): CartItem {
     null;
   
   if (!variationId) {
-    logger.error('Missing variation ID', { product });
-    throw new Error('Product must have a variation ID');
+    // Fallback: use product id or slug as variation ID for products without Square variations
+    const fallbackId = product.id || product.productId || product.slug;
+    if (!fallbackId) {
+      logger.error('Missing variation ID', { product });
+      throw new Error('Product must have a variation ID');
+    }
+    logger.warn('Using fallback ID as variationId', { fallbackId });
+    return normalizeProduct({ ...product, variationId: fallbackId });
   }
 
   const productId = product.id || product.productId || variationId;
@@ -236,16 +242,59 @@ export function normalizeProduct(product: any): CartItem {
 
 /**
  * 🎯 ADD TO CART WITH VALIDATION
+ * Accepts multiple call signatures used across the codebase:
+ *   addToCart(cartItem)
+ *   addToCart(product, quantity, selectedVariant)
+ *   addToCart(product, selectedVariant, quantity)
  */
-export function addToCart(item: CartItem): { success: boolean; error?: string } {
+export function addToCart(productOrItem: any, arg2?: any, arg3?: any): { success: boolean; error?: string } {
   try {
     const storage = getSafeLocalStorage();
     if (!storage) {
-      // In-memory fallback
       logger.warn('No localStorage, using in-memory cart');
       return { success: true };
     }
-    
+
+    // Resolve the flexible call signatures into a normalized CartItem
+    let item: CartItem;
+
+    if (productOrItem.variationId && typeof productOrItem.quantity === 'number' && arg2 === undefined) {
+      // Already a CartItem — use directly
+      item = productOrItem as CartItem;
+    } else {
+      // Raw product object — figure out quantity & variant from extra args
+      const product = { ...productOrItem };
+
+      let quantity = 1;
+      let variant: any = null;
+
+      if (typeof arg2 === 'number') {
+        // addToCart(product, quantity, variant?)
+        quantity = arg2;
+        variant = arg3 || null;
+      } else if (typeof arg3 === 'number') {
+        // addToCart(product, variant, quantity)
+        variant = arg2 || null;
+        quantity = arg3;
+      } else if (arg2 && typeof arg2 === 'object') {
+        // addToCart(product, variant)  — quantity defaults to 1
+        variant = arg2;
+      }
+
+      // Apply variant overrides to product before normalizing
+      if (variant) {
+        product.variationId = variant.id || variant.variationId || product.variationId;
+        product.variantLabel = variant.name || variant.label || product.variantLabel;
+        product.size = variant.name || variant.label || product.size;
+        if (variant.price != null) {
+          product.price = variant.price;
+        }
+      }
+
+      product.quantity = quantity;
+      item = normalizeProduct(product);
+    }
+
     const currentCart = loadCart();
     
     // Check if item already exists
@@ -286,9 +335,12 @@ export function loadCart(): CartItem[] {
     const parsed = JSON.parse(cartData);
     if (!Array.isArray(parsed)) return [];
     
-    // Migrate old cart items to new format
+    // Migrate old cart items to new format & coerce numeric fields
     return parsed.map(item => ({
       ...item,
+      price: Number(item.price) || 0,
+      quantity: Number(item.quantity) || 1,
+      priceCents: Number(item.priceCents) || Math.round((Number(item.price) || 0) * 100),
       marketExclusive: item.marketExclusive ?? isMarketExclusive(item),
     }));
   } catch (error) {
@@ -388,8 +440,8 @@ export function getCartTotal(): {
 } {
   const cart = loadCart();
   
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const subtotal = cart.reduce((sum, item) => sum + ((Number(item.price) || 0) * (Number(item.quantity) || 1)), 0);
+  const totalItems = cart.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
   const marketExclusiveCount = cart.filter(i => i.marketExclusive).length;
   const hasPreorderItems = cart.some(i => i.isPreorder);
   
