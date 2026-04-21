@@ -338,7 +338,7 @@ export default function ReviewAndPay({
                 ) : (
                   <MapPin className="w-4 h-4 text-emerald-600" />
                 )}
-                {fulfillment.type === 'pickup' ? 'Pickup' : fulfillment.type === 'delivery' ? 'Delivery' : 'Shipping'} Details
+                {fulfillment.type === 'pickup' ? 'Pickup' : 'Delivery'} Details
               </h4>
               <div className="text-sm text-gray-600 space-y-1">
                 {fulfillment.type === 'delivery' && fulfillment.delivery && (
@@ -351,15 +351,7 @@ export default function ReviewAndPay({
                 {fulfillment.type === 'pickup' && fulfillment.pickup && (
                   <p>{fulfillment.pickup.date?.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
                 )}
-                {fulfillment.type === 'shipping' && fulfillment.shipping && (
-                  <>
-                    <p>{fulfillment.shipping.address.street}</p>
-                    <p>{fulfillment.shipping.address.city}, {fulfillment.shipping.address.state} {fulfillment.shipping.address.zip}</p>
-                    {fulfillment.shipping.methodId && (
-                      <p className="text-emerald-600">Method: {fulfillment.shipping.methodId}</p>
-                    )}
-                  </>
-                )}
+
               </div>
               <button type="button" onClick={onBack} className="text-sm text-emerald-600 hover:underline mt-3">
                 Edit details

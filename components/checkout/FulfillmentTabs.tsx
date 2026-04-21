@@ -3,10 +3,11 @@
 
 /**
  * FulfillmentTabs - Adaptive fulfillment type selector
+ * Shipping removed — customers are directed to contact us for shipping inquiries.
  */
 
 import { motion } from 'framer-motion';
-import { MapPin, Truck, Package } from 'lucide-react';
+import { MapPin, Truck, Package, Mail } from 'lucide-react';
 import { FulfillmentType } from '@/stores/checkout';
 
 interface FulfillmentTabsProps {
@@ -18,13 +19,12 @@ interface FulfillmentTabsProps {
 const TABS = [
   { value: 'pickup' as FulfillmentType, label: 'Pickup', icon: MapPin, description: 'Pick up at market' },
   { value: 'delivery' as FulfillmentType, label: 'Delivery', icon: Truck, description: 'Home delivery' },
-  { value: 'shipping' as FulfillmentType, label: 'Shipping', icon: Package, description: 'Ship to address' }
 ];
 
 export default function FulfillmentTabs({ selected, onChange, hasPreorderItems = false }: FulfillmentTabsProps) {
   return (
     <>
-    <div className="grid grid-cols-3 gap-3 p-1 bg-gray-100 rounded-xl">
+    <div className="grid grid-cols-2 gap-3 p-1 bg-gray-100 rounded-xl">
       {TABS.map((tab) => {
         const Icon = tab.icon;
         const isSelected = selected === tab.value;
@@ -69,6 +69,24 @@ export default function FulfillmentTabs({ selected, onChange, hasPreorderItems =
         );
       })}
     </div>
+
+    {/* Shipping contact notice */}
+    <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+      <Package className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+      <div>
+        <p className="text-sm font-medium text-blue-800">Need shipping?</p>
+        <p className="text-xs text-blue-700 mt-0.5">
+          We offer nationwide shipping on select products.{' '}
+          <a href="/contact" className="underline font-medium hover:text-blue-900">Contact us</a>{' '}
+          or email{' '}
+          <a href="mailto:info@tasteofgratitude.shop" className="underline font-medium hover:text-blue-900">
+            info@tasteofgratitude.shop
+          </a>{' '}
+          to arrange shipping.
+        </p>
+      </div>
+    </div>
+
     {hasPreorderItems && selected !== 'pickup' && (
       <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 mt-3">
         ⏳ Your cart includes preorder items that require market pickup. Please select &quot;Pickup&quot; for these items.

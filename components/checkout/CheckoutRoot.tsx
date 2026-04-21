@@ -13,7 +13,6 @@ import ContactForm from './ContactForm';
 import FulfillmentTabs from './FulfillmentTabs';
 import PickupForm from './PickupForm';
 import DeliveryForm from './DeliveryForm';
-import ShippingForm from './ShippingForm';
 import ReviewAndPay from './ReviewAndPay';
 import Link from 'next/link';
 
@@ -87,11 +86,6 @@ export default function CheckoutRoot() {
       if (!fulfillment.delivery?.address.street) errors['address.street'] = 'Street address is required';
       if (!fulfillment.delivery?.address.city) errors['address.city'] = 'City is required';
       if (!fulfillment.delivery?.address.zip) errors['address.zip'] = 'ZIP code is required';
-    } else if (fulfillment.type === 'shipping') {
-      if (!fulfillment.shipping?.address?.street) errors['address.street'] = 'Street address is required';
-      if (!fulfillment.shipping?.address?.city) errors['address.city'] = 'City is required';
-      if (!fulfillment.shipping?.address?.state) errors['address.state'] = 'State is required';
-      if (!fulfillment.shipping?.address?.zip) errors['address.zip'] = 'ZIP code is required';
     }
     
     if (Object.keys(errors).length > 0) {
@@ -217,13 +211,7 @@ export default function CheckoutRoot() {
                               errors={validation.fulfillment}
                             />
                           )}
-                          {fulfillment.type === 'shipping' && (
-                            <ShippingForm
-                              data={fulfillment.shipping || { address: { street: '', city: '', state: '', zip: '' }, methodId: 'standard' }}
-                              onChange={(data) => setFulfillment({ shipping: { ...fulfillment.shipping, ...data } })}
-                              errors={validation.fulfillment}
-                            />
-                          )}
+
                         </AnimatePresence>
                       </div>
                     </div>

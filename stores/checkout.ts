@@ -132,10 +132,16 @@ function loadPersistedState(): Partial<CheckoutState> {
     if (!saved) return {};
     
     const parsed = JSON.parse(saved);
+    const fulfillment = parsed.fulfillment || initialFulfillment;
+    // Shipping removed from UI — reset stale persisted shipping to delivery
+    if (fulfillment.type === 'shipping') {
+      fulfillment.type = 'delivery';
+      fulfillment.delivery = fulfillment.delivery || initialFulfillment.delivery;
+    }
     return {
       stage: parsed.stage || 'cart',
       contact: parsed.contact || initialContact,
-      fulfillment: parsed.fulfillment || initialFulfillment,
+      fulfillment,
       tip: parsed.tip || 0,
       couponCode: parsed.couponCode || '',
       couponDiscount: parsed.couponDiscount || 0
