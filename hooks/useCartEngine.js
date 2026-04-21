@@ -27,66 +27,63 @@ export function useCartEngine() {
   const [cart, setCart] = useState([]);
   const [isHydrated, setIsHydrated] = useState(false);
 
+  // Reload cart from localStorage (single source of truth)
+  const refreshCart = useCallback(() => {
+    setCart(loadCart());
+  }, []);
+
   // Load cart on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setCart(loadCart());
+      refreshCart();
       setIsHydrated(true);
     }
-  }, []);
+  }, [refreshCart]);
 
-  // Subscribe to cart updates
+  // Subscribe to cart updates — re-read from localStorage on every event
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const unsubscribe = subscribeToCart((detail) => {
-      setCart(detail.cart);
+    const unsubscribe = subscribeToCart(() => {
+      refreshCart();
     });
 
     return unsubscribe;
-  }, []);
+  }, [refreshCart]);
 
   const add = useCallback((product, quantity = 1) => {
-    const updated = addToCart(product, quantity);
-    setCart(updated);
+    addToCart(product, quantity);
+    refreshCart();
     
-    // Toast notification
     if (typeof window !== 'undefined' && window.toast) {
       window.toast.success(`Added ${product.name} to cart`);
     }
-    
-    return updated;
-  }, []);
+  }, [refreshCart]);
 
   const remove = useCallback((productId) => {
-    const updated = removeFromCart(productId);
-    setCart(updated);
+    removeFromCart(productId);
+    refreshCart();
     
     if (typeof window !== 'undefined' && window.toast) {
       window.toast.success('Item removed from cart');
     }
-    
-    return updated;
-  }, []);
+  }, [refreshCart]);
 
   const updateQty = useCallback((productId, quantity) => {
-    const updated = updateQuantity(productId, quantity);
-    setCart(updated);
-    return updated;
-  }, []);
+    updateQuantity(productId, quantity);
+    refreshCart();
+  }, [refreshCart]);
 
   const clear = useCallback(() => {
-    const updated = clearCart();
-    setCart(updated);
+    clearCart();
+    refreshCart();
     
     if (typeof window !== 'undefined' && window.toast) {
       window.toast.success('Cart cleared');
     }
-    
-    return updated;
-  }, []);
+  }, [refreshCart]);
 
-  const totals = getCartTotal();
+  const totals = isHydrated ? getCartTotal() : { subtotal: 0, totalItems: 0 };
 
   return {
     // State
