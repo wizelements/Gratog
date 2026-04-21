@@ -1,28 +1,10 @@
-'use client';
+import CheckoutRoot from '@/components/checkout/CheckoutRoot';
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+export const metadata = {
+  title: 'Checkout | Taste of Gratitude',
+  description: 'Complete your order with secure checkout powered by Square'
+};
 
-/**
- * LEGACY CHECKOUT REDIRECT
- * 🎯 CONVERSION PSYCHOLOGY: Single entry point reduces decision paralysis
- * Redirects to modern checkout to ensure consistent experience
- */
 export default function OrderPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  
-  useEffect(() => {
-    const params = searchParams.toString();
-    router.push(params ? `/checkout?${params}` : '/checkout');
-  }, [router, searchParams]);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-emerald-50 to-white">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4" />
-        <p className="text-gray-600">Redirecting to checkout...</p>
-      </div>
-    </div>
-  );
+  return <CheckoutRoot />;
 }
