@@ -27,11 +27,12 @@ export default function FloatingCart() {
       logger.info('Cart loaded on mount', { itemCount: loadedCart.length });
     }
 
-    const handleCartUpdate = (event) => {
+    const handleCartUpdate = () => {
+      const freshCart = loadCart();
       logger.debug('Cart update event received', { 
-        itemCount: event.detail.cart.length 
+        itemCount: freshCart.length 
       });
-      setCart(event.detail.cart);
+      setCart(freshCart);
     };
 
     const handleOpenCart = () => {
@@ -39,11 +40,11 @@ export default function FloatingCart() {
       setIsOpen(true);
     };
 
-    window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('cart-updated', handleCartUpdate);
     window.addEventListener('openCart', handleOpenCart);
     
     return () => {
-      window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('cart-updated', handleCartUpdate);
       window.removeEventListener('openCart', handleOpenCart);
     };
   }, []);
@@ -58,22 +59,22 @@ export default function FloatingCart() {
     
     const newQuantity = item.quantity + change;
     if (newQuantity > 0) {
-      const newCart = updateQuantity(itemId, newQuantity);
-      setCart(newCart);
+      updateQuantity(itemId, newQuantity);
+      setCart(loadCart());
     } else {
       handleRemoveItem(itemId);
     }
   };
 
   const handleRemoveItem = (itemId) => {
-    const newCart = removeFromCart(itemId);
-    setCart(newCart);
+    removeFromCart(itemId);
+    setCart(loadCart());
     toast.success('Item removed from cart');
   };
 
   const handleClearCart = () => {
     clearCart();
-    setCart([]);
+    setCart(loadCart());
     toast.success('Cart cleared');
   };
 
