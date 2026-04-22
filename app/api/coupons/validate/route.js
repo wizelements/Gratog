@@ -60,7 +60,7 @@ export async function POST(request) {
       discount: {
         amount: discountAmount,
         freeShipping,
-        description: `${discountAmount > 0 ? `$${(discountAmount / 100).toFixed(2)} off` : ''}${freeShipping ? (discountAmount > 0 ? ' + ' : '') + 'Free shipping' : ''}`
+        description: `${discountAmount > 0 ? `$${(discountAmount / 100).toFixed(2)} off` : ''}${freeShipping ? (discountAmount > 0 ? ' + ' : '') + 'Free delivery' : ''}`
       }
     });
 

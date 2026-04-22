@@ -69,7 +69,6 @@ const AVAILABLE_REWARDS: AvailableReward[] = [
   { id: 'reward_5off', name: '$5 Off', pointsCost: 500, description: '$5 off your next order', type: 'discount', value: 5 },
   { id: 'reward_10off', name: '$10 Off', pointsCost: 1000, description: '$10 off your next order', type: 'discount', value: 10 },
   { id: 'reward_15off', name: '$15 Off', pointsCost: 1500, description: '$15 off your next order', type: 'discount', value: 15 },
-  { id: 'reward_freeship', name: 'Free Shipping', pointsCost: 300, description: 'Free shipping on your next order', type: 'shipping', value: 0 },
   { id: 'reward_freeproduct', name: 'Free Product', pointsCost: 3000, description: 'Choose a free product (up to $25 value)', type: 'product', value: 25 },
   { id: 'reward_premium', name: 'Premium Gift Box', pointsCost: 5000, description: 'Exclusive premium gift box', type: 'product', value: 50 }
 ];

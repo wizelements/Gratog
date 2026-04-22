@@ -1,6 +1,6 @@
 // AUTO-UPDATE: This version string is replaced at build time by next.config.js headers.
 // The browser byte-compares sw.js on every registration check — any change triggers update.
-const CACHE_VERSION = 'v10-20260422-1';
+const CACHE_VERSION = 'v10-20260422-2';
 const CACHE_PREFIX = 'gratog';
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${CACHE_VERSION}`;

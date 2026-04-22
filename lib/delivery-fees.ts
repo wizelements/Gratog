@@ -55,24 +55,9 @@ export function qualifiesForFreeDelivery(subtotal: number): boolean {
   return false;
 }
 
-// Calculate shipping fee based on state
-export function calculateShippingFee(state: string, subtotal: number): number {
-  const FREE_SHIPPING_THRESHOLD = 50;
-  
-  if (subtotal >= FREE_SHIPPING_THRESHOLD) {
-    return 0;
-  }
-  
-  const SHIPPING_RATES: { [key: string]: number } = {
-    'GA': 8.99,
-    'AL': 9.99,
-    'FL': 9.99,
-    'TN': 9.99,
-    'SC': 9.99,
-    'NC': 10.99,
-  };
-  
-  return SHIPPING_RATES[state] || 12.99;
+// Shipping removed — contact us for shipping inquiries
+export function calculateShippingFee(_state: string, _subtotal: number): number {
+  return 0;
 }
 
 // Calculate tip amount from preset or custom

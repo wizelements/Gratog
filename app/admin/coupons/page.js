@@ -107,7 +107,7 @@ export default function AdminCouponsPage() {
 
   const exportCoupons = () => {
     const csv = [
-      ['Code', 'Email', 'Discount', 'Free Shipping', 'Type', 'Used', 'Created', 'Expires'],
+      ['Code', 'Email', 'Discount', 'Free Delivery', 'Type', 'Used', 'Created', 'Expires'],
       ...coupons.map(coupon => [
         coupon.code,
         coupon.customerEmail,
@@ -263,7 +263,7 @@ export default function AdminCouponsPage() {
                     checked={formData.freeShipping}
                     onCheckedChange={(checked) => setFormData({...formData, freeShipping: checked})}
                   />
-                  <Label htmlFor="freeShipping">Include Free Shipping</Label>
+                  <Label htmlFor="freeShipping">Include Free Delivery</Label>
                 </div>
               </div>
               
@@ -309,7 +309,7 @@ export default function AdminCouponsPage() {
                           <span>${(coupon.discountAmount / 100).toFixed(2)} off</span>
                         )}
                         {coupon.freeShipping && (
-                          <span className="text-green-600 text-xs">Free shipping</span>
+                          <span className="text-green-600 text-xs">Free delivery</span>
                         )}
                       </div>
                     </TableCell>
