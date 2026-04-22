@@ -379,7 +379,7 @@ export default function RewardsPage() {
                             canRedeem ? 'bg-emerald-200' : 'bg-gray-200'
                           }`}>
                             {reward.type === 'discount' && <span className="text-lg">💰</span>}
-                            {reward.type === 'shipping' && <Truck className="w-5 h-5" />}
+                            {reward.type === 'shipping' && <Package className="w-5 h-5" />}
                             {reward.type === 'product' && <Package className="w-5 h-5" />}
                           </div>
                           <div>
