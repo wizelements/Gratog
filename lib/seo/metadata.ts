@@ -212,7 +212,7 @@ export function generateCatalogMeta(category?: string): Metadata {
   const title = category ? `${categoryName} | Shop ${SITE_NAME}` : `Shop All Products | ${SITE_NAME}`;
   const description = category
     ? `Browse our ${categoryName} collection. Premium wildcrafted sea moss products with 92 essential minerals for optimal wellness.`
-    : 'Shop our complete collection of wildcrafted sea moss gel, lemonades, and wellness products. 92 essential minerals. Free shipping on orders over $50.';
+    : 'Shop our complete collection of wildcrafted sea moss gel, lemonades, and wellness products. 92 essential minerals. Available at Atlanta-area farmers markets and for local delivery.';
 
   return generatePageMeta(title, description, category ? `/catalog?category=${category}` : '/catalog', {
     keywords: [
@@ -222,7 +222,7 @@ export function generateCatalogMeta(category?: string): Metadata {
       'wellness products',
       'natural supplements',
       'buy online',
-      'free shipping',
+      'farmers market Atlanta',
     ],
   });
 }
@@ -234,7 +234,7 @@ export function generateHomeMeta(): Metadata {
   return {
     metadataBase: new URL(BASE_URL),
     title: `Premium Wildcrafted Sea Moss Gel - 92 Essential Minerals | ${SITE_NAME}`,
-    description: 'Shop wildcrafted Irish sea moss gel packed with 92 essential minerals. Hand-crafted for immune support, thyroid health, and wellness. 100% natural, vegan superfood. Free shipping over $50.',
+    description: 'Shop wildcrafted Irish sea moss gel packed with 92 essential minerals. Hand-crafted for immune support, thyroid health, and wellness. 100% natural, vegan superfood. Available at Atlanta-area farmers markets.',
     keywords: [
       'sea moss gel',
       'wildcrafted sea moss',

@@ -142,7 +142,7 @@ export default function HelpCenter() {
             <div className="space-y-1 text-xs">
               {[
                 { title: 'How to use sea moss gel', href: '/explore/learn' },
-                { title: 'Shipping & tracking', href: '/contact' },
+                { title: 'Pickup & delivery info', href: '/contact' },
                 { title: 'Returns & refunds', href: '/policies' },
                 { title: 'Account & orders', href: '/profile' },
               ].map((topic) => (

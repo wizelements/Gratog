@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   Calendar, 
-  Truck, 
   RefreshCw, 
   CheckCircle2,
   Sparkles,
@@ -46,7 +45,7 @@ const SUBSCRIPTION_PLANS = [
 const SUBSCRIPTION_BENEFITS = [
   'Never run out of your wellness routine',
   'Skip or pause anytime',
-  'Free shipping on all subscription orders',
+  'Priority pickup at all markets',
   'Exclusive subscriber-only discounts',
   'Early access to new flavors'
 ];
@@ -125,7 +124,7 @@ export default function SubscriptionSelector({
             </div>
             <div>
               <h3 className="font-semibold text-gray-900">Subscribe & Save</h3>
-              <p className="text-sm text-gray-600">Up to 20% off + free shipping</p>
+              <p className="text-sm text-gray-600">Up to 20% off + priority pickup</p>
             </div>
           </div>
           <button

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ShieldCheck, RefreshCw, Clock, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, RefreshCw, Clock, CheckCircle2, MapPin } from 'lucide-react';
 
 /**
  * GuaranteeBadge - Shows money-back guarantee trust signal
@@ -115,8 +115,8 @@ export default function GuaranteeBadge({
 export function TrustBar() {
   const signals = [
     { icon: ShieldCheck, text: '90-Day Guarantee' },
-    { icon: RefreshCw, text: 'Free Returns' },
-    { icon: Clock, text: 'Fast Shipping' },
+    { icon: RefreshCw, text: 'Satisfaction Guarantee' },
+    { icon: MapPin, text: 'Market Fresh' },
   ];
 
   return (

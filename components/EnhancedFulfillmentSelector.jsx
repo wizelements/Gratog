@@ -158,7 +158,7 @@ export default function EnhancedFulfillmentSelector({
                     ) : typeof option.fee === 'number' ? (
                       <Badge variant="secondary" className="shadow-sm">
                         ${option.fee.toFixed(2)}
-                        {key === 'shipping' && subtotal >= 50 && ' → FREE! 🎉'}
+                        
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="shadow-sm">

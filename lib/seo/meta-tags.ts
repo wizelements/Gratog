@@ -120,7 +120,7 @@ export function generateMetadata(config: MetaConfig, baseUrl: string) {
 export function getHomeMetadata(baseUrl: string) {
   return generateMetadata({
     title: 'Premium Wildcrafted Sea Moss Gel - 92 Essential Minerals',
-    description: 'Shop wildcrafted Irish sea moss gel packed with 92 essential minerals. Hand-crafted for immune support, thyroid health, and wellness. 100% natural, vegan superfood. Free shipping over $50.',
+    description: 'Shop wildcrafted Irish sea moss gel packed with 92 essential minerals. Hand-crafted for immune support, thyroid health, and wellness. 100% natural, vegan superfood. Available at Atlanta-area farmers markets.',
     keywords: [
       'sea moss gel',
       'wildcrafted sea moss',

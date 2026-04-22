@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { CartItem, CartAPI } from '@/adapters/cartAdapter';
 import { OrderTotals, formatCurrency } from '@/adapters/totalsAdapter';
+import { PREORDER_MINIMUM, BOBA_PREORDER_MAX_QTY } from '@/lib/cart-engine';
 import { toast } from 'sonner';
 
 interface CartSummaryProps {
@@ -204,34 +205,64 @@ export default function CartSummary({
                 </span>
               </div>
               
-              {/* Free Delivery Progress */}
-              {totals.freeDeliveryProgress && (
-                <div className="pt-2">
-                  <p className="text-xs text-gray-600 mb-1">
-                    Add {formatCurrency(totals.freeDeliveryProgress.remaining)} more for FREE delivery!
-                  </p>
-                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-emerald-500 to-teal-500"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${totals.freeDeliveryProgress.percentage}%` }}
-                      transition={{ duration: 0.5 }}
-                    />
-                  </div>
-                </div>
-              )}
+
             </div>
 
-            {cart.some(item => item.isPreorder) && (
-              <div className="px-4 pb-4">
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm">
-                  <p className="font-medium text-amber-800">⏳ Preorder items included</p>
-                  <p className="text-xs text-amber-700 mt-1">
-                    These items will be made fresh and ready for your selected pickup date.
-                  </p>
+            {cart.some(item => item.isPreorder) && (() => {
+              const preorderItems = cart.filter(i => i.isPreorder);
+              const isBoba = (item: CartItem) => {
+                const cat = (item.category || '').toLowerCase();
+                const name = (item.name || '').toLowerCase();
+                return cat.includes('boba') || name.includes('boba') || name.includes('bubble tea');
+              };
+              const bobaItems = preorderItems.filter(isBoba);
+              const nonBobaItems = preorderItems.filter(i => !isBoba(i));
+              const bobaQty = bobaItems.reduce((s, i) => s + (Number(i.quantity) || 1), 0);
+              const nonBobaSubtotal = nonBobaItems.reduce(
+                (s, i) => s + ((Number(i.price) || 0) * (Number(i.quantity) || 1)), 0
+              );
+              const bobaOk = bobaQty <= BOBA_PREORDER_MAX_QTY;
+              const nonBobaOk = nonBobaItems.length === 0 || nonBobaSubtotal >= PREORDER_MINIMUM;
+              
+              return (
+                <div className="px-4 pb-4 space-y-2">
+                  {nonBobaItems.length > 0 && (
+                    <div className={`${nonBobaOk ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'} border rounded-lg p-3 text-sm`}>
+                      <p className={`font-medium ${nonBobaOk ? 'text-emerald-800' : 'text-amber-800'}`}>
+                        {nonBobaOk ? '✅ Preorder minimum met' : '⏳ Preorder minimum not met'}
+                      </p>
+                      <p className={`text-xs ${nonBobaOk ? 'text-emerald-700' : 'text-amber-700'} mt-1`}>
+                        {nonBobaOk 
+                          ? 'Made fresh for your next market pickup.'
+                          : `$${PREORDER_MINIMUM.toFixed(2)} minimum required. Current: $${nonBobaSubtotal.toFixed(2)}. Add $${(PREORDER_MINIMUM - nonBobaSubtotal).toFixed(2)} more.`
+                        }
+                      </p>
+                      {!nonBobaOk && (
+                        <div className="mt-2 w-full h-2 bg-amber-200 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-amber-500 rounded-full transition-all duration-300"
+                            style={{ width: `${Math.min(100, (nonBobaSubtotal / PREORDER_MINIMUM) * 100)}%` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {bobaItems.length > 0 && (
+                    <div className={`${bobaOk ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'} border rounded-lg p-3 text-sm`}>
+                      <p className={`font-medium ${bobaOk ? 'text-emerald-800' : 'text-red-800'}`}>
+                        {bobaOk ? `🧋 Boba preorder (${bobaQty}/${BOBA_PREORDER_MAX_QTY})` : `🧋 Boba limit exceeded (${bobaQty}/${BOBA_PREORDER_MAX_QTY})`}
+                      </p>
+                      <p className={`text-xs ${bobaOk ? 'text-emerald-700' : 'text-red-700'} mt-1`}>
+                        {bobaOk
+                          ? 'Boba will be made fresh for your pickup.'
+                          : `Max ${BOBA_PREORDER_MAX_QTY} boba drinks per preorder. Want more? Order at the market!`
+                        }
+                      </p>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </motion.div>
         )}
       </AnimatePresence>

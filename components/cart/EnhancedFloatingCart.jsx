@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
  * 🛒 Enhanced Floating Cart with creative features
  * - Smooth animations
  * - Undo delete
- * - Free shipping progress
+ * - Cart with undo delete
  * - Empty state with CTA
  * - Mobile optimized
  */
@@ -260,7 +260,7 @@ export default function EnhancedFloatingCart() {
                                     ${item.price.toFixed(2)}
                                   </p>
                                   {item.isPreorder && (
-                                    <p className="text-xs text-emerald-600 font-medium mb-2">Preorder — ships next batch</p>
+                                    <p className="text-xs text-emerald-600 font-medium mb-2">Preorder — ready at your next market pickup</p>
                                   )}
 
                                   <div className="flex items-center gap-3">

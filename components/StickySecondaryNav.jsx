@@ -75,7 +75,7 @@ export default function StickySecondaryNav() {
                 { label: 'FAQ', href: '/#faq', icon: '?' },
                 { label: 'Contact', href: '/contact', icon: '📧' },
                 { label: 'Chat', onClick: () => window.Tawk_API?.toggle?.(), icon: '💬' },
-                { label: 'Shipping', href: '/contact', icon: '🚚' },
+                { label: 'Delivery', href: '/contact', icon: '🚗' },
               ].map((item) => (
                 <div key={item.label}>
                   {item.href ? (

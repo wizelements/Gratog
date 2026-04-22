@@ -41,7 +41,7 @@ export default function SoldOutBadge({ stock, variant = 'overlay' }) {
  * PreorderNotice — shown below price when item is sold out.
  * Explains how preorder works in plain language.
  */
-export function PreorderNotice({ stock, minimumSize = '1 Gallon' }) {
+export function PreorderNotice({ stock }) {
   if (stock === null || stock === undefined || stock > 0) return null;
 
   return (
@@ -51,13 +51,9 @@ export function PreorderNotice({ stock, minimumSize = '1 Gallon' }) {
         <div>
           <p className="text-sm font-semibold text-emerald-800">Preorder — Made Fresh for You</p>
           <p className="text-xs text-emerald-700 mt-0.5">
-            Order now, pick up at your next market visit. We&apos;ll prepare it fresh for your pickup date.
+            $60 minimum for preorder items (boba: max 2 drinks). Order now, pick up at your next market visit.
+            We&apos;ll prepare it fresh for your pickup date.
           </p>
-          {minimumSize && (
-            <p className="text-xs text-emerald-600 mt-1 font-medium">
-              {minimumSize} minimum
-            </p>
-          )}
         </div>
       </div>
     </div>

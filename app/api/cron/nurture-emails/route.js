@@ -346,14 +346,14 @@ function generateSubscriptionOfferEmail() {
                   <div style="background: #fef3c7; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
                     <p style="color: #92400e; font-size: 14px; margin: 0 0 10px 0;">EXCLUSIVE OFFER FOR EMAIL SUBSCRIBERS</p>
                     <h2 style="color: #d97706; font-size: 48px; margin: 0;">20% OFF</h2>
-                    <p style="color: #92400e; margin: 10px 0 0 0;">+ Free Shipping on Every Order</p>
+                    <p style="color: #92400e; margin: 10px 0 0 0;">+ Priority Market Pickup</p>
                   </div>
                   
                   <ul style="text-align: left; line-height: 2; color: #374151; margin-bottom: 30px; display: inline-block;">
                     <li>✅ Automatic delivery every 30 days</li>
                     <li>✅ Pause, skip, or cancel anytime</li>
                     <li>✅ Save $7+ per jar</li>
-                    <li>✅ Free shipping (always)</li>
+                    <li>✅ Priority market pickup</li>
                     <li>✅ Early access to new products</li>
                   </ul>
                   

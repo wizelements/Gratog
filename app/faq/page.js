@@ -125,7 +125,7 @@ const faqCategories = [
       },
       {
         question: 'What is the Spin & Win wheel?',
-        answer: 'New customers get one free spin to win instant discounts ($1-$5 off or free shipping). Provide your email to spin. Prizes are valid for 24 hours. Existing customers can earn additional spins through our rewards program.'
+        answer: 'New customers get one free spin to win instant discounts ($1-$5 off). Provide your email to spin. Prizes are valid for 24 hours. Existing customers can earn additional spins through our rewards program.'
       },
       {
         question: 'How do I redeem my rewards?',

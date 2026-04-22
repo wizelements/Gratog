@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ShoppingCart, Check, Loader2, Star, Heart, Share2, Truck, Shield, Package, Sparkles, Droplets, Award, Users, Quote, ChevronRight, Leaf, Sun, Zap, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Check, Loader2, Star, Heart, Share2, MapPin, Shield, Package, Sparkles, Droplets, Award, Users, Quote, ChevronRight, Leaf, Sun, Zap, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cart-engine';
 import RecommendationsWidget from '@/components/RecommendationsWidget';
@@ -420,12 +420,12 @@ export default function ProductDetailClient({ product, slug }) {
               </div>
             )}
 
-            {/* Shipping Info */}
+            {/* Pickup & Delivery Info */}
             <div className="flex items-start gap-3 text-sm text-gray-600">
-              <Truck className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <MapPin className="w-5 h-5 text-emerald-600 flex-shrink-0" />
               <div>
-                <p className="font-medium text-gray-900">Free Shipping</p>
-                <p>On orders over $35. Local pickup available at Serenbe Farmers Market.</p>
+                <p className="font-medium text-gray-900">Pickup & Delivery</p>
+                <p>Available at Serenbe & Dunwoody farmers markets every Saturday. Local delivery also available.</p>
               </div>
             </div>
           </div>

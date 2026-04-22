@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Leaf, FlaskConical, ShieldCheck, Truck } from 'lucide-react';
+import { Leaf, FlaskConical, ShieldCheck, MapPin } from 'lucide-react';
 
 const differentiators = [
   {
@@ -23,10 +23,10 @@ const differentiators = [
       "Not completely satisfied? We offer a 30-day money-back guarantee. Your wellness journey is risk-free with us.",
   },
   {
-    icon: Truck,
-    title: 'Fast Shipping',
+    icon: MapPin,
+    title: 'Market Fresh Pickup',
     description:
-      'Orders ship within 1-2 business days. Free shipping on orders over $50. Track your package every step of the way.',
+      'Find us at Serenbe (Saturdays 9am–1pm) and Dunwoody (Saturdays 9am–12pm) farmers markets. Local delivery also available.',
   },
 ];
 

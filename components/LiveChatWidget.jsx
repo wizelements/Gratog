@@ -15,8 +15,8 @@ const FAQ_RESPONSES = {
     answer: 'Take 1-2 tablespoons daily! You can add it to smoothies, teas, soups, or even use it as a face mask. Store in the refrigerator and use within 3-4 weeks. For best results, take it consistently as part of your daily wellness routine.',
   },
   'shipping': {
-    question: 'What are shipping times?',
-    answer: 'We ship orders within 1-2 business days. Standard shipping takes 3-5 business days, and express shipping takes 1-2 business days. Free shipping is available on orders over $60! You\'ll receive tracking information via email once your order ships.',
+    question: 'How do I get my order?',
+    answer: 'Pick up your order at our farmers markets: Serenbe (Saturdays 9am–1pm) or Dunwoody (Saturdays 9am–12pm). Local delivery is also available ($6.99 flat rate, $30 minimum). For shipping inquiries, contact info@tasteofgratitude.shop.',
   },
   'refund': {
     question: 'Do you offer refunds?',
@@ -31,7 +31,7 @@ const FAQ_RESPONSES = {
 const FAQ_BUTTONS = [
   { key: 'sea moss', label: 'What is sea moss?' },
   { key: 'how to use', label: 'How to use it?' },
-  { key: 'shipping', label: 'Shipping times?' },
+  { key: 'shipping', label: 'Order pickup?' },
   { key: 'refund', label: 'Refund policy?' },
   { key: 'location', label: 'Your location?' },
 ];

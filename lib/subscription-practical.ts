@@ -88,7 +88,7 @@ export const SUBSCRIPTION_PLANS = {
       '6 Wellness Shots (2oz each)',
       'Mix & match flavors',
       '35% savings vs individual purchase',
-      'FREE shipping included',
+      'Market pickup priority',
       'Priority fulfillment'
     ],
     eligibleProducts: {

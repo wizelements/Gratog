@@ -25,7 +25,6 @@ import {
   Clock,
   CheckCircle,
   Package,
-  Truck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import SpinTracker from '@/components/SpinTracker';
@@ -65,7 +64,7 @@ const VIP_TIERS = [
     multiplier: 1.25,
     benefits: [
       { icon: Star, text: 'Earn 1.25 points per $1 spent (25% bonus!)' },
-      { icon: Truck, text: 'Free shipping on all orders' },
+      { icon: MapPin, text: 'Priority market pickup' },
       { icon: Gift, text: 'Double birthday points' },
       { icon: Zap, text: 'Priority customer support' }
     ]
@@ -84,7 +83,7 @@ const VIP_TIERS = [
     multiplier: 1.5,
     benefits: [
       { icon: Star, text: 'Earn 1.5 points per $1 spent (50% bonus!)' },
-      { icon: Truck, text: 'Free express shipping' },
+      { icon: MapPin, text: 'VIP market pickup + free delivery' },
       { icon: Clock, text: 'Early access to new products' },
       { icon: Gift, text: 'Exclusive seasonal gifts' },
       { icon: Users, text: 'VIP community access' }
@@ -104,7 +103,7 @@ const VIP_TIERS = [
     multiplier: 2,
     benefits: [
       { icon: Star, text: 'Earn 2 points per $1 spent (DOUBLE points!)' },
-      { icon: Truck, text: 'Free priority shipping + gift wrapping' },
+      { icon: Gift, text: 'Free delivery + gift wrapping' },
       { icon: Package, text: 'Access to exclusive products' },
       { icon: Gift, text: 'Quarterly luxury gift box' },
       { icon: Crown, text: 'Personal wellness concierge' },

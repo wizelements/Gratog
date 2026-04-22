@@ -13,7 +13,7 @@ const WHEEL_SEGMENTS = [
   { id: 2, label: '$1 OFF', value: 100, color: '#22c55e', probability: 0.30, freeShipping: false },
   { id: 3, label: '$3 OFF', value: 300, color: '#3b82f6', probability: 0.05, freeShipping: false },
   { id: 4, label: '$5 OFF', value: 500, color: '#8b5cf6', probability: 0.15, freeShipping: false },
-  { id: 5, label: 'FREE SHIPPING', value: 0, color: '#ef4444', probability: 0.15, freeShipping: true },
+  { id: 5, label: '$4 OFF', value: 400, color: '#ef4444', probability: 0.15, freeShipping: false },
   { id: 6, label: 'TRY AGAIN', value: 0, color: '#6b7280', probability: 0.10, freeShipping: false }
 ];
 

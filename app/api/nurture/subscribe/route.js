@@ -40,7 +40,7 @@ export async function POST(request) {
       { day: 1, subject: 'The Science Behind Sea Moss', template: 'education_1', delayHours: 24 },
       { day: 3, subject: 'Recipe: Golden Glow Smoothie 🥤', template: 'recipe', delayHours: 72 },
       { day: 7, subject: 'Customer Success Stories', template: 'social_proof', delayHours: 168 },
-      { day: 14, subject: 'Save 20% + Free Shipping', template: 'subscription_offer', delayHours: 336 }
+      { day: 14, subject: 'Save 20% + Priority Pickup', template: 'subscription_offer', delayHours: 336 }
     ];
     
     const now = new Date();

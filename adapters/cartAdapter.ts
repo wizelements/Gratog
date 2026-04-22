@@ -15,6 +15,7 @@ import {
   CART_STORAGE_KEY
 } from '@/lib/cartUtils';
 import type { CartItem } from '@/lib/cart-engine';
+export { validatePreorderMinimum, PREORDER_MINIMUM, BOBA_PREORDER_MAX_QTY } from '@/lib/cart-engine';
 
 // Re-export CartItem for consumers
 export type { CartItem };

@@ -9,7 +9,6 @@ import { CartItem } from './cartAdapter';
  * Delivery fee tiers (from existing logic)
  */
 const DELIVERY_FEE = 6.99;
-const FREE_DELIVERY_THRESHOLD = 75;
 const DELIVERY_MINIMUM = 30;
 
 /**
@@ -52,7 +51,7 @@ export function computeTotals(input: TotalsInput): OrderTotals {
   // Calculate delivery fee
   let deliveryFee = 0;
   if (fulfillmentType === 'delivery') {
-    deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
+    deliveryFee = DELIVERY_FEE;
   } else if (fulfillmentType === 'shipping') {
     deliveryFee = shippingFee;
   }
@@ -63,14 +62,6 @@ export function computeTotals(input: TotalsInput): OrderTotals {
   // Calculate total
   const total = subtotal - couponDiscount + deliveryFee + tax + tip;
   
-  // Calculate free delivery progress (for delivery only)
-  let freeDeliveryProgress: { remaining: number; percentage: number } | undefined;
-  if (fulfillmentType === 'delivery' && subtotal < FREE_DELIVERY_THRESHOLD) {
-    const remaining = FREE_DELIVERY_THRESHOLD - subtotal;
-    const percentage = (subtotal / FREE_DELIVERY_THRESHOLD) * 100;
-    freeDeliveryProgress = { remaining, percentage };
-  }
-  
   return {
     subtotal,
     deliveryFee,
@@ -79,7 +70,6 @@ export function computeTotals(input: TotalsInput): OrderTotals {
     couponDiscount,
     total,
     itemCount,
-    freeDeliveryProgress
   };
 }
 
@@ -116,7 +106,6 @@ export const Totals = {
   format: formatCurrency,
   constants: {
     DELIVERY_FEE,
-    FREE_DELIVERY_THRESHOLD,
     DELIVERY_MINIMUM,
     TAX_RATE
   }

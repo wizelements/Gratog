@@ -20,7 +20,7 @@ const testimonials = [
     name: 'Marcus T.',
     location: 'Houston, TX',
     rating: 5,
-    text: 'Best sea moss I have ever tried. You can taste the difference in quality. Fast shipping and great customer service too.',
+    text: 'Best sea moss I have ever tried. You can taste the difference in quality. Fast delivery and great customer service too.',
     verified: true,
   },
   {

@@ -97,13 +97,12 @@ export function getNextAvailableWindow(): string | null {
 // Calculate delivery fee based on subtotal
 export function calculateDeliveryFee(subtotal: number): number {
   const config = getDeliveryConfig();
-  return subtotal >= config.freeThreshold ? 0 : config.baseFee;
+  return config.baseFee;
 }
 
 // Calculate how much more is needed for free delivery
 export function getFreeDeliveryProgress(subtotal: number): number {
-  const config = getDeliveryConfig();
-  return Math.max(0, config.freeThreshold - subtotal);
+  return 0;
 }
 
 // Validate tip amount
