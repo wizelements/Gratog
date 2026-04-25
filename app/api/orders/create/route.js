@@ -17,6 +17,8 @@ import { getSquareClient } from '@/lib/square';
 import { sanitizeMetadata } from '@/lib/square-api';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';
 import { generateOrderAccessToken, verifyOrderAccessToken } from '@/lib/order-access-token';
+// CRITICAL FIX: Import preorder validation functions
+import { validatePreorderMinimum, validateCartForFulfillment, PREORDER_MINIMUM, BOBA_PREORDER_MAX_QTY } from '@/lib/cart-engine';
 
 const logger = createLogger('OrdersCreateAPI');
 const ORDER_ACCESS_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days for customer convenience
@@ -858,6 +860,55 @@ export async function POST(request) {
       logger.warn('Cart validation failed', { error: cartValidation.error });
       return NextResponse.json(
         { success: false, error: cartValidation.error },
+        { status: 400 }
+      );
+    }
+    
+    // CRITICAL FIX: VALIDATION 1b: Server-side preorder validation
+    // This prevents API clients from bypassing client-side preorder rules
+    const preorderValidation = validatePreorderMinimum(orderData.cart);
+    if (!preorderValidation.valid) {
+      logger.warn('Preorder validation failed', { 
+        error: preorderValidation.error,
+        code: preorderValidation.code,
+        preorderSubtotal: preorderValidation.preorderSubtotal,
+        bobaQty: preorderValidation.bobaQty
+      });
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: preorderValidation.error,
+          code: preorderValidation.code,
+          details: {
+            preorderMinimum: PREORDER_MINIMUM,
+            bobaMax: BOBA_PREORDER_MAX_QTY,
+            currentPreorderSubtotal: preorderValidation.preorderSubtotal,
+            currentBobaQty: preorderValidation.bobaQty
+          }
+        },
+        { status: 400 }
+      );
+    }
+    
+    // CRITICAL FIX: VALIDATION 1c: Server-side fulfillment validation for preorder items
+    // Preorder items can ONLY be picked up at markets (not delivery/shipping)
+    const fulfillmentValidation = validateCartForFulfillment(
+      orderData.cart, 
+      orderData.fulfillmentType,
+      orderData.pickup?.locationId || orderData.fulfillmentType
+    );
+    if (!fulfillmentValidation.valid) {
+      logger.warn('Fulfillment validation failed', { 
+        error: fulfillmentValidation.error,
+        code: fulfillmentValidation.code,
+        fulfillmentType: orderData.fulfillmentType
+      });
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: fulfillmentValidation.error,
+          code: fulfillmentValidation.code
+        },
         { status: 400 }
       );
     }

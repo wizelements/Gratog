@@ -18,7 +18,7 @@ interface FulfillmentTabsProps {
 
 const TABS = [
   { value: 'pickup' as FulfillmentType, label: 'Pickup', icon: MapPin, description: 'Pick up at market' },
-  { value: 'delivery' as FulfillmentType, label: 'Delivery', icon: Truck, description: 'Home delivery' },
+  { value: 'delivery' as FulfillmentType, label: 'Delivery', icon: Truck, description: 'Home delivery', disabledForPreorder: true },
 ];
 
 export default function FulfillmentTabs({ selected, onChange, hasPreorderItems = false }: FulfillmentTabsProps) {
@@ -28,13 +28,18 @@ export default function FulfillmentTabs({ selected, onChange, hasPreorderItems =
       {TABS.map((tab) => {
         const Icon = tab.icon;
         const isSelected = selected === tab.value;
+        // CRITICAL FIX: Disable delivery tab when preorder items present
+        const isDisabled = hasPreorderItems && tab.disabledForPreorder;
         
         return (
           <button
             type="button"
             key={tab.value}
-            onClick={() => onChange(tab.value)}
-            className="relative py-4 px-3 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+            onClick={() => !isDisabled && onChange(tab.value)}
+            disabled={isDisabled}
+            className={`relative py-4 px-3 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${
+              isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
           >
             {isSelected && (
               <motion.div
@@ -47,19 +52,19 @@ export default function FulfillmentTabs({ selected, onChange, hasPreorderItems =
             <div className="relative z-10 flex flex-col items-center gap-2">
               <Icon
                 className={`w-6 h-6 transition-colors ${
-                  isSelected ? 'text-emerald-600' : 'text-gray-500'
+                  isSelected ? 'text-emerald-600' : isDisabled ? 'text-gray-400' : 'text-gray-500'
                 }`}
               />
               <span
                 className={`text-sm font-medium transition-colors ${
-                  isSelected ? 'text-gray-900' : 'text-gray-600'
+                  isSelected ? 'text-gray-900' : isDisabled ? 'text-gray-400' : 'text-gray-600'
                 }`}
               >
                 {tab.label}
               </span>
               <span
                 className={`text-xs transition-colors ${
-                  isSelected ? 'text-gray-600' : 'text-gray-500'
+                  isSelected ? 'text-gray-600' : isDisabled ? 'text-gray-400' : 'text-gray-500'
                 }`}
               >
                 {tab.description}
@@ -88,9 +93,11 @@ export default function FulfillmentTabs({ selected, onChange, hasPreorderItems =
     </div>
 
     {hasPreorderItems && selected !== 'pickup' && (
-      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 mt-3">
-        ⏳ Your cart has preorder items — these are made fresh and can only be collected at a market. Please select &quot;Pickup&quot;.
-      </p>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
+        <p className="text-xs text-red-700 font-medium">
+          ⚠️ Your cart has preorder items — these must be collected at a market. Please select &quot;Pickup&quot; to continue.
+        </p>
+      </div>
     )}
     </>
   );

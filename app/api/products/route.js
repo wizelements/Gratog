@@ -321,6 +321,13 @@ async function getLegacyCatalogPayload({ startTime }) {
         .filter(Boolean)
       : [];
 
+    // CRITICAL FIX: Get inventory data for this product to determine stock status
+    // This enables preorder functionality for legacy catalog products
+    const inventoryCount = item.inventoryCount ?? 
+      (item.variations?.reduce((sum, v) => sum + (v.inventoryCount || 0), 0) ?? null);
+    const currentStock = inventoryCount !== null ? Number(inventoryCount) : 25; // Default to 25 if unknown
+    const isInStock = currentStock > 0;
+
     return {
       id: item.id,
       slug,
@@ -332,7 +339,12 @@ async function getLegacyCatalogPayload({ startTime }) {
       category,
       image: imageCandidates[0] || PRODUCT_IMAGE_FALLBACK_SRC,
       images: imageCandidates,
-      inStock: true,
+      // CRITICAL FIX: Use actual inventory data instead of hardcoding inStock: true
+      inStock: isInStock,
+      stock: currentStock,
+      currentStock: currentStock,
+      purchaseStatus: isInStock ? 'in_stock' : 'preorder',
+      isPreorder: !isInStock,
       variations: item.variations || [],
       squareData: {
         catalogObjectId: item.id,

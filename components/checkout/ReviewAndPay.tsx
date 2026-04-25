@@ -377,23 +377,37 @@ export default function ReviewAndPay({
             {/* 🎯 CONVERSION PSYCHOLOGY: Pre-validation error with clear CTA */}
             {!validationResult.valid && !orderError && (
               <motion.div
-                className="bg-amber-50 border border-amber-200 rounded-xl p-4"
+                className={`rounded-xl p-4 border ${validationResult.code?.includes('PREORDER') || validationResult.code?.includes('BOBA') ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'}`}
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
               >
                 <div className="flex items-start gap-3">
-                  <Store className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  {validationResult.code?.includes('PREORDER') || validationResult.code?.includes('BOBA') ? (
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <Store className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  )}
                   <div className="flex-1">
-                    <h4 className="font-medium text-amber-800">Market Pickup Required</h4>
-                    <p className="text-sm text-amber-700 mt-1">{validationResult.error}</p>
+                    <h4 className={`font-medium ${validationResult.code?.includes('PREORDER') || validationResult.code?.includes('BOBA') ? 'text-red-800' : 'text-amber-800'}`}>
+                      {validationResult.code?.includes('PREORDER') || validationResult.code?.includes('BOBA') 
+                        ? 'Cannot Proceed with Order' 
+                        : 'Market Pickup Required'}
+                    </h4>
+                    <p className={`text-sm mt-1 ${validationResult.code?.includes('PREORDER') || validationResult.code?.includes('BOBA') ? 'text-red-700' : 'text-amber-700'}`}>
+                      {validationResult.error}
+                    </p>
                     <div className="mt-3 flex gap-2">
                       <Button
                         onClick={onBack}
                         variant="outline"
                         size="sm"
-                        className="border-amber-300 text-amber-700 hover:bg-amber-100"
+                        className={validationResult.code?.includes('PREORDER') || validationResult.code?.includes('BOBA') 
+                          ? 'border-red-300 text-red-700 hover:bg-red-100'
+                          : 'border-amber-300 text-amber-700 hover:bg-amber-100'}
                       >
-                        Change to Market Pickup
+                        {validationResult.code?.includes('PREORDER') || validationResult.code?.includes('BOBA')
+                          ? 'Edit Cart'
+                          : 'Change to Market Pickup'}
                       </Button>
                     </div>
                   </div>

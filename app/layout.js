@@ -1,9 +1,10 @@
+'use client';
+
 import { Inter } from 'next/font/google';
 import './globals.css';
-import CustomerLayout from '@/components/CustomerLayout';
-import AdminLayoutWrapper from '@/components/AdminLayoutWrapper';
 import { Toaster } from 'sonner';
 import { Suspense } from 'react';
+import { LiveLocationBanner } from '@/components/market/LiveLocationBanner';
 import { BackgroundMusic } from '@/components/BackgroundMusic';
 import { MusicControls } from '@/components/MusicControls';
 import { CookieConsent } from '@/components/CookieConsent';
@@ -129,9 +130,8 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <PWAInitializer />
         <MusicProviderWrapper>
-          <AdminLayoutWrapper>
-            <CustomerLayout>{children}</CustomerLayout>
-          </AdminLayoutWrapper>
+          <LiveLocationBanner />
+          {children}
           <BackgroundMusic />
           <Suspense fallback={<div data-widget="music-controls" className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 z-[9999] h-12 w-12 rounded-full bg-gray-800/90 shadow-lg flex items-center justify-center text-white backdrop-blur-sm sm:bottom-6 sm:left-6">🎵</div>}>
             <MusicControls />

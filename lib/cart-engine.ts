@@ -143,12 +143,24 @@ export function validateCartForFulfillment(
   }
   
   // Extract market from fulfillment type or marketId
-  const marketKey = marketId || 
-    (fulfillmentType.includes('serenbe') ? 'serenbe' :
-     fulfillmentType.includes('dunwoody') ? 'dunwoody' :
-     fulfillmentType.includes('pickup') ? 'serenbe' : // default to serenbe for generic pickup
-     fulfillmentType.includes('delivery') ? 'delivery' :
-     fulfillmentType.includes('shipping') ? 'shipping' : null);
+  // CRITICAL FIX: Properly detect market from all pickup variants
+  let marketKey = marketId;
+  
+  if (!marketKey && fulfillmentType) {
+    if (fulfillmentType.includes('dunwoody') || fulfillmentType.includes('browns_mill')) {
+      marketKey = 'dunwoody';
+    } else if (fulfillmentType.includes('serenbe') || fulfillmentType.includes('meetup')) {
+      marketKey = 'serenbe';
+    } else if (fulfillmentType.includes('pickup')) {
+      // Generic pickup - default to serenbe but log warning
+      marketKey = 'serenbe';
+      logger.warn('Generic pickup fulfillment type detected, defaulting to Serenbe', { fulfillmentType });
+    } else if (fulfillmentType.includes('delivery')) {
+      marketKey = 'delivery';
+    } else if (fulfillmentType.includes('shipping')) {
+      marketKey = 'shipping';
+    }
+  }
   
   if (!marketKey) {
     return { valid: false, error: 'Please select a fulfillment method', code: 'NO_FULFILLMENT' };

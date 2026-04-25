@@ -69,7 +69,10 @@ function transformCartItems(cart: CartItem[]): Array<Record<string, unknown>> {
       size: item.size,
       image: item.image,
       category: item.category,
-      rewardPoints: item.rewardPoints
+      rewardPoints: item.rewardPoints,
+      // CRITICAL FIX: Pass preorder and market-exclusive flags for server validation
+      isPreorder: item.isPreorder || false,
+      marketExclusive: item.marketExclusive || false
     };
   });
 }
