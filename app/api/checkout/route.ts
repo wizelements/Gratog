@@ -123,7 +123,10 @@ export async function POST(request: NextRequest) {
       lineItems: lineItems.map((item: any) => {
         const lineItem: any = {
           quantity: String(item.quantity),
-          basePriceMoney: item.basePriceMoney,
+          basePriceMoney: {
+            amount: BigInt(item.basePriceMoney.amount),
+            currency: item.basePriceMoney.currency
+          },
           name: item.name,
           variationName: item.variationName,
           metadata: {
@@ -175,7 +178,10 @@ export async function POST(request: NextRequest) {
     const paymentLinkLineItems = lineItems.map((item: any) => {
       const lineItem: any = {
         quantity: String(item.quantity),
-        basePriceMoney: item.basePriceMoney,
+        basePriceMoney: {
+          amount: BigInt(item.basePriceMoney.amount),
+          currency: item.basePriceMoney.currency
+        },
         name: item.name,
         variationName: item.variationName,
         metadata: {
