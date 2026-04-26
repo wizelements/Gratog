@@ -56,6 +56,37 @@ export async function GET(request) {
     try {
       const { db } = await connectToDatabase();
       order = await db.collection('orders').findOne({ id: orderRef });
+      
+      // If not found in orders collection, check MarketOrder
+      if (!order) {
+        const MarketOrder = (await import('@/models/MarketOrder')).default;
+        const marketOrder = await MarketOrder.findOne({ orderNumber: orderRef });
+        if (marketOrder) {
+          // Transform MarketOrder to match orders collection format
+          order = {
+            id: marketOrder._id.toString(),
+            orderNumber: marketOrder.orderNumber,
+            status: marketOrder.status,
+            paymentStatus: marketOrder.paymentStatus,
+            total: marketOrder.total,
+            customer: {
+              name: marketOrder.customerName,
+              email: marketOrder.customerEmail,
+              phone: marketOrder.customerPhone,
+            },
+            items: marketOrder.items,
+            pricing: {
+              subtotal: marketOrder.subtotal,
+              tax: marketOrder.tax,
+              total: marketOrder.total,
+            },
+            fulfillmentType: 'pickup_market',
+            createdAt: marketOrder.createdAt,
+            paidAt: marketOrder.paymentStatus === 'PAID' ? marketOrder.updatedAt : null,
+            isMarketOrder: true,
+          };
+        }
+      }
     } catch (dbError) {
       logger.warn('Primary order lookup failed, attempting fallback lookup', {
         orderRef,
