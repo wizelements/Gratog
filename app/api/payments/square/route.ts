@@ -99,8 +99,14 @@ export async function POST(request: NextRequest) {
 /**
  * POST /api/payments/square/webhook
  * Handle Square payment webhooks with signature verification
+ * 
+ * NOTE: This endpoint is DEPRECATED. Use /api/webhooks/square instead.
+ * This is kept for backward compatibility but should be removed.
+ * 
+ * FIXED: Changed from PUT to POST to match Square's webhook expectations
  */
-export async function PUT(request: NextRequest) {
+export async function POST(request: NextRequest) {
+  console.warn('[DEPRECATED] /api/payments/square webhook endpoint called. Use /api/webhooks/square instead');
   try {
     // Get raw body for signature verification
     const body = await request.text();

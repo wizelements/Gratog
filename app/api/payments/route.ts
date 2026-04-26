@@ -35,25 +35,40 @@ import {
 
 // Status precedence for safe transitions (higher = more final)
 const STATUS_PRECEDENCE: Record<string, number> = {
+  'PENDING_PAYMENT': 1,
+  'PREORDER_PENDING_PAYMENT': 1,
+  'SHIPPING_PENDING_PAYMENT': 1,
   'pending': 1,
   'payment_processing': 2,
   'processing': 2,
+  'PENDING_CONFIRMATION': 2,
+  'CONFIRMED': 3,
+  'PREORDER_CONFIRMED': 3,
+  'SHIPPING_CONFIRMED': 3,
   'paid': 3,
   'COMPLETED': 3,
   'completed': 3,
   'payment_completed': 3,
-  'refunded': 4,
-  'cancelled': 5
+  'PREPARING': 4,
+  'READY': 5,
+  'PICKED_UP': 6,
+  'shipped': 7,
+  'delivered': 8,
+  'REFUNDED': 9,
+  'PARTIALLY_REFUNDED': 9,
+  'refunded': 9,
+  'CANCELLED': 10,
+  'cancelled': 10
 };
 
-// Paid statuses that should block new payment attempts
-const PAID_STATUSES = ['paid', 'COMPLETED', 'completed', 'payment_completed'];
+// Paid statuses that should block new payment attempts - FIXED: Use standardized values
+const PAID_STATUSES = ['CONFIRMED', 'PREORDER_CONFIRMED', 'SHIPPING_CONFIRMED', 'PAID', 'paid', 'COMPLETED', 'completed', 'payment_completed'];
 
 // Final statuses that should block any payment attempt (paid, refunded, cancelled)
-const FINAL_STATUSES = [...PAID_STATUSES, 'refunded', 'cancelled'];
+const FINAL_STATUSES = [...PAID_STATUSES, 'REFUNDED', 'PARTIALLY_REFUNDED', 'refunded', 'CANCELLED', 'cancelled'];
 
-// Pre-payment states that are valid for starting a new payment
-const PRE_PAYMENT_STATES = ['pending', 'payment_failed'];
+// Pre-payment states that are valid for starting a new payment - FIXED: Use standardized values
+const PRE_PAYMENT_STATES = ['pending', 'PENDING_PAYMENT', 'PREORDER_PENDING_PAYMENT', 'SHIPPING_PENDING_PAYMENT', 'payment_failed'];
 
 const ORDER_ACCESS_TOKEN_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -603,13 +618,12 @@ export async function POST(request: NextRequest) {
         errors: paymentResult.errors
       });
       
-      // Reset order status on failure
       await db.collection('orders').updateOne(
         { id: orderId },
         { 
           $set: { 
-            status: 'payment_failed', 
-            paymentStatus: 'failed',
+            status: 'PENDING_PAYMENT',  // Standardized status
+            paymentStatus: 'PENDING',    // Standardized payment status
             paymentError: errorDetail,
             paymentErrorCode: errorCode,
             updatedAt: new Date().toISOString() 
@@ -701,8 +715,8 @@ export async function POST(request: NextRequest) {
         { id: orderId },
         { 
           $set: {
-            status: isCompleted ? 'paid' : 'payment_processing',
-            paymentStatus: isCompleted ? 'paid' : 'processing',
+            status: isCompleted ? 'CONFIRMED' : 'payment_processing',  // Use standardized status
+            paymentStatus: isCompleted ? 'PAID' : 'processing',        // Use standardized payment status
             squarePaymentId: payment.id,
             squareOrderId,
             squareCustomerId,

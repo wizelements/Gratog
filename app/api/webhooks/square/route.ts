@@ -25,18 +25,30 @@ export const runtime = 'nodejs';
 
 // Status precedence (higher = more final, never downgrade)
 const STATUS_PRECEDENCE: Record<string, number> = {
+  'PENDING_PAYMENT': 1,
   'pending': 1,
+  'PREORDER_PENDING_PAYMENT': 1,
+  'SHIPPING_PENDING_PAYMENT': 1,
   'payment_processing': 2,
   'processing': 2,
-  'payment_failed': 2,
+  'PENDING_CONFIRMATION': 2,
+  'CONFIRMED': 3,
+  'PREORDER_CONFIRMED': 3,
+  'SHIPPING_CONFIRMED': 3,
   'paid': 3,
   'COMPLETED': 3,
   'completed': 3,
   'payment_completed': 3,
-  'shipped': 4,
-  'delivered': 5,
-  'refunded': 6,
-  'cancelled': 7
+  'PREPARING': 4,
+  'READY': 5,
+  'PICKED_UP': 6,
+  'shipped': 7,
+  'delivered': 8,
+  'REFUNDED': 9,
+  'PARTIALLY_REFUNDED': 9,
+  'refunded': 9,
+  'CANCELLED': 10,
+  'cancelled': 10
 };
 
 // Verify webhook signature for security
@@ -87,7 +99,8 @@ function verifyWebhookSignature(signatureHeader: string, requestUrl: string, req
  * FIX #6: Find local order using multiple strategies
  * 1. Try payment.reference_id (contains local orderId)
  * 2. Try Square order metadata.localOrderId or metadata.local_order_id
- * 3. Fall back to squareOrderId lookup
+ * 3. Fall back to squareOrderId lookup in orders collection
+ * 4. Fall back to MarketOrder lookup (for market orders system)
  */
 async function findLocalOrder(db: any, payment: any): Promise<any | null> {
   // Strategy 1: Use payment.reference_id (set in /api/payments when creating payment)
@@ -100,6 +113,17 @@ async function findLocalOrder(db: any, payment: any): Promise<any | null> {
       });
       return order;
     }
+    
+    // Also check MarketOrder by orderNumber (reference_id might be orderNumber)
+    const MarketOrder = (await import('@/models/MarketOrder')).default;
+    const marketOrder = await MarketOrder.findOne({ orderNumber: payment.reference_id });
+    if (marketOrder) {
+      logger.debug('Webhook', 'Found MarketOrder via orderNumber', { 
+        orderId: marketOrder._id.toString(),
+        orderNumber: payment.reference_id 
+      });
+      return marketOrder;
+    }
   }
   
   // Strategy 2: Use Square order_id to look up order with that squareOrderId
@@ -111,6 +135,17 @@ async function findLocalOrder(db: any, payment: any): Promise<any | null> {
         squareOrderId: payment.order_id 
       });
       return order;
+    }
+    
+    // Also check MarketOrder by squareOrderId
+    const MarketOrder = (await import('@/models/MarketOrder')).default;
+    const marketOrder = await MarketOrder.findOne({ squareOrderId: payment.order_id });
+    if (marketOrder) {
+      logger.debug('Webhook', 'Found MarketOrder via squareOrderId', { 
+        orderId: marketOrder._id.toString(),
+        squareOrderId: payment.order_id 
+      });
+      return marketOrder;
     }
   }
   
@@ -132,6 +167,22 @@ async function findLocalOrder(db: any, payment: any): Promise<any | null> {
         });
         return order;
       }
+      
+      // Also check MarketOrder
+      const MarketOrder = (await import('@/models/MarketOrder')).default;
+      const marketOrder = await MarketOrder.findOne({ 
+        $or: [
+          { _id: paymentRecord.metadata.orderId },
+          { orderNumber: paymentRecord.metadata.orderId }
+        ]
+      });
+      if (marketOrder) {
+        logger.debug('Webhook', 'Found MarketOrder via payment record', { 
+          orderId: marketOrder._id.toString(),
+          paymentId: payment.id 
+        });
+        return marketOrder;
+      }
     }
   }
   
@@ -147,6 +198,7 @@ async function findLocalOrder(db: any, payment: any): Promise<any | null> {
 /**
  * FIX #7: Update order status with precedence check
  * Never downgrade from a higher precedence status
+ * Handles both orders collection and MarketOrder model
  */
 async function updateOrderStatusSafe(
   db: any, 
@@ -154,56 +206,120 @@ async function updateOrderStatusSafe(
   newStatus: string, 
   updateFields: Record<string, any>
 ): Promise<boolean> {
+  // First try orders collection
   const order = await db.collection('orders').findOne({ id: orderId });
   
-  if (!order) {
-    logger.warn('Webhook', 'Order not found for status update', { orderId });
-    return false;
-  }
-  
-  const currentPrecedence = STATUS_PRECEDENCE[order.status] || 0;
-  const newPrecedence = STATUS_PRECEDENCE[newStatus] || 0;
-  
-  // Don't downgrade status (e.g., don't go from 'paid' back to 'processing')
-  if (currentPrecedence >= newPrecedence && newStatus !== order.status) {
-    logger.debug('Webhook', 'Skipping status downgrade', {
-      orderId,
-      currentStatus: order.status,
-      attemptedStatus: newStatus,
-      currentPrecedence,
-      newPrecedence
-    });
-    return false;
-  }
-  
-  // Apply update
-  const result = await db.collection('orders').updateOne(
-    { id: orderId },
-    {
-      $set: {
-        status: newStatus,
-        ...updateFields,
-        updatedAt: new Date().toISOString()
-      },
-      $push: {
-        timeline: {
+  if (order) {
+    const currentPrecedence = STATUS_PRECEDENCE[order.status] || 0;
+    const newPrecedence = STATUS_PRECEDENCE[newStatus] || 0;
+    
+    // Don't downgrade status (e.g., don't go from 'paid' back to 'processing')
+    if (currentPrecedence >= newPrecedence && newStatus !== order.status) {
+      logger.debug('Webhook', 'Skipping status downgrade', {
+        orderId,
+        currentStatus: order.status,
+        attemptedStatus: newStatus,
+        currentPrecedence,
+        newPrecedence
+      });
+      return false;
+    }
+    
+    // Apply update to orders collection
+    const result = await db.collection('orders').updateOne(
+      { id: orderId },
+      {
+        $set: {
           status: newStatus,
-          timestamp: new Date().toISOString(),
-          message: `Status updated via Square webhook`,
-          actor: 'square_webhook'
+          ...updateFields,
+          updatedAt: new Date().toISOString()
+        },
+        $push: {
+          timeline: {
+            status: newStatus,
+            timestamp: new Date().toISOString(),
+            message: `Status updated via Square webhook`,
+            actor: 'square_webhook'
+          }
         }
       }
+    );
+    
+    logger.info('Webhook', 'Order status updated', {
+      orderId,
+      previousStatus: order.status,
+      newStatus,
+      modifiedCount: result.modifiedCount
+    });
+    
+    return result.modifiedCount > 0;
+  }
+  
+  // Try MarketOrder model (Mongoose)
+  try {
+    const MarketOrder = (await import('@/models/MarketOrder')).default;
+    const marketOrder = await MarketOrder.findOne({ 
+      $or: [
+        { _id: orderId },
+        { orderNumber: orderId }
+      ]
+    });
+    
+    if (marketOrder) {
+      const currentPrecedence = STATUS_PRECEDENCE[marketOrder.status] || 0;
+      const newPrecedence = STATUS_PRECEDENCE[newStatus] || 0;
+      
+      // Don't downgrade status
+      if (currentPrecedence >= newPrecedence && newStatus !== marketOrder.status) {
+        logger.debug('Webhook', 'Skipping MarketOrder status downgrade', {
+          orderId: marketOrder._id.toString(),
+          currentStatus: marketOrder.status,
+          attemptedStatus: newStatus,
+          currentPrecedence,
+          newPrecedence
+        });
+        return false;
+      }
+      
+      // Map webhook status to MarketOrder status
+      const statusMapping: Record<string, string> = {
+        'payment_processing': 'PENDING_CONFIRMATION',
+        'CONFIRMED': 'CONFIRMED',
+        'paid': 'CONFIRMED',
+        'refunded': 'REFUNDED',
+        'payment_failed': 'PENDING_PAYMENT'
+      };
+      
+      const mappedStatus = statusMapping[newStatus] || newStatus;
+      
+      // Update MarketOrder
+      marketOrder.status = mappedStatus as any;
+      if (updateFields.squarePaymentId) {
+        marketOrder.squareOrderId = updateFields.squarePaymentId;
+      }
+      if (updateFields.paidAt) {
+        marketOrder.paymentStatus = 'PAID';
+      }
+      await marketOrder.save();
+      
+      logger.info('Webhook', 'MarketOrder status updated', {
+        orderId: marketOrder._id.toString(),
+        orderNumber: marketOrder.orderNumber,
+        previousStatus: marketOrder.status,
+        newStatus: mappedStatus
+      });
+      
+      return true;
     }
-  );
+  } catch (marketOrderError) {
+    logger.error('Webhook', 'Error updating MarketOrder', {
+      orderId,
+      error: marketOrderError instanceof Error ? marketOrderError.message : String(marketOrderError)
+    });
+  }
   
-  logger.info('Webhook', 'Order status updated', {
-    orderId,
-    previousStatus: order.status,
-    newStatus,
-    modifiedCount: result.modifiedCount
-  });
-  
-  return result.modifiedCount > 0;
+  logger.warn('Webhook', 'Order not found for status update', { orderId });
+  return false;
 }
 
 export async function POST(request: NextRequest) {
@@ -464,10 +580,10 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
     return { success: false, message: 'Order not found for payment' };
   }
   
-  // Map Square payment status to our order status
+  // Map Square payment status to our order status - FIXED: Use standardized status values
   const statusMap: Record<string, string> = {
-    'COMPLETED': 'paid',
-    'APPROVED': 'paid',
+    'COMPLETED': 'CONFIRMED',  // Was 'paid' - now uses order status value
+    'APPROVED': 'CONFIRMED',   // Was 'paid' - now uses order status value  
     'PENDING': 'payment_processing',
     'CANCELED': 'payment_failed',
     'FAILED': 'payment_failed'
@@ -538,38 +654,62 @@ async function handleRefundEvent(db: any, refund: any): Promise<{ success: boole
     status: refund.status
   });
   
-  // Find order via payment ID
-  const order = await db.collection('orders').findOne({ squarePaymentId: refund.payment_id });
+  // Find order via payment ID in orders collection
+  let order = await db.collection('orders').findOne({ squarePaymentId: refund.payment_id });
+  
+  // If not found, try MarketOrder
+  if (!order) {
+    try {
+      const MarketOrder = (await import('@/models/MarketOrder')).default;
+      const marketOrder = await MarketOrder.findOne({ squareOrderId: refund.payment_id });
+      if (marketOrder) {
+        order = marketOrder;
+      }
+    } catch (e) {
+      // MarketOrder not found, continue
+    }
+  }
   
   if (!order) {
     return { success: false, message: 'Order not found for refund' };
   }
   
   if (refund.status === 'COMPLETED') {
-    await db.collection('orders').updateOne(
-      { id: order.id },
-      {
-        $set: {
-          status: 'refunded',
-          paymentStatus: 'refunded',
-          refundId: refund.id,
-          refundedAt: new Date().toISOString(),
-          refundAmount: refund.amount_money?.amount,
-          updatedAt: new Date().toISOString()
-        },
-        $push: {
-          timeline: {
+    // Check if this is a MarketOrder (has _id but no id field)
+    if (order._id && !order.id) {
+      // It's a MarketOrder
+      const MarketOrder = (await import('@/models/MarketOrder')).default;
+      await MarketOrder.findByIdAndUpdate(order._id, {
+        status: 'REFUNDED',
+        paymentStatus: 'REFUNDED'
+      });
+      logger.info('Webhook', 'MarketOrder marked as refunded', { orderId: order._id.toString(), refundId: refund.id });
+    } else {
+      // It's a regular order in orders collection
+      await db.collection('orders').updateOne(
+        { id: order.id },
+        {
+          $set: {
             status: 'refunded',
-            timestamp: new Date().toISOString(),
-            message: 'Order refunded via Square',
-            actor: 'square_webhook',
-            refundId: refund.id
+            paymentStatus: 'refunded',
+            refundId: refund.id,
+            refundedAt: new Date().toISOString(),
+            refundAmount: refund.amount_money?.amount,
+            updatedAt: new Date().toISOString()
+          },
+          $push: {
+            timeline: {
+              status: 'refunded',
+              timestamp: new Date().toISOString(),
+              message: 'Order refunded via Square',
+              actor: 'square_webhook',
+              refundId: refund.id
+            }
           }
         }
-      }
-    );
-    
-    logger.info('Webhook', 'Order marked as refunded', { orderId: order.id, refundId: refund.id });
+      );
+      logger.info('Webhook', 'Order marked as refunded', { orderId: order.id, refundId: refund.id });
+    }
   }
   
   return { success: true, message: 'Refund event processed' };
