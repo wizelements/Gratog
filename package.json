@@ -43,7 +43,6 @@
     "validate:payments": "node scripts/validate-payments.js",
     "validate:music-button": "node scripts/validate-music-button.js",
     "predeploy": "npm run build",
-    "postbuild": "next-sitemap",
     "deploy:safe": "vercel --prod"
   },
   "dependencies": {
@@ -115,7 +114,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@lhci/cli": "0.12.x",
-    "@playwright/test": "^1.47.0",
+    "@playwright/test": "^1.59.1",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",

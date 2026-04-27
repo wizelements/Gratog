@@ -39,6 +39,9 @@ export interface CartItem {
   } | null;
   rewardPoints?: number;
   squareProductUrl?: string;
+  // Gratitude Credits
+  appliedCredits?: number;      // Credits used for discount
+  creditsDiscount?: number;     // $ amount of discount in cents
 }
 
 export interface ValidationResult {
