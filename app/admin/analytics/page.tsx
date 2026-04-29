@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  ArrowUp, 
-  ArrowDown, 
+  ChevronUp, 
+  ChevronDown, 
   DollarSign, 
   ShoppingBag, 
   Users,
@@ -90,7 +90,7 @@ export default function AnalyticsPage() {
       <header className="border-b bg-card px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <ArrowUp className="w-6 h-6 text-primary" />
+            <ChevronUp className="w-6 h-6 text-primary" />
             <h1 className="font-bold text-xl">Analytics Dashboard</h1>
           </div>
           <Button variant="outline" size="sm" onClick={exportCSV}>
@@ -130,9 +130,9 @@ export default function AnalyticsPage() {
                   data.dailyComparison >= 0 ? "text-emerald-600" : "text-red-600"
                 )}>
                   {data.dailyComparison >= 0 ? (
-                    <><ArrowUp className="w-3 h-3 mr-1" /> +{data.dailyComparison}%</>
+                    <><ChevronUp className="w-3 h-3 mr-1" /> +{data.dailyComparison}%</>
                   ) : (
-                    <><ArrowDown className="w-3 h-3 mr-1" /> {data.dailyComparison}%</>
+                    <><ChevronDown className="w-3 h-3 mr-1" /> {data.dailyComparison}%</>
                   )}
                 </div>
               )}
