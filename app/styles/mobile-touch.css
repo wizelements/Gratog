@@ -1,0 +1,139 @@
+/**
+ * Mobile Touch Optimizations
+ * Ensures 48px+ touch targets and app-like interactions
+ */
+
+/* Base touch optimizations */
+* {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Minimum touch target size (WCAG 2.1 AA compliant) */
+.touch-target,
+button,
+a,
+[role="button"],
+input,
+textarea,
+select {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+/* Remove default button padding for custom sizing */
+button,
+[role="button"] {
+  padding: 12px 16px;
+}
+
+/* Active/pressed states for tactile feedback */
+button:active,
+[role="button"]:active,
+a:active,
+.touch-active:active {
+  transform: scale(0.96);
+  transition: transform 0.1s ease-out;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+}
+
+/* Prevent pull-to-refresh on mobile (optional - enable if needed) */
+.prevent-refresh {
+  overscroll-behavior-y: contain;
+}
+
+/* Safe area insets for notched devices */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Bottom navigation specific */
+.bottom-nav {
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  min-width: 64px;
+  padding: 8px 4px;
+  gap: 4px;
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Prevent text selection on UI elements */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Focus visible for accessibility */
+*:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+/* Touch-optimized cards */
+.touch-card {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.touch-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* iOS momentum scrolling */
+.scroll-momentum {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Disable callout menu on long press (optional) */
+.no-callout {
+  -webkit-touch-callout: none;
+}
+
+/* Responsive touch targets - larger on smaller screens */
+@media (max-width: 640px) {
+  .touch-target-sm {
+    min-height: 56px;
+    min-width: 56px;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (orientation: landscape) and (max-height: 500px) {
+  .bottom-nav-landscape {
+    padding-bottom: 8px;
+  }
+}

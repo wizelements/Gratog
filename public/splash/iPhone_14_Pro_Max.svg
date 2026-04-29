@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 932">
+  <rect width="430" height="932" fill="#1f2937"/>
+  <g transform="translate(215, 400)">
+    <circle cx="0" cy="0" r="80" fill="#10b981"/>
+    <text x="0" y="15" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="bold" fill="white">G</text>
+  </g>
+  <text x="215" y="550" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="600" fill="white">Taste of Gratitude</text>
+  <text x="215" y="580" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#9ca3af">Premium Sea Moss</text>
+</svg>

@@ -1,5 +1,6 @@
 import { Inter } from 'next/font/google';
 import './globals.css';
+import './styles/mobile-touch.css';
 import { Toaster } from 'sonner';
 import { Suspense } from 'react';
 import { LiveLocationBanner } from '@/components/market/LiveLocationBanner';
@@ -11,6 +12,7 @@ import { PWAInitializer } from '@/components/PWAInitializer';
 import { PWAPrompt } from '@/components/PWAPrompt';
 import { PWAUpdateNotifier } from '@/components/PWAUpdateNotifier';
 import { PWADiagnostics } from '@/components/PWADiagnostics';
+import { BottomNav } from '@/components/BottomNav';
 import ExitIntentModal from '@/components/ExitIntentModal';
 
 const inter = Inter({ 
@@ -73,9 +75,10 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   minimumScale: 1,
-  maximumScale: 5,
-  userScalable: true,
-  viewportFit: 'cover'
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#1f2937'
 };
 
 export default function RootLayout({ children }) {
@@ -91,9 +94,32 @@ export default function RootLayout({ children }) {
          <meta name="apple-mobile-web-app-capable" content="yes" />
          <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
          <meta name="apple-mobile-web-app-title" content="Gratog" />
-         <meta name="apple-itunes-app" content="app-id=12345678" />
          
-         {/* iOS Splash Screens & Icons */}
+         {/* iOS Splash Screens - All Device Sizes */}
+         {/* iPhone 14 Pro Max (1290×2796) */}
+         <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iPhone_14_Pro_Max.png" />
+         {/* iPhone 14 Pro (1179×2556) */}
+         <link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iPhone_14_Pro.png" />
+         {/* iPhone 14 Plus (1284×2778) */}
+         <link rel="apple-touch-startup-image" media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iPhone_14_Plus.png" />
+         {/* iPhone 14 / 13 / 12 (1170×2532) */}
+         <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iPhone_14.png" />
+         {/* iPhone 13 / 12 mini (1080×2340) */}
+         <link rel="apple-touch-startup-image" media="screen and (device-width: 360px) and (device-height: 780px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iPhone_13_mini.png" />
+         {/* iPhone SE / 8 / 7 / 6s / 6 (750×1334) */}
+         <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/iPhone_SE.png" />
+         {/* iPhone 8 Plus / 7 Plus / 6s Plus / 6 Plus (1242×2208) */}
+         <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iPhone_8_Plus.png" />
+         {/* iPad Pro 12.9" (2048×2732) */}
+         <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/iPad_Pro_12.9.png" />
+         {/* iPad Pro 11" / Air (1668×2388) */}
+         <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/iPad_Pro_11.png" />
+         {/* iPad Air / mini (1640×2360) */}
+         <link rel="apple-touch-startup-image" media="screen and (device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/iPad_Air.png" />
+         {/* iPad mini (1488×2266) */}
+         <link rel="apple-touch-startup-image" media="screen and (device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/iPad_mini.png" />
+         
+         {/* iOS Icons */}
          <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
          <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="152x152" />
          <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="120x120" />
@@ -142,6 +168,7 @@ export default function RootLayout({ children }) {
           <CookieConsent />
         </Suspense>
         <ExitIntentModal />
+        <BottomNav />
         <Toaster position="top-right" richColors />
       </body>
     </html>
