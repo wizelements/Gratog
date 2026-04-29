@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { 
   ShoppingCart, 
   MapPin, 
@@ -13,7 +13,9 @@ import {
   ChevronRight,
   Check,
   AlertCircle,
-  Loader2
+  Loader2,
+  Ticket,
+  Info
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +35,7 @@ const MARKETS = [
     address: "10640 Serenbe Trail, Chattahoochee Hills, GA 30268",
     day: "Saturday",
     hours: "9:00 AM - 1:00 PM",
-    description: "Pre-order and skip the line!",
+    description: "Preorder and skip the line!",
     emoji: "🏡",
   },
   {
@@ -42,20 +44,119 @@ const MARKETS = [
     address: "Dunwoody Farmhouse, Dunwoody, GA 30338",
     day: "Saturday",
     hours: "9:00 AM - 12:00 PM",
-    description: "Pre-order and skip the line!",
+    description: "Preorder and skip the line!",
     emoji: "🏪",
+  },
+  {
+    id: "sandy-springs",
+    name: "Sandy Springs Farmers Market",
+    address: "Sandy Springs City Center, Sandy Springs, GA 30328",
+    day: "Sunday",
+    hours: "10:00 AM - 1:00 PM",
+    description: "New location!",
+    emoji: "🌳",
   },
 ];
 
-// Sample preorder items - in production, fetch from API
+// Inventory limits per market
+const MARKET_INVENTORY = {
+  "lemonades-and-juices": 35, // 35 units max per market
+  "sea-moss-gels": 999, // Unlimited
+};
+
+// Preorder items with category limits
 const PREORDER_ITEMS = [
-  { id: "basil-16oz", name: "Basil Sea Moss Gel", size: "16 oz", price: 25, category: "sea-moss", emoji: "🌿" },
-  { id: "calmwater-6pk", name: "Calmwaters", size: "6-pack", price: 30, category: "drinks", emoji: "🥤" },
-  { id: "pineapple-basil-16oz", name: "Pineapple Basil Sea Moss Gel", size: "16 oz", price: 28, category: "sea-moss", emoji: "🍍" },
-  { id: "lemon-ginger-16oz", name: "Lemon Ginger Sea Moss Gel", size: "16 oz", price: 25, category: "sea-moss", emoji: "🍋" },
-  { id: "gratitude-greens-6pk", name: "Gratitude Greens Juice", size: "6-pack", price: 35, category: "drinks", emoji: "🥬" },
-  { id: "golden-milk-16oz", name: "Golden Milk Sea Moss Gel", size: "16 oz", price: 28, category: "sea-moss", emoji: "🥛" },
+  { 
+    id: "basil-16oz", 
+    name: "Basil Sea Moss Gel", 
+    size: "16 oz", 
+    price: 25, 
+    category: "sea-moss-gels",
+    emoji: "🌿",
+    available: 999
+  },
+  { 
+    id: "pineapple-basil-16oz", 
+    name: "Pineapple Basil Sea Moss Gel", 
+    size: "16 oz", 
+    price: 28, 
+    category: "sea-moss-gels",
+    emoji: "🍍",
+    available: 999
+  },
+  { 
+    id: "lemon-ginger-16oz", 
+    name: "Lemon Ginger Sea Moss Gel", 
+    size: "16 oz", 
+    price: 25, 
+    category: "sea-moss-gels",
+    emoji: "🍋",
+    available: 999
+  },
+  { 
+    id: "golden-milk-16oz", 
+    name: "Golden Milk Sea Moss Gel", 
+    size: "16 oz", 
+    price: 28, 
+    category: "sea-moss-gels",
+    emoji: "🥛",
+    available: 999
+  },
+  { 
+    id: "calmwater-6pk", 
+    name: "Calmwaters", 
+    size: "6-pack", 
+    price: 30, 
+    category: "lemonades-and-juices",
+    emoji: "🥤",
+    available: 35 // 35 unit limit
+  },
+  { 
+    id: "gratitude-greens-6pk", 
+    name: "Gratitude Greens Juice", 
+    size: "6-pack", 
+    price: 35, 
+    category: "lemonades-and-juices",
+    emoji: "🥬",
+    available: 35 // 35 unit limit
+  },
+  { 
+    id: "kissed-by-gods-16oz", 
+    name: "Kissed by Gods Lemonade", 
+    size: "16 oz", 
+    price: 12, 
+    category: "lemonades-and-juices",
+    emoji: "🍹",
+    available: 35 // 35 unit limit
+  },
+  { 
+    id: "pineapple-basil-lemonade-16oz", 
+    name: "Pineapple Basil Lemonade", 
+    size: "16 oz", 
+    price: 12, 
+    category: "lemonades-and-juices",
+    emoji: "🍍",
+    available: 35 // 35 unit limit
+  },
 ];
+
+// Get current waitlist position (simulated - in production fetch from API)
+async function getWaitlistPosition(marketId: string): Promise<number > {
+  // In production, this would fetch from your API
+  // For now, return a random position between 5-20
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(Math.floor(Math.random() * 15) + 5);
+    }, 500);
+  });
+}
+
+// Calculate total lemonades/juices in cart
+function getLemonadeJuiceCount(cart: any[]): number {
+  return cart
+    .filter(item => item.category === "lemonades-and-juices")
+    .reduce((sum, item) => sum + item.quantity, 0);
+}
 
 export default function PreorderPage() {
   const searchParams = useSearchParams();
@@ -73,8 +174,31 @@ export default function PreorderPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [preorderComplete, setPreorderComplete] = useState(null);
+  const [waitlistPosition, setWaitlistPosition] = useState(null);
+  const [remainingInventory, setRemainingInventory] = useState({});
+
+  // Fetch inventory on mount
+  useEffect(() => {
+    // In production, fetch actual remaining inventory from API
+    const inventory = {};
+    PREORDER_ITEMS.forEach(item => {
+      inventory[item.id] = item.available;
+    });
+    setRemainingInventory(inventory);
+  }, []);
 
   const addToCart = (item, quantity = 1) => {
+    // Check category limits
+    if (item.category === "lemonades-and-juices") {
+      const currentLemonadeCount = getLemonadeJuiceCount(cart);
+      const newTotal = currentLemonadeCount + quantity;
+      
+      if (newTotal > 35) {
+        toast.error(`Only 35 lemonades/juices available per market. You have ${currentLemonadeCount} in cart.`);
+        return;
+      }
+    }
+
     setCart((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
@@ -88,6 +212,17 @@ export default function PreorderPage() {
   };
 
   const updateQuantity = (itemId, delta) => {
+    const item = PREORDER_ITEMS.find(i => i.id === itemId);
+    
+    // Check if removing lemonades/juices
+    if (item?.category === "lemonades-and-juices" && delta > 0) {
+      const currentCount = getLemonadeJuiceCount(cart);
+      if (currentCount >= 35) {
+        toast.error("35 unit limit reached for lemonades/juices");
+        return;
+      }
+    }
+
     setCart((prev) =>
       prev
         .map((item) =>
@@ -104,9 +239,12 @@ export default function PreorderPage() {
     0
   );
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const lemonadeJuiceCount = getLemonadeJuiceCount(cart);
 
-  const handleMarketSelect = (market) => {
+  const handleMarketSelect = async (market) => {
     setSelectedMarket(market);
+    const position = await getWaitlistPosition(market.id);
+    setWaitlistPosition(position);
     setStep("items");
   };
 
@@ -165,6 +303,10 @@ export default function PreorderPage() {
                 <div className="text-5xl font-bold text-emerald-600">
                   {preorderComplete.waitlistNumber}
                 </div>
+                <div className="mt-2 flex items-center justify-center gap-2 text-sm text-emerald-700">
+                  <Ticket className="w-4 h-4" />
+                  <span>You're #{preorderComplete.waitlistNumber} in line</span>
+                </div>
               </div>
 
               <Separator />
@@ -194,10 +336,18 @@ export default function PreorderPage() {
               <Separator />
 
               <div className="bg-emerald-50 p-4 rounded-lg">
-                <p className="text-sm text-emerald-800">
-                  Show your waitlist number <strong>#{preorderComplete.waitlistNumber}</strong> at the
-                  pickup booth. We&apos;ll text you when your order is ready!
-                </p>
+                <div className="flex items-start gap-2">
+                  <Info className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-emerald-800">
+                    <p className="font-medium">What to expect:</p>
+                    <ul className="mt-2 space-y-1 list-disc list-inside">
+                      <li>We'll text you updates on your position</li>
+                      <li>Come to the booth when your number is called</li>
+                      <li>Show your waitlist number at pickup</li>
+                      <li>Pay with cash or card when you arrive</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
 
               <Button asChild className="w-full">
@@ -215,6 +365,11 @@ export default function PreorderPage() {
       {/* Header */}
       <header className="bg-emerald-600 text-white px-4 py-6">
         <div className="max-w-md mx-auto">
+          <div className="flex items-center gap-2 mb-2">
+            <Link href="/markets" className="text-emerald-100 hover:text-white">
+              ← Back to Markets
+            </Link>
+          </div>
           <h1 className="text-2xl font-bold">Preorder & Skip the Line</h1>
           <p className="text-emerald-100 text-sm">
             Order ahead, get a waitlist number, pickup at the market
@@ -258,6 +413,9 @@ export default function PreorderPage() {
         {step === "market" && (
           <div className="space-y-4">
             <h2 className="font-semibold text-lg">Select a Market:</h2>
+            <p className="text-sm text-gray-600">
+              Choose which market you'll be picking up from:
+            </p>
             {MARKETS.map((market) => (
               <button
                 key={market.id}
@@ -290,13 +448,29 @@ export default function PreorderPage() {
               <Badge variant="outline">{selectedMarket.name}</Badge>
             </div>
 
+            {/* Inventory notice */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-amber-800">
+                  <p className="font-medium">Limited Availability:</p>
+                  <p>Only 35 lemonades & juices available per market.{lemonadeJuiceCount > 0 && ` You have ${lemonadeJuiceCount} in cart.`}</p>
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-3">
               {PREORDER_ITEMS.map((item) => {
                 const inCart = cart.find((i) => i.id === item.id);
+                const isAtLimit = item.category === "lemonades-and-juices" && lemonadeJuiceCount >= 35 && !inCart;
+                
                 return (
                   <div
                     key={item.id}
-                    className="flex items-center gap-4 p-4 bg-white rounded-lg border"
+                    className={cn(
+                      "flex items-center gap-4 p-4 bg-white rounded-lg border",
+                      isAtLimit && "opacity-50"
+                    )}
                   >
                     <span className="text-2xl">{item.emoji}</span>
                     <div className="flex-1 min-w-0">
@@ -304,11 +478,20 @@ export default function PreorderPage() {
                       <div className="text-sm text-muted-foreground">
                         {item.size} · ${item.price}
                       </div>
+                      {item.category === "lemonades-and-juices" && (
+                        <div className="text-xs text-amber-600 mt-1">
+                          Limited: {Math.max(0, 35 - lemonadeJuiceCount)} remaining
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       {!inCart ? (
-                        <Button size="sm" onClick={() => addToCart(item)}>
-                          Add
+                        <Button 
+                          size="sm" 
+                          onClick={() => addToCart(item)}
+                          disabled={isAtLimit}
+                        >
+                          {isAtLimit ? "Limit" : "Add"}
                         </Button>
                       ) : (
                         <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
@@ -327,7 +510,8 @@ export default function PreorderPage() {
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0"
-                            onClick={() => addToCart(item, 1)}
+                            onClick={() => updateQuantity(item.id, 1)}
+                            disabled={item.category === "lemonades-and-juices" && lemonadeJuiceCount >= 35}
                           >
                             +
                           </Button>
@@ -339,36 +523,50 @@ export default function PreorderPage() {
               })}
             </div>
 
-            <div className="flex gap-3 pt-4">
-              <Button variant="outline" onClick={() => setStep("market")}>
-                Back
-              </Button>
-              <Button
-                onClick={() => cartCount > 0 && setStep("details")}
-                disabled={cartCount === 0}
-                className="flex-1"
-              >
-                Continue ({cartCount} items · ${cartTotal.toFixed(2)})
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
+            {/* Cart Summary */}
+            {cart.length > 0 && (
+              <div className="fixed bottom-20 left-4 right-4 bg-white rounded-xl shadow-lg border border-emerald-200 p-4 z-40">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">{cartCount} items · ${cartTotal.toFixed(2)}</div>
+                    <div className="text-sm text-gray-500">Min. $15 for preorder</div>
+                  </div>
+                  <Button 
+                    onClick={() => setStep("details")}
+                    disabled={cartTotal < 15}
+                  >
+                    Continue
+                  </Button>
+                </div>              </div>
+            )}
           </div>
         )}
 
         {/* Step 3: Customer Details */}
-        {step === "details" && (
-          <div className="space-y-6">
+        {step === "details" && selectedMarket && (
+          <div className="space-y-4">
             <h2 className="font-semibold text-lg">Your Details:</h2>
 
             {/* Order Summary */}
             <Card className="bg-emerald-50 border-emerald-200">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 text-emerald-800 mb-2">
+                  <Ticket className="w-4 h-4" />
+                  <span className="font-medium">Your Place in Line</span>
+                </div>
+                <div className="text-2xl font-bold text-emerald-600">
+                  #{waitlistPosition || '...'}
+                </div>
+                <div className="text-sm text-emerald-700 mt-1">
+                  Estimated wait: ~{Math.ceil((waitlistPosition || 0) * 2)} minutes
+                </div>
+                <Separator className="my-3" />
+                <div className="flex items-center gap-2 text-emerald-800">
                   <MapPin className="w-4 h-4" />
                   <span className="font-medium">{selectedMarket?.name}</span>
                 </div>
                 <div className="text-sm text-emerald-700">
-                  {cartCount} items · ${cartTotal.toFixed(2)} minimum
+                  {cartCount} items · ${cartTotal.toFixed(2)} total
                 </div>
               </CardContent>
             </Card>
@@ -377,8 +575,8 @@ export default function PreorderPage() {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="name">
-                  <User className="w-4 h-4 inline mr-1" />
-                  Full Name
+                  <User className="w-4 h-4 inline mr-1" /
+                  Full Name *
                 </Label>
                 <Input
                   id="name"
@@ -388,13 +586,14 @@ export default function PreorderPage() {
                   }
                   placeholder="Your name"
                   className="mt-1"
+                  required
                 />
               </div>
 
               <div>
                 <Label htmlFor="phone">
-                  <Phone className="w-4 h-4 inline mr-1" />
-                  Phone Number
+                  <Phone className="w-4 h-4 inline mr-1" /
+                  Phone Number *
                 </Label>
                 <Input
                   id="phone"
@@ -405,15 +604,16 @@ export default function PreorderPage() {
                   }
                   placeholder="(555) 123-4567"
                   className="mt-1"
+                  required
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  We&apos;ll text you when your order is ready
+                  We'll text you updates on your position in line
                 </p>
               </div>
 
               <div>
                 <Label htmlFor="email">
-                  <Mail className="w-4 h-4 inline mr-1" />
+                  <Mail className="w-4 h-4 inline mr-1" /
                   Email (optional)
                 </Label>
                 <Input
@@ -438,8 +638,9 @@ export default function PreorderPage() {
                   <ul className="mt-1 space-y-1 list-disc list-inside">
                     <li>$15 minimum order</li>
                     <li>Pay at pickup (cash or card)</li>
-                    <li>We&apos;ll text when ready</li>
+                    <li>We'll text updates on your position</li>
                     <li>Show your waitlist number at pickup</li>
+                    <li>35 unit max on lemonades/juices</li>
                   </ul>
                 </div>
               </div>
@@ -456,7 +657,7 @@ export default function PreorderPage() {
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /
                     Submitting...
                   </>
                 ) : (
