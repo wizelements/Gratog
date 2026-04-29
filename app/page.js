@@ -1,12 +1,10 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import { LiveLocationBanner } from '@/components/market/LiveLocationBanner';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 import { logger } from '@/lib/logger';
 import { PUBLIC_REVIEW_FILTER } from '@/lib/review-visibility';
 import { buildHomepageFaqSchema, buildHomepageOrganizationSchema } from '@/seo/schemas';
+import HomePageClient from '@/components/home/HomePageClient';
 
 export const revalidate = 300;
 
