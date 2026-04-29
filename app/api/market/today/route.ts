@@ -125,13 +125,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-/**
- * GET /api/markets
- * Returns all configured markets
- */
-export async function getMarketsList() {
-  return NextResponse.json({
-    markets: MARKETS.filter(m => m.isActive),
-  });
-}
