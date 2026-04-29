@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { QrCode, ShoppingBag, MapPin, Clock, ChevronRight, Store } from 'lucide-react';
+import { ScanLine, ShoppingBag, MapPin, Clock, ChevronRight, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -71,7 +71,7 @@ export default function QRLandingPage() {
         <div className="max-w-md mx-auto text-center">
           <div className="flex justify-center mb-3">
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-              <QrCode className="w-8 h-8" />
+              <ScanLine className="w-8 h-8" />
             </div>
           </div>
           <h1 className="text-2xl font-bold mb-1">Taste of Gratitude</h1>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { QrCode, Download, Printer, Copy, Check } from 'lucide-react';
+import { ScanLine, Download, Printer, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -65,7 +65,7 @@ export default function QRGeneratorPage() {
         </div>
 
         <Button onClick={generateQR} className="w-full">
-          <QrCode className="w-4 h-4 mr-2" />
+          <ScanLine className="w-4 h-4 mr-2" />
           Generate QR Code
         </Button>
 
