@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, ShoppingBag, ShoppingCart, ClipboardList, User } from 'lucide-react';
+import { triggerHaptic, HapticPatterns } from '@/lib/haptics';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
@@ -44,6 +45,11 @@ export function BottomNav() {
     return null;
   }
 
+  const handleNavClick = (href) => {
+    // Haptic feedback on navigation
+    triggerHaptic(HapticPatterns.LIGHT);
+  };
+
   return (
     <nav
       className={`
@@ -69,6 +75,7 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => handleNavClick(item.href)}
               className={`
                 flex flex-col items-center justify-center
                 min-w-[64px] min-h-[48px]
