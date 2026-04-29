@@ -39,7 +39,7 @@ const statusSteps = [
 
 export default function OrderStatusPage() {
   const params = useParams();
-  const orderNumber = params.orderNumber as string;
+  const orderNumber = params.id as string;
   
   const [order, setOrder] = useState<OrderStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);

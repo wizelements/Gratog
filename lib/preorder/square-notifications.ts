@@ -119,7 +119,7 @@ Reply "CONFIRM ${orderNumber}" to confirm | "READY ${orderNumber}" when ready fo
  */
 export async function sendSquareTeamEmail(preorder) {
   try {
-    const { sendEmail } = await import('./resend-email');
+    const { sendEmail } = await import('@/lib/resend-email');
     
     const { orderNumber, customer, items, pickupLocation, pickupDate, waitlistNumber } = preorder;
     
@@ -212,7 +212,7 @@ export async function sendSquareTeamEmail(preorder) {
  */
 export async function sendPreorderSMS(preorder) {
   try {
-    const { sendSMS } = await import('./sms');
+    const { sendSMS } = await import('@/lib/sms');
     
     const { customer, orderNumber, waitlistNumber, pickupLocation, pickupDate, items } = preorder;
     
