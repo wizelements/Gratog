@@ -4,12 +4,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, ShoppingBag, ShoppingCart, ClipboardList, User } from 'lucide-react';
-import { useCart } from '@/contexts/CartContext';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/catalog', label: 'Shop', icon: ShoppingBag },
-  { href: '/checkout', label: 'Cart', icon: ShoppingCart, showBadge: true },
+  { href: '/checkout', label: 'Cart', icon: ShoppingCart },
   { href: '/profile/orders', label: 'Orders', icon: ClipboardList },
   { href: '/account', label: 'Account', icon: User },
 ];
@@ -18,13 +17,10 @@ export function BottomNav() {
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const { items } = useCart();
-  
-  const cartItemCount = items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
 
   useEffect(() => {
     // Only hide/show on mobile
-    if (window.innerWidth >= 768) return;
+    if (typeof window === 'undefined' || window.innerWidth >= 768) return;
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -93,11 +89,6 @@ export function BottomNav() {
                   className="w-6 h-6" 
                   strokeWidth={isActive ? 2.5 : 2}
                 />
-                {item.showBadge && cartItemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white ring-2 ring-white dark:ring-gray-900">
-                    {cartItemCount > 99 ? '99+' : cartItemCount}
-                  </span>
-                )}
               </div>
               <span className="mt-0.5 text-[10px] font-medium">
                 {item.label}
