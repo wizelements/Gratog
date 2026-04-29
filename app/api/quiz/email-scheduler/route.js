@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { getPendingEmails, updateEmailStatus, initializeEmailQueue, cancelScheduledEmails } from '@/lib/email-queue';
 import { getQuizResultsById, updateEmailSentStatus } from '@/lib/db-quiz';

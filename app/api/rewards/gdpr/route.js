@@ -12,6 +12,8 @@
  * - All actions are audit logged
  */
 
+export const dynamic = 'force-dynamic';
+
 import { connectToDatabase } from '@/lib/db-optimized';
 import {
   verifyRequestAuthentication,

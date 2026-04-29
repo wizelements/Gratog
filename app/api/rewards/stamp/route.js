@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import SecureRewardsSystem from '@/lib/rewards-secure';
 import { connectToDatabase } from '@/lib/db-optimized';
 import {

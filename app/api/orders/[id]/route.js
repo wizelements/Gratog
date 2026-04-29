@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { createLogger } from '@/lib/logger';

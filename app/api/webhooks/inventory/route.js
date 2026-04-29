@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { updateInventoryLevel, checkLowStock } from '@/lib/inventory-sync';

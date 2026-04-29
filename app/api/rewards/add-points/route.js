@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { rewardsSystem } from '@/lib/enhanced-rewards';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';

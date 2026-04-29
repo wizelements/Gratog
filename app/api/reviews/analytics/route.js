@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { PUBLIC_REVIEW_FILTER } from '@/lib/review-visibility';

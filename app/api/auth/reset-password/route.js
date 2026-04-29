@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { hashPassword } from '@/lib/auth/jwt';
 import { createLogger } from '@/lib/logger';

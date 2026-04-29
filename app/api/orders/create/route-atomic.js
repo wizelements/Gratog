@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { createOrderAtomic } from '@/lib/transactions';
 import { randomUUID } from 'crypto';

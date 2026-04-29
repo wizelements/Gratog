@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { createOrUpdateCustomer, getCustomers } from '@/lib/db-customers';
 import { verifyToken } from '@/lib/auth';
