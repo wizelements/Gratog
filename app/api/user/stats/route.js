@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 import { connectToDatabase } from '@/lib/db-optimized';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   try {
     // Get auth token from cookie

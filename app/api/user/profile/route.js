@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 import { updateUser, findUserById } from '@/lib/db/users';
 
+export const dynamic = 'force-dynamic';
+
 export async function PUT(request) {
   try {
     // Get auth token from cookie

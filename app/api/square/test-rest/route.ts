@@ -43,7 +43,10 @@ export async function GET() {
         count: paymentsResponse.data?.length || 0,
         recentPayment: paymentsResponse.data?.[0] ? {
           id: paymentsResponse.data[0].id,
-          amount: paymentsResponse.data[0].amountMoney,
+          amount: paymentsResponse.data[0].amountMoney ? {
+            amount: String(paymentsResponse.data[0].amountMoney.amount),
+            currency: paymentsResponse.data[0].amountMoney.currency
+          } : null,
           status: paymentsResponse.data[0].status
         } : null
       };
