@@ -27,18 +27,18 @@ interface DeliveryFormProps {
 const TIP_PRESETS = [0, 2, 4, 6, 8];
 
 export default function DeliveryForm({ data, onChange, tip, onTipChange, errors = {} }: DeliveryFormProps) {
-  const [zipValid, setZipValid] = useState<boolean | null>(null);
-  const [customTip, setCustomTip] = useState<string>('');
+  // Derive zip validity from props (survives remount)
+  const zipValid = data.address.zip.length === 5
+    ? Fulfillment.isZipServiceable(data.address.zip)
+    : null;
+
+  const [customTip, setCustomTip] = useState<string>(() => {
+    // Initialize from tip prop if it's not a preset
+    return TIP_PRESETS.includes(tip) || tip === 0 ? '' : String(tip);
+  });
   
   const handleZipChange = (zip: string) => {
     onChange({ address: { ...data.address, zip } });
-    
-    if (zip.length === 5) {
-      const valid = Fulfillment.isZipServiceable(zip);
-      setZipValid(valid);
-    } else {
-      setZipValid(null);
-    }
   };
   
   const deliveryWindows = data.address.zip && zipValid 

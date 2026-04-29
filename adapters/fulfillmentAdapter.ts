@@ -3,13 +3,13 @@
  * Reuses ZIP validation, market locations, and delivery windows
  */
 
+import { DELIVERY_ZONES } from '@/lib/delivery-zones';
+
 /**
- * Atlanta/South Fulton serviceable ZIP codes (from existing validation)
+ * Atlanta/South Fulton serviceable ZIP codes — derived from delivery-zones.js (single source of truth)
  */
-const SERVICEABLE_ZIPS = [
-  '30213', '30331', '30349', '30354', '30310', '30311', '30312', '30314', 
-  '30315', '30316', '30317', '30318', '30336', '30337', '30344', '30349', 
-  '30354', '30310', '30314', '30331', '30213'
+const SERVICEABLE_ZIPS: string[] = [
+  ...new Set(DELIVERY_ZONES.flatMap((zone: { zipcodes: string[] }) => zone.zipcodes))
 ];
 
 /**

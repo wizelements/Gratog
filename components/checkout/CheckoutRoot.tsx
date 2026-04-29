@@ -5,6 +5,7 @@ import { ArrowRight, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useCheckoutStore } from '@/stores/checkout';
 import { CartAPI } from '@/adapters/cartAdapter';
+import { Fulfillment } from '@/adapters/fulfillmentAdapter';
 import { Button } from '@/components/ui/button';
 import { track } from '@/utils/analytics';
 import CheckoutProgress from './CheckoutProgress';
@@ -83,9 +84,22 @@ export default function CheckoutRoot() {
       if (!fulfillment.pickup?.locationId) errors.locationId = 'Pickup location is required';
       if (!fulfillment.pickup?.date) errors.date = 'Pickup date is required';
     } else if (fulfillment.type === 'delivery') {
-      if (!fulfillment.delivery?.address.street) errors['address.street'] = 'Street address is required';
-      if (!fulfillment.delivery?.address.city) errors['address.city'] = 'City is required';
-      if (!fulfillment.delivery?.address.zip) errors['address.zip'] = 'ZIP code is required';
+      const street = fulfillment.delivery?.address.street || '';
+      const city = fulfillment.delivery?.address.city || '';
+      const zip = fulfillment.delivery?.address.zip || '';
+      
+      if (!street) errors['address.street'] = 'Street address is required';
+      if (!city) errors['address.city'] = 'City is required';
+      if (!zip) {
+        errors['address.zip'] = 'ZIP code is required';
+      } else if (zip.length !== 5) {
+        errors['address.zip'] = 'ZIP code must be 5 digits';
+      } else if (!Fulfillment.isZipServiceable(zip)) {
+        errors['address.zip'] = "We don't deliver to this area yet";
+      }
+      if (!fulfillment.delivery?.window) {
+        errors.window = 'Please select a delivery window';
+      }
     }
     
     if (Object.keys(errors).length > 0) {
@@ -138,7 +152,18 @@ export default function CheckoutRoot() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <CheckoutProgress currentStage={stage} />
+        <CheckoutProgress 
+          currentStage={stage} 
+          onStageClick={(clickedStage) => {
+            const stageOrder = ['cart', 'details', 'review'];
+            const currentIdx = stageOrder.indexOf(stage);
+            const clickedIdx = stageOrder.indexOf(clickedStage);
+            if (clickedIdx < currentIdx) {
+              clearValidation();
+              setStage(clickedStage);
+            }
+          }}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
           <div className="lg:col-span-2">
@@ -188,6 +213,7 @@ export default function CheckoutRoot() {
                         selected={fulfillment.type}
                         hasPreorderItems={cart.some(item => item.isPreorder)}
                         onChange={(type) => {
+                          setValidation({ ...validation, fulfillment: undefined });
                           setFulfillment({ type });
                           track('fulfillment_type_selected', { type });
                         }}

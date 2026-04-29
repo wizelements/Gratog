@@ -51,6 +51,7 @@ export default function ReviewAndPay({
   const [step, setStep] = useState<PaymentStep>('review');
   const [orderId, setOrderId] = useState<string | null>(null);
   const [squareOrderId, setSquareOrderId] = useState<string | null>(null);
+  const [serverTotal, setServerTotal] = useState<number | null>(null);
   const [orderAccessToken, setOrderAccessToken] = useState<string | null>(null);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
@@ -99,6 +100,10 @@ export default function ReviewAndPay({
       setOrderId(orderResponse.order.id);
       setSquareOrderId(orderResponse.order.squareOrderId);
       setOrderAccessToken(orderResponse.order.orderAccessToken || null);
+      // Use server-authoritative pricing for payment (prevents amount mismatch)
+      if (orderResponse.order.pricing?.total) {
+        setServerTotal(orderResponse.order.pricing.total);
+      }
       setStep('payment');
       track('order_created', { orderId: orderResponse.order.id });
     } catch (error) {
@@ -180,7 +185,7 @@ export default function ReviewAndPay({
       }
 
       // Standard flow for non-pickup orders
-      const amountCents = Math.round(totals.total * 100);
+      const amountCents = Math.round((serverTotal ?? totals.total) * 100);
       const params = new URLSearchParams({
         orderRef: orderId,
         paid: 'true',
@@ -486,13 +491,13 @@ export default function ReviewAndPay({
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-500">Amount Due</p>
-                <p className="text-xl font-bold text-emerald-600">{formatCurrency(totals.total)}</p>
+                <p className="text-xl font-bold text-emerald-600">{formatCurrency(serverTotal ?? totals.total)}</p>
               </div>
             </div>
 
             {/* Square Payment Form */}
             <SquarePaymentForm
-              amountCents={Math.round(totals.total * 100)}
+              amountCents={Math.round((serverTotal ?? totals.total) * 100)}
               orderId={orderId}
               squareOrderId={squareOrderId || undefined}
               orderAccessToken={orderAccessToken || undefined}

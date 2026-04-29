@@ -151,6 +151,14 @@ export default function QRLandingPage() {
                   </Button>
                 </Link>
                 
+                <Link href={`/preorder?market=${selectedMarket.id}`}>
+                  <Button size="lg" variant="secondary" className="w-full h-14 text-lg bg-amber-500 hover:bg-amber-600 text-white">
+                    <Clock className="w-5 h-5 mr-2" />
+                    Preorder for Pickup
+                    <Badge className="ml-2 bg-white/20 text-white border-0 text-xs">Skip the Line</Badge>
+                  </Button>
+                </Link>
+                
                 <Link href={`/menu?market=${selectedMarket.id}`}>
                   <Button variant="outline" size="lg" className="w-full">
                     View Menu

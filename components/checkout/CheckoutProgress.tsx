@@ -10,6 +10,7 @@ import { CheckoutStage } from '@/stores/checkout';
 
 interface CheckoutProgressProps {
   currentStage: CheckoutStage;
+  onStageClick?: (stage: CheckoutStage) => void;
 }
 
 const STAGES = [
@@ -18,7 +19,7 @@ const STAGES = [
   { key: 'review' as CheckoutStage, label: 'Review & Pay', step: 3 }
 ];
 
-export default function CheckoutProgress({ currentStage }: CheckoutProgressProps) {
+export default function CheckoutProgress({ currentStage, onStageClick }: CheckoutProgressProps) {
   const currentStep = STAGES.find(s => s.key === currentStage)?.step || 1;
   
   return (
@@ -43,10 +44,20 @@ export default function CheckoutProgress({ currentStage }: CheckoutProgressProps
             const isActive = stage.key === currentStage;
             const isCompleted = stage.step < currentStep;
             
+            const isClickable = isCompleted && !!onStageClick;
+            const Wrapper = isClickable ? 'button' : 'div';
+            
             return (
-              <div
+              <Wrapper
                 key={stage.key}
-                className="relative flex flex-col items-center z-10"
+                className={`relative flex flex-col items-center z-10 ${
+                  isClickable ? 'cursor-pointer group' : ''
+                }`}
+                {...(isClickable ? { 
+                  type: 'button' as const,
+                  onClick: () => onStageClick(stage.key),
+                  'aria-label': `Go back to ${stage.label}`,
+                } : {})}
               >
                 <motion.div
                   className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors ${
@@ -55,7 +66,7 @@ export default function CheckoutProgress({ currentStage }: CheckoutProgressProps
                       : isActive
                       ? 'bg-white border-emerald-500'
                       : 'bg-white border-gray-300'
-                  }`}
+                  } ${isClickable ? 'group-hover:bg-emerald-600 group-hover:border-emerald-600 group-hover:scale-110' : ''}`}
                   initial={{ scale: 0.8 }}
                   animate={{ scale: isActive ? 1.1 : 1 }}
                   transition={{ duration: 0.2 }}
@@ -80,13 +91,13 @@ export default function CheckoutProgress({ currentStage }: CheckoutProgressProps
                       : isCompleted
                       ? 'text-gray-700'
                       : 'text-gray-400'
-                  }`}
+                  } ${isClickable ? 'group-hover:text-emerald-600' : ''}`}
                   initial={{ opacity: 0.5 }}
                   animate={{ opacity: isActive ? 1 : 0.7 }}
                 >
                   {stage.label}
                 </motion.span>
-              </div>
+              </Wrapper>
             );
           })}
         </div>

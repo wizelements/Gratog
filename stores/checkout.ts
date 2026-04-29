@@ -138,6 +138,13 @@ function loadPersistedState(): Partial<CheckoutState> {
       fulfillment.type = 'delivery';
       fulfillment.delivery = fulfillment.delivery || initialFulfillment.delivery;
     }
+    // Deserialize pickup date from JSON string back to Date
+    if (fulfillment.pickup?.date && typeof fulfillment.pickup.date === 'string') {
+      fulfillment.pickup = {
+        ...fulfillment.pickup,
+        date: new Date(fulfillment.pickup.date),
+      };
+    }
     return {
       stage: parsed.stage || 'cart',
       contact: parsed.contact || initialContact,
