@@ -11,7 +11,6 @@ const ROTATING_HEADLINES = [
   "Small Batch, Big Heart",
   "Crafted with Gratitude",
   "Your Wellness Journey Starts Here",
-  "🧋 Boba at the Market"
 ];
 
 const BADGES = [
@@ -151,29 +150,6 @@ export default function EnhancedHero() {
             className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
           >
             View All Markets
-          </Button>
-        </div>
-
-        {/* Boba Market Exclusive Teaser */}
-        <div className="mt-6 p-6 bg-gradient-to-r from-purple-50 via-fuchsia-50 to-purple-50 backdrop-blur-sm rounded-2xl border border-purple-200 max-w-2xl mx-auto">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <span className="text-2xl">🧋</span>
-            <span className="text-purple-700 font-bold text-lg">Market Exclusive</span>
-          </div>
-          <div className="text-xl font-bold text-gray-800 mb-2">
-            Handcrafted Boba — Only at Serenbe
-          </div>
-          <div className="text-gray-600 mb-1">
-            Taro Boba • Strawberry Matcha • Brown Sugar • Vanilla Bean & more
-          </div>
-          <div className="text-sm text-purple-600 font-medium mb-4">
-            Made fresh at the market. Kids, Medium & Large sizes available.
-          </div>
-          <Button 
-            onClick={() => window.location.href = '/catalog?category=boba'}
-            className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white"
-          >
-            🎪 Preview the Boba Menu
           </Button>
         </div>
       </div>
