@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { User, History, Star, Phone, Mail, LogOut, ChevronRight } from 'lucide-react';
+import { User, HistoryIcon, Star, Phone, Mail, LogOut, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -155,7 +155,7 @@ export default function CustomerAccountPage() {
         <Tabs defaultValue="orders">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="orders">
-              <History className="w-4 h-4 mr-1" /> Orders
+              <HistoryIcon className="w-4 h-4 mr-1" /> Orders
             </TabsTrigger>
             <TabsTrigger value="favorites">
               <Star className="w-4 h-4 mr-1" /> Favorites
@@ -174,7 +174,7 @@ export default function CustomerAccountPage() {
             
             {orders.length === 0 ? (
               <Card className="p-8 text-center">
-                <History className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+                <HistoryIcon className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
                 <p>No orders yet</p>
                 <Link href="/order/start">
                   <Button className="mt-4">Place First Order</Button>
