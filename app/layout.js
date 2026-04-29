@@ -1,6 +1,7 @@
 import { Inter } from 'next/font/google';
 import './globals.css';
 import './styles/mobile-touch.css';
+import './styles/desktop-responsive.css';
 import { Toaster } from 'sonner';
 import { Suspense } from 'react';
 import { LiveLocationBanner } from '@/components/market/LiveLocationBanner';
@@ -13,6 +14,8 @@ import { PWAPrompt } from '@/components/PWAPrompt';
 import { PWAUpdateNotifier } from '@/components/PWAUpdateNotifier';
 import { PWADiagnostics } from '@/components/PWADiagnostics';
 import { BottomNav } from '@/components/BottomNav';
+import { DesktopNav } from '@/components/DesktopNav';
+import { Footer } from '@/components/Footer';
 import ExitIntentModal from '@/components/ExitIntentModal';
 
 const inter = Inter({ 
@@ -153,9 +156,13 @@ export default function RootLayout({ children }) {
        </head>
       <body className={inter.className}>
         <PWAInitializer />
+        <DesktopNav />
         <MusicProviderWrapper>
           <LiveLocationBanner />
-          {children}
+          <div className="min-h-screen">
+            {children}
+          </div>
+          <Footer />
           <BackgroundMusic />
           <Suspense fallback={<div data-widget="music-controls" className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 z-[9999] h-12 w-12 rounded-full bg-gray-800/90 shadow-lg flex items-center justify-center text-white backdrop-blur-sm sm:bottom-6 sm:left-6">🎵</div>}>
             <MusicControls />
