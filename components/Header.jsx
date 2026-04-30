@@ -183,22 +183,22 @@ export default function Header() {
               <p className="text-xs font-bold text-gray-600 uppercase tracking-wider px-4 py-2 mb-1">
                 Main
               </p>
-              <Link href="/" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/" className={`block text-sm py-2 px-4 rounded ${isActive('/') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 Home
               </Link>
-              <Link href="/markets" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/markets" className={`block text-sm py-2 px-4 rounded ${isActive('/markets') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 Markets
               </Link>
-              <Link href="/explore" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/explore" className={`block text-sm py-2 px-4 rounded ${pathname?.startsWith('/explore') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 Explore
               </Link>
-              <Link href="/community" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/community" className={`block text-sm py-2 px-4 rounded ${isActive('/community') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 Community
               </Link>
-              <Link href="/reviews" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/reviews" className={`block text-sm py-2 px-4 rounded ${isActive('/reviews') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 Reviews
               </Link>
-              <Link href="/rewards" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/rewards" className={`block text-sm py-2 px-4 rounded ${isActive('/rewards') || isActive('/passport') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 Rewards
               </Link>
             </div>
@@ -208,7 +208,7 @@ export default function Header() {
               <p className="text-xs font-bold text-gray-600 uppercase tracking-wider px-4 py-2 mb-1">
                 Shop
               </p>
-              <Link href="/catalog" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/catalog" className={`block text-sm py-2 px-4 rounded ${pathname?.startsWith('/catalog') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 All Products
               </Link>
               <Link href="/catalog?category=gel" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
@@ -231,10 +231,10 @@ export default function Header() {
               <Link href="/#what-is-sea-moss" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
                 What is Sea Moss?
               </Link>
-              <Link href="/explore/learn" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/explore/learn" className={`block text-sm py-2 px-4 rounded ${isActive('/explore/learn') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 How to Use
               </Link>
-              <Link href="/explore/games" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/explore/games" className={`block text-sm py-2 px-4 rounded ${isActive('/explore/games') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 Games
               </Link>
             </div>
@@ -245,12 +245,12 @@ export default function Header() {
                 Account
               </p>
               {isAuthenticated ? (
-                <Link href="/profile" className="block text-sm py-2 px-4 hover:bg-emerald-50 hover:text-emerald-700 rounded font-medium" onClick={() => setIsMenuOpen(false)}>
+                <Link href="/profile" className={`block text-sm py-2 px-4 rounded font-medium ${isActive('/profile') ? 'bg-emerald-100 text-emerald-700' : 'hover:bg-emerald-50 hover:text-emerald-700'}`} onClick={() => setIsMenuOpen(false)}>
                   <User className="h-4 w-4 inline mr-2" />
                   My Profile
                 </Link>
               ) : (
-                <Link href="/login" className="block text-sm py-2 px-4 hover:bg-emerald-50 hover:text-emerald-700 rounded font-medium" onClick={() => setIsMenuOpen(false)}>
+                <Link href="/login" className={`block text-sm py-2 px-4 rounded font-medium ${isActive('/login') ? 'bg-emerald-100 text-emerald-700' : 'hover:bg-emerald-50 hover:text-emerald-700'}`} onClick={() => setIsMenuOpen(false)}>
                   <LogIn className="h-4 w-4 inline mr-2" />
                   Login / Register
                 </Link>
@@ -262,13 +262,13 @@ export default function Header() {
               <p className="text-xs font-bold text-gray-600 uppercase tracking-wider px-4 py-2 mb-1">
                 Help
               </p>
-              <Link href="/faq" className="block text-sm py-2 px-4 hover:bg-blue-50 hover:text-blue-600 rounded" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/faq" className={`block text-sm py-2 px-4 rounded ${isActive('/faq') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-50 hover:text-blue-600'}`} onClick={() => setIsMenuOpen(false)}>
                 FAQ
               </Link>
-              <Link href="/contact" className="block text-sm py-2 px-4 hover:bg-blue-50 hover:text-blue-600 rounded" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/contact" className={`block text-sm py-2 px-4 rounded ${isActive('/contact') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-50 hover:text-blue-600'}`} onClick={() => setIsMenuOpen(false)}>
                 Contact Us
               </Link>
-              <Link href="/about" className="block text-sm py-2 px-4 hover:bg-blue-50 hover:text-blue-600 rounded" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/about" className={`block text-sm py-2 px-4 rounded ${isActive('/about') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-50 hover:text-blue-600'}`} onClick={() => setIsMenuOpen(false)}>
                 About Us
               </Link>
             </div>
