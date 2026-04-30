@@ -134,7 +134,6 @@ export default function Header() {
                 isActive('/about') ? 'w-full' : ''
               }`} />
             </Link>
-            <MegaMenu trigger="Learn" />
           </div>
 
           {/* Right Side Action Buttons */}
