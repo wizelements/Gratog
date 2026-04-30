@@ -21,7 +21,6 @@ const MENU_ITEMS = {
       {
         title: 'Special',
         items: [
-          { label: '🧋 Boba — Serenbe Only', href: '/catalog?category=boba' },
           { label: 'Bundles & Discounts', href: '/catalog?type=bundle' },
           { label: 'Bestsellers', href: '/catalog?sort=popular' },
           { label: 'New Arrivals', href: '/catalog?sort=newest' },
@@ -57,15 +56,47 @@ export default function MegaMenu({ trigger = 'Catalog', onClick }) {
   const [isOpen, setIsOpen] = useState(false);
   const timeoutRef = useRef(null);
   const containerRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile on mount
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleMouseEnter = () => {
+    if (isMobile) return; // Don't use hover on mobile
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsOpen(true);
   };
 
   const handleMouseLeave = () => {
+    if (isMobile) return;
     timeoutRef.current = setTimeout(() => setIsOpen(false), 200);
   };
+
+  const handleClick = () => {
+    if (isMobile) {
+      setIsOpen(!isOpen);
+    }
+    onClick?.();
+  };
+
+  // Close on outside click (mobile)
+  useEffect(() => {
+    if (!isMobile || !isOpen) return;
+    
+    const handleOutsideClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, [isMobile, isOpen]);
 
   useEffect(() => {
     return () => {
@@ -85,7 +116,7 @@ export default function MegaMenu({ trigger = 'Catalog', onClick }) {
     >
       <button
         className="text-sm font-medium transition-all hover:text-[#D4AF37] relative group/button flex items-center gap-1 py-2"
-        onClick={() => onClick?.()}
+        onClick={handleClick}
       >
         {trigger}
         <ChevronDown
@@ -128,11 +159,10 @@ export default function MegaMenu({ trigger = 'Catalog', onClick }) {
           {/* Menu Footer with Featured */}
           <div className="border-t bg-gradient-to-r from-[#D4AF37]/5 to-teal-100/5 px-6 py-4">
             <p className="text-xs text-gray-600 mb-2 font-medium">Featured</p>
-            <div className="flex gap-4">
+            <div className="flex gap-4 flex-wrap">
               {[
                 { label: 'Bestsellers', href: '/catalog?sort=popular' },
                 { label: 'New Products', href: '/catalog?sort=newest' },
-                { label: '🧋 Fresh Boba — Saturdays', href: '/catalog?category=boba' },
                 { label: 'Rewards', href: '/rewards' },
               ].map((item) => (
                 <Link
