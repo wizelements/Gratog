@@ -29,24 +29,25 @@ const MENU_ITEMS = {
       },
     ],
   },
-  Learn: {
+  Explore: {
     icon: Leaf,
     sections: [
       {
-        title: 'Education',
+        title: 'Content',
         items: [
-          { label: 'What is Sea Moss?', href: '/#what-is-sea-moss' },
+          { label: 'Explore All', href: '/explore' },
+          { label: 'Learn Sea Moss', href: '/explore/learn' },
           { label: 'Health Benefits', href: '/#benefits' },
           { label: 'How to Use', href: '/explore/learn' },
           { label: 'Ingredients Guide', href: '/explore/ingredients' },
         ],
       },
       {
-        title: 'Community',
+        title: 'Interactive',
         items: [
-          { label: 'Explore Content', href: '/explore' },
           { label: 'Games & Quizzes', href: '/explore/games' },
           { label: 'Customer Stories', href: '/explore/showcase' },
+          { label: 'What is Sea Moss?', href: '/#what-is-sea-moss' },
         ],
       },
     ],

@@ -9,7 +9,7 @@ import { triggerHaptic, HapticPatterns } from '@/lib/haptics';
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/catalog', label: 'Shop' },
-  { href: '/explore/learn', label: 'Learn' },
+  { href: '/explore', label: 'Explore' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
 ];
