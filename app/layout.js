@@ -14,7 +14,7 @@ import { PWAPrompt } from '@/components/PWAPrompt';
 import { PWAUpdateNotifier } from '@/components/PWAUpdateNotifier';
 import { PWADiagnostics } from '@/components/PWADiagnostics';
 import { BottomNav } from '@/components/BottomNav';
-import { DesktopNav } from '@/components/DesktopNav';
+import Header from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import ExitIntentModal from '@/components/ExitIntentModal';
 
@@ -156,7 +156,7 @@ export default function RootLayout({ children }) {
        </head>
       <body className={inter.className}>
         <PWAInitializer />
-        <DesktopNav />
+        <Header />
         <MusicProviderWrapper>
           <LiveLocationBanner />
           <div className="min-h-screen">
