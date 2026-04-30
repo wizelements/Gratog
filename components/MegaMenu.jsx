@@ -21,6 +21,7 @@ const MENU_ITEMS = {
       {
         title: 'Special',
         items: [
+          { label: '🧋 Boba — Serenbe Only', href: '/catalog?category=boba' },
           { label: 'Bundles & Discounts', href: '/catalog?type=bundle' },
           { label: 'Bestsellers', href: '/catalog?sort=popular' },
           { label: 'New Arrivals', href: '/catalog?sort=newest' },
@@ -163,6 +164,7 @@ export default function MegaMenu({ trigger = 'Catalog', onClick }) {
               {[
                 { label: 'Bestsellers', href: '/catalog?sort=popular' },
                 { label: 'New Products', href: '/catalog?sort=newest' },
+                { label: '🧋 Fresh Boba — Saturdays', href: '/catalog?category=boba' },
                 { label: 'Rewards', href: '/rewards' },
               ].map((item) => (
                 <Link
