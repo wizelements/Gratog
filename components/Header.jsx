@@ -171,7 +171,7 @@ export default function Header() {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div id="mobile-menu" className="md:hidden border-t bg-background/98 backdrop-blur animate-slide-up max-h-[70vh] overflow-y-auto">
+        <div id="mobile-menu" className="md:hidden border-t bg-background/98 backdrop-blur animate-slide-up h-[85vh] overflow-y-auto">
           <div className="container py-4 space-y-1">
             {/* Search Bar for Mobile */}
             <div className="mb-4 px-2">
