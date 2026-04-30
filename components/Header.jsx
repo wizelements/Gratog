@@ -88,17 +88,8 @@ export default function Header() {
                 isActive('/markets') ? 'w-full' : ''
               }`} />
             </Link>
-            <Link 
-              href="/explore" 
-              className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
-                pathname?.startsWith('/explore') ? 'text-[#D4AF37]' : ''
-              }`}
-            >
-              Explore
-              <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
-                pathname?.startsWith('/explore') ? 'w-full' : ''
-              }`} />
-            </Link>
+            {/* Mega Menu for Explore */}
+            <MegaMenu trigger="Explore" />
             <Link 
               href="/community" 
               className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
