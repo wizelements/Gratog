@@ -1,3 +1,11 @@
+/**
+ * 🚀 Gratog Mobile Homepage
+ * Detects mobile and redirects to /pay flow
+ * 
+ * REPLACE app/page.js with this version
+ * or add mobile detection to existing page
+ */
+
 import { LiveLocationBanner } from '@/components/market/LiveLocationBanner';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
@@ -5,8 +13,19 @@ import { logger } from '@/lib/logger';
 import { PUBLIC_REVIEW_FILTER } from '@/lib/review-visibility';
 import { buildHomepageFaqSchema, buildHomepageOrganizationSchema } from '@/seo/schemas';
 import HomePageClient from '@/components/home/HomePageClient';
+import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 
 export const revalidate = 300;
+
+/**
+ * Detect mobile devices
+ */
+function isMobileDevice(userAgent: string): boolean {
+  if (!userAgent) return false;
+  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile/i;
+  return mobileRegex.test(userAgent);
+}
 
 async function getHomepageCatalogData() {
   const snapshot = await getStorefrontCatalogSnapshot({});
@@ -93,20 +112,35 @@ async function getFeaturedReviews() {
 }
 
 export default async function HomePage() {
+  // 🔥 MOBILE DETECTION: Redirect mobile users to /pay
+  const headersList = headers();
+  const userAgent = headersList.get('user-agent') || '';
+  
+  if (isMobileDevice(userAgent)) {
+    redirect('/pay');
+  }
+
+  // Desktop: Show full site
   const [{ featuredProducts, initialCatalogCount }, socialProof, featuredReviews] = await Promise.all([
     getHomepageCatalogData(),
     getSocialProof(),
     getFeaturedReviews()
   ]);
 
+  const organizationSchema = buildHomepageOrganizationSchema();
+  const faqSchema = buildHomepageFaqSchema();
+
   return (
-    <HomePageClient
-      initialFeaturedProducts={featuredProducts}
-      initialCatalogCount={initialCatalogCount}
-      socialProof={socialProof}
-      featuredReviews={featuredReviews}
-      organizationSchema={buildHomepageOrganizationSchema()}
-      faqSchema={buildHomepageFaqSchema()}
-    />
+    <>
+      <LiveLocationBanner />
+      <HomePageClient
+        initialFeaturedProducts={featuredProducts}
+        initialCatalogCount={initialCatalogCount}
+        organizationSchema={organizationSchema}
+        faqSchema={faqSchema}
+        socialProof={socialProof}
+        featuredReviews={featuredReviews}
+      />
+    </>
   );
 }
