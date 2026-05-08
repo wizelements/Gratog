@@ -21,7 +21,7 @@ export const revalidate = 300;
 /**
  * Detect mobile devices
  */
-function isMobileDevice(userAgent: string): boolean {
+function isMobileDevice(userAgent) {
   if (!userAgent) return false;
   const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile/i;
   return mobileRegex.test(userAgent);
