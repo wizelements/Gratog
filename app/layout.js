@@ -17,6 +17,7 @@ import { BottomNav } from '@/components/BottomNav';
 import Header from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import ExitIntentModal from '@/components/ExitIntentModal';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -155,28 +156,30 @@ export default function RootLayout({ children }) {
          `}} />
        </head>
       <body className={inter.className}>
-        <PWAInitializer />
-        <Header />
-        <MusicProviderWrapper>
-          <LiveLocationBanner />
-          <div className="min-h-screen">
-            {children}
-          </div>
-          <Footer />
-          <BackgroundMusic />
-          <Suspense fallback={<div data-widget="music-controls" className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 z-[9999] h-12 w-12 rounded-full bg-gray-800/90 shadow-lg flex items-center justify-center text-white backdrop-blur-sm sm:bottom-6 sm:left-6">🎵</div>}>
-            <MusicControls />
+        <AuthProvider>
+          <PWAInitializer />
+          <Header />
+          <MusicProviderWrapper>
+            <LiveLocationBanner />
+            <div className="min-h-screen">
+              {children}
+            </div>
+            <Footer />
+            <BackgroundMusic />
+            <Suspense fallback={<div data-widget="music-controls" className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 z-[9999] h-12 w-12 rounded-full bg-gray-800/90 shadow-lg flex items-center justify-center text-white backdrop-blur-sm sm:bottom-6 sm:left-6">🎵</div>}>
+              <MusicControls />
+            </Suspense>
+          </MusicProviderWrapper>
+          <PWAPrompt />
+          <PWAUpdateNotifier />
+          <PWADiagnostics />
+          <Suspense fallback={null}>
+            <CookieConsent />
           </Suspense>
-        </MusicProviderWrapper>
-        <PWAPrompt />
-        <PWAUpdateNotifier />
-        <PWADiagnostics />
-        <Suspense fallback={null}>
-          <CookieConsent />
-        </Suspense>
-        <ExitIntentModal />
-        <BottomNav />
-        <Toaster position="top-right" richColors />
+          <ExitIntentModal />
+          <BottomNav />
+          <Toaster position="top-right" richColors />
+        </AuthProvider>
       </body>
     </html>
   );
