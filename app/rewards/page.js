@@ -1,6 +1,7 @@
 'use client';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

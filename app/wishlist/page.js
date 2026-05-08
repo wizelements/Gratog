@@ -1,6 +1,7 @@
 'use client';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 import { useState, useEffect } from 'react';
 import { Heart, Trash2, ShoppingCart, Share2, ArrowRight, Sparkles } from 'lucide-react';

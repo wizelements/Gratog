@@ -1,6 +1,7 @@
 'use client';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 import BenefitSort from '@/components/explore/games/BenefitSort';
 import { Button } from '@/components/ui/button';

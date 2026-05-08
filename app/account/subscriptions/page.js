@@ -3,6 +3,7 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import { verifySubscriptionAccessToken } from '@/lib/subscription-access';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 export default async function AccountSubscriptionsPage({ searchParams }) {
   const resolvedSearchParams = await searchParams;
