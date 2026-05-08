@@ -1,6 +1,9 @@
 const nextConfig = {
   // Removed 'standalone' output for Vercel compatibility
   // Vercel uses its own build output optimization
+
+  // Disable static generation - use dynamic rendering
+  output: 'standalone',
   
   // Keep production builds safe: do not ignore lint/type errors
   eslint: {
@@ -9,15 +12,15 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  
+
   // Production performance optimizations
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
-  
+
   // Allow development origins for hot reload
   allowedDevOrigins: ['gratitude-square.preview.emergentagent.com'],
-  
+
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
@@ -35,7 +38,7 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
   },
-  
+
   // Next.js 14.2.35 compatible configuration
   experimental: {
     // Production optimizations
@@ -45,7 +48,7 @@ const nextConfig = {
     esmExternals: true,
     serverComponentsExternalPackages: ['mongodb', 'mongoose'],
   },
-  
+
   webpack(config, { dev, isServer }) {
     // Exclude service worker from bundle
     config.module = config.module || {};
@@ -57,7 +60,7 @@ const nextConfig = {
         filename: 'static/[name][ext]',
       },
     });
-    
+
     // Development optimizations
     if (dev) {
       config.watchOptions = {
@@ -66,13 +69,13 @@ const nextConfig = {
         ignored: ['**/node_modules', '**/.git', '**/logs'],
       };
     }
-    
+
     // Memory optimizations
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': require('path').resolve(__dirname, './'),
     };
-    
+
     // Fix MongoDB client-side issues
     if (!isServer) {
       config.resolve.fallback = {
@@ -93,16 +96,16 @@ const nextConfig = {
         'async_hooks': false
       };
     }
-    
+
     return config;
   },
-  
+
   // Reduce memory usage
   onDemandEntries: {
     maxInactiveAge: 5000, // Reduced from 10000
     pagesBufferLength: 1, // Reduced from 2
   },
-  
+
   // Performance optimizations - SWC minification is default in Next.js 13+
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? {
