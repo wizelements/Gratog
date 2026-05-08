@@ -17,15 +17,25 @@ const NO_STORE_HEADERS = {
 
 export async function GET(request: NextRequest) {
   try {
-    // Fetch from the existing products API
-    const productsUrl = new URL('/api/products', request.url);
-    const response = await fetch(productsUrl.toString(), {
+    // Get the base URL from the request
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin;
+    
+    // Fetch from the existing products API using absolute URL
+    const productsUrl = `${baseUrl}/api/products`;
+    console.log('Fetching products from:', productsUrl);
+    
+    const response = await fetch(productsUrl, {
       headers: {
         'Accept': 'application/json'
-      }
+      },
+      cache: 'no-store'
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Products API error:', response.status, errorText);
       throw new Error(`Products API failed: ${response.status}`);
     }
 
