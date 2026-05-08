@@ -1,7 +1,6 @@
 /**
- * Storefront Catalog API
- * Returns products for the pay-flow and market checkout
- * Uses direct Square API to avoid database sync issues
+ * Direct Square Catalog API
+ * Fetches products directly from Square without database sync
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -26,12 +25,7 @@ export async function GET(request: NextRequest) {
     if (!squareToken) {
       console.error('SQUARE_ACCESS_TOKEN not configured');
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Square not configured', 
-          products: [],
-          source: 'error_no_credentials'
-        },
+        { success: false, error: 'Square not configured', products: [] },
         { status: 500, headers: NO_STORE_HEADERS }
       );
     }
@@ -46,14 +40,14 @@ export async function GET(request: NextRequest) {
     const { result } = await client.catalogApi.listCatalog(undefined, 'ITEM');
     const items = result.objects || [];
     
-    console.log(`[Storefront] Fetched ${items.length} items from Square`);
+    console.log(`Fetched ${items.length} items from Square`);
 
     // Transform Square items to storefront format
     const products = items
       .filter((item: any) => {
-        // Only include items that have variations/pricing
+        // Only include items that are available for sale
         const data = item.itemData || {};
-        return data.variations?.length > 0;
+        return !data.skipModifierScreen && data.variations?.length > 0;
       })
       .map((item: any) => {
         const data = item.itemData || {};
@@ -63,36 +57,30 @@ export async function GET(request: NextRequest) {
         
         // Get price in cents
         const priceMoney = variationData.priceMoney || {};
-        const priceCents = parseInt(priceMoney.amount?.toString() || '0');
+        const priceCents = priceMoney.amount || 0;
         const price = priceCents / 100;
         
-        // Determine category and emoji
+        // Determine category
         let category = 'specials';
-        let emoji = '🛍️';
         const name = (data.name || '').toLowerCase();
         const description = (data.description || '').toLowerCase();
         
         if (name.includes('lemonade') || description.includes('lemonade')) {
           category = 'lemonades';
-          emoji = '🍋';
         } else if (name.includes('juice') || description.includes('juice')) {
           category = 'juices';
-          emoji = '🧃';
-        } else if (name.includes('moss') || name.includes('gel') || name.includes('sea')) {
+        } else if (name.includes('moss') || name.includes('gel')) {
           category = 'sea-moss';
-          emoji = '🌿';
         } else if (name.includes('refresher')) {
           category = 'refreshers';
-          emoji = '🍹';
         } else if (name.includes('boba') || name.includes('bubble')) {
           category = 'boba';
-          emoji = '🧋';
         }
         
         // Get image if available
         const imageIds = data.imageIds || [];
         const imageUrl = imageIds.length > 0 
-          ? undefined // We'll handle images separately
+          ? `/api/square/image/${imageIds[0]}` 
           : undefined;
         
         return {
@@ -102,31 +90,31 @@ export async function GET(request: NextRequest) {
           price,
           priceCents,
           category,
-          emoji,
           available: true,
           inStock: true,
           stockQuantity: 99,
           image: imageUrl,
-          images: [],
-          ingredientHighlights: [],
-          tags: [],
-          isPopular: name.includes('original') || name.includes('signature'),
-          isNew: false,
+          images: imageIds.map((id: string) => `/api/square/image/${id}`),
           squareData: {
             itemId: item.id,
             variationId: primaryVariation.id,
             catalogObjectId: primaryVariation.id
-          }
+          },
+          variations: variations.map((v: any) => ({
+            id: v.id,
+            name: v.itemVariationData?.name || 'Default',
+            price: (v.itemVariationData?.priceMoney?.amount || 0) / 100,
+            priceCents: v.itemVariationData?.priceMoney?.amount || 0
+          }))
         };
       });
 
-    console.log(`[Storefront] Returning ${products.length} products`);
+    console.log(`Returning ${products.length} products`);
 
     return NextResponse.json(
       {
         success: true,
         products,
-        categories: [],
         count: products.length,
         source: 'square_direct',
         timestamp: new Date().toISOString()
@@ -135,16 +123,14 @@ export async function GET(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('[Storefront] Square catalog error:', error);
+    console.error('Square catalog error:', error);
 
     return NextResponse.json(
       {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch Square catalog',
         products: [],
-        categories: [],
-        source: 'error',
-        timestamp: new Date().toISOString()
+        source: 'error'
       },
       {
         status: 500,
