@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { getAdminUsers, getInventory } from '@/lib/db-admin';
 import { hashPassword } from '@/lib/auth';

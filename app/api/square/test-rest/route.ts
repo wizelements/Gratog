@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { getSquareClient } from '@/lib/square';
 import { logger } from '@/lib/logger';

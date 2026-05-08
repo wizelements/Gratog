@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import * as emailService from '@/lib/email/service';
 import * as templates from '@/lib/email/templates';

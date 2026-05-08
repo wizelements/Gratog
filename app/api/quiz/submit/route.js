@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import { sendEmail } from '@/lib/email';

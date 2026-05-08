@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 /**
  * @deprecated This webhook handler is DEPRECATED and returns 410 Gone.
  * All webhook traffic should go to /api/webhooks/square.

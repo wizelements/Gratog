@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { logger } from '@/lib/logger';
 import { cleanupExpiredLocks } from '@/lib/inventory-lock';
 import { connectToDatabase } from '@/lib/db-optimized';

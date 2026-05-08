@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 /**
  * Seed Markets API
  * Initializes default market data if none exists

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 /**
  * SEO Analysis API
  * Provides real-time SEO scoring and recommendations

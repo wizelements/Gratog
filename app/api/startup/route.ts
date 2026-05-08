@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { validateStartupConfig } from '@/lib/startup-validator';
 

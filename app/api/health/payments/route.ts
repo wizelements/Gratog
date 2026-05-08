@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { getSquareHealthStatus, getSquareServerConfig } from '@/lib/payments/config';
 

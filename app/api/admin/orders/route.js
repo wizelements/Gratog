@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { getOrders } from '@/lib/db-admin';
 import { requireAdmin } from '@/lib/admin-session';

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { validateToken, runScopeSmokeTests } from '@/lib/square-oauth-helper';
 import { logger } from '@/lib/logger';

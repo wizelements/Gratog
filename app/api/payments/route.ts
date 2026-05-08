@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { logger } from '@/lib/logger';
 import { RequestContext } from '@/lib/request-context';
 import { NextRequest, NextResponse } from 'next/server';

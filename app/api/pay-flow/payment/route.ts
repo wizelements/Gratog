@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 /**
  * 🚀 Gratog Pay Flow — Payment API Route
  * Uses existing Square API via square-extension.ts

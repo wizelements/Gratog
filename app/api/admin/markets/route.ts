@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 /**
  * Admin Markets API
  * CRUD operations for managing farmers market locations

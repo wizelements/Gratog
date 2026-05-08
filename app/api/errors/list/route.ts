@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 /**
  * Error List API Endpoint
  * 

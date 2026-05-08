@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { createRefund } from '@/lib/square-api';
 import { connectToDatabase } from '@/lib/db-optimized';

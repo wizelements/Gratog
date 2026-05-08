@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { createUser, initializeUserRewards, initializeUserChallenge } from '@/lib/db/users';
 import { hashPassword, generateToken } from '@/lib/auth/jwt';

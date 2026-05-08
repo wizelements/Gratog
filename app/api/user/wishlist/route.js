@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { verifyAuth } from '@/lib/auth/middleware';
 import { getDB } from '@/lib/db-client';
 import { ObjectId } from 'mongodb';

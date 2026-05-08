@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { orderTracking } from '@/lib/enhanced-order-tracking';
 import { sendOrderStatusEmail } from '@/lib/resend-email';

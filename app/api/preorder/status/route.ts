@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 /**
  * Preorder status API route
  * GET /api/preorder/status

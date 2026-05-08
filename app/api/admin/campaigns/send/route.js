@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-session';
 import { sendCampaign } from '@/lib/campaign-manager';
