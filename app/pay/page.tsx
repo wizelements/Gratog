@@ -80,23 +80,20 @@ export default function PayFlowPage() {
       <PayFlowHeader onSearchOpen={handleSearchOpen} />
       
       <main className="pb-24">
-        {/* Loading State */}
-        <{isLoading && (
+        {isLoading && (
           <div className="flex flex-col items-center justify-center py-16">
             <div className="w-8 h-8 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mb-4"></div>
             <p className="text-gray-500">Loading fresh drinks...🥤</p>
           </div>
         )}
         
-        {/* Error State */}
-        <{error && !isLoading && (
+        {error && !isLoading && (
           <div className="mx-4 mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
             <p className="text-amber-800 text-sm">{error}</p>
           </div>
         )}
         
-        {/* Product Feed */}
-        <{!isLoading && (
+        {!isLoading && (
           <>
             <CategoryTabs counts={categoryCounts} />
             <ProductFeed />
