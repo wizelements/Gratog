@@ -87,7 +87,7 @@ export function PayFlowHeader({ onSearchOpen }: PayFlowHeaderProps) {
         </div>
         
         {/* Search Bar (inline) */}
-        <{searchQuery && (
+        {searchQuery && (
           <div className="px-4 pb-3">
             <div className="relative">
               <input
@@ -110,7 +110,7 @@ export function PayFlowHeader({ onSearchOpen }: PayFlowHeaderProps) {
       </header>
       
       {/* Staff PIN Modal */}
-      <{showStaffPin && (
+      {showStaffPin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
             <h3 className="text-lg font-bold text-gray-900 mb-2">Staff Access</h3>

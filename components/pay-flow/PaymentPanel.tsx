@@ -308,7 +308,7 @@ export function PaymentPanel() {
           </div>
           
           {/* Error */}
-          <{error && (
+          {error && (
             <div className="flex items-center gap-2 p-3 bg-rose-50 text-rose-700 rounded-xl mb-4">
               <AlertCircle className="w-5 h-5 flex-shrink-0" />
               <p className="text-sm">{error}</p>
