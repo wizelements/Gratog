@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Leaf, Heart, Award, Users } from 'lucide-react';

@@ -1,10 +1,4 @@
 const nextConfig = {
-  // Removed 'standalone' output for Vercel compatibility
-  // Vercel uses its own build output optimization
-
-  // Disable static generation - use dynamic rendering
-  output: 'standalone',
-  
   // Keep production builds safe: do not ignore lint/type errors
   eslint: {
     ignoreDuringBuilds: true,

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import CatalogPageClient from '@/components/catalog/CatalogPageClient';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 

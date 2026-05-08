@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import IngredientQuiz from '@/components/explore/games/IngredientQuiz';
 import { Button } from '@/components/ui/button';

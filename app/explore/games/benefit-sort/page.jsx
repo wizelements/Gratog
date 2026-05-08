@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import BenefitSort from '@/components/explore/games/BenefitSort';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';

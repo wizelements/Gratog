@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useMemo, useState } from 'react';
 import { adminFetch } from '@/lib/admin-fetch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

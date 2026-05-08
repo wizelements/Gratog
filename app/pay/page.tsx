@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 /**
  * 🚀 Gratog Pay Flow — Main Page (Live Products)
  * Fetches from existing Gratog storefront API

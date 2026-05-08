@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 /**
  * 🚀 Gratog Mobile Homepage
  * Detects mobile and redirects to /pay flow

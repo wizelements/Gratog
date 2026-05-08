@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { generateMetadata, generateViewport } from '@/lib/seo';
 import {

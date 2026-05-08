@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import CheckoutRoot from '@/components/checkout/CheckoutRoot';
 
 export const metadata = {

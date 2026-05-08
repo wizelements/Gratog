@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { adminFetch } from '@/lib/admin-fetch';
 import { logger } from '@/lib/logger';
