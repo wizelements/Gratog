@@ -1,7 +1,6 @@
 'use client';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3 } from 'lucide-react';

@@ -1,4 +1,5 @@
 import { Inter } from 'next/font/google';
+import { unstable_noStore } from 'next/cache';
 import './globals.css';
 import './styles/mobile-touch.css';
 import './styles/desktop-responsive.css';
@@ -86,6 +87,9 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }) {
+  // Disable static generation for all pages
+  unstable_noStore();
+  
   return (
     <html lang="en">
       <head>

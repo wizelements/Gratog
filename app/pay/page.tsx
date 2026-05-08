@@ -7,7 +7,6 @@
 'use client';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
 import { useEffect, useState } from 'react';
 import { PayFlowHeader } from '@/components/pay-flow/PayFlowHeader';

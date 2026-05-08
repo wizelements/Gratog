@@ -1,5 +1,4 @@
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
 import CatalogPageClient from '@/components/catalog/CatalogPageClient';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';

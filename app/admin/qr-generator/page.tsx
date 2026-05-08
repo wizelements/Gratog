@@ -1,7 +1,6 @@
 'use client';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
 import React, { useState, useRef } from 'react';
 import { ScanLine, Download, Printer, Copy, Check } from 'lucide-react';

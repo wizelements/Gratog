@@ -1,5 +1,4 @@
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
 import CheckoutRoot from '@/components/checkout/CheckoutRoot';
 

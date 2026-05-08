@@ -1,5 +1,4 @@
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
 import { SUBSCRIPTION_TIERS } from '@/lib/subscription-tiers';
 

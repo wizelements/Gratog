@@ -98,5 +98,4 @@ export default async function ProductPage({ params }) {
 
 // Force dynamic rendering - fetch products at request time
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 export const revalidate = 0;
