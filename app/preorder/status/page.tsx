@@ -255,7 +255,7 @@ export default function OrderStatusPage() {
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="orderId">
-                      <Ticket className="w-4 h-4 inline mr-1" /
+                      <Ticket className="w-4 h-4 inline mr-1" />
                       Waitlist Number
                     </Label>
                     <Input
