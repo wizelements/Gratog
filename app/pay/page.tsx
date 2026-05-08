@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 
 /**
  * 🚀 Gratog Pay Flow — Main Page (Live Products)
@@ -6,6 +5,8 @@ export const dynamic = 'force-dynamic';
  */
 
 'use client';
+
+export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
 import { PayFlowHeader } from '@/components/pay-flow/PayFlowHeader';
