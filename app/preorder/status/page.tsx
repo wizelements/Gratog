@@ -231,7 +231,7 @@ export default function OrderStatusPage() {
         <div className="max-w-md mx-auto">
           <Link href="/markets" className="flex items-center gap-2 text-emerald-100 hover:text-white mb-2">
             <ArrowLeft className="w-4 h-4" />
-            Back to Markets
+            &larr; Back to Markets
           </Link>
           <h1 className="text-2xl font-bold">Check Order Status</h1>
         </div>

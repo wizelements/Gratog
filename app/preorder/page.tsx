@@ -367,7 +367,7 @@ export default function PreorderPage() {
         <div className="max-w-md mx-auto">
           <div className="flex items-center gap-2 mb-2">
             <Link href="/markets" className="text-emerald-100 hover:text-white">
-              ← Back to Markets
+              &larr; Back to Markets
             </Link>
           </div>
           <h1 className="text-2xl font-bold">Preorder & Skip the Line</h1>
