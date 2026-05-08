@@ -1,0 +1,152 @@
+/**
+ * 🚀 Gratog Pay Flow — Header
+ * Brand bar with staff mode toggle
+ */
+
+'use client';
+
+import { useState } from 'react';
+import { Search, UserCog, X } from 'lucide-react';
+import { usePayFlowUI } from '@/lib/pay-flow/store';
+import { cn } from '@/lib/utils';
+
+interface PayFlowHeaderProps {
+  onSearchOpen?: () => void;
+}
+
+export function PayFlowHeader({ onSearchOpen }: PayFlowHeaderProps) {
+  const { isStaffMode, toggleStaffMode, searchQuery, setSearchQuery, clearSearch } = usePayFlowUI();
+  const [showStaffPin, setShowStaffPin] = useState(false);
+  const [pin, setPin] = useState('');
+  
+  // Simple PIN for demo - in production use proper auth
+  const STAFF_PIN = '2024';
+  
+  const handleStaffToggle = () => {
+    if (isStaffMode) {
+      toggleStaffMode();
+      setShowStaffPin(false);
+      setPin('');
+    } else {
+      setShowStaffPin(true);
+    }
+  };
+  
+  const handlePinSubmit = () => {
+    if (pin === STAFF_PIN) {
+      toggleStaffMode();
+      setShowStaffPin(false);
+      setPin('');
+    } else {
+      alert('Invalid PIN');
+      setPin('');
+    }
+  };
+  
+  return (
+    <>
+      <header className="sticky top-0 z-30 bg-white border-b border-gray-100">
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-amber-400 rounded-xl flex items-center justify-center">
+              <span className="text-xl">🥤</span>
+            </div>
+            <div>
+              <h1 className="font-bold text-gray-900 leading-tight">Gratog</h1>
+              <p className="text-xs text-gray-500">Market Checkout</p>
+            </div>
+          </div>
+          
+          {/* Actions */}
+          <div className="flex items-center gap-1">
+            {/* Search */}
+            <button
+              onClick={onSearchOpen}
+              className="p-2.5 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5 text-gray-600" />
+            </button>
+            
+            {/* Staff Mode Toggle */}
+            <button
+              onClick={handleStaffToggle}
+              className={cn(
+                "p-2.5 rounded-full transition-colors",
+                isStaffMode 
+                  ? "bg-amber-100 text-amber-700" 
+                  : "hover:bg-gray-100 text-gray-600"
+              )}
+              aria-label="Staff mode"
+              title={isStaffMode ? "Exit staff mode" : "Enter staff mode"}
+            >
+              <UserCog className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+        
+        {/* Search Bar (inline) */}
+        <{searchQuery && (
+          <div className="px-4 pb-3">
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search drinks..."
+                className="w-full pl-4 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                autoFocus
+              />
+              <button
+                onClick={clearSearch}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full"
+              >
+                <X className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
+          </div>
+        )}
+      </header>
+      
+      {/* Staff PIN Modal */}
+      <{showStaffPin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Staff Access</h3>
+            <p className="text-sm text-gray-500 mb-4">Enter PIN to manage inventory</p>
+            
+            <input
+              type="password"
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              placeholder="••••"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-center text-2xl tracking-widest font-mono focus:outline-none focus:border-amber-400 mb-4"
+              maxLength={4}
+              autoFocus
+              onKeyDown={(e) => e.key === 'Enter' && handlePinSubmit()}
+            />
+            
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setShowStaffPin(false);
+                  setPin('');
+                }}
+                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePinSubmit}
+                className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-medium"
+              >
+                Enter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

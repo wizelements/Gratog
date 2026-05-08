@@ -1,13 +1,13 @@
-
 'use client';
 
 /**
  * DeliveryForm - Address, delivery window, and tip selection for delivery orders
+ * 🎯 UX IMPROVEMENTS: ZIP validation on blur only, not during typing
  */
 
 import { motion } from 'framer-motion';
 import { MapPin, Clock, DollarSign, AlertCircle, CheckCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -27,21 +27,44 @@ interface DeliveryFormProps {
 const TIP_PRESETS = [0, 2, 4, 6, 8];
 
 export default function DeliveryForm({ data, onChange, tip, onTipChange, errors = {} }: DeliveryFormProps) {
-  // Derive zip validity from props (survives remount)
-  const zipValid = data.address.zip.length === 5
-    ? Fulfillment.isZipServiceable(data.address.zip)
-    : null;
-
+  // 🎯 ZIP VALIDATION: Only validate after user finishes typing (on blur)
+  const [zipTouched, setZipTouched] = useState(false);
+  const [zipValid, setZipValid] = useState<boolean | null>(null);
   const [customTip, setCustomTip] = useState<string>(() => {
     // Initialize from tip prop if it's not a preset
     return TIP_PRESETS.includes(tip) || tip === 0 ? '' : String(tip);
   });
   
+  // Validate ZIP on blur - not during typing
+  const validateZip = useCallback((zip: string) => {
+    if (zip.length === 5) {
+      const isValid = Fulfillment.isZipServiceable(zip);
+      setZipValid(isValid);
+      return isValid;
+    } else {
+      setZipValid(null);
+      return null;
+    }
+  }, []);
+  
   const handleZipChange = (zip: string) => {
-    onChange({ address: { ...data.address, zip } });
+    // Strip non-digits, limit to 5
+    const cleaned = zip.replace(/\D/g, '').slice(0, 5);
+    onChange({ address: { ...data.address, zip: cleaned } });
+    
+    // Reset validation state while typing
+    if (zipTouched && cleaned.length < 5) {
+      setZipValid(null);
+    }
   };
   
-  const deliveryWindows = data.address.zip && zipValid 
+  const handleZipBlur = () => {
+    setZipTouched(true);
+    validateZip(data.address.zip);
+  };
+  
+  // Delivery windows only show when ZIP is valid
+  const deliveryWindows = zipValid === true && data.address.zip.length === 5
     ? Fulfillment.deliveryWindowsForZip(data.address.zip)
     : [];
   
@@ -136,13 +159,19 @@ export default function DeliveryForm({ data, onChange, tip, onTipChange, errors 
               id="zip"
               type="text"
               value={data.address.zip}
-              onChange={(e) => handleZipChange(e.target.value.replace(/\D/g, '').slice(0, 5))}
+              onChange={(e) => handleZipChange(e.target.value)}
+              onBlur={handleZipBlur}
               placeholder="30310"
               maxLength={5}
-              className={`mt-1 pr-10 ${errors['address.zip'] || zipValid === false ? 'border-red-500' : zipValid ? 'border-emerald-500' : ''}`}
+              inputMode="numeric"
+              className={`mt-1 pr-10 ${
+                zipTouched && zipValid === false ? 'border-red-500' : 
+                zipTouched && zipValid === true ? 'border-emerald-500' : 
+                ''
+              }`}
               autoComplete="postal-code"
             />
-            {zipValid !== null && (
+            {zipTouched && zipValid !== null && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2 mt-0.5">
                 {zipValid ? (
                   <CheckCircle className="w-5 h-5 text-emerald-500" />
@@ -155,8 +184,8 @@ export default function DeliveryForm({ data, onChange, tip, onTipChange, errors 
         </div>
       </div>
       
-      {/* ZIP Validation Message */}
-      {zipValid === false && (
+      {/* ZIP Validation Message - Only after blur */}
+      {zipTouched && zipValid === false && data.address.zip.length === 5 && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -174,7 +203,14 @@ export default function DeliveryForm({ data, onChange, tip, onTipChange, errors 
         </motion.div>
       )}
       
-      {zipValid && (
+      {/* ZIP Help - Show while typing if incomplete */}
+      {data.address.zip.length > 0 && data.address.zip.length < 5 && (
+        <p className="text-xs text-gray-500">
+          Enter complete 5-digit ZIP code
+        </p>
+      )}
+      
+      {zipValid === true && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
@@ -199,11 +235,17 @@ export default function DeliveryForm({ data, onChange, tip, onTipChange, errors 
                 </div>
               </SelectTrigger>
               <SelectContent>
-                {deliveryWindows.map((window) => (
-                  <SelectItem key={window.value} value={window.value} disabled={!window.available}>
-                    {window.label}
+                {deliveryWindows.length > 0 ? (
+                  deliveryWindows.map((window) => (
+                    <SelectItem key={window.value} value={window.value} disabled={!window.available}>
+                      {window.label}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="no-windows" disabled>
+                    No delivery windows available
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
           </div>

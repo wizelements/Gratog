@@ -116,13 +116,8 @@ export default async function HomePage() {
   const headersList = headers();
   const userAgent = headersList.get('user-agent') || '';
   
-  // Check for fullSite override (allows mobile users to access full site)
-  const fullSiteParam = headersList.get('x-query-fullsite') || '';
-  const isFullSiteRequested = fullSiteParam === 'true';
-  
-  if (isMobileDevice(userAgent) && !isFullSiteRequested) {
-    // Redirect mobile users to /pay with header hint for back navigation
-    redirect('/pay?from=home');
+  if (isMobileDevice(userAgent)) {
+    redirect('/pay');
   }
 
   // Desktop: Show full site

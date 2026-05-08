@@ -8,20 +8,21 @@ import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useCartEngine } from '@/hooks/useCartEngine';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import Link from 'next/link';
 
 /**
- * 🛒 Enhanced Floating Cart with creative features
- * - Smooth animations
- * - Undo delete
- * - Cart with undo delete
- * - Empty state with CTA
- * - Mobile optimized
+ * 🛒 Enhanced Floating Cart - Updated with custom confirm modal
+ * 🎯 UX IMPROVEMENTS: Replaces native confirm(), adds aria-live, back-to-catalog link
  */
 export default function EnhancedFloatingCart() {
   const [isOpen, setIsOpen] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [recentlyDeleted, setRecentlyDeleted] = useState(null);
   const [undoTimer, setUndoTimer] = useState(null);
+  
+  // 🎯 CUSTOM CONFIRM MODAL: Replace window.confirm()
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const { items, totalItems, subtotal, isEmpty, updateQuantity, removeItem, clearCart, isHydrated, addItem } = useCartEngine();
 
@@ -105,11 +106,19 @@ export default function EnhancedFloatingCart() {
     }
   };
 
-  const handleClearCart = () => {
-    if (window.confirm('Clear all items from cart?')) {
-      clearCart();
-      toast.success('Cart cleared');
-    }
+  // 🎯 CUSTOM CONFIRM MODAL: Open modal instead of window.confirm()
+  const handleClearCartClick = () => {
+    setShowClearConfirm(true);
+  };
+
+  const handleClearConfirm = () => {
+    clearCart();
+    setShowClearConfirm(false);
+    toast.success('Cart cleared');
+  };
+
+  const handleClearCancel = () => {
+    setShowClearConfirm(false);
   };
 
   const handleCheckout = () => {
@@ -195,6 +204,11 @@ export default function EnhancedFloatingCart() {
                     <span className="text-3xl font-bold">${subtotal.toFixed(2)}</span>
                   </div>
                 </div>
+                
+                {/* 🎯 ACCESSIBILITY: Live region for cart updates */}
+                <div aria-live="polite" aria-atomic="true" className="sr-only">
+                  {totalItems} items in cart, subtotal ${subtotal.toFixed(2)}
+                </div>
               </div>
 
               {/* Cart Items */}
@@ -207,16 +221,12 @@ export default function EnhancedFloatingCart() {
                     </div>
                     <h3 className="text-xl font-semibold text-gray-700 mb-2">Your cart is empty</h3>
                     <p className="text-gray-500 mb-6">Discover our amazing sea moss products!</p>
-                    <Button 
-                      onClick={() => {
-                        setIsOpen(false);
-                        window.location.href = '/catalog';
-                      }}
-                      className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
-                    >
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Browse Products
-                    </Button>
+                    <Link href="/catalog" onClick={() => setIsOpen(false)}>
+                      <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Browse Products
+                      </Button>
+                    </Link>
                   </div>
                 ) : (
                   <>
@@ -312,7 +322,7 @@ export default function EnhancedFloatingCart() {
 
                     {items.length > 1 && (
                       <Button
-                        onClick={handleClearCart}
+                        onClick={handleClearCartClick}
                         variant="outline"
                         className="w-full text-red-600 border-red-200 hover:bg-red-50"
                       >
@@ -354,6 +364,18 @@ export default function EnhancedFloatingCart() {
           </>
         )}
       </AnimatePresence>
+      
+      {/* 🎯 CUSTOM CONFIRM MODAL: Styled replacement for window.confirm() */}
+      <ConfirmModal
+        isOpen={showClearConfirm}
+        title="Clear Cart?"
+        message="This will remove all items from your cart. This action cannot be undone."
+        confirmLabel="Clear Cart"
+        cancelLabel="Keep Items"
+        variant="danger"
+        onConfirm={handleClearConfirm}
+        onCancel={handleClearCancel}
+      />
     </>
   );
 }

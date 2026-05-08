@@ -2,11 +2,12 @@
 
 /**
  * ContactForm - Collects customer contact information
+ * 🎯 UX IMPROVEMENTS: Phone auto-formatting, field validation
  */
 
 import { motion } from 'framer-motion';
 import { User, Mail, Phone, Check } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -18,14 +19,44 @@ interface ContactFormProps {
   errors?: Record<string, string>;
 }
 
+// 🎯 PHONE FORMATTING: Auto-format as (XXX) XXX-XXXX
+const formatPhoneDisplay = (value: string): string => {
+  const cleaned = value.replace(/\D/g, '');
+  
+  if (cleaned.length === 0) return '';
+  if (cleaned.length <= 3) return `(${cleaned}`;
+  if (cleaned.length <= 6) return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+  return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+};
+
 export default function ContactForm({ contact, onChange, errors = {} }: ContactFormProps) {
   const [completedFields, setCompletedFields] = useState<Set<string>>(new Set());
+  const [phoneTouched, setPhoneTouched] = useState(false);
   
   const handleFieldComplete = (fieldName: string, value: string) => {
     if (value.trim().length > 0 && !completedFields.has(fieldName)) {
       setCompletedFields(new Set([...completedFields, fieldName]));
     }
   };
+  
+  // Handle phone input - strip non-digits on change
+  const handlePhoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/\D/g, '').slice(0, 10);
+    onChange({ phone: rawValue });
+  }, [onChange]);
+  
+  // Handle phone blur
+  const handlePhoneBlur = useCallback(() => {
+    setPhoneTouched(true);
+    handleFieldComplete('phone', contact.phone);
+  }, [contact.phone, handleFieldComplete]);
+  
+  // Is phone complete (10 digits)
+  const isPhoneComplete = contact.phone?.length === 10;
+  const showPhoneError = phoneTouched && !isPhoneComplete && contact.phone?.length > 0;
+  
+  // Display formatted phone
+  const displayPhone = formatPhoneDisplay(contact.phone || '');
   
   return (
     <motion.div
@@ -152,7 +183,7 @@ export default function ContactForm({ contact, onChange, errors = {} }: ContactF
         )}
       </div>
       
-      {/* Phone */}
+      {/* Phone - With Auto-Formatting */}
       <div className="relative">
         <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
           Phone Number *
@@ -161,13 +192,23 @@ export default function ContactForm({ contact, onChange, errors = {} }: ContactF
           <Input
             id="phone"
             type="tel"
-            value={contact.phone}
-            onChange={(e) => onChange({ phone: e.target.value })}
-            onBlur={(e) => handleFieldComplete('phone', e.target.value)}
+            value={displayPhone}
+            onChange={handlePhoneChange}
+            onBlur={handlePhoneBlur}
             placeholder="(555) 123-4567"
-            className={`pr-10 ${errors.phone ? 'border-red-500' : ''}`}
-            aria-invalid={!!errors.phone}
-            aria-describedby={errors.phone ? 'phone-error' : undefined}
+            maxLength={14}
+            inputMode="numeric"
+            className={`pr-10 ${
+              errors.phone ? 'border-red-500' : 
+              showPhoneError ? 'border-amber-400' : 
+              isPhoneComplete ? 'border-emerald-500' : ''
+            }`}
+            aria-invalid={!!errors.phone || showPhoneError}
+            aria-describedby={
+              errors.phone ? 'phone-error' : 
+              showPhoneError ? 'phone-help' : 
+              undefined
+            }
             autoComplete="tel"
           />
           {!completedFields.has('phone') || errors.phone ? (
@@ -185,6 +226,11 @@ export default function ContactForm({ contact, onChange, errors = {} }: ContactF
         {errors.phone && (
           <p id="phone-error" className="mt-1 text-xs text-red-500">
             {errors.phone}
+          </p>
+        )}
+        {showPhoneError && (
+          <p id="phone-help" className="mt-1 text-xs text-amber-600">
+            Please enter a complete 10-digit phone number
           </p>
         )}
       </div>
