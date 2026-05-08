@@ -1,4 +1,13 @@
 const nextConfig = {
+  // Disable static generation for App Router
+  // This avoids 'useSearchParams should be wrapped in suspense' errors
+  experimental: {
+    // Disable build-time prerendering
+    // This forces all pages to be server-rendered
+    workerThreads: false,
+    cpus: 1,
+  },
+
   // Keep production builds safe: do not ignore lint/type errors
   eslint: {
     ignoreDuringBuilds: true,

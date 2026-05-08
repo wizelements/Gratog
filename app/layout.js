@@ -161,9 +161,11 @@ export default function RootLayout({ children }) {
           <Header />
           <MusicProviderWrapper>
             <LiveLocationBanner />
-            <div className="min-h-screen">
-              {children}
-            </div>
+            <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-emerald-500 border-t-transparent rounded-full"></div></div>}>
+              <div className="min-h-screen">
+                {children}
+              </div>
+            </Suspense>
             <Footer />
             <BackgroundMusic />
             <Suspense fallback={<div data-widget="music-controls" className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 z-[9999] h-12 w-12 rounded-full bg-gray-800/90 shadow-lg flex items-center justify-center text-white backdrop-blur-sm sm:bottom-6 sm:left-6">🎵</div>}>
