@@ -249,13 +249,16 @@ export default function PreorderPage() {
     return acc;
   }, {} as Record<string, PreorderItem[]>);
 
-  const categoryOrder = ['sea-moss-gels', 'lemonades-and-juices', 'refreshers', 'boba', 'other'];
+  const categoryOrder = ['sea-moss', 'lemonades', 'juices', 'refreshers', 'boba', 'shots', 'specials', 'other'];
   const categoryLabels: Record<string, string> = {
-    'sea-moss-gels': 'Sea Moss Gels',
-    'lemonades-and-juices': 'Lemonades & Juices',
+    'sea-moss': 'Sea Moss Gels',
+    'lemonades': 'Lemonades',
+    'juices': 'Fresh Juices',
     'refreshers': 'Refreshers',
     'boba': 'Boba Teas',
-    'other': 'Other Products'
+    'shots': 'Wellness Shots',
+    'specials': 'Specials',
+    'other': 'Other'
   };
 
   if (orderComplete) {
