@@ -18,7 +18,13 @@ const NO_STORE_HEADERS = {
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('[Storefront] Connecting to database...');
     const { db } = await connectToDatabase();
+    console.log('[Storefront] Database connected');
+    
+    // Check if collection exists
+    const collections = await db.listCollections({ name: 'square_catalog_items' }).toArray();
+    console.log('[Storefront] Collections found:', collections.map(c => c.name));
     
     // Fetch from square_catalog_items (same collection as working products API)
     const rawItems = await db
@@ -27,7 +33,7 @@ export async function GET(request: NextRequest) {
       .sort({ name: 1 })
       .toArray();
     
-    console.log(`[Storefront] Fetched ${rawItems.length} items from MongoDB`);
+    console.log(`[Storefront] Fetched ${rawItems.length} raw items from MongoDB`);
 
     // Transform to storefront format
     const products = rawItems
@@ -121,6 +127,7 @@ export async function GET(request: NextRequest) {
       {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch catalog',
+        errorStack: error instanceof Error ? error.stack : undefined,
         products: [],
         source: 'error'
       },
