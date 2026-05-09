@@ -36,7 +36,7 @@ export function ProductFeed() {
     
     // Staff mode: show all, Customer mode: available only
     if (!isStaffMode) {
-      filtered = filtered.filter(p => p.available && p.stockQuantity > 0);
+      filtered = filtered.filter(p => p.available);
     }
     
     return filtered;

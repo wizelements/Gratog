@@ -52,8 +52,9 @@ interface GratogProduct {
  * Transform Gratog product format to PayFlow format
  */
 export function transformToPayFlowProduct(product: GratogProduct): PayFlowProduct | null {
-  // Skip if not available
-  if (product.available === false || product.inStock === false) {
+  // Skip only if explicitly disabled (available === false)
+  // Allow preorder / out-of-stock items so they appear in the feed
+  if (product.available === false) {
     return null;
   }
   
@@ -96,8 +97,8 @@ export function transformToPayFlowProduct(product: GratogProduct): PayFlowProduc
     priceCents,
     image,
     ingredients,
-    available: product.available !== false && product.inStock !== false,
-    stockQuantity,
+    available: product.available !== false,
+    stockQuantity: product.inStock === false ? 0 : stockQuantity,
     tags,
     upsells: product.upsells || getDefaultUpsells(category),
     isPopular: product.isPopular,
@@ -116,11 +117,11 @@ function mapToPayFlowCategory(gratogCategory?: string): PayFlowCategory {
   
   const cat = gratogCategory.toLowerCase();
   
-  if (cat.includes('lemonade')) return 'lemonades';
-  if (cat.includes('juice')) return 'juices';
+  if (cat.includes('lemonade') || cat.includes('juice')) return 'lemonades';
   if (cat.includes('moss') || cat.includes('sea')) return 'sea-moss';
   if (cat.includes('refresher')) return 'refreshers';
   if (cat.includes('boba') || cat.includes('bubble')) return 'boba';
+  if (cat.includes('shot') || cat.includes('wellness')) return 'specials';
   if (cat.includes('special') || cat.includes('bundle')) return 'specials';
   
   return 'specials';
@@ -164,8 +165,8 @@ function getDefaultUpsells(category: PayFlowCategory): PayFlowProduct['upsells']
  */
 export async function fetchLiveProducts(): Promise<PayFlowProduct[]> {
   try {
-    // Try the storefront catalog snapshot first
-    const response = await fetch('/api/storefront/catalog', {
+    // Use the unified products API (same source as catalog/shop pages)
+    const response = await fetch('/api/products', {
       cache: 'no-store',
       headers: { 'Accept': 'application/json' }
     });
