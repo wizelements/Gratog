@@ -190,6 +190,9 @@ interface UIStore extends PayFlowUIState {
   
   // Product selection
   selectProduct: (productId: string | undefined) => void;
+  
+  // Full flow reset (for starting a new order)
+  resetFlow: () => void;
 }
 
 const VIEW_STACK: Record<PayFlowView, PayFlowView | null> = {
@@ -229,7 +232,19 @@ export const usePayFlowUI = create<UIStore>()((set, get) => ({
   enableStaffMode: () => set({ isStaffMode: true }),
   disableStaffMode: () => set({ isStaffMode: false }),
 
-  selectProduct: (productId) => set({ selectedProductId: productId })
+  selectProduct: (productId) => set({ selectedProductId: productId }),
+
+  resetFlow: () => {
+    set({
+      currentView: 'browse',
+      activeCategory: 'lemonades',
+      searchQuery: '',
+      isStaffMode: false,
+      selectedProductId: undefined,
+    });
+    usePayFlowCart.getState().clearCart();
+    usePayFlowMetrics.getState().endSession();
+  }
 }));
 
 // ============================================

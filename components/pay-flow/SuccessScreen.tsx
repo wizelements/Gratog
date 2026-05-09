@@ -132,13 +132,14 @@ export function SuccessScreen({ orderId }: SuccessScreenProps) {
                 New Order
               </button>
               
-              <a
-                href={`/order-confirmation/${displayOrderId}`}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+              {/* View Receipt disabled until /order-confirmation route exists */}
+              <button
+                disabled
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-gray-400 bg-gray-100 cursor-not-allowed"
               >
                 <Receipt className="w-5 h-5" />
-                View Receipt
-              </a>
+                Receipt coming soon
+              </button>
             </div>
             
             {/* Footer Message */}
@@ -147,7 +148,7 @@ export function SuccessScreen({ orderId }: SuccessScreenProps) {
                 Thank you for supporting Gratog! 💚
               </p>
               <p className="text-xs text-gray-300 mt-1">
-                tastegratitude.shop
+                tasteofgratitude.shop
               </p>
             </div>
           </div>
