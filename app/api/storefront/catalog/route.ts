@@ -24,11 +24,19 @@ export async function GET(request: NextRequest) {
     const squareEnv = process.env.SQUARE_ENVIRONMENT || 'sandbox';
     
     if (!squareToken) {
-      console.error('SQUARE_ACCESS_TOKEN not configured');
+      console.error('[Storefront] SQUARE_ACCESS_TOKEN not configured');
+      console.error('[Storefront] Environment:', process.env.VERCEL_ENV, 'Node:', process.env.NODE_ENV);
+      
+      // Return error with debugging info
       return NextResponse.json(
         { 
           success: false, 
-          error: 'Square not configured', 
+          error: 'Square not configured - token missing', 
+          debug: {
+            vercelEnv: process.env.VERCEL_ENV,
+            nodeEnv: process.env.NODE_ENV,
+            hasToken: false
+          },
           products: [],
           source: 'error_no_credentials'
         },
