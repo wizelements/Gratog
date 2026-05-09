@@ -137,6 +137,15 @@ html {
     transform: translateY(0);
   }
 
+  /* Hide scrollbar for horizontal scroll containers */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
   .prose {
     max-width: 65ch;
   }
