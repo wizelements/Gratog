@@ -2,36 +2,154 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Box, Smartphone, ArrowLeft, Sparkles, Rotate3d, Eye } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Box, Smartphone, ArrowLeft, Sparkles, Rotate3d, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
-const PRODUCTS = [
-  {
-    id: 'sea-moss-gel',
-    name: 'Sea Moss Gel',
-    description: 'Premium wildcrafted sea moss gel packed with 92 minerals',
-    image: '/images/products/sea-moss-gel.jpg',
-    price: '$25.00',
-    benefits: ['Thyroid Support', 'Immunity', 'Skin Health']
-  },
-  {
-    id: 'elderberry-syrup',
-    name: 'Elderberry Syrup',
-    description: 'Immune-boosting elderberry syrup with honey and spices',
-    image: '/images/products/elderberry-syrup.jpg',
-    price: '$18.00',
-    benefits: ['Immunity', 'Antioxidants', 'Respiratory']
-  }
+// Category order matching the shop/preorder
+const CATEGORY_ORDER = [
+  { key: 'sea-moss', label: 'Sea Moss Gels', emoji: '🌿' },
+  { key: 'lemonades', label: 'Lemonades', emoji: '🍋' },
+  { key: 'juices', label: 'Fresh Juices', emoji: '🧃' },
+  { key: 'refreshers', label: 'Refreshers', emoji: '🍹' },
+  { key: 'boba', label: 'Boba Teas', emoji: '🧋' },
+  { key: 'shots', label: 'Wellness Shots', emoji: '🥃' },
+  { key: 'specials', label: 'Specials', emoji: '✨' },
 ];
 
+function getCategoryFromProduct(product) {
+  const name = (product.name || '').toLowerCase();
+  const category = product.category || product.categoryData?.name || '';
+  
+  if (category.toLowerCase().includes('moss') || category.toLowerCase().includes('gel')) return 'sea-moss';
+  if (name.includes('lemonade') || category.toLowerCase().includes('lemonade')) return 'lemonades';
+  if (name.includes('juice') || category.toLowerCase().includes('juice')) return 'juices';
+  if (name.includes('refresher') || category.toLowerCase().includes('refresher')) return 'refreshers';
+  if (name.includes('boba') || category.toLowerCase().includes('boba')) return 'boba';
+  if (name.includes('shot') || category.toLowerCase().includes('shot')) return 'shots';
+  return 'specials';
+}
+
+function getCategoryEmoji(category) {
+  const cat = CATEGORY_ORDER.find(c => c.key === category);
+  return cat?.emoji || '✨';
+}
+
 export default function ShowcasePage() {
-  const [selectedProduct, setSelectedProduct] = useState(PRODUCTS[0]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [rotation, setRotation] = useState(0);
+  const [activeCategory, setActiveCategory] = useState('all');
+
+  // Fetch real products from Square
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch('/api/storefront/catalog', {
+          cache: 'no-store',
+          headers: { 'Accept': 'application/json' }
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch products');
+        
+        const data = await response.json();
+        
+        if (data.products && data.products.length > 0) {
+          // Transform and categorize products
+          const transformedProducts = data.products
+            .filter(p => p.available !== false && p.inStock !== false)
+            .map(p => ({
+              id: p.id,
+              name: p.name,
+              description: p.description || `${p.size || 'Regular'} - Premium wellness product`,
+              image: p.image,
+              price: p.price || (p.priceCents || 0) / 100,
+              priceFormatted: `$${(p.price || (p.priceCents || 0) / 100).toFixed(2)}`,
+              size: p.size || 'Regular',
+              category: getCategoryFromProduct(p),
+              emoji: p.emoji || '🫙',
+              benefits: p.benefits || ['Wellness', 'Natural', 'Premium'],
+              inStock: p.inStock !== false
+            }));
+          
+          setProducts(transformedProducts);
+          setSelectedProduct(transformedProducts[0]);
+        }
+      } catch (error) {
+        console.error('Failed to load products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProducts();
+  }, []);
+
+  // Filter products by category
+  const filteredProducts = activeCategory === 'all' 
+    ? products 
+    : products.filter(p => p.category === activeCategory);
+
+  // Get unique categories that have products
+  const availableCategories = CATEGORY_ORDER.filter(cat => 
+    products.some(p => p.category === cat.key)
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+        <div className="container mx-auto px-4 py-8">
+          <Link href="/explore">
+            <Button variant="ghost" className="mb-4">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Explore
+            </Button>
+          </Link>
+
+          <div className="text-center mb-12">
+            <Skeleton className="h-12 w-96 mx-auto mb-4" />
+            <Skeleton className="h-6 w-64 mx-auto" />
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+            <Skeleton className="h-[500px] rounded-2xl" />
+            <div className="space-y-6">
+              <Skeleton className="h-32 rounded-xl" />
+              <Skeleton className="h-48 rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+        <div className="container mx-auto px-4 py-8">
+          <Link href="/explore">
+            <Button variant="ghost" className="mb-4">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Explore
+            </Button>
+          </Link>
+
+          <div className="text-center py-20">
+            <Box className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-700 mb-2">No Products Available</h2>
+            <p className="text-gray-500">Check back soon for our wellness product showcase!</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
@@ -43,7 +161,7 @@ export default function ShowcasePage() {
           </Button>
         </Link>
 
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
             3D Product Showcase
           </h1>
@@ -52,38 +170,88 @@ export default function ShowcasePage() {
           </p>
         </div>
 
-        <div className="flex justify-center gap-4 mb-8">
-          {PRODUCTS.map((product) => (
+        {/* Category Tabs - Same as shop/preorder */}
+        <div className="flex flex-wrap justify-center gap-2 mb-8">
+          <Button
+            variant={activeCategory === 'all' ? 'default' : 'outline'}
+            onClick={() => { setActiveCategory('all'); setSelectedProduct(products[0]); }}
+            className={activeCategory === 'all' ? 'bg-emerald-600 hover:bg-emerald-700' : 'border-emerald-300 text-emerald-700'}
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            All Products
+          </Button>
+          {availableCategories.map((cat) => (
             <Button
-              key={product.id}
-              variant={selectedProduct.id === product.id ? 'default' : 'outline'}
-              onClick={() => setSelectedProduct(product)}
-              className="flex items-center gap-2"
+              key={cat.key}
+              variant={activeCategory === cat.key ? 'default' : 'outline'}
+              onClick={() => {
+                setActiveCategory(cat.key);
+                const firstInCat = products.find(p => p.category === cat.key);
+                if (firstInCat) setSelectedProduct(firstInCat);
+              }}
+              className={activeCategory === cat.key ? 'bg-emerald-600 hover:bg-emerald-700' : 'border-emerald-300 text-emerald-700'}
             >
-              <Box className="w-4 h-4" />
-              {product.name}
+              <span className="mr-2">{cat.emoji}</span>
+              {cat.label}
             </Button>
           ))}
         </div>
 
+        {/* Product Selector - Horizontal scroll like preorder */}
+        <div className="mb-8 overflow-x-auto">
+          <div className="flex gap-4 pb-4 min-w-max justify-center">
+            {filteredProducts.map((product) => (
+              <button
+                key={product.id}
+                onClick={() => setSelectedProduct(product)}
+                className={`flex-shrink-0 w-32 p-4 rounded-xl border-2 transition-all text-left ${
+                  selectedProduct?.id === product.id
+                    ? 'border-emerald-500 bg-emerald-50 shadow-md'
+                    : 'border-gray-200 bg-white hover:border-emerald-300'
+                }`}
+              >
+                <div className="text-4xl mb-2 text-center">{product.emoji}</div>
+                <p className="text-sm font-medium text-gray-900 line-clamp-2 text-center">{product.name}</p>
+                <p className="text-xs text-emerald-600 text-center mt-1">{product.priceFormatted}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+          {/* 3D Viewer */}
           <div>
             <Card className="overflow-hidden">
               <CardContent className="p-0">
                 <div className="relative min-h-[500px] bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex items-center justify-center">
-                  <div 
-                    className="relative w-64 h-64 transition-transform duration-300 ease-out"
-                    style={{ transform: `rotateY(${rotation}deg)` }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-200/50 to-teal-300/50 rounded-2xl shadow-2xl flex items-center justify-center">
-                      <div className="text-center p-6">
-                        <div className="text-6xl mb-4">🫙</div>
-                        <h3 className="text-xl font-bold text-emerald-800">{selectedProduct.name}</h3>
-                        <p className="text-emerald-600 mt-2">{selectedProduct.price}</p>
+                  {selectedProduct?.image ? (
+                    <div 
+                      className="relative w-64 h-64 transition-transform duration-300 ease-out"
+                      style={{ transform: `rotateY(${rotation}deg)` }}
+                    >
+                      <Image
+                        src={selectedProduct.image}
+                        alt={selectedProduct.name}
+                        fill
+                        className="object-contain drop-shadow-2xl"
+                      />
+                    </div>
+                  ) : (
+                    <div 
+                      className="relative w-64 h-64 transition-transform duration-300 ease-out"
+                      style={{ transform: `rotateY(${rotation}deg)` }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-200/50 to-teal-300/50 rounded-2xl shadow-2xl flex items-center justify-center">
+                        <div className="text-center p-6">
+                          <div className="text-8xl mb-4">{selectedProduct?.emoji || '🫙'}</div>
+                          <h3 className="text-xl font-bold text-emerald-800">{selectedProduct?.name}</h3>
+                          <p className="text-emerald-600 mt-2">{selectedProduct?.priceFormatted}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                   
+                  {/* Rotation Controls */}
                   <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
                     <Button 
                       size="sm" 
@@ -105,10 +273,11 @@ export default function ShowcasePage() {
                     </Button>
                   </div>
                   
+                  {/* Category Badge */}
                   <div className="absolute top-4 right-4">
                     <Badge className="bg-amber-500 text-white">
                       <Sparkles className="w-3 h-3 mr-1" />
-                      Preview Mode
+                      {getCategoryEmoji(selectedProduct?.category)} {selectedProduct?.category?.replace('-', ' ') || 'Product'}
                     </Badge>
                   </div>
                 </div>
@@ -130,18 +299,24 @@ export default function ShowcasePage() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-3xl">{selectedProduct.name}</CardTitle>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">{selectedProduct?.emoji}</span>
+                  <CardTitle className="text-3xl">{selectedProduct?.name}</CardTitle>
+                </div>
+                <Badge variant="secondary" className="w-fit">
+                  {getCategoryEmoji(selectedProduct?.category)} {selectedProduct?.category?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </Badge>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <p className="text-gray-600 text-lg mb-4">{selectedProduct.description}</p>
-                  <p className="text-4xl font-bold text-emerald-600">{selectedProduct.price}</p>
+                  <p className="text-gray-600 text-lg mb-4">{selectedProduct?.description}</p>
+                  <p className="text-4xl font-bold text-emerald-600">{selectedProduct?.priceFormatted}</p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold mb-3">Key Benefits</h3>
                   <div className="flex flex-wrap gap-2">
-                    {selectedProduct.benefits.map((benefit) => (
+                    {selectedProduct?.benefits?.map((benefit) => (
                       <Badge key={benefit} variant="secondary" className="text-sm px-3 py-1">
                         {benefit}
                       </Badge>
@@ -150,12 +325,17 @@ export default function ShowcasePage() {
                 </div>
 
                 <div className="space-y-3">
-                  <Button className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-lg py-6">
-                    Add to Cart - {selectedProduct.price}
-                  </Button>
-                  <Button variant="outline" className="w-full text-lg py-6">
-                    Learn More
-                  </Button>
+                  <Link href={`/product/${selectedProduct?.id}`}>
+                    <Button className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-lg py-6">
+                      <Plus className="w-5 h-5 mr-2" />
+                      View Product Details
+                    </Button>
+                  </Link>
+                  <Link href="/catalog">
+                    <Button variant="outline" className="w-full text-lg py-6">
+                      Browse Full Catalog
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
