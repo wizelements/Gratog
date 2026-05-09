@@ -318,8 +318,8 @@ export const usePayFlowMetrics = create<MetricsStore>()(
           }
         });
         
-        // Log success metrics
-        if (hitTarget) {
+        // Log success metrics (development only)
+        if (process.env.NODE_ENV === 'development') {
           console.log('🎯 Target hit! Flow completed in', totalFlowTimeMs, 'ms');
         }
       },

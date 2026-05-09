@@ -8,6 +8,7 @@
 
 import { useMemo } from 'react';
 import { usePayFlowUI, usePayFlowInventory } from '@/lib/pay-flow/store';
+import { safeSearchFilter } from '@/lib/pay-flow/useDebouncedSearch';
 import { ProductCard } from './ProductCard';
 import { cn } from '@/lib/utils';
 
@@ -24,14 +25,9 @@ export function ProductFeed() {
       filtered = filtered.filter(p => p.category === activeCategory);
     }
     
-    // Search filter
+    // SECURITY: Use safe search filter to prevent ReDoS
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.name.toLowerCase().includes(query) ||
-        p.ingredients.toLowerCase().includes(query) ||
-        p.tags.some(t => t.toLowerCase().includes(query))
-      );
+      filtered = safeSearchFilter(filtered, searchQuery);
     }
     
     // Staff mode: show all, Customer mode: available only
