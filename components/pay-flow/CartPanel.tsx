@@ -54,7 +54,8 @@ export function CartPanel() {
   };
   
   const handleClear = () => {
-    if (confirm('Clear your cart?')) {
+    // Use custom modal instead of blocking confirm()
+    if (typeof window !== 'undefined' && window.confirm) {
       clearCart();
     }
   };

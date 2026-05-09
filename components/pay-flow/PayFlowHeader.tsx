@@ -9,26 +9,31 @@ import { useState } from 'react';
 import { Search, UserCog, X } from 'lucide-react';
 import { usePayFlowUI } from '@/lib/pay-flow/store';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface PayFlowHeaderProps {
   onSearchOpen?: () => void;
 }
 
+// SECURITY: Staff PIN should be in environment variable
+// For production, use proper authentication instead of a simple PIN
+const STAFF_PIN = process.env.NEXT_PUBLIC_STAFF_PIN || '2024';
+
 export function PayFlowHeader({ onSearchOpen }: PayFlowHeaderProps) {
   const { isStaffMode, toggleStaffMode, searchQuery, setSearchQuery, clearSearch } = usePayFlowUI();
   const [showStaffPin, setShowStaffPin] = useState(false);
   const [pin, setPin] = useState('');
-  
-  // Simple PIN for demo - in production use proper auth
-  const STAFF_PIN = '2024';
+  const [pinError, setPinError] = useState(false);
   
   const handleStaffToggle = () => {
     if (isStaffMode) {
       toggleStaffMode();
       setShowStaffPin(false);
       setPin('');
+      setPinError(false);
     } else {
       setShowStaffPin(true);
+      setPinError(false);
     }
   };
   
@@ -37,9 +42,12 @@ export function PayFlowHeader({ onSearchOpen }: PayFlowHeaderProps) {
       toggleStaffMode();
       setShowStaffPin(false);
       setPin('');
+      setPinError(false);
+      toast.success('Staff mode enabled');
     } else {
-      alert('Invalid PIN');
+      setPinError(true);
       setPin('');
+      toast.error('Invalid PIN');
     }
   };
   
@@ -116,12 +124,24 @@ export function PayFlowHeader({ onSearchOpen }: PayFlowHeaderProps) {
             <h3 className="text-lg font-bold text-gray-900 mb-2">Staff Access</h3>
             <p className="text-sm text-gray-500 mb-4">Enter PIN to manage inventory</p>
             
+            {pinError && (
+              <p className="text-sm text-red-500 mb-2">Incorrect PIN. Please try again.</p>
+            )}
+            
             <input
               type="password"
               value={pin}
-              onChange={(e) => setPin(e.target.value)}
+              onChange={(e) => {
+                setPin(e.target.value);
+                setPinError(false);
+              }}
               placeholder="••••"
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-center text-2xl tracking-widest font-mono focus:outline-none focus:border-amber-400 mb-4"
+              className={cn(
+                "w-full px-4 py-3 border-2 rounded-xl text-center text-2xl tracking-widest font-mono focus:outline-none mb-4",
+                pinError 
+                  ? "border-red-300 focus:border-red-400" 
+                  : "border-gray-200 focus:border-amber-400"
+              )}
               maxLength={4}
               autoFocus
               onKeyDown={(e) => e.key === 'Enter' && handlePinSubmit()}
@@ -132,6 +152,7 @@ export function PayFlowHeader({ onSearchOpen }: PayFlowHeaderProps) {
                 onClick={() => {
                   setShowStaffPin(false);
                   setPin('');
+                  setPinError(false);
                 }}
                 className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium"
               >

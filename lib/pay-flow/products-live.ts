@@ -163,13 +163,18 @@ function getDefaultUpsells(category: PayFlowCategory): PayFlowProduct['upsells']
  * Fetch products from Gratog storefront API
  * Mirrors pattern from lib/storefront-products.js
  */
-export async function fetchLiveProducts(): Promise<PayFlowProduct[]> {
+export async function fetchLiveProducts(signal?: AbortSignal): Promise<PayFlowProduct[]> {
   try {
     // Use the unified products API (same source as catalog/shop pages)
     const response = await fetch('/api/products', {
       cache: 'no-store',
-      headers: { 'Accept': 'application/json' }
+      headers: { 'Accept': 'application/json' },
+      signal
     });
+    
+    if (signal?.aborted) {
+      throw new Error('Request aborted');
+    }
     
     if (!response.ok) {
       throw new Error(`Storefront API failed: ${response.status}`);
@@ -189,6 +194,9 @@ export async function fetchLiveProducts(): Promise<PayFlowProduct[]> {
     return payFlowProducts;
     
   } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw error;
+    }
     console.error('Failed to fetch live products:', error);
     
     // Fallback to demo products for development
@@ -204,11 +212,16 @@ export async function fetchLiveProducts(): Promise<PayFlowProduct[]> {
 /**
  * Fetch products from admin API (fallback)
  */
-export async function fetchAdminProducts(): Promise<PayFlowProduct[]> {
+export async function fetchAdminProducts(signal?: AbortSignal): Promise<PayFlowProduct[]> {
   try {
     const response = await fetch('/api/admin/products', {
-      cache: 'no-store'
+      cache: 'no-store',
+      signal
     });
+    
+    if (signal?.aborted) {
+      throw new Error('Request aborted');
+    }
     
     if (!response.ok) {
       throw new Error(`Admin API failed: ${response.status}`);

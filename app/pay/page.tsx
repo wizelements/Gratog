@@ -1,4 +1,3 @@
-
 /**
  * 🚀 Gratog Pay Flow — Main Page (Live Products)
  * Fetches from existing Gratog storefront API
@@ -8,7 +7,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { PayFlowHeader } from '@/components/pay-flow/PayFlowHeader';
 import { CategoryTabs } from '@/components/pay-flow/CategoryTabs';
 import { ProductFeed } from '@/components/pay-flow/ProductFeed';
@@ -17,36 +16,64 @@ import { CartPanel } from '@/components/pay-flow/CartPanel';
 import { PaymentPanel } from '@/components/pay-flow/PaymentPanel';
 import { SuccessScreen } from '@/components/pay-flow/SuccessScreen';
 import { MobileSwitchBanner } from '@/components/pay-flow/MobileSwitchBanner';
+import { PayFlowErrorBoundary } from '@/components/pay-flow/PayFlowErrorBoundary';
 import { usePayFlowInventory, usePayFlowUI, usePayFlowMetrics } from '@/lib/pay-flow/store';
 import { fetchLiveProducts, fetchAdminProducts, getDemoPayFlowProducts } from '@/lib/pay-flow/products-live';
 import type { PayFlowProduct } from '@/lib/pay-flow/types';
 
 export default function PayFlowPage() {
+  return (
+    <PayFlowErrorBoundary>
+      <PayFlowContent />
+    </PayFlowErrorBoundary>
+  );
+}
+
+function PayFlowContent() {
   const { setProducts, products, isLoading, setIsLoading } = usePayFlowInventory();
   const { setView } = usePayFlowUI();
   const { startSession } = usePayFlowMetrics();
   const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   
   // Fetch live products on mount
   useEffect(() => {
+    // Abort any previous request
+    if (abortRef.current) {
+      abortRef.current.abort();
+    }
+    
+    const controller = new AbortController();
+    abortRef.current = controller;
+    
     const loadProducts = async () => {
       setIsLoading(true);
       setError(null);
       
       try {
         // Try storefront API first
-        const liveProducts = await fetchLiveProducts();
+        const liveProducts = await fetchLiveProducts(controller.signal);
+        
+        if (controller.signal.aborted) return;
+        
         setProducts(liveProducts);
         startSession();
       } catch (err) {
+        if (controller.signal.aborted) return;
+        
         console.warn('Storefront API failed, trying admin API:', err);
         
         try {
           // Fallback to admin API
-          const adminProducts = await fetchAdminProducts();
+          const adminProducts = await fetchAdminProducts(controller.signal);
+          
+          if (controller.signal.aborted) return;
+          
           setProducts(adminProducts);
           startSession();
         } catch (adminErr) {
+          if (controller.signal.aborted) return;
+          
           console.error('All APIs failed:', adminErr);
           setError('Could not load products. Using demo data.');
           
@@ -55,11 +82,17 @@ export default function PayFlowPage() {
           startSession();
         }
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
     
     loadProducts();
+    
+    return () => {
+      controller.abort();
+    };
   }, [setProducts, setIsLoading, startSession]);
   
   // Calculate category counts from live products
