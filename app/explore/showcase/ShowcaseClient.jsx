@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -77,32 +77,91 @@ function getCategoryLabel(category) {
 }
 
 export default function ShowcaseClient({ initialProducts = [], initialCategories = [] }) {
+  const [products, setProducts] = useState(initialProducts);
+  const [categories, setCategories] = useState(initialCategories);
+  const [loading, setLoading] = useState(initialProducts.length === 0);
   const [selectedProduct, setSelectedProduct] = useState(initialProducts[0] || null);
   const [rotation, setRotation] = useState(0);
   const [activeCategory, setActiveCategory] = useState('all');
 
-  // Transform products with categories - same as catalog page
-  const products = useMemo(() => {
-    return initialProducts.map(p => ({
+  // Debug log
+  useEffect(() => {
+    console.log('[ShowcaseClient] Received props:', {
+      initialProductsCount: initialProducts?.length,
+      initialCategoriesCount: initialCategories?.length,
+      firstProduct: initialProducts?.[0]?.name
+    });
+  }, [initialProducts, initialCategories]);
+
+  // Client-side fallback fetch if server returns empty
+  useEffect(() => {
+    if (initialProducts.length > 0) {
+      setProducts(initialProducts);
+      setCategories(initialCategories);
+      setSelectedProduct(initialProducts[0]);
+      return;
+    }
+
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/products', { cache: 'no-store' });
+        const data = await response.json();
+        
+        if (data.success && data.products?.length > 0) {
+          console.log('[ShowcaseClient] Fetched products client-side:', data.products.length);
+          setProducts(data.products);
+          setCategories(data.categories || []);
+          setSelectedProduct(data.products[0]);
+        } else {
+          console.error('[ShowcaseClient] No products from API:', data);
+        }
+      } catch (error) {
+        console.error('[ShowcaseClient] Failed to fetch products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [initialProducts, initialCategories]);
+
+  // Transform products with categories
+  const transformedProducts = useMemo(() => {
+    return products.map(p => ({
       ...p,
       category: getCategoryFromProduct(p),
       priceFormatted: p.price ? `$${p.price.toFixed(2)}` : '$0.00',
     }));
-  }, [initialProducts]);
+  }, [products]);
 
   // Filter products by category
   const filteredProducts = useMemo(() => {
-    if (activeCategory === 'all') return products;
-    return products.filter(p => p.category === activeCategory);
-  }, [products, activeCategory]);
+    if (activeCategory === 'all') return transformedProducts;
+    return transformedProducts.filter(p => p.category === activeCategory);
+  }, [transformedProducts, activeCategory]);
 
   // Get available categories from actual products
   const availableCategories = useMemo(() => {
-    const usedCategories = new Set(products.map(p => p.category));
+    const usedCategories = new Set(transformedProducts.map(p => p.category));
     return CATEGORY_ORDER.filter(cat => usedCategories.has(cat.key));
-  }, [products]);
+  }, [transformedProducts]);
 
-  if (products.length === 0) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-20">
+            <Box className="w-16 h-16 text-gray-300 mx-auto mb-4 animate-pulse" />
+            <h2 className="text-2xl font-bold text-gray-700 mb-2">Loading Products...</h2>
+            <p className="text-gray-500">Fetching showcase items from catalog</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (transformedProducts.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
         <div className="container mx-auto px-4 py-8">
@@ -146,21 +205,21 @@ export default function ShowcaseClient({ initialProducts = [], initialCategories
         <div className="flex flex-wrap justify-center gap-2 mb-8">
           <Button
             variant={activeCategory === 'all' ? 'default' : 'outline'}
-            onClick={() => { setActiveCategory('all'); setSelectedProduct(products[0]); }}
+            onClick={() => { setActiveCategory('all'); setSelectedProduct(transformedProducts[0]); }}
             className={activeCategory === 'all' ? 'bg-emerald-600 hover:bg-emerald-700' : 'border-emerald-300 text-emerald-700'}
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            All Products ({products.length})
+            All Products ({transformedProducts.length})
           </Button>
           {availableCategories.map((cat) => {
-            const count = products.filter(p => p.category === cat.key).length;
+            const count = transformedProducts.filter(p => p.category === cat.key).length;
             return (
               <Button
                 key={cat.key}
                 variant={activeCategory === cat.key ? 'default' : 'outline'}
                 onClick={() => {
                   setActiveCategory(cat.key);
-                  const firstInCat = products.find(p => p.category === cat.key);
+                  const firstInCat = transformedProducts.find(p => p.category === cat.key);
                   if (firstInCat) setSelectedProduct(firstInCat);
                 }}
                 className={activeCategory === cat.key ? 'bg-emerald-600 hover:bg-emerald-700' : 'border-emerald-300 text-emerald-700'}
