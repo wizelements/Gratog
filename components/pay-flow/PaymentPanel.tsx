@@ -1,40 +1,29 @@
 /**
  * 🚀 Gratog Pay Flow — Payment Panel
  * Square Web Payments SDK integration
- * Uses existing Square infrastructure
+ * SECURITY: All payment processing verified server-side
  */
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { CreditCard, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import Script from 'next/script';
+import { CreditCard, Loader2, AlertCircle, CheckCircle, X } from 'lucide-react';
 import { usePayFlowCart, usePayFlowUI, usePayFlowInventory, usePayFlowMetrics } from '@/lib/pay-flow/store';
 import { formatPrice } from '@/lib/pay-flow/data';
 import { getPayFlowSquareConfig, getSquareSdkUrl } from '@/lib/pay-flow/square-extension';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 // Square SDK types
-declare global {
-  interface Window {
-    Square?: {
-      payments: (appId: string, locationId: string) => Promise<SquarePayments>;
-    };
-  }
+interface WindowWithSquare extends Window {
+  Square?: {
+    payments: (appId: string, locationId: string) => Promise<SquarePayments>;
+  };
 }
 
 interface SquarePayments {
-  paymentRequest: (options: PaymentRequestOptions) => PaymentRequest;
   card: () => Promise<SquareCard>;
-}
-
-interface PaymentRequestOptions {
-  countryCode: string;
-  currencyCode: string;
-  total: { amount: string; label: string; };
-}
-
-interface PaymentRequest {
-  tokenize: () => Promise<TokenResult | null>;
 }
 
 interface SquareCard {
@@ -45,8 +34,14 @@ interface SquareCard {
 interface TokenResult {
   status: string;
   token?: string;
-  details?: { method: string; card?: { brand: string; last4: string; }; };
   errors?: Array<{ message: string; }>;
+}
+
+interface PaymentResponse {
+  success: boolean;
+  orderId?: string;
+  receiptUrl?: string;
+  error?: string;
 }
 
 export function PaymentPanel() {
@@ -59,10 +54,13 @@ export function PaymentPanel() {
   const [isSquareReady, setIsSquareReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [scriptError, setScriptError] = useState(false);
   
   const cardContainerRef = useRef<HTMLDivElement>(null);
   const cardInstanceRef = useRef<SquareCard | null>(null);
   const paymentsRef = useRef<SquarePayments | null>(null);
+  const isProcessingRef = useRef(false);
   
   const { totalCents } = calculateTotals(products);
   const isOpen = currentView === 'payment';
@@ -70,43 +68,33 @@ export function PaymentPanel() {
   // Get Square config
   const squareConfig = getPayFlowSquareConfig();
   
-  // Load Square SDK
+  // Cleanup on unmount
   useEffect(() => {
-    if (!isOpen || typeof window === 'undefined') return;
-    
-    const loadSquare = async () => {
-      if (window.Square) {
-        setIsSquareReady(true);
-        return;
-      }
-      
-      const script = document.createElement('script');
-      script.src = getSquareSdkUrl();
-      script.onload = () => setIsSquareReady(true);
-      script.onerror = () => setError('Failed to load payment system');
-      document.body.appendChild(script);
+    return () => {
+      cardInstanceRef.current = null;
+      paymentsRef.current = null;
+      isProcessingRef.current = false;
     };
-    
-    loadSquare();
-  }, [isOpen]);
+  }, []);
   
-  // Initialize card payment
+  // Initialize Square when ready
   useEffect(() => {
-    if (!isSquareReady || !isOpen || !cardContainerRef.current) return;
+    if (!scriptLoaded || !isOpen || !cardContainerRef.current) return;
     
     if (!squareConfig.isConfigured) {
-      setError('Square not configured');
+      setError('Payment system not configured');
       return;
     }
     
     const initCard = async () => {
       try {
-        if (!window.Square) {
-          setError('Square SDK not available');
+        const win = window as WindowWithSquare;
+        if (!win.Square) {
+          setError('Payment SDK not available');
           return;
         }
         
-        const payments = await window.Square.payments(
+        const payments = await win.Square.payments(
           squareConfig.applicationId,
           squareConfig.locationId
         );
@@ -115,10 +103,11 @@ export function PaymentPanel() {
         const card = await payments.card();
         cardInstanceRef.current = card;
         
-        await card.attach(cardContainerRef.current);
+        await card.attach(cardContainerRef.current!);
+        setIsSquareReady(true);
       } catch (err) {
         console.error('Card initialization error:', err);
-        setError('Could not initialize card payment');
+        setError('Could not initialize payment. Please refresh.');
       }
     };
     
@@ -128,14 +117,63 @@ export function PaymentPanel() {
       cardInstanceRef.current = null;
       paymentsRef.current = null;
     };
-  }, [isSquareReady, isOpen, squareConfig.isConfigured, squareConfig.applicationId, squareConfig.locationId]);
+  }, [scriptLoaded, isOpen, squareConfig.isConfigured, squareConfig.applicationId, squareConfig.locationId]);
+  
+  // SECURITY: Server-side payment processing
+  const processPayment = useCallback(async (token: string): Promise<PaymentResponse> => {
+    try {
+      // SECURITY: Include CSRF token if available
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      
+      const response = await fetch('/api/pay/process', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+        },
+        body: JSON.stringify({
+          sourceId: token,
+          items: items.map(item => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            upsellIds: item.upsellIds
+          })),
+          totalCents,
+          // SECURITY: Server recalculates totals, this is just for validation
+          expectedTotal: totalCents
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Payment failed: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      // SECURITY: Verify server-calculated total matches
+      if (result.totalCents && Math.abs(result.totalCents - totalCents) > 1) {
+        console.error('Price mismatch detected:', { client: totalCents, server: result.totalCents });
+        throw new Error('Payment validation failed. Please try again.');
+      }
+      
+      return result;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Payment processing failed';
+      return { success: false, error: message };
+    }
+  }, [items, totalCents]);
   
   const handleCardPayment = async () => {
+    // Prevent double-submission
+    if (isProcessingRef.current) return;
+    
     if (!cardInstanceRef.current) {
-      setError('Card payment not ready');
+      setError('Payment not ready. Please wait.');
       return;
     }
     
+    isProcessingRef.current = true;
     setIsLoading(true);
     setError(null);
     setPaymentStatus('processing');
@@ -144,97 +182,37 @@ export function PaymentPanel() {
       const result = await cardInstanceRef.current.tokenize();
       
       if (result?.status === 'OK' && result.token) {
-        await processPayment(result.token);
-      } else {
-        throw new Error(result?.errors?.[0]?.message || 'Card tokenization failed');
-      }
-    } catch (err) {
-      setPaymentStatus('error');
-      setError(err instanceof Error ? err.message : 'Payment failed');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  const handleDigitalWallet = async (type: 'apple-pay' | 'google-pay') => {
-    if (!paymentsRef.current) {
-      setError('Payment system not ready');
-      return;
-    }
-    
-    setIsLoading(true);
-    setError(null);
-    setPaymentStatus('processing');
-    
-    try {
-      const paymentRequest = paymentsRef.current.paymentRequest({
-        countryCode: 'US',
-        currencyCode: 'USD',
-        total: {
-          amount: (totalCents / 100).toFixed(2),
-          label: 'Gratog Market Order'
-        }
-      });
-      
-      const result = await paymentRequest.tokenize();
-      
-      if (result?.status === 'OK' && result.token) {
-        await processPayment(result.token);
-      } else {
-        throw new Error(result?.errors?.[0]?.message || `${type} payment failed`);
-      }
-    } catch (err) {
-      setPaymentStatus('error');
-      setError(err instanceof Error ? err.message : 'Payment failed');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  const processPayment = async (sourceId: string) => {
-    try {
-      // Build items with product details for the API
-      const itemsWithDetails = items.map(item => {
-        const product = products.find(p => p.id === item.productId);
-        return {
-          productId: item.productId,
-          name: product?.name || item.productId,
-          quantity: item.quantity,
-          priceCents: product?.priceCents || 0,
-          upsellIds: item.upsellIds,
-          catalogObjectId: product?.id // Will need real Square catalog IDs
-        };
-      });
-      
-      const response = await fetch('/api/pay-flow/payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sourceId,
-          amountCents: totalCents,
-          items: itemsWithDetails
-        })
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        recordPaymentCompleted();
-        setPaymentStatus('success');
-        setTimeout(() => {
-          setView('success');
+        const paymentResult = await processPayment(result.token);
+        
+        if (paymentResult.success) {
+          setPaymentStatus('success');
+          recordPaymentCompleted();
           clearCart();
-        }, 1000);
+          
+          // Delay before showing success screen
+          setTimeout(() => {
+            setView('success');
+          }, 500);
+        } else {
+          throw new Error(paymentResult.error || 'Payment failed');
+        }
       } else {
-        throw new Error(result.error || 'Payment processing failed');
+        const errorMsg = result?.errors?.[0]?.message || 'Card validation failed';
+        throw new Error(errorMsg);
       }
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Payment failed';
+      setError(message);
       setPaymentStatus('error');
-      throw err;
+      toast.error(message);
+    } finally {
+      isProcessingRef.current = false;
+      setIsLoading(false);
     }
   };
   
   const handleClose = () => {
+    if (isProcessingRef.current) return; // Don't close during processing
     setView('cart');
     setError(null);
     setPaymentStatus('idle');
@@ -244,109 +222,112 @@ export function PaymentPanel() {
   
   return (
     <>
+      {/* Load Square SDK safely */}
+      {isOpen && !scriptLoaded && !scriptError && (
+        <Script
+          src={getSquareSdkUrl()}
+          strategy="lazyOnload"
+          onLoad={() => setScriptLoaded(true)}
+          onError={() => {
+            setScriptError(true);
+            setError('Failed to load payment system');
+          }}
+        />
+      )}
+      
+      {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/50 z-40"
-        onClick={handleClose}
+        className="fixed inset-0 bg-black/50 z-40 animate-in fade-in duration-200"
+        onClick={!isLoading ? handleClose : undefined}
       />
       
-      <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl shadow-2xl max-h-[95vh] flex flex-col">
+      {/* Panel */}
+      <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">Complete Payment</h2>
+        <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-4 py-3 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <CreditCard className="w-5 h-5 text-gray-900" />
+            <h2 className="text-lg font-bold text-gray-900">Payment</h2>
+          </div>
+          
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-gray-100 rounded-full"
+            disabled={isLoading}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
+            aria-label="Close"
           >
-            ✕
+            <X className="w-5 h-5 text-gray-600" />
           </button>
         </div>
         
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="p-4 space-y-4">
           {/* Total */}
-          <div className="text-center mb-6">
-            <p className="text-sm text-gray-500 mb-1">Total due</p>
-            <p className="text-4xl font-bold text-gray-900">{formatPrice(totalCents)}</p>
-          </div>
-          
-          {/* Digital Wallets */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <button
-              onClick={() => handleDigitalWallet('apple-pay')}
-              disabled={isLoading || !isSquareReady}
-              className="flex items-center justify-center gap-2 py-3 px-4 bg-black text-white rounded-xl font-medium disabled:opacity-50"
-            >
-              <span> Pay</span>
-            </button>
-            <button
-              onClick={() => handleDigitalWallet('google-pay')}
-              disabled={isLoading || !isSquareReady}
-              className="flex items-center justify-center gap-2 py-3 px-4 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-medium disabled:opacity-50"
-            >
-              <span>G Pay</span>
-            </button>
-          </div>
-          
-          {/* Divider */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-sm text-gray-400">or pay with card</span>
-            <div className="flex-1 h-px bg-gray-200" />
-          </div>
-          
-          {/* Card Input */}
-          <div 
-            ref={cardContainerRef}
-            className="min-h-[120px] border-2 border-gray-200 rounded-xl p-4 mb-4"
-          >
-            {!isSquareReady && (
-              <div className="flex items-center justify-center h-full text-gray-400">
-                <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                Loading payment system...
-              </div>
-            )}
+          <div className="bg-gray-50 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-600">Subtotal</span>
+              <span className="font-medium">{formatPrice(totalCents - Math.round(totalCents * 0.08))}</span>
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-600">Tax</span>
+              <span className="font-medium">{formatPrice(Math.round(totalCents * 0.08))}</span>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+              <span className="text-lg font-bold text-gray-900">Total</span>
+              <span className="text-2xl font-bold text-amber-500">{formatPrice(totalCents)}</span>
+            </div>
           </div>
           
           {/* Error */}
-          {error && (
-            <div className="flex items-center gap-2 p-3 bg-rose-50 text-rose-700 rounded-xl mb-4">
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
-              <p className="text-sm">{error}</p>
-            </div>
-          )}
-          
-          {/* Pay Button */}
-          <button
-            onClick={handleCardPayment}
-            disabled={isLoading || !isSquareReady}
-            className={cn(
-              "w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg",
-              "bg-gray-900 text-white min-h-[56px]",
-              "hover:bg-gray-800 active:scale-[0.98] transition-all",
-              (isLoading || !isSquareReady) && "opacity-50 cursor-not-allowed"
+          <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+            {error && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
             )}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Processing...
-              </>
-            ) : paymentStatus === 'success' ? (
-              <>
-                <CheckCircle className="w-5 h-5" />
-                Success!
-              </>
+            
+            {!isSquareReady && !error ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+                <span className="ml-2 text-gray-500">Loading payment system...</span>
+              </div>
             ) : (
               <>
-                <CreditCard className="w-5 h-5" />
-                Pay {formatPrice(totalCents)}
+                {/* Card Input Container */}
+                <div 
+                  ref={cardContainerRef}
+                  className="min-h-[100px] border-2 border-gray-200 rounded-xl p-4"
+                />
+                
+                {/* Pay Button */}
+                <button
+                  onClick={handleCardPayment}
+                  disabled={isLoading || !isSquareReady}
+                  className={cn(
+                    "w-full py-4 rounded-xl font-bold text-lg transition-all",
+                    isLoading || !isSquareReady
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-900 text-white hover:bg-gray-800 active:scale-[0.98]"
+                  )}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Processing...
+                    </span>
+                  ) : (
+                    `Pay ${formatPrice(totalCents)}`
+                  )}
+                </button>
               </>
             )}
-          </button>
+          </div>
           
-          <p className="text-center text-xs text-gray-400 mt-4">
-            Your payment is secured by Square. We never store your card details.
-          </p>
+          {/* Security Badge */}
+          <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
+            <CheckCircle className="w-4 h-4" />
+            <span>Secure payment powered by Square</span>
+          </div>
         </div>
       </div>
     </>
