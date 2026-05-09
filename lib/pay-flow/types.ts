@@ -206,11 +206,10 @@ export const PAY_FLOW_CONSTANTS = {
   
   // Categories in display order
   CATEGORIES: [
-    { id: 'lemonades', label: 'Lemonades', icon: '🍋' },
-    { id: 'juices', label: 'Juices', icon: '🥤' },
+    { id: 'lemonades', label: 'Lemonades & Juices', icon: '🍋' },
     { id: 'sea-moss', label: 'Sea Moss', icon: '🌊' },
-    { id: 'refreshers', label: 'Refreshers', icon: '✨' },
     { id: 'boba', label: 'Boba', icon: '🧋' },
+    { id: 'specials', label: 'Specials', icon: '✨' },
   ] as const,
   
   // Tax rate (matching existing)
