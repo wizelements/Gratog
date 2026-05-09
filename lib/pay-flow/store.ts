@@ -367,7 +367,7 @@ interface InventoryStore {
 
 export const usePayFlowInventory = create<InventoryStore>()((set, get) => ({
   products: [],
-  isLoading: false,
+  isLoading: true,
   lastFetched: 0,
 
   setProducts: (products) => set({ products, lastFetched: Date.now(), isLoading: false }),
