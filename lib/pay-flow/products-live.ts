@@ -66,9 +66,11 @@ export function transformToPayFlowProduct(product: GratogProduct): PayFlowProduc
   const category = mapToPayFlowCategory(product.category || product.categoryId);
   
   // Build ingredients string (1-line highlight)
-  const ingredients = product.ingredientHighlights?.join(', ') 
-    || product.ingredients?.slice(0, 3).join(', ')
-    || product.description?.slice(0, 50)
+  const ingredients = product.ingredientHighlights?.join(', ')
+    || (Array.isArray(product.ingredients)
+      ? product.ingredients.slice(0, 3).map((i: any) => typeof i === 'string' ? i : i?.name || '').filter(Boolean).join(', ')
+      : '')
+    || product.description?.split('\n')[0]?.replace(/^Ingredients:\s*/i, '').slice(0, 80)
     || '';
   
   // Get stock quantity
@@ -76,10 +78,10 @@ export function transformToPayFlowProduct(product: GratogProduct): PayFlowProduc
     || product.quantity 
     || 10; // Default if unknown
   
-  // Get image
+  // Get image — only use real URLs, not fabricated paths
   const image = product.images?.[0] 
     || product.image 
-    || `/images/products/${product.id}.jpg`;
+    || '';
   
   // Transform tags
   const tags: PayFlowProduct['tags'] = [];
