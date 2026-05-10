@@ -72,6 +72,7 @@ export function ProductCard({ product }: ProductCardProps) {
   
   return (
     <div 
+      data-testid="product-card"
       className={cn(
         "relative bg-white rounded-2xl overflow-hidden border transition-all duration-200",
         "shadow-sm hover:shadow-md",
@@ -154,6 +155,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {isSoldOut ? (
             <button
               disabled
+              data-testid="product-sold-out"
               className="px-4 py-2 bg-gray-200 text-gray-400 text-sm font-medium rounded-xl min-h-[44px]"
             >
               Sold Out
@@ -162,17 +164,19 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="flex items-center gap-1 bg-gray-900 rounded-xl p-1">
               <button
                 onClick={handleDecrement}
+                data-testid="quantity-decrement"
                 className="w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-lg transition-colors"
                 aria-label="Decrease quantity"
               >
                 <Minus className="w-4 h-4" />
               </button>
-              <span className="w-8 text-center text-white font-bold">
+              <span data-testid="quantity-value" className="w-8 text-center text-white font-bold">
                 {quantityInCart}
               </span>
               <button
                 onClick={handleIncrement}
                 disabled={!canAddMore}
+                data-testid="quantity-increment"
                 className={cn(
                   "w-10 h-10 flex items-center justify-center rounded-lg transition-colors",
                   canAddMore 
@@ -188,6 +192,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <button
               onClick={handleAdd}
               disabled={isAdding}
+              data-testid="product-card-add"
               className={cn(
                 "flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-medium text-sm",
                 "bg-gray-900 text-white min-h-[44px] active:scale-95 transition-all duration-150",

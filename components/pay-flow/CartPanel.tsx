@@ -71,12 +71,12 @@ export function CartPanel() {
       />
       
       {/* Panel */}
-      <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[90vh] flex flex-col">
+      <div data-testid="cart-panel" className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-bold text-gray-900">Your Order</h2>
-            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-sm font-medium rounded-full">
+            <span data-testid="cart-item-count" className="px-2 py-0.5 bg-gray-100 text-gray-600 text-sm font-medium rounded-full">
               {itemCount} items
             </span>
           </div>
@@ -84,6 +84,7 @@ export function CartPanel() {
             {items.length > 0 && (
               <button
                 onClick={handleClear}
+                data-testid="clear-cart"
                 className="px-3 py-1.5 text-sm text-rose-500 font-medium hover:bg-rose-50 rounded-lg transition-colors"
               >
                 Clear
@@ -102,7 +103,7 @@ export function CartPanel() {
         {/* Items */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {displayItems.length === 0 ? (
-            <div className="text-center py-8">
+            <div data-testid="empty-cart" className="text-center py-8">
               <span className="text-4xl mb-2 block">🛒</span>
               <p className="text-gray-500">Your cart is empty</p>
               <button
@@ -189,21 +190,22 @@ export function CartPanel() {
           <div className="space-y-2 mb-4">
             <div className="flex justify-between text-gray-600">
               <span>Subtotal</span>
-              <span>{formatPrice(subtotalCents)}</span>
+              <span data-testid="cart-subtotal">{formatPrice(subtotalCents)}</span>
             </div>
             <div className="flex justify-between text-gray-600">
               <span>Tax (8%)</span>
-              <span>{formatPrice(taxCents)}</span>
+              <span data-testid="cart-tax">{formatPrice(taxCents)}</span>
             </div>
             <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-100">
               <span>Total</span>
-              <span>{formatPrice(totalCents)}</span>
+              <span data-testid="cart-total">{formatPrice(totalCents)}</span>
             </div>
           </div>
           
           <button
             onClick={handleCheckout}
             disabled={items.length === 0}
+            data-testid="checkout-button"
             className={cn(
               "w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg",
               "min-h-[56px] transition-all duration-200",

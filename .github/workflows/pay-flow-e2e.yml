@@ -1,0 +1,116 @@
+# 🚀 Gratog Pay Flow — E2E Test CI/CD
+# Runs on every push and PR
+
+name: Pay Flow E2E Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'app/pay/**'
+      - 'components/pay-flow/**'
+      - 'lib/pay-flow/**'
+      - 'e2e/pay-flow/**'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'app/pay/**'
+      - 'components/pay-flow/**'
+      - 'lib/pay-flow/**'
+      - 'e2e/pay-flow/**'
+  workflow_dispatch:
+
+jobs:
+  e2e-test:
+    name: Pay Flow E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Install Playwright browsers
+        run: npx playwright install chromium firefox webkit --with-deps
+        
+      - name: Build application
+        run: npm run build
+        env:
+          SQUARE_ENVIRONMENT: sandbox
+          SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN_SANDBOX }}
+          SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID_SANDBOX }}
+          NEXT_PUBLIC_STAFF_PIN: '2024'
+          
+      - name: Run E2E tests
+        run: npm run test:pay:smoke
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+          
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          
+      - name: Upload coverage
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run npm audit
+        run: npm audit --audit-level moderate
+        continue-on-error: true
+        
+      - name: Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+
+  lighthouse-ci:
+    name: Lighthouse CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli@0.14.x
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
