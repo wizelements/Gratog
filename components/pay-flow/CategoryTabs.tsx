@@ -19,7 +19,7 @@ export function CategoryTabs({ counts }: CategoryTabsProps) {
 
   return (
     <div className="sticky top-0 z-20 bg-white border-b border-gray-100">
-      <div className="flex overflow-x-auto scrollbar-hide px-2 py-3 gap-1">
+      <div className="flex overflow-x-auto scrollbar-hide px-2 py-3 gap-1 snap-x snap-mandatory">
         {PAY_FLOW_CONSTANTS.CATEGORIES.map((cat) => {
           const count = counts[cat.id] || 0;
           const isActive = activeCategory === cat.id;
@@ -31,7 +31,7 @@ export function CategoryTabs({ counts }: CategoryTabsProps) {
               className={cn(
                 "flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-full",
                 "text-sm font-medium transition-all duration-200 active:scale-95",
-                "min-h-[44px]", // Touch target
+                "min-h-[44px] snap-start", // Touch target + scroll snap
                 isActive 
                   ? "bg-[#1a1a1a] text-white shadow-md"
                   : "bg-gray-50 text-gray-600 hover:bg-gray-100"

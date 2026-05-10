@@ -68,7 +68,7 @@ export function ProductFeed() {
   if (activeCategory !== 'all') {
     return (
       <div className="p-3">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 auto-rows-fr" data-testid="product-feed">
           {filteredProducts.map(product => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -79,7 +79,7 @@ export function ProductFeed() {
   
   // All categories view - grouped by category
   return (
-    <div className="pb-24">
+    <div className="pb-24" data-testid="product-feed">
       {groupedProducts && Object.entries(groupedProducts).map(([category, items]) => (
         <section key={category} className="mb-6">
           <div className="sticky top-[60px] z-10 bg-white/95 backdrop-blur-sm px-3 py-2 border-y border-gray-100">
@@ -87,7 +87,7 @@ export function ProductFeed() {
               {category.replace('-', ' ')}
             </h2>
           </div>
-          <div className="grid grid-cols-2 gap-3 p-3">
+          <div className="grid grid-cols-2 gap-3 p-3 auto-rows-fr">
             {items.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}

@@ -19,6 +19,7 @@ import { MobileSwitchBanner } from '@/components/pay-flow/MobileSwitchBanner';
 import { PayFlowErrorBoundary } from '@/components/pay-flow/PayFlowErrorBoundary';
 import { usePayFlowInventory, usePayFlowUI, usePayFlowMetrics } from '@/lib/pay-flow/store';
 import { fetchLiveProducts, fetchAdminProducts, getDemoPayFlowProducts } from '@/lib/pay-flow/products-live';
+import { ProductGridSkeleton } from '@/components/pay-flow/ProductCardSkeleton';
 import type { PayFlowProduct } from '@/lib/pay-flow/types';
 
 export default function PayFlowPage() {
@@ -117,9 +118,8 @@ function PayFlowContent() {
       
       <main className="pb-24">
         {isLoading && (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-8 h-8 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-500">Loading fresh drinks...🥤</p>
+          <div className="p-3">
+            <ProductGridSkeleton count={6} />
           </div>
         )}
         

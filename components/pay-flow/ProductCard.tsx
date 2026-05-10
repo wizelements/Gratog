@@ -74,7 +74,7 @@ export function ProductCard({ product }: ProductCardProps) {
     <div 
       data-testid="product-card"
       className={cn(
-        "relative bg-white rounded-2xl overflow-hidden border transition-all duration-200",
+        "relative bg-white rounded-2xl overflow-hidden border transition-all duration-200 h-full flex flex-col",
         "shadow-sm hover:shadow-md",
         isSoldOut ? "opacity-60 border-gray-200" : "border-gray-100"
       )}
@@ -130,7 +130,7 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
       
       {/* Content */}
-      <div className="p-3">
+      <div className="p-3 flex-1 flex flex-col">
         <h3 className="font-bold text-gray-900 text-base leading-tight mb-1">
           {product.name}
         </h3>
@@ -139,7 +139,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </p>
         
         {/* Price & Action */}
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2 mt-auto">
           <div className="flex flex-col">
             <span className="text-lg font-bold text-gray-900">
               {formatPrice(product.priceCents)}
