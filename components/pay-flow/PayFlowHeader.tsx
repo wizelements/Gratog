@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, UserCog, X } from 'lucide-react';
 import { usePayFlowUI } from '@/lib/pay-flow/store';
 import { cn } from '@/lib/utils';
@@ -19,11 +19,26 @@ interface PayFlowHeaderProps {
 // For production, use proper authentication instead of a simple PIN
 const STAFF_PIN = process.env.NEXT_PUBLIC_STAFF_PIN || '2024';
 
+// Staff mode auto-timeout after 5 minutes
+const STAFF_TIMEOUT_MS = 5 * 60 * 1000;
+
 export function PayFlowHeader({ onSearchOpen }: PayFlowHeaderProps) {
-  const { isStaffMode, toggleStaffMode, searchQuery, setSearchQuery, clearSearch } = usePayFlowUI();
+  const { isStaffMode, toggleStaffMode, disableStaffMode, searchQuery, setSearchQuery, clearSearch } = usePayFlowUI();
   const [showStaffPin, setShowStaffPin] = useState(false);
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState(false);
+  
+  // SECURITY: Auto-disable staff mode after timeout
+  useEffect(() => {
+    if (!isStaffMode) return;
+    
+    const timeout = setTimeout(() => {
+      disableStaffMode();
+      toast.info('Staff mode timed out after 5 minutes');
+    }, STAFF_TIMEOUT_MS);
+    
+    return () => clearTimeout(timeout);
+  }, [isStaffMode, disableStaffMode]);
   
   const handleStaffToggle = () => {
     if (isStaffMode) {

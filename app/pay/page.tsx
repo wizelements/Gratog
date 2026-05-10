@@ -21,6 +21,8 @@ import { usePayFlowInventory, usePayFlowUI, usePayFlowMetrics } from '@/lib/pay-
 import { fetchLiveProducts, fetchAdminProducts, getDemoPayFlowProducts } from '@/lib/pay-flow/products-live';
 import { ProductGridSkeleton } from '@/components/pay-flow/ProductCardSkeleton';
 import type { PayFlowProduct } from '@/lib/pay-flow/types';
+import { usePayFlowCart } from '@/lib/pay-flow/store';
+import { toast } from 'sonner';
 
 export default function PayFlowPage() {
   return (
@@ -36,6 +38,17 @@ function PayFlowContent() {
   const { startSession } = usePayFlowMetrics();
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  
+  // CRITICAL FIX: Check cart expiry on mount
+  useEffect(() => {
+    const cart = usePayFlowCart.getState();
+    if (cart.isCartExpired()) {
+      cart.clearCart();
+      toast.info('Your cart expired after 30 minutes of inactivity', {
+        description: 'Please add your items again',
+      });
+    }
+  }, []);
   
   // Fetch live products on mount
   useEffect(() => {
