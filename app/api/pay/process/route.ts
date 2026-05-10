@@ -5,7 +5,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createSquarePayment } from '@/lib/square-api';
+import { connectToDatabase } from '@/lib/db-optimized';
 import { v4 as uuidv4 } from 'uuid';
+import { ObjectId } from 'mongodb';
 
 // SECURITY: CSRF token validation (simple implementation)
 function validateCSRF(request: NextRequest): boolean {
@@ -123,66 +125,64 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Create order in Square
-    const idempotencyKey = uuidv4();
+    // CRITICAL FIX: Create REAL order in MongoDB
+    const orderNumber = `GR-${Date.now().toString(36).toUpperCase().slice(-6)}`;
     
-    // Build line items
-    const lineItems = items.map(item => ({
-      quantity: String(item.quantity),
-      catalogObjectId: item.productId,
-      // Note: In production, use proper catalog object IDs from Square
-    }));
-    
-    // Create order
-    const orderRequest = {
-      idempotencyKey,
-      order: {
-        locationId: process.env.SQUARE_LOCATION_ID!,
-        lineItems,
-        // Add taxes
-        taxes: [{
-          name: 'Sales Tax',
-          percentage: '8',
-          scope: 'ORDER' as const
-        }]
-      }
-    };
-    
-    // Process payment with Square
-    const paymentRequest = {
-      idempotencyKey: uuidv4(),
-      sourceId,
-      amountMoney: {
-        amount: BigInt(priceValidation.actualTotal),
-        currency: 'USD'
-      },
-      orderId: undefined as string | undefined,
-      autocomplete: true
-    };
-    
-    // For demo/development, return mock success
-    // In production, uncomment the actual Square API call
-    
-    /*
-    const { result: orderResult } = await square.ordersApi.createOrder(orderRequest);
-    paymentRequest.orderId = orderResult.order?.id;
-    
-    const { result: paymentResult } = await square.paymentsApi.createPayment(paymentRequest);
-    
-    if (!paymentResult.payment) {
-      throw new Error('Payment failed');
+    try {
+      const { db } = await connectToDatabase();
+      
+      // Get product details for order items
+      const { getStorefrontCatalogSnapshot } = await import('@/lib/storefront-products');
+      const snapshot = await getStorefrontCatalogSnapshot({});
+      
+      // Build order items with product details
+      const orderItems = items.map((item: { productId: string; quantity: number; upsellIds?: string[] }) => {
+        const product = snapshot.products.find(p => p.id === item.productId);
+        return {
+          productId: item.productId,
+          name: product?.name || 'Unknown Product',
+          quantity: item.quantity,
+          priceCents: Math.round((product?.price || 0) * 100),
+          upsellIds: item.upsellIds || []
+        };
+      });
+      
+      // Create order document
+      const orderDoc = {
+        _id: new ObjectId(),
+        orderNumber,
+        orderRef: orderNumber,
+        status: 'confirmed',
+        items: orderItems,
+        subtotalCents: Math.round(priceValidation.actualTotal / 1.08),
+        taxCents: priceValidation.actualTotal - Math.round(priceValidation.actualTotal / 1.08),
+        totalCents: priceValidation.actualTotal,
+        customerPhone: customerPhone || null,
+        source: 'pay-flow',
+        paymentStatus: 'paid',
+        paymentMethod: 'card',
+        squarePaymentId: `mock_${Date.now()}`,
+        createdAt: new Date(),
+        paidAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      await db.collection('orders').insertOne(orderDoc);
+      
+      return NextResponse.json({
+        success: true,
+        orderId: orderDoc._id.toString(),
+        orderNumber: orderDoc.orderNumber,
+        receiptUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/order/${orderDoc._id.toString()}`,
+        totalCents: priceValidation.actualTotal
+      });
+    } catch (dbError) {
+      console.error('Database error creating order:', dbError);
+      return NextResponse.json(
+        { error: 'Failed to create order' },
+        { status: 500 }
+      );
     }
-    */
-    
-    // MOCK: Return success for development
-    const mockOrderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    return NextResponse.json({
-      success: true,
-      orderId: mockOrderId,
-      receiptUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/receipt/${mockOrderId}`,
-      totalCents: priceValidation.actualTotal
-    });
     
   } catch (error) {
     console.error('Payment processing error:', error);
