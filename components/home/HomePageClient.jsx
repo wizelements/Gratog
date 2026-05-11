@@ -12,7 +12,7 @@ import { ArrowRight, Sparkles, Star, Shield, Zap, TrendingUp, Heart, Leaf, Dropl
 import { ProductImage } from '@/components/OptimizedImage';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 import { getCanonicalProductCategoryIcon, getCanonicalProductCategoryLabel } from '@/lib/storefront-query';
-import ProductBundles from '@/components/ProductBundles';
+import { MobileSwitchBanner } from '@/components/pay-flow/MobileSwitchBanner';
 import WhyUsComparison from '@/components/WhyUsComparison';
 import { JsonLd } from '@/components/JsonLd';
 
@@ -22,7 +22,8 @@ export default function HomePageClient({
     organizationSchema,
     faqSchema,
     socialProof = { customers: 'Growing Daily', reviews: 'Fresh Feedback', averageRating: '4.9 / 5.0' },
-    featuredReviews = []
+    featuredReviews = [],
+    isMobile = false
 }) {
     const router = useRouter();
     const [featuredProducts, setFeaturedProducts] = useState(initialFeaturedProducts);
@@ -158,6 +159,9 @@ export default function HomePageClient({
 
     return (
         <div className="flex flex-col min-h-screen">
+            {/* 🎯 Mobile Switch Banner - show on mobile for quick checkout option */}
+            {isMobile && <MobileSwitchBanner />}
+            
             <JsonLd id="home-organization-schema" data={organizationSchema} />
             <JsonLd id="home-faq-schema" data={faqSchema} />
 
@@ -178,9 +182,14 @@ export default function HomePageClient({
                 </div>
 
                 <div className="relative z-10 container text-center text-white animate-fade-in text-on-gradient">
-                    <Badge className="mb-6 bg-white/20 backdrop-blur-sm text-white border-white/30 px-6 py-2 text-lg">
+                    <Badge className="mb-4 bg-white/20 backdrop-blur-sm text-white border-white/30 px-6 py-2 text-lg">
                         <Sparkles className="mr-2 h-5 w-5" />
                         {heroCatalogBadge}
+                    </Badge>
+                    
+                    {/* 🎯 PREORDER BADGE: Highlight preorder availability */}
+                    <Badge className="mb-6 bg-amber-500/90 text-white border-amber-400 px-4 py-1.5 text-sm animate-pulse">
+                        📦 Preorder Now for Saturday Market Pickup
                     </Badge>
 
                     <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white">
@@ -191,8 +200,13 @@ export default function HomePageClient({
                         </span>
                     </h1>
 
-                    <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto">
+                    <p className="text-xl md:text-2xl mb-4 text-white/90 max-w-3xl mx-auto">
                         Wildcrafted sea moss gel packed with everything your body needs. Hand-crafted from pristine ocean waters to support your immune system, thyroid health, and natural energy.
+                    </p>
+                    
+                    {/* 🎯 PREORDER EMPHASIS: Highlight preorder availability */}
+                    <p className="text-lg mb-6 text-amber-300 max-w-3xl mx-auto font-medium">
+                        📦 Preorder Now for Saturday Market Pickup at Serenbe & Dunwoody
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -263,17 +277,26 @@ export default function HomePageClient({
                     {!loading && featuredProducts.length === 0 && (
                         <div className="text-center py-16 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl">
                             <Sparkles className="h-16 w-16 text-emerald-400 mx-auto mb-4" />
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Products Coming Soon</h3>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">All Products Available via Preorder</h3>
                             <p className="text-gray-600 max-w-md mx-auto mb-6">
-                                Our premium sea moss products are being prepared with love. Check back shortly!
+                                All items are currently reserved for Saturday market pickup. Preorder now to secure your favorites!
                             </p>
-                            <Button
-                                onClick={() => window.location.reload()}
-                                variant="outline"
-                                className="border-emerald-600 text-emerald-700 hover:bg-emerald-50"
-                            >
-                                Refresh Page
-                            </Button>
+                            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                <Button
+                                    onClick={() => router.push('/catalog')}
+                                    className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
+                                >
+                                    Browse Full Catalog
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                                <Button
+                                    onClick={() => router.push('/pay')}
+                                    variant="outline"
+                                    className="border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+                                >
+                                    🚀 Quick Order
+                                </Button>
+                            </div>
                         </div>
                     )}
 
@@ -284,6 +307,28 @@ export default function HomePageClient({
                                 const cardImageAlt = product.imageAlt || product.name;
                                 const categoryLabel = getCanonicalProductCategoryLabel(product, 'Premium Product');
                                 const categoryIcon = getCanonicalProductCategoryIcon(product, '🌿');
+                                
+                                // 🎯 PRODUCT AVAILABILITY: Check stock and preorder status
+                                const stock = product.stock ?? product.currentStock ?? null;
+                                const isPreorder = product.isPreorder ?? (stock !== null && stock <= 0);
+                                const isLowStock = stock !== null && stock > 0 && stock <= 5;
+                                
+                                // Determine badge to show
+                                let productBadge = null;
+                                if (isPreorder) {
+                                    productBadge = (
+                                        <Badge className="absolute top-4 left-4 bg-amber-500 text-white transform group-hover:scale-110 transition-transform shadow-lg">
+                                            📦 Preorder
+                                        </Badge>
+                                    );
+                                } else if (isLowStock) {
+                                    productBadge = (
+                                        <Badge className="absolute top-4 left-4 bg-orange-500 text-white transform group-hover:scale-110 transition-transform">
+                                            ⚡ Only {stock} Left
+                                        </Badge>
+                                    );
+                                }
+                                // Note: "Best Seller" badge removed - only show if we have actual sales data
 
                                 return (
                                     <Card
@@ -317,16 +362,23 @@ export default function HomePageClient({
                                                     </div>
                                                 </div>
 
-                                                <Badge className="absolute top-4 left-4 bg-emerald-600 text-white transform group-hover:scale-110 transition-transform">
-                                                    <Star className="h-3 w-3 mr-1 fill-white" />
-                                                    Best Seller
-                                                </Badge>
+                                                {productBadge}
+                                                
+                                                {/* Preorder availability note overlay */}
+                                                {isPreorder && (
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-amber-500/90 text-white text-xs font-medium py-2 px-4 text-center">
+                                                        📦 Preorder for Saturday Pickup
+                                                    </div>
+                                                )}
                                             </div>
                                             </Link>
 
                                             <div className="p-6">
                                             <p className="text-sm text-emerald-600 font-medium mb-2">
                                                 {categoryLabel}
+                                                {isPreorder && (
+                                                    <span className="ml-2 text-amber-600">• Preorder</span>
+                                                )}
                                             </p>
 
                                             <Link href={`/product/${product.slug || product.id}`}>
@@ -737,6 +789,44 @@ export default function HomePageClient({
                     </Button>
                 </div>
             </section>
+
+            {/* 🚀 Mobile Quick Order Button - appears after scrolling past hero */}
+            {isMobile && <QuickOrderButton router={router} />}
+        </div>
+    );
+}
+
+/**
+ * 🚀 Quick Order Button Component - Sticky bottom button for mobile
+ * Allows mobile users to quickly jump to /pay after browsing
+ */
+function QuickOrderButton({ router }) {
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        // Show button after scrolling past hero section
+        const handleScroll = () => {
+            const scrollY = window.scrollY;
+            setIsVisible(scrollY > 400);
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    return (
+        <div 
+            className={`fixed bottom-0 left-0 right-0 z-50 p-4 bg-white border-t border-gray-200 shadow-2xl transform transition-transform duration-300 ${
+                isVisible ? 'translate-y-0' : 'translate-y-full'
+            } md:hidden`}
+        >
+            <Button
+                onClick={() => router.push('/pay')}
+                className="w-full h-14 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-lg font-bold shadow-lg"
+            >
+                🚀 Quick Order
+                <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
         </div>
     );
 }

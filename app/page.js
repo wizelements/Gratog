@@ -38,9 +38,25 @@ async function getHomepageCatalogData() {
     });
   }
 
+  // 🎯 FILTER: Only show products that are available for purchase (in stock OR preorder-available)
+  // Filter OUT completely unavailable products (stock = 0 and not preorder-eligible)
+  const availableProducts = snapshot.products.filter(product => {
+    const stock = product.stock ?? product.currentStock ?? null;
+    const isPreorder = product.isPreorder ?? (stock !== null && stock <= 0);
+    
+    // Allow products that are: 1) In stock (stock > 0), OR 2) Preorder-eligible (marked as preorder)
+    // Filter out products that are explicitly marked as unavailable or sold out permanently
+    if (product.available === false) return false;
+    if (product.purchaseStatus === 'sold_out' || product.availability === 'sold_out') return false;
+    if (product.isPreorder === false && stock === 0) return false; // Truly sold out, not preorder
+    
+    // Otherwise, show it (in stock or preorder)
+    return true;
+  });
+
   return {
-    featuredProducts: snapshot.products.slice(0, 6),
-    initialCatalogCount: snapshot.isFallback ? null : snapshot.totalCount
+    featuredProducts: availableProducts.slice(0, 6),
+    initialCatalogCount: snapshot.isFallback ? null : availableProducts.length
   };
 }
 
@@ -114,20 +130,14 @@ async function getFeaturedReviews() {
 }
 
 export default async function HomePage() {
-  // 🔥 MOBILE DETECTION: Redirect mobile users to /pay
+  // 🔥 MOBILE EXPERIENCE: Show full site for all users now
+  // Mobile users get a sticky "Quick Order" button instead of instant redirect
   const headersList = headers();
   const userAgent = headersList.get('user-agent') || '';
   
-  // Check for fullSite override (allows mobile users to access full site)
-  const fullSiteParam = headersList.get('x-query-fullsite') || '';
-  const isFullSiteRequested = fullSiteParam === 'true';
-  
-  if (isMobileDevice(userAgent) && !isFullSiteRequested) {
-    // Redirect mobile users to /pay with header hint for back navigation
-    redirect('/pay?from=home');
-  }
+  // Detect if mobile for conditional UI enhancements
+  const isMobile = isMobileDevice(userAgent);
 
-  // Desktop: Show full site
   const [{ featuredProducts, initialCatalogCount }, socialProof, featuredReviews] = await Promise.all([
     getHomepageCatalogData(),
     getSocialProof(),
@@ -147,6 +157,7 @@ export default async function HomePage() {
         faqSchema={faqSchema}
         socialProof={socialProof}
         featuredReviews={featuredReviews}
+        isMobile={isMobile}
       />
     </>
   );
