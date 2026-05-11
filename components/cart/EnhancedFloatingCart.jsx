@@ -355,6 +355,15 @@ export default function EnhancedFloatingCart() {
                     )}
                   </Button>
 
+                  {/* 🎯 CONTINUE SHOPPING: Link back to catalog */}
+                  <Link
+                    href="/catalog"
+                    onClick={() => setIsOpen(false)}
+                    className="block text-center text-sm text-emerald-600 hover:text-emerald-700 font-medium py-2 transition-colors"
+                  >
+                    ← Continue Shopping
+                  </Link>
+
                   <p className="text-xs text-center text-gray-500">
                     Secure checkout powered by Square
                   </p>
