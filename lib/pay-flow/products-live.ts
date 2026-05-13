@@ -52,9 +52,19 @@ interface GratogProduct {
  * Transform Gratog product format to PayFlow format
  */
 export function transformToPayFlowProduct(product: GratogProduct): PayFlowProduct | null {
-  // Skip only if explicitly disabled (available === false)
-  // Allow preorder / out-of-stock items so they appear in the feed
+  // Skip only if explicitly disabled in Square
+  // Check squareEcomAvailable first (Square's e-commerce visibility)
+  if (product.squareEcomAvailable === false) {
+    return null;
+  }
+  
+  // If available is explicitly false, skip it
   if (product.available === false) {
+    return null;
+  }
+  
+  // Check if product is archived
+  if (product.squareData?.isArchived) {
     return null;
   }
   
