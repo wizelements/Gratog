@@ -461,13 +461,23 @@ export default function HomePageClient({
                                   <p>⏰ 9AM–1PM • Limited quantities • Come early for best selection</p>
                                 </div>
                             </div>
-                            <Button
-                                onClick={() => router.push('/markets')}
-                                className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all flex-shrink-0 whitespace-nowrap"
-                            >
-                                🎪 Find Us at Serenbe
-                                <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
+                            <div className="flex flex-col gap-2 flex-shrink-0">
+                                <Button
+                                    onClick={() => router.push('/preorder?market=serenbe')}
+                                    className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all whitespace-nowrap"
+                                >
+                                    🧋 Preorder Boba Now
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                                <Button
+                                    onClick={() => router.push('/markets')}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-purple-700 hover:text-purple-800 hover:bg-purple-100"
+                                >
+                                    See All Markets
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
