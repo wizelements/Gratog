@@ -1,9 +1,10 @@
 /**
  * 🚀 Gratog Pay Flow — Main Page (Live Products)
  * Fetches from existing Gratog storefront API
+ * 
+ * DISABLED SSR: This page uses Zustand persist middleware which causes
+ * hydration mismatches. We disable SSR and let client-side render fully.
  */
-
-'use client';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,20 +17,32 @@ import { CartPanel } from '@/components/pay-flow/CartPanel';
 import { PaymentPanel } from '@/components/pay-flow/PaymentPanel';
 import { SuccessScreen } from '@/components/pay-flow/SuccessScreen';
 import { MobileSwitchBanner } from '@/components/pay-flow/MobileSwitchBanner';
-import { PayFlowErrorBoundary } from '@/components/pay-flow/PayFlowErrorBoundary';
 import { usePayFlowInventory, usePayFlowUI, usePayFlowMetrics } from '@/lib/pay-flow/store';
 import { fetchLiveProducts, fetchAdminProducts, getDemoPayFlowProducts } from '@/lib/pay-flow/products-live';
 import { ProductGridSkeleton } from '@/components/pay-flow/ProductCardSkeleton';
-import type { PayFlowProduct } from '@/lib/pay-flow/types';
 import { usePayFlowCart } from '@/lib/pay-flow/store';
 import { toast } from 'sonner';
 
 export default function PayFlowPage() {
-  return (
-    <PayFlowErrorBoundary>
-      <PayFlowContent />
-    </PayFlowErrorBoundary>
-  );
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  // Show loading spinner until client-side hydration is ready
+  if (!isClient) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-600"></div>
+          <p className="mt-4 text-gray-600 font-medium">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  return <PayFlowContent />;
 }
 
 function PayFlowContent() {
