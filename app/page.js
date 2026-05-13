@@ -38,19 +38,16 @@ async function getHomepageCatalogData() {
     });
   }
 
-  // 🎯 FILTER: Only show products that are available for purchase (in stock OR preorder-available)
-  // Filter OUT completely unavailable products (stock = 0 and not preorder-eligible)
+  // 🎯 FILTER: Show all products that aren't explicitly unavailable
+  // Most products are preorder (negative stock), so we include those
   const availableProducts = snapshot.products.filter(product => {
-    const stock = product.stock ?? product.currentStock ?? null;
-    const isPreorder = product.isPreorder ?? (stock !== null && stock <= 0);
-    
-    // Allow products that are: 1) In stock (stock > 0), OR 2) Preorder-eligible (marked as preorder)
-    // Filter out products that are explicitly marked as unavailable or sold out permanently
+    // Only filter out explicitly unavailable products
     if (product.available === false) return false;
-    if (product.purchaseStatus === 'sold_out' || product.availability === 'sold_out') return false;
-    if (product.isPreorder === false && stock === 0) return false; // Truly sold out, not preorder
+    if (product.purchaseStatus === 'sold_out') return false;
+    if (product.availability === 'sold_out') return false;
+    if (product.squareEcomAvailable === false) return false;
     
-    // Otherwise, show it (in stock or preorder)
+    // Include everything else (in stock, low stock, preorder, out_of_stock with preorder flag)
     return true;
   });
 
