@@ -45,7 +45,11 @@ interface GratogProduct {
     itemId?: string;
     variationId?: string;
     catalogObjectId?: string;
+    isArchived?: boolean;
   };
+  // Square e-commerce visibility
+  squareEcomAvailable?: boolean;
+  squareIsArchived?: boolean;
 }
 
 /**
@@ -63,8 +67,8 @@ export function transformToPayFlowProduct(product: GratogProduct): PayFlowProduc
     return null;
   }
   
-  // Check if product is archived
-  if (product.squareData?.isArchived) {
+  // Check if product is archived in Square
+  if (product.squareData?.isArchived || product.squareIsArchived) {
     return null;
   }
   
