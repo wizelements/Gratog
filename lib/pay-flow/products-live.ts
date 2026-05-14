@@ -92,6 +92,20 @@ export function transformToPayFlowProduct(product: GratogProduct): PayFlowProduc
     || product.quantity 
     || 10; // Default if unknown
   
+  // Check if product is available for purchase
+  // Products can be: in stock, low stock, or preorder (out_of_stock with isPreorder=true)
+  const isPreorder = product.isPreorder === true || 
+    product.purchaseStatus === 'preorder' ||
+    (product.availability === 'out_of_stock' && product.inStock === false);
+  
+  // Available if: explicitly available, OR it's a preorder item
+  const isAvailable = product.available !== false || isPreorder;
+  
+  // Stock quantity: use actual stock, or default high value for preorder items
+  // Preorder items show as available even with negative/0 stock
+  const stockQuantity = isPreorder ? 99 : 
+    (product.inStock === false ? 0 : (product.stockQuantity || product.quantity || 10));
+  
   // Get image — only use real URLs, not fabricated paths
   const image = product.images?.[0] 
     || product.image 
@@ -100,6 +114,7 @@ export function transformToPayFlowProduct(product: GratogProduct): PayFlowProduc
   // Transform tags
   const tags: PayFlowProduct['tags'] = [];
   if (product.isPopular) tags.push('popular');
+  if (isPreorder) tags.push('preorder');
   if (product.tags?.includes('boba')) tags.push('boba-compatible');
   if (product.tags?.includes('refresher')) tags.push('refresher-base');
   if (product.tags?.includes('immune')) tags.push('immune-boost');
@@ -113,8 +128,8 @@ export function transformToPayFlowProduct(product: GratogProduct): PayFlowProduc
     priceCents,
     image,
     ingredients,
-    available: product.available !== false,
-    stockQuantity: product.inStock === false ? 0 : stockQuantity,
+    available: isAvailable,
+    stockQuantity,
     tags,
     upsells: product.upsells || getDefaultUpsells(category),
     isPopular: product.isPopular,
