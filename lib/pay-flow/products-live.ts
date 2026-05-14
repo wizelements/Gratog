@@ -87,11 +87,6 @@ export function transformToPayFlowProduct(product: GratogProduct): PayFlowProduc
     || product.description?.split('\n')[0]?.replace(/^Ingredients:\s*/i, '').slice(0, 80)
     || '';
   
-  // Get stock quantity
-  const stockQuantity = product.stockQuantity 
-    || product.quantity 
-    || 10; // Default if unknown
-  
   // Check if product is available for purchase
   // Products can be: in stock, low stock, or preorder (out_of_stock with isPreorder=true)
   const isPreorder = product.isPreorder === true || 
