@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
+// @ts-ignore - Footer is JSX file
 import Footer from '@/components/Footer';
 
 export default function InstagramPostPage() {

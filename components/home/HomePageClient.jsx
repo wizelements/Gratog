@@ -432,7 +432,9 @@ export default function HomePageClient({
                     {/* Set NEXT_PUBLIC_ENABLE_BUNDLES=true in environment to enable */}
                     {process.env.NEXT_PUBLIC_ENABLE_BUNDLES === 'true' && (
                         <div className="mt-16">
-                            <ProductBundles limit={3} />
+                            {/* ProductBundles component - import when enabling */}
+                            {/* <ProductBundles limit={3} /> */}
+                            <div className="text-center text-muted-foreground">Product Bundles coming soon</div>
                         </div>
                     )}
                 </div>

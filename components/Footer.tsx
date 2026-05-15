@@ -1,186 +1,192 @@
+'use client';
+
 import Link from 'next/link';
-import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Instagram, Mail } from 'lucide-react';
+import NewsletterSignup from '@/components/NewsletterSignup';
 
-const footerLinks = {
-  shop: [
-    { label: 'All Products', href: '/catalog' },
-    { label: 'Sea Moss Gels', href: '/catalog?category=sea-moss-gels' },
-    { label: 'Lemonades', href: '/catalog?category=lemonades' },
-    { label: 'Bundles', href: '/catalog?category=bundles' },
-  ],
-  learn: [
-    { label: 'What is Sea Moss?', href: '/explore/learn/what-is-sea-moss' },
-    { label: 'Health Benefits', href: '/explore/learn/health-benefits' },
-    { label: 'How to Use', href: '/explore/learn/how-to-use' },
-    { label: 'FAQ', href: '/explore/learn/faq' },
-  ],
-  company: [
-    { label: 'About Us', href: '/about' },
-    { label: 'Our Story', href: '/about#story' },
-    { label: 'Contact', href: '/contact' },
-    { label: 'Careers', href: '/careers' },
-  ],
-  support: [
-    { label: 'Shipping Info', href: '/shipping' },
-    { label: 'Returns', href: '/returns' },
-    { label: 'Track Order', href: '/track-order' },
-    { label: 'Help Center', href: '/help' },
-  ],
-};
-
-const socialLinks = [
-  { icon: Facebook, href: '#', label: 'Facebook' },
-  { icon: Instagram, href: '#', label: 'Instagram' },
-  { icon: Twitter, href: '#', label: 'Twitter' },
-  { icon: Youtube, href: '#', label: 'YouTube' },
-];
-
-export function Footer() {
+export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 lg:gap-12">
-          {/* Brand Column */}
-          <div className="col-span-2 md:col-span-4 lg:col-span-1 mb-8 lg:mb-0">
-            <Link href="/" className="inline-block">
-              <span className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                Taste of Gratitude
-              </span>
-            </Link>
-            <p className="mt-4 text-sm text-gray-400 max-w-xs">
-              Premium wildcrafted sea moss products. Hand-harvested with care for your wellness journey.
-            </p>
-            
-            {/* Contact Info */}
-            <div className="mt-6 space-y-3">
-              <a 
-                href="tel:+1234567890" 
-                className="flex items-center gap-2 text-sm hover:text-emerald-400 transition-colors"
-              >
-                <Phone className="w-4 h-4" />
-                <span>(123) 456-7890</span>
-              </a>
-              <a 
-                href="mailto:hello@tasteofgratitude.shop" 
-                className="flex items-center gap-2 text-sm hover:text-emerald-400 transition-colors"
-              >
-                <Mail className="w-4 h-4" />
-                <span>hello@tasteofgratitude.shop</span>
-              </a>
-              <div className="flex items-start gap-2 text-sm text-gray-400">
-                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>Atlanta, GA</span>
-              </div>
+    <footer id="footer" className="border-t bg-gradient-to-b from-muted/30 to-muted/60" role="contentinfo" aria-label="Site footer">
+      {/* Newsletter Section - Compact inline version to reduce CTA repetition
+          Note: This can be hidden on pages that have their own newsletter section
+          by passing hideFooterNewsletter prop to the layout or using CSS */}
+      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-b">
+        <div className="container py-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
+            <div className="flex items-center gap-2 text-emerald-800">
+              <Mail className="h-5 w-5 text-emerald-600" />
+              <span className="font-medium text-sm">Join our wellness community</span>
             </div>
-            
-            {/* Social Links */}
-            <div className="flex gap-4 mt-6">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
-                  aria-label={social.label}
-                >
-                  <social.icon className="w-5 h-5" />
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Shop Links */}
-          <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Shop</h3>
-            <ul className="space-y-3">
-              {footerLinks.shop.map((link) => (
-                <li key={link.href}>
-                  <Link 
-                    href={link.href}
-                    className="text-sm text-gray-400 hover:text-emerald-400 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Learn Links */}
-          <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Learn</h3>
-            <ul className="space-y-3">
-              {footerLinks.learn.map((link) => (
-                <li key={link.href}>
-                  <Link 
-                    href={link.href}
-                    className="text-sm text-gray-400 hover:text-emerald-400 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Company Links */}
-          <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Company</h3>
-            <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
-                <li key={link.href}>
-                  <Link 
-                    href={link.href}
-                    className="text-sm text-gray-400 hover:text-emerald-400 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Support Links */}
-          <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Support</h3>
-            <ul className="space-y-3">
-              {footerLinks.support.map((link) => (
-                <li key={link.href}>
-                  <Link 
-                    href={link.href}
-                    className="text-sm text-gray-400 hover:text-emerald-400 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <NewsletterSignup variant="inline" />
           </div>
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-gray-500">
-              © {new Date().getFullYear()} Taste of Gratitude. All rights reserved.
+      <div className="container py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          {/* Brand */}
+          <div>
+            <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-[#D4AF37] to-[#8B7355] bg-clip-text text-transparent">
+              Taste of Gratitude
+            </h3>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              Nourishing your wellness journey with nature's finest sea moss creations.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-              <Link href="/privacy" className="text-sm text-gray-500 hover:text-emerald-400 transition-colors">
-                Privacy Policy
-              </Link>
-              <Link href="/terms" className="text-sm text-gray-500 hover:text-emerald-400 transition-colors">
-                Terms of Service
-              </Link>
-              <Link href="/accessibility" className="text-sm text-gray-500 hover:text-emerald-400 transition-colors">
-                Accessibility
-              </Link>
-              <Link href="/sitemap" className="text-sm text-gray-500 hover:text-emerald-400 transition-colors">
-                Sitemap
-              </Link>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#D4AF37]/10 rounded-full text-xs font-semibold text-[#D4AF37]">
+              🌿 100% Natural & Organic
             </div>
           </div>
+
+          {/* Quick Links */}
+          <nav aria-label="Quick links">
+            <h4 className="font-semibold mb-4 text-lg">Quick Links</h4>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <Link 
+                  href="/catalog" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Shop Products
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/catalog?category=boba" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  🧋 Boba Menu
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/markets" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Find Us at Markets
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/community" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Community
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/about" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Our Story
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/contact" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Contact Us
+                </Link>
+              </li>
+            </ul>
+          </nav>
+
+          {/* Support & Legal */}
+          <nav aria-label="Support and legal">
+            <h4 className="font-semibold mb-4 text-lg">Support & Legal</h4>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <Link 
+                  href="/faq" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/terms" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/privacy" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/rewards" 
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Rewards Program
+                </Link>
+              </li>
+            </ul>
+          </nav>
+
+          {/* Connect */}
+          <div>
+            <h4 id="social-heading" className="font-semibold mb-4 text-lg">Connect With Us</h4>
+            <p className="text-sm text-muted-foreground mb-4">
+              Follow us for wellness tips, recipes, and special offers!
+            </p>
+            <div className="flex space-x-3" role="list" aria-labelledby="social-heading">
+              <a
+                href="https://www.facebook.com/tasteofgratitude"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white transition-all flex items-center justify-center group"
+                aria-label="Facebook"
+              >
+                <Facebook className="h-5 w-5 group-hover:scale-110 transition-transform" />
+              </a>
+              <a
+                href="https://www.instagram.com/tasteofgratitude"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white transition-all flex items-center justify-center group"
+                aria-label="Instagram"
+              >
+                <Instagram className="h-5 w-5 group-hover:scale-110 transition-transform" />
+              </a>
+              <a
+                href="mailto:hello@tasteofgratitude.shop"
+                className="w-10 h-10 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white transition-all flex items-center justify-center group"
+                aria-label="Email"
+              >
+                <Mail className="h-5 w-5 group-hover:scale-110 transition-transform" />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* FDA Disclaimer */}
+        <div className="pt-8 border-t">
+          <p className="text-xs text-muted-foreground/70 text-center max-w-4xl mx-auto mb-4">
+            * These statements have not been evaluated by the Food and Drug Administration. 
+            This product is not intended to diagnose, treat, cure, or prevent any disease. 
+            Consult your healthcare provider before use, especially if pregnant, nursing, or have thyroid conditions.
+          </p>
+          <p className="text-sm text-muted-foreground text-center">
+            &copy; {new Date().getFullYear()} Taste of Gratitude. Crafted with ❤️ for your wellness journey.
+          </p>
         </div>
       </div>
     </footer>
