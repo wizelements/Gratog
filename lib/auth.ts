@@ -131,3 +131,17 @@ export function logAdminAction(user: AuthUser, action: string, details: any) {
   // Could also store in database for audit trail
   // await database.collection('audit_log').insertOne(logEntry);
 }
+
+// Placeholder password hashing functions (use bcrypt in production)
+export async function hashPassword(password: string): Promise<string> {
+  // In production: return bcrypt.hash(password, 12);
+  // This is a placeholder - DO NOT USE IN PRODUCTION
+  return `hashed_${Buffer.from(password).toString('base64')}`;
+}
+
+export async function comparePassword(password: string, hash: string): Promise<boolean> {
+  // In production: return bcrypt.compare(password, hash);
+  // This is a placeholder - DO NOT USE IN PRODUCTION
+  const expectedHash = `hashed_${Buffer.from(password).toString('base64')}`;
+  return hash === expectedHash;
+}

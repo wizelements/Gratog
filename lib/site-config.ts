@@ -32,7 +32,13 @@ export const FEATURES = {
 // Contact information
 export const CONTACT_EMAIL = process.env.CONTACT_EMAIL || 'hello@tasteofgratitude.shop';
 export const CONTACT_PHONE = process.env.CONTACT_PHONE || '';
-export const CONTACT_PHONE_TEL = CONTACT_PHONE ? `tel:${CONTACT_PHONE.replace(/\D/g, '')}` : '';
+export const CONTACT_PHONE_HREF = CONTACT_PHONE ? `tel:${CONTACT_PHONE.replace(/\D/g, '')}` : '';
+export const CONTACT_PHONE_DISPLAY = CONTACT_PHONE || 'Contact Us';
+export const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || CONTACT_EMAIL;
+export const SUPPORT_HOURS_LABEL = process.env.SUPPORT_HOURS || 'Mon-Fri 9am-5pm EST';
+export const PRIVACY_EMAIL = process.env.PRIVACY_EMAIL || SUPPORT_EMAIL;
+export const MARKET_LOCATION_LABEL = process.env.MARKET_LOCATION || 'Atlanta, GA';
+export const WHOLESALE_EMAIL = process.env.WHOLESALE_EMAIL || SUPPORT_EMAIL;
 export const HAS_PUBLIC_PHONE = !!CONTACT_PHONE;
 
 // Default export

@@ -1,5 +1,5 @@
 import { Inter } from 'next/font/google';
-import { unstable_noStore } from 'next/cache';
+import { unstable_cacheLife as cacheLife } from 'next/cache';
 import './globals.css';
 import './styles/mobile-touch.css';
 import './styles/desktop-responsive.css';
@@ -19,6 +19,7 @@ import Header from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import ExitIntentModal from '@/components/ExitIntentModal';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { AnalyticsProvider } from '@/components/analytics/WebVitals';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -86,10 +87,10 @@ export const viewport = {
   themeColor: '#1f2937'
 };
 
+// Next.js 15: Layouts are static by default, cache with semi-dynamic for auth state
+export const dynamic = 'force-dynamic'; // Keep dynamic for AuthProvider, but child pages can be static
+
 export default function RootLayout({ children }) {
-  // Disable static generation for all pages
-  unstable_noStore();
-  
   return (
     <html lang="en">
       <head>
@@ -161,6 +162,7 @@ export default function RootLayout({ children }) {
        </head>
       <body className={inter.className}>
         <AuthProvider>
+          <AnalyticsProvider>
           <PWAInitializer />
           <Header />
           <MusicProviderWrapper>
@@ -185,6 +187,7 @@ export default function RootLayout({ children }) {
           <ExitIntentModal />
           <BottomNav />
           <Toaster position="top-right" richColors />
+          </AnalyticsProvider>
         </AuthProvider>
       </body>
     </html>

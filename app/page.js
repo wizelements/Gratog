@@ -1,13 +1,17 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-static';
+export const revalidate = 300; // Revalidate every 5 minutes
 
 /**
- * 🚀 Gratog Mobile Homepage
- * Detects mobile and redirects to /pay flow
+ * 🚀 Gratog Homepage - Static with ISR
  * 
- * REPLACE app/page.js with this version
- * or add mobile detection to existing page
+ * CHANGELOG:
+ * - 2026-05-14: Migrated to static generation with ISR
+ * - Removed unstable_noStore() 
+ * - Added cacheLife for semi-dynamic content
+ * - Mobile detection moved to client component
  */
 
+import { unstable_cacheLife as cacheLife } from 'next/cache';
 import { LiveLocationBanner } from '@/components/market/LiveLocationBanner';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
@@ -15,21 +19,12 @@ import { logger } from '@/lib/logger';
 import { PUBLIC_REVIEW_FILTER } from '@/lib/review-visibility';
 import { buildHomepageFaqSchema, buildHomepageOrganizationSchema } from '@/seo/schemas';
 import HomePageClient from '@/components/home/HomePageClient';
-import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
 
-export const revalidate = 300;
-
-/**
- * Detect mobile devices
- */
-function isMobileDevice(userAgent) {
-  if (!userAgent) return false;
-  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile/i;
-  return mobileRegex.test(userAgent);
-}
-
+// CacheLife for homepage data - semi-dynamic (1 min stale, 1 hour expire)
 async function getHomepageCatalogData() {
+  'use cache';
+  cacheLife('semiDynamic');
+  
   const snapshot = await getStorefrontCatalogSnapshot({});
 
   if (snapshot.isFallback) {
@@ -39,15 +34,12 @@ async function getHomepageCatalogData() {
   }
 
   // 🎯 FILTER: Show all products that aren't explicitly unavailable
-  // Most products are preorder (negative stock), so we include those
   const availableProducts = snapshot.products.filter(product => {
-    // Only filter out explicitly unavailable products
     if (product.available === false) return false;
     if (product.purchaseStatus === 'sold_out') return false;
     if (product.availability === 'sold_out') return false;
     if (product.squareEcomAvailable === false) return false;
     
-    // Include everything else (in stock, low stock, preorder, out_of_stock with preorder flag)
     return true;
   });
 
@@ -58,6 +50,9 @@ async function getHomepageCatalogData() {
 }
 
 async function getSocialProof() {
+  'use cache';
+  cacheLife('semiDynamic');
+  
   const fallback = {
     customers: 'Growing Daily',
     reviews: 'Fresh Feedback',
@@ -102,6 +97,9 @@ async function getSocialProof() {
 }
 
 async function getFeaturedReviews() {
+  'use cache';
+  cacheLife('semiDynamic');
+  
   try {
     const { db } = await connectToDatabase();
     const reviews = await db.collection('product_reviews')
@@ -127,14 +125,7 @@ async function getFeaturedReviews() {
 }
 
 export default async function HomePage() {
-  // 🔥 MOBILE EXPERIENCE: Show full site for all users now
-  // Mobile users get a sticky "Quick Order" button instead of instant redirect
-  const headersList = headers();
-  const userAgent = headersList.get('user-agent') || '';
-  
-  // Detect if mobile for conditional UI enhancements
-  const isMobile = isMobileDevice(userAgent);
-
+  // Fetch data in parallel with caching
   const [{ featuredProducts, initialCatalogCount }, socialProof, featuredReviews] = await Promise.all([
     getHomepageCatalogData(),
     getSocialProof(),
@@ -154,7 +145,6 @@ export default async function HomePage() {
         faqSchema={faqSchema}
         socialProof={socialProof}
         featuredReviews={featuredReviews}
-        isMobile={isMobile}
       />
     </>
   );

@@ -69,3 +69,6 @@ export const Events = {
   VIEW_ITEM: 'view_item',
   BEGIN_CHECKOUT: 'begin_checkout'
 };
+
+// Default export for compatibility
+export default AnalyticsSystem;
