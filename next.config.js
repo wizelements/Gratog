@@ -1,19 +1,21 @@
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+  openAnalyzer: false, // Don't auto-open browser
+});
+
 const nextConfig = {
-  // Disable static generation for App Router
-  // This avoids 'useSearchParams should be wrapped in suspense' errors
-  experimental: {
-    // Disable build-time prerendering
-    // This forces all pages to be server-rendered
-    workerThreads: false,
-    cpus: 1,
+  // Next.js 15 + Turbopack compatible configuration
+  turbopack: {
+    // Turbopack specific options
+    resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
   },
 
-  // Keep production builds safe: do not ignore lint/type errors
+  // Production quality gates - strict mode
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   // Production performance optimizations
@@ -42,14 +44,36 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
   },
 
-  // Next.js 14.2.35 compatible configuration
+  // Next.js 15 experimental features
   experimental: {
-    // Production optimizations
+    // CSS optimization
     optimizeCss: true,
     gzipSize: true,
-    // Memory optimizations
-    esmExternals: true,
-    serverComponentsExternalPackages: ['mongodb', 'mongoose'],
+    // React 19 features
+    reactCompiler: false, // Enable when ready for React 19 compiler
+    // Server components
+    serverExternalPackages: ['mongodb', 'mongoose', 'bcryptjs'],
+    // Enable use cache directive
+    useCache: true,
+  },
+
+  // Caching configuration (moved to root, not experimental)
+  cacheLife: {
+    // Static pages - catalog, products
+    static: {
+      staleAge: 86400, // 24 hours
+      expireAge: 604800, // 7 days
+    },
+    // Semi-dynamic - user-specific but cacheable
+    semiDynamic: {
+      staleAge: 60, // 1 minute
+      expireAge: 3600, // 1 hour
+    },
+    // Dynamic - cart, checkout, real-time
+    dynamic: {
+      staleAge: 0,
+      expireAge: 0,
+    },
   },
 
   webpack(config, { dev, isServer }) {
@@ -115,6 +139,7 @@ const nextConfig = {
       exclude: ['error', 'warn']
     } : false,
   },
+
   async headers() {
     return [
       {
@@ -123,7 +148,6 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
-          // CSP temporarily removed for Square SDK debugging
         ],
       },
       {
@@ -191,5 +215,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
-// Debug timestamp: 1767662191
+module.exports = withBundleAnalyzer(nextConfig);

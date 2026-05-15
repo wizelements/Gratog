@@ -6,6 +6,8 @@
  * hydration mismatches. We disable SSR and let client-side render fully.
  */
 
+'use client';
+
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useRef } from 'react';
