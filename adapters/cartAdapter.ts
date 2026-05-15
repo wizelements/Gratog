@@ -56,7 +56,7 @@ export const CartAPI = {
   clear: () => clearCart(),
   
   // Get cart totals
-  getTotals: (cart?: CartItem[]): CartTotals => {
+  getTotals: (_cart?: CartItem[]): CartTotals => {
     const result = getCartTotal();
     return {
       subtotal: result.subtotal,
