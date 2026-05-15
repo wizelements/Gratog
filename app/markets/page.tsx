@@ -351,9 +351,9 @@ export default function MarketsPage() {
   };
 
   const handleSelectProduct = (product: ProductItem) => {
-    // Route to preorder with product hint
+    // Route to preorder with product hint and category
     toast.success(`${product.name} — choose your market!`);
-    router.push('/preorder');
+    router.push(`/preorder?category=${product.category}`);
   };
 
   // Group products by category
