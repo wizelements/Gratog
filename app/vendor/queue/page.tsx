@@ -128,7 +128,7 @@ interface QueueStore {
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
 }
 
-export const useQueueStore = create<QueueStore>()(
+const useQueueStore = create<QueueStore>()(
   persist(
     (set, get) => ({
       orders: [],
