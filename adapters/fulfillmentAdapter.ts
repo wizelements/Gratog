@@ -101,7 +101,7 @@ export function isZipServiceable(zip: string): boolean {
 /**
  * Get available delivery windows for a ZIP
  */
-export function deliveryWindowsForZip(zip: string): DeliveryWindowOption[] {
+export function deliveryWindowsForZip(_zip: string): DeliveryWindowOption[] {
   // In future, could filter based on ZIP, time of day, etc.
   return DELIVERY_WINDOWS;
 }
