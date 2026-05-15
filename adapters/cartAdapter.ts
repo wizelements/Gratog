@@ -11,7 +11,6 @@ import {
   removeFromCart, 
   clearCart, 
   getCartTotal,
-  createCartItem,
   CART_STORAGE_KEY
 } from '@/lib/cartUtils';
 import type { CartItem } from '@/lib/cart-engine';
