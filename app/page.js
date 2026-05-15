@@ -7,11 +7,9 @@ export const revalidate = 300; // Revalidate every 5 minutes
  * CHANGELOG:
  * - 2026-05-14: Migrated to static generation with ISR
  * - Removed unstable_noStore() 
- * - Added cacheLife for semi-dynamic content
  * - Mobile detection moved to client component
  */
 
-import { unstable_cacheLife as cacheLife } from 'next/cache';
 import { LiveLocationBanner } from '@/components/market/LiveLocationBanner';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
@@ -20,11 +18,7 @@ import { PUBLIC_REVIEW_FILTER } from '@/lib/review-visibility';
 import { buildHomepageFaqSchema, buildHomepageOrganizationSchema } from '@/seo/schemas';
 import HomePageClient from '@/components/home/HomePageClient';
 
-// CacheLife for homepage data - semi-dynamic (1 min stale, 1 hour expire)
 async function getHomepageCatalogData() {
-  'use cache';
-  cacheLife('semiDynamic');
-  
   const snapshot = await getStorefrontCatalogSnapshot({});
 
   if (snapshot.isFallback) {
@@ -50,9 +44,6 @@ async function getHomepageCatalogData() {
 }
 
 async function getSocialProof() {
-  'use cache';
-  cacheLife('semiDynamic');
-  
   const fallback = {
     customers: 'Growing Daily',
     reviews: 'Fresh Feedback',
@@ -97,9 +88,6 @@ async function getSocialProof() {
 }
 
 async function getFeaturedReviews() {
-  'use cache';
-  cacheLife('semiDynamic');
-  
   try {
     const { db } = await connectToDatabase();
     const reviews = await db.collection('product_reviews')
