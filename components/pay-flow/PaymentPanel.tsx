@@ -125,7 +125,7 @@ export function PaymentPanel() {
       // SECURITY: Include CSRF token if available
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
       
-      const response = await fetch('/api/pay/process', {
+      const response = await fetch('/api/pay-flow/payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -135,12 +135,13 @@ export function PaymentPanel() {
           sourceId: token,
           items: items.map(item => ({
             productId: item.productId,
+            name: item.name,
             quantity: item.quantity,
-            upsellIds: item.upsellIds
+            priceCents: Math.round(item.price * 100),
+            upsellIds: item.upsellIds,
+            catalogObjectId: item.catalogObjectId
           })),
-          totalCents,
-          // SECURITY: Server recalculates totals, this is just for validation
-          expectedTotal: totalCents
+          amountCents: totalCents
         })
       });
       
