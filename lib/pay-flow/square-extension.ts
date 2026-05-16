@@ -77,28 +77,34 @@ export interface PayFlowPaymentResult {
 export async function createPayFlowOrder(
   request: PayFlowOrderRequest
 ): Promise<SquareResponse<{ order: PayFlowOrderResult }>> {
+  console.log('[createPayFlowOrder] Starting with', request.items.length, 'items');
   try {
     const referenceId = request.referenceId || `GR-${Date.now().toString(36).toUpperCase()}`;
+    console.log('[createPayFlowOrder] Reference ID:', referenceId);
     
     // Convert PayFlow items to Square line items
-    const lineItems: OrderLineItem[] = request.items.map((item, index) => ({
-      name: item.name,
-      quantity: item.quantity.toString(),
-      catalogObjectId: item.catalogObjectId,
-      basePriceMoney: {
-        amount: item.priceCents,
-        currency: 'USD'
-      },
-      note: item.upsellIds?.length 
-        ? `Upsells: ${item.upsellIds.join(', ')}` 
-        : undefined
-    }));
+    const lineItems: OrderLineItem[] = request.items.map((item, index) => {
+      console.log(`[createPayFlowOrder] Item ${index}:`, { name: item.name, quantity: item.quantity, priceCents: item.priceCents, catalogObjectId: item.catalogObjectId });
+      return ({
+        name: item.name,
+        quantity: item.quantity.toString(),
+        catalogObjectId: item.catalogObjectId,
+        basePriceMoney: {
+          amount: item.priceCents,
+          currency: 'USD'
+        },
+        note: item.upsellIds?.length 
+          ? `Upsells: ${item.upsellIds.join(', ')}` 
+          : undefined
+      });
+    });
     
     // Calculate total
     const totalCents = request.items.reduce(
       (sum, item) => sum + (item.priceCents * item.quantity), 
       0
     );
+    console.log('[createPayFlowOrder] Total cents:', totalCents);
     
     // Create pickup fulfillment
     const fulfillments: OrderFulfillment[] = [{
@@ -114,6 +120,7 @@ export async function createPayFlowOrder(
       }
     }];
     
+    console.log('[createPayFlowOrder] Calling baseCreateOrder...');
     // Use base createOrder
     const result = await baseCreateOrder({
       referenceId,
@@ -128,7 +135,10 @@ export async function createPayFlowOrder(
       }
     });
     
+    console.log('[createPayFlowOrder] baseCreateOrder result:', { success: result.success, hasData: !!result.data, errors: result.errors });
+    
     if (!result.success || !result.data?.order) {
+      console.error('[createPayFlowOrder] baseCreateOrder failed:', result.errors);
       return {
         success: false,
         errors: result.errors || [{ 
@@ -140,6 +150,7 @@ export async function createPayFlowOrder(
     }
     
     const order = result.data.order;
+    console.log('[createPayFlowOrder] Order created:', { id: order.id, state: order.state });
     
     return {
       success: true,
@@ -179,12 +190,16 @@ export async function processPayFlowPayment(
     let squareOrderId: string | undefined;
     
     if (!orderId) {
+      console.log('[PayFlow] Creating order with items:', request.items.length, 'items');
       const orderResult = await createPayFlowOrder({
         items: request.items,
         customerPhone: request.customerPhone
       });
       
+      console.log('[PayFlow] Order result:', { success: orderResult.success, hasData: !!orderResult.data, errors: orderResult.errors });
+      
       if (!orderResult.success || !orderResult.data?.order) {
+        console.error('[PayFlow] Order creation failed:', orderResult.errors);
         return {
           success: false,
           orderId: 'FAILED',
@@ -195,6 +210,7 @@ export async function processPayFlowPayment(
       
       orderId = orderResult.data.order.id;
       squareOrderId = orderResult.data.order.squareOrderId;
+      console.log('[PayFlow] Order created:', { orderId, squareOrderId });
     }
     
     // Step 2: Process payment
