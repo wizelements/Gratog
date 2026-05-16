@@ -52,16 +52,22 @@ function PayFlowContent() {
   const { setView } = usePayFlowUI();
   const { startSession } = usePayFlowMetrics();
   const [error, setError] = useState<string | null>(null);
+  const [initError, setInitError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   
-  // CRITICAL FIX: Check cart expiry on mount
+  // CRITICAL FIX: Check cart expiry on mount with try-catch
   useEffect(() => {
-    const cart = usePayFlowCart.getState();
-    if (cart.isCartExpired()) {
-      cart.clearCart();
-      toast.info('Your cart expired after 30 minutes of inactivity', {
-        description: 'Please add your items again',
-      });
+    try {
+      const cart = usePayFlowCart.getState();
+      if (cart.isCartExpired()) {
+        cart.clearCart();
+        toast.info('Your cart expired after 30 minutes of inactivity', {
+          description: 'Please add your items again',
+        });
+      }
+    } catch (err) {
+      console.error('Cart init error:', err);
+      setInitError('Cart initialization failed');
     }
   }, []);
   
@@ -81,10 +87,12 @@ function PayFlowContent() {
       
       try {
         // Try storefront API first
+        console.log('[PayFlow] Fetching live products...');
         const liveProducts = await fetchLiveProducts(controller.signal);
         
         if (controller.signal.aborted) return;
         
+        console.log('[PayFlow] Got', liveProducts.length, 'products');
         setProducts(liveProducts);
         startSession();
       } catch (err) {
@@ -157,11 +165,24 @@ function PayFlowContent() {
           </div>
         )}
         
-        {!isLoading && (
+        {initError && (
+          <div className="mx-4 mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+            <p className="text-red-800 text-sm">{initError}</p>
+          </div>
+        )}
+        
+        {!isLoading && !initError && products.length > 0 && (
           <>
             <CategoryTabs counts={categoryCounts} />
             <ProductFeed />
           </>
+        )}
+        
+        {!isLoading && !initError && products.length === 0 && (
+          <div className="mx-4 mt-8 p-6 bg-gray-100 border border-gray-200 rounded-xl text-center">
+            <p className="text-gray-600 font-medium mb-2">No products available</p>
+            <p className="text-gray-500 text-sm">Please check back later or refresh the page.</p>
+          </div>
         )}
       </main>
       

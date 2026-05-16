@@ -50,6 +50,10 @@ interface GratogProduct {
   // Square e-commerce visibility
   squareEcomAvailable?: boolean;
   squareIsArchived?: boolean;
+  // Preorder fields
+  isPreorder?: boolean;
+  purchaseStatus?: string;
+  availability?: string;
 }
 
 /**
