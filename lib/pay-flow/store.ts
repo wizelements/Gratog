@@ -161,7 +161,6 @@ export const usePayFlowCart = create<CartStore>()(
     {
       name: PAY_FLOW_CONSTANTS.STORAGE_KEY_CART,
       storage: createJSONStorage(() => localStorage),
-      skipHydration: true,
       partialize: (state) => ({ items: state.items, lastActivity: state.lastActivity })
     }
   )
