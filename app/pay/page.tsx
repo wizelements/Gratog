@@ -8,8 +8,6 @@
 
 'use client';
 
-export const dynamic = 'force-dynamic';
-
 import { useEffect, useState, useRef } from 'react';
 import { PayFlowHeader } from '@/components/pay-flow/PayFlowHeader';
 import { CategoryTabs } from '@/components/pay-flow/CategoryTabs';
@@ -53,10 +51,22 @@ function PayFlowContent() {
   const { startSession } = usePayFlowMetrics();
   const [error, setError] = useState<string | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  
+  // Wait for Zustand hydration before accessing cart
+  useEffect(() => {
+    // Small delay to ensure Zustand persist has rehydrated
+    const timer = setTimeout(() => {
+      setIsHydrated(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
   
   // CRITICAL FIX: Check cart expiry on mount with try-catch
   useEffect(() => {
+    if (!isHydrated) return;
+    
     try {
       const cart = usePayFlowCart.getState();
       if (cart.isCartExpired()) {
@@ -69,7 +79,7 @@ function PayFlowContent() {
       console.error('Cart init error:', err);
       setInitError('Cart initialization failed');
     }
-  }, []);
+  }, [isHydrated]);
   
   // Fetch live products on mount
   useEffect(() => {
@@ -178,10 +188,16 @@ function PayFlowContent() {
           </>
         )}
         
-        {!isLoading && !initError && products.length === 0 && (
+        {!isLoading && !initError && products.length === 0 && isHydrated && (
           <div className="mx-4 mt-8 p-6 bg-gray-100 border border-gray-200 rounded-xl text-center">
             <p className="text-gray-600 font-medium mb-2">No products available</p>
             <p className="text-gray-500 text-sm">Please check back later or refresh the page.</p>
+          </div>
+        )}
+        
+        {!isHydrated && (
+          <div className="p-3">
+            <ProductGridSkeleton count={6} />
           </div>
         )}
       </main>
