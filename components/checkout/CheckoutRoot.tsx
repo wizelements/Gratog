@@ -15,9 +15,19 @@ import FulfillmentTabs from './FulfillmentTabs';
 import PickupForm from './PickupForm';
 import DeliveryForm from './DeliveryForm';
 import ReviewAndPay from './ReviewAndPay';
+import CheckoutErrorBoundary from './CheckoutErrorBoundary';
 import Link from 'next/link';
 
+// FIX P1-2: Wrap checkout in error boundary
 export default function CheckoutRoot() {
+  return (
+    <CheckoutErrorBoundary>
+      <CheckoutContent />
+    </CheckoutErrorBoundary>
+  );
+}
+
+function CheckoutContent() {
   const {
     stage,
     setStage,
@@ -213,7 +223,9 @@ export default function CheckoutRoot() {
                         selected={fulfillment.type}
                         hasPreorderItems={cart.some(item => item.isPreorder)}
                         onChange={(type) => {
-                          setValidation({ ...validation, fulfillment: undefined });
+                          // FIX P1-4: Clear ALL validation when switching fulfillment types
+                          // Prevents stale validation errors from previous fulfillment type
+                          clearValidation();
                           setFulfillment({ type });
                           track('fulfillment_type_selected', { type });
                         }}

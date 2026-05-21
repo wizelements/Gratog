@@ -141,6 +141,45 @@ export async function POST(request: NextRequest) {
       return json({ success: false, error: 'Order ID is required for payment processing' }, 400);
     }
 
+    // FIX P0-4: Server-side preorder validation before payment
+    // Re-validate cart meets preorder minimums (client validation may be stale)
+    if (lineItems && lineItems.length > 0) {
+      const preorderItems = lineItems.filter((item: any) => item.isPreorder || item.category?.toLowerCase().includes('preorder'));
+      if (preorderItems.length > 0) {
+        const bobaItems = preorderItems.filter((item: any) => 
+          item.name?.toLowerCase().includes('boba') || 
+          item.category?.toLowerCase().includes('boba')
+        );
+        const bobaQty = bobaItems.reduce((sum: number, item: any) => sum + (Number(item.quantity) || 1), 0);
+        if (bobaQty > 2) {
+          return json({ 
+            success: false, 
+            error: 'Boba preorders are limited to 2 drinks. Want more? Order at the market!',
+            code: 'BOBA_PREORDER_LIMIT_EXCEEDED'
+          }, 400);
+        }
+        
+        const nonBobaPreorder = preorderItems.filter((item: any) => 
+          !item.name?.toLowerCase().includes('boba') && 
+          !item.category?.toLowerCase().includes('boba')
+        );
+        const preorderSubtotal = nonBobaPreorder.reduce(
+          (sum: number, item: any) => sum + ((Number(item.price) || 0) * (Number(item.quantity) || 1)), 
+          0
+        );
+        
+        if (nonBobaPreorder.length > 0 && preorderSubtotal < 60) {
+          return json({ 
+            success: false, 
+            error: `Preorder items require a $60.00 minimum. Current preorder total: $${preorderSubtotal.toFixed(2)}. Add $${(60 - preorderSubtotal).toFixed(2)} more to continue.`,
+            code: 'PREORDER_MINIMUM_NOT_MET',
+            preorderSubtotal,
+            minimumRequired: 60
+          }, 400);
+        }
+      }
+    }
+
     if (!orderAccessTokenInput && !auth?.authenticated) {
       return json(
         {
@@ -160,6 +199,7 @@ export async function POST(request: NextRequest) {
     
     // ========================================================================
     // DATABASE CONNECTION (fail fast if unavailable)
+    // FIX P0-3: Clear any stuck payment_processing status on DB failure
     // ========================================================================
     let db;
     try {
@@ -174,6 +214,31 @@ export async function POST(request: NextRequest) {
       Sentry.captureException(dbConnError, {
         tags: { api: 'payments', stage: 'db_connect' }
       });
+      
+      // FIX: Attempt to clear stuck payment_processing status even on connection failure
+      // This prevents orders from being locked indefinitely
+      try {
+        const fallbackDb = await connectToDatabase().catch(() => null);
+        if (fallbackDb?.db && orderId) {
+          await fallbackDb.db.collection('orders').updateOne(
+            { 
+              id: orderId,
+              status: 'payment_processing',
+              paymentStatus: 'processing'
+            },
+            { 
+              $set: { 
+                status: 'pending', 
+                paymentStatus: 'pending',
+                paymentError: 'DB_CONNECTION_FAILED',
+                updatedAt: new Date().toISOString() 
+              } 
+            }
+          );
+        }
+      } catch (clearError) {
+        logger.error('API', 'Failed to clear payment_processing status', { orderId, error: clearError });
+      }
       
       return json(
         { 
@@ -227,11 +292,26 @@ export async function POST(request: NextRequest) {
         authType: auth?.authType || 'public',
         hasToken: Boolean(orderAccessTokenInput),
       });
+      
+      // FIX P2-3: Check if token expired vs completely invalid
+      let errorMessage = 'Unauthorized';
+      let errorCode = 'UNAUTHORIZED_PAYMENT_ACCESS';
+      let shouldRestart = false;
+      
+      if (orderAccessTokenInput) {
+        // Token was provided but invalid - likely expired
+        errorMessage = 'Your session has expired. Please restart checkout to continue.';
+        errorCode = 'ORDER_ACCESS_TOKEN_EXPIRED';
+        shouldRestart = true;
+      }
+      
       return json(
         {
           success: false,
-          error: 'Unauthorized',
-          code: 'UNAUTHORIZED_PAYMENT_ACCESS',
+          error: errorMessage,
+          code: errorCode,
+          shouldRestart,
+          orderId: resolvedOrderId,
         },
         401
       );
@@ -416,20 +496,22 @@ export async function POST(request: NextRequest) {
     order = await db.collection('orders').findOne({ id: orderId });
     
     // ========================================================================
-    // FIX #5: AMOUNT VALIDATION (block significant mismatches)
+    // FIX #5: AMOUNT VALIDATION (block any mismatch - use server-authoritative)
     // ========================================================================
     const expectedAmountCents = order.totalCents || 
                           (order.pricing?.total ? Math.round(order.pricing.total * 100) : 0) ||
                           (order.total ? Math.round(order.total * 100) : 0);
     
+    // FIX P1-1: Always use server-authoritative amount, ignore client
+    // Any discrepancy indicates tampering or stale client state
     let validatedAmountCents = amountCents;
     
     if (expectedAmountCents && expectedAmountCents > 0) {
       const amountDifference = Math.abs(amountCents - expectedAmountCents);
       
-      // Block if difference > $0.50 (50 cents) - potential tampering or bug
-      if (amountDifference > 50) {
-        logger.error('API', 'BLOCKED: Significant amount mismatch detected', { 
+      // Block ANY amount mismatch - even $0.01 (potential tampering or bug)
+      if (amountDifference > 0) {
+        logger.error('API', 'BLOCKED: Amount mismatch detected', { 
           traceId: ctx.traceId,
           orderId, 
           clientAmount: amountCents, 
@@ -453,11 +535,15 @@ export async function POST(request: NextRequest) {
           { 
             success: false, 
             error: 'Order total mismatch. Please refresh the page and try again.',
-            code: 'AMOUNT_MISMATCH'
+            code: 'AMOUNT_MISMATCH',
+            expectedAmount: expectedAmountCents
           },
           409
         );
       }
+      
+      // Use server-authoritative amount
+      validatedAmountCents = expectedAmountCents;
       
       // Warn for small differences but use server amount (authoritative)
       if (amountDifference > 1) {
@@ -774,6 +860,30 @@ export async function POST(request: NextRequest) {
         tags: { api: 'payments', severity: 'high', issue: 'inventory_decrement_failed' },
         extra: { paymentId: payment.id, orderId },
       });
+      
+      // FIX P2-4: Retry inventory decrement once after short delay
+      // This handles transient DB connection issues
+      setTimeout(async () => {
+        try {
+          logger.info('API', 'Retrying inventory decrement', { orderId, paymentId: payment.id });
+          const retryResult = await consumeInventoryForPaidOrder(db, {
+            orderId,
+            orderNumber: order.orderNumber,
+            items: order.items || [],
+            actor: 'payment_capture_retry',
+          });
+          logger.info('API', 'Inventory retry succeeded', { 
+            orderId, 
+            debited: retryResult.debited,
+            skipped: retryResult.skipped 
+          });
+        } catch (retryError) {
+          logger.error('API', 'Inventory retry failed', {
+            orderId,
+            error: retryError instanceof Error ? retryError.message : String(retryError),
+          });
+        }
+      }, 5000); // 5 second delay before retry
     }
     
     // ========================================================================

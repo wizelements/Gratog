@@ -137,6 +137,8 @@ function loadPersistedState(): Partial<CheckoutState> {
     if (fulfillment.type === 'shipping') {
       fulfillment.type = 'delivery';
       fulfillment.delivery = fulfillment.delivery || initialFulfillment.delivery;
+      // FIX P1-3: Clear old shipping data to prevent mixed fulfillment state
+      delete fulfillment.shipping;
     }
     // Deserialize pickup date from JSON string back to Date
     if (fulfillment.pickup?.date && typeof fulfillment.pickup.date === 'string') {

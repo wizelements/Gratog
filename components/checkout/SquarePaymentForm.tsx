@@ -152,6 +152,19 @@ export default function SquarePaymentForm({
       
       const data = await res.json();
       
+      // FIX P2-3: Handle session expiry with restart flow
+      if (res.status === 401 && data.code === 'ORDER_ACCESS_TOKEN_EXPIRED') {
+        setCardError('Your session expired. Restarting checkout...');
+        setTimeout(() => {
+          // Clear checkout state and redirect to cart
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('checkout:reset'));
+            window.location.href = '/checkout?error=session_expired';
+          }
+        }, 2000);
+        return;
+      }
+      
       if (!res.ok || data.error) {
         throw new Error(data.error || 'Payment processing failed');
       }
