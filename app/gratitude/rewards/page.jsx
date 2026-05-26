@@ -1,7 +1,4 @@
 'use client';
-
-export const dynamic = 'force-dynamic';
-
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Gift, ShoppingBag, Truck, Sparkles, Check, Copy } from 'lucide-react';

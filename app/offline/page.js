@@ -1,7 +1,4 @@
 'use client';
-
-export const dynamic = 'force-dynamic';
-
 import Link from 'next/link';
 import { WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';

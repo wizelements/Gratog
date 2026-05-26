@@ -1,7 +1,4 @@
 'use client';
-
-export const dynamic = 'force-dynamic';
-
 import { useState, useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
 import IngredientExplorer from '@/components/explore/interactive/IngredientExplorer';
