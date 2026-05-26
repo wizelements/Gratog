@@ -279,7 +279,7 @@ export async function getHealthMetrics(): Promise<any> {
   const [totalProducts, totalVariants, recentCrawls, oldestCrawl] = await Promise.all([
     database.collection('products').countDocuments({ active: true }),
     database.collection('variants').countDocuments(),
-    database.collection('links').find({ crawl_status: 'success', last_crawled_at: { $gte: new Date(Date.now() - 60 * 60 * 1000) } }).count(),
+    database.collection('links').find({ crawl_status: 'success', last_crawled_at: { $gte: new Date(Date.now() - 60 * 60 * 1000) } }).countDocuments(),
     database.collection('links').findOne({}, { sort: { last_crawled_at: 1 } })
   ]);
   
