@@ -88,7 +88,7 @@ export const viewport = {
 };
 
 // Next.js 15: Layouts are static by default, cache with semi-dynamic for auth state
-export const dynamic = 'force-dynamic'; // Keep dynamic for AuthProvider, but child pages can be static
+// Removed force-dynamic — child pages control their own rendering strategy
 
 export default function RootLayout({ children }) {
   return (

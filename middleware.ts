@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Protected admin routes
-const PROTECTED_ROUTES = [
-  '/admin/market-day',
-  '/admin/market-setup',
-  '/admin/analytics',
-  '/admin/qr-generator',
+// Public admin routes (everything else is protected by default)
+const PUBLIC_ADMIN_ROUTES = [
+  '/admin/login',
 ];
 
 // Public routes that don't need auth
@@ -17,12 +14,17 @@ const PUBLIC_ROUTES = [
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check if this is a protected route
-  const isProtected = PROTECTED_ROUTES.some(route => 
+  // All admin routes are protected unless explicitly public
+  const isPublic = PUBLIC_ADMIN_ROUTES.some(route => 
     pathname === route || pathname.startsWith(route + '/')
   );
 
-  if (!isProtected) {
+  // Non-admin routes pass through
+  if (!pathname.startsWith('/admin')) {
+    return NextResponse.next();
+  }
+
+  if (isPublic) {
     return NextResponse.next();
   }
 
