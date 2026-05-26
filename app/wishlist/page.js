@@ -1,7 +1,4 @@
 'use client';
-
-export const dynamic = 'force-dynamic';
-
 import { useState, useEffect } from 'react';
 import { Heart, Trash2, ShoppingCart, Share2, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';

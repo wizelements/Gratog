@@ -1,7 +1,4 @@
 'use client';
-
-export const dynamic = 'force-dynamic';
-
 import UGCChallenge from '@/components/UGCChallenge';
 
 export default function UGCPage() {

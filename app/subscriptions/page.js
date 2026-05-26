@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import { SUBSCRIPTION_TIERS } from '@/lib/subscription-tiers';
 
 export const metadata = {

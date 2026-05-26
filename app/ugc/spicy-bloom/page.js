@@ -1,7 +1,4 @@
 'use client';
-
-export const dynamic = 'force-dynamic';
-
 import { useEffect } from 'react';
 import UGCChallenge from '@/components/UGCChallenge';
 import AnalyticsSystem from '@/lib/analytics';

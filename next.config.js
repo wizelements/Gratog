@@ -12,7 +12,7 @@ const nextConfig = {
 
   // Production quality gates - temporarily relaxed for deployment
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
     ignoreBuildErrors: true,
