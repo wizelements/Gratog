@@ -10,11 +10,15 @@ import { requireAdmin } from '@/lib/admin-session';
 import { logger } from '@/lib/logger';
 import { seedDefaultMarkets, ensureMarketIndexes } from '@/lib/markets/repository';
 
+import { requireAdminSession } from '@/lib/auth/unified-admin';
 /**
  * POST /api/admin/markets/seed
  * Seed default markets and create indexes
  */
-export async function POST(request: Request) {
+export async function POST(request: any) {
+  const session = await requireAdminSession(request);
+  if (!session) return new Response('Unauthorized', { status: 401 });
+
   try {
     const admin = await requireAdmin(request);
 

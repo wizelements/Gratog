@@ -1,7 +1,4 @@
 'use client';
-
-export const dynamic = 'force-dynamic';
-
 import { useState, useEffect } from 'react';
 import MemoryMatch from '@/components/explore/games/MemoryMatch';
 import { Button } from '@/components/ui/button';

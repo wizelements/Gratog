@@ -25,7 +25,10 @@ import {
  * POST /api/admin/notifications/send
  * Send notification to specific customers
  */
-export async function POST(request: NextRequest) {
+export async function POST(request: any) {
+  const session = await requireAdminSession(request);
+  if (!session) return new Response('Unauthorized', { status: 401 });
+
   try {
     const body = await request.json();
     const { emails, type, data } = body;
@@ -114,7 +117,10 @@ export async function PATCH(request: NextRequest) {
  * POST /api/admin/notifications/new-product
  * Announce new product
  */
-export async function PUT(request: NextRequest) {
+export async function PUT(request: any) {
+  const session = await requireAdminSession(request);
+  if (!session) return new Response('Unauthorized', { status: 401 });
+
   try {
     const body = await request.json();
     const { productId } = body;
@@ -163,7 +169,10 @@ export async function PUT(request: NextRequest) {
  * GET /api/admin/notifications/stats
  * Get notification statistics
  */
-export async function GET(request: NextRequest) {
+export async function GET(request: any) {
+  const session = await requireAdminSession(request);
+  if (!session) return new Response('Unauthorized', { status: 401 });
+
   try {
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get('days') || '7');

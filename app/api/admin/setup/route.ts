@@ -18,6 +18,7 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import { generateCsrfToken } from '@/lib/auth/unified-admin';
 
+import { requireAdminSession } from '@/lib/auth/unified-admin';
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
@@ -71,7 +72,10 @@ function getClientIp(request: NextRequest): string {
 // POST - Create initial admin
 // ============================================================================
 
-export async function POST(request: NextRequest) {
+export async function POST(request: any) {
+  const session = await requireAdminSession(request);
+  if (!session) return new Response('Unauthorized', { status: 401 });
+
   const startTime = Date.now();
   const ip = getClientIp(request);
   

@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { logger } from '@/lib/logger';
 import { RateLimit } from '@/lib/redis';
 
+import { requireAdminSession } from '@/lib/auth/unified-admin';
 async function hashPassword(password: string): Promise<string> {
   const salt = await bcrypt.genSalt(10);
   return bcrypt.hash(password, salt);
@@ -25,7 +26,10 @@ async function hashPassword(password: string): Promise<string> {
  * }
  */
 
-export async function POST(request: Request) {
+export async function POST(request: any) {
+  const session = await requireAdminSession(request);
+  if (!session) return new Response('Unauthorized', { status: 401 });
+
   try {
     // ISS-015 FIX: Rate limit brute-force attempts (5 attempts per 15 minutes)
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';

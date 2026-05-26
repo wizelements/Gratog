@@ -1,7 +1,4 @@
 'use client';
-
-export const dynamic = 'force-dynamic';
-
 import IngredientRush from '@/components/explore/games/IngredientRush';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';

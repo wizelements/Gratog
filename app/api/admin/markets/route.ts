@@ -25,7 +25,10 @@ import {
  * GET /api/admin/markets
  * Fetch all markets for admin dashboard
  */
-export async function GET(request: Request) {
+export async function GET(request: any) {
+  const session = await requireAdminSession(request);
+  if (!session) return new Response('Unauthorized', { status: 401 });
+
   try {
     const admin = await requireAdmin(request);
 
@@ -61,7 +64,10 @@ export async function GET(request: Request) {
  * POST /api/admin/markets
  * Create a new market
  */
-export async function POST(request: Request) {
+export async function POST(request: any) {
+  const session = await requireAdminSession(request);
+  if (!session) return new Response('Unauthorized', { status: 401 });
+
   try {
     const admin = await requireAdmin(request);
     const json = await request.json();
@@ -111,7 +117,10 @@ export async function POST(request: Request) {
  * PUT /api/admin/markets
  * Update an existing market
  */
-export async function PUT(request: Request) {
+export async function PUT(request: any) {
+  const session = await requireAdminSession(request);
+  if (!session) return new Response('Unauthorized', { status: 401 });
+
   try {
     const admin = await requireAdmin(request);
     const json = await request.json();
@@ -170,7 +179,10 @@ export async function PUT(request: Request) {
  * DELETE /api/admin/markets
  * Delete a market
  */
-export async function DELETE(request: Request) {
+export async function DELETE(request: any) {
+  const session = await requireAdminSession(request);
+  if (!session) return new Response('Unauthorized', { status: 401 });
+
   try {
     const admin = await requireAdmin(request);
     const json = await request.json();
