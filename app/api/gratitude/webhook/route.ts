@@ -17,8 +17,22 @@ export async function POST(request: NextRequest) {
     const signature = request.headers.get('x-square-signature');
     const body = await request.json();
     
-    // TODO: Verify webhook signature with SQUARE_WEBHOOK_SECRET
-    // For now, process all webhooks
+    // Verify Square webhook signature
+    const signatureKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
+    if (signatureKey) {
+      const crypto = await import('crypto');
+      const rawBody = JSON.stringify(body);
+      const expectedSignature = crypto
+        .createHmac('sha256', signatureKey)
+        .update(rawBody)
+        .digest('base64');
+      if (signature !== expectedSignature) {
+        console.warn('Invalid webhook signature — rejecting');
+        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+      }
+    } else if (process.env.NODE_ENV === 'production') {
+      console.warn('SQUARE_WEBHOOK_SIGNATURE_KEY not set — webhook signature not verified');
+    }
     
     const { type, data } = body;
     

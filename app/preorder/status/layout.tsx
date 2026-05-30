@@ -3,8 +3,6 @@ export const metadata = {
   description: 'Check the status of your preorder'
 };
 
-// @ts-ignore — implicit any
-export default function PreorderStatusLayout({ children: any }) {
-  // @ts-ignore — auto-fix
+export default function PreorderStatusLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

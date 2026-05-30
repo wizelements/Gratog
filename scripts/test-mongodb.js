@@ -2,7 +2,11 @@
 
 // Test MongoDB connection and fix product lookup issue
 const { MongoClient } = require('mongodb');
-const uri = process.env.MONGODB_URI || 'mongodb+srv://Togratitude:$gratitud3$@gratitude0.1ckskrv.mongodb.net/taste_of_gratitude?retryWrites=true&w=majority&appName=Gratitude0';
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+  console.error('MONGODB_URI environment variable is required');
+  process.exit(1);
+}
 
 async function testConnection() {
   console.log('Testing MongoDB connection...');

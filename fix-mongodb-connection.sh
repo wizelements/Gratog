@@ -7,7 +7,9 @@ echo "=== Fixing MongoDB Connection for Gratog ==="
 # Set the correct MongoDB URI in Vercel
 echo "Updating MONGODB_URI environment variable..."
 vercel env rm MONGODB_URI production -y 2>/dev/null || true
-echo 'mongodb+srv://Togratitude:$gratitud3$@gratitude0.1ckskrv.mongodb.net/taste_of_gratitude?retryWrites=true&w=majority&appName=Gratitude0' | vercel env add MONGODB_URI production
+# Read MONGODB_URI from .env.local instead of hardcoding
+MONGODB_URI=$(grep MONGODB_URI .env.local | cut -d '=' -f 2-)
+echo "$MONGODB_URI" | vercel env add MONGODB_URI production
 
 echo "Environment variables updated successfully!"
 

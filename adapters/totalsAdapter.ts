@@ -4,13 +4,7 @@
  */
 
 import { CartItem } from './cartAdapter';
-
-/**
- * Delivery fee tiers (from existing logic)
- */
-const DELIVERY_FEE = 6.99;
-const FREE_DELIVERY_THRESHOLD = 75;
-const DELIVERY_MINIMUM = 30;
+import { getDeliveryConfig } from '@/lib/fulfillment';
 
 /**
  * Tax rate (8% - from existing logic)
@@ -44,24 +38,20 @@ export interface TotalsInput {
  */
 export function computeTotals(input: TotalsInput): OrderTotals {
   const { cart, fulfillmentType, tip = 0, couponDiscount = 0, shippingFee = 0 } = input;
+  const config = getDeliveryConfig();
   
-  // Calculate subtotal
   const subtotal = cart.reduce((sum, item) => sum + ((Number(item.price) || 0) * (Number(item.quantity) || 1)), 0);
   const itemCount = cart.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
   
-  // Calculate delivery fee (waived above threshold)
   let deliveryFee = 0;
   if (fulfillmentType === 'delivery') {
-    deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
+    deliveryFee = subtotal >= config.freeThreshold ? 0 : config.baseFee;
   } else if (fulfillmentType === 'shipping') {
     deliveryFee = shippingFee;
   }
   
-  // Calculate tax (on subtotal only, not fees)
   const tax = subtotal * TAX_RATE;
-  
-  // Calculate total
-  const total = subtotal - couponDiscount + deliveryFee + tax + tip;
+  const total = Math.max(0, subtotal - couponDiscount + deliveryFee + tax + tip);
   
   return {
     subtotal,
@@ -81,11 +71,14 @@ export function validateMinimumOrder(
   subtotal: number, 
   fulfillmentType: 'pickup' | 'delivery' | 'shipping'
 ): { valid: boolean; message?: string } {
-  if (fulfillmentType === 'delivery' && subtotal < DELIVERY_MINIMUM) {
-    return {
-      valid: false,
-      message: `Minimum order for delivery is $${DELIVERY_MINIMUM.toFixed(2)}`
-    };
+  if (fulfillmentType === 'delivery') {
+    const config = getDeliveryConfig();
+    if (subtotal < config.minSubtotal) {
+      return {
+        valid: false,
+        message: `Minimum order for delivery is $${config.minSubtotal.toFixed(2)}`
+      };
+    }
   }
   
   return { valid: true };
@@ -105,9 +98,12 @@ export const Totals = {
   compute: computeTotals,
   validateMinimum: validateMinimumOrder,
   format: formatCurrency,
-  constants: {
-    DELIVERY_FEE,
-    DELIVERY_MINIMUM,
-    TAX_RATE
+  get constants() {
+    const config = getDeliveryConfig();
+    return {
+      DELIVERY_FEE: config.baseFee,
+      DELIVERY_MINIMUM: config.minSubtotal,
+      TAX_RATE
+    };
   }
 };

@@ -8,6 +8,10 @@ import { SquareClient as Client, SquareEnvironment as Environment } from 'square
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not available in production' }, { status: 404 });
+  }
+
   const diagnostics: any = {
     timestamp: new Date().toISOString(),
     env: {

@@ -3,8 +3,6 @@ export const metadata = {
   description: 'Preorder your sea moss gel and wellness drinks. Skip the line at the market!'
 };
 
-// @ts-ignore — implicit any
-export default function PreorderLayout({ children: any }) {
-  // @ts-ignore — auto-fix
+export default function PreorderLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

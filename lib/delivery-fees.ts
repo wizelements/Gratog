@@ -19,8 +19,9 @@ const DELIVERY_DISCOUNT_TIERS = [
 ];
 
 // Calculate delivery fee based on subtotal
-export function calculateDeliveryFee(_subtotal: number): number {
+export function calculateDeliveryFee(subtotal: number): number {
   const config = getDeliveryConfig();
+  if (subtotal >= config.freeThreshold) return 0;
   return config.baseFee;
 }
 
@@ -46,13 +47,16 @@ export function calculateDistanceBasedDeliveryFee(distanceMiles: number, subtota
 }
 
 // Calculate progress toward free delivery
-export function getFreeDeliveryProgress(_subtotal: number): number {
-  return 0;
+export function getFreeDeliveryProgress(subtotal: number): number {
+  const config = getDeliveryConfig();
+  if (subtotal >= config.freeThreshold) return 0;
+  return config.freeThreshold - subtotal;
 }
 
 // Check if order qualifies for free delivery
-export function qualifiesForFreeDelivery(_subtotal: number): boolean {
-  return false;
+export function qualifiesForFreeDelivery(subtotal: number): boolean {
+  const config = getDeliveryConfig();
+  return subtotal >= config.freeThreshold;
 }
 
 // Shipping removed — contact us for shipping inquiries

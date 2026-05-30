@@ -148,7 +148,7 @@ export default function RewardsCatalog() {
 
               <div className="flex gap-3">
                 <Link
-                  href="/cart"
+                  href="/checkout"
                   className="flex-1 bg-emerald-600 text-white text-center py-3 rounded-xl font-semibold hover:bg-emerald-700 transition"
                 >
                   Apply to Cart

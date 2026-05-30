@@ -4,8 +4,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-// @ts-ignore — auto-fix
-import { createSquarePayment } from '@/lib/square-api';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { v4 as uuidv4 } from 'uuid';
 import { ObjectId } from 'mongodb';
@@ -117,7 +115,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Initialize Square
+    // Process REAL Square payment
     const squareToken = process.env.SQUARE_ACCESS_TOKEN;
     if (!squareToken) {
       return NextResponse.json(
@@ -125,18 +123,47 @@ export async function POST(request: NextRequest) {
         { status: 503 }
       );
     }
-    
-    // CRITICAL FIX: Create REAL order in MongoDB
+
+    // Create idempotency key for this payment
+    const idempotencyKey = uuidv4();
+
+    // Charge the card via Square
+    let paymentResult;
+    try {
+      const { createPayment } = await import('@/lib/square-api');
+      const paymentResponse = await createPayment({
+        sourceId,
+        amountCents: priceValidation.actualTotal,
+        currency: 'USD',
+        idempotencyKey,
+        note: `Gratog Pay Flow - ${items.length} item(s)`,
+      });
+
+      if (!paymentResponse.success || !paymentResponse.data?.payment) {
+        return NextResponse.json(
+          { error: paymentResponse.errors?.[0]?.detail || 'Payment declined', code: 'PAYMENT_FAILED' },
+          { status: 402 }
+        );
+      }
+
+      paymentResult = paymentResponse.data.payment;
+    } catch (payError) {
+      console.error('Square payment failed:', payError);
+      return NextResponse.json(
+        { error: 'Payment processing failed. Please try again.' },
+        { status: 502 }
+      );
+    }
+
+    // Payment succeeded — create order in MongoDB
     const orderNumber = `GR-${Date.now().toString(36).toUpperCase().slice(-6)}`;
-    
+
     try {
       const { db } = await connectToDatabase();
-      
-      // Get product details for order items
+
       const { getStorefrontCatalogSnapshot } = await import('@/lib/storefront-products');
       const snapshot = await getStorefrontCatalogSnapshot({});
-      
-      // Build order items with product details
+
       const orderItems = items.map((item: { productId: string; quantity: number; upsellIds?: string[] }) => {
         const product = snapshot.products.find(p => p.id === item.productId);
         return {
@@ -147,8 +174,7 @@ export async function POST(request: NextRequest) {
           upsellIds: item.upsellIds || []
         };
       });
-      
-      // Create order document
+
       const orderDoc = {
         _id: new ObjectId(),
         orderNumber,
@@ -162,25 +188,32 @@ export async function POST(request: NextRequest) {
         source: 'pay-flow',
         paymentStatus: 'paid',
         paymentMethod: 'card',
-        squarePaymentId: `mock_${Date.now()}`,
+        squarePaymentId: paymentResult.id,
+        squareReceiptUrl: paymentResult.receiptUrl || null,
+        idempotencyKey,
         createdAt: new Date(),
         paidAt: new Date(),
         updatedAt: new Date()
       };
-      
+
       await db.collection('orders').insertOne(orderDoc);
-      
+
       return NextResponse.json({
         success: true,
         orderId: orderDoc._id.toString(),
         orderNumber: orderDoc.orderNumber,
-        receiptUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/order/${orderDoc._id.toString()}`,
+        receiptUrl: paymentResult.receiptUrl || `${process.env.NEXT_PUBLIC_SITE_URL}/order/${orderDoc._id.toString()}`,
         totalCents: priceValidation.actualTotal
       });
     } catch (dbError) {
-      console.error('Database error creating order:', dbError);
+      // Payment succeeded but DB failed — log for manual reconciliation
+      console.error('CRITICAL: Payment succeeded but order creation failed:', {
+        squarePaymentId: paymentResult.id,
+        amountCents: priceValidation.actualTotal,
+        error: dbError
+      });
       return NextResponse.json(
-        { error: 'Failed to create order' },
+        { error: 'Order recorded — please contact support if you don\'t see your order', squarePaymentId: paymentResult.id },
         { status: 500 }
       );
     }
