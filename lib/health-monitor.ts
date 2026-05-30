@@ -25,7 +25,7 @@ interface HealthCheckResult {
   errors?: string[];
 }
 
-interface HealthAlert {
+interface _HealthAlert {
   severity: 'critical' | 'high' | 'medium';
   message: string;
   metric: string;

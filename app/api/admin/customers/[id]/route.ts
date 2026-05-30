@@ -18,7 +18,7 @@ import { logger } from '@/lib/logger';
  * Get customer details with full PII (requires explicit permission)
  */
 export const GET = withAdminMiddlewareWithContext(
-  async (request: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
+  async (_request: AuthenticatedRequest, context: { params: Promise<Record<string, string>> }) => {
     const params = await context.params;
     const customerId = params.id;
     

@@ -124,7 +124,7 @@ test.describe('API Security', () => {
     }
   });
 
-  test('should not allow CORS from untrusted origins', async ({ page, context }) => {
+  test('should not allow CORS from untrusted origins', async ({ context }) => {
     const response = await context.request.get('/', {
       headers: {
         'Origin': 'https://evil.com',

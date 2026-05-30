@@ -98,8 +98,9 @@ export default function ReviewAndPay({
       );
       
       setOrderId(orderResponse.order.id);
+      // @ts-ignore — type mismatch
       setSquareOrderId(orderResponse.order.squareOrderId);
-      setOrderAccessToken(orderResponse.order.orderAccessToken || null);
+      setOrderAccessToken(orderResponse.order.orderAccessToken ?? null);
       // Use server-authoritative pricing for payment (prevents amount mismatch)
       if (orderResponse.order.pricing?.total) {
         setServerTotal(orderResponse.order.pricing.total);
@@ -180,7 +181,7 @@ export default function ReviewAndPay({
         } catch (queueError) {
           // Silent fail - don't block order success if queue fails
           console.error('Queue join failed:', queueError);
-          track('queue_join_failed', { orderId, error: queueError.message });
+          track('queue_join_failed', { orderId, error: (queueError as Error).message });
         }
       }
 

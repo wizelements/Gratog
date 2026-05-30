@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-session';
+import { requireAdminSession } from '@/lib/auth/unified-admin';
 import { logger } from '@/lib/logger';
 import {
   getAllMarkets,

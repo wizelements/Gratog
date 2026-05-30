@@ -24,6 +24,7 @@ function createDbMock() {
       collections.set(name, {
         updateOne: vi.fn().mockResolvedValue({ upsertedCount: 0, matchedCount: 1, modifiedCount: 1 }),
         replaceOne: vi.fn().mockResolvedValue({ upsertedCount: 1 }),
+        bulkWrite: vi.fn().mockResolvedValue({ upsertedCount: 0, matchedCount: 0, modifiedCount: 0 }),
         deleteMany: vi.fn().mockResolvedValue({ deletedCount: 0 }),
         insertMany: vi.fn().mockResolvedValue({ insertedCount: 0 }),
         createIndex: vi.fn().mockResolvedValue('idx'),

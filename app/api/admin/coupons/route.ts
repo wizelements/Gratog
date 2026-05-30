@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { PERMISSIONS } from '@/lib/security';
 import { withAdminMiddleware, AuthenticatedRequest } from '@/lib/middleware/admin';
-import { CouponCreateSchema, validateBody, ObjectIdSchema } from '@/lib/validation';
+import { CouponCreateSchema, validateBody } from '@/lib/validation';
 import { logger } from '@/lib/logger';
 import { ObjectId } from 'mongodb';
 
@@ -102,7 +102,7 @@ export const GET = withAdminMiddleware(
       const stats = statsAgg[0] || { total: 0, active: 0, used: 0, expired: 0 };
       
       // Mask customer emails for privacy
-      const sanitizedCoupons = coupons.map(coupon => ({
+      const sanitizedCoupons = coupons.map((coupon: any) => ({
         ...coupon,
         customerEmail: coupon.customerEmail ? 
           coupon.customerEmail.replace(/(.{2}).*(@)/, '$1***$2') : 
@@ -301,7 +301,7 @@ export const DELETE = withAdminMiddleware(
       
       if (couponsToDelete.length > 0) {
         await db.collection('deleted_coupons').insertMany(
-          couponsToDelete.map(c => ({
+          couponsToDelete.map((c: any) => ({
             ...c,
             deletedBy: admin.email,
             deletedAt: new Date(),

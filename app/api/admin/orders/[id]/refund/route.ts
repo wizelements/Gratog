@@ -6,7 +6,6 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import { getAdminFromRequest } from '@/lib/admin-auth';
 
-import { requireAdminSession } from '@/lib/auth/unified-admin';
 /**
  * Admin Refund API - Process refunds for completed orders
  * 

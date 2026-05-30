@@ -1,4 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
+// @ts-expect-error lucide-react types issue
 import { Loader2, Receipt } from 'lucide-react';
 
 export default function OrderLoading() {

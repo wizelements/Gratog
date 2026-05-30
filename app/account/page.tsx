@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
-import { User, Clock, Star, Phone, Mail, LogOut, ChevronRight } from 'lucide-react';
+import { User, Clock, Star, Phone, LogOut, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -32,7 +32,7 @@ interface CustomerProfile {
 export default function CustomerAccountPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [phone, setPhone] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
+  const [_verificationCode, _setVerificationCode] = useState('');
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);

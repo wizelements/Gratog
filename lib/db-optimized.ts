@@ -1,7 +1,7 @@
 import mongoose, { Connection } from 'mongoose';
 
 // Cache the connection to prevent multiple connections during hot reloads
-let cachedConnection: Connection | null = null;
+let _cachedConnection: Connection | null = null;
 
 interface MongoConnection {
   conn: Connection | null;

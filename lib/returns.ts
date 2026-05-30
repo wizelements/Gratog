@@ -477,7 +477,7 @@ export async function processRefund(returnId: string): Promise<{
 
     // Process refund based on method
     if (returnRecord.refundMethod === 'original_payment') {
-      // TODO: Integrate with Square/Stripe for refund
+      // TODO: Integrate with Square for refund
       // For now, mark as refunded and let admin handle via payment provider
       logger.info('Returns', 'Refund to original payment requested', { 
         returnId, 

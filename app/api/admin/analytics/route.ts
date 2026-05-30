@@ -226,7 +226,7 @@ async function getOrdersAnalytics(
   db: any,
   start: Date,
   end: Date,
-  groupBy: string,
+  _groupBy: string,
   limit: number
 ) {
   const pipeline = [

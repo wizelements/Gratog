@@ -6,7 +6,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, UserCog, X } from 'lucide-react';
+// @ts-expect-error lucide-react types issue
+import { Search, X, UserCog } from 'lucide-react';
 import { usePayFlowUI } from '@/lib/pay-flow/store';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';

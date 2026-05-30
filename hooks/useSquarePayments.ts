@@ -135,7 +135,7 @@ export function useSquarePayments(config: SquarePaymentsConfig | null): UseSquar
     if (!paymentsRef.current) return null;
 
     try {
-      const ap = await paymentsRef.current.applePay(request);
+      const ap = await paymentsRef.current.applePay!(request);
       if (ap) {
         setApplePay(ap);
       }
@@ -150,7 +150,7 @@ export function useSquarePayments(config: SquarePaymentsConfig | null): UseSquar
     if (!paymentsRef.current) return null;
 
     try {
-      const gp = await paymentsRef.current.googlePay(request);
+      const gp = await paymentsRef.current.googlePay!(request);
       if (gp) {
         await gp.attach(selector);
         setGooglePay(gp);

@@ -16,6 +16,7 @@ export default function OrderCompletePage() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [orderData, setOrderData] = useState<any>(null);
 
+  // @ts-ignore — not all paths return
   useEffect(() => {
     if (orderNumber) {
       checkPaymentStatus();

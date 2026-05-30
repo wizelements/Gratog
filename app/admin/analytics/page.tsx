@@ -6,17 +6,10 @@ import React, { useState, useEffect } from 'react';
 import { 
   ChevronUp, 
   ChevronDown, 
-  DollarSign, 
-  ShoppingBag, 
-  Users,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
   Download
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
@@ -37,7 +30,7 @@ export default function AnalyticsPage() {
   const [period, setPeriod] = useState<'today' | 'week' | 'month'>('today');
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedMarket, setSelectedMarket] = useState('all');
+  const [selectedMarket, _setSelectedMarket] = useState('all');
 
   useEffect(() => {
     fetchAnalytics();

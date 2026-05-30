@@ -46,7 +46,7 @@ function CheckoutContent() {
     couponCode,
   } = useCheckoutStore();
 
-  const formContainerRef = useRef<HTMLDivElement>(null);
+  const _formContainerRef = useRef<HTMLDivElement>(null);
 
   // Scroll to top when stage changes
   useEffect(() => {
@@ -236,14 +236,14 @@ function CheckoutContent() {
                           {fulfillment.type === 'pickup' && (
                             <PickupForm
                               data={fulfillment.pickup || { locationId: '', date: null }}
-                              onChange={(data) => setFulfillment({ pickup: { ...fulfillment.pickup, ...data } })}
+                              onChange={(data) => setFulfillment({ pickup: { locationId: '', date: null, ...fulfillment.pickup, ...data } })}
                               errors={validation.fulfillment}
                             />
                           )}
                           {fulfillment.type === 'delivery' && (
                             <DeliveryForm
                               data={fulfillment.delivery || { address: { street: '', city: '', state: 'GA', zip: '' }, window: '12-15' }}
-                              onChange={(data) => setFulfillment({ delivery: { ...fulfillment.delivery, ...data } })}
+                              onChange={(data) => setFulfillment({ delivery: { address: { street: '', city: '', state: 'GA', zip: '' }, window: '', ...fulfillment.delivery, ...data } })}
                               tip={tip}
                               onTipChange={setTip}
                               errors={validation.fulfillment}

@@ -18,7 +18,7 @@ import { logger } from '@/lib/logger';
  * Get inventory details for a specific product
  */
 export const GET = withAdminMiddlewareWithContext(
-  async (request: AuthenticatedRequest, context: { params: Promise<{ productId: string }> }) => {
+  async (_request: AuthenticatedRequest, context: { params: Promise<Record<string, string>> }) => {
     const params = await context.params;
     const productId = params.productId;
     
@@ -80,7 +80,7 @@ export const GET = withAdminMiddlewareWithContext(
  * CRITICAL: This uses atomic MongoDB operations to prevent race conditions
  */
 export const PATCH = withAdminMiddlewareWithContext(
-  async (request: AuthenticatedRequest, context: { params: Promise<{ productId: string }> }) => {
+  async (request: AuthenticatedRequest, context: { params: Promise<Record<string, string>> }) => {
     const params = await context.params;
     const productId = params.productId;
     const admin = request.admin;

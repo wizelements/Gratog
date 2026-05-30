@@ -89,11 +89,6 @@ export function validateStartupConfig(): StartupValidationResult {
     errors.push('CRON_SECRET not configured — cron jobs will reject all requests');
   }
   
-  const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!stripeWebhookSecret && isProduction) {
-    errors.push('STRIPE_WEBHOOK_SECRET not configured — Stripe webhooks will be rejected (fail-closed)');
-  }
-
   // 7. Feature Flags
   const checkoutV2 = process.env.FEATURE_CHECKOUT_V2;
   if (checkoutV2 !== 'on') {

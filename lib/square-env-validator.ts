@@ -72,7 +72,7 @@ export function validateSquareEnvironment(): ValidationResult {
   }
   
   // Origin validation  
-  if (config.allowedOrigins.length === 0) {
+  if (config?.allowedOrigins?.length === 0) {
     warnings.push('SQUARE_ALLOWED_ORIGINS not configured - CORS may fail');
   }
   

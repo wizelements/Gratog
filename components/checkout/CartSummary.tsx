@@ -6,12 +6,11 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Plus, Minus, X, ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, X, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { CartItem, CartAPI } from '@/adapters/cartAdapter';
+import { CartItem } from '@/adapters/cartAdapter';
 import { OrderTotals, formatCurrency } from '@/adapters/totalsAdapter';
 import { PREORDER_MINIMUM, BOBA_PREORDER_MAX_QTY } from '@/lib/cart-engine';
 import { toast } from 'sonner';

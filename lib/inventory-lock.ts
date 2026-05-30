@@ -362,7 +362,7 @@ export async function cleanupExpiredLocks(): Promise<{
     }
 
     // Mark them as expired
-    const lockIds = expiredLocks.map(lock => lock._id);
+    const lockIds = expiredLocks.map((lock: any) => lock._id);
     await db.collection('inventory_locks').updateMany(
       { _id: { $in: lockIds } },
       {
@@ -374,7 +374,7 @@ export async function cleanupExpiredLocks(): Promise<{
     );
 
     // Get unique products affected
-    const productsAffected = [...new Set(expiredLocks.map(lock => lock.productId))] as string[];
+    const productsAffected = [...new Set(expiredLocks.map((lock: any) => lock.productId))] as string[];
 
     // Invalidate cache for affected products
     productsAffected.forEach(productId => inventoryCache.invalidate(productId));

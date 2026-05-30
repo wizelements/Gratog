@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 
 // Haptic feedback patterns
 export const HapticPatterns = {
@@ -45,9 +45,9 @@ export function useHapticFeedback() {
   const light = useCallback(() => triggerHaptic(HapticPatterns.LIGHT), []);
   const medium = useCallback(() => triggerHaptic(HapticPatterns.MEDIUM), []);
   const heavy = useCallback(() => triggerHaptic(HapticPatterns.HEAVY), []);
-  const success = useCallback(() => triggerHaptic(HapticPatterns.SUCCESS), []);
+  const success = useCallback(() => triggerHaptic([...HapticPatterns.SUCCESS]), []);
   const error = useCallback(() => triggerHaptic(HapticPatterns.ERROR), []);
-  const warning = useCallback(() => triggerHaptic(HapticPatterns.WARNING), []);
+  const warning = useCallback(() => triggerHaptic([...HapticPatterns.WARNING]), []);
   const selection = useCallback(() => triggerHaptic(HapticPatterns.SELECTION), []);
   const custom = useCallback((pattern: number | number[]) => triggerHaptic(pattern), []);
 

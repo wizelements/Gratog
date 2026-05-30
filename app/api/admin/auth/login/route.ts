@@ -19,8 +19,6 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import { 
   generateAdminToken, 
-  setAdminCookie, 
-  setCsrfCookie,
   generateCsrfToken,
 } from '@/lib/auth/unified-admin';
 

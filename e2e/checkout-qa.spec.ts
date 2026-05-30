@@ -15,7 +15,7 @@ import { test, expect } from '@playwright/test';
 
 // Test configuration
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
-const DELIVERY_MINIMUM = 30;
+const _DELIVERY_MINIMUM = 30;
 
 // Helper to add item to cart via localStorage (faster than UI)
 async function setupCart(page: any, items: Array<{ id: string; name: string; price: number; quantity: number }>) {

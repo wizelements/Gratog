@@ -11,14 +11,13 @@
  * Run with: npx playwright test e2e/gratog-complete.spec.ts
  */
 
-import { test, expect, Page, Locator } from '@playwright/test';
-import { devices } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 // ═════════════════════════════════════════════════════════════════════════════
 // TEST CONFIGURATION
 // ═════════════════════════════════════════════════════════════════════════════
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+const _BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 // Test user data
 const TEST_USER = {
@@ -29,7 +28,7 @@ const TEST_USER = {
 };
 
 // Test card (Square sandbox)
-const TEST_CARD = {
+const _TEST_CARD = {
   number: '4532 0155 0016 4662',
   expiry: '12/25',
   cvv: '111',
@@ -40,7 +39,7 @@ const TEST_CARD = {
 // HELPER FUNCTIONS
 // ═════════════════════════════════════════════════════════════════════════════
 
-async function addProductToCart(page: Page, productName: string): Promise<void> {
+async function addProductToCart(page: Page, _productName: string): Promise<void> {
   // Navigate to catalog
   await page.goto('/catalog');
   await page.waitForLoadState('networkidle');
@@ -80,7 +79,7 @@ async function selectPickupLocation(page: Page, location: string): Promise<void>
   await page.locator('[role="option"]').first().click();
 }
 
-async function selectDeliveryAddress(page: Page, zip: string = '30310'): Promise<void> {
+async function _selectDeliveryAddress(page: Page, zip: string = '30310'): Promise<void> {
   await page.click('[data-testid="delivery-tab"], button:has-text("Delivery")');
   await page.fill('#street', '123 Test Street');
   await page.fill('#city', 'Atlanta');
@@ -261,7 +260,7 @@ test.describe('Edge Cases & Error Handling', () => {
     await page.click('button:has-text("Pay")');
     
     // Should show error
-    await expect(page.locator('text=failed|error|trouble', { ignoreCase: true })).toBeVisible();
+    await expect(page.locator('text=failed|error|trouble')).toBeVisible();
   });
 
   test('Cart Persistence Across Page Reloads', async ({ page }) => {

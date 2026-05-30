@@ -215,7 +215,7 @@ async function buildRecipientList(
   db: any,
   criteria: Record<string, unknown>
 ): Promise<{ email: string; name?: string }[]> {
-  const query: Record<string, unknown> = {};
+  const _query: Record<string, unknown> = {};
   
   // Build query based on criteria
   if (criteria.purchaseFrequency) {
@@ -320,7 +320,7 @@ async function sendEmailsAsync(
     const batch = recipients.slice(i, i + BATCH_SIZE);
     
     // Send batch
-    const results = await Promise.allSettled(
+    const _results = await Promise.allSettled(
       batch.map(async (recipient) => {
         try {
           const result = await sendEmail({

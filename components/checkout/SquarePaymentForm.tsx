@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { CreditCard, Lock, AlertCircle, CheckCircle, Shield } from 'lucide-react';
 import { formatCurrency } from '@/adapters/totalsAdapter';
-import type { SquareCard, SquareCardOptions, SquarePayments, SquareTokenResult } from '@/types/square';
+import type { SquareCard } from '@/types/square';
 
 interface SquareConfig {
   applicationId: string;
@@ -56,7 +56,6 @@ export default function SquarePaymentForm({
   const [paymentStep, setPaymentStep] = useState<PaymentStep>('idle');
   const [cardError, setCardError] = useState<string | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
   
   const cardRef = useRef<SquareCard | null>(null);
   const initRef = useRef(false);
@@ -101,7 +100,7 @@ export default function SquarePaymentForm({
           });
         }
         
-        const payments = await window.Square.payments(config.applicationId, config.locationId);
+        const payments = await window.Square!.payments(config.applicationId, config.locationId);
         const card = await payments.card();
         await card.attach('#square-card-container');
         

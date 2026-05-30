@@ -77,7 +77,7 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <div>
-                <p className="font-medium">Stripe Integration</p>
+                <p className="font-medium">Square Integration</p>
                 <p className="text-sm text-muted-foreground">Payment processing enabled</p>
               </div>
               <Badge variant="secondary" className="bg-green-100 text-green-700">

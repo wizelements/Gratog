@@ -334,7 +334,7 @@ export const DELETE = withAdminMiddleware(
       
       if (reviewsToDelete.length > 0) {
         await db.collection('deleted_reviews').insertMany(
-          reviewsToDelete.map(r => ({
+          reviewsToDelete.map((r: any) => ({
             ...r,
             deletedBy: admin.email,
             deletedAt: new Date(),

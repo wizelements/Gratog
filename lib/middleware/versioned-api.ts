@@ -69,7 +69,7 @@ export function createVersionedResponse<T>(
   data: T,
   options: VersionedResponseOptions = {}
 ): NextResponse {
-  const { version = API_VERSIONS.CURRENT, deprecationDate, sunsetDate } = options;
+  const { version = API_VERSIONS.CURRENT, sunsetDate } = options;
   
   const response = NextResponse.json({
     success: true,
@@ -101,7 +101,7 @@ export interface VersionedRequest extends NextRequest {
 /**
  * Middleware wrapper that adds version detection
  */
-export function withVersionedApi<T>(
+export function withVersionedApi<_T>(
   handler: (request: VersionedRequest) => Promise<NextResponse>
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
@@ -170,7 +170,7 @@ export function versionedRoute(
 // SCHEMA VERSIONING
 // ============================================================================
 
-interface VersionedSchema {
+interface _VersionedSchema {
   [version: string]: {
     request?: unknown;
     response?: unknown;

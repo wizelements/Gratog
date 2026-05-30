@@ -20,7 +20,7 @@ describe('Unhandled Promise Rejections Prevention', () => {
       // This should not throw or cause unhandled rejection
       let errorCaught = false;
       try {
-        await mockClipboard.writeText('test text').catch((err) => {
+        await mockClipboard.writeText('test text').catch((err: any) => {
           errorCaught = true;
           expect(err.message).toContain('Clipboard API denied');
         });
@@ -60,7 +60,7 @@ describe('Unhandled Promise Rejections Prevention', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'test' })
-      }).catch((err) => {
+      }).catch((err: any) => {
         errorCaught = true;
         expect(err.message).toContain('Network error');
       });
@@ -81,10 +81,10 @@ describe('Unhandled Promise Rejections Prevention', () => {
       let successCalled = false;
       
       mockSubmitQuizResults({ email: 'test@example.com' }, {}, [])
-        .then((submitData) => {
+        .then((submitData: any) => {
           successCalled = true;
         })
-        .catch((err) => {
+        .catch((err: any) => {
           errorCaught = true;
           expect(err.message).toContain('Submit failed');
         });
@@ -104,11 +104,11 @@ describe('Unhandled Promise Rejections Prevention', () => {
       let errorCaught = false;
       
       mockSubmitQuizResults({ email: 'test@example.com' }, {}, [])
-        .then((submitData) => {
+        .then((submitData: any) => {
           successCalled = true;
           expect(submitData.success).toBe(true);
         })
-        .catch((err) => {
+        .catch((err: any) => {
           errorCaught = true;
         });
       

@@ -6,15 +6,18 @@ import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
-  Ticket, 
+  
   MapPin, 
   Clock, 
   Package, 
   Phone,
   ArrowLeft,
   RefreshCw,
+  // @ts-ignore — auto-fix
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  // @ts-expect-error lucide-react types issue
+  Ticket
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

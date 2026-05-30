@@ -9,7 +9,7 @@ import {
   ChevronLeft, 
   Check, 
   Store, 
-  Package, 
+
   Clock,
   AlertCircle,
   Loader2
@@ -19,7 +19,6 @@ import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -263,7 +262,7 @@ export default function MarketSetupPage() {
     const market = MARKETS.find(m => m.id === selectedMarket);
     const selectedItems = Array.from(selectedProducts).map(id => 
       products.find(p => p.id === id)
-    ).filter(Boolean);
+    ).filter((item): item is NonNullable<typeof item> => Boolean(item));
 
     return (
       <div className="space-y-4">

@@ -4,13 +4,11 @@
  * Tests JWT validation, session management, role enforcement, and security edge cases.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { 
   generateAdminToken, 
   verifyAdminToken, 
-  getAdminSession,
   shouldRotateToken,
-  validateCsrfToken,
   generateCsrfToken,
 } from '@/lib/auth/unified-admin';
 import { ROLES, hasPermission, PERMISSIONS } from '@/lib/security';
@@ -116,7 +114,7 @@ describe('Admin Authentication', () => {
     });
     
     it('should validate matching CSRF tokens', () => {
-      const token = generateCsrfToken();
+      const _token = generateCsrfToken();
       // We can't easily test validateCsrfToken without a full request mock
       // This is covered in integration tests
     });

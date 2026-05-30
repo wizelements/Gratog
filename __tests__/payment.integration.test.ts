@@ -123,7 +123,7 @@ describe('Payment Race Conditions', () => {
 describe('Amount Validation', () => {
   it('should reject payments with significant amount mismatch', async () => {
     const orderId = 'ord_12345678901234567890';
-    const serverAmount = 1000; // $10.00
+    const _serverAmount = 1000; // $10.00
     const clientAmount = 5000; // $50.00
     
     mockFetch.mockResolvedValueOnce({
@@ -151,7 +151,7 @@ describe('Amount Validation', () => {
   });
   
   it('should accept minor amount differences (within $0.50)', async () => {
-    const orderId = 'ord_12345678901234567890';
+    const _orderId = 'ord_12345678901234567890';
     const serverAmount = 1000; // $10.00
     const clientAmount = 1001; // $10.01 (1 cent difference)
     
@@ -287,7 +287,7 @@ describe('Webhook Security', () => {
 
 describe('Inventory Atomicity', () => {
   it('should prevent inventory going negative', async () => {
-    const productId = 'prod_123';
+    const _productId = 'prod_123';
     const currentStock = 1;
     const requestedQuantity = 5;
     

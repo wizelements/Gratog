@@ -19,12 +19,14 @@ describe('square-visibility', () => {
     expect(isSquareProductVisibleOnStorefront({ ecom_visibility: 'UNINDEXED' })).toBe(false);
   });
 
-  it('hides products explicitly marked unavailable for ecom', () => {
+  it('ignores ecom_available flag (custom storefront handles its own checkout)', () => {
     const flags = extractSquareVisibilityFlags({ ecom_available: false });
 
     expect(flags.squareEcomAvailable).toBe(false);
-    expect(flags.hiddenByEcomAvailability).toBe(true);
-    expect(flags.shouldHideFromStorefront).toBe(true);
+    // hiddenByEcomAvailability is intentionally always false — this custom
+    // storefront has its own checkout, so Square Online's ecom_available flag
+    // is not used for visibility decisions.
+    expect(flags.hiddenByEcomAvailability).toBe(false);
   });
 
   it('hides products with explicit empty channel assignment metadata', () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { triggerHaptic, HapticPatterns } from '@/lib/haptics';
 
 interface PullToRefreshOptions {
@@ -46,11 +46,6 @@ export function usePullToRefresh({
   const startScrollRef = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const isAtTop = useCallback(() => {
-    if (!containerRef.current) return false;
-    return containerRef.current.scrollTop <= 0;
-  }, []);
-
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (disabled || isRefreshing) return;
     
@@ -79,7 +74,7 @@ export function usePullToRefresh({
       
       // Haptic feedback when threshold reached
       if (resistedDistance >= threshold && !hasTriggeredHaptic) {
-        triggerHaptic(HapticPatterns.MEDIUM);
+        triggerHaptic(HapticPatterns.MEDIUM as any);
         setHasTriggeredHaptic(true);
       }
     }
@@ -93,12 +88,12 @@ export function usePullToRefresh({
     // Trigger refresh if pulled past threshold
     if (pullDistance >= threshold) {
       setIsRefreshing(true);
-      triggerHaptic(HapticPatterns.SUCCESS);
+      triggerHaptic(HapticPatterns.SUCCESS as any);
       
       try {
         await onRefresh();
       } catch (error) {
-        triggerHaptic(HapticPatterns.ERROR);
+        triggerHaptic(HapticPatterns.ERROR as any);
       } finally {
         setIsRefreshing(false);
         setPullDistance(0);
@@ -107,7 +102,7 @@ export function usePullToRefresh({
     } else {
       // Snap back if not pulled enough
       setPullDistance(0);
-      triggerHaptic(HapticPatterns.LIGHT);
+      triggerHaptic(HapticPatterns.LIGHT as any);
     }
   }, [isPulling, disabled, pullDistance, threshold, onRefresh]);
 

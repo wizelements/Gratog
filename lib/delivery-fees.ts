@@ -19,7 +19,7 @@ const DELIVERY_DISCOUNT_TIERS = [
 ];
 
 // Calculate delivery fee based on subtotal
-export function calculateDeliveryFee(subtotal: number): number {
+export function calculateDeliveryFee(_subtotal: number): number {
   const config = getDeliveryConfig();
   return config.baseFee;
 }
@@ -46,12 +46,12 @@ export function calculateDistanceBasedDeliveryFee(distanceMiles: number, subtota
 }
 
 // Calculate progress toward free delivery
-export function getFreeDeliveryProgress(subtotal: number): number {
+export function getFreeDeliveryProgress(_subtotal: number): number {
   return 0;
 }
 
 // Check if order qualifies for free delivery
-export function qualifiesForFreeDelivery(subtotal: number): boolean {
+export function qualifiesForFreeDelivery(_subtotal: number): boolean {
   return false;
 }
 

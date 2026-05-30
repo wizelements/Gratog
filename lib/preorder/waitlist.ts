@@ -3,7 +3,7 @@
  * Generates unique waitlist numbers for preorders
  */
 
-import { createHash } from 'crypto';
+// import { createHash } from 'crypto';
 
 // In-memory store for session-based waitlist numbers
 // In production, this should use Redis or database
@@ -19,8 +19,8 @@ const MARKET_PREFIXES = {
  * Generate a unique waitlist number
  * Format: [MARKET_PREFIX]-[DAY_OF_MONTH][COUNTER] e.g., S-2815 (Serenbe, 28th, #15)
  */
-export function generateWaitlistNumber(marketId, date = new Date()) {
-  const prefix = MARKET_PREFIXES[marketId] || 'G';
+export function generateWaitlistNumber(marketId: string, date = new Date()) {
+  const prefix = (MARKET_PREFIXES as Record<string, string>)[marketId] || 'G';
   const dayOfMonth = date.getDate().toString().padStart(2, '0');
   
   // Get counter for this market/day
@@ -44,7 +44,7 @@ export function generateWaitlistNumber(marketId, date = new Date()) {
 /**
  * Get the current waitlist position for a market on a given date
  */
-export function getWaitlistPosition(marketId, date = new Date()) {
+export function getWaitlistPosition(marketId: string, date = new Date()) {
   const key = `${marketId}-${date.toISOString().split('T')[0]}`;
   const count = waitlistStore.get(key) || 0;
   return count + 1; // Next position
@@ -53,7 +53,7 @@ export function getWaitlistPosition(marketId, date = new Date()) {
 /**
  * Validate a waitlist number format
  */
-export function isValidWaitlistNumber(waitlistNumber) {
+export function isValidWaitlistNumber(waitlistNumber: string) {
   const pattern = /^[SD]\d{2}\d{2,4}$/; // S-2815 or D-2801
   return pattern.test(waitlistNumber);
 }
@@ -61,7 +61,7 @@ export function isValidWaitlistNumber(waitlistNumber) {
 /**
  * Parse waitlist number to extract info
  */
-export function parseWaitlistNumber(waitlistNumber) {
+export function parseWaitlistNumber(waitlistNumber: string) {
   const match = waitlistNumber.match(/^([SD])(\d{2})(\d{2,4})$/);
   if (!match) return null;
   
@@ -74,7 +74,7 @@ export function parseWaitlistNumber(waitlistNumber) {
   
   return {
     prefix,
-    marketId: marketMap[prefix],
+    marketId: (marketMap as Record<string, string>)[prefix],
     day: parseInt(day, 10),
     counter: parseInt(counter, 10),
   };
@@ -110,7 +110,7 @@ export function cleanupOldWaitlistEntries() {
  * Get estimated wait time based on position
  * Rough estimate: 2-3 minutes per customer at pickup
  */
-export function getEstimatedWaitTime(position) {
+export function getEstimatedWaitTime(position: number) {
   const minutesPerCustomer = 2.5;
   const estimatedMinutes = Math.ceil(position * minutesPerCustomer);
   

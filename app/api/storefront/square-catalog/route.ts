@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { Client, Environment } from 'square';
+import { SquareClient as Client, SquareEnvironment as Environment } from 'square';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -32,13 +32,13 @@ export async function GET(request: NextRequest) {
 
     // Initialize Square client
     const client = new Client({
-      accessToken: squareToken,
+      token: squareToken,
       environment: squareEnv === 'production' ? Environment.Production : Environment.Sandbox,
     });
 
     // Fetch catalog items from Square
-    const { result } = await client.catalogApi.listCatalog(undefined, 'ITEM');
-    const items = result.objects || [];
+    const catalogResult = await client.catalog.list({ types: 'ITEM' } as any);
+    const items = (catalogResult as any).data || (catalogResult as any).result?.objects || [];
     
     console.log(`Fetched ${items.length} items from Square`);
 

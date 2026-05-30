@@ -91,6 +91,7 @@ export function PerformanceObserverComponent() {
         // Long tasks not supported
       }
     }
+    return undefined;
   }, []);
 
   return null;

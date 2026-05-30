@@ -3,14 +3,14 @@
  * Full payment flow testing with Square integration
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 // Test configuration
 const PAY_URL = '/pay';
 const TEST_TIMEOUT = 30000;
 
 // Mock Square payment nonce for testing
-const MOCK_PAYMENT_NONCE = 'cnon:card-nonce-ok';
+const _MOCK_PAYMENT_NONCE = 'cnon:card-nonce-ok';
 
 test.describe('Pay Flow E2E', () => {
   test.beforeEach(async ({ page }) => {
@@ -64,7 +64,7 @@ test.describe('Pay Flow E2E', () => {
   test.describe('Cart Operations', () => {
     test('should add product to cart', async ({ page }) => {
       // Add first product
-      await page.click('[data-testid="product-card-add"]').first();
+      await page.locator('[data-testid="product-card-add"]').first().click();
       
       // Verify cart button shows item count
       const cartButton = page.locator('[data-testid="cart-button"]');
@@ -73,8 +73,8 @@ test.describe('Pay Flow E2E', () => {
 
     test('should increment quantity', async ({ page }) => {
       // Add product twice
-      await page.click('[data-testid="product-card-add"]').first();
-      await page.click('[data-testid="product-card-add"]').first();
+      await page.locator('[data-testid="product-card-add"]').first().click();
+      await page.locator('[data-testid="product-card-add"]').first().click();
       
       // Open cart
       await page.click('[data-testid="cart-button"]');
@@ -89,8 +89,8 @@ test.describe('Pay Flow E2E', () => {
 
     test('should decrement quantity', async ({ page }) => {
       // Add product
-      await page.click('[data-testid="product-card-add"]').first();
-      await page.click('[data-testid="product-card-add"]').first();
+      await page.locator('[data-testid="product-card-add"]').first().click();
+      await page.locator('[data-testid="product-card-add"]').first().click();
       
       // Open cart
       await page.click('[data-testid="cart-button"]');
@@ -105,7 +105,7 @@ test.describe('Pay Flow E2E', () => {
 
     test('should remove item from cart', async ({ page }) => {
       // Add product
-      await page.click('[data-testid="product-card-add"]').first();
+      await page.locator('[data-testid="product-card-add"]').first().click();
       
       // Open cart
       await page.click('[data-testid="cart-button"]');
@@ -120,8 +120,8 @@ test.describe('Pay Flow E2E', () => {
 
     test('should clear cart', async ({ page }) => {
       // Add products
-      await page.click('[data-testid="product-card-add"]').first();
-      await page.click('[data-testid="product-card-add"]').nth(1);
+      await page.locator('[data-testid="product-card-add"]').first().click();
+      await page.locator('[data-testid="product-card-add"]').nth(1).click();
       
       // Open cart
       await page.click('[data-testid="cart-button"]');
@@ -141,7 +141,7 @@ test.describe('Pay Flow E2E', () => {
   test.describe('Payment Flow', () => {
     test('should proceed to payment', async ({ page }) => {
       // Add product
-      await page.click('[data-testid="product-card-add"]').first();
+      await page.locator('[data-testid="product-card-add"]').first().click();
       
       // Open cart
       await page.click('[data-testid="cart-button"]');
@@ -156,7 +156,7 @@ test.describe('Pay Flow E2E', () => {
 
     test('should display Square card form', async ({ page }) => {
       // Add product and proceed to payment
-      await page.click('[data-testid="product-card-add"]').first();
+      await page.locator('[data-testid="product-card-add"]').first().click();
       await page.click('[data-testid="cart-button"]');
       await page.click('[data-testid="checkout-button"]');
       
@@ -179,7 +179,7 @@ test.describe('Pay Flow E2E', () => {
 
     test('should calculate totals correctly', async ({ page }) => {
       // Add product with known price
-      await page.click('[data-testid="product-card-add"]').first();
+      await page.locator('[data-testid="product-card-add"]').first().click();
       
       // Open cart
       await page.click('[data-testid="cart-button"]');
@@ -241,7 +241,7 @@ test.describe('Pay Flow E2E', () => {
       await page.click('[data-testid="pin-submit"]');
       
       // Verify unavailable products visible
-      const unavailableProducts = page.locator('[data-testid="product-unavailable"]');
+      const _unavailableProducts = page.locator('[data-testid="product-unavailable"]');
       // May or may not exist depending on inventory
     });
   });
@@ -261,7 +261,7 @@ test.describe('Pay Flow E2E', () => {
 
     test('should recover from payment error', async ({ page }) => {
       // Add product and proceed to payment
-      await page.click('[data-testid="product-card-add"]').first();
+      await page.locator('[data-testid="product-card-add"]').first().click();
       await page.click('[data-testid="cart-button"]');
       await page.click('[data-testid="checkout-button"]');
       
@@ -270,7 +270,7 @@ test.describe('Pay Flow E2E', () => {
       
       // Mock failed payment (would need API interception)
       // Verify error message appears
-      const paymentError = page.locator('[data-testid="payment-error"]');
+      const _paymentError = page.locator('[data-testid="payment-error"]');
       // Error would show after failed payment attempt
     });
   });
@@ -280,7 +280,7 @@ test.describe('Pay Flow E2E', () => {
       // Already set to mobile viewport in beforeEach
       
       // Add product
-      await page.click('[data-testid="product-card-add"]').first();
+      await page.locator('[data-testid="product-card-add"]').first().click();
       
       // Verify cart button visible
       const cartButton = page.locator('[data-testid="cart-button"]');

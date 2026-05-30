@@ -69,7 +69,7 @@ export const DEFAULT_NOTIFICATION_PREFERENCES = {
 /**
  * Get or create notification preferences for a customer
  */
-export async function getNotificationPreferences(email) {
+export async function getNotificationPreferences(email: any) {
   const { db } = await connectToDatabase();
   
   let prefs = await db.collection('notification_preferences').findOne({ email });
@@ -90,7 +90,7 @@ export async function getNotificationPreferences(email) {
 /**
  * Update notification preferences
  */
-export async function updateNotificationPreferences(email, updates) {
+export async function updateNotificationPreferences(email: any, updates: any) {
   const { db } = await connectToDatabase();
   
   await db.collection('notification_preferences').updateOne(
@@ -113,7 +113,7 @@ export async function updateNotificationPreferences(email, updates) {
 /**
  * Save push subscription for a customer
  */
-export async function savePushSubscription(email, subscription) {
+export async function savePushSubscription(email: any, subscription: any) {
   const { db } = await connectToDatabase();
   
   await db.collection('push_subscriptions').updateOne(
@@ -136,7 +136,7 @@ export async function savePushSubscription(email, subscription) {
 /**
  * Remove push subscription
  */
-export async function removePushSubscription(email) {
+export async function removePushSubscription(email: any) {
   const { db } = await connectToDatabase();
   
   await db.collection('push_subscriptions').updateOne(
@@ -170,7 +170,7 @@ export async function getActivePushSubscriptions(filter = {}) {
 // ============================================================================
 
 const NOTIFICATION_TEMPLATES = {
-  [NOTIFICATION_TYPES.ORDER_CONFIRMED]: (data) => ({
+  [NOTIFICATION_TYPES.ORDER_CONFIRMED]: (data: any) => ({
     title: 'Order Confirmed! 🎉',
     body: `Your order #${data.orderNumber} for $${data.total} has been confirmed.`,
     icon: '/icon-192x192.png',
@@ -184,7 +184,7 @@ const NOTIFICATION_TEMPLATES = {
     }
   }),
   
-  [NOTIFICATION_TYPES.ORDER_READY]: (data) => ({
+  [NOTIFICATION_TYPES.ORDER_READY]: (data: any) => ({
     title: 'Your Order is Ready! 🛍️',
     body: `Order #${data.orderNumber} is ready for ${data.fulfillmentMethod}.`,
     icon: '/icon-192x192.png',
@@ -198,7 +198,7 @@ const NOTIFICATION_TEMPLATES = {
     }
   }),
   
-  [NOTIFICATION_TYPES.MARKET_DAY]: (data) => ({
+  [NOTIFICATION_TYPES.MARKET_DAY]: (data: any) => ({
     title: `Market Day Today! 🌿`,
     body: `${data.marketName} is open ${data.hours}. We have ${data.products.join(', ')} ready!`,
     icon: '/icon-192x192.png',
@@ -216,7 +216,7 @@ const NOTIFICATION_TEMPLATES = {
     }
   }),
   
-  [NOTIFICATION_TYPES.NEARBY_MARKET]: (data) => ({
+  [NOTIFICATION_TYPES.NEARBY_MARKET]: (data: any) => ({
     title: 'We\'re Nearby! 📍',
     body: `${data.marketName} is ${data.distance} miles away. Come say hi!`,
     icon: '/icon-192x192.png',
@@ -235,7 +235,7 @@ const NOTIFICATION_TEMPLATES = {
     }
   }),
   
-  [NOTIFICATION_TYPES.NEW_PRODUCT]: (data) => ({
+  [NOTIFICATION_TYPES.NEW_PRODUCT]: (data: any) => ({
     title: 'New Product! ✨',
     body: `Check out ${data.productName} - ${data.description}`,
     icon: data.productImage || '/icon-192x192.png',
@@ -254,7 +254,7 @@ const NOTIFICATION_TEMPLATES = {
     }
   }),
   
-  [NOTIFICATION_TYPES.FLASH_SALE]: (data) => ({
+  [NOTIFICATION_TYPES.FLASH_SALE]: (data: any) => ({
     title: `⚡ Flash Sale: ${data.discount}% OFF!`,
     body: data.description,
     icon: '/icon-192x192.png',
@@ -272,7 +272,7 @@ const NOTIFICATION_TEMPLATES = {
     }
   }),
   
-  [NOTIFICATION_TYPES.SUBSCRIPTION_REMINDER]: (data) => ({
+  [NOTIFICATION_TYPES.SUBSCRIPTION_REMINDER]: (data: any) => ({
     title: 'Subscription Delivery Soon 📦',
     body: `Your ${data.planName} subscription will be delivered ${data.deliveryDate}.`,
     icon: '/icon-192x192.png',
@@ -286,7 +286,7 @@ const NOTIFICATION_TEMPLATES = {
     }
   }),
   
-  [NOTIFICATION_TYPES.WELCOME]: (data) => ({
+  [NOTIFICATION_TYPES.WELCOME]: (data: any) => ({
     title: 'Welcome to Gratog! 🌊',
     body: 'Thanks for enabling notifications. We\'ll keep you updated on markets and new products!',
     icon: '/icon-192x192.png',
@@ -329,7 +329,7 @@ export const MARKET_LOCATIONS = [
 /**
  * Calculate distance between two coordinates (Haversine formula)
  */
-export function calculateDistance(lat1, lng1, lat2, lng2) {
+export function calculateDistance(lat1: any, lng1: any, lat2: any, lng2: any) {
   const R = 3959; // Earth's radius in miles
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLng = (lng2 - lng1) * (Math.PI / 180);
@@ -344,7 +344,7 @@ export function calculateDistance(lat1, lng1, lat2, lng2) {
 /**
  * Check if customer is near any market
  */
-export async function checkNearbyMarkets(customerLat, customerLng) {
+export async function checkNearbyMarkets(customerLat: any, customerLng: any) {
   const nearby = [];
   
   for (const market of MARKET_LOCATIONS) {
@@ -369,7 +369,7 @@ export async function checkNearbyMarkets(customerLat, customerLng) {
 /**
  * Send location-based notification
  */
-export async function sendLocationNotification(email, location) {
+export async function sendLocationNotification(email: any, location: any) {
   const prefs = await getNotificationPreferences(email);
   
   if (!prefs.nearbyMarkets || !prefs.pushEnabled) {
@@ -401,7 +401,7 @@ export async function sendLocationNotification(email, location) {
 /**
  * Send notification via all enabled channels
  */
-export async function sendNotification(email, type, data) {
+export async function sendNotification(email: any, type: any, data: any) {
   const prefs = await getNotificationPreferences(email);
   const results = { push: false, email: false, sms: false };
   
@@ -437,7 +437,7 @@ export async function sendNotification(email, type, data) {
 /**
  * Send push notification via Web Push API
  */
-async function sendPushNotification(email, notification) {
+async function sendPushNotification(email: any, notification: any) {
   try {
     const { db } = await connectToDatabase();
     const subscription = await db.collection('push_subscriptions').findOne({ 
@@ -472,7 +472,7 @@ async function sendPushNotification(email, notification) {
 /**
  * Send email notification
  */
-async function sendEmailNotification(email, type, notification, data) {
+async function sendEmailNotification(email: any, type: any, notification: any, data: any) {
   try {
     const subject = notification.title;
     const html = buildEmailTemplate(type, notification, data);
@@ -496,7 +496,7 @@ async function sendEmailNotification(email, type, notification, data) {
 /**
  * Build email template from notification
  */
-function buildEmailTemplate(type, notification, data) {
+function buildEmailTemplate(type: any, notification: any, data: any) {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h1 style="color: #1f2937;">${notification.title}</h1>
@@ -514,7 +514,7 @@ function buildEmailTemplate(type, notification, data) {
 /**
  * Log notification to database
  */
-async function logNotification(email, type, data, results) {
+async function logNotification(email: any, type: any, data: any, results: any) {
   const { db } = await connectToDatabase();
   
   await db.collection('notification_logs').insertOne({
@@ -533,7 +533,7 @@ async function logNotification(email, type, data, results) {
 /**
  * Send notification to multiple customers
  */
-export async function sendBulkNotification(emails, type, data) {
+export async function sendBulkNotification(emails: any, type: any, data: any) {
   const results = { sent: 0, failed: 0, skipped: 0 };
   
   for (const email of emails) {
@@ -558,7 +558,7 @@ export async function sendBulkNotification(emails, type, data) {
 /**
  * Send market day reminder to all subscribers
  */
-export async function sendMarketDayNotifications(marketId, products = []) {
+export async function sendMarketDayNotifications(marketId: any, products = []) {
   const market = MARKET_LOCATIONS.find(m => m.id === marketId);
   if (!market) {
     throw new Error(`Market not found: ${marketId}`);
@@ -571,7 +571,7 @@ export async function sendMarketDayNotifications(marketId, products = []) {
     .find({ marketDays: true, pushEnabled: true })
     .toArray();
   
-  const emails = customers.map(c => c.email);
+  const emails = customers.map((c: any) => c.email);
   
   return await sendBulkNotification(emails, NOTIFICATION_TYPES.MARKET_DAY, {
     marketId: market.id,
@@ -584,7 +584,7 @@ export async function sendMarketDayNotifications(marketId, products = []) {
 /**
  * Send new product announcement
  */
-export async function announceNewProduct(product) {
+export async function announceNewProduct(product: any) {
   const { db } = await connectToDatabase();
   
   // Get customers who want new product notifications
@@ -592,7 +592,7 @@ export async function announceNewProduct(product) {
     .find({ newProducts: true, pushEnabled: true })
     .toArray();
   
-  const emails = customers.map(c => c.email);
+  const emails = customers.map((c: any) => c.email);
   
   return await sendBulkNotification(emails, NOTIFICATION_TYPES.NEW_PRODUCT, {
     productId: product.id,

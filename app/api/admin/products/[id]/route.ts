@@ -19,7 +19,7 @@ import { revalidatePath } from 'next/cache';
  * Get single product details for editing
  */
 export const GET = withAdminMiddlewareWithContext(
-  async (request: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
+  async (_request: AuthenticatedRequest, context: { params: Promise<Record<string, string>> }) => {
     const params = await context.params;
     const productId = params.id;
     
@@ -87,7 +87,7 @@ export const GET = withAdminMiddlewareWithContext(
  * Update a specific product
  */
 export const PUT = withAdminMiddlewareWithContext(
-  async (request: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
+  async (request: AuthenticatedRequest, context: { params: Promise<Record<string, string>> }) => {
     const params = await context.params;
     const productId = params.id;
     const admin = request.admin;
@@ -246,7 +246,7 @@ export const PUT = withAdminMiddlewareWithContext(
  * Delete a product
  */
 export const DELETE = withAdminMiddlewareWithContext(
-  async (request: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
+  async (request: AuthenticatedRequest, context: { params: Promise<Record<string, string>> }) => {
     const params = await context.params;
     const productId = params.id;
     const admin = request.admin;

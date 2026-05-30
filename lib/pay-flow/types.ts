@@ -49,6 +49,7 @@ export interface PayFlowProduct {
 
 export type PayFlowTag = 
   | 'popular' 
+  | 'preorder'
   | 'boba-compatible' 
   | 'refresher-base'
   | 'immune-boost'

@@ -1,7 +1,7 @@
 // Product-specific ingredient mappings
 // Maps product slugs to their ingredient lists
 
-import { getIngredients, INGREDIENT_DATABASE } from './shared-ingredients';
+import { getIngredients } from './shared-ingredients';
 
 export const PRODUCT_INGREDIENTS: Record<string, string[]> = {
   // GELS

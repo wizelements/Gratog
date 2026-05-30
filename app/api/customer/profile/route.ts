@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     // Calculate favorite items (most ordered)
     const itemCounts: Record<string, number> = {};
     orders.forEach(order => {
-      order.items.forEach(item => {
+      order.items.forEach((item: any) => {
         itemCounts[item.name] = (itemCounts[item.name] || 0) + item.quantity;
       });
     });
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
         orderNumber: o.orderNumber,
         marketName: o.marketName,
         total: o.total,
-        items: o.items.map(i => ({ name: i.name, quantity: i.quantity })),
+        items: o.items.map((i: any) => ({ name: i.name, quantity: i.quantity })),
         createdAt: o.createdAt,
         status: o.status,
       })),

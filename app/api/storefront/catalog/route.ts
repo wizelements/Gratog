@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     
     // Check if collection exists
     const collections = await db.listCollections({ name: 'square_catalog_items' }).toArray();
-    console.log('[Storefront] Collections found:', collections.map(c => c.name));
+    console.log('[Storefront] Collections found:', collections.map((c: any) => c.name));
     
     // Fetch from square_catalog_items (same collection as working products API)
     const rawItems = await db

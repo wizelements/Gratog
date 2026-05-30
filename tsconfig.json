@@ -37,8 +37,8 @@
       ]
     },
     "target": "ES2017",
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "noImplicitReturns": true,

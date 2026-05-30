@@ -17,8 +17,8 @@ const REQUIRED_PUBLIC_VARS = [
   'NEXT_PUBLIC_SQUARE_APPLICATION_ID',
 ] as const;
 
-type ServerEnvKey = (typeof REQUIRED_SERVER_VARS)[number];
-type PublicEnvKey = (typeof REQUIRED_PUBLIC_VARS)[number];
+type _ServerEnvKey = (typeof REQUIRED_SERVER_VARS)[number];
+type _PublicEnvKey = (typeof REQUIRED_PUBLIC_VARS)[number];
 
 export interface SquareServerConfig {
   accessToken: string;
@@ -55,7 +55,7 @@ function getRequiredEnv(key: string): string {
 /**
  * Get an optional env var with fallback
  */
-function getOptionalEnv(key: string, fallback: string): string {
+function _getOptionalEnv(key: string, fallback: string): string {
   return process.env[key] || fallback;
 }
 

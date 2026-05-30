@@ -39,7 +39,7 @@ Sentry.init({
     'Non-Error promise rejection captured',
   ],
   
-  beforeSend(event, hint) {
+  beforeSend(event, _hint) {
     // Filter out admin auth errors from monitoring
     if (event.exception?.values?.[0]?.value?.includes('admin_token')) {
       return null;

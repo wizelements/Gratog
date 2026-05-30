@@ -4,7 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ScanLine, ShoppingBag, MapPin, Clock, ChevronRight, Store } from 'lucide-react';
+// @ts-expect-error lucide-react types issue
+import { ShoppingBag, MapPin, Clock, ChevronRight, Store, ScanLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

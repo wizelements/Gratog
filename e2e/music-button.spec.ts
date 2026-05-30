@@ -244,7 +244,7 @@ test.describe('Music Button - E2E Visibility Tests', () => {
     await page.waitForTimeout(300);
     
     // Expanded panel should appear
-    const expandedPanel = page.locator('text=Music Psychology, text=Reduces stress').first();
+    const _expandedPanel = page.locator('text=Music Psychology, text=Reduces stress').first();
     
     // Should either show expanded content or button should still work
     await expect(settingsButton).toBeVisible();

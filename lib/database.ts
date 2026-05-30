@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { Product, DBProduct, DBVariant, DBImage, DBInventoryLevel, DBLink } from '@/types/product';
+import { Product } from '@/types/product';
 import { connectToDatabase } from './db-optimized';
 
 // CONSOLIDATED: Now uses the centralized db-optimized.js connection
@@ -209,7 +209,7 @@ export async function queryCatalog(params: {
       description: product.description,
       brand: product.brand,
       category: product.category,
-      images: images.map(img => ({
+      images: images.map((img: any) => ({
         url: img.url,
         width: img.width,
         height: img.height,
@@ -224,7 +224,7 @@ export async function queryCatalog(params: {
   }
   
   const nextCursor = hasMore ? (skip + params.limit).toString() : undefined;
-  const etag = createHash('md5').update(JSON.stringify(items.map(p => p.hash))).digest('hex');
+  const etag = createHash('md5').update(JSON.stringify(items.map((p: any) => p.hash))).digest('hex');
   
   return { items: enrichedProducts, nextCursor, etag };
 }
@@ -259,7 +259,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     description: product.description,
     brand: product.brand,
     category: product.category,
-    images: images.map(img => ({
+    images: images.map((img: any) => ({
       url: img.url,
       width: img.width,
       height: img.height,

@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      transactions: transactions.map(t => ({
+      transactions: transactions.map((t: any) => ({
         id: t._id,
         type: t.type,
         credits: t.credits,
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
         expiresAt: t.expiresAt,
         expired: t.expired || false
       })),
-      redemptions: includeRedemptions ? redemptions.map(r => ({
+      redemptions: includeRedemptions ? redemptions.map((r: any) => ({
         id: r._id,
         rewardId: r.rewardId,
         couponCode: r.couponCode,

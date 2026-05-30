@@ -1,10 +1,10 @@
 
 const DEBUG = process.env.DEBUG === "true";
-const debug = (...args) => { if (DEBUG) console.log(...args); };
+const debug = (...args: any[]) => { if (DEBUG) console.log(...args); };
 
 import { Product, ProductZ } from '@/types/product';
 import { upsertProduct } from './database';
-import { createHash } from 'crypto';
+import { /* createHash */ } from 'crypto';
 
 // Rate limiting and circuit breaker state
 interface CrawlState {

@@ -39,7 +39,7 @@ export interface WishlistState {
 
 const STORAGE_KEY = 'wishlist_v1';
 
-function loadPersistedState(): string[] {
+function _loadPersistedState(): string[] {
   const storage = getSafeLocalStorage();
   if (!storage) return [];
   

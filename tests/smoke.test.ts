@@ -46,7 +46,7 @@ describe('Critical Component Imports', () => {
   it('should have Footer file exist', () => {
     const fs = require('fs');
     const path = require('path');
-    expect(fs.existsSync(path.join(process.cwd(), 'components/Footer.jsx'))).toBe(true);
+    expect(fs.existsSync(path.join(process.cwd(), 'components/Footer.tsx')) || fs.existsSync(path.join(process.cwd(), 'components/Footer.jsx'))).toBe(true);
   });
 });
 

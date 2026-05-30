@@ -91,7 +91,7 @@ export const GET = withAdminMiddleware(
       ]);
       
       // Sanitize orders for admin view
-      const sanitizedOrders = orders.map(order => ({
+      const sanitizedOrders = orders.map((order: any) => ({
         _id: order._id?.toString(),
         id: order.id,
         orderNumber: order.orderNumber,

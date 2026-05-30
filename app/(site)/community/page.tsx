@@ -10,7 +10,7 @@ import Link from 'next/link';
 import {
   Users,
   Heart,
-  MessageCircle,
+
   Award,
   ShoppingBag,
   Camera,

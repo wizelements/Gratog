@@ -75,7 +75,7 @@ test.describe('Frontend Security', () => {
     
     // All scripts should be from trusted domains
     for (const script of externalScripts) {
-      const url = new URL(script);
+      const _url = new URL(script);
       
       // Script should not be from suspicious domains
       expect(script).not.toMatch(/suspicious|malware|phishing/i);

@@ -86,7 +86,7 @@ test.describe('Mobile Music Widget - Debugging', () => {
     }
 
     // Check console for errors
-    const pageContent = await page.content();
+    const _pageContent = await page.content();
     console.log('📊 Page loaded successfully');
 
     // Try to access useMusic context directly via page evaluation

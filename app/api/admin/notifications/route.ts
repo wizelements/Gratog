@@ -14,12 +14,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import { 
-  sendNotification, 
   sendBulkNotification,
   sendMarketDayNotifications,
   announceNewProduct,
   NOTIFICATION_TYPES 
 } from '@/lib/push-notifications';
+import { requireAdminSession } from '@/lib/auth/unified-admin';
 
 /**
  * POST /api/admin/notifications/send
@@ -40,7 +40,7 @@ export async function POST(request: any) {
       );
     }
 
-    if (!type || !NOTIFICATION_TYPES[type]) {
+    if (!type || !(NOTIFICATION_TYPES as Record<string, any>)[type]) {
       return NextResponse.json(
         { error: 'Valid notification type required' },
         { status: 400 }
@@ -228,9 +228,9 @@ export async function GET(request: any) {
       period: `${daysToQuery} days`,
       stats: {
         byType: stats,
-        totalSent: stats.reduce((sum, s) => sum + s.count, 0),
-        totalPush: stats.reduce((sum, s) => sum + s.pushSent, 0),
-        totalEmail: stats.reduce((sum, s) => sum + s.emailSent, 0)
+        totalSent: stats.reduce((sum: any, s: any) => sum + s.count, 0),
+        totalPush: stats.reduce((sum: any, s: any) => sum + s.pushSent, 0),
+        totalEmail: stats.reduce((sum: any, s: any) => sum + s.emailSent, 0)
       },
       subscribers: {
         activePush: activePushSubscriptions,

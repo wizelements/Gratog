@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const itemSales: Record<string, { name: string; count: number; revenue: number }> = {};
     orders.forEach(order => {
       if (order.status === 'CANCELLED') return;
-      order.items.forEach(item => {
+      order.items.forEach((item: any) => {
         if (!itemSales[item.productId]) {
           itemSales[item.productId] = { name: item.name, count: 0, revenue: 0 };
         }
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       date: { $gte: startOfDay, $lt: endOfDay },
     });
 
-    const soldOutItems = inventory?.items.filter(item => item.isSoldOut) || [];
+    const soldOutItems = inventory?.items.filter((item: any) => item.isSoldOut) || [];
 
     const report = {
       date,
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
       },
       topItems,
       peakHour: peakHour ? `${peakHour[0]}:00 (${peakHour[1]} orders)` : null,
-      soldOutItems: soldOutItems.map(item => ({
+      soldOutItems: soldOutItems.map((item: any) => ({
         name: item.name,
         sold: item.soldCount,
       })),

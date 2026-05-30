@@ -183,7 +183,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      returns: returns.map(r => ({
+      returns: returns.map((r: any) => ({
         returnId: r.returnId,
         orderId: r.orderId,
         orderNumber: r.orderNumber,

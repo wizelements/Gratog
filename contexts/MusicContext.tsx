@@ -102,7 +102,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     return Math.pow(10, db / 20);
   }, []);
 
-  const linearToDb = useCallback((linear: number): number => {
+  const _linearToDb = useCallback((linear: number): number => {
     return 20 * Math.log10(linear);
   }, []);
 

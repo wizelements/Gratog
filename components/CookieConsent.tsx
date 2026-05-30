@@ -23,6 +23,7 @@ export function CookieConsent() {
     } catch {
       // localStorage unavailable
     }
+    return undefined;
   }, []);
 
   const handleAccept = () => {

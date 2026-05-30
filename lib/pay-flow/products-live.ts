@@ -4,7 +4,7 @@
  * Uses storefront-products.js pattern
  */
 
-import type { PayFlowProduct, PayFlowCategory } from './types';
+import type { PayFlowProduct, PayFlowCategory, PayFlowUpsell, PayFlowTag } from './types';
 
 // ============================================
 // TRANSFORM: Gratog Product → PayFlow Product
@@ -98,7 +98,7 @@ export function transformToPayFlowProduct(product: GratogProduct): PayFlowProduc
     (product.availability === 'out_of_stock' && product.inStock === false);
   
   // Available if: explicitly available, OR it's a preorder item
-  const isAvailable = product.available !== false || isPreorder;
+  const isAvailable = (product.available as boolean | undefined) !== false || isPreorder;
   
   // Stock quantity: use actual stock, or default high value for preorder items
   // Preorder items show as available even with negative/0 stock
@@ -130,7 +130,7 @@ export function transformToPayFlowProduct(product: GratogProduct): PayFlowProduc
     available: isAvailable,
     stockQuantity,
     tags,
-    upsells: product.upsells || getDefaultUpsells(category),
+    upsells: (product.upsells?.map((u: any) => ({ id: u.id, name: u.name, priceCents: u.priceCents ?? u.price, description: u.description })) || getDefaultUpsells(category)) as PayFlowUpsell[] | undefined,
     isPopular: product.isPopular,
     isNew: product.isNew,
     originalPriceCents: product.originalPrice 

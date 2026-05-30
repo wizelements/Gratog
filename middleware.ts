@@ -5,12 +5,6 @@ const PUBLIC_ADMIN_ROUTES = [
   '/admin/login',
 ];
 
-// Public routes that don't need auth
-const PUBLIC_ROUTES = [
-  '/admin/login',
-  '/api/auth',
-];
-
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 

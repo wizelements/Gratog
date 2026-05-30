@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       count: posts.length,
-      posts: posts.map(post => ({
+      posts: posts.map((post: any) => ({
         id: post.instagramId,
         slug: post.slug,
         caption: post.caption,

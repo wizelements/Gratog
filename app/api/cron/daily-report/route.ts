@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     const itemSales: Record<string, { name: string; count: number; revenue: number }> = {};
     orders.forEach(order => {
       if (order.status === 'CANCELLED') return;
-      order.items.forEach(item => {
+      order.items.forEach((item: any) => {
         if (!itemSales[item.productId]) {
           itemSales[item.productId] = { name: item.name, count: 0, revenue: 0 };
         }

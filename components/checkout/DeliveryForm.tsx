@@ -6,8 +6,8 @@
  */
 
 import { motion } from 'framer-motion';
-import { MapPin, Clock, DollarSign, AlertCircle, CheckCircle } from 'lucide-react';
-import { useState, useEffect, useCallback } from 'react';
+import { Clock, AlertCircle, CheckCircle } from 'lucide-react';
+import { useState, useCallback } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

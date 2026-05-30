@@ -25,7 +25,7 @@ const CouponUpdateSchema = z.object({
  * Get coupon details
  */
 export const GET = withAdminMiddlewareWithContext(
-  async (request: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
+  async (_request: AuthenticatedRequest, context: { params: Promise<Record<string, string>> }) => {
     const params = await context.params;
     const couponId = params.id;
     
@@ -90,7 +90,7 @@ export const GET = withAdminMiddlewareWithContext(
  * Update coupon (limited fields)
  */
 export const PATCH = withAdminMiddlewareWithContext(
-  async (request: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
+  async (request: AuthenticatedRequest, context: { params: Promise<Record<string, string>> }) => {
     const params = await context.params;
     const couponId = params.id;
     const admin = request.admin;
@@ -194,7 +194,7 @@ export const PATCH = withAdminMiddlewareWithContext(
  * Delete single coupon
  */
 export const DELETE = withAdminMiddlewareWithContext(
-  async (request: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
+  async (request: AuthenticatedRequest, context: { params: Promise<Record<string, string>> }) => {
     const params = await context.params;
     const couponId = params.id;
     const admin = request.admin;

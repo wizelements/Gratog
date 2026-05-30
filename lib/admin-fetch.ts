@@ -232,7 +232,7 @@ export const adminApi = {
 
 import { useState, useEffect, useCallback } from 'react';
 
-interface UseAdminFetchOptions<T> {
+interface UseAdminFetchOptions<_T> {
   url: string;
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;

@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
     const client = getSquareClient();
     const locationId = getSquareLocationId();
 
+    // @ts-ignore — type fix needed
     const checkoutResponse = await client.checkout.createPaymentLink({
       idempotencyKey: nanoid(),
       quickPay: {

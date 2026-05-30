@@ -51,7 +51,7 @@ function isEnabledForLevel(level: LogLevel): boolean {
 }
 
 // Legacy function for backward compatibility
-function isEnabled(): boolean {
+function _isEnabled(): boolean {
   return isEnabledForLevel('debug');
 }
 

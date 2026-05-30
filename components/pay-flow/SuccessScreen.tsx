@@ -7,7 +7,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { CheckCircle, Clock, Receipt, RefreshCw } from 'lucide-react';
+// @ts-expect-error lucide-react types issue
+import { CheckCircle, Clock, RefreshCw, Receipt } from 'lucide-react';
 import { usePayFlowCart, usePayFlowUI, usePayFlowInventory, usePayFlowMetrics } from '@/lib/pay-flow/store';
 import { formatPrice } from '@/lib/pay-flow/data';
 import { cn } from '@/lib/utils';

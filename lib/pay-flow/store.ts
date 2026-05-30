@@ -8,7 +8,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { 
-  PayFlowCart, 
   PayFlowCartItem, 
   PayFlowCartDisplayItem,
   PayFlowProduct, 
@@ -16,7 +15,6 @@ import type {
   PayFlowView,
   PayFlowUIState,
   PayFlowMetrics,
-  PayFlowOrder
 } from './types';
 import { PAY_FLOW_CONSTANTS } from './types';
 

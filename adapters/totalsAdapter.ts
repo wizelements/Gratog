@@ -9,6 +9,7 @@ import { CartItem } from './cartAdapter';
  * Delivery fee tiers (from existing logic)
  */
 const DELIVERY_FEE = 6.99;
+const FREE_DELIVERY_THRESHOLD = 75;
 const DELIVERY_MINIMUM = 30;
 
 /**
@@ -48,10 +49,10 @@ export function computeTotals(input: TotalsInput): OrderTotals {
   const subtotal = cart.reduce((sum, item) => sum + ((Number(item.price) || 0) * (Number(item.quantity) || 1)), 0);
   const itemCount = cart.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
   
-  // Calculate delivery fee
+  // Calculate delivery fee (waived above threshold)
   let deliveryFee = 0;
   if (fulfillmentType === 'delivery') {
-    deliveryFee = DELIVERY_FEE;
+    deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
   } else if (fulfillmentType === 'shipping') {
     deliveryFee = shippingFee;
   }

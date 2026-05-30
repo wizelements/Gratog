@@ -6,7 +6,7 @@
  * so we use jose for middleware verification
  */
 
-import { jwtVerify, SignJWT } from 'jose';
+import { jwtVerify } from 'jose';
 
 interface AdminTokenPayload {
   id: string;

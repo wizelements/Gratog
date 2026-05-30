@@ -2,7 +2,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Package, Truck } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';

@@ -31,8 +31,8 @@ export function normalizeVariants(product: any): ProductVariant[] {
   // CASE A: Product already has variations array (Unified/Square format)
   if (product.variations && Array.isArray(product.variations) && product.variations.length > 0) {
     return product.variations
-      .filter(v => v.price && v.price > 0) // Filter $0 prices
-      .map(v => ({
+      .filter((v: any) => v.price && v.price > 0) // Filter $0 prices
+      .map((v: any) => ({
         id: v.id || `${product.id}-${v.name}`,
         productId: product.id,
         name: v.name || v.label || 'Regular',

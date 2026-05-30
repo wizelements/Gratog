@@ -131,7 +131,7 @@ test.describe('Music Psychology Integration', () => {
     await page.waitForLoadState('networkidle');
 
     // Audio requests should come from R2
-    const r2Requests = audioUrls.filter(url => url.includes('pub-5562920411814baeba7fe2cc990d43ef.r2.dev'));
+    const _r2Requests = audioUrls.filter(url => url.includes('pub-5562920411814baeba7fe2cc990d43ef.r2.dev'));
     
     // Note: Autoplay may be blocked, but verify the URLs exist in code
     const musicButton = page.locator('button[title="Music Controls"]');
@@ -154,7 +154,7 @@ test.describe('Music Psychology Integration', () => {
     }
 
     // Check now playing status
-    const nowPlaying = page.locator('text=Now playing, text=Paused');
+    const _nowPlaying = page.locator('text=Now playing, text=Paused');
     
     // Toggle to see it change (may require a moment for audio to start)
     await page.waitForTimeout(500);

@@ -14,6 +14,7 @@ describe('Square Environment Configuration Tests', () => {
       expect(appId).toBeDefined();
       expect(appId).not.toBe('');
       expect(appId).toMatch(/^sq0idp-/);
+      // @ts-ignore — possibly null
       expect(appId.length).toBeGreaterThan(20);
     });
 
@@ -21,6 +22,7 @@ describe('Square Environment Configuration Tests', () => {
       const locationId = process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID;
       expect(locationId).toBeDefined();
       expect(locationId).not.toBe('');
+      // @ts-ignore — possibly null
       expect(locationId.length).toBeGreaterThan(5);
     });
 

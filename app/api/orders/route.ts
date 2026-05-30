@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
         });
 
         for (const item of data.items) {
-          const invItem = inventory?.items.find(i => i.productId === item.productId);
+          const invItem = inventory?.items.find((i: any) => i.productId === item.productId);
           const remaining = (invItem?.initialQuantity || 0) - (invItem?.soldCount || 0);
           
           if (invItem?.isSoldOut || remaining < item.quantity) {

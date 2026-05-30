@@ -12,12 +12,12 @@ const SQUARE_TEAM_EMAIL = process.env.SQUARE_TEAM_EMAIL || 'team@tasteofgratitud
  * Send preorder notification to Square chat
  * This appears in Square's team messaging/chat system
  */
-export async function sendSquareChatNotification(preorder) {
+export async function sendSquareChatNotification(preorder: any) {
   try {
     const webhookUrl = SQUARE_CHAT_WEBHOOK_URL;
     
     if (!webhookUrl) {
-      logger.warn('SQUARE_CHAT_WEBHOOK_URL not configured, skipping chat notification');
+      logger.warn('PreorderNotifications', 'SQUARE_CHAT_WEBHOOK_URL not configured, skipping chat notification');
       return { sent: false, reason: 'webhook_not_configured' };
     }
 
@@ -45,7 +45,7 @@ export async function sendSquareChatNotification(preorder) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      logger.error('Failed to send Square chat notification', {
+      logger.error('PreorderNotifications', 'Failed to send Square chat notification', {
         status: response.status,
         error: errorText,
         orderNumber: preorder.orderNumber,
@@ -53,35 +53,36 @@ export async function sendSquareChatNotification(preorder) {
       return { sent: false, error: errorText };
     }
 
-    logger.info('Square chat notification sent', {
+    logger.info('PreorderNotifications', 'Square chat notification sent', {
       orderNumber: preorder.orderNumber,
       waitlistNumber: preorder.waitlistNumber,
     });
 
     return { sent: true };
-  } catch (error) {
-    logger.error('Error sending Square chat notification', {
-      error: error.message,
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    logger.error('PreorderNotifications', 'Error sending Square chat notification', {
+      error: errMsg,
       orderNumber: preorder.orderNumber,
     });
-    return { sent: false, error: error.message };
+    return { sent: false, error: errMsg };
   }
 }
 
 /**
  * Build preorder message for Square chat
  */
-function buildPreorderMessage(preorder) {
+function buildPreorderMessage(preorder: any) {
   const { orderNumber, customer, items, pickupLocation, pickupDate, waitlistNumber, notes } = preorder;
   
   // Format items list
   const itemsList = items
-    .map(item => `• ${item.quantity}x ${item.name}${item.size ? ` (${item.size})` : ''}`)
+    .map((item: any) => `• ${item.quantity}x ${item.name}${item.size ? ` (${item.size})` : ''}`)
     .join('\n');
   
   // Calculate total items
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const totalItems = items.reduce((sum: number, item: any) => sum + item.quantity, 0);
+  const subtotal = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
   
   // Build the chat message
   const text = `🛒 **NEW PREORDER #${orderNumber}**
@@ -104,8 +105,8 @@ Reply "CONFIRM ${orderNumber}" to confirm | "READY ${orderNumber}" when ready fo
   return {
     text,
     attachments: items
-      .filter(item => item.imageUrl)
-      .map(item => ({
+      .filter((item: any) => item.imageUrl)
+      .map((item: any) => ({
         type: 'image',
         url: item.imageUrl,
         alt: item.name,
@@ -117,14 +118,14 @@ Reply "CONFIRM ${orderNumber}" to confirm | "READY ${orderNumber}" when ready fo
  * Send email notification to Square team email
  * Fallback when chat webhook is not available
  */
-export async function sendSquareTeamEmail(preorder) {
+export async function sendSquareTeamEmail(preorder: any) {
   try {
     const { sendEmail } = await import('@/lib/resend-email');
     
     const { orderNumber, customer, items, pickupLocation, pickupDate, waitlistNumber } = preorder;
     
     const itemsHtml = items
-      .map(item => `
+      .map((item: any) => `
         <tr>
           <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${item.quantity}x</td>
           <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${item.name}${item.size ? ` <span style="color: #6b7280;">(${item.size})</span>` : ''}</td>
@@ -133,7 +134,7 @@ export async function sendSquareTeamEmail(preorder) {
       `)
       .join('');
     
-    const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const total = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
     
     const html = `
 <!DOCTYPE html>
@@ -194,36 +195,41 @@ export async function sendSquareTeamEmail(preorder) {
       to: SQUARE_TEAM_EMAIL,
       subject: `🛒 Preorder #${orderNumber} - Waitlist #${waitlistNumber} | ${customer.name}`,
       html,
+      text: `New Preorder #${orderNumber} - Waitlist #${waitlistNumber}`,
+      replyTo: SQUARE_TEAM_EMAIL,
+      emailType: 'preorder_notification',
+      from: SQUARE_TEAM_EMAIL,
     });
     
-    logger.info('Square team email sent', { orderNumber, waitlistNumber });
+    logger.info('PreorderNotifications', 'Square team email sent', { orderNumber, waitlistNumber });
     return { sent: true };
-  } catch (error) {
-    logger.error('Failed to send Square team email', {
-      error: error.message,
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    logger.error('PreorderNotifications', 'Failed to send Square team email', {
+      error: errMsg,
       orderNumber: preorder.orderNumber,
     });
-    return { sent: false, error: error.message };
+    return { sent: false, error: errMsg };
   }
 }
 
 /**
  * Send SMS notification for preorder
  */
-export async function sendPreorderSMS(preorder) {
+export async function sendPreorderSMS(preorder: any) {
   try {
-    const { sendSMS } = await import('@/lib/sms');
+    const smsModule = await import('@/lib/sms') as any;
     
-    const { customer, orderNumber, waitlistNumber, pickupLocation, pickupDate, items } = preorder;
+    const { _customer, orderNumber, waitlistNumber, pickupLocation, pickupDate, items } = preorder;
     
     // Build condensed item list for SMS
     const itemSummary = items
       .slice(0, 3)
-      .map(item => `${item.quantity}x ${item.name}`)
+      .map((item: any) => `${item.quantity}x ${item.name}`)
       .join(', ');
     
     const moreItems = items.length > 3 ? ` +${items.length - 3} more` : '';
-    const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const total = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
     
     const message = `🛒 Taste of Gratitude Preorder #${orderNumber}
 🎫 Waitlist #${waitlistNumber}
@@ -235,27 +241,28 @@ export async function sendPreorderSMS(preorder) {
 
 Reply CONFIRM to accept this preorder.`;
 
-    await sendSMS(
-      process.env.STAFF_PHONE || '',
-      message,
-      'TasteOfGratitude'
-    );
+    await smsModule.sendAdminNotification({
+      orderNumber,
+      customerName: preorder.customer?.name || 'Customer',
+      total,
+    });
     
-    logger.info('Preorder SMS sent', { orderNumber, waitlistNumber });
+    logger.info('PreorderNotifications', 'Preorder SMS sent', { orderNumber, waitlistNumber });
     return { sent: true };
-  } catch (error) {
-    logger.error('Failed to send preorder SMS', {
-      error: error.message,
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    logger.error('PreorderNotifications', 'Failed to send preorder SMS', {
+      error: errMsg,
       orderNumber: preorder.orderNumber,
     });
-    return { sent: false, error: error.message };
+    return { sent: false, error: errMsg };
   }
 }
 
 /**
  * Main notification function - sends to all configured channels
  */
-export async function notifySquareTeam(preorder) {
+export async function notifySquareTeam(preorder: any) {
   const results = {
     chat: { sent: false },
     email: { sent: false },
@@ -277,7 +284,7 @@ export async function notifySquareTeam(preorder) {
   
   const anySent = results.chat.sent || results.email.sent || results.sms.sent;
   
-  logger.info('Square team notifications complete', {
+  logger.info('PreorderNotifications', 'Square team notifications complete', {
     orderNumber: preorder.orderNumber,
     waitlistNumber: preorder.waitlistNumber,
     chat: results.chat.sent,

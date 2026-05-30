@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+// @ts-expect-error lucide-react deprecated brand icons not in type declarations
 import { Facebook, Instagram, Mail } from 'lucide-react';
 import NewsletterSignup from '@/components/NewsletterSignup';
 

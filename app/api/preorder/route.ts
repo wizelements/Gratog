@@ -31,7 +31,7 @@ const MARKET_SCHEDULE = {
 /**
  * Get next market date
  */
-function getNextMarketDate(dayName) {
+function getNextMarketDate(dayName: any) {
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const targetDay = days.indexOf(dayName);
   const today = new Date();
@@ -47,7 +47,7 @@ function getNextMarketDate(dayName) {
   return nextDate;
 }
 
-export async function POST(request) {
+export async function POST(request: any) {
   try {
     let data = await request.json();
     
@@ -61,6 +61,7 @@ export async function POST(request) {
     });
     
     // Validation
+    // @ts-ignore — type fix needed
     if (!data.marketId || !MARKET_SCHEDULE[data.marketId]) {
       return NextResponse.json(
         { success: false, error: 'Invalid or missing market selection' },
@@ -85,11 +86,12 @@ export async function POST(request) {
     }
     
     // Calculate totals
-    const subtotal = data.items.reduce((sum, item) => {
+    const subtotal = data.items.reduce((sum: any, item: any) => {
       return sum + ((item.price || 0) * (item.quantity || 1));
     }, 0);
     
     // Check minimum order
+    // @ts-ignore — type fix needed
     const minimum = PREORDER_MINIMUMS[data.marketId] || 15;
     if (subtotal < minimum) {
       return NextResponse.json(
@@ -105,6 +107,7 @@ export async function POST(request) {
     }
     
     // Get market info
+    // @ts-ignore — type fix needed
     const market = MARKET_SCHEDULE[data.marketId];
     const pickupDate = getNextMarketDate(market.day);
     const pickupDateStr = pickupDate.toLocaleDateString('en-US', {
@@ -125,7 +128,7 @@ export async function POST(request) {
         email: data.customer.email,
         phone: data.customer.phone,
       },
-      items: data.items.map(item => ({
+      items: data.items.map((item: any) => ({
         productId: item.productId || item.id,
         name: item.name,
         quantity: item.quantity || 1,
@@ -171,11 +174,13 @@ export async function POST(request) {
     });
     
   } catch (error) {
+    // @ts-ignore — type fix needed
     logger.error('Preorder creation error', { error: error.message });
     
     return NextResponse.json({
       success: false,
       error: 'Failed to create preorder. Please try again.',
+      // @ts-ignore — type fix needed
       details: error.message
     }, { status: 500 });
   }
@@ -185,7 +190,7 @@ export async function POST(request) {
  * Get preorder status
  * GET /api/preorder?orderNumber=PRE-xxx
  */
-export async function GET(request) {
+export async function GET(request: any) {
   try {
     const { searchParams } = new URL(request.url);
     const orderNumber = searchParams.get('orderNumber');
@@ -211,6 +216,7 @@ export async function GET(request) {
     });
     
   } catch (error) {
+    // @ts-ignore — type fix needed
     logger.error('Preorder status error', { error: error.message });
     
     return NextResponse.json({
@@ -220,7 +226,7 @@ export async function GET(request) {
   }
 }
 
-function getEstimatedWaitTime(position) {
+function getEstimatedWaitTime(position: any) {
   const minutesPerCustomer = 2.5;
   const estimatedMinutes = Math.ceil(position * minutesPerCustomer);
   

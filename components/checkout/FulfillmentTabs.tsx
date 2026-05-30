@@ -7,7 +7,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { MapPin, Truck, Package, Mail } from 'lucide-react';
+import { MapPin, Truck, Package } from 'lucide-react';
 import { FulfillmentType } from '@/stores/checkout';
 
 interface FulfillmentTabsProps {

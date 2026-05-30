@@ -5,7 +5,7 @@
  */
 
 import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
+// import { redirect } from 'next/navigation';
 
 /**
  * Detect if request is from mobile device
@@ -29,7 +29,7 @@ export function isMobileDevice(userAgent: string): boolean {
  * }
  */
 export async function shouldRedirectToPayFlow(): Promise<boolean> {
-  const headersList = headers();
+  const headersList = await headers();
   const userAgent = headersList.get('user-agent') || '';
   
   // Check for mobile

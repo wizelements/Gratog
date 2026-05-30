@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
     // Top items
     const itemSales: Record<string, { name: string; count: number; revenue: number }> = {};
     orders.forEach(order => {
-      order.items.forEach(item => {
+      order.items.forEach((item: any) => {
         if (!itemSales[item.productId]) {
           itemSales[item.productId] = { name: item.name, count: 0, revenue: 0 };
         }

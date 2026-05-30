@@ -7,8 +7,6 @@
 import { 
   createPayment as baseCreatePayment,
   createOrder as baseCreateOrder,
-  CreatePaymentRequest,
-  CreateOrderRequest,
   OrderLineItem,
   OrderFulfillment,
   SquareResponse,

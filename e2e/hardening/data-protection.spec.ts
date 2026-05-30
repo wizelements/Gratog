@@ -62,12 +62,12 @@ test.describe('Data Protection', () => {
     }
   });
 
-  test('should enforce HTTPS in production', async ({ page, context }) => {
+  test('should enforce HTTPS in production', async ({ page }) => {
     // Only check in production-like environments
     const baseURL = new URL(page.url()).origin;
     
     if (baseURL.includes('https')) {
-      const response = await page.goto('/');
+      await page.goto('/');
       expect(page.url()).toContain('https://');
     } else if (baseURL.includes('localhost') || baseURL.includes('127.0.0.1')) {
       // Allow HTTP for local development
@@ -81,7 +81,7 @@ test.describe('Data Protection', () => {
     
     // Check cache control headers
     const cacheControl = headers?.['cache-control'] || '';
-    const pragma = headers?.['pragma'] || '';
+    const _pragma = headers?.['pragma'] || '';
     
     // Sensitive pages should not be cached
     if (page.url().includes('checkout') || page.url().includes('payment')) {

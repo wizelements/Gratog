@@ -216,7 +216,6 @@ describe('URL Consistency - Email Templates', () => {
 
 describe('URL Consistency - API Routes', () => {
   const apiFiles = [
-    'app/api/stripe/create-checkout/route.js',
     'app/api/checkout/route.ts',
     'app/api/create-checkout/route.ts',
   ];

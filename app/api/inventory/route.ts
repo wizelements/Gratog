@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
         marketName: inventory.marketName,
         date: inventory.date,
         isClosed: inventory.isClosed,
-        items: inventory.items.map(item => ({
+        items: inventory.items.map((item: any) => ({
           productId: item.productId,
           name: item.name,
           price: item.price,

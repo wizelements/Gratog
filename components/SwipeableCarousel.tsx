@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useSwipe, useSwipeNavigation } from '@/hooks/useSwipe';
+import { useSwipe } from '@/hooks/useSwipe';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { triggerHaptic } from '@/lib/haptics';
 
@@ -71,6 +71,7 @@ export function SwipeableCarousel({
         if (autoPlayRef.current) clearInterval(autoPlayRef.current);
       };
     }
+    return undefined;
   }, [autoPlay, interval, itemCount]);
 
   // Pause auto-play on touch

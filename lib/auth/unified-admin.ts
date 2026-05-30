@@ -31,7 +31,7 @@ const TOKEN_ROTATION_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 1 day
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7 days
 
 // Rate limiting (requests per window)
-const RATE_LIMITS = {
+const _RATE_LIMITS = {
   login: { max: 5, windowMs: 15 * 60 * 1000 }, // 5 per 15 min
   refresh: { max: 30, windowMs: 60 * 1000 }, // 30 per min
   general: { max: 100, windowMs: 60 * 1000 }, // 100 per min

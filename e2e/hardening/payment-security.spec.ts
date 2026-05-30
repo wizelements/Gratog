@@ -4,7 +4,7 @@ test.describe('Payment Flow Security', () => {
   test('should validate PCI compliance - no card data in localStorage', async ({ page }) => {
     await page.goto('/checkout');
     
-    const localStorage = await page.evaluate(() => {
+    const localStorageData: any = await page.evaluate(() => {
       return {
         card: localStorage.getItem('card'),
         cvv: localStorage.getItem('cvv'),
@@ -14,17 +14,17 @@ test.describe('Payment Flow Security', () => {
       };
     });
     
-    expect(localStorage.card).toBeNull();
-    expect(localStorage.cvv).toBeNull();
-    expect(localStorage.zip).toBeNull();
-    expect(localStorage.cardNumber).toBeNull();
-    expect(localStorage.pin).toBeNull();
+    expect(localStorageData.card).toBeNull();
+    expect(localStorageData.cvv).toBeNull();
+    expect(localStorageData.zip).toBeNull();
+    expect(localStorageData.cardNumber).toBeNull();
+    expect(localStorageData.pin).toBeNull();
   });
 
   test('should validate PCI compliance - no card data in sessionStorage', async ({ page }) => {
     await page.goto('/checkout');
     
-    const sessionStorage = await page.evaluate(() => {
+    const sessionStorageData: any = await page.evaluate(() => {
       return {
         card: sessionStorage.getItem('card'),
         cvv: sessionStorage.getItem('cvv'),
@@ -34,11 +34,11 @@ test.describe('Payment Flow Security', () => {
       };
     });
     
-    expect(sessionStorage.card).toBeNull();
-    expect(sessionStorage.cvv).toBeNull();
-    expect(sessionStorage.zip).toBeNull();
-    expect(sessionStorage.cardNumber).toBeNull();
-    expect(sessionStorage.pin).toBeNull();
+    expect(sessionStorageData.card).toBeNull();
+    expect(sessionStorageData.cvv).toBeNull();
+    expect(sessionStorageData.zip).toBeNull();
+    expect(sessionStorageData.cardNumber).toBeNull();
+    expect(sessionStorageData.pin).toBeNull();
   });
 
   test('should prevent double submission of payment form', async ({ page }) => {
@@ -75,7 +75,7 @@ test.describe('Payment Flow Security', () => {
   test('should validate all required fields before payment submission', async ({ page }) => {
     await page.goto('/checkout');
     
-    const requiredFieldSelectors = [
+    const _requiredFieldSelectors = [
       'input[type="email"]',
       'input[name="name"]',
     ];

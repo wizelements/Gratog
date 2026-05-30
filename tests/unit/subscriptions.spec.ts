@@ -104,10 +104,10 @@ describe('validateCreatePayload', () => {
 describe('getNextRetryDate', () => {
   it('computes correct dates from anchor', () => {
     const anchor = new Date('2026-01-01T00:00:00.000Z');
-    expect(getNextRetryDate(1, anchor).toISOString()).toBe('2026-01-01T00:00:00.000Z');
-    expect(getNextRetryDate(2, anchor).toISOString()).toBe('2026-01-03T00:00:00.000Z');
-    expect(getNextRetryDate(3, anchor).toISOString()).toBe('2026-01-05T00:00:00.000Z');
-    expect(getNextRetryDate(4, anchor).toISOString()).toBe('2026-01-07T00:00:00.000Z');
+    expect(getNextRetryDate(1, anchor)!.toISOString()).toBe('2026-01-01T00:00:00.000Z');
+    expect(getNextRetryDate(2, anchor)!.toISOString()).toBe('2026-01-03T00:00:00.000Z');
+    expect(getNextRetryDate(3, anchor)!.toISOString()).toBe('2026-01-05T00:00:00.000Z');
+    expect(getNextRetryDate(4, anchor)!.toISOString()).toBe('2026-01-07T00:00:00.000Z');
   });
 
   it('returns null for out-of-range attempt', () => {

@@ -97,12 +97,15 @@ export function getNextAvailableWindow(): string | null {
 // Calculate delivery fee based on subtotal
 export function calculateDeliveryFee(subtotal: number): number {
   const config = getDeliveryConfig();
+  if (subtotal >= config.freeThreshold) return 0;
   return config.baseFee;
 }
 
 // Calculate how much more is needed for free delivery
 export function getFreeDeliveryProgress(subtotal: number): number {
-  return 0;
+  const config = getDeliveryConfig();
+  if (subtotal >= config.freeThreshold) return 0;
+  return config.freeThreshold - subtotal;
 }
 
 // Validate tip amount
@@ -278,7 +281,7 @@ export async function getShippingOptions(
   address: ShippingAddress,
   cartItems: Array<{ quantity: number; weight?: number }>
 ): Promise<ShippingOption[]> {
-  const fromAddress: ShippingAddress = {
+  const _fromAddress: ShippingAddress = {
     street: process.env.SHIPPING_FROM_STREET || '123 Bakery Lane',
     city: process.env.SHIPPING_FROM_CITY || 'Los Angeles',
     state: process.env.SHIPPING_FROM_STATE || 'CA',
