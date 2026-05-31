@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminToken } from '@/lib/auth/unified-admin';
+// IMPORTANT: this file runs on the Edge Runtime.
+// `lib/admin-session` only depends on `jose` (Edge-safe). Do NOT import
+// `lib/auth/unified-admin` here — it transitively imports the MongoDB layer
+// (lib/db-optimized → mongoose), which the Edge bundler rejects with
+// "Dynamic Code Evaluation not allowed in Edge Runtime". Both modules sign
+// with the same JWT_SECRET / HS256, so verifying tokens with admin-session
+// is fully interoperable with tokens issued by unified-admin.
+import { verifyAdminToken } from '@/lib/admin-session';
 
 // Routes that the admin area exposes without authentication.
 const PUBLIC_ADMIN_ROUTES = ['/admin/login'];
