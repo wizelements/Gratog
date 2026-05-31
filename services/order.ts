@@ -180,10 +180,20 @@ export async function createOrder(
   const sanitizedTip = Math.max(0, Number(tip) || 0);
   const sanitizedDiscount = Math.max(0, Number(couponDiscountDollars) || 0);
   
+  // Compute subtotal so server doesn't store $0 orders
+  const computedSubtotal = cart.reduce(
+    (sum, i) => sum + (Number(i.price) || 0) * (Number(i.quantity) || 0),
+    0
+  );
+  
   // Build payload matching API expected structure
   const payload: Record<string, unknown> = {
     // Transform cart items to API format (also validates)
     cart: transformCartItems(cart),
+    
+    // Order totals (server will recompute/validate; this is the client estimate)
+    subtotal: computedSubtotal,
+    total: Math.max(0, computedSubtotal + sanitizedTip - sanitizedDiscount),
     
     // Customer - API validates name, email, phone
     customer: {

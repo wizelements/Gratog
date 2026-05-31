@@ -51,19 +51,44 @@ export async function POST(request) {
       customerName: orderData.customer?.name,
       customerPhone: orderData.customer?.phone,
       
-      items: orderData.cart.map(item => ({
-        id: item.id,
-        name: item.name,
-        subtitle: item.subtitle,
-        price: item.price,
-        quantity: item.quantity,
-        size: item.size,
-        category: item.category,
-        rewardPoints: item.rewardPoints,
-        squareProductUrl: item.squareProductUrl
-      })),
-      subtotal: orderData.subtotal || 0,
-      total: orderData.total || 0,
+      items: orderData.cart.map(item => {
+        const productId = item.productId || item.catalogObjectId || item.variationId || item.id;
+        return {
+          id: productId,
+          productId,
+          variationId: item.variationId || null,
+          catalogObjectId: item.catalogObjectId || null,
+          name: item.name,
+          subtitle: item.subtitle,
+          price: item.price,
+          quantity: item.quantity,
+          size: item.size,
+          image: item.image,
+          category: item.category,
+          rewardPoints: item.rewardPoints,
+          isPreorder: !!item.isPreorder,
+          marketExclusive: !!item.marketExclusive,
+          squareProductUrl: item.squareProductUrl
+        };
+      }),
+      subtotal: (() => {
+        if (typeof orderData.subtotal === 'number' && orderData.subtotal > 0) return orderData.subtotal;
+        return orderData.cart.reduce(
+          (sum, i) => sum + (Number(i.price) || 0) * (Number(i.quantity) || 0),
+          0
+        );
+      })(),
+      total: (() => {
+        if (typeof orderData.total === 'number' && orderData.total > 0) return orderData.total;
+        const sub = orderData.cart.reduce(
+          (sum, i) => sum + (Number(i.price) || 0) * (Number(i.quantity) || 0),
+          0
+        );
+        const delivery = Number(orderData.deliveryFee) || 0;
+        const discount = Number(orderData.couponDiscount) || 0;
+        const tip = Number(orderData.deliveryTip) || 0;
+        return Math.max(0, sub + delivery + tip - discount);
+      })(),
       currency: 'USD',
       
       fulfillmentType: orderData.fulfillmentType,
@@ -110,9 +135,19 @@ export async function POST(request) {
           order: {
             id: order.id,
             orderNumber: `TOG-${order.id.slice(-8)}`,
-            total: order.total,
             status: order.status,
-            items: order.items
+            paymentStatus: order.paymentStatus,
+            squareOrderId: order.squareOrderId || null,
+            squareCustomerId: order.squareCustomerId || null,
+            orderAccessToken: null,
+            orderAccessTokenExpiresAt: null,
+            items: order.items,
+            pricing: {
+              subtotal: order.subtotal,
+              deliveryFee: order.deliveryFee || 0,
+              tax: order.tax || 0,
+              total: order.total
+            }
           }
         };
         

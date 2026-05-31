@@ -71,37 +71,15 @@ export async function createOrderAtomic(orderData: any) {
     }
 
     // 3. Decrement inventory for each item
+    // NOTE: Inventory is NOT decremented here at order creation time.
+    // It is decremented in `consumeInventoryForPaidOrder` (lib/custom-inventory.ts)
+    // after payment succeeds in `/api/payments`. Decrementing here would
+    // double-debit and also fail loudly for catalog items not in our inventory
+    // collection (e.g. Square-only items). We only validate items have an identifier.
     for (const item of orderData.items) {
-      const updateDoc = {
-        $inc: { currentStock: -item.quantity },
-        $push: {
-          stockHistory: {
-            date: new Date(),
-            adjustment: -item.quantity,
-            reason: `Order ${orderData.id}`,
-            adjustedBy: 'system',
-          },
-        },
-      };
-      const inventoryResult = await db.collection('inventory').findOneAndUpdate(
-        { productId: item.id },
-        updateDoc as any,
-        { session }
-      );
-
-      // Check if inventory was actually decremented
-      // @ts-ignore — possibly null
-      if (!inventoryResult.value) {
-        throw new Error(`Product ${item.id} not found in inventory`);
-      }
-
-      // Check for negative stock (optional: enforce stock limits)
-      // @ts-ignore — possibly null
-      const newStock = inventoryResult.value.currentStock - item.quantity;
-      if (newStock < 0) {
-        console.info(`Product ${item.id} stock is ${newStock} (preorder fulfillment expected)`);
-        // Optionally: throw error to rollback if out of stock
-        // throw new Error(`Product ${item.id} is out of stock`);
+      const productKey = item.productId || item.catalogObjectId || item.variationId || item.id;
+      if (!productKey) {
+        throw new Error('Cart item is missing a product identifier');
       }
     }
 
