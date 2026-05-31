@@ -84,8 +84,9 @@ describe('priceCart — tamper resistance', () => {
 
     const result = await priceCart({
       items: [
-        // Client lies: claims $0.01 unit price.
-        { productId: 'PROD_A', quantity: 2, /* @ts-expect-error */ price: 0.01 } as any,
+        // Client lies: claims $0.01 unit price. Cast through `any` because
+        // CartLineInput doesn't accept a price field — and that's the point.
+        { productId: 'PROD_A', quantity: 2, price: 0.01 } as any,
       ],
     });
 
