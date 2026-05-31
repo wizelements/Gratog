@@ -154,6 +154,7 @@ function isAllowlisted(ref, allowlist) {
     ...(allowlist.deferred || []),
     ...(allowlist.deprecated || []),
     ...(allowlist.external || []),
+    ...(allowlist.internal_ui || []),
   ].some((entry) => {
     const a = normalizeRoute(entry.path);
     return ref === a || ref.startsWith(a + '/');
