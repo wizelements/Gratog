@@ -1,0 +1,215 @@
+# EXISTING ROUTES BY CATEGORY
+
+## Admin (22)
+  /api/admin/analytics  ←  app/api/admin/analytics/route.ts
+  /api/admin/auth/csrf  ←  app/api/admin/auth/csrf/route.ts
+  /api/admin/auth/login  ←  app/api/admin/auth/login/route.ts
+  /api/admin/auth/logout  ←  app/api/admin/auth/logout/route.ts
+  /api/admin/auth/me  ←  app/api/admin/auth/me/route.ts
+  /api/admin/campaigns  ←  app/api/admin/campaigns/route.ts
+  /api/admin/campaigns/send  ←  app/api/admin/campaigns/send/route.ts
+  /api/admin/coupons  ←  app/api/admin/coupons/route.ts
+  /api/admin/coupons/[id]  ←  app/api/admin/coupons/[id]/route.ts
+  /api/admin/customers  ←  app/api/admin/customers/route.ts
+  /api/admin/customers/[id]  ←  app/api/admin/customers/[id]/route.ts
+  /api/admin/emergency-init  ←  app/api/admin/emergency-init/route.ts
+  /api/admin/inventory/[productId]  ←  app/api/admin/inventory/[productId]/route.ts
+  /api/admin/markets  ←  app/api/admin/markets/route.ts
+  /api/admin/markets/seed  ←  app/api/admin/markets/seed/route.ts
+  /api/admin/notifications  ←  app/api/admin/notifications/route.ts
+  /api/admin/orders  ←  app/api/admin/orders/route.ts
+  /api/admin/orders/[id]/refund  ←  app/api/admin/orders/[id]/refund/route.ts
+  /api/admin/products  ←  app/api/admin/products/route.ts
+  /api/admin/products/[id]  ←  app/api/admin/products/[id]/route.ts
+  /api/admin/reviews  ←  app/api/admin/reviews/route.ts
+  /api/admin/setup  ←  app/api/admin/setup/route.ts
+
+## Checkout (1)
+  /api/checkout  ←  app/api/checkout/route.ts
+
+## Cron (2)
+  /api/cron/cleanup-locks  ←  app/api/cron/cleanup-locks/route.ts
+  /api/cron/daily-report  ←  app/api/cron/daily-report/route.ts
+
+## Gratitude (loyalty) (8)
+  /api/gratitude/account  ←  app/api/gratitude/account/route.ts
+  /api/gratitude/earn  ←  app/api/gratitude/earn/route.ts
+  /api/gratitude/redeem  ←  app/api/gratitude/redeem/route.ts
+  /api/gratitude/referral/code  ←  app/api/gratitude/referral/code/route.ts
+  /api/gratitude/referral/track  ←  app/api/gratitude/referral/track/route.ts
+  /api/gratitude/rewards  ←  app/api/gratitude/rewards/route.ts
+  /api/gratitude/transactions  ←  app/api/gratitude/transactions/route.ts
+  /api/gratitude/webhook  ←  app/api/gratitude/webhook/route.ts
+
+## Market (2)
+  /api/market/today  ←  app/api/market/today/route.ts
+  /api/markets  ←  app/api/markets/route.ts
+
+## Notifications (1)
+  /api/notifications  ←  app/api/notifications/route.ts
+
+## Orders (4)
+  /api/orders  ←  app/api/orders/route.ts
+  /api/orders/by-ref  ←  app/api/orders/by-ref/route.js
+  /api/orders/create  ←  app/api/orders/create/route.js
+  /api/orders/search  ←  app/api/orders/search/route.ts
+
+## Other (36)
+  /api/analytics  ←  app/api/analytics/route.ts
+  /api/analytics/web-vitals  ←  app/api/analytics/web-vitals/route.ts
+  /api/cart  ←  app/api/cart/route.ts
+  /api/cart/price  ←  app/api/cart/price/route.ts
+  /api/catalog  ←  app/api/catalog/route.ts
+  /api/create-checkout  ←  app/api/create-checkout/route.ts
+  /api/csp-report  ←  app/api/csp-report/route.ts
+  /api/customer/profile  ←  app/api/customer/profile/route.ts
+  /api/debug/square  ←  app/api/debug/square/route.ts
+  /api/errors/list  ←  app/api/errors/list/route.ts
+  /api/errors/summary  ←  app/api/errors/summary/route.ts
+  /api/health  ←  app/api/health/route.ts
+  /api/health/payments  ←  app/api/health/payments/route.ts
+  /api/ics/market-route  ←  app/api/ics/market-route/route.js
+  /api/instagram/post/[slug]  ←  app/api/instagram/post/[slug]/route.ts
+  /api/instagram/posts  ←  app/api/instagram/posts/route.ts
+  /api/instagram/sync  ←  app/api/instagram/sync/route.ts
+  /api/inventory  ←  app/api/inventory/route.ts
+  /api/inventory/confirm  ←  app/api/inventory/confirm/route.ts
+  /api/inventory/lock  ←  app/api/inventory/lock/route.ts
+  /api/inventory/release  ←  app/api/inventory/release/route.ts
+  /api/oauth/square/authorize  ←  app/api/oauth/square/authorize/route.ts
+  /api/oauth/square/callback  ←  app/api/oauth/square/callback/route.ts
+  /api/oauth/square/status  ←  app/api/oauth/square/status/route.ts
+  /api/pay-flow/payment  ←  app/api/pay-flow/payment/route.ts
+  /api/pay-flow/products  ←  app/api/pay-flow/products/route.ts
+  /api/products  ←  app/api/products/route.ts
+  /api/reports/daily  ←  app/api/reports/daily/route.ts
+  /api/returns/create  ←  app/api/returns/create/route.ts
+  /api/search/enhanced  ←  app/api/search/enhanced/route.ts
+  /api/seo/analyze  ←  app/api/seo/analyze/route.ts
+  /api/shipping/rates  ←  app/api/shipping/rates/route.ts
+  /api/startup  ←  app/api/startup/route.ts
+  /api/storefront/catalog  ←  app/api/storefront/catalog/route.ts
+  /api/storefront/square-catalog  ←  app/api/storefront/square-catalog/route.ts
+  /api/subscriptions  ←  app/api/subscriptions/route.ts
+
+## Payments (4)
+  /api/pay/process  ←  app/api/pay/process/route.ts
+  /api/payments  ←  app/api/payments/route.ts
+  /api/payments/refund  ←  app/api/payments/refund/route.ts
+  /api/payments/square  ←  app/api/payments/square/route.ts
+
+## Preorder (2)
+  /api/preorder  ←  app/api/preorder/route.ts
+  /api/preorder/status  ←  app/api/preorder/status/route.ts
+
+## Queue (2)
+  /api/queue/join  ←  app/api/queue/join/route.js
+  /api/queue/position/[id]  ←  app/api/queue/position/[id]/route.js
+
+## Rewards (2)
+  /api/rewards/add-points  ←  app/api/rewards/add-points/route.js
+  /api/rewards/passport  ←  app/api/rewards/passport/route.js
+
+## Square (4)
+  /api/square/config  ←  app/api/square/config/route.ts
+  /api/square/diagnose  ←  app/api/square/diagnose/route.ts
+  /api/square/test-rest  ←  app/api/square/test-rest/route.ts
+  /api/square/validate-token  ←  app/api/square/validate-token/route.ts
+
+## User (1)
+  /api/user/rewards  ←  app/api/user/rewards/route.js
+
+## Webhooks (2)
+  /api/webhooks/resend  ←  app/api/webhooks/resend/route.js
+  /api/webhooks/square  ←  app/api/webhooks/square/route.ts
+
+
+# MISSING ROUTES BY CATEGORY
+
+## Admin (12)
+  /api/admin/auth/reset-password
+  /api/admin/campaigns/generate
+  /api/admin/campaigns/test
+  /api/admin/interactions
+  /api/admin/inventory
+  /api/admin/notifications/broadcast
+  /api/admin/notifications/market-day
+  /api/admin/notifications/new-product
+  /api/admin/notifications/send
+  /api/admin/notifications/stats
+  /api/admin/orders/sync
+  /api/admin/orders/update-status
+
+## Auth (public) (2)
+  /api/auth/register
+  /api/auth/reset-password
+
+## Cron (1)
+  /api/cron/cleanup-abandoned-orders
+
+## Email (1)
+  /api/email/alert
+
+## Learning (2)
+  /api/learning/me/modules
+  /api/learning/modules
+
+## Notifications (5)
+  /api/notifications/location
+  /api/notifications/preferences
+  /api/notifications/subscribe
+  /api/notifications/test
+  /api/notifications/unsubscribe
+
+## Other (26)
+  /api/contact
+  /api/coupons/create
+  /api/coupons/validate
+  /api/customers
+  /api/error-report
+  /api/instagram/post
+  /api/interactions
+  /api/newsletter/subscribe
+  /api/nurture/subscribe
+  /api/pay-flow
+  /api/quiz/recommendations
+  /api/quiz/results
+  /api/quiz/submit
+  /api/recommendations
+  /api/returns
+  /api/reviews
+  /api/reviews/helpful
+  /api/sms/alert
+  /api/subscriptions/plans
+  /api/tracking/user
+  /api/transactions/log
+  /api/transactions/stats
+  /api/ugc/submit
+  /api/unsubscribe
+  /api/v1
+  /api/waitlist
+
+## Payments (1)
+  /api/payments/route
+
+## Queue (3)
+  /api/queue/active
+  /api/queue/position
+  /api/queue/update
+
+## Rewards (3)
+  /api/rewards/leaderboard
+  /api/rewards/passport/scan
+  /api/rewards/stamp
+
+## Square (1)
+  /api/square/image
+
+## User (7)
+  /api/user/challenge
+  /api/user/challenge/checkin
+  /api/user/email-preferences
+  /api/user/favorites
+  /api/user/orders
+  /api/user/profile
+  /api/user/stats

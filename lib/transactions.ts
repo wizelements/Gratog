@@ -41,7 +41,11 @@ export async function createOrderAtomic(orderData: any) {
       throw new Error('Order insertion failed');
     }
 
-    // 2. Update customer data (upsert)
+    // 2. Upsert the customer profile (identity only).
+    //    DO NOT $inc LTV counters here — abandoned orders would inflate
+    //    totalOrders / totalSpent before a single dollar is captured.
+    //    LTV counters are incremented exactly once in /api/payments on
+    //    confirmed payment success.
     if (orderData.customerEmail) {
       await db.collection('customers').findOneAndUpdate(
         { email: orderData.customerEmail },
@@ -54,15 +58,13 @@ export async function createOrderAtomic(orderData: any) {
             lastOrderId: orderData.id,
             updatedAt: new Date(),
           },
-          $inc: { 
-            totalOrders: 1, 
-            totalSpent: orderData.total || 0 
-          },
           $setOnInsert: {
             id: orderData.customerEmail,
             createdAt: new Date(),
             preferences: {},
             addresses: [],
+            totalOrders: 0,
+            totalSpent: 0,
             version: 1,
           },
         },
@@ -83,25 +85,11 @@ export async function createOrderAtomic(orderData: any) {
       }
     }
 
-    // 4. If coupon was applied, mark it as used
-    if (orderData.appliedCoupon?.code) {
-      await db.collection('coupons').updateOne(
-        { code: orderData.appliedCoupon.code },
-        {
-          $inc: { usedCount: 1 },
-          $set: { lastUsedAt: new Date() },
-          $push: {
-            usageHistory: {
-              orderId: orderData.id,
-              customerEmail: orderData.customerEmail,
-              usedAt: new Date(),
-              discountAmount: orderData.couponDiscount || 0,
-            },
-          },
-        } as any,
-        { session }
-      );
-    }
+    // 4. INTENTIONAL NO-OP: coupon usage is NOT incremented at order
+    //    creation. Pre-payment increments let abandoned-cart loops drain
+    //    capped coupons (REVENUE risk R-C4). The coupon `usedCount` and
+    //    `isUsed` flag are advanced atomically in /api/payments on
+    //    confirmed payment success.
 
     return orderData;
   });

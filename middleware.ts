@@ -1,36 +1,71 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyAdminToken } from '@/lib/auth/unified-admin';
 
-// Public admin routes (everything else is protected by default)
-const PUBLIC_ADMIN_ROUTES = [
-  '/admin/login',
+// Routes that the admin area exposes without authentication.
+const PUBLIC_ADMIN_ROUTES = ['/admin/login'];
+
+// API routes under /api/admin that the admin login flow itself must reach
+// before any session exists.
+const PUBLIC_ADMIN_API_ROUTES = [
+  '/api/admin/auth/login',
+  '/api/admin/auth/me',
+  '/api/admin/auth/logout',
+  '/api/admin/auth/reset-password',
 ];
 
-export function middleware(request: NextRequest) {
+const ADMIN_COOKIE_NAME = 'admin_token';
+
+function isPublicAdminPath(pathname: string): boolean {
+  if (
+    PUBLIC_ADMIN_ROUTES.some(
+      (route) => pathname === route || pathname.startsWith(route + '/')
+    )
+  ) {
+    return true;
+  }
+  if (
+    PUBLIC_ADMIN_API_ROUTES.some(
+      (route) => pathname === route || pathname.startsWith(route + '/')
+    )
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function unauthorizedApi(): NextResponse {
+  return NextResponse.json(
+    { success: false, error: 'Unauthorized', code: 'ADMIN_AUTH_REQUIRED' },
+    { status: 401 }
+  );
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // All admin routes are protected unless explicitly public
-  const isPublic = PUBLIC_ADMIN_ROUTES.some(route => 
-    pathname === route || pathname.startsWith(route + '/')
-  );
-
-  // Non-admin routes pass through
-  if (!pathname.startsWith('/admin')) {
+  // Pass through non-admin paths untouched.
+  if (!pathname.startsWith('/admin') && !pathname.startsWith('/api/admin')) {
     return NextResponse.next();
   }
 
-  if (isPublic) {
+  if (isPublicAdminPath(pathname)) {
     return NextResponse.next();
   }
 
-  // Check for auth token in cookie or header
-  const token = request.cookies.get('admin_token')?.value ||
+  // Cookie is the canonical source of admin identity. The legacy
+  // Authorization: Bearer <API_KEY> path is intentionally removed — admin
+  // identity is now ALWAYS a signed JWT (lib/auth/unified-admin.ts).
+  const token =
+    request.cookies.get(ADMIN_COOKIE_NAME)?.value ||
     request.headers.get('authorization')?.replace('Bearer ', '');
 
-  const apiKey = process.env.ADMIN_API_KEY;
-  const masterKey = process.env.MASTER_API_KEY;
+  const session = token ? await verifyAdminToken(token) : null;
 
-  if (!token || (token !== apiKey && token !== masterKey)) {
-    // Redirect to login
+  if (!session) {
+    // API: return 401 JSON; pages: redirect to login with intended path.
+    if (pathname.startsWith('/api/admin')) {
+      return unauthorizedApi();
+    }
     const loginUrl = new URL('/admin/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
@@ -40,8 +75,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/admin/:path*',
-    '/api/admin/:path*',
-  ],
+  matcher: ['/admin/:path*', '/api/admin/:path*'],
 };

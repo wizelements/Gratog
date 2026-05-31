@@ -109,6 +109,36 @@ const INDEXES = {
     { key: { userId: 1, createdAt: -1 }, name: 'idx_rewards_user_created' },
     { key: { orderId: 1 }, name: 'idx_rewards_order' },
     { key: { type: 1, status: 1 }, name: 'idx_rewards_type_status' },
+    // IDEMPOTENCY: enforce one award per (email, orderId, type). Partial
+    // filter so legacy rows without orderId don't collide.
+    {
+      key: { email: 1, orderId: 1, type: 1 },
+      unique: true,
+      partialFilterExpression: { orderId: { $type: 'string' } },
+      name: 'idx_rewards_idempotency',
+    },
+  ],
+
+  // Transactional email observability
+  email_sends: [
+    { key: { messageId: 1 }, unique: true, sparse: true, name: 'idx_email_sends_message_id' },
+    { key: { to: 1, createdAt: -1 }, name: 'idx_email_sends_to_created' },
+    { key: { orderId: 1 }, sparse: true, name: 'idx_email_sends_order' },
+    { key: { status: 1, createdAt: -1 }, name: 'idx_email_sends_status_created' },
+    { key: { template: 1, createdAt: -1 }, name: 'idx_email_sends_template_created' },
+  ],
+
+  // Contact form submissions
+  contact_messages: [
+    { key: { createdAt: -1 }, name: 'idx_contact_created' },
+    { key: { email: 1, createdAt: -1 }, name: 'idx_contact_email_created' },
+    { key: { status: 1, createdAt: -1 }, name: 'idx_contact_status_created' },
+  ],
+
+  // Newsletter / unsubscribe
+  newsletter_subscribers: [
+    { key: { email: 1 }, unique: true, name: 'idx_newsletter_email' },
+    { key: { unsubscribedAt: 1 }, sparse: true, name: 'idx_newsletter_unsubscribed' },
   ],
 };
 

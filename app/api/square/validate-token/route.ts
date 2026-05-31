@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateToken, runScopeSmokeTests } from '@/lib/square-oauth-helper';
 import { logger } from '@/lib/logger';
 import { getAdminSession } from '@/lib/admin-session';
+import { blockInProduction } from '@/lib/diagnostics-guard';
 
 /**
  * Square Token Validation Endpoint
@@ -16,6 +17,9 @@ import { getAdminSession } from '@/lib/admin-session';
  * - 403 FORBIDDEN: Valid token but missing required scope
  */
 export async function GET(request: NextRequest) {
+  const blocked = blockInProduction(request);
+  if (blocked) return blocked;
+
   const admin = await getAdminSession(request);
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

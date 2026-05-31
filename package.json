@@ -43,6 +43,7 @@
     "monitor": "node scripts/monitor-and-fix.js",
     "verify:deployment": "node scripts/verify-deployment.js",
     "test:smoke": "vitest run tests/smoke.test.ts tests/hydration-safety.test.ts --reporter=verbose",
+    "check:routes": "node scripts/check-route-coverage.js",
     "analyze": "ANALYZE=true npm run build",
     "analyze:server": "ANALYZE=true ANALYZE_SERVER=true npm run build",
     "predeploy": "npm run build",

@@ -3,141 +3,169 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { createOrderAtomic } from '@/lib/transactions';
 import { randomUUID } from 'crypto';
-import { calculateRewardPoints } from '@/lib/products';
-import { retrySquareApi } from '@/lib/retry';
-import { 
-  getIdempotencyKeyFromHeaders, 
-  withIdempotency, 
-  isValidIdempotencyKey 
+import {
+  getIdempotencyKeyFromHeaders,
+  withIdempotency,
+  isValidIdempotencyKey,
 } from '@/lib/idempotency';
 import { generateOrderAccessToken } from '@/lib/order-access-token';
+import { priceCart, CartPricingError } from '@/lib/cart-pricing';
 
 // Order access token TTL — must outlive the longest realistic checkout session.
 // Payment route uses 30m; we use the same so the token survives until pay click.
 const ORDER_ACCESS_TOKEN_TTL_MS = 30 * 60 * 1000;
 
-const INTERNAL_REWARDS_TOKEN = process.env.MASTER_API_KEY || process.env.ADMIN_API_KEY || '';
-
 export async function POST(request) {
   try {
     const orderData = await request.json();
-    
+
     // Check for idempotency key
     const idempotencyKey = getIdempotencyKeyFromHeaders(request.headers);
-    if (idempotencyKey) {
-      if (!isValidIdempotencyKey(idempotencyKey)) {
-        return NextResponse.json(
-          { error: 'Invalid idempotency key format' },
-          { status: 400 }
-        );
-      }
+    if (idempotencyKey && !isValidIdempotencyKey(idempotencyKey)) {
+      return NextResponse.json(
+        { error: 'Invalid idempotency key format' },
+        { status: 400 }
+      );
     }
 
     // Validate required fields
     if (!orderData.customer || !orderData.cart || orderData.cart.length === 0) {
-      return NextResponse.json({
-        error: 'Customer information and cart items are required',
-        received: {
-          customer: !!orderData.customer,
-          cart: !!orderData.cart,
-          cartLength: orderData.cart?.length
-        }
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: 'Customer information and cart items are required',
+          received: {
+            customer: !!orderData.customer,
+            cart: !!orderData.cart,
+            cartLength: orderData.cart?.length,
+          },
+        },
+        { status: 400 }
+      );
     }
-    
+
+    // -----------------------------------------------------------------------
+    // SERVER-AUTHORITATIVE PRICING.
+    // Everything money-related is rebuilt from the catalog. Any subtotal,
+    // total, price, or couponDiscount sent by the client is IGNORED. This is
+    // the underpayment fix; see lib/cart-pricing.ts and docs REVENUE risk R-C1.
+    // -----------------------------------------------------------------------
+    let pricing;
+    try {
+      pricing = await priceCart({
+        items: orderData.cart,
+        couponCode:
+          orderData.appliedCoupon?.code ||
+          orderData.couponCode ||
+          null,
+        deliveryFeeCents: dollarsToCents(orderData.deliveryFee),
+        tipCents: dollarsToCents(orderData.deliveryTip),
+      });
+    } catch (err) {
+      if (err instanceof CartPricingError) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: err.message,
+            code: err.code,
+            details: err.details,
+          },
+          { status: err.status }
+        );
+      }
+      throw err;
+    }
+
     const orderId = randomUUID();
     const timestamp = new Date();
-    
-    // Build order object
+
+    // Build order object — pricing comes from the server, not the client.
     const enhancedOrder = {
       id: orderId,
       customerId: orderData.customer?.email || null,
       customerEmail: orderData.customer?.email,
       customerName: orderData.customer?.name,
       customerPhone: orderData.customer?.phone,
-      
-      items: orderData.cart.map(item => {
-        const productId = item.productId || item.catalogObjectId || item.variationId || item.id;
-        return {
-          id: productId,
-          productId,
-          variationId: item.variationId || null,
-          catalogObjectId: item.catalogObjectId || null,
-          name: item.name,
-          subtitle: item.subtitle,
-          price: item.price,
-          quantity: item.quantity,
-          size: item.size,
-          image: item.image,
-          category: item.category,
-          rewardPoints: item.rewardPoints,
-          isPreorder: !!item.isPreorder,
-          marketExclusive: !!item.marketExclusive,
-          squareProductUrl: item.squareProductUrl
-        };
-      }),
-      subtotal: (() => {
-        if (typeof orderData.subtotal === 'number' && orderData.subtotal > 0) return orderData.subtotal;
-        return orderData.cart.reduce(
-          (sum, i) => sum + (Number(i.price) || 0) * (Number(i.quantity) || 0),
-          0
-        );
-      })(),
-      total: (() => {
-        if (typeof orderData.total === 'number' && orderData.total > 0) return orderData.total;
-        const sub = orderData.cart.reduce(
-          (sum, i) => sum + (Number(i.price) || 0) * (Number(i.quantity) || 0),
-          0
-        );
-        const delivery = Number(orderData.deliveryFee) || 0;
-        const discount = Number(orderData.couponDiscount) || 0;
-        const tip = Number(orderData.deliveryTip) || 0;
-        return Math.max(0, sub + delivery + tip - discount);
-      })(),
-      currency: 'USD',
-      
+
+      items: pricing.items.map((line) => ({
+        id: line.productId,
+        productId: line.productId,
+        variationId: line.variationId,
+        catalogObjectId: line.catalogObjectId,
+        name: line.name,
+        subtitle: line.subtitle,
+        price: line.unitPrice, // dollars, server-derived
+        priceCents: line.unitPriceCents,
+        quantity: line.quantity,
+        lineTotal: line.lineTotal,
+        lineTotalCents: line.lineTotalCents,
+        size: line.size,
+        image: line.image,
+        category: line.category,
+        rewardPoints: line.rewardPoints,
+        isPreorder: line.isPreorder,
+        marketExclusive: line.marketExclusive,
+        squareProductUrl: line.squareProductUrl,
+      })),
+
+      subtotal: pricing.subtotal,
+      subtotalCents: pricing.subtotalCents,
+      total: pricing.total,
+      totalCents: pricing.totalCents,
+      tax: pricing.tax,
+      taxCents: pricing.taxCents,
+      currency: pricing.currency,
+
       fulfillmentType: orderData.fulfillmentType,
       deliveryAddress: orderData.deliveryAddress,
       deliveryTimeSlot: orderData.deliveryTimeSlot,
       deliveryInstructions: orderData.deliveryInstructions,
-      deliveryFee: orderData.deliveryFee || 0,
-      
-      appliedCoupon: orderData.appliedCoupon,
-      couponDiscount: orderData.couponDiscount || 0,
-      
+      deliveryFee: pricing.deliveryFee,
+      deliveryFeeCents: pricing.deliveryFeeCents,
+      deliveryTip: pricing.tip,
+      deliveryTipCents: pricing.tipCents,
+
+      // Canonical coupon field — payments/route.ts reads this exact path.
+      appliedCoupon: pricing.appliedCoupon
+        ? {
+            code: pricing.appliedCoupon.code,
+            type: pricing.appliedCoupon.type,
+            value: pricing.appliedCoupon.value,
+          }
+        : null,
+      couponDiscount: pricing.discount,
+      couponDiscountCents: pricing.discountCents,
+
       status: 'pending',
       paymentStatus: 'pending',
       paymentMethod: 'square_link',
       squareOrderUrl: null,
-      
+
       createdAt: timestamp,
       updatedAt: timestamp,
       confirmedAt: null,
       completedAt: null,
-      
-      rewardPointsEarned: calculateRewardPoints(orderData.cart.map(item => item.id)),
-      
+
+      // Reward points are CALCULATED here for display/UX but NOT awarded.
+      // Awarding happens exactly once in /api/payments on confirmed payment
+      // success (see lib/enhanced-rewards.js idempotency).
+      rewardPointsEarned: pricing.rewardPointsEarned,
+
       source: orderData.source || 'website',
       deviceInfo: orderData.deviceInfo || {},
-      version: 1
+      version: 1,
     };
-    
+
     // Wrap order creation in idempotency check
     const createOrder = async () => {
       try {
-        // Use atomic transaction
         const order = await createOrderAtomic(enhancedOrder);
-        
-        // Award reward points asynchronously (don't block response)
-        if (order.rewardPointsEarned > 0 && order.customerEmail) {
-          awardRewardPointsWithRetry(order).catch(error => {
-            console.error('Failed to award reward points:', error);
-          });
-        }
-        
+
+        // INTENTIONAL NO-OP: reward points used to be fired here in
+        // parallel with /api/payments, which double-awarded every order.
+        // Rewards are now awarded only on confirmed payment success.
+
         // Mint an order access token so the (guest) checkout can authorize
-        // its subsequent POST /api/payments call. Without this every guest
-        // payment is rejected with 401 UNAUTHORIZED_PAYMENT_ACCESS.
+        // its subsequent POST /api/payments call.
         const accessToken = generateOrderAccessToken({
           orderId: order.id,
           customerEmail: order.customerEmail,
@@ -161,21 +189,20 @@ export async function POST(request) {
             pricing: {
               subtotal: order.subtotal,
               deliveryFee: order.deliveryFee || 0,
+              tip: order.deliveryTip || 0,
+              discount: order.couponDiscount || 0,
               tax: order.tax || 0,
-              total: order.total
-            }
-          }
+              total: order.total,
+            },
+            appliedCoupon: order.appliedCoupon,
+          },
         };
-        
       } catch (dbError) {
         console.error('Atomic order creation failed:', dbError);
-        
-        // Check if it's a retryable error
+
         if (dbError.code === 'ECONNREFUSED' || dbError.message?.includes('timeout')) {
           throw dbError; // Let retry logic handle it
         }
-        
-        // For other errors, return error response
         throw new Error(`Order creation failed: ${dbError.message}`);
       }
     };
@@ -189,54 +216,21 @@ export async function POST(request) {
     }
 
     return NextResponse.json(result);
-    
   } catch (error) {
     console.error('Create order error:', error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to create order',
-        details: error.message 
+        details: error.message,
       },
       { status: 500 }
     );
   }
 }
 
-// Helper function to award reward points with retry
-async function awardRewardPointsWithRetry(order) {
-  if (!INTERNAL_REWARDS_TOKEN) {
-    console.warn('Skipping reward points award: missing internal rewards token');
-    return { skipped: true };
-  }
-
-  return retrySquareApi(async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rewards/add-points`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${INTERNAL_REWARDS_TOKEN}`
-      },
-      body: JSON.stringify({
-        email: order.customerEmail,
-        points: order.rewardPointsEarned,
-        activityType: 'purchase',
-        activityData: {
-          orderId: order.id,
-          items: order.items.map(item => ({ 
-            id: item.id, 
-            name: item.name, 
-            category: item.category 
-          })),
-          total: order.total
-        }
-      })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Reward points API returned ${response.status}`);
-    }
-    
-    return response.json();
-  });
+function dollarsToCents(v) {
+  const n = typeof v === 'number' ? v : Number(v);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.round(n * 100);
 }

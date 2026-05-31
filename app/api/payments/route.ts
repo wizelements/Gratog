@@ -990,58 +990,130 @@ export async function POST(request: NextRequest) {
     }
     
     // ========================================================================
-    // REWARDS SYSTEM
+    // PAID-ONCE SIDE EFFECTS — rewards + coupon usage + customer LTV
+    //
+    // All financial side effects below run AT MOST ONCE per order. We claim
+    // an atomic flag `paidEffectsAppliedAt` on the order document; only the
+    // process that wins the claim performs the increments. Duplicate Square
+    // callbacks, browser refreshes, double clicks, and webhook retries all
+    // see `matchedCount=0` and silently no-op.
     // ========================================================================
-    try {
-      if (customerInfo?.email && isCompleted && rewardsSystem) {
-        const pointsToAward = Math.ceil(validatedAmountCents / 100);
-        await rewardsSystem.addPoints(
-          customerInfo.email,
-          pointsToAward,
-          'purchase',
-          { orderId, amountCents: validatedAmountCents }
-        );
+    const paidEffectsClaim = isCompleted
+      ? await db.collection('orders').updateOne(
+          { id: orderId, paidEffectsAppliedAt: { $exists: false } },
+          { $set: { paidEffectsAppliedAt: new Date().toISOString() } }
+        )
+      : { modifiedCount: 0 };
+
+    if (paidEffectsClaim.modifiedCount > 0) {
+      // ----- 1) Rewards ----------------------------------------------------
+      try {
+        if (customerInfo?.email && rewardsSystem) {
+          const pointsToAward = Math.ceil(validatedAmountCents / 100);
+          await rewardsSystem.addPoints(
+            customerInfo.email,
+            pointsToAward,
+            'purchase',
+            { orderId, amountCents: validatedAmountCents }
+          );
+        }
+      } catch (rewardsError) {
+        logger.warn('API', 'Rewards failed', {
+          error: rewardsError instanceof Error ? rewardsError.message : String(rewardsError),
+        });
       }
-    } catch (rewardsError) {
-      logger.warn('API', 'Rewards failed', { 
-        error: rewardsError instanceof Error ? rewardsError.message : String(rewardsError) 
-      });
-    }
-    
-    // ========================================================================
-    // FIX #7: MARK COUPON AS USED (with error-level logging on failure)
-    // ========================================================================
-    try {
-      if (order?.coupon?.code && isCompleted) {
-        const couponResult = await db.collection('coupons').updateOne(
-          { code: order.coupon.code.toUpperCase(), isUsed: false },
-          { 
-            $set: { 
-              isUsed: true, 
-              usedAt: new Date().toISOString(),
+
+      // ----- 2) Coupon usage ----------------------------------------------
+      // Canonical coupon location is `order.appliedCoupon.code` (written by
+      // /api/orders/create). The old `order.coupon.code` path is kept as a
+      // backward-compatible fallback only for legacy orders.
+      const couponCode =
+        order?.appliedCoupon?.code ||
+        (order as any)?.coupon?.code ||
+        null;
+
+      if (couponCode) {
+        try {
+          const code = String(couponCode).toUpperCase();
+          // Use $inc usedCount AND set isUsed:true so single-use and
+          // multi-use coupons both behave correctly. Filter on orderId
+          // absence in usageHistory so this whole block is idempotent.
+          const couponResult = await db.collection('coupons').updateOne(
+            {
+              code,
+              'usageHistory.orderId': { $ne: orderId },
+            },
+            {
+              $inc: { usedCount: 1 },
+              $set: {
+                isUsed: true,
+                lastUsedAt: new Date(),
+                lastOrderId: orderId,
+                lastPaymentId: payment.id,
+              },
+              $push: {
+                usageHistory: {
+                  orderId,
+                  customerEmail: customerInfo?.email || null,
+                  usedAt: new Date(),
+                  paymentId: payment.id,
+                  amountCents: validatedAmountCents,
+                },
+              },
+            } as any
+          );
+
+          if (couponResult.modifiedCount > 0) {
+            logger.info('API', 'Coupon marked as used', { code, orderId });
+          } else {
+            logger.warn('API', 'Coupon already used for this order (idempotent)', {
+              code,
               orderId,
-              paymentId: payment.id
-            } 
+            });
           }
-        );
-        
-        if (couponResult.modifiedCount > 0) {
-          logger.info('API', 'Coupon marked as used', { code: order.coupon.code, orderId });
-        } else {
-          logger.warn('API', 'Coupon already used or not found', { code: order.coupon.code, orderId });
+        } catch (couponError) {
+          logger.error('API', 'CRITICAL: Failed to mark coupon as used - possible reuse risk', {
+            orderId,
+            couponCode,
+            error: couponError instanceof Error ? couponError.message : String(couponError),
+          });
+          Sentry.captureException(couponError, {
+            tags: { api: 'payments', severity: 'high', issue: 'coupon_not_marked_used' },
+            extra: { orderId, couponCode, paymentId: payment.id },
+          });
         }
       }
-    } catch (couponError) {
-      // CRITICAL: Coupon might be reused - log as error and alert
-      logger.error('API', 'CRITICAL: Failed to mark coupon as used - possible reuse risk', { 
+
+      // ----- 3) Customer LTV ----------------------------------------------
+      // Moved here from /api/orders/create (was inflating LTV for abandoned
+      // checkouts). Increments at most once per order because of the
+      // paidEffectsAppliedAt claim above.
+      if (customerInfo?.email) {
+        try {
+          await db.collection('customers').updateOne(
+            { email: customerInfo.email },
+            {
+              $inc: {
+                totalOrders: 1,
+                totalSpent: validatedAmountCents / 100,
+              },
+              $set: {
+                lastPaidAt: new Date(),
+                lastPaidOrderId: orderId,
+                updatedAt: new Date(),
+              },
+            }
+          );
+        } catch (ltvError) {
+          logger.warn('API', 'Customer LTV increment failed', {
+            orderId,
+            error: ltvError instanceof Error ? ltvError.message : String(ltvError),
+          });
+        }
+      }
+    } else if (isCompleted) {
+      logger.debug('API', 'Paid-once side effects already applied for this order', {
         orderId,
-        couponCode: order?.coupon?.code,
-        error: couponError instanceof Error ? couponError.message : String(couponError) 
-      });
-      
-      Sentry.captureException(couponError, {
-        tags: { api: 'payments', severity: 'high', issue: 'coupon_not_marked_used' },
-        extra: { orderId, couponCode: order?.coupon?.code, paymentId: payment.id }
       });
     }
     

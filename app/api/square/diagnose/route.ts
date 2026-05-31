@@ -4,13 +4,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSquareClient, getSquareLocationId, getSquareApplicationId, validateSquareConfig } from '@/lib/square';
 import { logger } from '@/lib/logger';
 import { getAdminSession } from '@/lib/admin-session';
+import { blockInProduction } from '@/lib/diagnostics-guard';
 
 /**
  * Square Authentication Diagnostic Endpoint
- * Tests Square API connectivity and identifies authentication issues
+ * Tests Square API connectivity and identifies authentication issues.
+ *
+ * SECURITY: returns 404 in production. The output details Square auth state
+ * which we never want to surface to an internet visitor.
  */
 
 export async function GET(request: NextRequest) {
+  const blocked = blockInProduction(request);
+  if (blocked) return blocked;
+
   const admin = await getAdminSession(request);
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
