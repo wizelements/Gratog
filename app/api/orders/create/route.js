@@ -10,6 +10,11 @@ import {
   withIdempotency, 
   isValidIdempotencyKey 
 } from '@/lib/idempotency';
+import { generateOrderAccessToken } from '@/lib/order-access-token';
+
+// Order access token TTL — must outlive the longest realistic checkout session.
+// Payment route uses 30m; we use the same so the token survives until pay click.
+const ORDER_ACCESS_TOKEN_TTL_MS = 30 * 60 * 1000;
 
 const INTERNAL_REWARDS_TOKEN = process.env.MASTER_API_KEY || process.env.ADMIN_API_KEY || '';
 
@@ -130,6 +135,15 @@ export async function POST(request) {
           });
         }
         
+        // Mint an order access token so the (guest) checkout can authorize
+        // its subsequent POST /api/payments call. Without this every guest
+        // payment is rejected with 401 UNAUTHORIZED_PAYMENT_ACCESS.
+        const accessToken = generateOrderAccessToken({
+          orderId: order.id,
+          customerEmail: order.customerEmail,
+          ttlMs: ORDER_ACCESS_TOKEN_TTL_MS,
+        });
+
         return {
           success: true,
           order: {
@@ -139,8 +153,10 @@ export async function POST(request) {
             paymentStatus: order.paymentStatus,
             squareOrderId: order.squareOrderId || null,
             squareCustomerId: order.squareCustomerId || null,
-            orderAccessToken: null,
-            orderAccessTokenExpiresAt: null,
+            orderAccessToken: accessToken,
+            orderAccessTokenExpiresAt: accessToken
+              ? new Date(Date.now() + ORDER_ACCESS_TOKEN_TTL_MS).toISOString()
+              : null,
             items: order.items,
             pricing: {
               subtotal: order.subtotal,
