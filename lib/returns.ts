@@ -5,7 +5,7 @@
 
 import { logger } from './logger';
 import { connectToDatabase } from './db-optimized';
-import { sendEmail } from './email';
+import { sendEmail } from './resend-email';
 
 // Return window in days (default: 30)
 const RETURN_WINDOW_DAYS = parseInt(process.env.RETURNS_WINDOW_DAYS || '30');

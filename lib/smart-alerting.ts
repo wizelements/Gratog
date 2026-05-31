@@ -264,7 +264,7 @@ class SmartAlerter {
     const email = process.env.ALERT_EMAIL;
     if (!email) return;
 
-    // Integrate with email service (SendGrid, AWS SES, etc.)
+    // Integrate with email service (Resend)
     const subject = `[${alert.rule.severity.toUpperCase()}] ${alert.rule.name}`;
     const body = this.generateEmailBody(alert);
 

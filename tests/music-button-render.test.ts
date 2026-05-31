@@ -240,8 +240,11 @@ describe('Music Button Integration - Full Render Path', () => {
     
     // Find key components
     const providerWrapperStart = lines.findIndex(l => l.includes('<MusicProviderWrapper'));
-    const suspenseStart = lines.findIndex(l => l.includes('<Suspense'));
     const musicControlsStart = lines.findIndex(l => l.includes('<MusicControls'));
+    // Find the Suspense that immediately precedes <MusicControls>
+    const suspenseStart = lines.findIndex(
+      (l, i) => l.includes('<Suspense') && i > providerWrapperStart && i < musicControlsStart
+    );
     const providerWrapperEnd = lines.findIndex((l, i) => i > providerWrapperStart && l.includes('</MusicProviderWrapper>'));
     
     // Verify nesting order
@@ -258,11 +261,15 @@ describe('Music Button Integration - Full Render Path', () => {
     
     const content = await fs.readFile(layoutPath, 'utf-8');
     
-    // Find the Suspense fallback
-    const fallbackMatch = content.match(/fallback\s*=\s*{([^}]+)}/);
-    expect(fallbackMatch).toBeTruthy();
-    
-    const fallbackContent = fallbackMatch?.[1] || '';
+    // Find the Suspense that wraps <MusicControls /> and inspect its fallback.
+    // layout.js has multiple Suspense boundaries; the music one is the one that
+    // wraps MusicControls. We scan back from <MusicControls> to its opening
+    // <Suspense ...> tag so we don't depend on nested-brace regex parsing.
+    const musicControlsIdx = content.indexOf('<MusicControls');
+    expect(musicControlsIdx).toBeGreaterThan(0);
+    const suspenseOpenIdx = content.lastIndexOf('<Suspense', musicControlsIdx);
+    expect(suspenseOpenIdx).toBeGreaterThan(0);
+    const fallbackContent = content.slice(suspenseOpenIdx, musicControlsIdx);
     
     // Should not be empty or null
     expect(fallbackContent.length).toBeGreaterThan(10);
@@ -270,8 +277,8 @@ describe('Music Button Integration - Full Render Path', () => {
     // Should have className for visibility
     expect(fallbackContent).toMatch(/className/);
     
-    // Should have some content (♪, text, etc)
-    expect(fallbackContent.match(/[♪\w]/)).toBeTruthy();
+    // Should have some content (♪, 🎵, text, etc)
+    expect(fallbackContent.match(/[♪🎵\w]/)).toBeTruthy();
   });
 });
 
