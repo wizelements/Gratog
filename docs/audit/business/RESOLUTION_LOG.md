@@ -102,9 +102,61 @@ All revenue/security-critical checks green. Cron route is deferred (Phase
 
 - [ ] Rotate `MONGODB_URI` (was echoed into earlier transcript during PTY
       automation while adding the Preview env var). Treat as compromised.
-- [ ] Rotate `ADMIN_API_KEY` / `MASTER_API_KEY` per Phase 2.2 rotation
-      checklist (boilerplate hardening, not a known leak).
-- [ ] Run `node scripts/setup-database-indexes.js` against prod Mongo to
-      apply the new reward/email/contact indexes.
+      **Explicitly deferred for the 2026-06-01 release verification per
+      operator instruction "without rotating Mongo credentials".**
+- [x] ~~Rotate `ADMIN_API_KEY` / `MASTER_API_KEY` per Phase 2.2 rotation
+      checklist~~. **No rotation needed** — 2026-06-01 audit shows these
+      env vars are not present in Vercel production. All remaining code
+      references are dead code or fail-closed under `undefined`. See
+      [ADMIN_KEY_AUDIT.md](./ADMIN_KEY_AUDIT.md).
+- [x] Run `node scripts/setup-database-indexes.js` against prod Mongo to
+      apply the new reward/email/contact indexes — **done 2026-06-01**.
+      See [MONGO_INDEX_VERIFICATION.md](./MONGO_INDEX_VERIFICATION.md).
 - [ ] Optional: implement `app/api/cron/cleanup-abandoned-orders/route.ts`
       (Phase 7.5) once `CRON_SECRET` is set in prod.
+
+### 2026-06-01 — v1.0-boringly-reliable verification cycle (Amp)
+
+- **Production deployment under test:** `gratog-6himwzv35`
+- **Production commit under test:** `0605c879`
+- **Docs commit prior:** `46e49df6`
+- **Result:** **TAG NOT CUT.** Two blockers identified — see
+  [FINAL_SCORECARD.md](./FINAL_SCORECARD.md).
+- **Cleared:** admin key audit (ADMIN_KEY_AUDIT.md), index verification
+  (MONGO_INDEX_VERIFICATION.md), post-index curl matrix
+  (SECURITY_CURL_MATRIX.md and FINAL_VALIDATION_REPORT.md), LTV audit
+  (CUSTOMER_LTV_BACKFILL_REPORT.md), rollback documentation
+  (ROLLBACK_DRILL.md and RUNBOOK.md).
+- **Both blockers cleared 2026-06-01 (later same day):**
+  1. Operator updated the DKIM TXT record at Namecheap; Resend
+     re-verified `tasteofgratitude.shop`. Control + production
+     `email_sends` rows now show `status: "sent"` with messageIds
+     `9ea7df01-…`, `f6590daf-…`, `72ef97c9-…`.
+  2. Real live order placed:
+     `0ca234e0-eb0b-4397-82f6-bfa14bf4f81f` (order# `F4F81F`, 1× Kissed
+     by Gods @ $11.99). `paidEffectsAppliedAt` set exactly once; one
+     `reward_transactions` row (12 pts); one `email_sends` row
+     (`status: "sent"`); one `payment_records` row (COMPLETED);
+     `customers.totalOrders=1`, `totalSpent=11.99`. Square
+     `payment.updated` webhook replayed against
+     `/api/webhooks/square` → all counters unchanged
+     (idempotency confirmed).
+
+### 2026-06-01 — Defects discovered + fixed during live verification
+
+- `e1a1576a` — fix(db): expose native MongoClient so withTransaction /
+  endSession work. Without this, every `POST /api/orders/create` 500'd
+  with `d.endSession is not a function`. Root cause: mongoose 8's
+  `Connection.startSession` returns a Promise; we were treating it as
+  sync.
+- `a498b0cf` — fix(payments): restore inline `createSquareOrder` block.
+  The boringly-reliable revenue-core refactor removed the only Square
+  order creation site while still demanding `squareOrderId` on the
+  order. Every payment attempt 409'd with `MISSING_SQUARE_ORDER_ID`.
+  Restored from `00db3847`, with Square line items now built from the
+  stored server-priced `order.items` (not client lineItems) so
+  server-authoritative pricing is preserved.
+
+### Tag
+
+`v1.0-boringly-reliable` cut on commit `a498b0cf`.

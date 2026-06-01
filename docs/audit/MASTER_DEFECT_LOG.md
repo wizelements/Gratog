@@ -12,6 +12,22 @@
 
 ## 🔴 Critical
 
+### C0 — Resend sender domain `tasteofgratitude.shop` not verified
+- **Discovered:** 2026-06-01 during v1.0-boringly-reliable verification.
+- **Description:** All `email_sends` rows from 2026-06-01 carry
+  `status:"failed"` with Resend error *"The tasteofgratitude.shop
+  domain is not verified."* This affects the contact-notification path
+  observed and, by implication, every transactional email originating
+  from that From-domain (including order confirmations).
+- **Impact:** Customers placing live orders today would not receive
+  receipt emails. Observability captures the failure cleanly, but the
+  user-visible defect is total email loss for the affected sender.
+- **Recommended fix:** Verify `tasteofgratitude.shop` on Resend, OR
+  repoint `RESEND_FROM_EMAIL` to an already-verified domain. After
+  remediation, replay an order confirmation and verify the next
+  `email_sends` row has `status:"sent"` and a non-null `messageId`.
+- **Release-blocking for v1.0-boringly-reliable: YES.**
+
 ### C1 — 64 referenced API routes missing
 - **Description:** Cleanup commit `04768656` deleted dozens of route files. Subsequent restoration covered ~9 (orders/create, by-ref, rewards/{add-points,passport}, queue/{join,position}, user/rewards, webhooks/resend, ics/market-route); 64 remain missing.
 - **Impact:** Customer auth, contact, quiz, reviews, wishlist, newsletter, unsubscribe, profile, notifications admin, queue admin, waitlist admin, and more — all dead.

@@ -5,6 +5,31 @@
 > **Bypass header:** `x-vercel-protection-bypass: <user-supplied token>`
 > Date executed: 2026-05-31
 
+## v1.0-boringly-reliable production re-run (2026-06-01)
+
+Production target: `gratog-6himwzv35` / https://tasteofgratitude.shop @ `0605c879`.
+No bypass header; clean unauthenticated client.
+
+| Endpoint | Status | Expected | Result |
+| --- | :---: | :---: | :---: |
+| `GET /` | 200 | 200 | ✅ |
+| `GET /api/debug/square` | 404 | 404 | ✅ |
+| `GET /api/square/diagnose` | 404 | 404 | ✅ |
+| `GET /api/square/test-rest` | 404 | 404 | ✅ |
+| `GET /api/square/validate-token` | 404 | 404 | ✅ |
+| `GET /api/startup` | 404 | 404 | ✅ |
+| `GET /api/pay/process` | 410 | 410 | ✅ |
+| `GET /api/checkout` | 410 | 410 | ✅ |
+| `GET /api/create-checkout` | 410 | 410 | ✅ |
+| `GET /api/admin/auth/me` | 401 (`ADMIN_AUTH_REQUIRED`) | 401 | ✅ |
+| `GET /api/admin/inventory` | 401 (`ADMIN_AUTH_REQUIRED`) | 401 | ✅ |
+| `GET /api/contact` | 405 | 4xx | ✅ |
+| `GET /api/unsubscribe` (no token) | 400 | 4xx | ✅ |
+
+Security headers on 401: HSTS preload, `x-frame-options: DENY`,
+`x-content-type-options: nosniff`, restrictive `permissions-policy`.
+
+
 ## A. Diagnostic endpoints
 
 | Endpoint | Preview status | Notes |

@@ -20,7 +20,7 @@ const INDEXES = {
   // Orders collection - critical for payment lookups
   orders: [
     { key: { id: 1 }, unique: true, name: 'idx_orders_id' },
-    { key: { _id: 1 }, unique: true },
+    // _id is implicitly unique; do not redeclare here (MongoDB rejects it).
     { key: { 'customer.email': 1 }, name: 'idx_orders_customer_email' },
     { key: { status: 1, createdAt: -1 }, name: 'idx_orders_status_created' },
     { key: { paymentStatus: 1 }, name: 'idx_orders_payment_status' },
@@ -121,7 +121,15 @@ const INDEXES = {
 
   // Transactional email observability
   email_sends: [
-    { key: { messageId: 1 }, unique: true, sparse: true, name: 'idx_email_sends_message_id' },
+    // IDEMPOTENCY: enforce unique messageId only when set to a string.
+    // `sparse` treats `null` as a value (so existing null rows collide);
+    // a partial filter on string skips them safely.
+    {
+      key: { messageId: 1 },
+      unique: true,
+      partialFilterExpression: { messageId: { $type: 'string' } },
+      name: 'idx_email_sends_message_id',
+    },
     { key: { to: 1, createdAt: -1 }, name: 'idx_email_sends_to_created' },
     { key: { orderId: 1 }, sparse: true, name: 'idx_email_sends_order' },
     { key: { status: 1, createdAt: -1 }, name: 'idx_email_sends_status_created' },
