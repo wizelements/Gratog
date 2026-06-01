@@ -56,9 +56,14 @@ function signEmail(email: string): string {
 }
 
 function verifyToken(token: string): string | null {
-  if (!token || typeof token !== 'string' || !token.includes('.')) return null;
-  const [encEmail, mac] = token.split('.');
-  if (!encEmail || !mac) return null;
+  if (!token || typeof token !== 'string') return null;
+  // Exactly one separator, mac is exactly 64 hex chars (sha256). Reject
+  // any trailing garbage so an attacker can't pad a valid token (Node's
+  // `Buffer.from(s, 'hex')` silently truncates at the first invalid pair).
+  const m = /^([A-Za-z0-9_-]+)\.([0-9a-f]{64})$/.exec(token);
+  if (!m) return null;
+  const [, encEmail, mac] = m;
+
   let email: string;
   try {
     email = b64urlDecode(encEmail).trim().toLowerCase();
