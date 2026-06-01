@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { logger } from '@/lib/logger';
 import { RequestContext } from '@/lib/request-context';
 import { NextRequest, NextResponse } from 'next/server';
-import { createPayment, getPayment as getSquarePayment, findOrCreateCustomer, getSquareConfig } from '@/lib/square-api';
+import { createPayment, getPayment as getSquarePayment, findOrCreateCustomer, createOrder as createSquareOrder, getSquareConfig } from '@/lib/square-api';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
 import * as Sentry from '@sentry/nextjs';
@@ -642,6 +642,80 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    if (!squareOrderId) {
+      // Create the Square order inline. Line items come from the stored
+      // server-priced order; never trust the client-supplied lineItems for
+      // price (server-authoritative pricing). Falls back to a single-line
+      // item at the server-validated amount if order.items is unavailable.
+      const squareLineItems =
+        Array.isArray(order.items) && order.items.length > 0
+          ? order.items.map((it: any) => {
+              const cents = Number.isFinite(it.priceCents)
+                ? Number(it.priceCents)
+                : Math.round((Number(it.price) || 0) * 100);
+              const catalogObjectId =
+                typeof it.catalogObjectId === 'string' && it.catalogObjectId.length > 20
+                  ? it.catalogObjectId
+                  : undefined;
+              return {
+                catalogObjectId,
+                name: String(it.name || 'Item').slice(0, 255),
+                quantity: String(Number(it.quantity) || 1),
+                basePriceMoney: { amount: cents, currency },
+              };
+            })
+          : [
+              {
+                name: 'Order Payment',
+                quantity: '1',
+                basePriceMoney: { amount: validatedAmountCents, currency },
+              },
+            ];
+
+      try {
+        const orderResult = await createSquareOrder({
+          referenceId: orderId,
+          customerId: squareCustomerId,
+          lineItems: squareLineItems,
+          metadata: {
+            localOrderId: orderId,
+            orderNumber: order.orderNumber || '',
+            customerEmail: customerInfo?.email || '',
+            source: 'gratog_web',
+          },
+          idempotencyKey: orderIdempotencyKey,
+        });
+
+        if (orderResult.success && orderResult.data?.order) {
+          squareOrderId = orderResult.data.order.id;
+          logger.info('API', 'Square order created', {
+            traceId: ctx.traceId,
+            orderId,
+            squareOrderId,
+          });
+
+          // Persist so future retries / webhooks can resolve the same Square order.
+          await db.collection('orders').updateOne(
+            { id: orderId },
+            { $set: { squareOrderId, updatedAt: new Date().toISOString() } }
+          );
+        } else {
+          logger.error('API', 'Failed to create Square order', {
+            traceId: ctx.traceId,
+            orderId,
+            errors: orderResult.errors,
+          });
+        }
+      } catch (orderError) {
+        logger.error('API', 'Square order creation threw', {
+          traceId: ctx.traceId,
+          orderId,
+          error: orderError instanceof Error ? orderError.message : String(orderError),
+        });
+      }
+    }
+
+    // If still missing after inline create attempt, refuse payment.
     if (!squareOrderId) {
       logger.error('API', 'Missing Square order ID — cannot process payment safely', {
         traceId: ctx.traceId,
