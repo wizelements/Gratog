@@ -20,7 +20,11 @@ if (!global.mongoose) {
 
 export async function connectToDatabase(): Promise<{ db: any; client: any }> {
   if (cached.conn) {
-    return { db: cached.conn.db, client: cached.conn };
+    // Return the native MongoClient (not the mongoose Connection wrapper) so
+    // callers can use `client.startSession()` / transactions correctly. The
+    // mongoose Connection's startSession returns a Promise in mongoose 8+,
+    // which breaks `withTransaction` / `endSession` in lib/transactions.ts.
+    return { db: cached.conn.db, client: cached.conn.getClient() };
   }
 
   if (!cached.promise) {
@@ -40,7 +44,7 @@ export async function connectToDatabase(): Promise<{ db: any; client: any }> {
 
   try {
     cached.conn = await cached.promise;
-    return { db: cached.conn.db, client: cached.conn };
+    return { db: cached.conn.db, client: cached.conn.getClient() };
   } catch (e) {
     cached.promise = null;
     throw e;
