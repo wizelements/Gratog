@@ -195,11 +195,11 @@ function unitPriceCentsFromProduct(
   return 0;
 }
 
-function isProductPurchasable(product: UnifiedProductDoc): boolean {
+function isProductPurchasable(product: UnifiedProductDoc, isPreorder = false): boolean {
   if (product.squareIsArchived === true) return false;
-  // squareEcomAvailable / inStock are advisory; if explicitly false, block.
   if (product.squareEcomAvailable === false) return false;
-  if (product.inStock === false) return false;
+  // Preorder items are made-to-order — inStock doesn't apply
+  if (!isPreorder && product.inStock === false) return false;
   return true;
 }
 
@@ -374,7 +374,7 @@ export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
         { key }
       );
     }
-    if (!isProductPurchasable(product)) {
+    if (!isProductPurchasable(product, !!item.isPreorder)) {
       throw new CartPricingError(
         'PRODUCT_UNAVAILABLE',
         `Product is not currently available: ${product.name}`,
