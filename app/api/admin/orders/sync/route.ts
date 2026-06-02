@@ -28,8 +28,8 @@ export const POST = withAdminMiddleware(
   async (request: AuthenticatedRequest) => {
     try {
       const { db } = await connectToDatabase();
-      const result = await syncSquareOrders(db, { limit: 200 });
-      return NextResponse.json({ success: true, ...result });
+      const { success: _, ...rest } = await syncSquareOrders(db, { limit: 200 });
+      return NextResponse.json({ success: true, ...rest });
     } catch (error) {
       logger.error('SYNC', 'Square sync failed', error);
       return NextResponse.json(

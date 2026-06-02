@@ -11,11 +11,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify, SignJWT } from 'jose';
 
+export type AdminRole = 'admin' | 'super_admin';
+
 // Standardized admin token payload shape
 export interface AdminTokenPayload {
   id: string;
   email: string;
-  role: 'admin';
+  role: AdminRole;
   name?: string;
   iat?: number;
   exp?: number;
@@ -24,7 +26,7 @@ export interface AdminTokenPayload {
 export interface AdminSession {
   id: string;
   email: string;
-  role: 'admin';
+  role: AdminRole;
   name?: string;
 }
 
@@ -62,21 +64,23 @@ export async function verifyAdminToken(token: string): Promise<AdminTokenPayload
     const secretKey = getJwtSecretKey();
     const { payload } = await jwtVerify(token, secretKey);
     
-    // SECURITY: Must have admin role
-    if (payload.role !== 'admin') {
+    // SECURITY: Must have a valid admin role. `super_admin` is a superset of
+    // `admin` and is issued by lib/auth/unified-admin.ts for elevated users.
+    if (payload.role !== 'admin' && payload.role !== 'super_admin') {
       return null;
     }
     
     // Support both 'id' and 'userId' for backward compatibility
     const id = (payload.id || payload.userId) as string;
-    if (!id) {
+    const email = payload.email as string | undefined;
+    if (!id || !email) {
       return null;
     }
     
     return {
       id,
-      email: payload.email as string,
-      role: 'admin',
+      email,
+      role: payload.role,
       name: payload.name as string | undefined,
     };
   } catch (error) {
@@ -94,6 +98,7 @@ const TOKEN_ROTATION_THRESHOLD_MS = 24 * 60 * 60 * 1000; // Rotate if more than 
 export async function generateAdminToken(admin: {
   id: string;
   email: string;
+  role?: AdminRole;
   name?: string;
 }): Promise<string> {
   const secretKey = getJwtSecretKey();
@@ -101,7 +106,7 @@ export async function generateAdminToken(admin: {
   const token = await new SignJWT({
     id: admin.id,
     email: admin.email,
-    role: 'admin',
+    role: admin.role || 'admin',
     name: admin.name,
   })
     .setProtectedHeader({ alg: 'HS256' })

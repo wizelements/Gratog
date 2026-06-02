@@ -6,13 +6,13 @@ export const dynamic = 'force-dynamic';
  * Returns current admin user info for session validation.
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSession } from '@/lib/auth/unified-admin';
 import { logger } from '@/lib/logger';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const admin = await getAdminSession(request as any);
+    const admin = await getAdminSession(request);
     
     if (!admin) {
       return NextResponse.json(

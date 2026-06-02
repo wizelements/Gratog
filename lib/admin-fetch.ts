@@ -96,8 +96,35 @@ interface FetchResult<T> {
   data?: T;
   error?: string;
   status: number;
+  ok: boolean;
+  headers?: Headers;
+  json: () => Promise<any>;
   rateLimited?: boolean;
   retryAfter?: number;
+}
+
+function createFetchResult<T>(params: {
+  body: any;
+  ok: boolean;
+  status: number;
+  headers?: Headers;
+  error?: string;
+  rateLimited?: boolean;
+  retryAfter?: number;
+}): FetchResult<T> {
+  const { body, ok, status, headers, rateLimited, retryAfter } = params;
+  const error = params.error || body?.error;
+  return {
+    success: ok && body?.success !== false,
+    data: body?.data ?? body,
+    error,
+    status,
+    ok,
+    headers,
+    json: async () => body,
+    rateLimited,
+    retryAfter,
+  };
 }
 
 /**
@@ -130,11 +157,14 @@ export async function adminFetch<T>(
     
     if (!token) {
       logger.error('CSRF', 'CSRF token not available');
-      return {
-        success: false,
-        error: 'Security token not available. Please refresh the page.',
+      return createFetchResult<T>({
+        body: {
+          success: false,
+          error: 'Security token not available. Please refresh the page.',
+        },
+        ok: false,
         status: 403,
-      };
+      });
     }
     
     requestHeaders['x-csrf-token'] = token;
@@ -146,24 +176,25 @@ export async function adminFetch<T>(
       headers: requestHeaders,
       credentials: 'include',
     });
+    const data = await response.json().catch(() => ({}));
     
     // Handle rate limiting
     if (response.status === 429) {
       const retryAfter = response.headers.get('Retry-After');
       
-      return {
-        success: false,
-        error: 'Rate limit exceeded. Please try again later.',
+      return createFetchResult<T>({
+        body: data,
+        ok: false,
         status: 429,
+        headers: response.headers,
+        error: data.error || 'Rate limit exceeded. Please try again later.',
         rateLimited: true,
         retryAfter: retryAfter ? parseInt(retryAfter, 10) : 60,
-      };
+      });
     }
     
     // Handle CSRF errors (token may have expired)
     if (response.status === 403) {
-      const data = await response.json().catch(() => ({}));
-      
       if (data.code === 'CSRF_INVALID' && retryCount < 1) {
         // Clear token and retry once
         clearCsrfToken();
@@ -178,31 +209,33 @@ export async function adminFetch<T>(
         window.location.href = '/admin/login?redirect=' + encodeURIComponent(window.location.pathname);
       }
       
-      return {
-        success: false,
-        error: 'Session expired. Please log in again.',
+      return createFetchResult<T>({
+        body: data,
+        ok: false,
         status: 401,
-      };
+        headers: response.headers,
+        error: data.error || 'Session expired. Please log in again.',
+      });
     }
     
-    // Parse response
-    const data = await response.json();
-    
-    return {
-      success: response.ok && data.success,
-      data: data.data || data,
-      error: data.error,
+    return createFetchResult<T>({
+      body: data,
+      ok: response.ok,
       status: response.status,
-    };
+      headers: response.headers,
+    });
     
   } catch (error) {
     logger.error('FETCH', 'Admin fetch error', { url, error });
     
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Network error',
+    return createFetchResult<T>({
+      body: {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error',
+      },
+      ok: false,
       status: 0,
-    };
+    });
   }
 }
 

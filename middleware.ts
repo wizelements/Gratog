@@ -15,7 +15,6 @@ const PUBLIC_ADMIN_ROUTES = ['/admin/login'];
 // before any session exists.
 const PUBLIC_ADMIN_API_ROUTES = [
   '/api/admin/auth/login',
-  '/api/admin/auth/me',
   '/api/admin/auth/logout',
   '/api/admin/auth/reset-password',
 ];

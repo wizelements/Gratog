@@ -3,18 +3,20 @@
 export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ShieldCheck, Loader2 } from 'lucide-react';
+import { Shield, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/admin';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +36,7 @@ export default function AdminLoginPage() {
 
       if (response.ok) {
         toast.success('Login successful!');
-        router.push('/admin');
+        router.push(redirect);
         router.refresh();
       } else {
         toast.error(data.error || 'Login failed');
@@ -53,7 +55,7 @@ export default function AdminLoginPage() {
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-[#D4AF37]/10 rounded-full">
-              <ShieldCheck className="h-10 w-10 text-[#D4AF37]" />
+              <Shield className="h-10 w-10 text-[#D4AF37]" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold text-gradient-gold">

@@ -32,6 +32,7 @@ const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 // In-memory rate limiting (use Redis in production)
 const rateLimitStore = new Map<string, { count: number; resetAt: number; locked?: boolean; lockUntil?: number }>();
+type LoginRateLimit = { allowed: boolean; remaining: number; resetAt: number; locked?: boolean; lockUntil?: number };
 
 // ============================================================================
 // VALIDATION SCHEMA
@@ -47,7 +48,7 @@ const LoginSchema = z.object({
 // RATE LIMITING
 // ============================================================================
 
-function checkLoginRateLimit(key: string): { allowed: boolean; remaining: number; resetAt: number; locked?: boolean; lockUntil?: number } {
+function checkLoginRateLimit(key: string): LoginRateLimit {
   const now = Date.now();
   const entry = rateLimitStore.get(key);
   
@@ -68,9 +69,7 @@ function checkLoginRateLimit(key: string): { allowed: boolean; remaining: number
   }
   
   if (!entry || now > entry.resetAt) {
-    // New window
-    rateLimitStore.set(key, { count: 1, resetAt: now + LOCKOUT_DURATION_MS });
-    return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS - 1, resetAt: now + LOCKOUT_DURATION_MS };
+    return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS, resetAt: now + LOCKOUT_DURATION_MS };
   }
   
   // Check if max attempts reached
@@ -87,19 +86,74 @@ function checkLoginRateLimit(key: string): { allowed: boolean; remaining: number
     };
   }
   
-  entry.count++;
   return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS - entry.count, resetAt: entry.resetAt };
 }
 
-function recordFailedAttempt(key: string): void {
+function recordFailedAttempt(key: string): LoginRateLimit {
   const now = Date.now();
   const entry = rateLimitStore.get(key);
+  const resetAt = now + LOCKOUT_DURATION_MS;
   
   if (!entry || now > entry.resetAt) {
-    rateLimitStore.set(key, { count: 1, resetAt: now + LOCKOUT_DURATION_MS });
-  } else {
-    entry.count++;
+    const next = { count: 1, resetAt };
+    rateLimitStore.set(key, next);
+    return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS - 1, resetAt };
   }
+
+  entry.count++;
+
+  if (entry.count >= MAX_LOGIN_ATTEMPTS) {
+    entry.locked = true;
+    entry.lockUntil = now + LOCKOUT_DURATION_MS;
+    return {
+      allowed: false,
+      remaining: 0,
+      resetAt: entry.lockUntil,
+      locked: true,
+      lockUntil: entry.lockUntil,
+    };
+  }
+
+  return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS - entry.count, resetAt: entry.resetAt };
+}
+
+function rateLimitResponse(rateLimit: LoginRateLimit): NextResponse {
+  const retryAfter = rateLimit.lockUntil
+    ? Math.ceil((rateLimit.lockUntil - Date.now()) / 1000)
+    : 900;
+
+  return NextResponse.json(
+    {
+      success: false,
+      error: rateLimit.locked
+        ? 'Account temporarily locked due to too many failed attempts. Please try again later.'
+        : 'Too many login attempts. Please try again later.',
+      retryAfter,
+      locked: rateLimit.locked,
+    },
+    {
+      status: 429,
+      headers: { 'Retry-After': String(retryAfter) },
+    }
+  );
+}
+
+function invalidCredentialsResponse(rateLimit: LoginRateLimit): NextResponse {
+  if (rateLimit.locked) {
+    return rateLimitResponse(rateLimit);
+  }
+
+  const response: Record<string, unknown> = {
+    success: false,
+    error: 'Invalid credentials',
+  };
+
+  // Warn about remaining attempts
+  if (rateLimit.remaining <= 2) {
+    response.warning = `${rateLimit.remaining} attempts remaining before temporary lockout`;
+  }
+
+  return NextResponse.json(response, { status: 401 });
 }
 
 function getClientIp(request: NextRequest): string {
@@ -132,20 +186,7 @@ export async function POST(request: NextRequest) {
         retryAfter,
       });
       
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: rateLimit.locked 
-            ? 'Account temporarily locked due to too many failed attempts. Please try again later.'
-            : 'Too many login attempts. Please try again later.',
-          retryAfter,
-          locked: rateLimit.locked,
-        },
-        { 
-          status: 429,
-          headers: { 'Retry-After': String(retryAfter) },
-        }
-      );
+      return rateLimitResponse(rateLimit);
     }
     
     // Parse and validate body
@@ -181,19 +222,28 @@ export async function POST(request: NextRequest) {
     // Check if user exists and is active
     if (!admin || admin.isActive === false) {
       // Record failed attempt (even for non-existent users to prevent user enumeration)
-      recordFailedAttempt(rateLimitKey);
+      const failedRateLimit = recordFailedAttempt(rateLimitKey);
       
       logger.warn('LOGIN', 'Failed login attempt - user not found or inactive', { 
         email: normalizedEmail, 
         ip,
-        remaining: rateLimit.remaining - 1,
+        remaining: failedRateLimit.remaining,
       });
       
       // Generic error to prevent user enumeration
-      return NextResponse.json(
-        { success: false, error: 'Invalid credentials' },
-        { status: 401 }
-      );
+      return invalidCredentialsResponse(failedRateLimit);
+    }
+
+    if (typeof admin.passwordHash !== 'string' || !admin.passwordHash) {
+      const failedRateLimit = recordFailedAttempt(rateLimitKey);
+
+      logger.warn('LOGIN', 'Failed login attempt - missing password hash', {
+        email: normalizedEmail,
+        ip,
+        remaining: failedRateLimit.remaining,
+      });
+
+      return invalidCredentialsResponse(failedRateLimit);
     }
     
     // Verify password
@@ -201,9 +251,7 @@ export async function POST(request: NextRequest) {
     
     if (!isPasswordValid) {
       // Record failed attempt
-      recordFailedAttempt(rateLimitKey);
-      
-      const updatedRateLimit = checkLoginRateLimit(rateLimitKey);
+      const updatedRateLimit = recordFailedAttempt(rateLimitKey);
       
       logger.warn('LOGIN', 'Failed login attempt - invalid password', { 
         email: normalizedEmail, 
@@ -212,21 +260,11 @@ export async function POST(request: NextRequest) {
       });
       
       // Generic error
-      const response: Record<string, unknown> = { 
-        success: false, 
-        error: 'Invalid credentials',
-      };
-      
-      // Warn about remaining attempts
-      if (updatedRateLimit.remaining <= 2) {
-        response.warning = `${updatedRateLimit.remaining} attempts remaining before temporary lockout`;
-      }
-      
-      return NextResponse.json(response, { status: 401 });
+      return invalidCredentialsResponse(updatedRateLimit);
+    } else {
+      // Password valid - clear rate limit
+      rateLimitStore.delete(rateLimitKey);
     }
-    
-    // Password valid - clear rate limit
-    rateLimitStore.delete(rateLimitKey);
     
     // Generate JWT token
     const token = await generateAdminToken({

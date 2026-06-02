@@ -15,6 +15,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify, SignJWT } from 'jose';
+import * as bcrypt from 'bcryptjs';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 
@@ -444,25 +445,27 @@ function timingSafeEqual(a: string, b: string): boolean {
 // ============================================================================
 
 /**
- * Hash a password using bcrypt (browser-compatible)
- * Note: In production, this should use Node.js crypto or a proper bcrypt implementation
+ * Hash a password using bcrypt
  */
 export async function hashPassword(password: string): Promise<string> {
-  // For browser/Edge compatibility, we'll use a simple hash
-  // In production, use a proper bcrypt implementation on the server
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + getJwtSecret().slice(0, 32));
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return bcrypt.hash(password, 12);
 }
 
 /**
- * Verify a password
+ * Verify a password against a hash (supports legacy SHA-256 migration)
  */
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  const computedHash = await hashPassword(password);
-  return timingSafeEqual(computedHash, hash);
+  // Support legacy SHA-256 hashes (64-char hex strings) for migration
+  if (hash.length === 64 && /^[a-f0-9]+$/.test(hash)) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password + getJwtSecret().slice(0, 32));
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const legacyHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return timingSafeEqual(legacyHash, hash);
+  }
+  // Standard bcrypt verification
+  return bcrypt.compare(password, hash);
 }
 
 // ============================================================================

@@ -37,16 +37,17 @@ function createRequest(body: unknown) {
     async json() {
       return body;
     },
+    headers: new Headers({ 'x-forwarded-for': '127.0.0.1' }),
   };
 }
 
-describe.skip('Auth Register Route Pending Customer Reconciliation — route removed, pending reimplementation', () => {
+describe('Auth Register Route Pending Customer Reconciliation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
     validateRegistrationMock.mockReturnValue({ valid: true, errors: {} });
     hashPasswordMock.mockResolvedValue('hashed-password');
-    generateTokenMock.mockReturnValue('jwt-token');
+    generateTokenMock.mockResolvedValue('jwt-token');
     sendWelcomeEmailMock.mockResolvedValue(undefined);
     initializeUserRewardsMock.mockResolvedValue({});
     initializeUserChallengeMock.mockResolvedValue({});

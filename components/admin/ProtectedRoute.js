@@ -38,7 +38,11 @@ export default function ProtectedRoute({ children }) {
       
       const data = await response.json();
       
-      if (data.success && data.user && data.user.role === 'admin') {
+      if (
+        data.success &&
+        data.user &&
+        ['admin', 'super_admin'].includes(data.user.role)
+      ) {
         setIsAuthenticated(true);
       } else {
         // Invalid response - redirect to login

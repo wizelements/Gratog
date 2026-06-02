@@ -41,7 +41,7 @@ export async function verifyAdminCookieToken(token: string): Promise<AdminTokenP
     const secretKey = getJwtSecretKey();
     const { payload } = await jwtVerify(token, secretKey);
     
-    if (payload.role !== 'admin') {
+    if (payload.role !== 'admin' && payload.role !== 'super_admin') {
       return null;
     }
     
@@ -68,7 +68,7 @@ export function decodeTokenPayload(token: string): AdminTokenPayload | null {
     
     const payload = JSON.parse(atob(parts[1]));
     
-    if (payload.role !== 'admin') {
+    if (payload.role !== 'admin' && payload.role !== 'super_admin') {
       return null;
     }
     
