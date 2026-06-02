@@ -67,14 +67,21 @@ export async function POST(request) {
       return NextResponse.json({ received: true, ignored: true });
     }
     
-    // Update email_sends record
+    // Update email_sends record (check both resendId and messageId for correlation)
     const updateResult = await db.collection('email_sends').updateOne(
-      { resendId: data.email_id },
+      {
+        $or: [
+          { resendId: data.email_id },
+          { messageId: data.email_id }
+        ]
+      },
       {
         $set: {
           [`events.${status}`]: new Date(),
           lastEventType: status,
-          lastEventAt: new Date()
+          lastEventAt: new Date(),
+          ...(status === 'delivered' && { deliveredAt: new Date() }),
+          ...(status === 'bounced' && { bouncedAt: new Date() }),
         },
         $push: {
           eventLog: {
@@ -93,7 +100,7 @@ export async function POST(request) {
     
     // Also update email_logs for individual emails
     await db.collection('email_logs').updateOne(
-      { resendId: data.email_id },
+      { $or: [{ resendId: data.email_id }, { messageId: data.email_id }] },
       {
         $set: {
           deliveryStatus: status,
@@ -104,7 +111,9 @@ export async function POST(request) {
     
     // Update campaign stats if this was a campaign email
     if (updateResult.matchedCount > 0) {
-      const emailSend = await db.collection('email_sends').findOne({ resendId: data.email_id });
+      const emailSend = await db.collection('email_sends').findOne({
+        $or: [{ resendId: data.email_id }, { messageId: data.email_id }]
+      });
       
       if (emailSend?.campaignId) {
         const statField = `stats.${status}`;

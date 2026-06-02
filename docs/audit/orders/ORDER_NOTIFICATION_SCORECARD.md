@@ -5,6 +5,8 @@
 **Owner**: AMP forensic audit
 **Repository**: Gratog-live
 
+**Remediation Plan**: [Order Notification Fix Plan](./ORDER_NOTIFICATION_FIX_PLAN.md)
+
 ---
 
 ## Grades

@@ -890,6 +890,19 @@ export async function POST(request: NextRequest) {
           }
         }
       );
+
+      // Preserve first payment evidence - firstPaidAt must never be overwritten
+      if (isCompleted) {
+        await db.collection('orders').updateOne(
+          { id: orderId, firstPaidAt: { $exists: false } },
+          {
+            $set: {
+              firstPaidAt: new Date().toISOString(),
+              firstPaidSource: 'payment_api',
+            }
+          }
+        );
+      }
     } catch (updateError) {
       logger.error('API', 'Order status update failed after successful payment', { 
         orderId,

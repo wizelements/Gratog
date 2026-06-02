@@ -33,8 +33,10 @@ export const GET = withAdminMiddleware(
       // Status filter with whitelist
       if (status) {
         const allowedStatuses = [
-          'pending', 'confirmed', 'preparing', 'ready', 
-          'delivered', 'picked_up', 'shipped', 'cancelled', 'refunded'
+          'pending', 'payment_processing', 'confirmed', 'preparing', 'ready', 
+          'delivered', 'picked_up', 'shipped', 'fulfilled', 'cancelled', 'refunded',
+          // Legacy uppercase (backward compat)
+          'CONFIRMED', 'COMPLETED', 'PENDING_PAYMENT'
         ];
         if (allowedStatuses.includes(status)) {
           query.status = status;
@@ -96,14 +98,30 @@ export const GET = withAdminMiddleware(
         id: order.id,
         orderNumber: order.orderNumber,
         status: order.status,
+        paymentStatus: order.paymentStatus,
         fulfillmentType: order.fulfillmentType,
-        customerName: order.customerName,
-        customerEmail: order.customerEmail?.replace(/(.{2}).*(@)/, '$1***$2'), // Mask email
+        customerName: order.customerName || order.customer?.name || 'N/A',
+        customerEmail: order.customerEmail || order.customer?.email || '',
+        customerPhone: order.customerPhone || order.customer?.phone || '',
         total: order.total,
         items: order.items?.map((item: { name: string; quantity: number }) => ({
           name: item.name,
           quantity: item.quantity,
         })),
+        // Notification statuses
+        emailSentAt: order.emailSentAt || null,
+        emailFailedAt: order.emailFailedAt || null,
+        emailError: order.emailError || null,
+        staffNotifiedAt: order.staffNotifiedAt || null,
+        staffNotificationStatus: order.staffNotificationStatus || null,
+        staffNotificationError: order.staffNotificationError || null,
+        // Queue status
+        queuePosition: order.queuePosition || null,
+        // Fulfillment notes
+        fulfillmentNotes: order.fulfillmentNotes || order.notes || null,
+        // Timestamps
+        paidAt: order.paidAt || null,
+        firstPaidAt: order.firstPaidAt || null,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt,
         squareOrderId: order.squareOrderId,

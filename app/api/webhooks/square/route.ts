@@ -411,17 +411,27 @@ export async function POST(request: NextRequest) {
     // Connect to database
     const { db } = await connectToDatabase();
     
-    // Event deduplication - prevent double-processing
+    // Event deduplication with retry safety
     const existingEvent = await db.collection('webhook_events_processed').findOne({ eventId });
     
     if (existingEvent) {
-      logger.debug('Webhook', 'Event already processed (idempotent return)', { eventId, eventType });
-      return NextResponse.json({
-        received: true,
-        eventType,
-        eventId,
-        processedAt: existingEvent.processedAt,
-        cached: true
+      if (existingEvent.status === 'success') {
+        // Successfully processed before - skip (idempotent)
+        logger.debug('Webhook', 'Event already processed successfully (idempotent return)', { eventId, eventType });
+        return NextResponse.json({
+          received: true,
+          eventType,
+          eventId,
+          processedAt: existingEvent.processedAt,
+          cached: true
+        });
+      }
+      // Previously failed - allow retry
+      logger.info('Webhook', 'Retrying previously failed event', { 
+        eventId, 
+        eventType, 
+        previousError: existingEvent.error,
+        attemptCount: (existingEvent.attemptCount || 1) + 1
       });
     }
     
@@ -461,14 +471,22 @@ export async function POST(request: NextRequest) {
           logger.debug('Webhook', `Unhandled webhook event type: ${eventType}`);
       }
       
-      // Mark as successfully processed
-      await db.collection('webhook_events_processed').insertOne({
-        eventId,
-        eventType,
-        processedAt: new Date().toISOString(),
-        status: 'success',
-        result: processingResult
-      });
+      // Record successful processing (upsert for retry safety)
+      await db.collection('webhook_events_processed').updateOne(
+        { eventId },
+        {
+          $set: {
+            eventType,
+            processedAt: new Date().toISOString(),
+            status: 'success',
+            result: processingResult,
+            lastAttemptAt: new Date().toISOString(),
+          },
+          $inc: { attemptCount: 1 },
+          $setOnInsert: { firstAttemptAt: new Date().toISOString() }
+        },
+        { upsert: true }
+      );
       
     } catch (eventError) {
       const errorMessage = eventError instanceof Error ? eventError.message : String(eventError);
@@ -484,14 +502,22 @@ export async function POST(request: NextRequest) {
         extra: { eventId }
       });
       
-      // Mark as processed with error (prevents infinite retries)
-      await db.collection('webhook_events_processed').insertOne({
-        eventId,
-        eventType,
-        processedAt: new Date().toISOString(),
-        status: 'error',
-        error: errorMessage
-      });
+      // Record failed processing (upsert, allows retry)
+      await db.collection('webhook_events_processed').updateOne(
+        { eventId },
+        {
+          $set: {
+            eventType,
+            processedAt: new Date().toISOString(),
+            status: 'error',
+            lastError: errorMessage,
+            lastAttemptAt: new Date().toISOString(),
+          },
+          $inc: { attemptCount: 1 },
+          $setOnInsert: { firstAttemptAt: new Date().toISOString() }
+        },
+        { upsert: true }
+      );
       
       // Return 500 so Square knows there was an issue (may retry)
       return NextResponse.json(
@@ -609,6 +635,24 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
   
   // Update with precedence check
   const updated = await updateOrderStatusSafe(db, order.id, newOrderStatus, updateFields);
+  
+  // Preserve first payment evidence
+  if (isCompleted) {
+    await db.collection('orders').updateOne(
+      { id: order.id, firstPaidAt: { $exists: false } },
+      {
+        $set: {
+          firstPaidAt: new Date().toISOString(),
+          firstPaidSource: 'square_webhook',
+        }
+      }
+    );
+    // Always update reconciliation timestamp
+    await db.collection('orders').updateOne(
+      { id: order.id },
+      { $set: { lastPaymentReconciledAt: new Date().toISOString() } }
+    );
+  }
   
   // Send confirmation email if newly paid and not already sent
   if (isCompleted && updated && !order.emailSentAt && order.customer?.email) {

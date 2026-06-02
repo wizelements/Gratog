@@ -65,10 +65,8 @@ export default function OrdersPage() {
   useEffect(() => {
     fetchOrders();
     fetchSyncStatus();
-    // Removed broken interval that wasn't calling fetchOrders
-    return () => {
-      // Cleanup if needed
-    };
+    const interval = setInterval(() => fetchOrders(false), 30000); // 30s polling
+    return () => clearInterval(interval);
   }, [fetchOrders]);
 
   const fetchSyncStatus = async () => {
@@ -393,6 +391,22 @@ export default function OrdersPage() {
                             <Package className="h-3 w-3" />
                             Pickup
                           </Badge>
+                        )}
+                        {/* Notification badges */}
+                        {order.staffNotifiedAt && (
+                          <Badge className="bg-green-100 text-green-800 border-green-300">✓ Staff Alerted</Badge>
+                        )}
+                        {order.staffNotificationStatus === 'failed' && (
+                          <Badge className="bg-red-100 text-red-800 border-red-300">✗ Staff Alert Failed</Badge>
+                        )}
+                        {!order.staffNotifiedAt && order.staffNotificationStatus !== 'failed' && order.paidAt && (
+                          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">⏳ Staff Alert Pending</Badge>
+                        )}
+                        {order.emailSentAt && (
+                          <Badge className="bg-green-100 text-green-800 border-green-300">✓ Email Sent</Badge>
+                        )}
+                        {order.emailFailedAt && !order.emailSentAt && (
+                          <Badge className="bg-red-100 text-red-800 border-red-300">✗ Email Failed</Badge>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">
