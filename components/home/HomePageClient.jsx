@@ -193,7 +193,7 @@ export default function HomePageClient({
                     </Badge>
 
                     <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white">
-                        92 Essential Minerals
+                        Rich Mineral Content
                         <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-300">
                             One Daily Scoop
@@ -201,7 +201,7 @@ export default function HomePageClient({
                     </h1>
 
                     <p className="text-xl md:text-2xl mb-4 text-white/90 max-w-3xl mx-auto">
-                        Wildcrafted sea moss gel packed with everything your body needs. Hand-crafted from pristine ocean waters to support your immune system, thyroid health, and natural energy.
+                        Wildcrafted sea moss gel crafted from pristine ocean waters. A natural addition to your daily wellness routine.*
                     </p>
                     
                     {/* 🎯 PREORDER EMPHASIS: Highlight preorder availability */}
@@ -247,7 +247,7 @@ export default function HomePageClient({
                         </div>
                         <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
                             <CheckCircle className="h-5 w-5 text-emerald-300" />
-                            <span className="font-medium">92 Essential Minerals</span>
+                            <span className="font-medium">Rich Mineral Content</span>
                         </div>
                     </div>
                 </div>
@@ -496,8 +496,8 @@ export default function HomePageClient({
                             },
                             {
                                 icon: Zap,
-                                title: '92 Essential Minerals',
-                                description: 'Natures multivitamin packed with everything your body needs to thrive'
+                                title: 'Rich Mineral Content',
+                                description: 'A nutrient-dense superfood tradition enjoyed for centuries*'
                             },
                             {
                                 icon: Star,
@@ -534,7 +534,7 @@ export default function HomePageClient({
                             What is Sea Moss?
                         </h2>
                         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                            A complete guide to nature's most powerful superfood
+                            A complete guide to this traditional superfood
                         </p>
                     </div>
 
@@ -583,11 +583,11 @@ export default function HomePageClient({
                             <ul className="space-y-3 text-gray-700">
                                 <li className="flex items-start">
                                     <CheckCircle className="mr-3 h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                    <span><strong>Immune System Support:</strong> High vitamin and mineral content supports healthy immune response</span>
+                                    <span><strong>Immune Wellness:</strong> May support immune wellness with its rich vitamin and mineral content*</span>
                                 </li>
                                 <li className="flex items-start">
                                     <CheckCircle className="mr-3 h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                    <span><strong>Thyroid Support:</strong> Natural iodine content supports healthy thyroid function</span>
+                                    <span><strong>Traditional Wellness:</strong> Traditionally used in wellness routines* — contains natural iodine</span>
                                 </li>
                                 <li className="flex items-start">
                                     <CheckCircle className="mr-3 h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
@@ -622,7 +622,7 @@ export default function HomePageClient({
                     <div className="grid md:grid-cols-3 gap-6 text-center">
                         <div className="bg-white p-6 rounded-xl shadow-lg">
                             <div className="text-4xl font-bold text-emerald-600 mb-2">92</div>
-                            <div className="text-gray-600">Essential Minerals</div>
+                            <div className="text-gray-600">Minerals (Traditional Claim*)</div>
                         </div>
                         <div className="bg-white p-6 rounded-xl shadow-lg">
                             <div className="text-4xl font-bold text-emerald-600 mb-2">14,000+</div>
@@ -740,7 +740,7 @@ export default function HomePageClient({
                         {[
                             {
                                 question: "What is sea moss and what are its benefits?",
-                                answer: "Sea moss (Chondrus crispus), also known as Irish moss, is a species of red algae that contains 92 of the 102 essential minerals our bodies need. It supports immune function, thyroid health, digestive wellness, provides natural energy, and promotes healthy skin. Rich in iodine, potassium, calcium, and vitamins, it's considered nature's multivitamin."
+                                answer: "Sea moss (Chondrus crispus), also known as Irish moss, is a species of red algae with rich mineral content. It has been traditionally used to support wellness routines.* Rich in iodine, potassium, calcium, and vitamins, it's a popular addition to daily nutrition.*"
                             },
                             {
                                 question: "How do I use sea moss gel?",
@@ -788,7 +788,7 @@ export default function HomePageClient({
                         Ready to Start Your Wellness Journey?
                     </h2>
                     <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
-                        Join our growing wellness community and experience the power of wildcrafted sea moss.
+                        Join our growing wellness community and discover wildcrafted sea moss.
                     </p>
                     <Button
                         onClick={() => router.push('/catalog')}

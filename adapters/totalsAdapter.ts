@@ -7,9 +7,9 @@ import { CartItem } from './cartAdapter';
 import { getDeliveryConfig } from '@/lib/fulfillment';
 
 /**
- * Tax rate (8% - from existing logic)
+ * Tax is currently handled outside checkout pricing; keep client and server totals aligned.
  */
-const TAX_RATE = 0.08;
+const TAX_RATE = 0;
 
 export interface OrderTotals {
   subtotal: number;
@@ -31,21 +31,23 @@ export interface TotalsInput {
   tip?: number;
   couponDiscount?: number;
   shippingFee?: number;
+  deliveryFee?: number;
 }
 
 /**
  * Compute comprehensive order totals
  */
 export function computeTotals(input: TotalsInput): OrderTotals {
-  const { cart, fulfillmentType, tip = 0, couponDiscount = 0, shippingFee = 0 } = input;
-  const config = getDeliveryConfig();
+  const { cart, fulfillmentType, tip = 0, couponDiscount = 0, shippingFee = 0, deliveryFee: quotedDeliveryFee } = input;
   
   const subtotal = cart.reduce((sum, item) => sum + ((Number(item.price) || 0) * (Number(item.quantity) || 1)), 0);
   const itemCount = cart.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
   
   let deliveryFee = 0;
   if (fulfillmentType === 'delivery') {
-    deliveryFee = subtotal >= config.freeThreshold ? 0 : config.baseFee;
+    deliveryFee = typeof quotedDeliveryFee === 'number'
+      ? Math.max(0, quotedDeliveryFee)
+      : 0;
   } else if (fulfillmentType === 'shipping') {
     deliveryFee = shippingFee;
   }

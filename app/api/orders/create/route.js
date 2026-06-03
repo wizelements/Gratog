@@ -10,6 +10,8 @@ import {
 } from '@/lib/idempotency';
 import { generateOrderAccessToken } from '@/lib/order-access-token';
 import { priceCart, CartPricingError } from '@/lib/cart-pricing';
+import { checkDeliveryRadius } from '@/lib/delivery-radius';
+import { calculateDistanceBasedDeliveryFee } from '@/lib/delivery-fees';
 
 // Order access token TTL — must outlive the longest realistic checkout session.
 // Payment route uses 30m; we use the same so the token survives until pay click.
@@ -50,15 +52,28 @@ export async function POST(request) {
     // the underpayment fix; see lib/cart-pricing.ts and docs REVENUE risk R-C1.
     // -----------------------------------------------------------------------
     let pricing;
+    let deliveryQuote = null;
     try {
+      const couponCode =
+        orderData.appliedCoupon?.code ||
+        orderData.couponCode ||
+        null;
+      const tipCents = dollarsToCents(orderData.deliveryTip);
+
+      const basePricing = await priceCart({
+        items: orderData.cart,
+        couponCode,
+        deliveryFeeCents: 0,
+        tipCents,
+      });
+
+      deliveryQuote = await quoteServerDelivery(orderData, basePricing.subtotal);
+
       pricing = await priceCart({
         items: orderData.cart,
-        couponCode:
-          orderData.appliedCoupon?.code ||
-          orderData.couponCode ||
-          null,
-        deliveryFeeCents: dollarsToCents(orderData.deliveryFee),
-        tipCents: dollarsToCents(orderData.deliveryTip),
+        couponCode,
+        deliveryFeeCents: deliveryQuote.feeCents,
+        tipCents,
       });
     } catch (err) {
       if (err instanceof CartPricingError) {
@@ -68,6 +83,16 @@ export async function POST(request) {
             error: err.message,
             code: err.code,
             details: err.details,
+          },
+          { status: err.status }
+        );
+      }
+      if (err.status) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: err.message,
+            code: err.code || 'DELIVERY_QUOTE_FAILED',
           },
           { status: err.status }
         );
@@ -123,6 +148,9 @@ export async function POST(request) {
       deliveryFeeCents: pricing.deliveryFeeCents,
       deliveryTip: pricing.tip,
       deliveryTipCents: pricing.tipCents,
+      deliveryDistance: deliveryQuote?.distance ?? orderData.deliveryDistance ?? null,
+      deliveryNearestLocation: deliveryQuote?.nearestLocationName ?? null,
+      deliveryQuoteMessage: deliveryQuote?.message || orderData.deliveryQuoteMessage || null,
 
       // Canonical coupon field — payments/route.ts reads this exact path.
       appliedCoupon: pricing.appliedCoupon
@@ -233,4 +261,69 @@ function dollarsToCents(v) {
   const n = typeof v === 'number' ? v : Number(v);
   if (!Number.isFinite(n) || n < 0) return 0;
   return Math.round(n * 100);
+}
+
+function isDeliveryFulfillment(type) {
+  return String(type || '').includes('delivery');
+}
+
+function formatDeliveryAddress(address) {
+  return [
+    address?.street,
+    address?.suite,
+    address?.city,
+    address?.state || 'GA',
+    address?.zip,
+  ]
+    .filter(Boolean)
+    .join(', ');
+}
+
+function orderError(message, status, code) {
+  const err = new Error(message);
+  err.status = status;
+  err.code = code;
+  return err;
+}
+
+async function quoteServerDelivery(orderData, subtotalDollars) {
+  if (!isDeliveryFulfillment(orderData.fulfillmentType)) {
+    return { feeCents: 0 };
+  }
+
+  const address = orderData.deliveryAddress;
+  if (!address?.street || !address?.city || !address?.zip) {
+    throw orderError('Delivery address is required', 400, 'DELIVERY_ADDRESS_REQUIRED');
+  }
+
+  let radius;
+  try {
+    radius = await checkDeliveryRadius(formatDeliveryAddress(address));
+  } catch (err) {
+    throw orderError(
+      err?.message || 'Unable to verify delivery address',
+      400,
+      'DELIVERY_QUOTE_FAILED'
+    );
+  }
+
+  if (!radius.eligible) {
+    throw orderError(
+      radius.message || 'Delivery is not available for this address',
+      400,
+      'DELIVERY_OUT_OF_RANGE'
+    );
+  }
+
+  const feeDollars = calculateDistanceBasedDeliveryFee(radius.distance, subtotalDollars);
+  return {
+    feeCents: dollarsToCents(feeDollars),
+    fee: feeDollars,
+    distance: radius.distance,
+    nearestLocationName: radius.nearestLocationName,
+    message:
+      feeDollars === 0
+        ? `Free delivery — ${radius.distance} miles away.`
+        : `Delivery is $${feeDollars.toFixed(2)} — ${radius.distance} miles away.`,
+  };
 }

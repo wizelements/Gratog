@@ -94,7 +94,8 @@ export default function ReviewAndPay({
         cart,
         tip,
         couponCode,
-        totals.couponDiscount // couponDiscount is already in dollars from totalsAdapter
+        totals.couponDiscount, // couponDiscount is already in dollars from totalsAdapter
+        totals.deliveryFee
       );
       
       setOrderId(orderResponse.order.id);
@@ -358,6 +359,9 @@ export default function ReviewAndPay({
                     <p>{fulfillment.delivery.address.street}</p>
                     <p>{fulfillment.delivery.address.city}, {fulfillment.delivery.address.state} {fulfillment.delivery.address.zip}</p>
                     <p className="text-emerald-600">Window: {fulfillment.delivery.window}</p>
+                    {fulfillment.delivery.deliveryMessage && (
+                      <p className="text-emerald-600">{fulfillment.delivery.deliveryMessage}</p>
+                    )}
                   </>
                 )}
                 {fulfillment.type === 'pickup' && fulfillment.pickup && (

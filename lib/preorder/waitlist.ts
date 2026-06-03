@@ -1,60 +1,40 @@
 /**
- * Waitlist number generator
- * Generates unique waitlist numbers for preorders
+ * Waitlist number utilities
+ * 
+ * DEPRECATED: generateWaitlistNumber / getWaitlistPosition — use repository.getNextWaitlistNumber()
+ * Pure utility functions (parse, validate, estimate, generatePreorderNumber) kept as-is.
  */
 
-// import { createHash } from 'crypto';
-
-// In-memory store for session-based waitlist numbers
-// In production, this should use Redis or database
-const waitlistStore = new Map();
-
-const MARKET_PREFIXES = {
+const MARKET_PREFIXES: Record<string, string> = {
   'serenbe': 'S',
   'dunwoody': 'D',
   'sandy-springs': 'SS',
 };
 
 /**
- * Generate a unique waitlist number
- * Format: [MARKET_PREFIX]-[DAY_OF_MONTH][COUNTER] e.g., S-2815 (Serenbe, 28th, #15)
+ * @deprecated Use repository.getNextWaitlistNumber() for atomic MongoDB counters.
+ * This sync fallback is kept only for backward-compat imports that haven't migrated.
  */
-export function generateWaitlistNumber(marketId: string, date = new Date()) {
-  const prefix = (MARKET_PREFIXES as Record<string, string>)[marketId] || 'G';
-  const dayOfMonth = date.getDate().toString().padStart(2, '0');
-  
-  // Get counter for this market/day
-  const key = `${marketId}-${date.toISOString().split('T')[0]}`;
-  const currentCount = waitlistStore.get(key) || 0;
-  const nextCount = currentCount + 1;
-  waitlistStore.set(key, nextCount);
-  
-  // Format: S-2815 (Serenbe, 28th, #15)
-  const waitlistNumber = `${prefix}-${dayOfMonth}${nextCount.toString().padStart(2, '0')}`;
-  
-  return {
-    waitlistNumber,
-    marketPrefix: prefix,
-    dayOfMonth,
-    counter: nextCount,
-    fullKey: key,
-  };
+export function generateWaitlistNumber(_marketId: string, _date = new Date()) {
+  throw new Error(
+    'generateWaitlistNumber is deprecated. Use getNextWaitlistNumber from @/lib/preorder/repository instead.'
+  );
 }
 
 /**
- * Get the current waitlist position for a market on a given date
+ * @deprecated Use repository-based lookup instead.
  */
-export function getWaitlistPosition(marketId: string, date = new Date()) {
-  const key = `${marketId}-${date.toISOString().split('T')[0]}`;
-  const count = waitlistStore.get(key) || 0;
-  return count + 1; // Next position
+export function getWaitlistPosition(_marketId: string, _date = new Date()) {
+  throw new Error(
+    'getWaitlistPosition is deprecated. Use findPreorderByOrderNumber from @/lib/preorder/repository instead.'
+  );
 }
 
 /**
  * Validate a waitlist number format
  */
 export function isValidWaitlistNumber(waitlistNumber: string) {
-  const pattern = /^[SD]\d{2}\d{2,4}$/; // S-2815 or D-2801
+  const pattern = /^(SS|S|D)-\d{2}\d{2,4}$/;
   return pattern.test(waitlistNumber);
 }
 
@@ -62,19 +42,20 @@ export function isValidWaitlistNumber(waitlistNumber: string) {
  * Parse waitlist number to extract info
  */
 export function parseWaitlistNumber(waitlistNumber: string) {
-  const match = waitlistNumber.match(/^([SD])(\d{2})(\d{2,4})$/);
+  const match = waitlistNumber.match(/^(SS|S|D)-(\d{2})(\d{2,4})$/);
   if (!match) return null;
-  
+
   const [, prefix, day, counter] = match;
-  
-  const marketMap = {
+
+  const marketMap: Record<string, string> = {
     'S': 'serenbe',
     'D': 'dunwoody',
+    'SS': 'sandy-springs',
   };
-  
+
   return {
     prefix,
-    marketId: (marketMap as Record<string, string>)[prefix],
+    marketId: marketMap[prefix],
     day: parseInt(day, 10),
     counter: parseInt(counter, 10),
   };
@@ -91,34 +72,20 @@ export function generatePreorderNumber() {
 }
 
 /**
- * Clear old waitlist entries (call this periodically)
- * Keeps only last 7 days
- */
-export function cleanupOldWaitlistEntries() {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 7);
-  
-  for (const [key] of waitlistStore) {
-    const keyDate = key.split('-').slice(1).join('-');
-    if (new Date(keyDate) < cutoff) {
-      waitlistStore.delete(key);
-    }
-  }
-}
-
-/**
  * Get estimated wait time based on position
  * Rough estimate: 2-3 minutes per customer at pickup
  */
 export function getEstimatedWaitTime(position: number) {
   const minutesPerCustomer = 2.5;
   const estimatedMinutes = Math.ceil(position * minutesPerCustomer);
-  
+
   if (estimatedMinutes < 60) {
     return `${estimatedMinutes} min`;
   }
-  
+
   const hours = Math.floor(estimatedMinutes / 60);
   const mins = estimatedMinutes % 60;
   return `${hours}h ${mins}m`;
 }
+
+export { MARKET_PREFIXES };

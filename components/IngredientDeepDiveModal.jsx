@@ -18,17 +18,17 @@ const INGREDIENT_DATABASE = {
     name: 'Wildcrafted Sea Moss',
     color: 'emerald',
     benefits: [
-      'Contains 92 of 102 essential minerals',
-      'Supports immune system health',
-      'Promotes digestive wellness',
-      'Natural thyroid support'
+      'Rich mineral content*',
+      'May support immune wellness*',
+      'May promote digestive wellness*',
+      'Traditionally used in wellness routines*'
     ],
     story: 'Harvested from pristine Caribbean waters, our sea moss is sun-dried and prepared using traditional methods passed down through generations. Each batch is carefully inspected to ensure premium quality and potency.',
     flavorProfile: 'Mild ocean essence with subtle mineral notes',
     sourcing: 'Sustainably wildcrafted from St. Lucia',
     nutritionalHighlights: [
-      { nutrient: 'Iodine', benefit: 'Thyroid function' },
-      { nutrient: 'Potassium', benefit: 'Heart health' },
+      { nutrient: 'Iodine', benefit: 'Traditional wellness use*' },
+      { nutrient: 'Potassium', benefit: 'Mineral support' },
       { nutrient: 'Calcium', benefit: 'Bone strength' },
       { nutrient: 'Magnesium', benefit: 'Muscle recovery' }
     ]
@@ -38,17 +38,17 @@ const INGREDIENT_DATABASE = {
     name: 'Fresh Ginger Root',
     color: 'orange',
     benefits: [
-      'Natural anti-inflammatory properties',
-      'Aids digestion and reduces nausea',
-      'Supports circulation',
-      'Warming and energizing'
+      'Contains compounds traditionally associated with comfort*',
+      'May aid digestion*',
+      'Warming and energizing',
+      'Traditional culinary spice'
     ],
     story: 'Our ginger is sourced from organic farms known for their rich, spicy roots. Fresh-pressed daily to capture maximum flavor and beneficial compounds.',
     flavorProfile: 'Spicy, warming with citrus undertones',
     sourcing: 'Certified organic farms',
     nutritionalHighlights: [
-      { nutrient: 'Gingerol', benefit: 'Anti-inflammatory' },
-      { nutrient: 'Vitamin C', benefit: 'Immune support' }
+      { nutrient: 'Gingerol', benefit: 'Traditional comfort compound*' },
+      { nutrient: 'Vitamin C', benefit: 'Nutritional support' }
     ]
   },
   'lemon': {
@@ -57,8 +57,8 @@ const INGREDIENT_DATABASE = {
     color: 'yellow',
     benefits: [
       'Rich in Vitamin C',
-      'Alkalizing effect on body',
-      'Supports liver detoxification',
+      'Traditionally enjoyed for its bright flavor',
+      'Used in traditional wellness practices*',
       'Natural energizer'
     ],
     story: 'Hand-picked lemons from sun-soaked groves, cold-pressed to preserve their vital nutrients and bright, uplifting flavor.',
@@ -74,16 +74,16 @@ const INGREDIENT_DATABASE = {
     name: 'Organic Elderberry',
     color: 'purple',
     benefits: [
-      'Powerful immune system booster',
+      'May support immune wellness*',
       'Rich in antioxidants',
-      'Supports respiratory health',
-      'Natural cold & flu fighter'
+      'Traditionally used for respiratory comfort*',
+      'Traditional warming remedy*'
     ],
-    story: 'European elderberries have been used for centuries as a natural remedy. Our organic elderberry extract is concentrated for maximum potency.',
+    story: 'European elderberries have been used for centuries in traditional wellness practices. Our organic elderberry extract is concentrated for maximum potency.',
     flavorProfile: 'Deep berry with subtle tartness',
     sourcing: 'European organic elderberry farms',
     nutritionalHighlights: [
-      { nutrient: 'Anthocyanins', benefit: 'Immune defense' },
+      { nutrient: 'Anthocyanins', benefit: 'Antioxidant support' },
       { nutrient: 'Vitamin A', benefit: 'Cellular health' }
     ]
   },
@@ -93,8 +93,8 @@ const INGREDIENT_DATABASE = {
     color: 'yellow',
     benefits: [
       'Contains bromelain enzyme',
-      'Supports digestion',
-      'Anti-inflammatory properties',
+      'May support digestion*',
+      'Contains compounds traditionally associated with comfort*',
       'Rich in Vitamin C'
     ],
     story: 'Tropical sweetness meets powerful enzymes. Our pineapples are selected at peak ripeness for optimal flavor and nutritional content.',
@@ -247,6 +247,13 @@ export default function IngredientDeepDiveModal({ ingredient, isOpen, onClose })
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* FDA Disclaimer */}
+          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-xs text-amber-800">
+              *These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease.
+            </p>
           </div>
         </ScrollArea>
       </DialogContent>

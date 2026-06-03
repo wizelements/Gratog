@@ -6,7 +6,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { Clock, AlertCircle, CheckCircle } from 'lucide-react';
+import { Clock, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 interface DeliveryFormProps {
   data: DeliveryData;
   onChange: (data: Partial<DeliveryData>) => void;
+  subtotal: number;
   tip: number;
   onTipChange: (tip: number) => void;
   errors?: Record<string, string>;
@@ -26,7 +27,7 @@ interface DeliveryFormProps {
 
 const TIP_PRESETS = [0, 2, 4, 6, 8];
 
-export default function DeliveryForm({ data, onChange, tip, onTipChange, errors = {} }: DeliveryFormProps) {
+export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChange, errors = {} }: DeliveryFormProps) {
   // 🎯 ZIP VALIDATION: Only validate after user finishes typing (on blur)
   const [zipTouched, setZipTouched] = useState(false);
   const [zipValid, setZipValid] = useState<boolean | null>(null);
@@ -34,6 +35,23 @@ export default function DeliveryForm({ data, onChange, tip, onTipChange, errors 
     // Initialize from tip prop if it's not a preset
     return TIP_PRESETS.includes(tip) || tip === 0 ? '' : String(tip);
   });
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+  
+  const clearQuoteFields = {
+    fee: undefined,
+    distanceMiles: undefined,
+    deliveryMessage: undefined,
+    quotedSubtotal: undefined,
+  };
+  
+  const updateAddress = (addressUpdate: Partial<DeliveryData['address']>) => {
+    setQuoteError(null);
+    onChange({
+      address: { ...data.address, ...addressUpdate },
+      ...clearQuoteFields,
+    });
+  };
   
   // Validate ZIP on blur - not during typing
   const validateZip = useCallback((zip: string) => {
@@ -50,7 +68,7 @@ export default function DeliveryForm({ data, onChange, tip, onTipChange, errors 
   const handleZipChange = (zip: string) => {
     // Strip non-digits, limit to 5
     const cleaned = zip.replace(/\D/g, '').slice(0, 5);
-    onChange({ address: { ...data.address, zip: cleaned } });
+    updateAddress({ zip: cleaned });
     
     // Reset validation state while typing
     if (zipTouched && cleaned.length < 5) {
@@ -61,6 +79,51 @@ export default function DeliveryForm({ data, onChange, tip, onTipChange, errors 
   const handleZipBlur = () => {
     setZipTouched(true);
     validateZip(data.address.zip);
+  };
+
+  const quoteDelivery = async () => {
+    setQuoteLoading(true);
+    setQuoteError(null);
+    setZipTouched(true);
+
+    const currentZipValid = validateZip(data.address.zip);
+    if (currentZipValid !== true) {
+      setQuoteLoading(false);
+      setQuoteError('Enter a serviceable 5-digit ZIP before checking delivery.');
+      onChange(clearQuoteFields);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/delivery/quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: data.address,
+          subtotal,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        setQuoteError(json.error || 'Unable to quote delivery for this address.');
+        onChange(clearQuoteFields);
+        return;
+      }
+
+      onChange({
+        fee: json.deliveryFee,
+        distanceMiles: json.distanceMiles,
+        deliveryMessage: json.message,
+        quotedSubtotal: subtotal,
+      });
+    } catch {
+      setQuoteError('Unable to quote delivery right now. Please try again.');
+      onChange(clearQuoteFields);
+    } finally {
+      setQuoteLoading(false);
+    }
   };
   
   // Delivery windows only show when ZIP is valid
@@ -92,7 +155,7 @@ export default function DeliveryForm({ data, onChange, tip, onTipChange, errors 
           id="street"
           type="text"
           value={data.address.street}
-          onChange={(e) => onChange({ address: { ...data.address, street: e.target.value } })}
+          onChange={(e) => updateAddress({ street: e.target.value })}
           placeholder="123 Main Street"
           className={`mt-1 ${errors['address.street'] ? 'border-red-500' : ''}`}
           autoComplete="street-address"
@@ -111,7 +174,7 @@ export default function DeliveryForm({ data, onChange, tip, onTipChange, errors 
           id="suite"
           type="text"
           value={data.address.suite || ''}
-          onChange={(e) => onChange({ address: { ...data.address, suite: e.target.value } })}
+          onChange={(e) => updateAddress({ suite: e.target.value })}
           placeholder="Apt 4B"
           className="mt-1"
         />
@@ -127,7 +190,7 @@ export default function DeliveryForm({ data, onChange, tip, onTipChange, errors 
             id="city"
             type="text"
             value={data.address.city}
-            onChange={(e) => onChange({ address: { ...data.address, city: e.target.value } })}
+            onChange={(e) => updateAddress({ city: e.target.value })}
             placeholder="Atlanta"
             className={`mt-1 ${errors['address.city'] ? 'border-red-500' : ''}`}
             autoComplete="address-level2"
@@ -142,7 +205,7 @@ export default function DeliveryForm({ data, onChange, tip, onTipChange, errors 
             id="state"
             type="text"
             value={data.address.state}
-            onChange={(e) => onChange({ address: { ...data.address, state: e.target.value.toUpperCase() } })}
+            onChange={(e) => updateAddress({ state: e.target.value.toUpperCase() })}
             placeholder="GA"
             maxLength={2}
             className={`mt-1 ${errors['address.state'] ? 'border-red-500' : ''}`}
@@ -209,6 +272,50 @@ export default function DeliveryForm({ data, onChange, tip, onTipChange, errors 
           Enter complete 5-digit ZIP code
         </p>
       )}
+
+      {/* Delivery Quote */}
+      <div className="space-y-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={quoteDelivery}
+          disabled={
+            quoteLoading ||
+            !data.address.street ||
+            !data.address.city ||
+            data.address.zip.length !== 5 ||
+            (zipTouched && zipValid === false)
+          }
+          className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+        >
+          {quoteLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Checking delivery fee...
+            </>
+          ) : (
+            'Check delivery fee by mileage'
+          )}
+        </Button>
+
+        {data.deliveryMessage && data.quotedSubtotal === subtotal && (
+          <p className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+            {data.deliveryMessage}
+          </p>
+        )}
+
+        {data.quotedSubtotal !== undefined && data.quotedSubtotal !== subtotal && (
+          <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+            Your cart changed. Check delivery fee again before continuing.
+          </p>
+        )}
+
+        {(quoteError || errors.deliveryFee) && (
+          <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">
+            {quoteError || errors.deliveryFee}
+          </p>
+        )}
+      </div>
       
       {zipValid === true && (
         <motion.div

@@ -74,6 +74,15 @@ export const MARKET_CONFIG = {
     allowsBoba: true,
     allowsPreorder: true,
   },
+  'sandy-springs': {
+    id: 'sandy-springs',
+    name: 'Sandy Springs Farmers Market',
+    day: 'Sunday',
+    hours: '10am-1pm',
+    location: 'Sandy Springs',
+    allowsBoba: false,
+    allowsPreorder: true,
+  },
   shipping: {
     id: 'shipping',
     name: 'Shipping',

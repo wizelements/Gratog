@@ -36,6 +36,10 @@ export interface DeliveryData {
   };
   window: string;
   notes?: string;
+  fee?: number;
+  distanceMiles?: number;
+  deliveryMessage?: string;
+  quotedSubtotal?: number;
 }
 
 export interface ShippingData {
@@ -189,7 +193,8 @@ export const useCheckoutStore = create<CheckoutState>((set, get) => {
     cart: initialCart,
     fulfillmentType: persisted.fulfillment?.type || 'delivery',
     tip: persisted.tip || 0,
-    couponDiscount: persisted.couponDiscount || 0
+    couponDiscount: persisted.couponDiscount || 0,
+    deliveryFee: persisted.fulfillment?.delivery?.fee
   });
   
   return {
@@ -271,7 +276,8 @@ export const useCheckoutStore = create<CheckoutState>((set, get) => {
         fulfillmentType: state.fulfillment.type,
         tip: state.tip,
         couponDiscount: state.couponDiscount,
-        shippingFee
+        shippingFee,
+        deliveryFee: state.fulfillment.delivery?.fee
       });
       
       set({ totals });

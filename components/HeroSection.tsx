@@ -36,29 +36,28 @@ export function HeroSection() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-sm font-medium mb-6"
             >
               <Star className="w-4 h-4 fill-current" />
-              <span>92 Essential Minerals</span>
+              <span>Rich Mineral Content</span>
             </motion.div>
 
             {/* Title */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight">
-              Nature's Most
+              Nature's
               <br />
               <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                Powerful Superfood
+                Superfood Tradition
               </span>
             </h1>
 
             {/* Description */}
             <p className="mt-6 text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-xl mx-auto lg:mx-0">
-              Handcrafted wildcrafted sea moss gel packed with everything your body needs. 
-              From pristine ocean waters to your daily wellness routine.
+              Handcrafted wildcrafted sea moss gel from pristine ocean waters. 
+              A natural addition to your daily wellness routine.*
             </p>
 
             {/* Stats */}
             <div className="mt-8 flex flex-wrap justify-center lg:justify-start gap-8">
               {[
                 { value: '92+', label: 'Minerals' },
-                { value: '5.0', label: 'Star Rating' },
                 { value: '14K+', label: 'Years of Use' },
               ].map((stat, index) => (
                 <motion.div

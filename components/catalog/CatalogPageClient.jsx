@@ -484,7 +484,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
               Premium Wildcrafted Sea Moss Products
             </p>
             <p className="text-lg text-emerald-600 max-w-2xl mx-auto mb-8">
-              Each product is hand-crafted with 92 essential minerals from the ocean
+              Each product is hand-crafted with mineral-rich ingredients from the ocean
             </p>
             
             {/* Quiz CTA */}
@@ -799,7 +799,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                 </div>
                 <div className="text-left">
                   <p className="font-semibold text-gray-900">100% Wildcrafted</p>
-                  <p className="text-sm text-gray-600">92 Essential Minerals</p>
+                  <p className="text-sm text-gray-600">Rich Mineral Content</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -830,10 +830,10 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
         <section className="py-20 bg-gradient-to-br from-emerald-600 to-teal-600 text-white">
           <div className="container text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Ready to Transform Your Wellness?
+              Ready to Explore Natural Flavors?
             </h2>
             <p className="text-xl mb-8 text-emerald-100 max-w-2xl mx-auto">
-              Join thousands experiencing the power of wildcrafted sea moss
+              Discover our collection of wildcrafted sea moss products
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
@@ -854,6 +854,9 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                 </Button>
               </Link>
             </div>
+            <p className="mt-6 text-xs text-emerald-200 max-w-2xl mx-auto">
+              *These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease.
+            </p>
           </div>
         </section>
       )}

@@ -39,7 +39,7 @@ const MARKETS = [
     address: "10640 Serenbe Trail, Chattahoochee Hills, GA 30268",
     day: "Saturday",
     hours: "9:00 AM - 1:00 PM",
-    description: "Preorder and skip the line!",
+    description: "Reserve your weekly wellness staples before market day.",
     emoji: "🏡",
   },
   {
@@ -48,7 +48,7 @@ const MARKETS = [
     address: "Dunwoody Farmhouse, Dunwoody, GA 30338",
     day: "Saturday",
     hours: "9:00 AM - 12:00 PM",
-    description: "Preorder and skip the line!",
+    description: "Reserve made-fresh staples and pick up at the booth.",
     emoji: "🏪",
   },
   {
@@ -57,7 +57,7 @@ const MARKETS = [
     address: "Sandy Springs City Center, Sandy Springs, GA 30328",
     day: "Sunday",
     hours: "10:00 AM - 1:00 PM",
-    description: "New location!",
+    description: "Sunday pickup for intentional weekly routines.",
     emoji: "🌳",
   },
 ];
@@ -76,6 +76,16 @@ interface PreorderItem {
   description?: string;
   isPopular?: boolean;
   isNew?: boolean;
+  isPreorder?: boolean;
+}
+
+const PREORDER_MINIMUM = 60;
+const BOBA_PREORDER_MAX_QTY = 2;
+
+function isBobaItem(item?: Pick<PreorderItem, 'category' | 'name'>) {
+  const category = (item?.category || '').toLowerCase();
+  const name = (item?.name || '').toLowerCase();
+  return category.includes('boba') || name.includes('boba') || name.includes('bubble tea');
 }
 
 // Horizontal scroll category section
@@ -219,6 +229,7 @@ export default function PreorderPage() {
   const [cart, setCart] = useState<Record<string, number>>({});
   const [customer, setCustomer] = useState({ name: "", phone: "", email: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [waitlistNumber, setWaitlistNumber] = useState("");
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
@@ -241,7 +252,7 @@ export default function PreorderPage() {
         
         // Transform Square products to preorder format
         const transformedProducts = (data.products || [])
-          .filter((p: any) => p.available !== false && p.inStock !== false)
+          .filter((p: any) => p.available !== false && (p.inStock !== false || p.isPreorder === true || p.purchaseStatus === 'preorder'))
           .map((p: any) => {
             const name = (p.name || '').toLowerCase();
             let category = p.category || 'specials';
@@ -282,7 +293,8 @@ export default function PreorderPage() {
               image: p.image,
               description: p.description,
               isPopular: p.isPopular || name.includes('original'),
-              isNew: p.isNew || false
+              isNew: p.isNew || false,
+              isPreorder: p.isPreorder === true || p.purchaseStatus === 'preorder' || p.inStock === false
             };
           });
         
@@ -317,6 +329,20 @@ export default function PreorderPage() {
 
   const cartItemCount = Object.values(cart).reduce((a, b) => a + b, 0);
 
+  const cartEntries = Object.entries(cart).map(([id, qty]) => ({
+    item: products.find(p => p.id === id),
+    qty,
+  }));
+  const bobaQty = cartEntries.reduce((sum, entry) => (
+    isBobaItem(entry.item) ? sum + entry.qty : sum
+  ), 0);
+  const nonBobaSubtotal = cartEntries.reduce((sum, entry) => (
+    entry.item && !isBobaItem(entry.item) ? sum + entry.item.price * entry.qty : sum
+  ), 0);
+  const nonBobaMinimumMet = nonBobaSubtotal === 0 || nonBobaSubtotal >= PREORDER_MINIMUM;
+  const bobaLimitMet = bobaQty <= BOBA_PREORDER_MAX_QTY;
+  const preorderRulesMet = nonBobaMinimumMet && bobaLimitMet;
+
   const updateCart = (id: string, delta: number) => {
     setCart(prev => {
       const current = prev[id] || 0;
@@ -331,6 +357,15 @@ export default function PreorderPage() {
 
   const handleSubmitPreorder = async () => {
     if (!selectedMarket) return;
+
+    if (!preorderRulesMet) {
+      toast.error(
+        !nonBobaMinimumMet
+          ? `Non-boba preorders require a $${PREORDER_MINIMUM.toFixed(2)} minimum. Add $${(PREORDER_MINIMUM - nonBobaSubtotal).toFixed(2)} more.`
+          : `Boba preorders are limited to ${BOBA_PREORDER_MAX_QTY} drinks. Order more at the market.`
+      );
+      return;
+    }
     
     setIsSubmitting(true);
     
@@ -339,9 +374,14 @@ export default function PreorderPage() {
         const product = products.find(p => p.id === id);
         return {
           id,
+          productId: id,
           name: product?.name || id,
           quantity: qty,
-          price: product?.price || 0
+          price: product?.price || 0,
+          size: product?.size,
+          category: product?.category,
+          imageUrl: product?.image,
+          isPreorder: true
         };
       });
 
@@ -359,10 +399,14 @@ export default function PreorderPage() {
       const data = await response.json();
 
       if (data.success) {
-        setOrderNumber(data.orderNumber);
-        setWaitlistPosition(data.waitlistPosition);
+        const preorder = data.preorder || {};
+        const nextWaitlistNumber = preorder.waitlistNumber || data.waitlistNumber || "";
+
+        setOrderNumber(preorder.orderNumber || data.orderNumber || "");
+        setWaitlistNumber(nextWaitlistNumber);
+        setWaitlistPosition(preorder.waitlistPosition || data.waitlistPosition || null);
         setOrderComplete(true);
-        toast.success(`Preorder placed! Your number is #${data.waitlistPosition}`);
+        toast.success(`Preorder placed! Your number is ${nextWaitlistNumber}`);
       } else {
         toast.error(data.error || 'Failed to place preorder');
       }
@@ -406,7 +450,10 @@ export default function PreorderPage() {
             <CardContent className="p-6">
               <div className="text-center mb-6">
                 <div className="text-sm text-gray-500 mb-1">Your Waitlist Number</div>
-                <div className="text-6xl font-bold text-emerald-600">#{waitlistPosition}</div>
+                <div className="text-5xl font-bold text-emerald-600">{waitlistNumber}</div>
+                {waitlistPosition && (
+                  <div className="text-sm text-gray-500 mt-2">Pickup position #{waitlistPosition}</div>
+                )}
               </div>
 
               <div className="space-y-3 text-sm">
@@ -456,7 +503,7 @@ export default function PreorderPage() {
           
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900">Select Market</h1>
-            <p className="text-gray-600 mt-2">Choose where you'll pick up your order</p>
+            <p className="text-gray-600 mt-2">Samples are for discovery at the booth. Preorders reserve what you already know you want.</p>
           </div>
 
           <div className="space-y-4">
@@ -529,6 +576,14 @@ export default function PreorderPage() {
             </div>
           ) : (
             <>
+              <div className="mx-4 mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+                <h2 className="font-semibold text-amber-900">Samples at the booth. Preorders for intentional wellness.</h2>
+                <p className="text-sm text-amber-800 mt-1">
+                  If you want to try first, visit us at the market. If you are stocking up for your routine,
+                  reserve ahead: non-boba preorders have a ${PREORDER_MINIMUM} minimum and boba is limited to {BOBA_PREORDER_MAX_QTY} drinks.
+                </p>
+              </div>
+
               {categoryOrder.map(({ key, label, emoji }) => (
                 <CategorySection
                   key={key}
@@ -609,6 +664,20 @@ export default function PreorderPage() {
               <span className="text-lg font-semibold">Total</span>
               <span className="text-2xl font-bold text-emerald-600">${cartTotal.toFixed(2)}</span>
             </div>
+
+            {cartItemCount > 0 && (
+              <div className={`${preorderRulesMet ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'} border rounded-xl p-3 text-sm`}>
+                <p className={`font-medium ${preorderRulesMet ? 'text-emerald-800' : 'text-amber-800'}`}>
+                  {preorderRulesMet ? 'Preorder rules met' : 'Preorder minimum or limit needs attention'}
+                </p>
+                <p className={`${preorderRulesMet ? 'text-emerald-700' : 'text-amber-700'} mt-1`}>
+                  {nonBobaMinimumMet
+                    ? `Non-boba preorder subtotal: $${nonBobaSubtotal.toFixed(2)}.`
+                    : `$${PREORDER_MINIMUM.toFixed(2)} minimum for non-boba preorder items. Add $${(PREORDER_MINIMUM - nonBobaSubtotal).toFixed(2)} more.`}
+                  {' '}Boba: {bobaQty}/{BOBA_PREORDER_MAX_QTY}.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -686,7 +755,7 @@ export default function PreorderPage() {
                   <p>{selectedMarket?.name}</p>
                   <p className="text-amber-700/80">{selectedMarket?.address}</p>
                   <p className="mt-2 font-medium text-emerald-700">
-                    Estimated waitlist: #{waitlistPosition || "TBD"}
+                    Your waitlist number is generated after you submit.
                   </p>
                 </div>
               </div>
@@ -707,7 +776,7 @@ export default function PreorderPage() {
           </Button>
           <Button
             onClick={handleSubmitPreorder}
-            disabled={isSubmitting || !customer.name || !customer.phone}
+            disabled={isSubmitting || cartItemCount === 0 || !customer.name || !customer.phone || !preorderRulesMet}
             className="flex-1 h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700"
           >
             {isSubmitting ? (

@@ -170,7 +170,8 @@ export async function createOrder(
   cart: CartItem[],
   tip: number = 0,
   couponCode?: string,
-  couponDiscountDollars: number = 0
+  couponDiscountDollars: number = 0,
+  deliveryFeeDollars: number = 0
 ): Promise<OrderResponse> {
   // Client-side validation (fail fast before network call)
   validateContact(contact);
@@ -179,6 +180,7 @@ export async function createOrder(
   // Validate tip and discount
   const sanitizedTip = Math.max(0, Number(tip) || 0);
   const sanitizedDiscount = Math.max(0, Number(couponDiscountDollars) || 0);
+  const sanitizedDeliveryFee = Math.max(0, Number(deliveryFeeDollars) || 0);
   
   // Compute subtotal so server doesn't store $0 orders
   const computedSubtotal = cart.reduce(
@@ -193,7 +195,8 @@ export async function createOrder(
     
     // Order totals (server will recompute/validate; this is the client estimate)
     subtotal: computedSubtotal,
-    total: Math.max(0, computedSubtotal + sanitizedTip - sanitizedDiscount),
+    total: Math.max(0, computedSubtotal + sanitizedDeliveryFee + sanitizedTip - sanitizedDiscount),
+    deliveryFee: sanitizedDeliveryFee,
     
     // Customer - API validates name, email, phone
     customer: {
@@ -248,6 +251,8 @@ export async function createOrder(
     payload.deliveryTimeSlot = fulfillment.delivery.window;
     payload.deliveryInstructions = sanitizeString(fulfillment.delivery.notes, 500);
     payload.deliveryTip = sanitizedTip;
+    payload.deliveryDistance = fulfillment.delivery.distanceMiles;
+    payload.deliveryQuoteMessage = sanitizeString(fulfillment.delivery.deliveryMessage, 200);
   } else if (fulfillment.type === 'shipping' && fulfillment.shipping) {
     // API expects shippingAddress at TOP LEVEL
     payload.shippingAddress = {

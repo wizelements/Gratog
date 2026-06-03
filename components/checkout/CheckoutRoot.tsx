@@ -110,6 +110,12 @@ function CheckoutContent() {
       if (!fulfillment.delivery?.window) {
         errors.window = 'Please select a delivery window';
       }
+      if (
+        typeof fulfillment.delivery?.fee !== 'number' ||
+        fulfillment.delivery?.quotedSubtotal !== totals.subtotal
+      ) {
+        errors.deliveryFee = 'Check your delivery fee by mileage before continuing';
+      }
     }
     
     if (Object.keys(errors).length > 0) {
@@ -244,6 +250,7 @@ function CheckoutContent() {
                             <DeliveryForm
                               data={fulfillment.delivery || { address: { street: '', city: '', state: 'GA', zip: '' }, window: '12-15' }}
                               onChange={(data) => setFulfillment({ delivery: { address: { street: '', city: '', state: 'GA', zip: '' }, window: '', ...fulfillment.delivery, ...data } })}
+                              subtotal={totals.subtotal}
                               tip={tip}
                               onTipChange={setTip}
                               errors={validation.fulfillment}

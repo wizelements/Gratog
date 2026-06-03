@@ -256,7 +256,7 @@ function MarketCard({ market, onSelect }: { market: typeof MARKETS[0]; onSelect:
           className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl"
         >
           <ShoppingBag className="w-4 h-4 mr-2" />
-          Preorder from {market.name.split(' ')[0]}
+          Preorder for Pickup
         </Button>
       </div>
     </div>
@@ -283,7 +283,7 @@ export default function MarketsPage() {
         
         // Transform Square products
         const transformedProducts = (data.products || [])
-          .filter((p: any) => p.available !== false && p.inStock !== false)
+          .filter((p: any) => p.available !== false && (p.inStock !== false || p.isPreorder === true || p.purchaseStatus === 'preorder'))
           .map((p: any) => {
             const name = (p.name || '').toLowerCase();
             let category = p.category || 'specials';
@@ -371,8 +371,8 @@ export default function MarketsPage() {
             Find Us at Local Markets
           </h1>
           <p className="text-xl text-emerald-100 max-w-2xl mx-auto">
-            Browse our wellness collection and preorder for pickup at any of our 
-            three Atlanta-area farmers markets.
+            Come taste at the market, then preorder when you want your wellness routine guaranteed.
+            Market pickup is best for weekly orders, gifts, and made-fresh batches.
           </p>
           
           {/* Quick Actions */}
@@ -408,27 +408,27 @@ export default function MarketsPage() {
               <AlertCircle className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-amber-900 mb-1">How Preordering Works</h3>
+              <h3 className="font-semibold text-amber-900 mb-1">Samples at the booth. Preorders for intentional wellness.</h3>
               <div className="grid sm:grid-cols-3 gap-4 mt-3">
+                <div className="flex items-start gap-2">
+                  <span className="text-lg">🥄</span>
+                  <div className="text-sm text-amber-800">
+                    <span className="font-medium">Try samples first</span>
+                    <p className="text-amber-700/80">New to Taste of Gratitude? Visit the booth and sample what is available that day.</p>
+                  </div>
+                </div>
                 <div className="flex items-start gap-2">
                   <span className="text-lg">🛒</span>
                   <div className="text-sm text-amber-800">
-                    <span className="font-medium">1. Browse & Select</span>
-                    <p className="text-amber-700/80">Choose your market and products</p>
+                    <span className="font-medium">Preorder to reserve</span>
+                    <p className="text-amber-700/80">Best for customers stocking up for the week. Non-boba preorders have a $60 minimum.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-lg">🎫</span>
+                  <span className="text-lg">🧋</span>
                   <div className="text-sm text-amber-800">
-                    <span className="font-medium">2. Get Waitlist #</span>
-                    <p className="text-amber-700/80">Receive your place in line</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-lg">💳</span>
-                  <div className="text-sm text-amber-800">
-                    <span className="font-medium">3. Pay at Pickup</span>
-                    <p className="text-amber-700/80">Cash or card when you arrive</p>
+                    <span className="font-medium">Boba stays fresh</span>
+                    <p className="text-amber-700/80">Boba preorders are limited to 2 drinks. Larger boba orders can be placed at the market.</p>
                   </div>
                 </div>
               </div>
@@ -496,10 +496,9 @@ export default function MarketsPage() {
         {/* Bottom CTA */}
         <section className="mt-16 text-center">
           <div className="bg-gradient-to-br from-emerald-600 to-teal-600 rounded-3xl p-8 md:p-12 text-white">
-            <h2 className="text-3xl font-bold mb-4">Can't Make It to the Market?</h2>
+            <h2 className="text-3xl font-bold mb-4">Want Home Delivery?</h2>
             <p className="text-emerald-100 mb-6 max-w-xl mx-auto">
-              Browse our full catalog and see everything we offer — from sea moss gel 
-              to wellness shots and exclusive boba tea.
+              Add your items to cart and enter your address at checkout. We'll quote delivery by mileage before you pay.
             </p>
             <Link href="/catalog">
               <Button

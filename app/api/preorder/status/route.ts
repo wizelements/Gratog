@@ -1,20 +1,23 @@
 export const dynamic = 'force-dynamic';
 
 /**
- * Preorder status API route
- * GET /api/preorder/status
- * 
- * Gets the current status and position of a preorder
+ * Preorder status API
+ * GET  /api/preorder/status — Look up by orderNumber, waitlistNumber, or phone
+ * POST /api/preorder/status — Staff status update (requires PREORDER_STAFF_KEY)
+ *
+ * Returns real MongoDB data. 404 if not found — NO mocks.
  */
 
 import { NextResponse } from 'next/server';
-import { getWaitlistPosition, parseWaitlistNumber } from '@/lib/preorder/waitlist';
+import {
+  findPreorderByOrderNumber,
+  findPreorderByWaitlistNumber,
+  findPreorderByPhone,
+  updatePreorderStatus,
+} from '@/lib/preorder/repository';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('PreorderStatusAPI');
-
-// Mock database - in production, use real database
-const preorderDatabase = new Map();
 
 export async function GET(request: any) {
   try {
@@ -22,71 +25,31 @@ export async function GET(request: any) {
     const orderNumber = searchParams.get('orderNumber');
     const waitlistNumber = searchParams.get('waitlistNumber');
     const phone = searchParams.get('phone');
-    
+
     if (!orderNumber && !waitlistNumber && !phone) {
       return NextResponse.json(
         { success: false, error: 'Order number, waitlist number, or phone required' },
         { status: 400 }
       );
     }
-    
-    // Look up preorder (mock - would query database in production)
+
     let preorder = null;
-    
+
     if (orderNumber) {
-      preorder = preorderDatabase.get(orderNumber);
+      preorder = await findPreorderByOrderNumber(orderNumber);
     } else if (waitlistNumber) {
-      // Find by waitlist number
-      for (const [, value] of preorderDatabase) {
-        if (value.waitlistNumber === waitlistNumber) {
-          preorder = value;
-          break;
-        }
-      }
+      preorder = await findPreorderByWaitlistNumber(waitlistNumber);
     } else if (phone) {
-      // Find by phone (last preorder for this phone)
-      const matches = [];
-      for (const [, value] of preorderDatabase) {
-        if (value.customer?.phone === phone) {
-          matches.push(value);
-        }
-      }
-      if (matches.length > 0) {
-        // Sort by date, get most recent
-        // @ts-ignore — auto-fix
-        // @ts-ignore — auto-fix
-        matches.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        preorder = matches[0];
-      }
+      preorder = await findPreorderByPhone(phone);
     }
-    
+
     if (!preorder) {
-      // Return mock data for demo
-      return NextResponse.json({
-        success: true,
-        preorder: {
-          orderNumber: orderNumber || 'PRE-XXXXX',
-          waitlistNumber: waitlistNumber || 'S-2801',
-          status: 'confirmed',
-          statusMessage: 'Your preorder is confirmed!',
-          position: 5,
-          estimatedReadyTime: '9:15 AM',
-          pickupLocation: 'Serenbe Farmers Market',
-          pickupHours: 'Saturday 9:00 AM - 1:00 PM',
-          items: [],
-          total: 0,
-          customer: { name: '', phone: '' },
-          createdAt: new Date().toISOString(),
-        },
-      });
+      return NextResponse.json(
+        { success: false, error: 'Preorder not found' },
+        { status: 404 }
+      );
     }
-    
-    // Calculate current position
-    const parsed = parseWaitlistNumber(preorder.waitlistNumber);
-    const currentPosition = parsed 
-      ? getWaitlistPosition(parsed.marketId, new Date()) - parsed.counter + 1
-      : null;
-    
+
     return NextResponse.json({
       success: true,
       preorder: {
@@ -94,25 +57,29 @@ export async function GET(request: any) {
         waitlistNumber: preorder.waitlistNumber,
         status: preorder.status,
         statusMessage: getStatusMessage(preorder.status),
-        position: currentPosition,
-        estimatedReadyTime: calculateReadyTime(currentPosition),
-        pickupLocation: preorder.pickupLocation,
+        queuePosition: preorder.queuePosition ?? null,
+        estimatedReadyTime: calculateReadyTime(preorder.queuePosition),
+        pickupLocation: preorder.pickupLocation || preorder.marketName,
+        pickupDate: preorder.pickupDate,
         pickupHours: preorder.pickupHours,
         items: preorder.items,
-        total: preorder.subtotal,
-        customer: preorder.customer,
+        subtotal: preorder.subtotal,
+        total: preorder.total,
+        customer: {
+          name: preorder.customerName,
+          phone: preorder.customerPhone,
+          email: preorder.customerEmail,
+        },
         createdAt: preorder.createdAt,
       },
     });
-    
-  } catch (error) {
-    // @ts-ignore — type fix needed
+  } catch (error: any) {
     logger.error('Preorder status error', { error: error.message });
-    
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to retrieve preorder status'
-    }, { status: 500 });
+
+    return NextResponse.json(
+      { success: false, error: 'Failed to retrieve preorder status' },
+      { status: 500 }
+    );
   }
 }
 
@@ -124,91 +91,83 @@ export async function POST(request: any) {
   try {
     const data = await request.json();
     const { orderNumber, status, staffKey } = data;
-    
-    // Simple staff authentication
+
+    // Staff authentication
     if (staffKey !== process.env.PREORDER_STAFF_KEY) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
-    
-    const preorder = preorderDatabase.get(orderNumber);
-    if (!preorder) {
+
+    if (!orderNumber || !status) {
+      return NextResponse.json(
+        { success: false, error: 'orderNumber and status are required' },
+        { status: 400 }
+      );
+    }
+
+    const updated = await updatePreorderStatus(orderNumber, status);
+
+    if (!updated) {
       return NextResponse.json(
         { success: false, error: 'Preorder not found' },
         { status: 404 }
       );
     }
-    
-    preorder.status = status;
-    preorder.updatedAt = new Date().toISOString();
-    preorderDatabase.set(orderNumber, preorder);
-    
-    logger.info('Preorder status updated', { 
-      orderNumber, 
+
+    logger.info('Preorder status updated', {
+      orderNumber,
       status,
-      updatedBy: 'staff' 
+      updatedBy: 'staff',
     });
-    
+
     return NextResponse.json({
       success: true,
       preorder: {
-        orderNumber: preorder.orderNumber,
-        status: preorder.status,
-      }
+        orderNumber: updated.orderNumber,
+        status: updated.status,
+      },
     });
-    
-  } catch (error) {
-    // @ts-ignore — type fix needed
+  } catch (error: any) {
     logger.error('Preorder status update error', { error: error.message });
-    
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to update preorder status'
-    }, { status: 500 });
+
+    return NextResponse.json(
+      { success: false, error: 'Failed to update preorder status' },
+      { status: 500 }
+    );
   }
 }
 
-function getStatusMessage(status: any) {
-  const messages = {
-    'pending': 'Your preorder has been received and is awaiting confirmation.',
-    'confirmed': 'Your preorder is confirmed! We\'ll have it ready at the market.',
-    'preparing': 'Your preorder is being prepared now.',
-    'ready': 'Your order is ready for pickup!',
-    'completed': 'Your order has been picked up. Thank you!',
-    'cancelled': 'This preorder has been cancelled.',
+function getStatusMessage(status: string): string {
+  const messages: Record<string, string> = {
+    PENDING_CONFIRMATION: 'Your preorder has been received and is awaiting confirmation.',
+    CONFIRMED: "Your preorder is confirmed! We'll have it ready at the market.",
+    PREPARING: 'Your preorder is being prepared now.',
+    READY: 'Your order is ready for pickup!',
+    PICKED_UP: 'Your order has been picked up. Thank you!',
+    CANCELLED: 'This preorder has been cancelled.',
+    REFUNDED: 'This preorder has been refunded.',
+    PENDING_PAYMENT: 'Awaiting payment.',
   };
-  // @ts-ignore — type fix needed
   return messages[status] || 'Status unknown';
 }
 
-function calculateReadyTime(position: any) {
+function calculateReadyTime(position: number | null | undefined): string | null {
   if (!position) return null;
-  
+
   const now = new Date();
   const marketOpen = new Date(now);
   marketOpen.setHours(9, 0, 0, 0);
-  
-  if (now < marketOpen) {
-    // Market hasn't opened yet
-    const minutesPerCustomer = 2.5;
-    const estimatedMinutes = Math.ceil(position * minutesPerCustomer);
-    const readyTime = new Date(marketOpen.getTime() + estimatedMinutes * 60000);
-    return readyTime.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit',
-      hour12: true 
-    });
-  }
-  
-  // Market is open - estimate from now
+
   const minutesPerCustomer = 2.5;
   const estimatedMinutes = Math.ceil(position * minutesPerCustomer);
-  const readyTime = new Date(now.getTime() + estimatedMinutes * 60000);
-  return readyTime.toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
+
+  const baseTime = now < marketOpen ? marketOpen : now;
+  const readyTime = new Date(baseTime.getTime() + estimatedMinutes * 60000);
+  return readyTime.toLocaleTimeString('en-US', {
+    hour: 'numeric',
     minute: '2-digit',
-    hour12: true 
+    hour12: true,
   });
 }
