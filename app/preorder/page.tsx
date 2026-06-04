@@ -6,9 +6,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { 
   ShoppingCart, 
-  MapPin, 
-  Calendar, 
-  Clock, 
   User, 
   Phone, 
   Mail,
@@ -26,41 +23,53 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+
 import { toast } from "sonner";
 import Link from "next/link";
 
-// Market configurations
-const MARKETS = [
-  {
-    id: "serenbe",
-    name: "Serenbe Farmers Market",
-    address: "10640 Serenbe Trail, Chattahoochee Hills, GA 30268",
-    day: "Saturday",
-    hours: "9:00 AM - 1:00 PM",
-    description: "Reserve your weekly wellness staples before market day.",
-    emoji: "🏡",
-  },
-  {
-    id: "dunwoody",
-    name: "Dunwoody Farmers Market", 
-    address: "Dunwoody Farmhouse, Dunwoody, GA 30338",
-    day: "Saturday",
-    hours: "9:00 AM - 12:00 PM",
-    description: "Reserve made-fresh staples and pick up at the booth.",
-    emoji: "🏪",
-  },
-  {
-    id: "sandy-springs",
-    name: "Sandy Springs Farmers Market",
-    address: "Sandy Springs City Center, Sandy Springs, GA 30328",
-    day: "Sunday",
-    hours: "10:00 AM - 1:00 PM",
-    description: "Sunday pickup for intentional weekly routines.",
-    emoji: "🌳",
-  },
-];
+// Day-of-week labels
+const DAY_LABELS: Record<number, string> = {
+  0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday',
+  4: 'Thursday', 5: 'Friday', 6: 'Saturday',
+};
+
+// Convert "HH:MM-HH:MM" to display format
+function formatHoursRange(hours: string): string {
+  if (!hours || !hours.includes('-')) return hours || '';
+  const [start, end] = hours.split('-').map(t => t.trim());
+  const fmt = (t: string) => {
+    const [hStr, mStr] = t.split(':');
+    let h = parseInt(hStr, 10);
+    const m = mStr || '00';
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    if (h > 12) h -= 12;
+    if (h === 0) h = 12;
+    return `${h}:${m} ${ampm}`;
+  };
+  return `${fmt(start)} - ${fmt(end)}`;
+}
+
+// Market shape from /api/markets
+interface MarketData {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  hours: string;
+  dayOfWeek: number;
+  description: string;
+  mapsUrl?: string;
+  addressLine?: string;
+  isActive: boolean;
+  featured: boolean;
+  // Derived display fields (computed after fetch)
+  day?: string;
+  displayHours?: string;
+  emoji?: string;
+  fullAddress?: string;
+}
 
 // Product type from Square
 interface PreorderItem {
@@ -223,7 +232,9 @@ export default function PreorderPage() {
   const marketId = searchParams.get("market");
   
   const [step, setStep] = useState<"market" | "items" | "checkout">("market");
-  const [selectedMarket, setSelectedMarket] = useState<typeof MARKETS[0] | null>(null);
+  const [selectedMarket, setSelectedMarket] = useState<MarketData | null>(null);
+  const [markets, setMarkets] = useState<MarketData[]>([]);
+  const [marketsLoading, setMarketsLoading] = useState(true);
   const [products, setProducts] = useState<PreorderItem[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [cart, setCart] = useState<Record<string, number>>({});
@@ -233,6 +244,36 @@ export default function PreorderPage() {
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
+
+  // Fetch markets from API
+  useEffect(() => {
+    const fetchMarkets = async () => {
+      try {
+        const response = await fetch('/api/markets', {
+          cache: 'no-store',
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!response.ok) throw new Error('Failed to fetch markets');
+        const data = await response.json();
+        if (data.success && Array.isArray(data.markets)) {
+          const enriched: MarketData[] = data.markets.map((m: any) => ({
+            ...m,
+            day: DAY_LABELS[m.dayOfWeek] || 'Saturday',
+            displayHours: formatHoursRange(m.hours),
+            emoji: m.featured ? '🏡' : '🏪',
+            fullAddress: m.addressLine || `${m.address}, ${m.city}, ${m.state} ${m.zip}`,
+          }));
+          setMarkets(enriched);
+        }
+      } catch (error) {
+        console.error('Failed to fetch markets:', error);
+        toast.error('Could not load markets.');
+      } finally {
+        setMarketsLoading(false);
+      }
+    };
+    fetchMarkets();
+  }, []);
 
   // Fetch real products from Square
   useEffect(() => {
@@ -311,16 +352,16 @@ export default function PreorderPage() {
     fetchProducts();
   }, []);
 
-  // Initialize market from URL
+  // Initialize market from URL once markets are loaded
   useEffect(() => {
-    if (marketId) {
-      const market = MARKETS.find(m => m.id === marketId);
+    if (marketId && markets.length > 0 && !selectedMarket) {
+      const market = markets.find(m => m.id === marketId);
       if (market) {
         setSelectedMarket(market);
         setStep("items");
       }
     }
-  }, [marketId]);
+  }, [marketId, markets, selectedMarket]);
 
   const cartTotal = Object.entries(cart).reduce((sum, [id, qty]) => {
     const item = products.find(p => p.id === id);
@@ -348,7 +389,7 @@ export default function PreorderPage() {
       const current = prev[id] || 0;
       const newQty = Math.max(0, current + delta);
       if (newQty === 0) {
-        const { [id]: _, ...rest } = prev;
+        const { [id]: _, ...rest } = prev; // eslint-disable-line @typescript-eslint/no-unused-vars
         return rest;
       }
       return { ...prev, [id]: newQty };
@@ -410,7 +451,7 @@ export default function PreorderPage() {
       } else {
         toast.error(data.error || 'Failed to place preorder');
       }
-    } catch (error) {
+    } catch {
       toast.error('Network error. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -507,25 +548,46 @@ export default function PreorderPage() {
           </div>
 
           <div className="space-y-4">
-            {MARKETS.map((market) => (
-              <button
-                key={market.id}
-                onClick={() => {
-                  setSelectedMarket(market);
-                  setStep("items");
-                }}
-                className="w-full p-5 bg-white rounded-2xl border-2 border-gray-100 hover:border-emerald-500 transition-all text-left shadow-sm hover:shadow-md"
-              >
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl">{market.emoji}</span>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{market.name}</h3>
-                    <p className="text-sm text-gray-500">{market.day}s, {market.hours}</p>
+            {marketsLoading ? (
+              [1, 2, 3].map(i => (
+                <div key={i} className="w-full p-5 bg-white rounded-2xl border-2 border-gray-100 shadow-sm">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-gray-100 rounded-full animate-pulse" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-5 bg-gray-100 rounded animate-pulse w-3/4" />
+                      <div className="h-4 bg-gray-100 rounded animate-pulse w-1/2" />
+                    </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
                 </div>
-              </button>
-            ))}
+              ))
+            ) : markets.length === 0 ? (
+              <div className="p-6 bg-gray-50 border border-gray-200 rounded-2xl text-center">
+                <p className="text-gray-600 font-medium">No markets available right now.</p>
+                <Link href="/catalog" className="text-emerald-600 hover:underline text-sm mt-2 inline-block">
+                  Browse our catalog instead →
+                </Link>
+              </div>
+            ) : (
+              markets.map((market) => (
+                <button
+                  key={market.id}
+                  onClick={() => {
+                    setSelectedMarket(market);
+                    setStep("items");
+                  }}
+                  className="w-full p-5 bg-white rounded-2xl border-2 border-gray-100 hover:border-emerald-500 transition-all text-left shadow-sm hover:shadow-md"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-3xl">{market.emoji}</span>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900">{market.name}</h3>
+                      <p className="text-sm text-gray-500">{market.day}s, {market.displayHours}</p>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                  </div>
+                </button>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -547,7 +609,7 @@ export default function PreorderPage() {
             
             <div className="flex-1 min-w-0">
               <h1 className="font-semibold text-gray-900 truncate">{selectedMarket?.name}</h1>
-              <p className="text-xs text-gray-500">{selectedMarket?.day}s, {selectedMarket?.hours}</p>
+              <p className="text-xs text-gray-500">{selectedMarket?.day}s, {selectedMarket?.displayHours}</p>
             </div>
             
             {cartItemCount > 0 && (
@@ -688,7 +750,7 @@ export default function PreorderPage() {
               <span className="text-3xl">{selectedMarket?.emoji}</span>
               <div>
                 <h3 className="font-semibold text-gray-900">{selectedMarket?.name}</h3>
-                <p className="text-sm text-gray-600">{selectedMarket?.day}s, {selectedMarket?.hours}</p>
+                <p className="text-sm text-gray-600">{selectedMarket?.day}s, {selectedMarket?.displayHours}</p>
               </div>
             </div>
           </CardContent>
@@ -753,7 +815,7 @@ export default function PreorderPage() {
                 <div className="text-sm text-amber-800">
                   <p className="font-semibold mb-1">Pickup Details</p>
                   <p>{selectedMarket?.name}</p>
-                  <p className="text-amber-700/80">{selectedMarket?.address}</p>
+                  <p className="text-amber-700/80">{selectedMarket?.fullAddress || selectedMarket?.address}</p>
                   <p className="mt-2 font-medium text-emerald-700">
                     Your waitlist number is generated after you submit.
                   </p>

@@ -5,15 +5,13 @@ import { useRouter } from 'next/navigation';
 import { 
   MapPin, 
   Calendar, 
-  Clock, 
+
   AlertCircle, 
   ChevronRight, 
   ChevronLeft,
   Sparkles,
   ShoppingBag,
   ArrowRight,
-  Plus,
-  Minus,
   Star,
   Store
 } from 'lucide-react';
@@ -21,39 +19,44 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 
-// Market configurations
-const MARKETS = [
-  {
-    id: 'serenbe',
-    name: 'Serenbe Farmers Market',
-    address: '10640 Serenbe Trail, Chattahoochee Hills, GA 30268',
-    day: 'Saturday',
-    hours: '9:00 AM - 1:00 PM',
-    emoji: '🏡',
-    description: 'Our flagship market with the full menu including exclusive Boba Tea!',
-    featured: ['Boba Tea', 'Sea Moss Gel', 'Wellness Shots'],
-  },
-  {
-    id: 'dunwoody',
-    name: 'Dunwoody Farmers Market',
-    address: 'Dunwoody Farmhouse, Dunwoody, GA 30338',
-    day: 'Saturday',
-    hours: '9:00 AM - 12:00 PM',
-    emoji: '🏪',
-    description: 'All your favorites in a charming historic setting.',
-    featured: ['Sea Moss Gel', 'Fresh Lemonade', 'Wellness Shots'],
-  },
-  {
-    id: 'sandy-springs',
-    name: 'Sandy Springs Farmers Market',
-    address: 'Sandy Springs City Center, Sandy Springs, GA 30328',
-    day: 'Sunday',
-    hours: '10:00 AM - 1:00 PM',
-    emoji: '🌳',
-    description: 'Sunday wellness in the heart of Sandy Springs.',
-    featured: ['Sea Moss Gel', 'Fresh Juices', 'Wellness Shots'],
-  },
-];
+// Day-of-week labels
+const DAY_LABELS: Record<number, string> = {
+  0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday',
+  4: 'Thursday', 5: 'Friday', 6: 'Saturday',
+};
+
+// Convert "HH:MM-HH:MM" to display format like "9:00 AM - 1:00 PM"
+function formatHoursRange(hours: string): string {
+  if (!hours || !hours.includes('-')) return hours || '';
+  const [start, end] = hours.split('-').map(t => t.trim());
+  const fmt = (t: string) => {
+    const [hStr, mStr] = t.split(':');
+    let h = parseInt(hStr, 10);
+    const m = mStr || '00';
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    if (h > 12) h -= 12;
+    if (h === 0) h = 12;
+    return `${h}:${m} ${ampm}`;
+  };
+  return `${fmt(start)} - ${fmt(end)}`;
+}
+
+// Market shape from /api/markets
+interface PublicMarket {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  hours: string;
+  dayOfWeek: number;
+  description: string;
+  mapsUrl?: string;
+  addressLine?: string;
+  isActive: boolean;
+  featured: boolean;
+}
 
 // Product type
 interface ProductItem {
@@ -192,31 +195,33 @@ function CategorySection({
 }
 
 // Market card component
-function MarketCard({ market, onSelect }: { market: typeof MARKETS[0]; onSelect: (id: string) => void }) {
+function MarketCard({ market, onSelect }: { market: PublicMarket; onSelect: (id: string) => void }) {
   const [countdown, setCountdown] = useState('');
+  const dayName = DAY_LABELS[market.dayOfWeek] || 'Saturday';
+  const displayHours = formatHoursRange(market.hours);
+  const emoji = market.featured ? '🏡' : '🏪';
+  const fullAddress = market.addressLine || `${market.address}, ${market.city}, ${market.state} ${market.zip}`;
   
   useEffect(() => {
     const updateCountdown = () => {
-      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const targetDay = days.indexOf(market.day);
       const today = new Date();
       const todayDay = today.getDay();
-      let daysUntil = targetDay - todayDay;
+      let daysUntil = market.dayOfWeek - todayDay;
       if (daysUntil <= 0) daysUntil += 7;
       
-      if (daysUntil === 0) setCountdown('Today!');
+      if (daysUntil === 7) setCountdown('Today!');
       else if (daysUntil === 1) setCountdown('Tomorrow');
       else setCountdown(`${daysUntil} days`);
     };
     
     updateCountdown();
-  }, [market.day]);
+  }, [market.dayOfWeek]);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
       <div className="p-5">
         <div className="flex items-start gap-4">
-          <div className="text-4xl">{market.emoji}</div>
+          <div className="text-4xl">{emoji}</div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-semibold text-gray-900">{market.name}</h3>
@@ -227,25 +232,15 @@ function MarketCard({ market, onSelect }: { market: typeof MARKETS[0]; onSelect:
             
             <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
               <Calendar className="w-4 h-4" />
-              <span>{market.day}s {market.hours}</span>
+              <span>{dayName}s {displayHours}</span>
             </div>
             
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <MapPin className="w-4 h-4" />
-              <span className="truncate">{market.address}</span>
+              <span className="truncate">{fullAddress}</span>
             </div>
             
             <p className="mt-3 text-sm text-gray-600">{market.description}</p>
-            
-            {/* Featured items */}
-            <div className="mt-3 flex flex-wrap gap-2">
-              {market.featured.map((item) => (
-                <span key={item} className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
-                  <Sparkles className="w-3 h-3" />
-                  {item}
-                </span>
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -267,6 +262,9 @@ export default function MarketsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [markets, setMarkets] = useState<PublicMarket[]>([]);
+  const [marketsLoading, setMarketsLoading] = useState(true);
+  const [marketsError, setMarketsError] = useState('');
 
   // Fetch products from Square
   useEffect(() => {
@@ -330,7 +328,7 @@ export default function MarketsPage() {
         console.error('Failed to fetch products:', error);
         // Fallback products
         setProducts([
-          { id: '1', name: 'Golden Glow Sea Moss Gel', category: 'sea-moss', emoji: '🌿', price: 25.00, isPopular: true, description: '92 essential minerals in every scoop' },
+          { id: '1', name: 'Golden Glow Sea Moss Gel', category: 'sea-moss', emoji: '🌿', price: 25.00, isPopular: true, description: 'Our signature wildcrafted sea moss gel' },
           { id: '2', name: 'Original Boba Tea', category: 'boba', emoji: '🧋', price: 6.99, isBoba: true, description: 'Serenbe exclusive! Brown sugar boba' },
           { id: '3', name: 'Fresh Sea Moss Lemonade', category: 'lemonades', emoji: '🍋', price: 5.99, description: 'Refreshing blend with wildcrafted sea moss' },
           { id: '4', name: 'Immunity Shot', category: 'shots', emoji: '🥃', price: 4.99, isNew: true, description: 'Ginger, turmeric, and sea moss power' },
@@ -341,6 +339,31 @@ export default function MarketsPage() {
     };
     
     fetchProducts();
+  }, []);
+
+  // Fetch markets from API
+  useEffect(() => {
+    const fetchMarkets = async () => {
+      try {
+        const response = await fetch('/api/markets', {
+          cache: 'no-store',
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!response.ok) throw new Error('Failed to fetch markets');
+        const data = await response.json();
+        if (data.success && Array.isArray(data.markets)) {
+          setMarkets(data.markets);
+        } else {
+          setMarketsError('No markets available right now.');
+        }
+      } catch (error) {
+        console.error('Failed to fetch markets:', error);
+        setMarketsError('Could not load markets. Please try again later.');
+      } finally {
+        setMarketsLoading(false);
+      }
+    };
+    fetchMarkets();
   }, []);
 
   const handleSelectMarket = (marketId: string) => {
@@ -365,7 +388,7 @@ export default function MarketsPage() {
         <div className="max-w-6xl mx-auto text-center">
           <Badge className="mb-4 bg-white/20 backdrop-blur-sm text-white border-white/30 px-4 py-1">
             <Sparkles className="w-4 h-4 mr-1" />
-            Skip the Line — Preorder Now
+            Come Find Us This Weekend
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Find Us at Local Markets
@@ -482,15 +505,53 @@ export default function MarketsPage() {
             Choose Your Market
           </h2>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
-            {MARKETS.map((market) => (
-              <MarketCard 
-                key={market.id} 
-                market={market} 
-                onSelect={handleSelectMarket}
-              />
-            ))}
-          </div>
+          {marketsLoading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                  <div className="p-5 space-y-3">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-gray-100 rounded-full animate-pulse" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-5 bg-gray-100 rounded animate-pulse w-3/4" />
+                        <div className="h-4 bg-gray-100 rounded animate-pulse w-1/2" />
+                        <div className="h-4 bg-gray-100 rounded animate-pulse w-full" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="px-5 pb-5">
+                    <div className="h-12 bg-gray-100 rounded-xl animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : marketsError ? (
+            <div className="px-4">
+              <div className="p-6 bg-amber-50 border border-amber-200 rounded-2xl text-center">
+                <AlertCircle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
+                <p className="text-amber-800 font-medium">{marketsError}</p>
+                <p className="text-sm text-amber-700 mt-1">Check back soon or browse our catalog.</p>
+              </div>
+            </div>
+          ) : markets.length === 0 ? (
+            <div className="px-4">
+              <div className="p-6 bg-gray-50 border border-gray-200 rounded-2xl text-center">
+                <Store className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-600 font-medium">No markets listed yet.</p>
+                <p className="text-sm text-gray-500 mt-1">We're setting up — check back soon!</p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+              {markets.map((market) => (
+                <MarketCard 
+                  key={market.id} 
+                  market={market} 
+                  onSelect={handleSelectMarket}
+                />
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Bottom CTA */}

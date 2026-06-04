@@ -206,12 +206,14 @@ function SquareCheckoutContent() {
                     <>
                       <div className="flex items-center gap-2 font-medium text-emerald-700">
                         <Package className="w-4 h-4" />
-                        Pickup at Serenbe Farmers Market
+                        Pickup at {orderData.marketName || 'your selected market'}
                       </div>
-                      <div className="mt-1">Saturdays 9:00 AM - 1:00 PM</div>
+                      {orderData.marketSchedule && (
+                        <div className="mt-1">{orderData.marketSchedule}</div>
+                      )}
                       <div className="mt-2 text-xs bg-yellow-50 border border-yellow-200 rounded p-2">
                         📝 <strong>Note for pickup:</strong> When checking out on Square, 
-                        select "Pickup" and we'll have your order ready at the market!
+                        select &quot;Pickup&quot; and we&apos;ll have your order ready at the market!
                       </div>
                     </>
                   )}
