@@ -112,17 +112,11 @@ Plus a `MarketSchedule` Mongoose model in `models/MarketSchedule.ts` that is **n
 
 ### Confusion 3: Preorder Minimum Surprise
 
-- **$60 minimum** for non-boba preorders (`PREORDER_RULES.NON_BOBA_MINIMUM_CENTS = 6000`)
+- **$60 minimum** for preorders (`PREORDER_RULES.MINIMUM_CENTS = 6000`)
 - This is not clearly communicated before a customer starts building their order
 - Customers may add 1-2 items, reach checkout, and be surprised by the minimum
 
-### Confusion 4: Boba Restrictions Not Upfront
-
-- **Max 2 boba items** per preorder (`PREORDER_RULES.BOBA_MAX_QTY = 2`)
-- The markets page mentions: *"Boba preorders are limited to 2 drinks. Larger boba orders can be placed at the market."*
-- But this appears as a small note, not a prominent constraint before ordering
-
-### Confusion 5: No "What's Available THIS Week" Signal
+### Confusion 4: No "What's Available THIS Week" Signal
 
 - No indicator of what's on this week's menu
 - No "this week's specials" or featured items
@@ -157,7 +151,7 @@ What the journey should be:
 
 ### Critical (Reduce Confusion)
 1. **Consolidate to ONE primary checkout flow** — eliminate redundant paths
-2. **Surface preorder minimum ($60) and boba limit (2) early** — on market page and at cart-add time
+2. **Surface preorder minimum ($60) early** — on market page and at cart-add time
 3. **Single source of truth for market data** — use `MarketSchedule` model, eliminate hardcoded duplication
 
 ### High Priority (Align Psychology)

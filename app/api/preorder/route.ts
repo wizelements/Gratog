@@ -73,7 +73,7 @@ export async function POST(request: any) {
       return sum + ((item.price || 0) * (item.quantity || 1));
     }, 0);
 
-    // Preorder rules: $60 non-boba minimum, boba max 2
+    // Preorder rules: $60 minimum
     const preorderValidation = validatePreorderMinimum(preorderCartItems as any);
     if (!preorderValidation.valid) {
       return NextResponse.json(
@@ -83,8 +83,6 @@ export async function POST(request: any) {
           code: preorderValidation.code,
           minimum: preorderValidation.minimumRequired,
           current: preorderValidation.preorderSubtotal,
-          bobaQty: preorderValidation.bobaQty,
-          bobaMax: preorderValidation.bobaMax,
         },
         { status: 400 }
       );

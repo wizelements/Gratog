@@ -74,9 +74,6 @@ export async function GET(request: NextRequest) {
         } else if (name.includes('refresher')) {
           category = 'refreshers';
           emoji = '🍹';
-        } else if (name.includes('boba')) {
-          category = 'boba';
-          emoji = '🧋';
         } else if (name.includes('shot')) {
           category = 'shots';
           emoji = '🥃';

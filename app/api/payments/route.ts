@@ -142,33 +142,15 @@ export async function POST(request: NextRequest) {
     }
 
     // FIX P0-4: Server-side preorder validation before payment
-    // Re-validate cart meets preorder minimums (client validation may be stale)
     if (lineItems && lineItems.length > 0) {
       const preorderItems = lineItems.filter((item: any) => item.isPreorder || item.category?.toLowerCase().includes('preorder'));
       if (preorderItems.length > 0) {
-        const bobaItems = preorderItems.filter((item: any) => 
-          item.name?.toLowerCase().includes('boba') || 
-          item.category?.toLowerCase().includes('boba')
-        );
-        const bobaQty = bobaItems.reduce((sum: number, item: any) => sum + (Number(item.quantity) || 1), 0);
-        if (bobaQty > 2) {
-          return json({ 
-            success: false, 
-            error: 'Boba preorders are limited to 2 drinks. Want more? Order at the market!',
-            code: 'BOBA_PREORDER_LIMIT_EXCEEDED'
-          }, 400);
-        }
-        
-        const nonBobaPreorder = preorderItems.filter((item: any) => 
-          !item.name?.toLowerCase().includes('boba') && 
-          !item.category?.toLowerCase().includes('boba')
-        );
-        const preorderSubtotal = nonBobaPreorder.reduce(
+        const preorderSubtotal = preorderItems.reduce(
           (sum: number, item: any) => sum + ((Number(item.price) || 0) * (Number(item.quantity) || 1)), 
           0
         );
         
-        if (nonBobaPreorder.length > 0 && preorderSubtotal < 60) {
+        if (preorderSubtotal < 60) {
           return json({ 
             success: false, 
             error: `Preorder items require a $60.00 minimum. Current preorder total: $${preorderSubtotal.toFixed(2)}. Add $${(60 - preorderSubtotal).toFixed(2)} more to continue.`,

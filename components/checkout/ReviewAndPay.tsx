@@ -387,23 +387,23 @@ export default function ReviewAndPay({
             {/* 🎯 CONVERSION PSYCHOLOGY: Pre-validation error with clear CTA */}
             {!validationResult.valid && !orderError && (
               <motion.div
-                className={`rounded-xl p-4 border ${validationResult.code?.includes('PREORDER') || validationResult.code?.includes('BOBA') ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'}`}
+                className={`rounded-xl p-4 border ${validationResult.code?.includes('PREORDER') ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'}`}
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
               >
                 <div className="flex items-start gap-3">
-                  {validationResult.code?.includes('PREORDER') || validationResult.code?.includes('BOBA') ? (
+                  {validationResult.code?.includes('PREORDER') ? (
                     <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                   ) : (
                     <Store className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                   )}
                   <div className="flex-1">
-                    <h4 className={`font-medium ${validationResult.code?.includes('PREORDER') || validationResult.code?.includes('BOBA') ? 'text-red-800' : 'text-amber-800'}`}>
-                      {validationResult.code?.includes('PREORDER') || validationResult.code?.includes('BOBA') 
+                    <h4 className={`font-medium ${validationResult.code?.includes('PREORDER') ? 'text-red-800' : 'text-amber-800'}`}>
+                      {validationResult.code?.includes('PREORDER') 
                         ? 'Cannot Proceed with Order' 
                         : 'Market Pickup Required'}
                     </h4>
-                    <p className={`text-sm mt-1 ${validationResult.code?.includes('PREORDER') || validationResult.code?.includes('BOBA') ? 'text-red-700' : 'text-amber-700'}`}>
+                    <p className={`text-sm mt-1 ${validationResult.code?.includes('PREORDER') ? 'text-red-700' : 'text-amber-700'}`}>
                       {validationResult.error}
                     </p>
                     <div className="mt-3 flex gap-2">
@@ -411,11 +411,11 @@ export default function ReviewAndPay({
                         onClick={onBack}
                         variant="outline"
                         size="sm"
-                        className={validationResult.code?.includes('PREORDER') || validationResult.code?.includes('BOBA') 
+                        className={validationResult.code?.includes('PREORDER') 
                           ? 'border-red-300 text-red-700 hover:bg-red-100'
                           : 'border-amber-300 text-amber-700 hover:bg-amber-100'}
                       >
-                        {validationResult.code?.includes('PREORDER') || validationResult.code?.includes('BOBA')
+                        {validationResult.code?.includes('PREORDER')
                           ? 'Edit Cart'
                           : 'Change to Market Pickup'}
                       </Button>

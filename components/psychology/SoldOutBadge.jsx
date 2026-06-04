@@ -51,7 +51,7 @@ export function PreorderNotice({ stock }) {
         <div>
           <p className="text-sm font-semibold text-emerald-800">Preorder — Made Fresh for You</p>
           <p className="text-xs text-emerald-700 mt-0.5">
-            $60 minimum for preorder items (boba: max 2 drinks). Order now, pick up at your next market visit.
+            $60 minimum for preorder items. Order now, pick up at your next market visit.
             We&apos;ll prepare it fresh for your pickup date.
           </p>
         </div>

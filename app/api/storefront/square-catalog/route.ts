@@ -73,8 +73,6 @@ export async function GET(request: NextRequest) {
           category = 'sea-moss';
         } else if (name.includes('refresher')) {
           category = 'refreshers';
-        } else if (name.includes('boba') || name.includes('bubble')) {
-          category = 'boba';
         }
         
         // Get image if available

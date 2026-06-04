@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
         const name = (item.itemData?.name || '').toLowerCase();
         let availability: 'fresh' | 'preorder' | 'shippable' = 'preorder';
         
-        if (category.includes('drink') || category.includes('juice') || category.includes('boba') || name.includes('juice') || name.includes('boba')) {
+        if (category.includes('drink') || category.includes('juice') || name.includes('juice')) {
           availability = 'fresh';
         } else if (category.includes('dried') || category.includes('capsule') || category.includes('merch') || name.includes('dried') || name.includes('capsule')) {
           availability = 'shippable';

@@ -12,7 +12,7 @@
 Gratog (Taste of Gratitude) is a sophisticated, boutique e-commerce platform specializing in wildcrafted sea moss wellness products. The platform combines modern web technology with traditional farmers market charm, offering a unique blend of online ordering with local pickup, delivery, and shipping fulfillment. Built on Next.js with a robust Square payment integration, Gratog serves as both a direct-to-consumer storefront and a farmers market commerce tool.
 
 ### Key Metrics at a Glance
-- **Product Portfolio:** Sea moss gels, wellness shots, lemonades, and boba
+- **Product Portfolio:** Sea moss gels, wellness shots, and lemonades
 - **Fulfillment Options:** Pickup (2 market locations), local delivery, nationwide shipping
 - **Payment Processing:** Square Web Payments SDK
 - **Marketing Stack:** Resend (email), Twilio (SMS), custom cron campaigns
@@ -32,7 +32,7 @@ Gratog (Taste of Gratitude) is a sophisticated, boutique e-commerce platform spe
 | **Sea Moss Gels** | Wildcrafted sea moss in gel form with various flavors | $25-45 |
 | **Wellness Shots** | Concentrated sea moss with superfood boosters | $8-12 |
 | **Sea Moss Lemonades** | Refreshing drinks with sea moss infusion | $6-10 |
-| **Seasonal Specialties** | Market-exclusive items like handcrafted boba | Market-only |
+| **Seasonal Specialties** | Market-exclusive items | Market-only |
 
 **Unique Value Proposition:**
 - **Wildcrafted sourcing** - Not farmed sea moss

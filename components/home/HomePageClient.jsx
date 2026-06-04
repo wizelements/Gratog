@@ -187,7 +187,7 @@ export default function HomePageClient({
                     </h1>
 
                     <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto">
-                        Wildcrafted sea moss gel & handcrafted boba — made fresh every week for Saturday market pickup.
+                        Wildcrafted sea moss gel — made fresh every week for Saturday market pickup.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -406,7 +406,7 @@ export default function HomePageClient({
                     <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Our Story</h2>
                     <p className="text-lg text-white/90 leading-relaxed mb-2">
                         Taste of Gratitude started with Jenneisha&apos;s love for natural wellness and a blender in her kitchen.
-                        What began as sea moss gel for family became a weekly market tradition — handcrafted boba, infused gels,
+                        What began as sea moss gel for family became a weekly market tradition — infused gels,
                         and real connections with the people who show up every Saturday.
                     </p>
                     <Link href="/about" className="inline-flex items-center mt-6 text-emerald-200 hover:text-white font-semibold transition-colors">
@@ -427,7 +427,7 @@ export default function HomePageClient({
                         <div className="bg-gradient-to-r from-purple-50 via-fuchsia-50 to-purple-50 rounded-2xl border border-purple-200 p-8">
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-purple-600 to-fuchsia-600 rounded-full flex items-center justify-center shadow-lg">
-                                    <span className="text-2xl">🧋</span>
+                                    <span className="text-2xl">🌿</span>
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-gray-900">Serenbe Farmers Market</h3>
@@ -435,7 +435,7 @@ export default function HomePageClient({
                                 </div>
                             </div>
                             <p className="text-gray-700 text-sm mb-4">
-                                Sea moss gel, handcrafted boba (Taro, Strawberry Matcha, Brown Sugar & more), and seasonal specials. Come early for best selection.
+                                Sea moss gel, wellness drinks, and seasonal specials. Come early for best selection.
                             </p>
                             <Button
                                 onClick={() => router.push('/preorder?market=serenbe')}

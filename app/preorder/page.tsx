@@ -89,13 +89,6 @@ interface PreorderItem {
 }
 
 const PREORDER_MINIMUM = 60;
-const BOBA_PREORDER_MAX_QTY = 2;
-
-function isBobaItem(item?: Pick<PreorderItem, 'category' | 'name'>) {
-  const category = (item?.category || '').toLowerCase();
-  const name = (item?.name || '').toLowerCase();
-  return category.includes('boba') || name.includes('boba') || name.includes('bubble tea');
-}
 
 // Horizontal scroll category section
 function CategorySection({ 
@@ -313,9 +306,6 @@ export default function PreorderPage() {
               } else if (name.includes('refresher')) {
                 category = 'refreshers';
                 emoji = '🍹';
-              } else if (name.includes('boba')) {
-                category = 'boba';
-                emoji = '🧋';
               } else if (name.includes('shot')) {
                 category = 'shots';
                 emoji = '🥃';
@@ -370,19 +360,9 @@ export default function PreorderPage() {
 
   const cartItemCount = Object.values(cart).reduce((a, b) => a + b, 0);
 
-  const cartEntries = Object.entries(cart).map(([id, qty]) => ({
-    item: products.find(p => p.id === id),
-    qty,
-  }));
-  const bobaQty = cartEntries.reduce((sum, entry) => (
-    isBobaItem(entry.item) ? sum + entry.qty : sum
-  ), 0);
-  const nonBobaSubtotal = cartEntries.reduce((sum, entry) => (
-    entry.item && !isBobaItem(entry.item) ? sum + entry.item.price * entry.qty : sum
-  ), 0);
-  const nonBobaMinimumMet = nonBobaSubtotal === 0 || nonBobaSubtotal >= PREORDER_MINIMUM;
-  const bobaLimitMet = bobaQty <= BOBA_PREORDER_MAX_QTY;
-  const preorderRulesMet = nonBobaMinimumMet && bobaLimitMet;
+  const preorderSubtotal = cartTotal;
+  const preorderMinimumMet = preorderSubtotal === 0 || preorderSubtotal >= PREORDER_MINIMUM;
+  const preorderRulesMet = preorderMinimumMet;
 
   const updateCart = (id: string, delta: number) => {
     setCart(prev => {
@@ -401,9 +381,7 @@ export default function PreorderPage() {
 
     if (!preorderRulesMet) {
       toast.error(
-        !nonBobaMinimumMet
-          ? `Non-boba preorders require a $${PREORDER_MINIMUM.toFixed(2)} minimum. Add $${(PREORDER_MINIMUM - nonBobaSubtotal).toFixed(2)} more.`
-          : `Boba preorders are limited to ${BOBA_PREORDER_MAX_QTY} drinks. Order more at the market.`
+        `Preorders require a $${PREORDER_MINIMUM.toFixed(2)} minimum. Add $${(PREORDER_MINIMUM - preorderSubtotal).toFixed(2)} more.`
       );
       return;
     }
@@ -470,7 +448,7 @@ export default function PreorderPage() {
     { key: 'lemonades', label: 'Lemonades', emoji: '🍋' },
     { key: 'juices', label: 'Fresh Juices', emoji: '🧃' },
     { key: 'refreshers', label: 'Refreshers', emoji: '🍹' },
-    { key: 'boba', label: 'Boba Teas', emoji: '🧋' },
+
     { key: 'shots', label: 'Wellness Shots', emoji: '🥃' },
     { key: 'specials', label: 'Specials', emoji: '✨' },
   ];
@@ -642,7 +620,7 @@ export default function PreorderPage() {
                 <h2 className="font-semibold text-amber-900">Samples at the booth. Preorders for intentional wellness.</h2>
                 <p className="text-sm text-amber-800 mt-1">
                   If you want to try first, visit us at the market. If you are stocking up for your routine,
-                  reserve ahead: non-boba preorders have a ${PREORDER_MINIMUM} minimum and boba is limited to {BOBA_PREORDER_MAX_QTY} drinks.
+                  reserve ahead — preorders have a ${PREORDER_MINIMUM} minimum.
                 </p>
               </div>
 
@@ -730,13 +708,12 @@ export default function PreorderPage() {
             {cartItemCount > 0 && (
               <div className={`${preorderRulesMet ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'} border rounded-xl p-3 text-sm`}>
                 <p className={`font-medium ${preorderRulesMet ? 'text-emerald-800' : 'text-amber-800'}`}>
-                  {preorderRulesMet ? 'Preorder rules met' : 'Preorder minimum or limit needs attention'}
+                  {preorderRulesMet ? '✅ Preorder minimum met' : '⏳ Preorder minimum not met'}
                 </p>
                 <p className={`${preorderRulesMet ? 'text-emerald-700' : 'text-amber-700'} mt-1`}>
-                  {nonBobaMinimumMet
-                    ? `Non-boba preorder subtotal: $${nonBobaSubtotal.toFixed(2)}.`
-                    : `$${PREORDER_MINIMUM.toFixed(2)} minimum for non-boba preorder items. Add $${(PREORDER_MINIMUM - nonBobaSubtotal).toFixed(2)} more.`}
-                  {' '}Boba: {bobaQty}/{BOBA_PREORDER_MAX_QTY}.
+                  {preorderMinimumMet
+                    ? `Preorder subtotal: $${preorderSubtotal.toFixed(2)}.`
+                    : `$${PREORDER_MINIMUM.toFixed(2)} minimum required. Add $${(PREORDER_MINIMUM - preorderSubtotal).toFixed(2)} more.`}
                 </p>
               </div>
             )}

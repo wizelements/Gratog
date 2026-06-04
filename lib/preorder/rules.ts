@@ -12,8 +12,7 @@ export const MARKET_CONFIGS = {
 export type MarketId = keyof typeof MARKET_CONFIGS;
 
 export const PREORDER_RULES = {
-  NON_BOBA_MINIMUM_CENTS: 6000, // $60.00
-  BOBA_MAX_QTY: 2,
+  MINIMUM_CENTS: 6000, // $60.00
   TAX_RATE: 0, // market sales, no tax collected
 } as const;
 

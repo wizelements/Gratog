@@ -39,7 +39,7 @@ const STATUS_CONFIG = {
     label: 'Being Made', 
     color: 'bg-amber-500',
     icon: ChefHat,
-    message: 'Your boba is being prepared!'
+    message: 'Your order is being prepared!'
   },
   ready: { 
     label: 'Ready!', 
@@ -51,7 +51,7 @@ const STATUS_CONFIG = {
     label: 'Picked Up', 
     color: 'bg-gray-500',
     icon: Coffee,
-    message: 'Enjoy your boba!'
+    message: 'Enjoy your order!'
   }
 };
 

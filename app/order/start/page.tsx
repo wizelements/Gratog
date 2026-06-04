@@ -21,7 +21,7 @@ const MARKETS = [
     address: '10640 Serenbe Trail, Chattahoochee Hills, GA 30268',
     hours: { open: '09:00', close: '13:00' },
     days: ['Saturday'],
-    description: 'Handcrafted sea moss gel, juices, and boba every Saturday',
+    description: 'Handcrafted sea moss gel and juices every Saturday',
     parkingInfo: 'Free parking at the Farmhouse',
   },
   {

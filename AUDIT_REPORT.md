@@ -231,7 +231,6 @@ outputFileTracingRoot: path.join(__dirname, '../../'),
 - `music-button.spec.ts`
 - `music-integration.spec.ts`
 - `payment-flows.spec.ts`
-- `serenbe-boba-market.spec.ts`
 - `validation.spec.ts`
 - `hardening/` (7 security-focused test files)
 - `smoke/critical-paths.spec.ts`

@@ -68,9 +68,7 @@ Preorders are for intentional market-pickup customers who want made-fresh items 
 - Staff should confirm availability before market day when possible.
 
 ### Minimums and Limits
-- Non-boba preorder items require a **$60 subtotal minimum**.
-- Boba preorders are limited to **2 drinks per preorder** to protect freshness and booth capacity.
-- Customers who want more boba should order at the market.
+- Preorder items require a **$60 subtotal minimum**.
 
 ### Customer Messaging
 - "Come taste at the market, then preorder when you want your wellness routine guaranteed."

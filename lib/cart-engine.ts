@@ -62,7 +62,6 @@ export const MARKET_CONFIG = {
     day: 'Saturday',
     hours: '9am-1pm',
     location: 'Serenbe',
-    allowsBoba: true,
     allowsPreorder: true,
   },
   dunwoody: {
@@ -71,7 +70,6 @@ export const MARKET_CONFIG = {
     day: 'Saturday', 
     hours: '9am-12pm',
     location: 'Dunwoody',
-    allowsBoba: true,
     allowsPreorder: true,
   },
   'sandy-springs': {
@@ -80,30 +78,26 @@ export const MARKET_CONFIG = {
     day: 'Sunday',
     hours: '10am-1pm',
     location: 'Sandy Springs',
-    allowsBoba: false,
     allowsPreorder: true,
   },
   shipping: {
     id: 'shipping',
     name: 'Shipping',
-    allowsBoba: false,
     allowsPreorder: false,
   },
   delivery: {
     id: 'delivery',
     name: 'Local Delivery',
-    allowsBoba: false,
     allowsPreorder: false,
   }
 };
 
 // Preorder rules by product type
-export const PREORDER_MINIMUM = 60; // Minimum subtotal for non-boba preorder items
-export const BOBA_PREORDER_MAX_QTY = 2; // Max boba drinks per preorder (order more at market)
+export const PREORDER_MINIMUM = 60; // Minimum subtotal for preorder items
 
 // 🎯 MARKET-EXCLUSIVE PRODUCTS
-const MARKET_EXCLUSIVE_CATEGORIES = ['boba', 'market-exclusive', 'fresh-pressed'];
-const MARKET_EXCLUSIVE_KEYWORDS = ['boba', 'bubble tea', 'tapioca', 'fresh pressed', 'market only'];
+const MARKET_EXCLUSIVE_CATEGORIES = ['market-exclusive', 'fresh-pressed'];
+const MARKET_EXCLUSIVE_KEYWORDS = ['fresh pressed', 'market only'];
 
 function getSafeLocalStorage() {
   if (typeof window === 'undefined') return null;
@@ -213,47 +207,21 @@ export function validateCartForFulfillment(
 }
 
 /**
- * 🎯 DETERMINE IF ITEM IS BOBA
- */
-function isBoba(item: CartItem | any): boolean {
-  const category = (item.category || item.intelligentCategory || '').toLowerCase();
-  const name = (item.name || '').toLowerCase();
-  return category.includes('boba') || name.includes('boba') || name.includes('bubble tea');
-}
-
-/**
  * Validate preorder items meet minimum requirements.
- * - Boba: max 2 drinks per preorder (order more at market)
- * - Everything else (lemonades, juices, sea moss): $60 minimum subtotal
+ * Preorder items require a $60 minimum subtotal.
  */
-export function validatePreorderMinimum(cart: CartItem[]): ValidationResult & { preorderSubtotal?: number; minimumRequired?: number; bobaQty?: number; bobaMax?: number } {
+export function validatePreorderMinimum(cart: CartItem[]): ValidationResult & { preorderSubtotal?: number; minimumRequired?: number } {
   const preorderItems = cart.filter(item => item.isPreorder);
   if (preorderItems.length === 0) {
     return { valid: true };
   }
   
-  // Check boba preorder quantity cap
-  const bobaPreorder = preorderItems.filter(item => isBoba(item));
-  const bobaQty = bobaPreorder.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
-  if (bobaQty > BOBA_PREORDER_MAX_QTY) {
-    return {
-      valid: false,
-      error: `Boba preorders are limited to ${BOBA_PREORDER_MAX_QTY} drinks. Want more? Order at the market! Remove ${bobaQty - BOBA_PREORDER_MAX_QTY} boba drink(s) to continue.`,
-      code: 'BOBA_PREORDER_LIMIT',
-      bobaQty,
-      bobaMax: BOBA_PREORDER_MAX_QTY,
-    };
-  }
-  
-  // Check non-boba preorder minimum subtotal ($60)
-  const nonBobaPreorder = preorderItems.filter(item => !isBoba(item));
-  const preorderSubtotal = nonBobaPreorder.reduce(
+  const preorderSubtotal = preorderItems.reduce(
     (sum, item) => sum + ((Number(item.price) || 0) * (Number(item.quantity) || 1)), 
     0
   );
   
-  // Only enforce minimum if there are non-boba preorder items
-  if (nonBobaPreorder.length > 0 && preorderSubtotal < PREORDER_MINIMUM) {
+  if (preorderSubtotal < PREORDER_MINIMUM) {
     return {
       valid: false,
       error: `Preorder items require a $${PREORDER_MINIMUM.toFixed(2)} minimum. Current preorder total: $${preorderSubtotal.toFixed(2)}. Add $${(PREORDER_MINIMUM - preorderSubtotal).toFixed(2)} more to continue.`,

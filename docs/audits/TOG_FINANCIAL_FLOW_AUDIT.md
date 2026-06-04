@@ -93,8 +93,7 @@ Customer Flow:
 
 | Rule | Value | Implementation |
 |------|-------|---------------|
-| Non-boba minimum | $60.00 | `PREORDER_RULES.NON_BOBA_MINIMUM_CENTS = 6000` |
-| Boba max quantity | 2 items | `PREORDER_RULES.BOBA_MAX_QTY = 2` |
+| Preorder minimum | $60.00 | `PREORDER_RULES.MINIMUM_CENTS = 6000` |
 | Tax rate | 0% | `PREORDER_RULES.TAX_RATE = 0` (market sales, no tax collected) |
 | Saturday market cutoff | Friday 6:00 PM | `cutoffDay: 'Friday', cutoffHour: 18` |
 | Sunday market cutoff | Saturday 6:00 PM | `cutoffDay: 'Saturday', cutoffHour: 18` |

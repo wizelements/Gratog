@@ -35,8 +35,7 @@ curl -s -X POST http://localhost:3000/api/queue/join \
       \"email\": \"silverwatkins@gmail.com\"
     },
     \"items\": [
-      { \"name\": \"Thai Milk Tea\", \"quantity\": 1, \"customizations\": {\"sweetness\": \"50%\", \"ice\": \"light\"} },
-      { \"name\": \"Brown Sugar Boba\", \"quantity\": 1, \"customizations\": {\"tapioca\": \"extra\"} }
+      { \"name\": \"Thai Milk Tea\", \"quantity\": 1, \"customizations\": {\"sweetness\": \"50%\", \"ice\": \"light\"} }
     ]
   }" | tee /tmp/queue_join_response.json | jq -r '
     "Position: \(.position)",
@@ -94,7 +93,7 @@ curl -s -X POST http://localhost:3000/api/queue/update \
 echo ""
 
 echo "Customer view after MAKING:"
-curl -s "http://localhost:3000/api/queue/position/$TEST_ORDER_ID" | jq -r '"  Status: \(.status)", "  Message: Your boba is being prepared!"'
+curl -s "http://localhost:3000/api/queue/position/$TEST_ORDER_ID" | jq -r '"  Status: \(.status)", "  Message: Your order is being prepared!"'
 
 echo ""
 

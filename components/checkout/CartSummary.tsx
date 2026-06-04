@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { CartItem } from '@/adapters/cartAdapter';
 import { OrderTotals, formatCurrency } from '@/adapters/totalsAdapter';
-import { PREORDER_MINIMUM, BOBA_PREORDER_MAX_QTY } from '@/lib/cart-engine';
+import { PREORDER_MINIMUM } from '@/lib/cart-engine';
 import { toast } from 'sonner';
 
 interface CartSummaryProps {
@@ -209,56 +209,32 @@ export default function CartSummary({
 
             {cart.some(item => item.isPreorder) && (() => {
               const preorderItems = cart.filter(i => i.isPreorder);
-              const isBoba = (item: CartItem) => {
-                const cat = (item.category || '').toLowerCase();
-                const name = (item.name || '').toLowerCase();
-                return cat.includes('boba') || name.includes('boba') || name.includes('bubble tea');
-              };
-              const bobaItems = preorderItems.filter(isBoba);
-              const nonBobaItems = preorderItems.filter(i => !isBoba(i));
-              const bobaQty = bobaItems.reduce((s, i) => s + (Number(i.quantity) || 1), 0);
-              const nonBobaSubtotal = nonBobaItems.reduce(
+              const preorderSubtotal = preorderItems.reduce(
                 (s, i) => s + ((Number(i.price) || 0) * (Number(i.quantity) || 1)), 0
               );
-              const bobaOk = bobaQty <= BOBA_PREORDER_MAX_QTY;
-              const nonBobaOk = nonBobaItems.length === 0 || nonBobaSubtotal >= PREORDER_MINIMUM;
+              const preorderOk = preorderItems.length === 0 || preorderSubtotal >= PREORDER_MINIMUM;
               
               return (
                 <div className="px-4 pb-4 space-y-2">
-                  {nonBobaItems.length > 0 && (
-                    <div className={`${nonBobaOk ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'} border rounded-lg p-3 text-sm`}>
-                      <p className={`font-medium ${nonBobaOk ? 'text-emerald-800' : 'text-amber-800'}`}>
-                        {nonBobaOk ? '✅ Preorder minimum met' : '⏳ Preorder minimum not met'}
-                      </p>
-                      <p className={`text-xs ${nonBobaOk ? 'text-emerald-700' : 'text-amber-700'} mt-1`}>
-                        {nonBobaOk 
-                          ? 'Made fresh for your next market pickup.'
-                          : `$${PREORDER_MINIMUM.toFixed(2)} minimum required. Current: $${nonBobaSubtotal.toFixed(2)}. Add $${(PREORDER_MINIMUM - nonBobaSubtotal).toFixed(2)} more.`
-                        }
-                      </p>
-                      {!nonBobaOk && (
-                        <div className="mt-2 w-full h-2 bg-amber-200 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-amber-500 rounded-full transition-all duration-300"
-                            style={{ width: `${Math.min(100, (nonBobaSubtotal / PREORDER_MINIMUM) * 100)}%` }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {bobaItems.length > 0 && (
-                    <div className={`${bobaOk ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'} border rounded-lg p-3 text-sm`}>
-                      <p className={`font-medium ${bobaOk ? 'text-emerald-800' : 'text-red-800'}`}>
-                        {bobaOk ? `🧋 Boba preorder (${bobaQty}/${BOBA_PREORDER_MAX_QTY})` : `🧋 Boba limit exceeded (${bobaQty}/${BOBA_PREORDER_MAX_QTY})`}
-                      </p>
-                      <p className={`text-xs ${bobaOk ? 'text-emerald-700' : 'text-red-700'} mt-1`}>
-                        {bobaOk
-                          ? 'Boba will be made fresh for your pickup.'
-                          : `Max ${BOBA_PREORDER_MAX_QTY} boba drinks per preorder. Want more? Order at the market!`
-                        }
-                      </p>
-                    </div>
-                  )}
+                  <div className={`${preorderOk ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'} border rounded-lg p-3 text-sm`}>
+                    <p className={`font-medium ${preorderOk ? 'text-emerald-800' : 'text-amber-800'}`}>
+                      {preorderOk ? '✅ Preorder minimum met' : '⏳ Preorder minimum not met'}
+                    </p>
+                    <p className={`text-xs ${preorderOk ? 'text-emerald-700' : 'text-amber-700'} mt-1`}>
+                      {preorderOk 
+                        ? 'Made fresh for your next market pickup.'
+                        : `$${PREORDER_MINIMUM.toFixed(2)} minimum required. Current: $${preorderSubtotal.toFixed(2)}. Add $${(PREORDER_MINIMUM - preorderSubtotal).toFixed(2)} more.`
+                      }
+                    </p>
+                    {!preorderOk && (
+                      <div className="mt-2 w-full h-2 bg-amber-200 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-amber-500 rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min(100, (preorderSubtotal / PREORDER_MINIMUM) * 100)}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })()}

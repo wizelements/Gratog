@@ -30,7 +30,7 @@ Taste of Gratitude operates at **3 verified Atlanta-area farmers markets**. The 
 const MARKETS = [
   { id: 'serenbe', name: 'Serenbe Farmers Market', day: 'Saturday',
     hours: '9:00 AM - 1:00 PM', emoji: '🏡',
-    featured: ['Boba Tea', 'Sea Moss Gel', 'Wellness Shots'] },
+    featured: ['Sea Moss Gel', 'Lemonades', 'Wellness Shots'] },
   { id: 'dunwoody', name: 'Dunwoody Farmers Market', day: 'Saturday',
     hours: '9:00 AM - 12:00 PM', emoji: '🏪',
     featured: ['Sea Moss Gel', 'Fresh Lemonade', 'Wellness Shots'] },
@@ -162,7 +162,7 @@ The admin can manage markets in the database via `/admin/markets`, but public pa
 
 ### Gap 3: No Market-Specific Product Assignments
 
-Customers see the same product catalog regardless of which market they select. In reality, some products (like Boba Tea) are only available at specific markets (Serenbe).
+Customers see the same product catalog regardless of which market they select. In reality, some products are only available at specific markets.
 
 ### Gap 4: No Market-Day "Live" Indicator
 
@@ -185,7 +185,6 @@ Markets use emoji identifiers: 🏡 (Serenbe), 🏪 (Dunwoody), 🌳 (Sandy Spri
 | Category | Emoji |
 |----------|-------|
 | Sea Moss Gel | 🌿 |
-| Boba Tea | 🧋 |
 | Fresh Lemonades | 🍋 |
 | Cold Pressed Juices | 🧃 |
 | Wellness Refreshers | 🍹 |
@@ -233,7 +232,7 @@ From the markets page, selecting a market routes to `/preorder?market=${marketId
 
 ### High Priority (Operations)
 4. **Weekly menu per market** — ability to assign a menu (Canva image + product list) to a market for a specific date
-5. **Market-specific product availability** — "Boba Tea only at Serenbe" should be data-driven
+5. **Market-specific product availability** — market-exclusive items should be data-driven
 6. **Live market indicator on homepage** — "We're at Serenbe right now! 🟢"
 7. **"This week's menu" on market page** — show what's available before ordering
 

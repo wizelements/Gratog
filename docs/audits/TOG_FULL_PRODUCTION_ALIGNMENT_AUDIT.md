@@ -90,7 +90,7 @@
 | `/checkout/square` | Alternative Square checkout | ⚠️ Redundant path |
 | `/checkout/success` | Order confirmation | — |
 | `/markets` | Market listings | ⚠️ HARDCODED: Serenbe, Dunwoody, Sandy Springs |
-| `/preorder` | Preorder flow | $60 min, boba restricted |
+| `/preorder` | Preorder flow | $60 min |
 | `/preorder/status` | Preorder status tracking | — |
 | `/order/menu` | Mobile menu | Market-day in-person ordering, NOT a menu display |
 | `/order/[id]` | Order detail | — |
@@ -321,8 +321,7 @@ Admin navigation includes: Dashboard, Customers, Orders, Products, Reviews, Mark
 - Role checks
 
 #### 14. Preorder System Has Real Business Logic
-- $60 minimum for non-boba items
-- Boba max 2 qty preorder limit
+- $60 minimum for preorder items
 - Market-specific cutoff times
 - Proper cutoff logic (Friday 6PM for Saturday markets, Saturday 6PM for Sunday)
 

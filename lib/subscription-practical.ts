@@ -6,7 +6,7 @@
  * - Sea Moss Gels (16oz): Elderberry ($35), Purple ($38), Turmeric Ginger, Plain
  * - Wellness Shots (2oz): $8-12 each
  * - Lemonades (16oz): $28
- * - Boba: Market-only
+
  */
 
 import { getSquareClient } from './square';

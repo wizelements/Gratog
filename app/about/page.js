@@ -52,7 +52,7 @@ export default function AboutPage() {
             </p>
             <p>
               I brought my first batch to a local farmers market in Atlanta, and that changed everything.
-              Watching someone taste my boba for the first time at the Serenbe Market — their eyes going
+              Watching someone try my sea moss gel for the first time at the Serenbe Market — their eyes going
               wide — that&apos;s when I knew this was bigger than me. Now you can find us at Serenbe
               and Dunwoody farmers markets, and every weekend I&apos;m still behind the table, still
               making everything in small batches, still grateful.
@@ -119,7 +119,7 @@ export default function AboutPage() {
             Come Find Us at the Market
           </h2>
           <p className="text-lg text-emerald-100/80 max-w-2xl mx-auto mb-8">
-            The best way to experience Taste of Gratitude is in person. Grab a boba, try the gel,
+            The best way to experience Taste of Gratitude is in person. Try the gel,
             and let me tell you the story behind each flavor.
           </p>
           <Link

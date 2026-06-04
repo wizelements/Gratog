@@ -25,7 +25,7 @@ export const MARKETS: MarketConfig[] = [
     coordinates: { lat: 33.5407, lng: -84.7241 },
     hours: { open: '09:00', close: '13:00' },
     days: ['Saturday'],
-    description: 'Handcrafted sea moss gel, juices, and boba every Saturday',
+    description: 'Handcrafted sea moss gel, juices, and wellness drinks every Saturday',
     parkingInfo: 'Free parking at the Farmhouse entrance',
     isActive: true,
   },

@@ -250,7 +250,7 @@ export default function MarketSetupPage() {
             id="notes"
             value={specialNotes}
             onChange={(e) => setSpecialNotes(e.target.value)}
-            placeholder="e.g., Limited boba today, New flavor launch..."
+            placeholder="e.g., New flavor launch..."
           />
         </div>
       </div>

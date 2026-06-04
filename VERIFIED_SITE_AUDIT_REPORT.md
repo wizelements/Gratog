@@ -22,7 +22,7 @@ This report documents verified findings from direct observation of the live Tast
 | **Single-page landing architecture** | Verified | Homepage loads as unified landing with multiple sections; no traditional multi-page product browsing visible |
 | **Hero Section** | Verified | "Wildcrafted Sea Moss Wellness Journey" with 31 product count, dual CTAs (Shop All Products, View Featured) |
 | **Featured Products Section** | Verified | 6 products displayed: Golden Glow Gel, Healing Harmony, Kissed by Gods, Pineapple Basil, Rejuvenate, SuppleMint |
-| **Market Exclusive Section** | Verified | "Handcrafted Boba - Market Exclusive — Saturdays Only" with Serenbe Farmers Market 9AM-1PM timing |
+| **Market Exclusive Section** | Verified | "Market Exclusive — Saturdays Only" with Serenbe Farmers Market 9AM-1PM timing |
 | **Trust Indicators Section** | Verified | Three trust blocks: "100% Natural & Wildcrafted", "92 Essential Minerals", "Premium Quality Guaranteed" |
 | **Educational Content Section** | Verified | "What is Sea Moss?" detailed section with scientific classification, mineral composition, bioactive compounds |
 | **Reviews Section** | Verified | "Loved by Thousands" with 5.0 rating, 3 customer testimonials visible |
@@ -71,7 +71,7 @@ app/
 |----------|--------|----------|
 | **Sea Moss Gels** | Verified | Category label visible on Golden Glow Gel, Healing Harmony |
 | **Lemonades & Juices** | Verified | Category label visible on Kissed by Gods, Pineapple Basil, Rejuvenate, SuppleMint |
-| **Boba (Market Exclusive)** | Verified | "Handcrafted Boba" section with Taro, Strawberry Matcha, Brown Sugar, Vanilla Bean |
+| **Market Exclusives** | Verified | Market exclusive section with seasonal items |
 
 ### ✅ VERIFIED: Featured Products Detail
 

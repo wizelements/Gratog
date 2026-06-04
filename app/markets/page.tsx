@@ -69,13 +69,13 @@ interface ProductItem {
   description?: string;
   isPopular?: boolean;
   isNew?: boolean;
-  isBoba?: boolean;
+
 }
 
 // Categories with emojis
 const CATEGORIES = [
   { id: 'sea-moss', name: 'Sea Moss Gel', emoji: '🌿' },
-  { id: 'boba', name: 'Boba Tea', emoji: '🧋' },
+
   { id: 'lemonades', name: 'Fresh Lemonades', emoji: '🍋' },
   { id: 'juices', name: 'Cold Pressed Juices', emoji: '🧃' },
   { id: 'refreshers', name: 'Wellness Refreshers', emoji: '🍹' },
@@ -164,11 +164,7 @@ function CategorySection({
                   New
                 </div>
               )}
-              {item.isBoba && (
-                <div className="absolute bottom-2 left-2 bg-purple-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                  🧋 Serenbe Exclusive
-                </div>
-              )}
+
             </div>
 
             {/* Product Info */}
@@ -286,8 +282,6 @@ export default function MarketsPage() {
             const name = (p.name || '').toLowerCase();
             let category = p.category || 'specials';
             let emoji = p.emoji || '🛍️';
-            let isBoba = false;
-            
             if (name.includes('lemonade')) {
               category = 'lemonades';
               emoji = '🍋';
@@ -300,10 +294,6 @@ export default function MarketsPage() {
             } else if (name.includes('refresher')) {
               category = 'refreshers';
               emoji = '🍹';
-            } else if (name.includes('boba') || name.includes('bubble')) {
-              category = 'boba';
-              emoji = '🧋';
-              isBoba = true;
             } else if (name.includes('shot')) {
               category = 'shots';
               emoji = '🥃';
@@ -319,7 +309,6 @@ export default function MarketsPage() {
               description: p.description,
               isPopular: p.isPopular || name.includes('original'),
               isNew: p.isNew || false,
-              isBoba,
             };
           });
         
@@ -329,7 +318,7 @@ export default function MarketsPage() {
         // Fallback products
         setProducts([
           { id: '1', name: 'Golden Glow Sea Moss Gel', category: 'sea-moss', emoji: '🌿', price: 25.00, isPopular: true, description: 'Our signature wildcrafted sea moss gel' },
-          { id: '2', name: 'Original Boba Tea', category: 'boba', emoji: '🧋', price: 6.99, isBoba: true, description: 'Serenbe exclusive! Brown sugar boba' },
+
           { id: '3', name: 'Fresh Sea Moss Lemonade', category: 'lemonades', emoji: '🍋', price: 5.99, description: 'Refreshing blend with wildcrafted sea moss' },
           { id: '4', name: 'Immunity Shot', category: 'shots', emoji: '🥃', price: 4.99, isNew: true, description: 'Ginger, turmeric, and sea moss power' },
         ]);
@@ -432,7 +421,7 @@ export default function MarketsPage() {
             </div>
             <div>
               <h3 className="font-semibold text-amber-900 mb-1">Samples at the booth. Preorders for intentional wellness.</h3>
-              <div className="grid sm:grid-cols-3 gap-4 mt-3">
+              <div className="grid sm:grid-cols-2 gap-4 mt-3">
                 <div className="flex items-start gap-2">
                   <span className="text-lg">🥄</span>
                   <div className="text-sm text-amber-800">
@@ -444,14 +433,7 @@ export default function MarketsPage() {
                   <span className="text-lg">🛒</span>
                   <div className="text-sm text-amber-800">
                     <span className="font-medium">Preorder to reserve</span>
-                    <p className="text-amber-700/80">Best for customers stocking up for the week. Non-boba preorders have a $60 minimum.</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-lg">🧋</span>
-                  <div className="text-sm text-amber-800">
-                    <span className="font-medium">Boba stays fresh</span>
-                    <p className="text-amber-700/80">Boba preorders are limited to 2 drinks. Larger boba orders can be placed at the market.</p>
+                    <p className="text-amber-700/80">Best for customers stocking up for the week. Preorders have a $60 minimum.</p>
                   </div>
                 </div>
               </div>

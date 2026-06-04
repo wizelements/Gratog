@@ -93,10 +93,6 @@ export async function POST(request: NextRequest) {
           preorderSubtotal: preorderValidation.preorderSubtotal,
           minimumRequired: preorderValidation.minimumRequired,
         }),
-        ...(preorderValidation.bobaQty !== undefined && {
-          bobaQty: preorderValidation.bobaQty,
-          bobaMax: preorderValidation.bobaMax,
-        }),
       } : undefined,
       fulfillmentValidation: fulfillmentValidation.error ? fulfillmentValidation : undefined,
     };

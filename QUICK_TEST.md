@@ -23,7 +23,7 @@ curl -X POST http://localhost:3000/api/queue/join \
     },
     "items": [
       {"name": "Thai Milk Tea", "quantity": 1, "customizations": {"sweetness": "50%"}},
-      {"name": "Tiger Milk Tea", "quantity": 1, "customizations": {"boba": "extra"}}
+      {"name": "Tiger Milk Tea", "quantity": 1, "customizations": {"topping": "extra"}}
     ]
   }'
 ```
