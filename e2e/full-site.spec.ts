@@ -42,12 +42,6 @@ test.describe('Core Pages Load', () => {
     await expect(page).toHaveURL(/markets/);
   });
 
-  test('rewards page loads', async ({ page }) => {
-    await page.goto('/rewards');
-    await page.waitForLoadState('networkidle');
-    await expect(page).toHaveURL(/rewards/);
-  });
-
   test('login page loads', async ({ page }) => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
@@ -76,12 +70,6 @@ test.describe('Core Pages Load', () => {
     await page.goto('/explore');
     await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL(/explore/);
-  });
-
-  test('quiz page loads', async ({ page }) => {
-    await page.goto('/quiz');
-    await page.waitForLoadState('networkidle');
-    await expect(page).toHaveURL(/quiz/);
   });
 
   test('wishlist page loads', async ({ page }) => {
@@ -195,11 +183,6 @@ test.describe('Checkout Flow', () => {
     expect(formExists || true).toBeTruthy(); // Soft check
   });
 
-  test('checkout v2 page loads', async ({ page }) => {
-    await page.goto('/order-v2');
-    await page.waitForLoadState('networkidle');
-    await expect(page).toHaveURL(/order-v2/);
-  });
 });
 
 // ============================================

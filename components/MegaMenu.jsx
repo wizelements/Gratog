@@ -45,8 +45,6 @@ const MENU_ITEMS = {
       {
         title: 'Interactive',
         items: [
-          { label: 'Games & Quizzes', href: '/explore/games' },
-          { label: 'Customer Stories', href: '/explore/showcase' },
           { label: 'What is Sea Moss?', href: '/#what-is-sea-moss' },
         ],
       },

@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Sparkles, Gamepad2, Box, BookOpen } from 'lucide-react';
+import { ArrowRight, Sparkles, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -17,24 +17,6 @@ export default function ExploreHomepage() {
       color: 'from-emerald-500 to-green-600',
       href: '/explore/ingredients',
       emoji: '🌿'
-    },
-    {
-      id: 'games',
-      icon: <Gamepad2 className="h-8 w-8" />,
-      title: 'Wellness Games',
-      description: 'Play interactive games and learn while having fun',
-      color: 'from-purple-500 to-pink-600',
-      href: '/explore/games',
-      emoji: '🎮'
-    },
-    {
-      id: 'showcase',
-      icon: <Box className="h-8 w-8" />,
-      title: '3D Showcase',
-      description: 'View products in 3D and experience them in AR',
-      color: 'from-blue-500 to-cyan-600',
-      href: '/explore/showcase',
-      emoji: '📦'
     },
     {
       id: 'learn',
@@ -69,10 +51,10 @@ export default function ExploreHomepage() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link href="/explore/games">
+            <Link href="/explore/learn">
               <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 px-8 py-6 text-lg">
-                Play Games
-                <Gamepad2 className="ml-2 h-5 w-5" />
+                Start Learning
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
           </div>
@@ -137,8 +119,8 @@ export default function ExploreHomepage() {
               <div className="text-white/60">Unique Ingredients</div>
             </div>
             <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-              <div className="text-5xl font-bold text-emerald-400 mb-2">3</div>
-              <div className="text-white/60">Interactive Games</div>
+              <div className="text-5xl font-bold text-emerald-400 mb-2">10+</div>
+              <div className="text-white/60">Learning Modules</div>
             </div>
             <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
               <div className="text-5xl font-bold text-emerald-400 mb-2">∞</div>

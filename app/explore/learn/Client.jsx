@@ -378,9 +378,7 @@ export default function LearningCenterPage() {
               <Link href="/explore/ingredients">
                 <Button type="button" variant="outline">Explore Ingredients</Button>
               </Link>
-              <Link href="/explore/games">
-                <Button type="button" variant="outline">Try Learning Games</Button>
-              </Link>
+
             </div>
           </div>
         )}

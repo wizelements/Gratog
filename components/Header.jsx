@@ -7,10 +7,9 @@ import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import CartBadge from '@/components/CartBadge';
-import WishlistBadge from '@/components/WishlistBadge';
 import SearchBar from '@/components/SearchBar';
 import MegaMenu from '@/components/MegaMenu';
-import AccessibilityControls from '@/components/AccessibilityControls';
+
 import HelpCenter from '@/components/HelpCenter';
 
 export default function Header() {
@@ -42,7 +41,6 @@ export default function Header() {
 
         {/* Right Side Controls */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <AccessibilityControls />
           <HelpCenter />
         </div>
 
@@ -115,12 +113,12 @@ export default function Header() {
             <Link
               href="/rewards"
               className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
-                isActive('/rewards') || isActive('/passport') ? 'text-[#D4AF37]' : ''
+                isActive('/rewards') ? 'text-[#D4AF37]' : ''
               }`}
             >
               Rewards
               <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
-                isActive('/rewards') || isActive('/passport') ? 'w-full' : ''
+                isActive('/rewards') ? 'w-full' : ''
               }`} />
             </Link>
             <Link 
@@ -138,7 +136,6 @@ export default function Header() {
 
           {/* Right Side Action Buttons */}
           <div className="flex items-center space-x-2">
-            <WishlistBadge />
             <CartBadge />
             {isAuthenticated ? (
               <Button
@@ -198,7 +195,7 @@ export default function Header() {
               <Link href="/reviews" className={`block text-sm py-2 px-4 rounded ${isActive('/reviews') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 Reviews
               </Link>
-              <Link href="/rewards" className={`block text-sm py-2 px-4 rounded ${isActive('/rewards') || isActive('/passport') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
+              <Link href="/rewards" className={`block text-sm py-2 px-4 rounded ${isActive('/rewards') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 Rewards
               </Link>
             </div>
@@ -234,9 +231,7 @@ export default function Header() {
               <Link href="/explore/learn" className={`block text-sm py-2 px-4 rounded ${isActive('/explore/learn') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 How to Use
               </Link>
-              <Link href="/explore/games" className={`block text-sm py-2 px-4 rounded ${isActive('/explore/games') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
-                Games
-              </Link>
+
             </div>
 
             {/* Account Section */}

@@ -221,24 +221,6 @@ describe('Specific Hydration Checks', () => {
     expect(content).toMatch(/typeof window\s*(!==|===)/);
   });
   
-  it('ExitIntentPopup should have window guards for localStorage', () => {
-    const content = fs.readFileSync(
-      path.join(WORKSPACE, 'components/ExitIntentPopup.jsx'), 
-      'utf8'
-    );
-    
-    expect(content).toMatch(/typeof window\s*(!==|===)/);
-  });
-  
-  it('AccessibilityControls should have window guards', () => {
-    const content = fs.readFileSync(
-      path.join(WORKSPACE, 'components/AccessibilityControls.jsx'), 
-      'utf8'
-    );
-    
-    expect(content).toMatch(/typeof window\s*(!==|===)/);
-  });
-  
   it('secure-storage should handle SSR', () => {
     const content = fs.readFileSync(
       path.join(WORKSPACE, 'lib/secure-storage.ts'), 

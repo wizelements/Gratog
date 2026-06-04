@@ -13,7 +13,7 @@ import { ProductImage } from '@/components/OptimizedImage';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 import { getCanonicalProductCategoryIcon, getCanonicalProductCategoryLabel } from '@/lib/storefront-query';
 import { MobileSwitchBanner } from '@/components/pay-flow/MobileSwitchBanner';
-import WhyUsComparison from '@/components/WhyUsComparison';
+
 import { JsonLd } from '@/components/JsonLd';
 
 export default function HomePageClient({
@@ -717,9 +717,6 @@ export default function HomePageClient({
                     </div>
                 </div>
             </section>
-
-            {/* Why Us Comparison Section */}
-            <WhyUsComparison />
 
             <section className="py-20 bg-gradient-to-b from-white to-emerald-50 fade-in-section opacity-0 transition-all duration-1000">
                 <div className="container max-w-4xl">

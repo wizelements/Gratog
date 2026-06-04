@@ -6,10 +6,7 @@ import './styles/desktop-responsive.css';
 import { Toaster } from 'sonner';
 import { Suspense } from 'react';
 import { LiveLocationBanner } from '@/components/market/LiveLocationBanner';
-import { BackgroundMusic } from '@/components/BackgroundMusic';
-import { MusicControls } from '@/components/MusicControls';
 import { CookieConsent } from '@/components/CookieConsent';
-import MusicProviderWrapper from '@/components/MusicProviderWrapper';
 import { PWAInitializer } from '@/components/PWAInitializer';
 import { PWAPrompt } from '@/components/PWAPrompt';
 import { PWAUpdateNotifier } from '@/components/PWAUpdateNotifier';
@@ -17,7 +14,7 @@ import { PWADiagnostics } from '@/components/PWADiagnostics';
 import { BottomNav } from '@/components/BottomNav';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import ExitIntentModal from '@/components/ExitIntentModal';
+
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AnalyticsProvider } from '@/components/analytics/WebVitals';
 
@@ -167,26 +164,19 @@ export default function RootLayout({ children }) {
           <Suspense fallback={null}>
             <Header />
           </Suspense>
-          <MusicProviderWrapper>
-            <LiveLocationBanner />
-            <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-emerald-500 border-t-transparent rounded-full"></div></div>}>
-              <div className="min-h-screen">
-                {children}
-              </div>
-            </Suspense>
-            <Footer />
-            <BackgroundMusic />
-            <Suspense fallback={<div data-widget="music-controls" className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 z-[9999] h-12 w-12 rounded-full bg-gray-800/90 shadow-lg flex items-center justify-center text-white backdrop-blur-sm sm:bottom-6 sm:left-6">🎵</div>}>
-              <MusicControls />
-            </Suspense>
-          </MusicProviderWrapper>
+          <LiveLocationBanner />
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-emerald-500 border-t-transparent rounded-full"></div></div>}>
+            <div className="min-h-screen">
+              {children}
+            </div>
+          </Suspense>
+          <Footer />
           <PWAPrompt />
           <PWAUpdateNotifier />
           <PWADiagnostics />
           <Suspense fallback={null}>
             <CookieConsent />
           </Suspense>
-          <ExitIntentModal />
           <BottomNav />
           <Toaster position="top-right" richColors />
           </AnalyticsProvider>

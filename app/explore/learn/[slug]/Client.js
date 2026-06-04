@@ -604,11 +604,7 @@ export default function LearningModulePage() {
                 Explore Ingredients
               </Button>
             </Link>
-            <Link href="/explore/games">
-              <Button type="button" variant="outline" className="bg-white">
-                Try Learning Games
-              </Button>
-            </Link>
+
             <Link href="/explore/learn">
               <Button type="button" variant="outline" className="bg-white">
                 Browse More Modules

@@ -11,15 +11,13 @@ module.exports = {
     '/robots.txt',
     '/sitemap.xml',
     '/server-sitemap.xml',
-    '/test-auth',
-    '/diagnostic'
   ],
   robotsTxtOptions: {
     policies: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin', '/admin/*', '/api', '/api/*', '/test-auth', '/diagnostic'],
+        disallow: ['/admin', '/admin/*', '/api', '/api/*'],
       },
       {
         userAgent: 'Googlebot',

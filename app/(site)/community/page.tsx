@@ -40,22 +40,7 @@ export default function CommunityPage() {
       link: '/reviews',
       color: 'bg-yellow-100 text-yellow-600',
     },
-    {
-      icon: Camera,
-      title: 'Spicy Bloom Challenge',
-      description: 'Join our viral challenge and win amazing prizes',
-      action: 'Join Challenge',
-      link: '/ugc/spicy-bloom',
-      color: 'bg-orange-100 text-orange-600',
-    },
-    {
-      icon: Award,
-      title: 'Market Passport',
-      description: 'Collect stamps at markets and unlock exclusive rewards',
-      action: 'Get Passport',
-      link: '/passport',
-      color: 'bg-emerald-100 text-emerald-600',
-    },
+
     {
       icon: Mail,
       title: 'Wellness Newsletter',

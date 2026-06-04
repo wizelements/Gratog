@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import InfoBoardProductCard from '@/components/InfoBoardProductCard';
-import HealthBenefitFilters from '@/components/HealthBenefitFilters';
+
 import { 
   enrichProductWithHealthBenefits, 
   filterProductsByHealthBenefit,
@@ -187,18 +187,6 @@ export default function InfoBoardPage() {
               </button>
             )}
           </div>
-        </div>
-      </section>
-
-      {/* Health Benefit Filters */}
-      <section className="py-8 bg-white border-b border-emerald-100">
-        <div className="container mx-auto px-4">
-          <HealthBenefitFilters
-            benefitCounts={healthBenefitCounts}
-            selectedBenefit={selectedHealthBenefit}
-            onBenefitChange={setSelectedHealthBenefit}
-            totalProducts={products.length}
-          />
         </div>
       </section>
 

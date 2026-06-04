@@ -12,8 +12,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import EnhancedProductCard from '@/components/EnhancedProductCard';
 import ProductCard from '@/components/ProductCard';
 import InfoBoardProductCard from '@/components/InfoBoardProductCard';
-import HealthBenefitFilters from '@/components/HealthBenefitFilters';
-import FitQuiz from '@/components/FitQuiz';
+
 import { Sparkles, Grid, List, Droplets, Heart, Award, Search, X, Info, SlidersHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import AnalyticsSystem from '@/lib/analytics';
@@ -525,24 +524,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
             )}
           </div>
 
-          {/* Quiz Modal */}
-          {showQuiz && !infoMode && (
-            <div className="mb-12">
-              <FitQuiz 
-                onRecommendations={handleQuizRecommendations}
-                onAddToCart={handleAddToCart}
-              />
-              <div className="text-center mt-6">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowQuiz(false)}
-                  className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
-                >
-                  Browse All Products Instead
-                </Button>
-              </div>
-            </div>
-          )}
+          
         </div>
       </section>
 
@@ -654,15 +636,6 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
             </div>
           )}
 
-          {/* Health Benefit Filters */}
-          <div className="mb-8 bg-white rounded-xl p-6 shadow-sm border border-emerald-100">
-            <HealthBenefitFilters
-              benefitCounts={healthBenefitCounts}
-              selectedBenefit={selectedHealthBenefit}
-              onBenefitChange={handleHealthBenefitChange}
-            />
-          </div>
-          
           {/* Category Filters + View Toggle */}
           <div className="flex flex-col lg:flex-row justify-between items-center mb-8 gap-4">
             <div 
@@ -901,17 +874,6 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
           </div>
 
           <div className="space-y-5">
-            <div>
-              <p className="mb-3 text-sm font-semibold text-gray-900">Wellness Goal</p>
-              <HealthBenefitFilters
-                benefitCounts={healthBenefitCounts}
-                selectedBenefit={selectedHealthBenefit}
-                onBenefitChange={(id) => {
-                  handleHealthBenefitChange(id);
-                }}
-              />
-            </div>
-
             <div>
               <p className="mb-3 text-sm font-semibold text-gray-900">Category</p>
               <select

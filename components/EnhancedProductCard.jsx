@@ -1,16 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { Star, Eye } from 'lucide-react';
+import { Star } from 'lucide-react';
 import Link from 'next/link';
 import QuickAddButton from './QuickAddButton';
-import QuickViewModal from './QuickViewModal';
 import VariantSelector from './VariantSelector';
-import WishlistButton from './WishlistButton';
 import ScarcityBadge from './psychology/ScarcityBadge';
 import SoldOutBadge, { PreorderNotice } from './psychology/SoldOutBadge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -18,13 +16,7 @@ import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 
 export default function EnhancedProductCard({ product, onCheckout, variant = 'default' }) {
   const [imageError, setImageError] = useState(false);
-  const [showQuickView, setShowQuickView] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState(null);
-  const [isClient, setIsClient] = useState(false);
-  
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
   
   const fallbackImage = PRODUCT_IMAGE_FALLBACK_SRC;
   const hasIngredientData = product.ingredients && product.ingredients.length > 0;
@@ -92,9 +84,6 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
             />
           )}
           
-          <div className="absolute top-3 right-3 z-10">
-            <WishlistButton productId={product.id || product.slug} size="small" />
-          </div>
           
           {product.marketExclusive && (
             <Badge 
@@ -236,29 +225,7 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
           selectedVariant={selectedVariant || product.variations?.[0]}
           className="flex-1"
         />
-        
-        <Button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setShowQuickView(true);
-          }}
-          variant="outline"
-          className="flex-1 border-emerald-600 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-700 active:bg-emerald-100 transition-colors"
-          type="button"
-        >
-          <Eye className="mr-2 h-4 w-4" />
-          Quick View
-        </Button>
       </CardFooter>
-      
-      {isClient && (
-        <QuickViewModal 
-          product={product}
-          isOpen={showQuickView}
-          onClose={() => setShowQuickView(false)}
-        />
-      )}
     </Card>
   );
 }

@@ -183,8 +183,5 @@ describe('Component Import Safety', () => {
     expect(result.errorType).not.toBe('ReferenceError');
   });
   
-  it.skip('ExitIntentPopup should be importable in SSR context', async () => {
-    const result = await testComponentImport('../components/ExitIntentPopup');
-    expect(result.errorType).not.toBe('ReferenceError');
-  });
+
 });

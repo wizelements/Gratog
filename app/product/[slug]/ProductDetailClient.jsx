@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, ShoppingCart, Check, Loader2, Star, Heart, Share2, MapPin, Shield, Package, Sparkles, Droplets, Award, Users, Quote, ChevronRight, Leaf, Sun, Zap, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cart-engine';
-import RecommendationsWidget from '@/components/RecommendationsWidget';
+
 import Breadcrumbs, { getProductBreadcrumbs } from '@/components/Breadcrumbs';
 import ProductReviews from '@/components/ProductReviews';
 import Script from 'next/script';
@@ -509,14 +509,6 @@ export default function ProductDetailClient({ product, slug }) {
           </Tabs>
         </div>
 
-        {/* Recommendations */}
-        <div className="mt-16">
-          <RecommendationsWidget 
-            productId={product.id}
-            category={product.category}
-            limit={4}
-          />
-        </div>
       </div>
     </div>
   );

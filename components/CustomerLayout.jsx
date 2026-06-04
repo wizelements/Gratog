@@ -43,18 +43,12 @@ const FloatingCart = dynamic(
   () => import('@/components/FloatingCart').catch(() => () => null), 
   { ssr: false }
 );
-const LiveChatWidget = dynamic(
-  () => import('@/components/LiveChatWidget').catch(() => () => null), 
-  { ssr: false }
-);
+
 const CartNotification = dynamic(
   () => import('@/components/cart/CartNotification').catch(() => () => null), 
   { ssr: false }
 );
-const StickySecondaryNav = dynamic(
-  () => import('@/components/StickySecondaryNav').catch(() => () => null), 
-  { ssr: false }
-);
+
 
 /**
  * Customer Layout - Wraps customer-facing pages with full storefront UI
@@ -131,15 +125,7 @@ export default function CustomerLayout({ children }) {
             </ErrorBoundary>
             
             <ErrorBoundary>
-              <StickySecondaryNav />
-            </ErrorBoundary>
-            
-            <ErrorBoundary>
               <FloatingCart />
-            </ErrorBoundary>
-            
-            <ErrorBoundary>
-              <LiveChatWidget />
             </ErrorBoundary>
             
             <ErrorBoundary>

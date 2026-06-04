@@ -26,8 +26,7 @@ import {
   Package,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import SpinTracker from '@/components/SpinTracker';
-import ReferralWidget from '@/components/ReferralWidget';
+
 import { useRewardsStore, TIER_THRESHOLDS, TIER_MULTIPLIERS, AVAILABLE_REWARDS } from '@/stores/rewards';
 
 const VIP_TIERS = [
@@ -442,24 +441,6 @@ export default function RewardsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="bg-gradient-to-br from-emerald-600 to-teal-600 text-white">
-                <CardHeader>
-                  <CardTitle className="text-white">Get Your Passport</CardTitle>
-                  <CardDescription className="text-emerald-100">
-                    Digital passport for market check-ins
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button 
-                    onClick={() => window.location.href = '/passport'}
-                    className="w-full bg-white text-emerald-600 hover:bg-emerald-50"
-                  >
-                    <QrCode className="w-4 h-4 mr-2" />
-                    Get Passport
-                  </Button>
-                </CardContent>
-              </Card>
-
               <Card className="bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
                 <CardHeader>
                   <CardTitle className="text-white">Shop & Earn</CardTitle>
@@ -632,8 +613,6 @@ export default function RewardsPage() {
           </TabsContent>
 
           <TabsContent value="referrals" className="space-y-6">
-            <ReferralWidget />
-            
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -700,8 +679,6 @@ export default function RewardsPage() {
               </Card>
             ) : (
               <div className="space-y-6">
-                <SpinTracker userEmail={passport.email || passport.customerEmail} />
-                
                 <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
                   <CardHeader>
                     <div className="flex items-center justify-between">
