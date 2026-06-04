@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
-import audioManager from '@/lib/explore/audio-manager';
+
 
 export default function IngredientDetailModal({ ingredient, isOpen, onClose }) {
   const [activeTab, setActiveTab] = useState('benefits');
@@ -18,9 +18,6 @@ export default function IngredientDetailModal({ ingredient, isOpen, onClose }) {
   const handleOpen = (open) => {
     if (!open) {
       onClose();
-    } else {
-      // Play open sound
-      audioManager.play('modal-open');
     }
   };
 

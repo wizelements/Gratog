@@ -12,7 +12,7 @@ import { ArrowRight, Sparkles, Star, Shield, Zap, TrendingUp, Heart, Leaf, Dropl
 import { ProductImage } from '@/components/OptimizedImage';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 import { getCanonicalProductCategoryIcon, getCanonicalProductCategoryLabel } from '@/lib/storefront-query';
-import { MobileSwitchBanner } from '@/components/pay-flow/MobileSwitchBanner';
+
 
 import { JsonLd } from '@/components/JsonLd';
 
@@ -159,8 +159,6 @@ export default function HomePageClient({
 
     return (
         <div className="flex flex-col min-h-screen">
-            {/* 🎯 Mobile Switch Banner - show on mobile for quick checkout option */}
-            {isMobile && <MobileSwitchBanner />}
             
             <JsonLd id="home-organization-schema" data={organizationSchema} />
             <JsonLd id="home-faq-schema" data={faqSchema} />

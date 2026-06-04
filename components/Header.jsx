@@ -111,14 +111,14 @@ export default function Header() {
               }`} />
             </Link>
             <Link
-              href="/rewards"
+              href="/gratitude/rewards"
               className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
-                isActive('/rewards') ? 'text-[#D4AF37]' : ''
+                isActive('/gratitude/rewards') ? 'text-[#D4AF37]' : ''
               }`}
             >
               Rewards
               <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
-                isActive('/rewards') ? 'w-full' : ''
+                isActive('/gratitude/rewards') ? 'w-full' : ''
               }`} />
             </Link>
             <Link 
@@ -195,7 +195,7 @@ export default function Header() {
               <Link href="/reviews" className={`block text-sm py-2 px-4 rounded ${isActive('/reviews') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 Reviews
               </Link>
-              <Link href="/rewards" className={`block text-sm py-2 px-4 rounded ${isActive('/rewards') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
+              <Link href="/gratitude/rewards" className={`block text-sm py-2 px-4 rounded ${isActive('/gratitude/rewards') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 Rewards
               </Link>
             </div>
