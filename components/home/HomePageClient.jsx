@@ -173,10 +173,9 @@ export default function HomePageClient({
                 </div>
 
                 <div className="relative z-10 container text-center text-white animate-fade-in text-on-gradient">
-                    <Badge className="mb-6 bg-white/20 backdrop-blur-sm text-white border-white/30 px-6 py-2 text-lg">
-                        <Leaf className="mr-2 h-5 w-5" />
+                    <p className="mb-6 text-emerald-200 text-lg font-medium">
                         {heroCatalogBadge}
-                    </Badge>
+                    </p>
 
                     <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white">
                         Taste of Gratitude
@@ -201,20 +200,20 @@ export default function HomePageClient({
                         </Button>
                     </div>
 
-                    {/* Trust Signals Bar */}
-                    <div className="mt-12 flex flex-wrap justify-center gap-6 md:gap-10 text-sm md:text-base">
-                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
-                            <Shield className="h-5 w-5 text-emerald-300" />
-                            <span className="font-medium">100% Wildcrafted</span>
-                        </div>
-                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
-                            <Heart className="h-5 w-5 text-emerald-300" />
-                            <span className="font-medium">Small Batch</span>
-                        </div>
-                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
-                            <Sparkles className="h-5 w-5 text-emerald-300" />
-                            <span className="font-medium">Made for the Market</span>
-                        </div>
+                    {/* Trust Signals — simplified */}
+                    <div className="mt-10 flex flex-wrap justify-center gap-8 text-white/80 text-sm">
+                        <span className="flex items-center gap-2">
+                            <Shield className="h-4 w-4 text-emerald-300" />
+                            100% Wildcrafted
+                        </span>
+                        <span className="flex items-center gap-2">
+                            <Heart className="h-4 w-4 text-emerald-300" />
+                            Small Batch
+                        </span>
+                        <span className="flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-emerald-300" />
+                            Made for the Market
+                        </span>
                     </div>
                 </div>
             </section>
@@ -222,10 +221,6 @@ export default function HomePageClient({
             <section id="featured" className="py-20 bg-gradient-to-b from-white to-emerald-50">
                 <div className="container">
                     <div className="text-center mb-12">
-                        <Badge className="mb-4 bg-emerald-600 text-white px-4 py-2">
-                            <Leaf className="mr-2 h-4 w-4" />
-                            Fresh Weekly
-                        </Badge>
                         <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
                             This Week&apos;s Menu
                         </h2>
@@ -292,53 +287,38 @@ export default function HomePageClient({
                                 return (
                                     <Card
                                         key={product.id}
-                                        className="group overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-emerald-300"
+                                        className="group overflow-hidden hover:shadow-lg transition-shadow duration-200 border border-gray-200"
                                     >
                                         <CardContent className="p-0">
                                             <Link href={`/product/${product.slug || product.id}`} className="block">
-                                                <div className="relative h-64 bg-gradient-to-br from-emerald-100 to-teal-100 overflow-hidden">
+                                                <div className="relative h-64 bg-gray-100 overflow-hidden">
                                                     <ProductImage
                                                         src={cardImage}
                                                         alt={cardImageAlt}
                                                         fill
                                                         priority={index < 3}
-                                                        className="group-hover:scale-110 group-hover:rotate-2 transition-all duration-500"
+                                                        className="object-cover"
                                                         objectFit="cover"
                                                     />
 
-                                                {/* Hover Overlay */}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                    <div className="absolute bottom-4 left-4 right-4 text-white">
-                                                        <p className="text-sm font-semibold mb-2">Quick View</p>
-                                                        <div className="flex gap-2">
-                                                            <Badge className="bg-white/20 backdrop-blur-sm border-white/40">View Details</Badge>
-                                                            {categoryLabel && (
-                                                                <Badge className="bg-white/20 backdrop-blur-sm border-white/40">
-                                                                    {categoryIcon} {categoryLabel}
-                                                                </Badge>
-                                                            )}
-                                                        </div>
-                                                    </div>
+                                                    {/* Stock indicator — minimal text */}
+                                                    {isLowStock && (
+                                                        <span className="absolute top-4 left-4 text-xs font-medium text-orange-700 bg-orange-100 px-2 py-1 rounded">
+                                                            Only {stock} left
+                                                        </span>
+                                                    )}
+                                                    {isPreorder && (
+                                                        <span className="absolute top-4 left-4 text-xs font-medium text-amber-800 bg-amber-100 px-2 py-1 rounded">
+                                                            Preorder
+                                                        </span>
+                                                    )}
                                                 </div>
-
-                                                {productBadge}
-                                                
-                                                {/* Preorder availability note overlay */}
-                                                {isPreorder && (
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-amber-500/90 text-white text-xs font-medium py-2 px-4 text-center">
-                                                        📦 Preorder for Saturday Pickup
-                                                    </div>
-                                                )}
-                                            </div>
                                             </Link>
 
                                             <div className="p-6">
-                                            <p className="text-sm text-emerald-600 font-medium mb-2">
-                                                {categoryLabel}
-                                                {isPreorder && (
-                                                    <span className="ml-2 text-amber-600">• Preorder</span>
-                                                )}
-                                            </p>
+                                                <p className="text-sm text-gray-500 mb-1">
+                                                    {categoryLabel}
+                                                </p>
 
                                             <Link href={`/product/${product.slug || product.id}`}>
                                                 <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1 hover:text-emerald-600 transition-colors cursor-pointer">
@@ -361,7 +341,7 @@ export default function HomePageClient({
 
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <span className="text-3xl font-bold text-emerald-600">
+                                                    <span className="text-2xl font-bold text-emerald-700">
                                                         ${typeof product.price === 'number' ? product.price.toFixed(2) : '0.00'}
                                                     </span>
                                                 </div>
@@ -380,7 +360,7 @@ export default function HomePageClient({
                         <Button
                             onClick={() => router.push('/catalog')}
                             size="lg"
-                            className="h-14 px-8 text-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                            className="h-14 px-8 text-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
                         >
                             {viewAllProductsLabel}
                             <ArrowRight className="ml-2 h-5 w-5" />
@@ -400,16 +380,16 @@ export default function HomePageClient({
             </section>
 
             {/* Our Story */}
-            <section className="py-16 bg-gradient-to-br from-emerald-600 to-teal-600 fade-in-section opacity-0 transition-all duration-1000">
-                <div className="container max-w-3xl text-center text-on-gradient">
-                    <Heart className="h-10 w-10 text-emerald-200 mx-auto mb-4" />
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Our Story</h2>
-                    <p className="text-lg text-white/90 leading-relaxed mb-2">
+            <section className="py-16 bg-emerald-700">
+                <div className="container max-w-3xl text-center text-white">
+                    <Heart className="h-8 w-8 text-emerald-200 mx-auto mb-4" />
+                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Our Story</h2>
+                    <p className="text-base text-white/90 leading-relaxed mb-4">
                         Taste of Gratitude started with Jenneisha&apos;s love for natural wellness and a blender in her kitchen.
                         What began as sea moss gel for family became a weekly market tradition — infused gels,
                         and real connections with the people who show up every Saturday.
                     </p>
-                    <Link href="/about" className="inline-flex items-center mt-6 text-emerald-200 hover:text-white font-semibold transition-colors">
+                    <Link href="/about" className="inline-flex items-center text-emerald-200 hover:text-white font-medium transition-colors">
                         Learn Our Story
                         <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
@@ -417,51 +397,51 @@ export default function HomePageClient({
             </section>
 
             {/* Find Us This Weekend */}
-            <section className="py-16 bg-white fade-in-section opacity-0 transition-all duration-1000">
+            <section className="py-16 bg-white">
                 <div className="container max-w-4xl">
-                    <div className="text-center mb-8">
-                        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Find Us This Weekend</h2>
+                    <div className="text-center mb-10">
+                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Find Us This Weekend</h2>
                         <p className="text-gray-600">We set up every Saturday — come say hi and grab something fresh.</p>
                     </div>
                     <div className="grid md:grid-cols-2 gap-6">
-                        <div className="bg-gradient-to-r from-purple-50 via-fuchsia-50 to-purple-50 rounded-2xl border border-purple-200 p-8">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-purple-600 to-fuchsia-600 rounded-full flex items-center justify-center shadow-lg">
-                                    <span className="text-2xl">🌿</span>
+                        <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="flex-shrink-0 w-10 h-10 bg-stone-700 rounded-full flex items-center justify-center">
+                                    <span className="text-lg">🌿</span>
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-900">Serenbe Farmers Market</h3>
-                                    <p className="text-sm text-purple-700">Saturdays • 9AM–1PM</p>
+                                    <h3 className="text-lg font-semibold text-gray-900">Serenbe Farmers Market</h3>
+                                    <p className="text-sm text-stone-600">Saturdays • 9AM–1PM</p>
                                 </div>
                             </div>
-                            <p className="text-gray-700 text-sm mb-4">
+                            <p className="text-gray-600 text-sm mb-4">
                                 Sea moss gel, wellness drinks, and seasonal specials. Come early for best selection.
                             </p>
                             <Button
                                 onClick={() => router.push('/preorder?market=serenbe')}
-                                className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all w-full"
+                                className="bg-stone-700 hover:bg-stone-800 text-white w-full"
                             >
                                 Reserve Your Pickup
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         </div>
-                        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-200 p-8">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-full flex items-center justify-center shadow-lg">
-                                    <span className="text-2xl">🌿</span>
+                        <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="flex-shrink-0 w-10 h-10 bg-emerald-700 rounded-full flex items-center justify-center">
+                                    <span className="text-lg">🌿</span>
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-900">Dunwoody Farmers Market</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900">Dunwoody Farmers Market</h3>
                                     <p className="text-sm text-emerald-700">Saturdays • 8:30AM–12:30PM</p>
                                 </div>
                             </div>
-                            <p className="text-gray-700 text-sm mb-4">
+                            <p className="text-gray-600 text-sm mb-4">
                                 Our full sea moss gel lineup plus market-day specials. Stop by for a taste and chat with Jenneisha.
                             </p>
                             <Button
                                 onClick={() => router.push('/markets')}
                                 variant="outline"
-                                className="border-emerald-600 text-emerald-700 hover:bg-emerald-50 w-full"
+                                className="border-gray-300 text-gray-700 hover:bg-gray-100 w-full"
                             >
                                 See All Markets
                                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -471,9 +451,9 @@ export default function HomePageClient({
                 </div>
             </section>
 
-            <section id="benefits" className="py-20 bg-white fade-in-section opacity-0 transition-all duration-1000">
+            <section id="benefits" className="py-16 bg-white">
                 <div className="container">
-                    <div className="grid md:grid-cols-3 gap-8">
+                    <div className="grid md:grid-cols-3 gap-6">
                         {[
                             {
                                 icon: Shield,
@@ -491,15 +471,15 @@ export default function HomePageClient({
                                 description: 'Prepped fresh each week for Saturday pickup at Serenbe & Dunwoody'
                             }
                         ].map((benefit, index) => (
-                            <Card key={index} className="text-center p-8 hover:shadow-xl transition-all hover:-translate-y-1 duration-300">
+                            <Card key={index} className="text-center p-8 hover:shadow-md transition-shadow duration-200 border border-gray-200">
                                 <CardContent className="p-0 flex flex-col items-center">
-                                    <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4 transition-transform hover:scale-110 duration-300">
-                                        <benefit.icon className="h-8 w-8 text-emerald-600" />
+                                    <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
+                                        <benefit.icon className="h-6 w-6 text-emerald-600" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
                                         {benefit.title}
                                     </h3>
-                                    <p className="text-gray-600">
+                                    <p className="text-gray-600 text-sm">
                                         {benefit.description}
                                     </p>
                                 </CardContent>
@@ -509,17 +489,13 @@ export default function HomePageClient({
                 </div>
             </section>
 
-            <section className="py-20 bg-gradient-to-b from-white to-emerald-50 fade-in-section opacity-0 transition-all duration-1000">
+            <section className="py-20 bg-gray-50">
                 <div className="container max-w-4xl">
                     <div className="text-center mb-12">
-                        <Badge className="mb-4 bg-emerald-600 text-white px-4 py-2">
-                            <Award className="mr-2 h-4 w-4" />
+                        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                             Frequently Asked Questions
-                        </Badge>
-                        <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                            Your Questions Answered
                         </h2>
-                        <p className="text-xl text-gray-600">
+                        <p className="text-lg text-gray-600">
                             Everything you need to know about sea moss
                         </p>
                     </div>
@@ -570,24 +546,24 @@ export default function HomePageClient({
                 </div>
             </section>
 
-            <section className="py-20 bg-gradient-to-br from-emerald-600 to-teal-600 text-white">
-                <div className="container text-center text-on-gradient">
-                    <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+            <section className="py-16 bg-emerald-700 text-white">
+                <div className="container text-center">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
                         See you at the market this Saturday
                     </h2>
-                    <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
+                    <p className="text-lg mb-6 text-white/90 max-w-2xl mx-auto">
                         Browse what&apos;s fresh, place a preorder, or just come say hi at Serenbe or Dunwoody.
                     </p>
                     <Button
                         onClick={() => router.push('/catalog')}
                         size="lg"
-                        className="h-14 px-8 text-lg bg-white text-emerald-600 hover:bg-emerald-50 shadow-2xl hover:scale-105 transition-all"
+                        className="h-14 px-8 text-lg bg-white text-emerald-700 hover:bg-gray-100 shadow-md"
                     >
                         Browse This Week&apos;s Menu
                         <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
-                    <p className="mt-8 text-emerald-200 text-sm">
-                        📬 Get the weekly menu in your inbox — newsletter coming soon
+                    <p className="mt-6 text-emerald-200 text-sm">
+                        Get the weekly menu in your inbox — newsletter coming soon
                     </p>
                 </div>
             </section>

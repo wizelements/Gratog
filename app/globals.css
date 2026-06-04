@@ -280,64 +280,67 @@ code {
 
 @layer base {
   :root {
-        /* ===== UNIFIED DESIGN SYSTEM ===== */
-        /* Background & Foreground */
-        --background: 0 0% 100%;
-        --foreground: 222.2 84% 4.9%;
-        --card: 0 0% 100%;
-        --card-foreground: 222.2 84% 4.9%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 222.2 84% 4.9%;
+        /* ===== WARM EARTH TONE PALETTE - Phase 4 ===== */
+        /* Core backgrounds - warm cream, not stark white */
+        --background: 35 30% 97%;
+        --foreground: 30 10% 15%;
+        --card: 35 25% 96%;
+        --card-foreground: 30 10% 15%;
+        --popover: 35 30% 97%;
+        --popover-foreground: 30 10% 15%;
         
-        /* Primary: Emerald (main brand color for CTAs) */
-        --primary: 152 57% 35%;
-        --primary-foreground: 0 0% 100%;
+        /* Primary: Muted earth green ( replaces bright emerald ) */
+        --primary: 142 25% 35%;
+        --primary-foreground: 35 30% 97%;
         
-        /* Secondary: Teal (supporting color) */
-        --secondary: 174 62% 94%;
-        --secondary-foreground: 174 62% 25%;
+        /* Secondary: Warm stone/sage */
+        --secondary: 35 20% 92%;
+        --secondary-foreground: 30 10% 20%;
         
-        /* Muted */
-        --muted: 152 20% 96%;
-        --muted-foreground: 152 10% 40%;
+        /* Muted: Soft warm gray */
+        --muted: 35 15% 90%;
+        --muted-foreground: 30 8% 45%;
         
-        /* Accent: Gold (rewards, highlights) */
-        --accent: 43 74% 49%;
-        --accent-foreground: 43 90% 12%;
+        /* Accent: Warm terracotta/amber */
+        --accent: 30 55% 55%;
+        --accent-foreground: 35 30% 97%;
         
         /* Destructive */
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 210 40% 98%;
+        --destructive: 0 65% 50%;
+        --destructive-foreground: 35 30% 97%;
         
-        /* Border & Input */
-        --border: 152 20% 90%;
-        --input: 152 20% 90%;
-        --ring: 152 57% 35%;
+        /* Borders & inputs - warm, not cool */
+        --border: 35 20% 88%;
+        --input: 35 20% 88%;
+        --ring: 142 25% 35%;
         
-        /* Chart colors (consistent palette) */
-        --chart-1: 152 57% 35%;
-        --chart-2: 174 62% 39%;
-        --chart-3: 43 74% 49%;
-        --chart-4: 152 40% 55%;
-        --chart-5: 174 40% 55%;
+        /* Chart colors - earthy tones */
+        --chart-1: 142 25% 35%;
+        --chart-2: 30 55% 55%;
+        --chart-3: 25 40% 45%;
+        --chart-4: 160 20% 40%;
+        --chart-5: 35 40% 50%;
         
-        --radius: 0.5rem;
+        --radius: 0.375rem;
         
         /* Sidebar */
-        --sidebar-background: 0 0% 98%;
-        --sidebar-foreground: 240 5.3% 26.1%;
-        --sidebar-primary: 152 57% 30%;
-        --sidebar-primary-foreground: 0 0% 98%;
-        --sidebar-accent: 152 20% 96%;
-        --sidebar-accent-foreground: 152 57% 25%;
-        --sidebar-border: 152 15% 91%;
-        --sidebar-ring: 152 57% 45%;
+        --sidebar-background: 35 30% 97%;
+        --sidebar-foreground: 30 10% 20%;
+        --sidebar-primary: 142 25% 30%;
+        --sidebar-primary-foreground: 35 30% 97%;
+        --sidebar-accent: 35 20% 92%;
+        --sidebar-accent-foreground: 30 10% 20%;
+        --sidebar-border: 35 20% 88%;
+        --sidebar-ring: 142 25% 35%;
         
-        /* ===== BRAND COLOR TOKENS ===== */
-        --brand-emerald: 152 57% 35%;
-        --brand-teal: 174 62% 39%;
-        --brand-gold: 43 74% 49%;
-        --brand-gold-dark: 43 80% 35%;
+        /* ===== BRAND COLOR TOKENS - Warm Earth ===== */
+        --brand-earth: 142 25% 35%;
+        --brand-sage: 145 18% 42%;
+        --brand-terracotta: 25 50% 48%;
+        --brand-gold: 40 60% 48%;
+        --brand-cream: 35 30% 97%;
+        --brand-stone: 30 10% 42%;
+        --brand-charcoal: 30 10% 15%;
     }
   .dark {
         --background: 222.2 84% 4.9%;
