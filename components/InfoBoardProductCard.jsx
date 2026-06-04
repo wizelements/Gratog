@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { Sparkles, Leaf, Heart, Droplets } from 'lucide-react';
+import { Leaf, Heart, Droplets } from 'lucide-react';
 import { HEALTH_BENEFIT_FILTERS } from '@/lib/health-benefits';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 
@@ -15,7 +14,7 @@ import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
  * Focus: Product info, ingredients, health benefits
  * 
  * Removed: Add to Cart, Quick Add, Price emphasis, Checkout CTAs
- * Added: Health benefit badges, ingredient spotlight, benefit descriptions
+ * Added: Ingredient spotlight and plain-language benefit descriptions
  */
 export default function InfoBoardProductCard({ product }) {
   const [imageError, setImageError] = useState(false);
@@ -53,16 +52,16 @@ export default function InfoBoardProductCard({ product }) {
   
   return (
     <Card 
-      className="group overflow-hidden transition-all duration-300 hover:shadow-lg border-2 border-emerald-100 bg-white"
+      className="group overflow-hidden border border-gray-200 bg-white transition-shadow duration-200 hover:shadow-md"
       data-testid={`info-card-${product.id}`}
     >
       {/* Product Image */}
-      <div className="relative h-56 overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50">
+      <div className="relative h-56 overflow-hidden bg-gray-100">
         {usesInlineImage ? (
           <img
             src={resolvedImage}
             alt={productAlt}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="h-full w-full object-cover"
             onError={() => setImageError(true)}
             loading="lazy"
           />
@@ -71,31 +70,20 @@ export default function InfoBoardProductCard({ product }) {
             src={resolvedImage}
             alt={productAlt}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-cover"
             onError={() => setImageError(true)}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         )}
-        
-        {/* Category Badge */}
+      </div>
+
+      <CardHeader className="pb-2">
         {categoryData.icon && (
-          <Badge 
-            className="absolute top-3 left-3 bg-white/95 text-emerald-700 border-emerald-200 shadow-sm text-sm px-3 py-1"
-          >
+          <p className="mb-2 text-sm font-medium text-emerald-700">
             <span className="mr-1.5">{categoryData.icon}</span>
             {product.intelligentCategory || 'Wellness'}
-          </Badge>
+          </p>
         )}
-        
-        {/* Featured indicator */}
-        {product.featured && (
-          <div className="absolute top-3 right-3 bg-amber-400 text-amber-900 rounded-full p-2 shadow-md">
-            <Sparkles className="h-4 w-4" />
-          </div>
-        )}
-      </div>
-      
-      <CardHeader className="pb-2">
         <CardTitle className="text-xl font-bold text-gray-900 line-clamp-2">
           {product.name}
         </CardTitle>
@@ -118,29 +106,14 @@ export default function InfoBoardProductCard({ product }) {
                 Key Ingredients
               </span>
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {visibleIngredients.map((ingredient, idx) => {
+            <p className="text-sm text-gray-600">
+              {visibleIngredients.map((ingredient) => {
                 const isObject = typeof ingredient === 'object';
                 const name = isObject ? ingredient.name : ingredient;
                 const icon = isObject ? ingredient.icon : '';
-                
-                return (
-                  <Badge 
-                    key={idx}
-                    variant="secondary" 
-                    className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200 py-1 px-2"
-                  >
-                    {icon && <span className="mr-1">{icon}</span>}
-                    {name}
-                  </Badge>
-                );
-              })}
-              {remainingIngredients > 0 && (
-                <Badge variant="outline" className="text-xs text-gray-400 py-1">
-                  +{remainingIngredients} more
-                </Badge>
-              )}
-            </div>
+                return `${icon ? `${icon} ` : ''}${name}`;
+              }).join(', ')}{remainingIngredients > 0 ? `, +${remainingIngredients} more` : ''}
+            </p>
           </div>
         )}
         
@@ -150,25 +123,15 @@ export default function InfoBoardProductCard({ product }) {
             <div className="flex items-center gap-1.5 mb-2">
               <Heart className="h-4 w-4 text-rose-500" />
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                Wellness Benefits
+                Product Notes
               </span>
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {healthBenefits.map((benefitId, idx) => {
+            <p className="text-sm text-gray-600">
+              {healthBenefits.map((benefitId) => {
                 const benefit = HEALTH_BENEFIT_FILTERS[benefitId];
-                if (!benefit) return null;
-                
-                return (
-                  <Badge 
-                    key={idx}
-                    className="text-xs bg-blue-50 text-blue-700 border-blue-200 py-1 px-2"
-                  >
-                    <span className="mr-1">{benefit.icon}</span>
-                    {benefit.label}
-                  </Badge>
-                );
-              })}
-            </div>
+                return benefit ? `${benefit.icon} ${benefit.label}` : null;
+              }).filter(Boolean).join(', ')}
+            </p>
           </div>
         )}
         

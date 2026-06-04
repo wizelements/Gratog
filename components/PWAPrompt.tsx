@@ -76,7 +76,7 @@ export function PWAPrompt() {
   return (
     <div
       data-widget="pwa-install-prompt"
-      className="fixed left-1/2 -translate-x-1/2 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] sm:bottom-4 z-[10020] w-[min(24rem,calc(100vw-2rem))] bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg shadow-lg p-4 text-white"
+      className="fixed left-1/2 -translate-x-1/2 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] sm:bottom-4 z-[10020] w-[min(24rem,calc(100vw-2rem))] bg-emerald-700 rounded-lg shadow-md p-4 text-white"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-1">

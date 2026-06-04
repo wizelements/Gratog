@@ -2,19 +2,13 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { Star, Leaf } from 'lucide-react';
 import Link from 'next/link';
 import QuickAddButton from './QuickAddButton';
 import VariantSelector from './VariantSelector';
-import ScarcityBadge from './psychology/ScarcityBadge';
-import InventoryBadge from './InventoryBadge';
-import SoldOutBadge, { PreorderNotice } from './psychology/SoldOutBadge';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 
-export default function ProductCard({ product, onCheckout, variant = 'default' }) {
+export default function ProductCard({ product }) {
   const [imageError, setImageError] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState(null);
   
@@ -50,22 +44,26 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
     || product.size 
     || '';
 
-  const visibleBenefits = product.benefits?.slice(0, 2) || [];
-  const remainingBenefits = (product.benefits?.length || 0) - 2;
+  const lowStockThreshold = product.lowStockThreshold || 5;
+  const availabilityLabel = product.stock !== null && product.stock !== undefined && product.stock <= 0
+    ? 'Preorder for Saturday pickup'
+    : product.stock !== null && product.stock !== undefined && product.stock <= lowStockThreshold
+      ? `Limited stock (${product.stock} left)`
+      : null;
   
   return (
     <Card 
-      className="group overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+      className="group overflow-hidden border border-gray-200 transition-shadow duration-200 hover:shadow-md"
       data-testid={`product-card-${product.id}`}
       data-product={product.id}
     >
       <Link href={`/product/${product.slug || product.id}`}>
-        <div className="relative h-64 overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50">
+        <div className="relative h-64 overflow-hidden bg-gray-100">
           {usesInlineImage ? (
             <img
               src={resolvedImage}
               alt={productAlt}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="h-full w-full object-cover"
               onError={() => setImageError(true)}
               loading="lazy"
             />
@@ -74,67 +72,19 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
               src={resolvedImage}
               alt={productAlt}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              className="object-cover"
               onError={() => setImageError(true)}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           )}
-          
-          {product.featured && (
-            <Badge 
-              className="absolute top-3 right-3 bg-yellow-500 text-white border-none shadow-sm"
-              data-testid="featured-badge"
-            >
-              <Star className="h-3 w-3 mr-1 fill-white" />
-              Featured
-            </Badge>
-          )}
-          
-          {product.badge && !product.featured && (
-            <Badge 
-              className="absolute top-3 right-3 bg-emerald-600 text-white border-none shadow-sm"
-              data-testid="special-badge"
-            >
-              {product.badge}
-            </Badge>
-          )}
-          
-          <SoldOutBadge stock={product.stock} />
         </div>
       </Link>
       
       <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg line-clamp-2">{product.name}</CardTitle>
-          {product.points && (
-            <Badge 
-              variant="outline" 
-              className="text-xs border-emerald-600 text-emerald-600 shrink-0"
-              data-testid="points-badge"
-            >
-              +{product.points} pts
-            </Badge>
-          )}
-        </div>
+        <CardTitle className="text-lg line-clamp-2">{product.name}</CardTitle>
         
         {product.subtitle && (
           <CardDescription className="mt-1 line-clamp-1">{product.subtitle}</CardDescription>
-        )}
-        
-        {visibleBenefits.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {visibleBenefits.map((benefit, idx) => (
-              <Badge key={idx} variant="secondary" className="text-xs py-0.5">
-                <Leaf className="w-3 h-3 mr-1" />
-                {benefit}
-              </Badge>
-            ))}
-            {remainingBenefits > 0 && (
-              <Badge variant="outline" className="text-xs py-0.5 text-muted-foreground">
-                +{remainingBenefits} more
-              </Badge>
-            )}
-          </div>
         )}
       </CardHeader>
       
@@ -145,16 +95,9 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
             <span className="text-sm text-muted-foreground">/ {displaySize}</span>
           )}
         </div>
-        <div className="mb-3">
-          <InventoryBadge 
-            stock={product.stock} 
-            threshold={product.lowStockThreshold || 10}
-            isPreorder={product.isPreorder}
-            isSellingFast={product.isSellingFast}
-          />
-        </div>
-        <ScarcityBadge productId={product.id} stock={product.stock} threshold={product.lowStockThreshold} />
-        <PreorderNotice stock={product.stock} />
+        {availabilityLabel && (
+          <p className="mb-3 text-sm font-medium text-stone-600">{availabilityLabel}</p>
+        )}
         
         {hasMultipleVariants && (
           <div className="mb-3">
@@ -173,25 +116,13 @@ export default function ProductCard({ product, onCheckout, variant = 'default' }
           </p>
         )}
       </CardContent>
-      
+
       <CardFooter className="pt-0">
-        <div className="flex gap-2 w-full">
-          <QuickAddButton 
-            product={product}
-            selectedVariant={selectedVariant || product.variations?.[0]}
-            className="flex-1"
-          />
-          
-          <Link href={`/product/${product.slug || product.id}`} className="flex-1">
-            <Button 
-              variant="outline" 
-              className="w-full border-emerald-600 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-700 transition-colors"
-              data-testid={`view-details-${product.id}`}
-            >
-              View Details
-            </Button>
-          </Link>
-        </div>
+        <QuickAddButton
+          product={product}
+          selectedVariant={selectedVariant || product.variations?.[0]}
+          className="w-full"
+        />
       </CardFooter>
     </Card>
   );

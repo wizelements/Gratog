@@ -96,14 +96,14 @@ export default function FloatingCart() {
       >
         <Button
           onClick={() => setIsOpen((open) => !open)}
-          className="h-16 w-16 rounded-full shadow-2xl bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 hover:scale-110"
+          className="h-16 w-16 rounded-full shadow-md bg-emerald-700 hover:bg-emerald-800 transition-colors"
           size="icon"
           aria-label={isOpen ? 'Close cart' : 'Open cart'}
         >
           <div className="relative">
             <ShoppingCart className="h-7 w-7" />
             {itemCount > 0 && (
-              <Badge className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 bg-red-500 animate-pulse">
+              <Badge className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 bg-emerald-950">
                 {itemCount}
               </Badge>
             )}
@@ -114,7 +114,7 @@ export default function FloatingCart() {
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent side="right" hideClose className="w-full sm:max-w-[480px] p-0">
           <div className="h-full flex flex-col">
-          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6">
+          <div className="bg-emerald-700 text-white p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-2xl font-bold">Your Cart</h2>
@@ -262,7 +262,7 @@ export default function FloatingCart() {
               <Button
                 onClick={handleCheckout}
                 disabled={isCheckingOut}
-                className="w-full h-14 text-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                className="w-full h-14 text-lg bg-emerald-700 hover:bg-emerald-800 shadow-md transition-colors"
               >
                 {isCheckingOut ? (
                   <>

@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ShoppingCart, X, Plus, Minus, ChevronRight, Sparkles, Trash2, Undo2 } from 'lucide-react';
+import { ShoppingCart, X, Plus, Minus, ChevronRight, Sparkles, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useCartEngine } from '@/hooks/useCartEngine';
@@ -85,7 +84,7 @@ export default function EnhancedFloatingCart() {
     toast.success('Item removed', {
       action: {
         label: 'Undo',
-        onClick: () => handleUndo(item),
+        onClick: handleUndo,
       },
       duration: 5000,
     });
@@ -97,7 +96,7 @@ export default function EnhancedFloatingCart() {
     setUndoTimer(timer);
   };
 
-  const handleUndo = (item) => {
+  const handleUndo = () => {
     if (recentlyDeleted) {
       addItem(recentlyDeleted, recentlyDeleted.quantity);
       setRecentlyDeleted(null);
@@ -135,24 +134,20 @@ export default function EnhancedFloatingCart() {
       {/* Floating Cart Button */}
       <motion.div 
         className="fixed bottom-6 right-6 z-50"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
       >
         <Button
           onClick={() => setIsOpen(!isOpen)}
-          className="h-16 w-16 rounded-full shadow-2xl bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transition-all duration-300"
+          className="h-16 w-16 rounded-full shadow-md bg-emerald-700 hover:bg-emerald-800 transition-colors"
           size="icon"
         >
           <div className="relative">
             <ShoppingCart className="h-7 w-7" />
             {totalItems > 0 && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center rounded-full bg-red-500 text-xs font-bold"
+              <div
+                className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center rounded-full bg-emerald-950 text-xs font-bold"
               >
                 {totalItems > 99 ? '99+' : totalItems}
-              </motion.div>
+              </div>
             )}
           </div>
         </Button>
@@ -340,7 +335,7 @@ export default function EnhancedFloatingCart() {
                   <Button
                     onClick={handleCheckout}
                     disabled={isCheckingOut}
-                    className="w-full h-14 text-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="w-full h-14 text-lg bg-emerald-700 hover:bg-emerald-800 shadow-md transition-colors"
                   >
                     {isCheckingOut ? (
                       <>

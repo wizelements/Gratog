@@ -12,11 +12,9 @@ import {
   Sparkles,
   ShoppingBag,
   ArrowRight,
-  Star,
   Store
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 
 // Day-of-week labels
@@ -140,31 +138,19 @@ function CategorySection({
           <div 
             key={item.id}
             onClick={() => onSelectProduct(item)}
-            className="flex-shrink-0 w-[260px] snap-start bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
+            className="flex-shrink-0 w-[260px] snap-start bg-white rounded-2xl border border-gray-100 overflow-hidden transition-shadow hover:shadow-md cursor-pointer group"
           >
             {/* Product Image */}
-            <div className="relative h-36 bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center overflow-hidden">
+            <div className="relative h-36 bg-gray-100 flex items-center justify-center overflow-hidden">
               {item.image ? (
                 <img 
                   src={item.image} 
                   alt={item.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-cover"
                 />
               ) : (
                 <span className="text-5xl">{item.emoji}</span>
               )}
-              {item.isPopular && (
-                <div className="absolute top-2 left-2 flex items-center gap-1 bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-medium">
-                  <Star className="w-3 h-3 fill-current" />
-                  Popular
-                </div>
-              )}
-              {item.isNew && (
-                <div className="absolute top-2 right-2 bg-emerald-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                  New
-                </div>
-              )}
-
             </div>
 
             {/* Product Info */}
@@ -214,16 +200,16 @@ function MarketCard({ market, onSelect }: { market: PublicMarket; onSelect: (id:
   }, [market.dayOfWeek]);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden transition-shadow hover:shadow-md">
       <div className="p-5">
         <div className="flex items-start gap-4">
           <div className="text-4xl">{emoji}</div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-semibold text-gray-900">{market.name}</h3>
-              <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
+              <span className="text-xs font-medium text-emerald-700">
                 {countdown}
-              </Badge>
+              </span>
             </div>
             
             <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
@@ -371,14 +357,13 @@ export default function MarketsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-background">
       {/* Hero Header */}
-      <header className="bg-gradient-to-br from-emerald-600 to-teal-600 text-white px-4 py-12">
+      <header className="bg-emerald-700 text-white px-4 py-12">
         <div className="max-w-6xl mx-auto text-center">
-          <Badge className="mb-4 bg-white/20 backdrop-blur-sm text-white border-white/30 px-4 py-1">
-            <Sparkles className="w-4 h-4 mr-1" />
+          <p className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-emerald-100">
             Come Find Us This Weekend
-          </Badge>
+          </p>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Find Us at Local Markets
           </h1>
@@ -389,24 +374,17 @@ export default function MarketsPage() {
           
           {/* Quick Actions */}
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/catalog">
-              <Button
-                size="lg"
-                className="h-14 px-8 bg-white text-emerald-700 hover:bg-emerald-50 font-bold rounded-xl"
-              >
-                <Store className="w-5 h-5 mr-2" />
-                Browse Full Catalog
-              </Button>
-            </Link>
             <Link href="/preorder">
               <Button
                 size="lg"
-                variant="outline"
-                className="h-14 px-8 border-2 border-white text-white hover:bg-white/10 font-bold rounded-xl"
+                className="h-14 px-8 bg-white text-emerald-700 hover:bg-emerald-50 font-bold rounded-xl shadow-md"
               >
                 <ShoppingBag className="w-5 h-5 mr-2" />
                 Start Preorder
               </Button>
+            </Link>
+            <Link href="/catalog" className="inline-flex items-center justify-center text-emerald-100 underline-offset-4 hover:underline">
+              Browse full catalog
             </Link>
           </div>
         </div>
@@ -538,7 +516,7 @@ export default function MarketsPage() {
 
         {/* Bottom CTA */}
         <section className="mt-16 text-center">
-          <div className="bg-gradient-to-br from-emerald-600 to-teal-600 rounded-3xl p-8 md:p-12 text-white">
+          <div className="bg-emerald-700 rounded-3xl p-8 md:p-12 text-white">
             <h2 className="text-3xl font-bold mb-4">Want Home Delivery?</h2>
             <p className="text-emerald-100 mb-6 max-w-xl mx-auto">
               Add your items to cart and enter your address at checkout. We'll quote delivery by mileage before you pay.
@@ -546,7 +524,7 @@ export default function MarketsPage() {
             <Link href="/catalog">
               <Button
                 size="lg"
-                className="h-14 px-10 bg-white text-emerald-700 hover:bg-emerald-50 font-bold rounded-xl"
+                className="h-14 px-10 bg-white text-emerald-700 hover:bg-emerald-50 font-bold rounded-xl shadow-md"
               >
                 <Store className="w-5 h-5 mr-2" />
                 Browse Full Catalog
@@ -557,31 +535,6 @@ export default function MarketsPage() {
         </section>
       </div>
 
-      {/* Mobile Sticky Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg md:hidden z-50">
-        <div className="flex gap-3">
-          <Link href="/catalog" className="flex-1">
-            <Button
-              variant="outline"
-              className="w-full h-14 border-emerald-600 text-emerald-700 font-semibold"
-            >
-              <Store className="w-5 h-5 mr-2" />
-              Catalog
-            </Button>
-          </Link>
-          <Link href="/preorder" className="flex-1">
-            <Button
-              className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
-            >
-              <ShoppingBag className="w-5 h-5 mr-2" />
-              Preorder
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Mobile padding for sticky footer */}
-      <div className="h-20 md:hidden" />
     </div>
   );
 }

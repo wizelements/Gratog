@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import EnhancedProductCard from '@/components/EnhancedProductCard';
@@ -44,7 +43,7 @@ export default function CatalogPage({ initialProducts = [], initialCategories = 
 function CatalogLoadingFallback() {
   return (
     <div className="min-h-screen">
-      <section className="bg-gradient-to-br from-emerald-50 to-teal-50 py-16">
+      <section className="bg-background py-16">
         <div className="container text-center">
           <Skeleton className="h-8 w-48 mx-auto mb-4" />
           <Skeleton className="h-12 w-96 mx-auto mb-4" />
@@ -425,22 +424,8 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
     });
   };
 
-  const handleQuizRecommendations = (recommendations) => {
-    if (recommendations.length > 0) {
-      setRecommendedIds(new Set(recommendations.map(p => p.id)));
-      toast.success(`Found ${recommendations.length} perfect matches for you!`);
-    }
-    setShowQuiz(false);
-  };
-
   const handleCheckout = () => {
     router.push('/order');
-  };
-
-  const handleAddToCart = (product) => {
-    toast.success(`${product.name} added to cart!`);
-    AnalyticsSystem.trackPDPView(product.id);
-    setTimeout(() => router.push('/order'), 1000);
   };
 
   // Get label for active health benefit
@@ -449,35 +434,12 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
   return (
     <div className="min-h-screen">
       {/* Header Section */}
-      <section className="bg-gradient-to-br from-emerald-50 to-teal-50 py-16">
+      <section className="bg-background py-16 border-b border-gray-100">
         <div className="container">
-          {/* Mode Badge */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 flex-wrap">
-              <Badge className="bg-emerald-600 text-white px-4 py-2 text-sm">
-                <Sparkles className="h-4 w-4 mr-2 inline" aria-hidden="true" />
-                Premium Wellness Collection
-              </Badge>
-              
-              {!infoMode ? (
-                <Link href="/catalog?mode=info">
-                  <Badge className="bg-blue-100 text-blue-700 border-blue-200 px-4 py-2 text-sm cursor-pointer hover:bg-blue-200 transition-colors">
-                    <Info className="h-4 w-4 mr-2 inline" aria-hidden="true" />
-                    Info Board Mode
-                  </Badge>
-                </Link>
-              ) : (
-                <Link href="/catalog">
-                  <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 px-4 py-2 text-sm cursor-pointer hover:bg-emerald-200 transition-colors">
-                    <Sparkles className="h-4 w-4 mr-2 inline" aria-hidden="true" />
-                    Full Catalog Mode
-                  </Badge>
-                </Link>
-              )}
-            </div>
-          </div>
-
           <div className="text-center mb-12">
+            <p className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">
+              Fresh market menu
+            </p>
             <h1 className="text-4xl md:text-5xl font-bold text-emerald-800 mb-4">Discover Your Wellness</h1>
             <p className="text-xl text-emerald-700 max-w-3xl mx-auto mb-2">
               Premium Wildcrafted Sea Moss Products
@@ -485,10 +447,21 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
             <p className="text-lg text-emerald-600 max-w-2xl mx-auto mb-8">
               Each product is hand-crafted with mineral-rich ingredients from the ocean
             </p>
+            {!infoMode ? (
+              <Link href="/catalog?mode=info" className="inline-flex items-center text-sm font-medium text-emerald-700 underline-offset-4 hover:underline">
+                <Info className="h-4 w-4 mr-2" aria-hidden="true" />
+                View info board mode
+              </Link>
+            ) : (
+              <Link href="/catalog" className="inline-flex items-center text-sm font-medium text-emerald-700 underline-offset-4 hover:underline">
+                <Sparkles className="h-4 w-4 mr-2" aria-hidden="true" />
+                Return to full catalog
+              </Link>
+            )}
             
             {/* Quiz CTA */}
             {!infoMode && !showQuiz && (
-              <Card className="max-w-2xl mx-auto bg-white/80 backdrop-blur-sm border-emerald-200">
+              <Card className="max-w-2xl mx-auto mt-8 bg-white border-gray-200 shadow-sm">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-center gap-3 mb-4">
                     <Sparkles className="w-6 h-6 text-emerald-600" aria-hidden="true" />
@@ -510,13 +483,13 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
             
             {/* Info Mode Banner */}
             {infoMode && (
-              <Card className="max-w-2xl mx-auto bg-blue-50 border-blue-200">
+              <Card className="max-w-2xl mx-auto mt-8 bg-white border-gray-200 shadow-sm">
                 <CardContent className="p-6 text-center">
                   <div className="flex items-center justify-center gap-3 mb-2">
-                    <Info className="w-6 h-6 text-blue-600" aria-hidden="true" />
-                    <h3 className="text-xl font-semibold text-blue-800">Info Board Mode</h3>
+                    <Info className="w-6 h-6 text-emerald-700" aria-hidden="true" />
+                    <h3 className="text-xl font-semibold text-gray-900">Info Board Mode</h3>
                   </div>
-                  <p className="text-blue-600">
+                  <p className="text-gray-600">
                     Explore products by wellness goals. Filter by health benefits to find what supports your journey.
                   </p>
                 </CardContent>
@@ -572,55 +545,55 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                   <span className="text-sm text-gray-600 font-medium">Active:</span>
                   
                   {recommendedIds && (
-                    <Badge className="bg-yellow-200 text-yellow-800 flex items-center gap-1">
-                      ✨ Quiz Recommendations
+                    <span className="inline-flex items-center gap-1 rounded-md bg-white px-2.5 py-1 text-sm text-stone-700 border border-stone-200">
+                      Quiz recommendations
                       <button
                         onClick={() => setRecommendedIds(null)}
-                        className="ml-1 hover:text-yellow-600"
+                        className="ml-1 hover:text-stone-900"
                         aria-label="Clear quiz recommendations"
                       >
                         <X className="h-3 w-3" />
                       </button>
-                    </Badge>
+                    </span>
                   )}
                   
                   {selectedCategory !== 'all' && !recommendedIds && (
-                    <Badge className="bg-emerald-200 text-emerald-800 flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-white px-2.5 py-1 text-sm text-stone-700 border border-stone-200">
                       {selectedCategoryLabel}
                       <button
                         onClick={() => handleCategoryChange('all')}
-                        className="ml-1 hover:text-emerald-600"
+                        className="ml-1 hover:text-stone-900"
                         aria-label="Remove category filter"
                       >
                         <X className="h-3 w-3" />
                       </button>
-                    </Badge>
+                    </span>
                   )}
                   
                   {selectedHealthBenefit !== 'all' && !recommendedIds && (
-                    <Badge className="bg-blue-200 text-blue-800 flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-white px-2.5 py-1 text-sm text-stone-700 border border-stone-200">
                       {activeHealthBenefitLabel}
                       <button
                         onClick={() => handleHealthBenefitChange('all')}
-                        className="ml-1 hover:text-blue-600"
+                        className="ml-1 hover:text-stone-900"
                         aria-label="Remove wellness filter"
                       >
                         <X className="h-3 w-3" />
                       </button>
-                    </Badge>
+                    </span>
                   )}
                   
                   {hasSearchFilter && (
-                    <Badge className="bg-purple-200 text-purple-800 flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-white px-2.5 py-1 text-sm text-stone-700 border border-stone-200">
                       "{searchQuery}"
                       <button
                         onClick={clearSearch}
-                        className="ml-1 hover:text-purple-600"
+                        className="ml-1 hover:text-stone-900"
                         aria-label="Clear search"
                       >
                         <X className="h-3 w-3" />
                       </button>
-                    </Badge>
+                    </span>
                   )}
                 </div>
                 
@@ -691,7 +664,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
             <div className="mb-6 p-4 bg-emerald-50 rounded-lg flex items-center justify-between" aria-live="polite">
               <div className="text-sm text-emerald-700">
                 {recommendedIds ? (
-                  <span>✨ Showing <strong>{displayCount}</strong> personalized recommendations</span>
+                  <span>Showing <strong>{displayCount}</strong> personalized recommendations</span>
                 ) : isSearchMode ? (
                   <span>Showing <strong>{displayCount}</strong> results for &ldquo;{searchQuery}&rdquo;</span>
                 ) : hasActiveFilters ? (
@@ -702,7 +675,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
               </div>
               {displayCount > 0 && displayCount <= 3 && hasActiveFilters && (
                 <span className="text-xs text-amber-600 font-medium">
-                  ⚠️ Only a few options — try adjusting filters
+                  Only a few options — try adjusting filters
                 </span>
               )}
             </div>
@@ -763,12 +736,12 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
 
       {/* Trust Indicators */}
       {!loading && !showQuiz && (
-        <section className="py-12 bg-emerald-50/50 border-y border-emerald-100">
+        <section className="py-12 bg-stone-50 border-y border-stone-100">
           <div className="container">
             <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 text-center">
               <div className="flex items-center gap-3">
-                <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center">
-                  <Droplets className="h-6 w-6 text-blue-600" aria-hidden="true" />
+                <div className="bg-emerald-100 w-12 h-12 rounded-full flex items-center justify-center">
+                  <Droplets className="h-6 w-6 text-emerald-700" aria-hidden="true" />
                 </div>
                 <div className="text-left">
                   <p className="font-semibold text-gray-900">100% Wildcrafted</p>
@@ -785,8 +758,8 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center">
-                  <Heart className="h-6 w-6 text-purple-600" aria-hidden="true" />
+                <div className="bg-stone-200 w-12 h-12 rounded-full flex items-center justify-center">
+                  <Heart className="h-6 w-6 text-stone-700" aria-hidden="true" />
                 </div>
                 <div className="text-left">
                   <p className="font-semibold text-gray-900">Community Trusted</p>
@@ -800,33 +773,22 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
 
       {/* CTA Section */}
       {!loading && !showQuiz && (
-        <section className="py-20 bg-gradient-to-br from-emerald-600 to-teal-600 text-white">
+        <section className="py-20 bg-emerald-700 text-white">
           <div className="container text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Ready to Explore Natural Flavors?
             </h2>
             <p className="text-xl mb-8 text-emerald-100 max-w-2xl mx-auto">
-              Discover our collection of wildcrafted sea moss products
+              Discover our collection of wildcrafted sea moss products.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button 
-                onClick={() => setShowQuiz(true)}
-                size="lg"
-                className="h-14 px-8 text-lg bg-white text-emerald-600 hover:bg-emerald-50 shadow-2xl hover:scale-105 transition-all"
-              >
-                <Sparkles className="mr-2 h-5 w-5" aria-hidden="true" />
-                Take the Quiz
-              </Button>
-              <Link href="/contact">
-                <Button 
-                  variant="outline"
-                  size="lg"
-                  className="h-14 px-8 text-lg border-white text-white hover:bg-white/10"
-                >
-                  Contact Us
-                </Button>
-              </Link>
-            </div>
+            <Button
+              onClick={() => setShowQuiz(true)}
+              size="lg"
+              className="h-14 px-8 text-lg bg-white text-emerald-700 hover:bg-emerald-50 shadow-md transition-colors"
+            >
+              <Sparkles className="mr-2 h-5 w-5" aria-hidden="true" />
+              Take the Quiz
+            </Button>
             <p className="mt-6 text-xs text-emerald-200 max-w-2xl mx-auto">
               *These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease.
             </p>
@@ -839,7 +801,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
         <button
           type="button"
           onClick={() => setIsMobileFilterOpen(true)}
-          className="md:hidden fixed bottom-[calc(9rem+env(safe-area-inset-bottom))] right-4 z-50 inline-flex items-center gap-2 rounded-full bg-emerald-700 px-4 py-3 text-white shadow-lg transition-colors hover:bg-emerald-800"
+          className="md:hidden fixed bottom-[calc(9rem+env(safe-area-inset-bottom))] right-4 z-50 inline-flex items-center gap-2 rounded-full bg-emerald-700 px-4 py-3 text-white shadow-md transition-colors hover:bg-emerald-800"
           data-widget="catalog-filters"
           aria-label="Open filters"
         >

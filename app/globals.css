@@ -539,8 +539,8 @@ body[data-overlay-open="true"] [data-widget="pwa-install-prompt"] {
 .btn-cta-primary {
   @apply bg-emerald-600 hover:bg-emerald-700 text-white font-semibold;
   @apply px-6 py-3 rounded-lg;
-  @apply shadow-lg hover:shadow-xl;
-  @apply transition-all duration-200;
+  @apply shadow-sm;
+  @apply transition-colors duration-200;
   @apply focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2;
 }
 
@@ -557,8 +557,8 @@ body[data-overlay-open="true"] [data-widget="pwa-install-prompt"] {
 .btn-cta-accent {
   @apply font-semibold;
   @apply px-6 py-3 rounded-lg;
-  @apply shadow-lg hover:shadow-xl;
-  @apply transition-all duration-200;
+  @apply shadow-sm;
+  @apply transition-colors duration-200;
   background: hsl(43 74% 49%);
   color: hsl(43 90% 12%);
 }
@@ -569,9 +569,9 @@ body[data-overlay-open="true"] [data-widget="pwa-install-prompt"] {
 
 /* Card styles for consistent look */
 .card-hover {
-  @apply transition-all duration-300;
-  @apply hover:shadow-xl hover:-translate-y-1;
-  @apply border border-gray-200 hover:border-emerald-300;
+  @apply transition-shadow duration-200;
+  @apply hover:shadow-md;
+  @apply border border-gray-200;
 }
 
 /* Icon container - centered and consistent */

@@ -5,13 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import QuickAddButton from '@/components/QuickAddButton';
-import { ArrowRight, Sparkles, Star, Shield, Heart, Leaf, Award, ChevronDown } from 'lucide-react';
+import { ArrowRight, Sparkles, Star, Shield, Heart, Leaf, ChevronDown } from 'lucide-react';
 import { ProductImage } from '@/components/OptimizedImage';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
-import { getCanonicalProductCategoryIcon, getCanonicalProductCategoryLabel } from '@/lib/storefront-query';
+import { getCanonicalProductCategoryLabel } from '@/lib/storefront-query';
 
 
 import { JsonLd } from '@/components/JsonLd';
@@ -20,8 +19,7 @@ export default function HomePageClient({
     initialFeaturedProducts = [],
     initialCatalogCount = null,
     organizationSchema,
-    faqSchema,
-    isMobile = false
+    faqSchema
 }) {
     const router = useRouter();
     const [featuredProducts, setFeaturedProducts] = useState(initialFeaturedProducts);
@@ -169,7 +167,7 @@ export default function HomePageClient({
                         className="object-cover"
                         style={{ transform: `translateY(${scrollY * 0.5}px)` }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/90 via-emerald-800/80 to-teal-900/90" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-stone-950/85 via-emerald-950/75 to-stone-900/85" />
                 </div>
 
                 <div className="relative z-10 container text-center text-white animate-fade-in text-on-gradient">
@@ -180,7 +178,7 @@ export default function HomePageClient({
                     <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white">
                         Taste of Gratitude
                         <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-300">
+                        <span className="text-emerald-200">
                             Crafted with care. Shared at the market.
                         </span>
                     </h1>
@@ -193,7 +191,7 @@ export default function HomePageClient({
                         <Button
                             onClick={handleViewFeatured}
                             size="lg"
-                            className="h-16 px-10 text-lg bg-white text-emerald-700 hover:bg-emerald-50 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all font-bold"
+                            className="h-16 px-10 text-lg bg-white text-emerald-800 hover:bg-emerald-50 shadow-md transition-colors font-bold"
                         >
                             See This Week&apos;s Menu
                             <ArrowRight className="ml-2 h-5 w-5" />
@@ -218,7 +216,7 @@ export default function HomePageClient({
                 </div>
             </section>
 
-            <section id="featured" className="py-20 bg-gradient-to-b from-white to-emerald-50">
+            <section id="featured" className="py-20 bg-background">
                 <div className="container">
                     <div className="text-center mb-12">
                         <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -260,28 +258,12 @@ export default function HomePageClient({
                                 const cardImage = product.displayImage || product.image || PRODUCT_IMAGE_FALLBACK_SRC;
                                 const cardImageAlt = product.imageAlt || product.name;
                                 const categoryLabel = getCanonicalProductCategoryLabel(product, 'Premium Product');
-                                const categoryIcon = getCanonicalProductCategoryIcon(product, '🌿');
                                 
                                 // 🎯 PRODUCT AVAILABILITY: Check stock and preorder status
                                 const stock = product.stock ?? product.currentStock ?? null;
                                 const isPreorder = product.isPreorder ?? (stock !== null && stock <= 0);
                                 const isLowStock = stock !== null && stock > 0 && stock <= 5;
-                                
-                                // Determine badge to show
-                                let productBadge = null;
-                                if (isPreorder) {
-                                    productBadge = (
-                                        <Badge className="absolute top-4 left-4 bg-amber-500 text-white transform group-hover:scale-110 transition-transform shadow-lg">
-                                            📦 Preorder
-                                        </Badge>
-                                    );
-                                } else if (isLowStock) {
-                                    productBadge = (
-                                        <Badge className="absolute top-4 left-4 bg-orange-500 text-white transform group-hover:scale-110 transition-transform">
-                                            ⚡ Only {stock} Left
-                                        </Badge>
-                                    );
-                                }
+
                                 // Note: "Best Seller" badge removed - only show if we have actual sales data
 
                                 return (
@@ -451,6 +433,15 @@ export default function HomePageClient({
                 </div>
             </section>
 
+            <section id="what-is-sea-moss" className="py-16 bg-stone-50">
+                <div className="container max-w-3xl text-center">
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">What is sea moss?</h2>
+                    <p className="text-gray-600 leading-relaxed">
+                        Sea moss is a red seaweed traditionally used in Caribbean and Irish kitchens. We blend it into a smooth gel made fresh for market pickup, so it is simple to add to smoothies, teas, soups, or recipes.
+                    </p>
+                </div>
+            </section>
+
             <section id="benefits" className="py-16 bg-white">
                 <div className="container">
                     <div className="grid md:grid-cols-3 gap-6">
@@ -568,43 +559,6 @@ export default function HomePageClient({
                 </div>
             </section>
 
-            {/* 🚀 Mobile Quick Order Button - appears after scrolling past hero */}
-            {isMobile && <QuickOrderButton router={router} />}
-        </div>
-    );
-}
-
-/**
- * 🚀 Quick Order Button Component - Sticky bottom button for mobile
- * Allows mobile users to quickly jump to /pay after browsing
- */
-function QuickOrderButton({ router }) {
-    const [isVisible, setIsVisible] = useState(false);
-
-    useEffect(() => {
-        // Show button after scrolling past hero section
-        const handleScroll = () => {
-            const scrollY = window.scrollY;
-            setIsVisible(scrollY > 400);
-        };
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    return (
-        <div 
-            className={`fixed bottom-0 left-0 right-0 z-50 p-4 bg-white border-t border-gray-200 shadow-2xl transform transition-transform duration-300 ${
-                isVisible ? 'translate-y-0' : 'translate-y-full'
-            } md:hidden`}
-        >
-            <Button
-                onClick={() => router.push('/pay')}
-                className="w-full h-14 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-lg font-bold shadow-lg"
-            >
-                🚀 Quick Order
-                <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
         </div>
     );
 }

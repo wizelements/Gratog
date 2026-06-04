@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CheckCircle2, ShoppingCart, X } from 'lucide-react';
+import { ShoppingCart, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 // Dynamically import framer-motion with SSR disabled to prevent hydration issues
@@ -58,7 +58,7 @@ export default function CartNotification() {
           initial={{ opacity: 0, y: -20, scale: 0.8 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.8 }}
-          className="fixed top-20 right-6 z-50 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg shadow-2xl p-4 flex items-center gap-3 min-w-[280px]"
+          className="fixed top-20 right-6 z-50 bg-emerald-700 text-white rounded-lg shadow-md p-4 flex items-center gap-3 min-w-[280px]"
         >
           <div className="bg-white/20 rounded-full p-2">
             <ShoppingCart className="h-5 w-5" />

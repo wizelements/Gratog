@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ShoppingCart, Check, Loader2, Star, Heart, Share2, MapPin, Shield, Package, Sparkles, Droplets, Award, Users, Quote, ChevronRight, Leaf, Sun, Zap, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Loader2, Star, MapPin, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cart-engine';
 
@@ -15,9 +14,6 @@ import Breadcrumbs, { getProductBreadcrumbs } from '@/components/Breadcrumbs';
 import ProductReviews from '@/components/ProductReviews';
 import Script from 'next/script';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
-import SoldOutBadge, { PreorderNotice } from '@/components/psychology/SoldOutBadge';
-import ScarcityBadge from '@/components/psychology/ScarcityBadge';
-import SubscriptionSelector from '@/components/SubscriptionSelector';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop';
 
@@ -54,14 +50,9 @@ export default function ProductDetailClient({ product, slug }) {
   const [isAdding, setIsAdding] = useState(false);
   const [selectedVariation, setSelectedVariation] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [scrollY, setScrollY] = useState(0);
-  const [activeStory, setActiveStory] = useState(0);
   const [activeTab, setActiveTab] = useState('details');
   const [reviewSummary, setReviewSummary] = useState(DEFAULT_REVIEW_SUMMARY);
-  const [topReviews, setTopReviews] = useState([]);
-  const storyRef = useRef(null);
 
   // Set default variation on mount
   useEffect(() => {
@@ -72,13 +63,6 @@ export default function ProductDetailClient({ product, slug }) {
       }
     }
   }, [product]);
-
-  // Scroll effect for parallax
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Fetch reviews
   useEffect(() => {
@@ -100,7 +84,6 @@ export default function ProductDetailClient({ product, slug }) {
         
         if (data.success) {
           setReviewSummary(normalizeReviewSummary(data.summary));
-          setTopReviews(data.reviews?.slice(0, 3) || []);
         }
       } catch (err) {
         console.error('[ProductReviews] Error fetching reviews:', err);
@@ -132,24 +115,6 @@ export default function ProductDetailClient({ product, slug }) {
       toast.error(error.message || 'Failed to add to cart. Please try again.');
     } finally {
       setIsAdding(false);
-    }
-  };
-
-  const handleShare = async () => {
-    const url = `${BASE_URL}/product/${slug}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: product.name,
-          text: product.description?.substring(0, 100) || 'Check out this product!',
-          url: url,
-        });
-      } else {
-        await navigator.clipboard.writeText(url);
-        toast.success('Link copied to clipboard!');
-      }
-    } catch (err) {
-      console.error('[GratOG] Share error:', err);
     }
   };
 
@@ -240,8 +205,8 @@ export default function ProductDetailClient({ product, slug }) {
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
               {stockStatus === 'preorder' && (
-                <div className="absolute top-4 left-4">
-                  <PreorderNotice />
+                <div className="absolute top-4 left-4 rounded bg-white/95 px-3 py-1 text-sm font-medium text-emerald-800 shadow-sm">
+                  Preorder
                 </div>
               )}
             </div>
@@ -274,17 +239,9 @@ export default function ProductDetailClient({ product, slug }) {
           <div className="space-y-6">
             {/* Header */}
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
-                  {product.category}
-                </Badge>
-                {product.primaryHealthBenefit && (
-                  <Badge variant="outline" className="text-emerald-600">
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    {product.primaryHealthBenefit.label}
-                  </Badge>
-                )}
-              </div>
+              <p className="mb-2 text-sm font-medium uppercase tracking-[0.18em] text-emerald-700">
+                {product.category}
+              </p>
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">{product.name}</h1>
               
               {/* Rating */}
@@ -362,11 +319,11 @@ export default function ProductDetailClient({ product, slug }) {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3">
+            <div>
               <Button
                 onClick={handleAddToCart}
                 disabled={isAdding || (!selectedVariation && product.variations?.length > 0)}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-700 h-12 text-lg"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 text-lg"
               >
                 {isAdding ? (
                   <Loader2 className="w-5 h-5 animate-spin mr-2" />
@@ -375,48 +332,20 @@ export default function ProductDetailClient({ product, slug }) {
                 )}
                 Add to Cart
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsFavorite(!isFavorite)}
-                className="w-12 h-12"
-              >
-                <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleShare}
-                className="w-12 h-12"
-              >
-                <Share2 className="w-5 h-5" />
-              </Button>
-            </div>
-
-            {/* Subscription Option */}
-            <div className="mt-4">
-              <SubscriptionSelector
-                product={product}
-                selectedVariation={selectedVariation}
-                quantity={quantity}
-                onAddToCart={handleAddToCart}
-                isAdding={isAdding}
-              />
             </div>
 
             {/* Benefits */}
             {product.healthBenefits?.length > 0 && (
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                  <Shield className="w-5 h-5 mr-2 text-emerald-600" />
-                  Health Benefits
-                </h3>
-                <div className="flex flex-wrap gap-2">
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 className="font-semibold text-gray-900 mb-3">Product Notes</h3>
+                <ul className="space-y-2 text-sm text-gray-600">
                   {product.healthBenefits.slice(0, 6).map((benefit, idx) => (
-                    <Badge key={idx} variant="secondary" className="bg-emerald-50 text-emerald-700">
-                      <CheckCircle2 className="w-3 h-3 mr-1" />
-                      {benefit}
-                    </Badge>
+                    <li key={idx} className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                      <span>{benefit}</span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
             )}
 
@@ -437,7 +366,7 @@ export default function ProductDetailClient({ product, slug }) {
             <TabsList className="grid w-full grid-cols-3 lg:grid-cols-4">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
-              <TabsTrigger value="benefits">Benefits</TabsTrigger>
+              <TabsTrigger value="benefits">Notes</TabsTrigger>
               <TabsTrigger value="reviews">Reviews ({reviewSummary.reviewCount})</TabsTrigger>
             </TabsList>
 
@@ -487,7 +416,7 @@ export default function ProductDetailClient({ product, slug }) {
             <TabsContent value="benefits" className="mt-6">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Wellness Benefits</h3>
+                  <h3 className="text-lg font-semibold mb-4">Product Notes</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {product.healthBenefits?.map((benefit, idx) => (
                       <div key={idx} className="flex items-center gap-2">

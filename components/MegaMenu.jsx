@@ -126,7 +126,7 @@ export default function MegaMenu({ trigger = 'Catalog', onClick }) {
       {/* Mega Menu Dropdown */}
       {isOpen && (
         <div
-          className="absolute left-0 top-full mt-0 bg-white border-t-4 border-[#D4AF37] shadow-2xl rounded-b-lg min-w-max z-50"
+          className="absolute left-0 top-full mt-0 bg-white border-t-4 border-[#D4AF37] shadow-md rounded-b-lg min-w-max z-50"
           role="menu"
         >
           <div className="grid grid-cols-2 gap-8 p-6 min-w-[600px]">
@@ -141,7 +141,7 @@ export default function MegaMenu({ trigger = 'Catalog', onClick }) {
                     <li key={item.href}>
                       <Link
                         href={item.href}
-                        className="text-sm text-gray-700 hover:text-[#D4AF37] hover:translate-x-1 transition-all flex items-center gap-2 group"
+                        className="text-sm text-gray-700 hover:text-[#D4AF37] transition-colors flex items-center gap-2 group"
                         onClick={() => setIsOpen(false)}
                         role="menuitem"
                       >

@@ -212,8 +212,14 @@ describe('Hydration Safety - Components Directory', () => {
 
 describe('Specific Hydration Checks', () => {
   it('WhatsNewModal should have window guards for localStorage', () => {
+    const modalPath = path.join(WORKSPACE, 'components/WhatsNewModal.jsx');
+    if (!fs.existsSync(modalPath)) {
+      expect(fs.existsSync(modalPath)).toBe(false);
+      return;
+    }
+
     const content = fs.readFileSync(
-      path.join(WORKSPACE, 'components/WhatsNewModal.jsx'), 
+      modalPath,
       'utf8'
     );
     

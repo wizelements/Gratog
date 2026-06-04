@@ -15,7 +15,7 @@ import HelpCenter from '@/components/HelpCenter';
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const isActive = (path) => pathname === path;
 
@@ -111,14 +111,14 @@ export default function Header() {
               }`} />
             </Link>
             <Link
-              href="/gratitude/rewards"
+              href="/rewards"
               className={`text-sm font-medium transition-all hover:text-[#D4AF37] relative group ${
-                isActive('/gratitude/rewards') ? 'text-[#D4AF37]' : ''
+                isActive('/rewards') || isActive('/gratitude/rewards') ? 'text-[#D4AF37]' : ''
               }`}
             >
               Rewards
               <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all group-hover:w-full ${
-                isActive('/gratitude/rewards') ? 'w-full' : ''
+                isActive('/rewards') || isActive('/gratitude/rewards') ? 'w-full' : ''
               }`} />
             </Link>
             <Link 
@@ -195,7 +195,7 @@ export default function Header() {
               <Link href="/reviews" className={`block text-sm py-2 px-4 rounded ${isActive('/reviews') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 Reviews
               </Link>
-              <Link href="/gratitude/rewards" className={`block text-sm py-2 px-4 rounded ${isActive('/gratitude/rewards') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
+              <Link href="/rewards" className={`block text-sm py-2 px-4 rounded ${isActive('/rewards') || isActive('/gratitude/rewards') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
                 Rewards
               </Link>
             </div>

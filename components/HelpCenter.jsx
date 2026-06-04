@@ -85,7 +85,7 @@ export default function HelpCenter() {
       {/* Help Panel */}
       {isOpen && (
         <div
-          className="absolute right-0 top-full mt-2 bg-white border rounded-lg shadow-2xl p-6 z-50 min-w-[380px] max-w-sm"
+          className="absolute right-0 top-full mt-2 bg-white border rounded-lg shadow-md p-6 z-50 min-w-[380px] max-w-sm"
           role="region"
           aria-label="Help and support options"
         >

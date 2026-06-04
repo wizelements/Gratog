@@ -2,19 +2,13 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { Star } from 'lucide-react';
 import Link from 'next/link';
 import QuickAddButton from './QuickAddButton';
 import VariantSelector from './VariantSelector';
-import ScarcityBadge from './psychology/ScarcityBadge';
-import SoldOutBadge, { PreorderNotice } from './psychology/SoldOutBadge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 
-export default function EnhancedProductCard({ product, onCheckout, variant = 'default' }) {
+export default function EnhancedProductCard({ product }) {
   const [imageError, setImageError] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState(null);
   
@@ -53,23 +47,26 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
 
   const visibleIngredients = product.ingredients?.slice(0, 2) || [];
   const remainingIngredients = (product.ingredients?.length || 0) - 2;
-  
-  const visibleTags = product.tags?.slice(0, 2) || [];
-  const remainingTags = (product.tags?.length || 0) - 2;
+  const lowStockThreshold = product.lowStockThreshold || 5;
+  const availabilityLabel = product.stock !== null && product.stock !== undefined && product.stock <= 0
+    ? 'Preorder for Saturday pickup'
+    : product.stock !== null && product.stock !== undefined && product.stock <= lowStockThreshold
+      ? `Limited stock (${product.stock} left)`
+      : null;
   
   return (
     <Card 
-      className="group overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border"
+      className="group overflow-hidden border border-gray-200 transition-shadow duration-200 hover:shadow-md"
       data-testid={`enhanced-product-card-${product.id}`}
       data-product={product.id}
     >
       <Link href={`/product/${product.slug || product.id}`}>
-        <div className="relative h-64 overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50">
+        <div className="relative h-64 overflow-hidden bg-gray-100">
           {usesInlineImage ? (
             <img
               src={resolvedImage}
               alt={productAlt}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="h-full w-full object-cover"
               onError={() => setImageError(true)}
               loading="lazy"
             />
@@ -78,52 +75,16 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
               src={resolvedImage}
               alt={productAlt}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              className="object-cover"
               onError={() => setImageError(true)}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           )}
-          
-          
-          {product.marketExclusive && (
-            <Badge 
-              className="absolute top-3 left-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white border-none shadow-md text-xs"
-              data-testid="market-exclusive-badge"
-            >
-              🎪 Serenbe Markets Only
-            </Badge>
-          )}
-          
-          {product.featured && !product.marketExclusive && (
-            <Badge 
-              className="absolute top-3 left-3 bg-yellow-500 text-white border-none shadow-sm"
-              data-testid="featured-badge"
-            >
-              <Star className="h-3 w-3 mr-1 fill-white" />
-              Featured
-            </Badge>
-          )}
-          
-          <SoldOutBadge stock={product.stock} />
         </div>
       </Link>
       
       <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg line-clamp-2 group-hover:text-emerald-600 transition-colors">
-            {product.name}
-          </CardTitle>
-          
-          {product.points && (
-            <Badge 
-              variant="outline" 
-              className="text-xs border-emerald-600 text-emerald-600 shrink-0"
-              data-testid="points-badge"
-            >
-              +{product.points} pts
-            </Badge>
-          )}
-        </div>
+        <CardTitle className="text-lg line-clamp-2">{product.name}</CardTitle>
         
         {product.benefitStory && (
           <CardDescription className="mt-1.5 text-sm line-clamp-2">
@@ -136,44 +97,11 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
         )}
         
         {hasIngredientData && visibleIngredients.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            <TooltipProvider>
-              {visibleIngredients.map((ingredient, idx) => {
-                const isObject = typeof ingredient === 'object';
-                const ingredientName = isObject ? ingredient.name : ingredient;
-                const ingredientIcon = isObject ? ingredient.icon : '';
-                const ingredientBenefits = isObject ? ingredient.benefits : [];
-                
-                return (
-                  <Tooltip key={idx}>
-                    <TooltipTrigger asChild>
-                      <Badge 
-                        variant="secondary" 
-                        className="text-xs cursor-help bg-emerald-50 text-emerald-700 hover:bg-emerald-100 py-0.5"
-                      >
-                        {ingredientIcon && `${ingredientIcon} `}{ingredientName}
-                      </Badge>
-                    </TooltipTrigger>
-                    {ingredientBenefits.length > 0 && (
-                      <TooltipContent>
-                        <p className="text-xs font-semibold">Benefits:</p>
-                        <ul className="text-xs list-disc list-inside">
-                          {ingredientBenefits.map((benefit, bidx) => (
-                            <li key={bidx}>{benefit}</li>
-                          ))}
-                        </ul>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                );
-              })}
-              {remainingIngredients > 0 && (
-                <Badge variant="outline" className="text-xs text-muted-foreground py-0.5">
-                  +{remainingIngredients} more
-                </Badge>
-              )}
-            </TooltipProvider>
-          </div>
+          <p className="mt-2 text-sm text-muted-foreground line-clamp-1">
+            Ingredients: {visibleIngredients.map((ingredient) => (
+              typeof ingredient === 'object' ? ingredient.name : ingredient
+            )).join(', ')}{remainingIngredients > 0 ? `, +${remainingIngredients} more` : ''}
+          </p>
         )}
       </CardHeader>
       
@@ -186,8 +114,9 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
             <span className="text-sm text-muted-foreground">/ {displaySize}</span>
           )}
         </div>
-        <ScarcityBadge productId={product.id} stock={product.stock} threshold={product.lowStockThreshold} />
-        <PreorderNotice stock={product.stock} />
+        {availabilityLabel && (
+          <p className="mb-3 text-sm font-medium text-stone-600">{availabilityLabel}</p>
+        )}
         
         {hasMultipleVariants && (
           <div className="mb-3">
@@ -200,23 +129,6 @@ export default function EnhancedProductCard({ product, onCheckout, variant = 'de
           </div>
         )}
         
-        {visibleTags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {visibleTags.map((tag, idx) => (
-              <span 
-                key={idx}
-                className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full"
-              >
-                #{tag}
-              </span>
-            ))}
-            {remainingTags > 0 && (
-              <span className="text-xs px-2 py-0.5 text-gray-400">
-                +{remainingTags} more
-              </span>
-            )}
-          </div>
-        )}
       </CardContent>
       
       <CardFooter className="pt-0 flex gap-2">

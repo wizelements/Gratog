@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cart-engine';
 import { getAddToCartLabel, getAddedToCartMessage } from '@/lib/purchase-status';
-import { motion } from 'framer-motion';
 
 /**
  * ⚡ Quick Add Button - Enhanced with global loading states
@@ -97,35 +96,30 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
   }, [product, selectedVariant, isAdding, added, purchaseStatus]);
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+    <Button
+      onClick={handleAddToCart}
+      disabled={isAdding || added}
+      variant={variant}
+      className={`relative ${className} ${
+        added ? 'bg-emerald-600 hover:bg-emerald-700' : ''
+      }`}
     >
-      <Button
-        onClick={handleAddToCart}
-        disabled={isAdding || added}
-        variant={variant}
-        className={`relative ${className} ${
-          added ? 'bg-emerald-600 hover:bg-emerald-700' : ''
-        }`}
-      >
-        {isAdding ? (
-          <>
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            Adding...
-          </>
-        ) : added ? (
-          <>
-            <Check className="h-4 w-4 mr-2" />
-            Added!
-          </>
-        ) : (
-          <>
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            {getAddToCartLabel(purchaseStatus)}
-          </>
-        )}
-      </Button>
-    </motion.div>
+      {isAdding ? (
+        <>
+          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          Adding...
+        </>
+      ) : added ? (
+        <>
+          <Check className="h-4 w-4 mr-2" />
+          Added!
+        </>
+      ) : (
+        <>
+          <ShoppingCart className="h-4 w-4 mr-2" />
+          {getAddToCartLabel(purchaseStatus)}
+        </>
+      )}
+    </Button>
   );
 }
