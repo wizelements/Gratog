@@ -114,10 +114,8 @@ async function getFeaturedReviews() {
 
 export default async function HomePage() {
   // Fetch data in parallel with caching
-  const [{ featuredProducts, initialCatalogCount }, socialProof, featuredReviews] = await Promise.all([
+  const [{ featuredProducts, initialCatalogCount }] = await Promise.all([
     getHomepageCatalogData(),
-    getSocialProof(),
-    getFeaturedReviews()
   ]);
 
   const organizationSchema = buildHomepageOrganizationSchema();
@@ -131,8 +129,7 @@ export default async function HomePage() {
         initialCatalogCount={initialCatalogCount}
         organizationSchema={organizationSchema}
         faqSchema={faqSchema}
-        socialProof={socialProof}
-        featuredReviews={featuredReviews}
+
       />
     </>
   );

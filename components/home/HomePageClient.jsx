@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import QuickAddButton from '@/components/QuickAddButton';
-import { ArrowRight, Sparkles, Star, Shield, Zap, TrendingUp, Heart, Leaf, Droplets, Award, Users, CheckCircle, CheckCircle2, ChevronDown } from 'lucide-react';
+import { ArrowRight, Sparkles, Star, Shield, Heart, Leaf, Award, ChevronDown } from 'lucide-react';
 import { ProductImage } from '@/components/OptimizedImage';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 import { getCanonicalProductCategoryIcon, getCanonicalProductCategoryLabel } from '@/lib/storefront-query';
@@ -21,8 +21,6 @@ export default function HomePageClient({
     initialCatalogCount = null,
     organizationSchema,
     faqSchema,
-    socialProof = { customers: 'Growing Daily', reviews: 'Fresh Feedback', averageRating: '4.9 / 5.0' },
-    featuredReviews = [],
     isMobile = false
 }) {
     const router = useRouter();
@@ -146,16 +144,11 @@ export default function HomePageClient({
 
     const hasLiveCatalogCount = Number.isFinite(catalogProductCount) && catalogProductCount > 0;
     const heroCatalogBadge = hasLiveCatalogCount
-        ? `${catalogProductCount} Premium Products Available`
-        : 'Premium Wellness Collection';
+        ? `${catalogProductCount} Items This Week`
+        : 'Fresh This Week';
     const viewAllProductsLabel = hasLiveCatalogCount
-        ? `View All ${catalogProductCount} Products`
-        : 'View All Products';
-
-    const averageRatingText = typeof socialProof?.averageRating === 'string'
-        ? socialProof.averageRating
-        : '4.9 / 5.0';
-    const primaryAverageRating = averageRatingText.split('/')[0].trim();
+        ? `Browse All ${catalogProductCount} Items`
+        : 'Browse the Full Menu';
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -180,72 +173,47 @@ export default function HomePageClient({
                 </div>
 
                 <div className="relative z-10 container text-center text-white animate-fade-in text-on-gradient">
-                    <Badge className="mb-4 bg-white/20 backdrop-blur-sm text-white border-white/30 px-6 py-2 text-lg">
-                        <Sparkles className="mr-2 h-5 w-5" />
+                    <Badge className="mb-6 bg-white/20 backdrop-blur-sm text-white border-white/30 px-6 py-2 text-lg">
+                        <Leaf className="mr-2 h-5 w-5" />
                         {heroCatalogBadge}
-                    </Badge>
-                    
-                    {/* 🎯 PREORDER BADGE: Highlight preorder availability */}
-                    <Badge className="mb-6 bg-amber-500/90 text-white border-amber-400 px-4 py-1.5 text-sm animate-pulse">
-                        📦 Preorder Now for Saturday Market Pickup
                     </Badge>
 
                     <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white">
-                        Rich Mineral Content
+                        Taste of Gratitude
                         <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-300">
-                            One Daily Scoop
+                            Crafted with care. Shared at the market.
                         </span>
                     </h1>
 
-                    <p className="text-xl md:text-2xl mb-4 text-white/90 max-w-3xl mx-auto">
-                        Wildcrafted sea moss gel crafted from pristine ocean waters. A natural addition to your daily wellness routine.*
-                    </p>
-                    
-                    {/* 🎯 PREORDER EMPHASIS: Highlight preorder availability */}
-                    <p className="text-lg mb-6 text-amber-300 max-w-3xl mx-auto font-medium">
-                        📦 Preorder Now for Saturday Market Pickup at Serenbe & Dunwoody
+                    <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto">
+                        Wildcrafted sea moss gel & handcrafted boba — made fresh every week for Saturday market pickup.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                         <Button
-                            onClick={() => router.push('/catalog')}
+                            onClick={handleViewFeatured}
                             size="lg"
                             className="h-16 px-10 text-lg bg-white text-emerald-700 hover:bg-emerald-50 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all font-bold"
                         >
-                            <Sparkles className="mr-2 h-5 w-5" />
-                            Shop Sea Moss Now
+                            See This Week&apos;s Menu
                             <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
-
-                        <Button
-                            size="lg"
-                            asChild
-                            className="h-16 px-10 text-lg bg-emerald-600/80 text-white hover:bg-emerald-600 hover:text-white shadow-2xl hover:shadow-3xl hover:scale-105 transition-all font-semibold border-2 border-white/30"
-                        >
-                            <Link href="/product/golden-glow-gel">
-                                View Best Seller
-                            </Link>
                         </Button>
                     </div>
 
-                    {/* Trust Signals Bar - Real Data */}
+                    {/* Trust Signals Bar */}
                     <div className="mt-12 flex flex-wrap justify-center gap-6 md:gap-10 text-sm md:text-base">
                         <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
                             <Shield className="h-5 w-5 text-emerald-300" />
                             <span className="font-medium">100% Wildcrafted</span>
                         </div>
                         <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
-                            <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-                            <span className="font-medium">{socialProof.averageRating} Rating</span>
+                            <Heart className="h-5 w-5 text-emerald-300" />
+                            <span className="font-medium">Small Batch</span>
                         </div>
                         <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
-                            <Users className="h-5 w-5 text-emerald-300" />
-                            <span className="font-medium">{socialProof.customers} Customers</span>
-                        </div>
-                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
-                            <CheckCircle className="h-5 w-5 text-emerald-300" />
-                            <span className="font-medium">Rich Mineral Content</span>
+                            <Sparkles className="h-5 w-5 text-emerald-300" />
+                            <span className="font-medium">Made for the Market</span>
                         </div>
                     </div>
                 </div>
@@ -255,14 +223,14 @@ export default function HomePageClient({
                 <div className="container">
                     <div className="text-center mb-12">
                         <Badge className="mb-4 bg-emerald-600 text-white px-4 py-2">
-                            <TrendingUp className="mr-2 h-4 w-4" />
-                            Most Popular
+                            <Leaf className="mr-2 h-4 w-4" />
+                            Fresh Weekly
                         </Badge>
                         <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                            Featured Products
+                            This Week&apos;s Menu
                         </h2>
                         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                            Discover our customer favorites - hand-selected for maximum wellness benefits
+                            Fresh this week — handcrafted in small batches
                         </p>
                     </div>
 
@@ -274,25 +242,18 @@ export default function HomePageClient({
 
                     {!loading && featuredProducts.length === 0 && (
                         <div className="text-center py-16 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl">
-                            <Sparkles className="h-16 w-16 text-emerald-400 mx-auto mb-4" />
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">All Products Available via Preorder</h3>
+                            <Leaf className="h-16 w-16 text-emerald-400 mx-auto mb-4" />
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">This week&apos;s menu is coming soon</h3>
                             <p className="text-gray-600 max-w-md mx-auto mb-6">
-                                All items are currently reserved for Saturday market pickup. Preorder now to secure your favorites!
+                                We&apos;re prepping a fresh batch — check back soon or visit us at the market this Saturday.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3 justify-center">
                                 <Button
                                     onClick={() => router.push('/catalog')}
                                     className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
                                 >
-                                    Browse Full Catalog
+                                    Browse the Full Menu
                                     <ArrowRight className="ml-2 h-4 w-4" />
-                                </Button>
-                                <Button
-                                    onClick={() => router.push('/pay')}
-                                    variant="outline"
-                                    className="border-emerald-600 text-emerald-700 hover:bg-emerald-50"
-                                >
-                                    🚀 Quick Order
                                 </Button>
                             </div>
                         </div>
@@ -438,46 +399,73 @@ export default function HomePageClient({
                 </div>
             </section>
 
-            {/* Boba Market Exclusive Teaser */}
+            {/* Our Story */}
+            <section className="py-16 bg-gradient-to-br from-emerald-600 to-teal-600 fade-in-section opacity-0 transition-all duration-1000">
+                <div className="container max-w-3xl text-center text-on-gradient">
+                    <Heart className="h-10 w-10 text-emerald-200 mx-auto mb-4" />
+                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Our Story</h2>
+                    <p className="text-lg text-white/90 leading-relaxed mb-2">
+                        Taste of Gratitude started with Jenneisha&apos;s love for natural wellness and a blender in her kitchen.
+                        What began as sea moss gel for family became a weekly market tradition — handcrafted boba, infused gels,
+                        and real connections with the people who show up every Saturday.
+                    </p>
+                    <Link href="/about" className="inline-flex items-center mt-6 text-emerald-200 hover:text-white font-semibold transition-colors">
+                        Learn Our Story
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                </div>
+            </section>
+
+            {/* Find Us This Weekend */}
             <section className="py-16 bg-white fade-in-section opacity-0 transition-all duration-1000">
                 <div className="container max-w-4xl">
-                    <div className="bg-gradient-to-r from-purple-50 via-fuchsia-50 to-purple-50 rounded-2xl border border-purple-200 p-8 md:p-10">
-                        <div className="flex flex-col md:flex-row items-center gap-8">
-                            <div className="flex-shrink-0 w-24 h-24 bg-gradient-to-br from-purple-600 to-fuchsia-600 rounded-full flex items-center justify-center shadow-lg">
-                                <span className="text-4xl">🧋</span>
-                            </div>
-                            <div className="flex-1">
-                                <Badge className="mb-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white border-none">
-                                    🎪 Market Exclusive — Saturdays Only
-                                </Badge>
-                                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-                                    Handcrafted Boba
-                                </h3>
-                                <p className="text-gray-700 mb-3 font-medium">
-                                    Taro Boba • Strawberry Matcha • Brown Sugar • Vanilla Bean & more
-                                </p>
-                                <div className="space-y-2 mb-4 text-sm text-purple-700">
-                                  <p>✨ Made fresh every Saturday at Serenbe Farmers Market</p>
-                                  <p>⏰ 9AM–1PM • Limited quantities • Come early for best selection</p>
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Find Us This Weekend</h2>
+                        <p className="text-gray-600">We set up every Saturday — come say hi and grab something fresh.</p>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="bg-gradient-to-r from-purple-50 via-fuchsia-50 to-purple-50 rounded-2xl border border-purple-200 p-8">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-purple-600 to-fuchsia-600 rounded-full flex items-center justify-center shadow-lg">
+                                    <span className="text-2xl">🧋</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900">Serenbe Farmers Market</h3>
+                                    <p className="text-sm text-purple-700">Saturdays • 9AM–1PM</p>
                                 </div>
                             </div>
-                            <div className="flex flex-col gap-2 flex-shrink-0">
-                                <Button
-                                    onClick={() => router.push('/preorder?market=serenbe')}
-                                    className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all whitespace-nowrap"
-                                >
-                                    🧋 Preorder Boba Now
-                                    <ArrowRight className="ml-2 h-4 w-4" />
-                                </Button>
-                                <Button
-                                    onClick={() => router.push('/markets')}
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-purple-700 hover:text-purple-800 hover:bg-purple-100"
-                                >
-                                    See All Markets
-                                </Button>
+                            <p className="text-gray-700 text-sm mb-4">
+                                Sea moss gel, handcrafted boba (Taro, Strawberry Matcha, Brown Sugar & more), and seasonal specials. Come early for best selection.
+                            </p>
+                            <Button
+                                onClick={() => router.push('/preorder?market=serenbe')}
+                                className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all w-full"
+                            >
+                                Reserve Your Pickup
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                        </div>
+                        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-200 p-8">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-full flex items-center justify-center shadow-lg">
+                                    <span className="text-2xl">🌿</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900">Dunwoody Farmers Market</h3>
+                                    <p className="text-sm text-emerald-700">Saturdays • 8:30AM–12:30PM</p>
+                                </div>
                             </div>
+                            <p className="text-gray-700 text-sm mb-4">
+                                Our full sea moss gel lineup plus market-day specials. Stop by for a taste and chat with Jenneisha.
+                            </p>
+                            <Button
+                                onClick={() => router.push('/markets')}
+                                variant="outline"
+                                className="border-emerald-600 text-emerald-700 hover:bg-emerald-50 w-full"
+                            >
+                                See All Markets
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -489,18 +477,18 @@ export default function HomePageClient({
                         {[
                             {
                                 icon: Shield,
-                                title: '100% Natural & Wildcrafted',
-                                description: 'Sourced from pristine waters, our sea moss is never farmed or pool-grown'
+                                title: '100% Wildcrafted',
+                                description: 'Sourced from pristine ocean waters — never farmed, never pool-grown'
                             },
                             {
-                                icon: Zap,
-                                title: 'Rich Mineral Content',
-                                description: 'A nutrient-dense superfood tradition enjoyed for centuries*'
+                                icon: Heart,
+                                title: 'Small Batch, Big Heart',
+                                description: 'Every jar is handcrafted with care by Jenneisha and her team'
                             },
                             {
-                                icon: Star,
-                                title: 'Premium Quality Guaranteed',
-                                description: 'Every jar is hand-crafted with care and tested for purity and potency'
+                                icon: Sparkles,
+                                title: 'Made for the Market',
+                                description: 'Prepped fresh each week for Saturday pickup at Serenbe & Dunwoody'
                             }
                         ].map((benefit, index) => (
                             <Card key={index} className="text-center p-8 hover:shadow-xl transition-all hover:-translate-y-1 duration-300">
@@ -517,201 +505,6 @@ export default function HomePageClient({
                                 </CardContent>
                             </Card>
                         ))}
-                    </div>
-                </div>
-            </section>
-
-            <section id="what-is-sea-moss" className="py-20 bg-gradient-to-b from-emerald-50 to-white fade-in-section opacity-0 transition-all duration-1000">
-                <div className="container max-w-5xl">
-                    <div className="text-center mb-16">
-                        <Badge className="mb-4 bg-emerald-600 text-white px-4 py-2">
-                            <Leaf className="mr-2 h-4 w-4" />
-                            Scientific Research
-                        </Badge>
-                        <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                            What is Sea Moss?
-                        </h2>
-                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                            A complete guide to this traditional superfood
-                        </p>
-                    </div>
-
-                    <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-12">
-                        <div className="prose prose-lg max-w-none content-readable mx-auto">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                                <Droplets className="mr-3 h-6 w-6 text-emerald-600" />
-                                Overview & Scientific Classification
-                            </h3>
-                            <p className="text-gray-700 leading-relaxed mb-6">
-                                <strong>Sea moss</strong> (<em>Chondrus crispus</em>), also known as Irish moss, is a species of red algae that grows along the rocky Atlantic coastlines. This marine superfood has been used for centuries in traditional wellness practices, dating back to the Irish Potato Famine of the 1840s.
-                            </p>
-                            
-                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-                                <p className="text-sm text-amber-800">
-                                    <strong>Disclaimer:</strong> These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease. Consult your healthcare provider before use.
-                                </p>
-                            </div>
-
-                            <div className="grid md:grid-cols-2 gap-6 my-8">
-                                <div className="bg-emerald-50 p-6 rounded-xl">
-                                    <h4 className="font-bold text-gray-900 mb-3 flex items-center">
-                                        <CheckCircle className="mr-2 h-5 w-5 text-emerald-600" />
-                                        Mineral Composition
-                                    </h4>
-                                    <p className="text-gray-700 text-sm">
-                                        Contains <strong>92 of the 102 minerals</strong> the human body needs, including iodine, calcium, potassium, sulfur, magnesium, iron, zinc, selenium, and vitamins A, E, K, and B-complex.
-                                    </p>
-                                </div>
-
-                                <div className="bg-teal-50 p-6 rounded-xl">
-                                    <h4 className="font-bold text-gray-900 mb-3 flex items-center">
-                                        <CheckCircle className="mr-2 h-5 w-5 text-teal-600" />
-                                        Bioactive Compounds
-                                    </h4>
-                                    <p className="text-gray-700 text-sm">
-                                        Rich in <strong>carrageenan</strong> (a natural thickening agent), omega-3 fatty acids, essential amino acids, and powerful antioxidants that support cellular health.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <h3 className="text-2xl font-bold text-gray-900 mb-4 mt-8 flex items-center">
-                                <Heart className="mr-3 h-6 w-6 text-emerald-600" />
-                                Health Benefits & Applications
-                            </h3>
-                            <ul className="space-y-3 text-gray-700">
-                                <li className="flex items-start">
-                                    <CheckCircle className="mr-3 h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                    <span><strong>Immune Wellness:</strong> May support immune wellness with its rich vitamin and mineral content*</span>
-                                </li>
-                                <li className="flex items-start">
-                                    <CheckCircle className="mr-3 h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                    <span><strong>Traditional Wellness:</strong> Traditionally used in wellness routines* — contains natural iodine</span>
-                                </li>
-                                <li className="flex items-start">
-                                    <CheckCircle className="mr-3 h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                    <span><strong>Digestive Wellness:</strong> Prebiotic properties promote gut health</span>
-                                </li>
-                                <li className="flex items-start">
-                                    <CheckCircle className="mr-3 h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                    <span><strong>Skin & Joint Health:</strong> Mineral-rich compounds support healthy skin and joint comfort</span>
-                                </li>
-                                <li className="flex items-start">
-                                    <CheckCircle className="mr-3 h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                    <span><strong>Natural Energy:</strong> Rich mineral profile supports natural vitality</span>
-                                </li>
-                            </ul>
-
-                            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6 rounded-xl my-8">
-                                <h4 className="font-bold text-lg mb-2">📚 Historical Use</h4>
-                                <p className="text-emerald-50 text-sm">
-                                    Sea moss has been used in traditional medicine for over 14,000 years. Ancient Egyptians used it for skincare, while Caribbean cultures incorporated it into daily nutrition. Modern research continues to validate its traditional uses.
-                                </p>
-                            </div>
-
-                            <h3 className="text-2xl font-bold text-gray-900 mb-4 mt-8">
-                                Wildcrafted vs. Pool-Grown
-                            </h3>
-                            <p className="text-gray-700 leading-relaxed">
-                                <strong>Wildcrafted sea moss</strong> grows naturally in the ocean, absorbing minerals from seawater and maintaining authentic nutritional density. In contrast, pool-grown sea moss lacks the mineral-rich environment and often contains only 5-10% of the nutrients found in wildcrafted varieties. All Taste of Gratitude products use exclusively <strong>100% wildcrafted sea moss</strong> for maximum potency and authenticity.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-3 gap-6 text-center">
-                        <div className="bg-white p-6 rounded-xl shadow-lg">
-                            <div className="text-4xl font-bold text-emerald-600 mb-2">92</div>
-                            <div className="text-gray-600">Minerals (Traditional Claim*)</div>
-                        </div>
-                        <div className="bg-white p-6 rounded-xl shadow-lg">
-                            <div className="text-4xl font-bold text-emerald-600 mb-2">14,000+</div>
-                            <div className="text-gray-600">Years of Use</div>
-                        </div>
-                        <div className="bg-white p-6 rounded-xl shadow-lg">
-                            <div className="text-4xl font-bold text-emerald-600 mb-2">100%</div>
-                            <div className="text-gray-600">Wildcrafted</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section className="py-20 bg-white fade-in-section opacity-0 transition-all duration-1000">
-                <div className="container max-w-4xl">
-                    <div className="text-center mb-12">
-                        <Badge className="mb-4 bg-emerald-600 text-white px-4 py-2">
-                            <Users className="mr-2 h-4 w-4" />
-                            Customer Reviews
-                        </Badge>
-                        <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                            Loved by Thousands
-                        </h2>
-                        <div className="flex items-center justify-center gap-2 mb-4">
-                            {[...Array(5)].map((_, i) => (
-                                <Star key={i} className="h-6 w-6 text-yellow-500 fill-yellow-500" />
-                            ))}
-                            <span className="text-xl font-bold text-gray-900 ml-2">{primaryAverageRating}</span>
-                            <span className="text-gray-600">/ 5.0 (customer feedback)</span>
-                        </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-3 gap-6 mb-12">
-                        {featuredReviews.length > 0 ? featuredReviews.map((review, index) => (
-                            <Card key={index} className="hover:shadow-xl transition-shadow">
-                                <CardContent className="p-6">
-                                    <div className="flex gap-1 mb-3">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} />
-                                        ))}
-                                    </div>
-                                    <p className="text-gray-700 mb-4 italic">&ldquo;{review.comment}&rdquo;</p>
-                                    <div className="border-t pt-4">
-                                        <div className="flex items-center gap-2">
-                                            <p className="font-bold text-gray-900">{review.name}</p>
-                                            {review.verifiedPurchase && (
-                                                <span className="inline-flex items-center text-xs text-emerald-600 font-medium">
-                                                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                                                    Verified
-                                                </span>
-                                            )}
-                                        </div>
-                                        {review.createdAt && (
-                                            <p className="text-sm text-gray-600">{new Date(review.createdAt).toLocaleDateString()}</p>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )) : (
-                            <div className="col-span-full text-center py-12">
-                                <Star className="h-10 w-10 text-emerald-300 mx-auto mb-4" />
-                                <p className="text-lg text-gray-600 mb-4">Be the first to share your experience</p>
-                                <Link href="/reviews">
-                                    <Button variant="outline" className="border-emerald-600 text-emerald-600 hover:bg-emerald-50">
-                                        Write a Review
-                                        <ArrowRight className="ml-2 h-4 w-4" />
-                                    </Button>
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-8 rounded-2xl">
-                        <div className="grid md:grid-cols-4 gap-6 text-center">
-                            <div>
-                                <div className="text-3xl font-bold text-emerald-600 mb-1">{socialProof.customers}</div>
-                                <div className="text-gray-600 text-sm">Active Community Members</div>
-                            </div>
-                            <div>
-                                <div className="text-3xl font-bold text-emerald-600 mb-1">{socialProof.reviews}</div>
-                                <div className="text-gray-600 text-sm">Verified Reviews</div>
-                            </div>
-                            <div>
-                                <div className="text-3xl font-bold text-emerald-600 mb-1">{socialProof.averageRating}</div>
-                                <div className="text-gray-600 text-sm">Average Star Rating</div>
-                            </div>
-                            <div>
-                                <div className="text-3xl font-bold text-emerald-600 mb-1">100%</div>
-                                <div className="text-gray-600 text-sm">Natural & Pure</div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </section>
@@ -734,28 +527,28 @@ export default function HomePageClient({
                     <div className="space-y-4">
                         {[
                             {
-                                question: "What is sea moss and what are its benefits?",
-                                answer: "Sea moss (Chondrus crispus), also known as Irish moss, is a species of red algae with rich mineral content. It has been traditionally used to support wellness routines.* Rich in iodine, potassium, calcium, and vitamins, it's a popular addition to daily nutrition.*"
+                                question: "What is sea moss?",
+                                answer: "Sea moss is a type of red algae (also called Irish moss) that grows along rocky coastlines. It's been used in Caribbean and Irish kitchens for generations. We blend it into a smooth gel that you can add to smoothies, teas, or recipes."
                             },
                             {
                                 question: "How do I use sea moss gel?",
-                                answer: "Take 1-2 tablespoons daily for optimal benefits. You can add it to smoothies, teas, coffee, soups, sauces, or consume it directly. It's tasteless and blends seamlessly into any recipe. For skincare, apply directly to face as a hydrating mask. Store refrigerated and use within 3-4 weeks of opening."
+                                answer: "Add 1-2 tablespoons to your smoothie, tea, coffee, or soup — it blends right in. You can also use it as a face mask. Keep it refrigerated and use within 3-4 weeks of opening."
                             },
                             {
-                                question: "Is your sea moss wildcrafted or pool-grown?",
-                                answer: "All our sea moss is 100% wildcrafted from pristine ocean waters. We NEVER use pool-grown or farmed sea moss. Wildcrafted sea moss absorbs minerals directly from the ocean, ensuring authentic nutritional density and maximum potency. Pool-grown varieties contain only a fraction of the nutrients."
+                                question: "What does wildcrafted mean?",
+                                answer: "Wildcrafted means our sea moss grows naturally in the ocean, not in a pool or farm. It's hand-harvested from clean waters, which is how it's been done traditionally. We never use pool-grown sea moss."
                             },
                             {
-                                question: "What makes Taste of Gratitude sea moss different?",
-                                answer: "We hand-craft every jar with love using only wildcrafted sea moss. Each batch is tested for purity and quality. We offer unique flavor infusions like elderberry and lemonade made with real ingredients - no artificial flavors or preservatives. Our products are 100% natural, vegan, non-GMO, and gluten-free."
-                            },
-                            {
-                                question: "Are there any side effects or precautions?",
-                                answer: "Sea moss is generally safe for most people. However, due to its high iodine content, those with thyroid conditions should consult a healthcare provider before use. Start with smaller amounts (1 tablespoon) to assess tolerance. Pregnant or nursing women should consult their doctor."
+                                question: "What makes Taste of Gratitude different?",
+                                answer: "Every jar is handcrafted by Jenneisha in small batches. We use only wildcrafted sea moss and real ingredients for our flavor infusions — elderberry, lemonade, and more. No artificial flavors or preservatives."
                             },
                             {
                                 question: "How long does sea moss gel last?",
-                                answer: "Refrigerated sea moss gel lasts 3-4 weeks when properly stored in an airtight container. You can also freeze it in ice cube trays for up to 6 months. Look for freshness indicators like ocean-like smell and gel consistency."
+                                answer: "Refrigerated, it lasts 3-4 weeks in an airtight container. You can also freeze it in ice cube trays for up to 6 months."
+                            },
+                            {
+                                question: "How do I pick up my order?",
+                                answer: "We're at Serenbe Farmers Market and Dunwoody Farmers Market every Saturday. Place your order online and pick it up fresh at the market — we'll have it ready for you."
                             }
                         ].map((faq, index) => (
                             <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -780,20 +573,22 @@ export default function HomePageClient({
             <section className="py-20 bg-gradient-to-br from-emerald-600 to-teal-600 text-white">
                 <div className="container text-center text-on-gradient">
                     <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-                        Ready to Start Your Wellness Journey?
+                        See you at the market this Saturday
                     </h2>
                     <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
-                        Join our growing wellness community and discover wildcrafted sea moss.
+                        Browse what&apos;s fresh, place a preorder, or just come say hi at Serenbe or Dunwoody.
                     </p>
                     <Button
                         onClick={() => router.push('/catalog')}
                         size="lg"
                         className="h-14 px-8 text-lg bg-white text-emerald-600 hover:bg-emerald-50 shadow-2xl hover:scale-105 transition-all"
                     >
-                        <Sparkles className="mr-2 h-5 w-5" />
-                        Shop Now
+                        Browse This Week&apos;s Menu
                         <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
+                    <p className="mt-8 text-emerald-200 text-sm">
+                        📬 Get the weekly menu in your inbox — newsletter coming soon
+                    </p>
                 </div>
             </section>
 
