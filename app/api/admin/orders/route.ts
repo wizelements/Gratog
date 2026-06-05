@@ -104,10 +104,16 @@ export const GET = withAdminMiddleware(
         customerEmail: order.customerEmail || order.customer?.email || '',
         customerPhone: order.customerPhone || order.customer?.phone || '',
         total: order.total,
-        items: order.items?.map((item: { name: string; quantity: number }) => ({
+        items: order.items?.map((item: { name: string; quantity: number; isPreorder?: boolean }) => ({
           name: item.name,
           quantity: item.quantity,
+          isPreorder: item.isPreorder || false,
         })),
+        pickup: order.pickup || null,
+        pickupDate: order.pickupDate || null,
+        deliveryAddress: order.deliveryAddress || null,
+        orderTiming: order.orderTiming || null,
+        deliveryTimeSlot: order.deliveryTimeSlot || null,
         // Notification statuses
         emailSentAt: order.emailSentAt || null,
         emailFailedAt: order.emailFailedAt || null,

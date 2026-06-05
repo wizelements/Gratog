@@ -2,360 +2,368 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from 'react';
-import { logger } from '@/lib/logger';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, ShoppingCart, Package, TrendingUp, AlertCircle, CloudDownload, RefreshCw } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import { adminFetch } from '@/lib/admin-fetch';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertTriangle,
+  CalendarDays,
+  CheckCircle2,
+  ClipboardList,
+  MapPin,
+  Package,
+  RefreshCw,
+  ShoppingCart,
+} from 'lucide-react';
+
+const TERMINAL_STATUSES = new Set([
+  'cancelled',
+  'canceled',
+  'refunded',
+  'delivered',
+  'picked_up',
+  'fulfilled',
+  'completed',
+  'COMPLETED',
+  'CANCELLED',
+  'REFUNDED',
+  'PICKED_UP',
+]);
+
+const PAYMENT_ATTENTION = new Set([
+  'pending',
+  'processing',
+  'PENDING',
+  'PROCESSING',
+  'payment_processing',
+]);
+
+function todayKey(date = new Date()) {
+  return date.toISOString().slice(0, 10);
+}
+
+function asDateKey(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return todayKey(date);
+}
+
+function formatDateRange(start, end) {
+  if (!start && !end) return 'No date range set';
+  const startDate = start ? new Date(start) : null;
+  const endDate = end ? new Date(end) : null;
+
+  if (startDate && endDate && !Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime())) {
+    const opts = { month: 'short', day: 'numeric' };
+    return `${startDate.toLocaleDateString('en-US', opts)} – ${endDate.toLocaleDateString('en-US', opts)}`;
+  }
+
+  return start || end || 'No date range set';
+}
+
+function formatCurrency(value) {
+  const amount = Number(value) || 0;
+  const dollars = amount > 1000 ? amount / 100 : amount;
+  return dollars.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}
+
+function orderDisplayId(order) {
+  return order.orderNumber || order.id || order._id?.slice(-8) || 'unknown';
+}
+
+function orderPickupDate(order) {
+  return order.pickup?.date || order.pickupDate || order.orderTiming?.requestedDate || null;
+}
+
+function isPreorder(order) {
+  const fulfillment = String(order.fulfillmentType || '').toLowerCase();
+  return fulfillment.includes('preorder') || order.items?.some((item) => item.isPreorder);
+}
+
+function isOpenOrder(order) {
+  return !TERMINAL_STATUSES.has(order.status);
+}
+
+function statusLabel(status) {
+  if (!status) return 'Pending';
+  return String(status).replace(/_/g, ' ').toLowerCase();
+}
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({
-    todaySales: 0,
-    todayOrders: 0,
-    totalOrders: 0,
-    totalRevenue: 0,
-    lowStockCount: 0,
-    totalProducts: 13
-  });
-  const [lowStockProducts, setLowStockProducts] = useState([]);
-  const [recentOrders, setRecentOrders] = useState([]);
-  const [syncing, setSyncing] = useState(false);
-  const [lastSync, setLastSync] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [menus, setMenus] = useState([]);
+  const [markets, setMarkets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastLoadedAt, setLastLoadedAt] = useState(null);
 
-  useEffect(() => {
-    fetchDashboardData();
-    fetchOrders();
-    fetchSyncStatus();
+  const loadDashboard = useCallback(async () => {
+    setRefreshing(true);
+
+    try {
+      const [ordersResult, productsResult, menusResult, marketsResult] = await Promise.allSettled([
+        adminFetch('/api/admin/orders?limit=100', { skipCsrf: true }),
+        adminFetch('/api/admin/products?limit=100', { skipCsrf: true }),
+        adminFetch('/api/admin/menus', { skipCsrf: true }),
+        adminFetch('/api/admin/markets', { skipCsrf: true }),
+      ]);
+
+      if (ordersResult.status === 'fulfilled' && ordersResult.value.success) {
+        setOrders(ordersResult.value.data?.orders || []);
+      }
+
+      if (productsResult.status === 'fulfilled' && productsResult.value.success) {
+        setProducts(productsResult.value.data?.products || []);
+      }
+
+      if (menusResult.status === 'fulfilled' && menusResult.value.success) {
+        setMenus(menusResult.value.data?.menus || []);
+      }
+
+      if (marketsResult.status === 'fulfilled' && marketsResult.value.success) {
+        setMarkets(marketsResult.value.data?.markets || []);
+      }
+
+      setLastLoadedAt(new Date());
+    } catch (error) {
+      logger.error('Admin', 'Failed to load operational dashboard', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
 
-  const fetchDashboardData = async () => {
-    try {
-      const response = await adminFetch('/api/admin/products');
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      
-      if (data.products) {
-        const lowStock = data.products.filter(
-          p => p.stock <= p.lowStockThreshold
-        );
-        setLowStockProducts(lowStock);
-        setStats(prev => ({
-          ...prev,
-          lowStockCount: lowStock.length,
-          totalProducts: data.products.length
-        }));
-      }
-    } catch (error) {
-      logger.error('Admin', 'Failed to fetch dashboard data', error);
-    }
-  };
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
 
-  const fetchOrders = async () => {
-    try {
-      const response = await adminFetch('/api/admin/orders');
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      
-      if (data.orders) {
-        const orders = data.orders;
-        const today = new Date().toDateString();
-        const todayOrders = orders.filter(o => new Date(o.createdAt).toDateString() === today);
-        const todaySales = todayOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-        const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
-        
-        setStats(prev => ({
-          ...prev,
-          todayOrders: todayOrders.length,
-          todaySales: todaySales / 100,
-          totalOrders: orders.length,
-          totalRevenue: totalRevenue / 100
-        }));
-        
-        setRecentOrders(orders.slice(0, 5));
-      }
-    } catch (error) {
-      logger.error('Admin', 'Failed to fetch orders', error);
-    }
-  };
+  const activeMenu = useMemo(
+    () => menus.find((menu) => menu.isActive) || menus[0] || null,
+    [menus]
+  );
 
-  const fetchSyncStatus = async () => {
-    try {
-      const response = await adminFetch('/api/admin/orders/sync');
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      if (data.lastSync) {
-        setLastSync(new Date(data.lastSync));
-      }
-    } catch (error) {
-      logger.debug('Admin', 'Could not fetch sync status');
-    }
-  };
+  const activeProducts = useMemo(
+    () => products.filter((product) => product.active !== false && product.inStock !== false),
+    [products]
+  );
 
-  const syncFromSquare = async () => {
-    setSyncing(true);
-    try {
-      const response = await adminFetch('/api/admin/orders/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({})
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        toast.success(`Synced ${data.synced} orders from Square`);
-        setLastSync(new Date());
-        fetchOrders();
-      } else {
-        toast.error(data.error || 'Failed to sync orders');
-      }
-    } catch (error) {
-      logger.error('Admin', 'Failed to sync from Square', error);
-      toast.error('Failed to sync orders from Square');
-    } finally {
-      setSyncing(false);
-    }
-  };
+  const lowStockProducts = useMemo(
+    () => products.filter((product) => product.stockStatus === 'low_stock' || product.stockStatus === 'out_of_stock'),
+    [products]
+  );
+
+  const activeMarkets = useMemo(
+    () => markets.filter((market) => market.isActive !== false),
+    [markets]
+  );
+
+  const openOrders = useMemo(
+    () => orders.filter(isOpenOrder),
+    [orders]
+  );
+
+  const todaysPreorders = useMemo(() => {
+    const today = todayKey();
+    return orders.filter((order) => {
+      if (!isPreorder(order)) return false;
+      return asDateKey(orderPickupDate(order)) === today || asDateKey(order.createdAt) === today;
+    });
+  }, [orders]);
+
+  const paymentAttentionOrders = useMemo(
+    () => orders.filter((order) => PAYMENT_ATTENTION.has(order.paymentStatus) && isOpenOrder(order)),
+    [orders]
+  );
+
+  const recentOperationalOrders = useMemo(
+    () => openOrders.slice(0, 5),
+    [openOrders]
+  );
 
   return (
     <div className="space-y-6">
-      {/* Welcome */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Welcome back!</h1>
+          <p className="text-sm font-medium uppercase tracking-wide text-amber-700">Operations</p>
+          <h1 className="text-3xl font-bold">Today at Taste of Gratitude</h1>
           <p className="text-muted-foreground">
-            Here's what's happening with your store today.
-            {lastSync && (
-              <span className="ml-2 text-xs text-blue-600">
-                Last Square sync: {lastSync.toLocaleString()}
-              </span>
+            Active menu, market readiness, inventory pressure, and preorder fulfillment in one place.
+            {lastLoadedAt && (
+              <span className="ml-2 text-xs">Updated {lastLoadedAt.toLocaleTimeString()}</span>
             )}
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={syncFromSquare}
-          disabled={syncing}
-          className="bg-blue-50 hover:bg-blue-100 border-blue-200"
-        >
-          <CloudDownload className={`h-4 w-4 mr-2 ${syncing ? 'animate-pulse' : ''}`} />
-          {syncing ? 'Syncing...' : 'Sync from Square'}
+
+        <Button onClick={loadDashboard} disabled={refreshing} variant="outline">
+          <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          Refresh
         </Button>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-        <Card className="hover-lift">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Card className="border-amber-200 bg-amber-50/60">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Today's Sales
-            </CardTitle>
-            <DollarSign className="h-5 w-5 text-[#D4AF37]" />
+            <CardTitle className="text-sm font-medium text-amber-900">Active Menu</CardTitle>
+            <CalendarDays className="h-5 w-5 text-amber-700" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">${stats.todaySales.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {stats.todayOrders} orders today
+            <div className="text-xl font-semibold text-amber-950">
+              {activeMenu?.title || 'No active menu'}
+            </div>
+            <p className="mt-1 text-sm text-amber-900/75">
+              {activeMenu ? formatDateRange(activeMenu.weekStart, activeMenu.weekEnd) : 'Publish this week’s menu before market day.'}
             </p>
+            <Button asChild size="sm" className="mt-4 bg-amber-700 hover:bg-amber-800">
+              <Link href="/admin/menus">Manage menus</Link>
+            </Button>
           </CardContent>
         </Card>
 
-        <Card className="hover-lift">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Revenue
-            </CardTitle>
-            <TrendingUp className="h-5 w-5 text-green-600" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Products Ready</CardTitle>
+            <Package className="h-5 w-5 text-emerald-700" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">${stats.totalRevenue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              All time
+            <div className="text-3xl font-bold">{activeProducts.length}</div>
+            <p className="text-sm text-muted-foreground">
+              {lowStockProducts.length} need inventory attention
             </p>
+            <Button asChild size="sm" variant="outline" className="mt-4">
+              <Link href="/admin/inventory">Review inventory</Link>
+            </Button>
           </CardContent>
         </Card>
 
-        <Card className="hover-lift">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Orders
-            </CardTitle>
-            <ShoppingCart className="h-5 w-5 text-[#D4AF37]" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Active Markets</CardTitle>
+            <MapPin className="h-5 w-5 text-blue-700" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalOrders}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              From Square
+            <div className="text-3xl font-bold">{activeMarkets.length}</div>
+            <p className="text-sm text-muted-foreground">
+              Pickup locations currently shown to customers
             </p>
+            <Button asChild size="sm" variant="outline" className="mt-4">
+              <Link href="/admin/markets">Manage markets</Link>
+            </Button>
           </CardContent>
         </Card>
 
-        <Card className="hover-lift">
+        <Card className="border-emerald-200 bg-emerald-50/60">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Today's Orders
-            </CardTitle>
-            <ShoppingCart className="h-5 w-5 text-blue-600" />
+            <CardTitle className="text-sm font-medium text-emerald-900">Today's Preorders</CardTitle>
+            <ClipboardList className="h-5 w-5 text-emerald-700" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.todayOrders}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Awaiting fulfillment
+            <div className="text-3xl font-bold text-emerald-950">{todaysPreorders.length}</div>
+            <p className="text-sm text-emerald-900/75">
+              Preorder pickups requiring fulfillment focus
             </p>
-          </CardContent>
-        </Card>
-
-        <Card className="hover-lift">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Products
-            </CardTitle>
-            <Package className="h-5 w-5 text-[#D4AF37]" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProducts}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Active products
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="hover-lift border-yellow-200 dark:border-yellow-900">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Low Stock Alert
-            </CardTitle>
-            <AlertCircle className="h-5 w-5 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.lowStockCount}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Need restocking
-            </p>
+            <Button asChild size="sm" className="mt-4 bg-emerald-700 hover:bg-emerald-800">
+              <Link href="/admin/orders?filter=today">Open orders</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-4">
-          <Button asChild className="bg-[#D4AF37] hover:bg-[#B8941F]">
-            <Link href="/admin/products">Manage Products</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/admin/orders">View Orders</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/admin/inventory">Update Inventory</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/admin/reviews">Moderate Reviews</Link>
-          </Button>
-          <Button asChild variant="outline" className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white">
-            <Link href="/admin/coupons">🎡 Manage Coupons</Link>
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Low Stock Products */}
-      {lowStockProducts.length > 0 && (
-        <Card className="border-yellow-200 dark:border-yellow-900">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-yellow-600" />
-              Low Stock Products
-            </CardTitle>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <Card className="xl:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Fulfillment Focus</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Open orders that still need operational attention.
+              </p>
+            </div>
+            <Badge variant="secondary">{openOrders.length} open</Badge>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {lowStockProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="flex items-center justify-between p-4 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium">{product.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Current stock: {product.stock} units
-                    </p>
+            {loading ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">Loading operations…</p>
+            ) : recentOperationalOrders.length > 0 ? (
+              <div className="space-y-3">
+                {recentOperationalOrders.map((order) => (
+                  <div key={order.id || order._id} className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="font-medium">Order #{orderDisplayId(order)}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {order.customerName || 'Customer'} • {order.fulfillmentType || 'pickup'} • {order.items?.length || 0} item(s)
+                      </p>
+                      {orderPickupDate(order) && (
+                        <p className="text-xs text-muted-foreground">
+                          Pickup target: {new Date(orderPickupDate(order)).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 sm:text-right">
+                      <div>
+                        <p className="font-semibold">{formatCurrency(order.total)}</p>
+                        <p className="text-xs capitalize text-muted-foreground">{statusLabel(order.status)}</p>
+                      </div>
+                      <Button asChild size="sm" variant="outline">
+                        <Link href="/admin/orders">Review</Link>
+                      </Button>
+                    </div>
                   </div>
-                  <Button asChild size="sm" variant="outline">
-                    <Link href="/admin/inventory">Restock</Link>
-                  </Button>
-                </div>
-              ))}
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed p-8 text-center">
+                <CheckCircle2 className="mx-auto mb-3 h-10 w-10 text-emerald-600" />
+                <p className="font-medium">No open orders in the current admin feed.</p>
+                <p className="text-sm text-muted-foreground">Keep an eye on Square sync before market pickup windows.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Action Needed</CardTitle>
+            <p className="text-sm text-muted-foreground">Signals that can affect customer trust today.</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-3 rounded-lg bg-yellow-50 p-3 text-yellow-950">
+              <AlertTriangle className="mt-0.5 h-5 w-5 text-yellow-700" />
+              <div>
+                <p className="font-medium">Inventory pressure</p>
+                <p className="text-sm">{lowStockProducts.length} product(s) low or out of stock.</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 rounded-lg bg-blue-50 p-3 text-blue-950">
+              <ShoppingCart className="mt-0.5 h-5 w-5 text-blue-700" />
+              <div>
+                <p className="font-medium">Payment follow-up</p>
+                <p className="text-sm">{paymentAttentionOrders.length} open order(s) still pending payment.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <Button asChild variant="outline" size="sm">
+                <Link href="/admin/orders">Orders</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/admin/menus">Menus</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/admin/products">Products</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/admin/markets">Markets</Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {/* Recent Orders */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Recent Orders from Square</CardTitle>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/admin/orders">View All</Link>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {recentOrders.length > 0 ? (
-            <div className="space-y-4">
-              {recentOrders.map((order) => (
-                <div
-                  key={order._id}
-                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium">
-                      Order #{order.orderNumber || order._id?.slice(-6)}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {order.customerName || 'Customer'} • {new Date(order.createdAt).toLocaleDateString()}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {order.items?.length || 0} items • {order.fulfillmentType === 'delivery' ? '🚚 Delivery' : '📦 Pickup'}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-[#D4AF37]">
-                      ${((order.total || 0) / 100).toFixed(2)}
-                    </p>
-                    <p className={`text-xs font-medium ${
-                      order.status === 'delivered' || order.status === 'picked_up' ? 'text-green-600' :
-                      order.status === 'cancelled' ? 'text-red-600' :
-                      'text-blue-600'
-                    }`}>
-                      {order.status?.replace(/_/g, ' ').toUpperCase() || 'PENDING'}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <ShoppingCart className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-              <p className="text-sm text-muted-foreground mb-4">
-                No orders synced yet. Click "Sync from Square" to import your orders.
-              </p>
-              <Button
-                onClick={syncFromSquare}
-                disabled={syncing}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <CloudDownload className="h-4 w-4 mr-2" />
-                Sync Orders Now
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

@@ -9,20 +9,15 @@ import {
   LayoutDashboard,
   Package,
   ShoppingCart,
-  BarChart3,
   Warehouse,
   Settings,
   LogOut,
   Menu,
   X,
   Users,
-  Clock,
-  Mail,
-  Ticket,
   ExternalLink,
   MapPin,
-  Video,
-  MessageSquare
+  CalendarDays,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -30,17 +25,12 @@ import { Toaster } from '@/components/ui/sonner';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { name: 'Customers', href: '/admin/customers', icon: Users },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
+  { name: 'Menus', href: '/admin/menus', icon: CalendarDays },
   { name: 'Products', href: '/admin/products', icon: Package },
-  { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare },
   { name: 'Markets', href: '/admin/markets', icon: MapPin },
   { name: 'Inventory', href: '/admin/inventory', icon: Warehouse },
-  { name: 'Coupons', href: '/admin/coupons', icon: Ticket },
-  { name: 'Campaigns', href: '/admin/campaigns', icon: Mail },
-  { name: 'Interactions', href: '/admin/interactions', icon: Video },
-  { name: 'Waitlist', href: '/admin/waitlist', icon: Clock },
-  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+  { name: 'Customers', href: '/admin/customers', icon: Users },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
@@ -72,7 +62,7 @@ export default function AdminLayout({ children }) {
       toast.success('Logged out successfully');
       router.push('/admin/login');
       router.refresh();
-    } catch (error) {
+    } catch {
       toast.error('Logout failed');
     }
   };

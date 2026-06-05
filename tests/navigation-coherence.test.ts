@@ -29,6 +29,32 @@ describe('Navigation Coherence', () => {
     expect(header).toContain('min-h-12');
   });
 
+  it('desktop navigation stays intentional and avoids mega-menu sprawl', () => {
+    const header = tryRead('components/Header.jsx');
+
+    expect(header).toContain('const desktopNavItems');
+    expect(header).toContain("href: '/menu'");
+    expect(header).toContain("href: '/markets'");
+    expect(header).toContain("href: '/catalog'");
+    expect(header).toContain("href: '/about'");
+    expect(header).not.toContain('MegaMenu');
+    expect(header).not.toContain("href=\"/community\"");
+    expect(header).not.toContain("href=\"/rewards\"");
+  });
+
+  it('admin sidebar exposes core operational routes only', () => {
+    const adminLayout = tryRead('app/admin/layout.js');
+
+    expect(adminLayout).toContain("href: '/admin/menus'");
+    expect(adminLayout).toContain("href: '/admin/orders'");
+    expect(adminLayout).toContain("href: '/admin/products'");
+    expect(adminLayout).toContain("href: '/admin/markets'");
+    expect(adminLayout).toContain("href: '/admin/inventory'");
+    expect(adminLayout).not.toContain("href: '/admin/interactions'");
+    expect(adminLayout).not.toContain("href: '/admin/waitlist'");
+    expect(adminLayout).not.toContain("href: '/admin/queue'");
+  });
+
   it('product detail reviews tab uses live review component', () => {
     const productClient = tryRead('app/product/[slug]/ProductDetailClient.jsx');
 

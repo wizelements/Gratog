@@ -31,10 +31,10 @@ export default function Footer() {
               Taste of Gratitude
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              Nourishing your wellness journey with nature's finest sea moss creations.
+              Fresh small-batch sea moss for weekly market pickup, local delivery, and repeat wellness routines.
             </p>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#D4AF37]/10 rounded-full text-xs font-semibold text-[#D4AF37]">
-              🌿 100% Natural & Organic
+              🌿 Local pickup • Small batch
             </div>
           </div>
 
@@ -43,12 +43,12 @@ export default function Footer() {
             <h4 className="font-semibold mb-4 text-lg">Quick Links</h4>
             <ul className="space-y-3 text-sm">
               <li>
-                <Link 
-                  href="/catalog" 
+                <Link
+                  href="/menu"
                   className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
-                  Shop Products
+                  Weekly Menu
                 </Link>
               </li>
 
@@ -62,12 +62,12 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link 
-                  href="/community" 
+                <Link
+                  href="/catalog"
                   className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
-                  Community
+                  Shop
                 </Link>
               </li>
               <li>
@@ -120,15 +120,6 @@ export default function Footer() {
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
                   Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/gratitude/rewards" 
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
-                >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
-                  Rewards Program
                 </Link>
               </li>
             </ul>
