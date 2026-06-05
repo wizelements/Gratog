@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { CreditCard, Lock, AlertCircle, CheckCircle, Shield } from 'lucide-react';
+import { CreditCard, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 import { formatCurrency } from '@/adapters/totalsAdapter';
 import type { SquareCard } from '@/types/square';
 
@@ -295,10 +295,9 @@ export default function SquarePaymentForm({
       </div>
 
       {/* Security Note */}
-      <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-        <Shield className="w-4 h-4" />
-        <span>Payments securely processed by Square</span>
-      </div>
+      <p className="text-center text-sm text-gray-500">
+        Payment is securely processed by Square.
+      </p>
     </div>
   );
 }

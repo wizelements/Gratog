@@ -12,7 +12,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { CreditCard, Lock, CheckCircle, Smartphone, AlertCircle } from 'lucide-react';
+import { CreditCard, Smartphone, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/adapters/totalsAdapter';
 import { usePaymentStateMachine, STATE_MESSAGES, ERROR_CODES } from './PaymentStateMachine';
@@ -325,7 +325,7 @@ export default function SquarePaymentFormV2({
         applePayRef.current = applePay;
         setApplePayAvailable(true);
       }
-    } catch (e) {
+    } catch {
       console.debug('[Square] Apple Pay not available');
     }
 
@@ -336,7 +336,7 @@ export default function SquarePaymentFormV2({
         googlePayRef.current = googlePay;
         setGooglePayAvailable(true);
       }
-    } catch (e) {
+    } catch {
       console.debug('[Square] Google Pay not available');
     }
   };
@@ -453,7 +453,7 @@ export default function SquarePaymentFormV2({
         error={paymentSM.error}
         onRetry={handleRetry}
         onBack={handleBack}
-        // @ts-ignore — type mismatch
+        // @ts-expect-error — type mismatch
         canRetry={paymentSM.canRetry}
         retryCount={paymentSM.retryCount}
       />
@@ -545,7 +545,7 @@ export default function SquarePaymentFormV2({
           type="button"
           onClick={handleCardPayment}
           disabled={!paymentSM.isReady || isProcessing || isInitializing}
-          className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50"
+          className="w-full h-14 text-lg font-semibold bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50"
         >
           {isProcessing ? (
             <div className="flex items-center gap-2">
@@ -562,18 +562,9 @@ export default function SquarePaymentFormV2({
       </div>
 
       {/* Security footer */}
-      <div className="flex items-center justify-center gap-4 text-xs text-gray-500 pt-2">
-        <div className="flex items-center gap-1">
-          <Lock className="w-3 h-3" />
-          <span>256-bit encryption</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <CheckCircle className="w-3 h-3" />
-          <span>PCI compliant</span>
-        </div>
-        <span className="text-gray-300">|</span>
-        <span>Powered by Square</span>
-      </div>
+      <p className="pt-2 text-center text-sm text-gray-500">
+        Payment is securely processed by Square.
+      </p>
 
       {/* Cancel button */}
       {onCancel && (

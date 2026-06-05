@@ -9,6 +9,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { toast } from 'sonner';
 import { loadCart, updateQuantity, removeFromCart, clearCart, getCartTotal } from '@/lib/cart-engine';
 import { createLogger } from '@/lib/logger';
+import { usePathname } from 'next/navigation';
 
 const logger = createLogger('FloatingCart');
 
@@ -17,6 +18,7 @@ export default function FloatingCart() {
   const [cart, setCart] = useState([]);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -84,14 +86,23 @@ export default function FloatingCart() {
       return;
     }
     setIsCheckingOut(true);
-    window.location.href = '/order';
+    window.location.href = '/checkout';
   };
+
+  if (
+    pathname?.startsWith('/checkout') ||
+    pathname?.startsWith('/cart') ||
+    pathname?.startsWith('/order') ||
+    pathname?.startsWith('/admin')
+  ) {
+    return null;
+  }
 
   return (
     <>
       {/* Cart Toggle Button */}
       <div
-        className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50 sm:bottom-6 sm:right-6"
+        className="hidden md:block fixed bottom-6 right-6 z-50"
         data-widget="floating-cart"
       >
         <Button

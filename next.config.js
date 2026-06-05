@@ -134,6 +134,16 @@ const nextConfig = {
     pagesBufferLength: 1, // Reduced from 2
   },
 
+  async redirects() {
+    return [
+      {
+        source: '/order',
+        destination: '/checkout',
+        permanent: false,
+      },
+    ];
+  },
+
   // Performance optimizations - SWC minification is default in Next.js 13+
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? {

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ShoppingCart, Loader2, Star, MapPin, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Loader2, Star, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cart-engine';
 
@@ -51,7 +51,7 @@ export default function ProductDetailClient({ product, slug }) {
   const [selectedVariation, setSelectedVariation] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [activeTab, setActiveTab] = useState('details');
+  const [activeTab, setActiveTab] = useState('flavor');
   const [reviewSummary, setReviewSummary] = useState(DEFAULT_REVIEW_SUMMARY);
 
   // Set default variation on mount
@@ -142,6 +142,25 @@ export default function ProductDetailClient({ product, slug }) {
 
   const displayPrice = selectedVariation?.price || product.price;
   const stockStatus = product.stock > 0 ? 'in_stock' : product.isPreorder ? 'preorder' : 'out_of_stock';
+  const flavorNotes =
+    product.flavorNotes ||
+    product.tastingNotes ||
+    product.flavorProfile ||
+    product.shortDescription ||
+    product.description ||
+    'Small-batch sea moss gel with a smooth chilled texture and naturally simple ingredients.';
+  const storageGuidance =
+    product.storageInstructions ||
+    product.careInstructions ||
+    'Keep refrigerated. Use a clean spoon each time and follow the freshness window on the label.';
+  const pickupGuidance = product.isPreorder
+    ? 'Preorder items are made for your selected pickup date. Choose your market and pickup day during checkout.'
+    : 'Choose market pickup or eligible local delivery during checkout. Pickup details are confirmed before payment.';
+  const ingredients = Array.isArray(product.ingredients)
+    ? product.ingredients
+        .map((ingredient) => (typeof ingredient === 'string' ? { name: ingredient } : ingredient))
+        .filter((ingredient) => ingredient?.name)
+    : [];
   
   // Prepare images
   const images = product.images?.length > 0 
@@ -153,7 +172,7 @@ export default function ProductDetailClient({ product, slug }) {
   const breadcrumbItems = getProductBreadcrumbs(product);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/20">
+    <div className="min-h-screen bg-[#fbfaf7]">
       <Script id="product-schema" type="application/ld+json">
         {JSON.stringify({
           '@context': 'https://schema.org',
@@ -195,7 +214,7 @@ export default function ProductDetailClient({ product, slug }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Image Gallery */}
           <div className="space-y-4">
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-white shadow-lg">
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-white shadow-sm border border-stone-100">
               <Image
                 src={images[selectedImage]}
                 alt={product.imageAlt || product.name}
@@ -221,6 +240,7 @@ export default function ProductDetailClient({ product, slug }) {
                     className={`relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
                       selectedImage === idx ? 'border-emerald-500' : 'border-transparent'
                     }`}
+                    aria-label={`Show ${product.name} image ${idx + 1}`}
                   >
                     <Image
                       src={img}
@@ -269,7 +289,7 @@ export default function ProductDetailClient({ product, slug }) {
             </div>
 
             {/* Description */}
-            <p className="text-gray-600 leading-relaxed">{product.description}</p>
+            <p className="text-base text-gray-700 leading-relaxed">{product.description}</p>
 
             {/* Variations */}
             {product.variations?.length > 0 && (
@@ -284,7 +304,7 @@ export default function ProductDetailClient({ product, slug }) {
                     <button
                       key={variation.id}
                       onClick={() => setSelectedVariation(variation)}
-                      className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                      className={`min-h-12 px-4 py-3 rounded-lg border-2 transition-all text-left ${
                         selectedVariation?.id === variation.id
                           ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                           : 'border-gray-200 hover:border-emerald-300'
@@ -304,14 +324,16 @@ export default function ProductDetailClient({ product, slug }) {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50"
+                  className="w-11 h-11 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50"
+                  aria-label="Decrease quantity"
                 >
                   -
                 </button>
                 <span className="w-12 text-center font-medium">{quantity}</span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
-                  className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50"
+                  className="w-11 h-11 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50"
+                  aria-label="Increase quantity"
                 >
                   +
                 </button>
@@ -334,27 +356,22 @@ export default function ProductDetailClient({ product, slug }) {
               </Button>
             </div>
 
-            {/* Benefits */}
-            {product.healthBenefits?.length > 0 && (
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="font-semibold text-gray-900 mb-3">Product Notes</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  {product.healthBenefits.slice(0, 6).map((benefit, idx) => (
-                    <li key={idx} className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-                      <span>{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h3 className="font-semibold text-gray-900 mb-3">What to expect</h3>
+              <div className="space-y-3 text-base text-gray-700 leading-relaxed">
+                <p>{flavorNotes}</p>
+                <p className="text-gray-600">
+                  Made in small batches with transparent ingredients and simple pickup guidance below.
+                </p>
               </div>
-            )}
+            </div>
 
             {/* Pickup & Delivery Info */}
             <div className="flex items-start gap-3 text-sm text-gray-600">
               <MapPin className="w-5 h-5 text-emerald-600 flex-shrink-0" />
               <div>
                 <p className="font-medium text-gray-900">Pickup & Delivery</p>
-                <p>Available at Serenbe & Dunwoody farmers markets every Saturday. Local delivery also available.</p>
+                <p>{pickupGuidance}</p>
               </div>
             </div>
           </div>
@@ -363,26 +380,22 @@ export default function ProductDetailClient({ product, slug }) {
         {/* Tabs Section */}
         <div className="mt-16">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-4">
-              <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+              <TabsTrigger value="flavor">Flavor</TabsTrigger>
               <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
-              <TabsTrigger value="benefits">Notes</TabsTrigger>
+              <TabsTrigger value="care">Storage & Pickup</TabsTrigger>
               <TabsTrigger value="reviews">Reviews ({reviewSummary.reviewCount})</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="details" className="mt-6">
+            <TabsContent value="flavor" className="mt-6">
               <Card>
                 <CardContent className="p-6">
                   <div className="prose max-w-none">
-                    <h3 className="text-lg font-semibold mb-4">Product Details</h3>
-                    <p className="text-gray-600 whitespace-pre-line">{product.description}</p>
-                    
-                    {product.benefitStory && (
-                      <div className="mt-6 p-4 bg-emerald-50 rounded-lg">
-                        <h4 className="font-medium text-emerald-900 mb-2">The Gratitude Story</h4>
-                        <p className="text-emerald-800">{product.benefitStory}</p>
-                      </div>
-                    )}
+                    <h3 className="text-lg font-semibold mb-4">Flavor & texture</h3>
+                    <p className="text-gray-700 whitespace-pre-line leading-relaxed">{flavorNotes}</p>
+                    <p className="mt-4 text-gray-600 leading-relaxed">
+                      Each batch is meant to be enjoyed chilled, folded into a daily ritual, or mixed into your favorite drink or bowl.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -392,15 +405,17 @@ export default function ProductDetailClient({ product, slug }) {
               <Card>
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Key Ingredients</h3>
-                  {product.ingredients?.length > 0 ? (
+                  {ingredients.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {product.ingredients.map((ingredient, idx) => (
+                      {ingredients.map((ingredient, idx) => (
                         <div key={idx} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
                           <span className="text-2xl">{ingredient.icon || '🌿'}</span>
                           <div>
                             <p className="font-medium capitalize">{ingredient.name}</p>
-                            {ingredient.benefits && (
-                              <p className="text-sm text-gray-600">{ingredient.benefits.join(' • ')}</p>
+                            {(ingredient.description || ingredient.notes || ingredient.source) && (
+                              <p className="text-sm text-gray-600">
+                                {ingredient.description || ingredient.notes || ingredient.source}
+                              </p>
                             )}
                           </div>
                         </div>
@@ -413,17 +428,16 @@ export default function ProductDetailClient({ product, slug }) {
               </Card>
             </TabsContent>
 
-            <TabsContent value="benefits" className="mt-6">
+            <TabsContent value="care" className="mt-6">
               <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Product Notes</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {product.healthBenefits?.map((benefit, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                        <span className="capitalize">{benefit.replace(/_/g, ' ')}</span>
-                      </div>
-                    ))}
+                <CardContent className="p-6 space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Storage</h3>
+                    <p className="text-gray-700 leading-relaxed">{storageGuidance}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Pickup</h3>
+                    <p className="text-gray-700 leading-relaxed">{pickupGuidance}</p>
                   </div>
                 </CardContent>
               </Card>

@@ -9,6 +9,7 @@ import { useCartEngine } from '@/hooks/useCartEngine';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 /**
  * 🛒 Enhanced Floating Cart - Updated with custom confirm modal
@@ -19,6 +20,7 @@ export default function EnhancedFloatingCart() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [recentlyDeleted, setRecentlyDeleted] = useState(null);
   const [undoTimer, setUndoTimer] = useState(null);
+  const pathname = usePathname();
   
   // 🎯 CUSTOM CONFIRM MODAL: Replace window.confirm()
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -126,14 +128,23 @@ export default function EnhancedFloatingCart() {
       return;
     }
     setIsCheckingOut(true);
-    window.location.href = '/order';
+    window.location.href = '/checkout';
   };
+
+  if (
+    pathname?.startsWith('/checkout') ||
+    pathname?.startsWith('/cart') ||
+    pathname?.startsWith('/order') ||
+    pathname?.startsWith('/admin')
+  ) {
+    return null;
+  }
 
   return (
     <>
       {/* Floating Cart Button */}
       <motion.div 
-        className="fixed bottom-6 right-6 z-50"
+        className="hidden md:block fixed bottom-6 right-6 z-50"
       >
         <Button
           onClick={() => setIsOpen(!isOpen)}

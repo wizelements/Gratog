@@ -8,7 +8,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Plus, Minus, X, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { CartItem } from '@/adapters/cartAdapter';
 import { OrderTotals, formatCurrency } from '@/adapters/totalsAdapter';
@@ -47,24 +46,24 @@ export default function CartSummary({
   
   return (
     <motion.div
-      className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden"
+      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
       {/* Header */}
       <div
-        className={`p-4 bg-gradient-to-r from-emerald-50 to-teal-50 flex items-center justify-between ${
+        className={`p-4 bg-stone-50 flex items-center justify-between ${
           collapsible ? 'cursor-pointer' : ''
         }`}
         onClick={() => collapsible && setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
-          <ShoppingCart className="w-5 h-5 text-emerald-600" />
+          <ShoppingCart className="w-5 h-5 text-emerald-700" />
           <h3 className="font-semibold text-gray-900">Your Cart</h3>
-          <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+          <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-gray-600 border border-gray-200">
             {totals.itemCount} {totals.itemCount === 1 ? 'item' : 'items'}
-          </Badge>
+          </span>
         </div>
         
         {collapsible && (
@@ -98,7 +97,7 @@ export default function CartSummary({
                 >
                   <div className="flex gap-4">
                     {/* Product Image */}
-                    <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100 flex-shrink-0">
+                    <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-stone-100 flex-shrink-0">
                       <Image
                         src={item.image}
                         alt={item.name}
@@ -129,7 +128,7 @@ export default function CartSummary({
                         <button
                           type="button"
                           onClick={() => handleQuantityChange(item.id, -1)}
-                          className="text-gray-600 hover:text-emerald-600 transition-colors"
+                          className="min-h-11 min-w-11 text-gray-600 hover:text-emerald-700 transition-colors flex items-center justify-center"
                           aria-label="Decrease quantity"
                         >
                           <Minus className="w-4 h-4" />
@@ -140,7 +139,7 @@ export default function CartSummary({
                         <button
                           type="button"
                           onClick={() => handleQuantityChange(item.id, 1)}
-                          className="text-gray-600 hover:text-emerald-600 transition-colors"
+                          className="min-h-11 min-w-11 text-gray-600 hover:text-emerald-700 transition-colors flex items-center justify-center"
                           aria-label="Increase quantity"
                         >
                           <Plus className="w-4 h-4" />
@@ -153,7 +152,7 @@ export default function CartSummary({
                           onRemoveItem(item.id);
                           toast.success('Item removed from cart');
                         }}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        className="min-h-11 min-w-11 text-gray-400 hover:text-red-500 transition-colors flex items-center justify-center"
                         aria-label="Remove item"
                       >
                         <X className="w-4 h-4" />
@@ -218,7 +217,7 @@ export default function CartSummary({
                 <div className="px-4 pb-4 space-y-2">
                   <div className={`${preorderOk ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'} border rounded-lg p-3 text-sm`}>
                     <p className={`font-medium ${preorderOk ? 'text-emerald-800' : 'text-amber-800'}`}>
-                      {preorderOk ? '✅ Preorder minimum met' : '⏳ Preorder minimum not met'}
+                      {preorderOk ? 'Preorder minimum met' : 'Preorder minimum not met'}
                     </p>
                     <p className={`text-xs ${preorderOk ? 'text-emerald-700' : 'text-amber-700'} mt-1`}>
                       {preorderOk 

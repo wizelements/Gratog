@@ -1,12 +1,7 @@
+import { redirect } from 'next/navigation';
+
 export const dynamic = 'force-dynamic';
 
-import CheckoutRoot from '@/components/checkout/CheckoutRoot';
-
-export const metadata = {
-  title: 'Checkout | Taste of Gratitude',
-  description: 'Complete your order with secure checkout powered by Square'
-};
-
 export default function OrderPage() {
-  return <CheckoutRoot />;
+  redirect('/checkout');
 }

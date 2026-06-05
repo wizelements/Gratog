@@ -46,7 +46,9 @@ function CheckoutContent() {
     couponCode,
   } = useCheckoutStore();
 
-  const _formContainerRef = useRef<HTMLDivElement>(null);
+  const hasTrackedStartRef = useRef(false);
+  const hasPreorderItems = cart.some(item => item.isPreorder);
+  const showSideSummary = stage !== 'cart';
 
   // Scroll to top when stage changes
   useEffect(() => {
@@ -54,8 +56,20 @@ function CheckoutContent() {
   }, [stage]);
 
   useEffect(() => {
+    if (hasPreorderItems && fulfillment.type !== 'pickup') {
+      clearValidation();
+      setFulfillment({
+        type: 'pickup',
+        pickup: fulfillment.pickup || { locationId: '', date: null },
+      });
+    }
+  }, [hasPreorderItems, fulfillment.type, fulfillment.pickup, clearValidation, setFulfillment]);
+
+  useEffect(() => {
+    if (hasTrackedStartRef.current) return;
+    hasTrackedStartRef.current = true;
     track('checkout_started', { itemCount: cart.length, total: totals.total });
-  }, []);
+  }, [cart.length, totals.total]);
 
   const scrollToFirstError = () => {
     setTimeout(() => {
@@ -146,7 +160,7 @@ function CheckoutContent() {
 
   if (cart.length === 0 && stage !== 'cart') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#fbfaf7] flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -156,7 +170,7 @@ function CheckoutContent() {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
           <p className="text-gray-600 mb-6">Add some items to get started!</p>
           <Link href="/catalog">
-            <Button className="bg-gradient-to-r from-emerald-600 to-teal-600">
+            <Button className="bg-emerald-700 hover:bg-emerald-800">
               Browse Products
             </Button>
           </Link>
@@ -166,7 +180,7 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+    <div className="min-h-screen bg-[#fbfaf7] py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <CheckoutProgress 
           currentStage={stage} 
@@ -181,9 +195,9 @@ function CheckoutContent() {
           }}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className={`grid grid-cols-1 gap-6 mt-8 ${showSideSummary ? 'lg:grid-cols-3' : ''}`}>
+          <div className={showSideSummary ? 'lg:col-span-2' : ''}>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-6">
               <AnimatePresence mode="wait">
                 {stage === 'cart' && (
                   <motion.div
@@ -192,7 +206,8 @@ function CheckoutContent() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
                   >
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Review Your Cart</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Review your cart</h2>
+                    <p className="mb-6 text-base text-gray-600">Confirm your items before choosing pickup or delivery.</p>
                     <CartSummary
                       cart={cart}
                       totals={totals}
@@ -224,10 +239,11 @@ function CheckoutContent() {
                     />
 
                     <div className="border-t pt-8">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Fulfillment Method</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Pickup or delivery</h3>
+                      <p className="mb-4 text-base text-gray-600">Choose how you want to receive your order. Preorders are made for market pickup.</p>
                       <FulfillmentTabs
                         selected={fulfillment.type}
-                        hasPreorderItems={cart.some(item => item.isPreorder)}
+                        hasPreorderItems={hasPreorderItems}
                         onChange={(type) => {
                           // FIX P1-4: Clear ALL validation when switching fulfillment types
                           // Prevents stale validation errors from previous fulfillment type
@@ -285,12 +301,12 @@ function CheckoutContent() {
               </AnimatePresence>
 
               {stage !== 'review' && (
-                <div className="flex justify-between mt-8 pt-6 border-t">
+                <div className="flex justify-between gap-3 mt-8 pt-6 border-t">
                   <Button
                     variant="outline"
                     onClick={handleBack}
                     disabled={stage === 'cart'}
-                    className="flex items-center gap-2"
+                    className="min-h-12 flex items-center gap-2"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Back
@@ -299,7 +315,7 @@ function CheckoutContent() {
                   <Button
                     onClick={handleNext}
                     disabled={cart.length === 0}
-                    className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 flex items-center gap-2"
+                    className="min-h-12 bg-emerald-700 hover:bg-emerald-800 flex items-center gap-2"
                   >
                     {stage === 'cart' ? 'Continue to Details' : 'Continue to Review'}
                     <ArrowRight className="w-4 h-4" />
@@ -309,6 +325,7 @@ function CheckoutContent() {
             </div>
           </div>
 
+          {showSideSummary && (
           <div className="lg:col-span-1">
             <div className="sticky top-8">
               <CartSummary
@@ -322,10 +339,11 @@ function CheckoutContent() {
                   CartAPI.removeItem(id);
                   updateCart(CartAPI.getCart());
                 }}
-                collapsible={stage !== 'cart'}
+                collapsible
               />
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>

@@ -120,10 +120,10 @@ const initialContact: ContactInfo = {
 };
 
 const initialFulfillment: FulfillmentData = {
-  type: 'delivery',
-  delivery: {
-    address: { street: '', city: '', state: 'GA', zip: '' },
-    window: '12-15'
+  type: 'pickup',
+  pickup: {
+    locationId: '',
+    date: null
   }
 };
 
@@ -137,10 +137,10 @@ function loadPersistedState(): Partial<CheckoutState> {
     
     const parsed = JSON.parse(saved);
     const fulfillment = parsed.fulfillment || initialFulfillment;
-    // Shipping removed from UI — reset stale persisted shipping to delivery
+    // Shipping removed from UI — reset stale persisted shipping to pickup
     if (fulfillment.type === 'shipping') {
-      fulfillment.type = 'delivery';
-      fulfillment.delivery = fulfillment.delivery || initialFulfillment.delivery;
+      fulfillment.type = 'pickup';
+      fulfillment.pickup = fulfillment.pickup || initialFulfillment.pickup;
       // FIX P1-3: Clear old shipping data to prevent mixed fulfillment state
       delete fulfillment.shipping;
     }
@@ -191,7 +191,7 @@ export const useCheckoutStore = create<CheckoutState>((set, get) => {
   
   const initialTotals = computeTotals({
     cart: initialCart,
-    fulfillmentType: persisted.fulfillment?.type || 'delivery',
+    fulfillmentType: persisted.fulfillment?.type || 'pickup',
     tip: persisted.tip || 0,
     couponDiscount: persisted.couponDiscount || 0,
     deliveryFee: persisted.fulfillment?.delivery?.fee

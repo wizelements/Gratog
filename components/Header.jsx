@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu, X, ShoppingBag, Sparkles, User, LogIn } from 'lucide-react';
+import { Menu, X, ShoppingBag, User, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,6 +18,17 @@ export default function Header() {
   const { isAuthenticated } = useAuth();
 
   const isActive = (path) => pathname === path;
+  const isMobileActive = (path) => pathname === path || pathname?.startsWith(`${path}/`);
+  const mobileNavItems = [
+    { href: '/catalog', label: 'Shop' },
+    { href: '/menu', label: 'Menu' },
+    { href: '/markets', label: 'Markets' },
+    { href: '/about', label: 'Our Story' },
+    {
+      href: isAuthenticated ? '/profile' : '/login',
+      label: isAuthenticated ? 'Account' : 'Login',
+    },
+  ];
 
   return (
     <header id="navigation" className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm" role="banner">
@@ -26,8 +37,7 @@ export default function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2 group flex-shrink-0">
           <div className="relative">
-            <ShoppingBag className="h-6 w-6 text-[#D4AF37] group-hover:scale-110 transition-transform" />
-            <Sparkles className="h-3 w-3 text-[#D4AF37] absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <ShoppingBag className="h-6 w-6 text-[#D4AF37] transition-transform group-hover:scale-105" />
           </div>
           <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#D4AF37] to-[#8B7355] bg-clip-text text-transparent hidden sm:inline">
             Taste of Gratitude
@@ -168,102 +178,33 @@ export default function Header() {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div id="mobile-menu" className="md:hidden border-t bg-background/98 backdrop-blur animate-slide-up h-[85vh] overflow-y-auto">
-          <div className="container py-4 space-y-1">
-            {/* Search Bar for Mobile */}
-            <div className="mb-4 px-2">
-              <SearchBar placeholder="Search..." />
+        <div id="mobile-menu" className="md:hidden border-t bg-background/98 backdrop-blur animate-slide-up max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <div className="container py-4 space-y-4">
+            <div className="px-2">
+              <SearchBar placeholder="Search products..." />
             </div>
 
-            {/* Main Section */}
-            <div className="border-b pb-3">
-              <p className="text-xs font-bold text-gray-600 uppercase tracking-wider px-4 py-2 mb-1">
-                Main
-              </p>
-              <Link href="/" className={`block text-sm py-2 px-4 rounded ${isActive('/') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
-                Home
-              </Link>
-              <Link href="/markets" className={`block text-sm py-2 px-4 rounded ${isActive('/markets') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
-                Markets
-              </Link>
-              <Link href="/explore" className={`block text-sm py-2 px-4 rounded ${pathname?.startsWith('/explore') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
-                Explore
-              </Link>
-              <Link href="/community" className={`block text-sm py-2 px-4 rounded ${isActive('/community') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
-                Community
-              </Link>
-              <Link href="/reviews" className={`block text-sm py-2 px-4 rounded ${isActive('/reviews') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
-                Reviews
-              </Link>
-              <Link href="/rewards" className={`block text-sm py-2 px-4 rounded ${isActive('/rewards') || isActive('/gratitude/rewards') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
-                Rewards
-              </Link>
-            </div>
+            <nav className="space-y-1" aria-label="Mobile navigation">
+              {mobileNavItems.map((item) => {
+                const active = isMobileActive(item.href);
 
-            {/* Shop Section */}
-            <div className="border-b pb-3">
-              <p className="text-xs font-bold text-gray-600 uppercase tracking-wider px-4 py-2 mb-1">
-                Shop
-              </p>
-              <Link href="/catalog" className={`block text-sm py-2 px-4 rounded ${pathname?.startsWith('/catalog') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
-                All Products
-              </Link>
-              <Link href="/catalog?category=gel" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
-                Sea Moss Gel
-              </Link>
-              <Link href="/catalog?type=bundle" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
-                Bundles
-              </Link>
-
-            </div>
-
-            {/* Learn Section */}
-            <div className="border-b pb-3">
-              <p className="text-xs font-bold text-gray-600 uppercase tracking-wider px-4 py-2 mb-1">
-                Learn
-              </p>
-              <Link href="/#what-is-sea-moss" className="block text-sm py-2 px-4 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] rounded" onClick={() => setIsMenuOpen(false)}>
-                What is Sea Moss?
-              </Link>
-              <Link href="/explore/learn" className={`block text-sm py-2 px-4 rounded ${isActive('/explore/learn') ? 'bg-[#D4AF37]/20 text-[#D4AF37] font-medium' : 'hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'}`} onClick={() => setIsMenuOpen(false)}>
-                How to Use
-              </Link>
-
-            </div>
-
-            {/* Account Section */}
-            <div className="border-b pb-3">
-              <p className="text-xs font-bold text-gray-600 uppercase tracking-wider px-4 py-2 mb-1">
-                Account
-              </p>
-              {isAuthenticated ? (
-                <Link href="/profile" className={`block text-sm py-2 px-4 rounded font-medium ${isActive('/profile') ? 'bg-emerald-100 text-emerald-700' : 'hover:bg-emerald-50 hover:text-emerald-700'}`} onClick={() => setIsMenuOpen(false)}>
-                  <User className="h-4 w-4 inline mr-2" />
-                  My Profile
-                </Link>
-              ) : (
-                <Link href="/login" className={`block text-sm py-2 px-4 rounded font-medium ${isActive('/login') ? 'bg-emerald-100 text-emerald-700' : 'hover:bg-emerald-50 hover:text-emerald-700'}`} onClick={() => setIsMenuOpen(false)}>
-                  <LogIn className="h-4 w-4 inline mr-2" />
-                  Login / Register
-                </Link>
-              )}
-            </div>
-
-            {/* Help Section */}
-            <div className="pt-3">
-              <p className="text-xs font-bold text-gray-600 uppercase tracking-wider px-4 py-2 mb-1">
-                Help
-              </p>
-              <Link href="/faq" className={`block text-sm py-2 px-4 rounded ${isActive('/faq') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-50 hover:text-blue-600'}`} onClick={() => setIsMenuOpen(false)}>
-                FAQ
-              </Link>
-              <Link href="/contact" className={`block text-sm py-2 px-4 rounded ${isActive('/contact') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-50 hover:text-blue-600'}`} onClick={() => setIsMenuOpen(false)}>
-                Contact Us
-              </Link>
-              <Link href="/about" className={`block text-sm py-2 px-4 rounded ${isActive('/about') ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-50 hover:text-blue-600'}`} onClick={() => setIsMenuOpen(false)}>
-                About Us
-              </Link>
-            </div>
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex min-h-12 items-center rounded-lg px-4 text-base font-medium transition-colors ${
+                      active
+                        ? 'bg-[#D4AF37]/15 text-[#8B7355]'
+                        : 'text-gray-800 hover:bg-gray-50 hover:text-[#8B7355]'
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                    aria-current={active ? 'page' : undefined}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
           </div>
         </div>
       )}

@@ -15,6 +15,7 @@ import SquarePaymentForm from './SquarePaymentForm';
 import { useRouter } from 'next/navigation';
 import { addOrderToQueue, shouldUseQueue, getQueueRedirectUrl } from '@/lib/queue-integration';
 import { validateCartForFulfillment, validatePreorderMinimum } from '@/lib/cart-engine';
+import { Fulfillment } from '@/adapters/fulfillmentAdapter';
 
 interface ReviewAndPayProps {
   cart: CartItem[];
@@ -27,6 +28,10 @@ interface ReviewAndPayProps {
 }
 
 type PaymentStep = 'review' | 'payment' | 'success';
+
+type FulfillmentReadiness =
+  | { valid: true }
+  | { valid: false; code: string; error: string };
 
 interface PaymentResult {
   paymentId: string;
@@ -56,9 +61,12 @@ export default function ReviewAndPay({
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
   const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(null);
+  const hasPreorderItems = useMemo(() => cart.some((item) => item.isPreorder), [cart]);
+  const pickupLocation = useMemo(() => {
+    if (!fulfillment.pickup?.locationId) return null;
+    return Fulfillment.pickupLocations().find((location) => location.id === fulfillment.pickup?.locationId) || null;
+  }, [fulfillment.pickup?.locationId]);
   
-  // 🎯 CONVERSION PSYCHOLOGY: Validate cart before proceeding
-  // Prevents frustration from failed orders at payment step
   const validationResult = useMemo(() => {
     const marketId = fulfillment.pickup?.locationId || fulfillment.type;
     const fulfillmentCheck = validateCartForFulfillment(cart as any, fulfillment.type, marketId);
@@ -69,6 +77,70 @@ export default function ReviewAndPay({
     
     return fulfillmentCheck;
   }, [cart, fulfillment]);
+
+  const fulfillmentReadiness = useMemo<FulfillmentReadiness>(() => {
+    if (hasPreorderItems && fulfillment.type !== 'pickup') {
+      return {
+        valid: false,
+        code: 'PREORDER_PICKUP_REQUIRED',
+        error: 'Preorder items must be picked up at a selected market.',
+      };
+    }
+
+    if (fulfillment.type === 'pickup') {
+      if (!fulfillment.pickup?.locationId) {
+        return {
+          valid: false,
+          code: 'PICKUP_LOCATION_REQUIRED',
+          error: 'Choose a pickup market before payment.',
+        };
+      }
+
+      if (!fulfillment.pickup?.date) {
+        return {
+          valid: false,
+          code: 'PICKUP_DATE_REQUIRED',
+          error: 'Choose a pickup date before payment.',
+        };
+      }
+    }
+
+    if (fulfillment.type === 'delivery') {
+      const address = fulfillment.delivery?.address;
+      const hasAddress = Boolean(address?.street && address?.city && address?.state && address?.zip);
+      const hasQuote = Number.isFinite(Number(fulfillment.delivery?.fee))
+        && Number.isFinite(Number(fulfillment.delivery?.quotedSubtotal));
+
+      if (!hasAddress || !fulfillment.delivery?.window) {
+        return {
+          valid: false,
+          code: 'DELIVERY_DETAILS_REQUIRED',
+          error: 'Complete the delivery address and window before payment.',
+        };
+      }
+
+      if (!hasQuote) {
+        return {
+          valid: false,
+          code: 'DELIVERY_QUOTE_REQUIRED',
+          error: 'Confirm the delivery quote before payment.',
+        };
+      }
+    }
+
+    return { valid: true };
+  }, [
+    hasPreorderItems,
+    fulfillment.type,
+    fulfillment.pickup?.locationId,
+    fulfillment.pickup?.date,
+    fulfillment.delivery?.address,
+    fulfillment.delivery?.window,
+    fulfillment.delivery?.fee,
+    fulfillment.delivery?.quotedSubtotal,
+  ]);
+
+  const canProceedToPayment = validationResult.valid && fulfillmentReadiness.valid;
   
   const handleProceedToPayment = async () => {
     // Pre-validate before API call
@@ -78,6 +150,16 @@ export default function ReviewAndPay({
       track('checkout_validation_failed', { 
         error: validationResult.error,
         code: validationResult.code 
+      });
+      return;
+    }
+
+    if (!fulfillmentReadiness.valid) {
+      setOrderError(fulfillmentReadiness.error);
+      toast.error(fulfillmentReadiness.error);
+      track('checkout_fulfillment_incomplete', {
+        error: fulfillmentReadiness.error,
+        code: fulfillmentReadiness.code,
       });
       return;
     }
@@ -99,7 +181,7 @@ export default function ReviewAndPay({
       );
       
       setOrderId(orderResponse.order.id);
-      // @ts-ignore — type mismatch
+      // @ts-expect-error — type mismatch
       setSquareOrderId(orderResponse.order.squareOrderId);
       setOrderAccessToken(orderResponse.order.orderAccessToken ?? null);
       // Use server-authoritative pricing for payment (prevents amount mismatch)
@@ -200,7 +282,7 @@ export default function ReviewAndPay({
 
       router.push(`/order/success?${params.toString()}`);
     }, 2000);
-  }, [orderId, router, totals.total, fulfillment, contact, cart]);
+  }, [orderId, router, totals.total, fulfillment, contact, cart, serverTotal]);
   
   const handlePaymentError = useCallback((error: string) => {
     toast.error(error);
@@ -259,10 +341,10 @@ export default function ReviewAndPay({
             className="space-y-6"
           >
             {/* Order Summary */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-              <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-gray-200">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-4 bg-stone-50 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Package className="w-5 h-5 text-emerald-600" />
+                  <Package className="w-5 h-5 text-emerald-700" />
                   Order Summary
                 </h3>
               </div>
@@ -271,7 +353,7 @@ export default function ReviewAndPay({
                 <div className="space-y-3">
                   {cart.map((item) => (
                     <div key={item.id} className="flex gap-3">
-                      <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100 flex-shrink-0">
+                      <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-stone-100 flex-shrink-0">
                         <Image src={item.image} alt={item.name} fill className="object-cover" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -328,7 +410,7 @@ export default function ReviewAndPay({
             </div>
 
             {/* Preorder Notice */}
-            {cart.some(item => item.isPreorder) && (
+            {hasPreorderItems && (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                 <div className="flex items-start gap-3">
                   <Clock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -347,9 +429,9 @@ export default function ReviewAndPay({
             <div className="bg-gray-50 rounded-lg p-4">
               <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
                 {fulfillment.type === 'pickup' ? (
-                  <Clock className="w-4 h-4 text-emerald-600" />
+                  <Clock className="w-4 h-4 text-emerald-700" />
                 ) : (
-                  <MapPin className="w-4 h-4 text-emerald-600" />
+                  <MapPin className="w-4 h-4 text-emerald-700" />
                 )}
                 {fulfillment.type === 'pickup' ? 'Pickup' : 'Delivery'} Details
               </h4>
@@ -365,7 +447,20 @@ export default function ReviewAndPay({
                   </>
                 )}
                 {fulfillment.type === 'pickup' && fulfillment.pickup && (
-                  <p>{fulfillment.pickup.date?.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+                  <>
+                    {pickupLocation && (
+                      <>
+                        <p className="font-medium text-gray-900">{pickupLocation.name}</p>
+                        <p>{pickupLocation.address}</p>
+                        <p>{pickupLocation.hours}</p>
+                      </>
+                    )}
+                    {fulfillment.pickup.date && (
+                      <p className="text-emerald-700">
+                        Pickup date: {fulfillment.pickup.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                      </p>
+                    )}
+                  </>
                 )}
 
               </div>
@@ -384,7 +479,32 @@ export default function ReviewAndPay({
               </div>
             </div>
             
-            {/* 🎯 CONVERSION PSYCHOLOGY: Pre-validation error with clear CTA */}
+            {!fulfillmentReadiness.valid && !orderError && (
+              <motion.div
+                className="rounded-xl p-4 border bg-amber-50 border-amber-200"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className="flex items-start gap-3">
+                  <Store className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h4 className="font-medium text-amber-800">Complete fulfillment details</h4>
+                    <p className="text-sm mt-1 text-amber-700">{fulfillmentReadiness.error}</p>
+                    <div className="mt-3 flex gap-2">
+                      <Button
+                        onClick={onBack}
+                        variant="outline"
+                        size="sm"
+                        className="border-amber-300 text-amber-700 hover:bg-amber-100"
+                      >
+                        Edit details
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {!validationResult.valid && !orderError && (
               <motion.div
                 className={`rounded-xl p-4 border ${validationResult.code?.includes('PREORDER') ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'}`}
@@ -454,8 +574,8 @@ export default function ReviewAndPay({
             {/* Proceed to Payment Button */}
             <Button
               onClick={handleProceedToPayment}
-              disabled={isCreatingOrder || !validationResult.valid}
-              className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isCreatingOrder || !canProceedToPayment}
+              className="w-full h-14 text-lg font-semibold bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isCreatingOrder ? (
                 <div className="flex items-center gap-2">
@@ -469,14 +589,6 @@ export default function ReviewAndPay({
                 </div>
               )}
             </Button>
-            
-            <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
-              <div className="flex items-center gap-1">
-                <Lock className="w-3 h-3" />
-                <span>Secure checkout</span>
-              </div>
-              <span>🔒 Powered by Square</span>
-            </div>
           </motion.div>
         )}
 

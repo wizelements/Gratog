@@ -83,7 +83,7 @@ function verifyToken(token: string): string | null {
 }
 
 /** Helper exported for email templates: build a working unsubscribe URL. */
-export function buildUnsubscribeUrl(baseUrl: string, email: string): string {
+function buildUnsubscribeUrl(baseUrl: string, email: string): string {
   const token = signEmail(email);
   const base = baseUrl.replace(/\/$/, '');
   return `${base}/unsubscribe?token=${encodeURIComponent(token)}`;

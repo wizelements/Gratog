@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, ShoppingBag, ShoppingCart, ClipboardList, User } from 'lucide-react';
@@ -16,36 +15,18 @@ const navItems = [
 
 export function BottomNav() {
   const pathname = usePathname();
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
 
-  useEffect(() => {
-    // Only hide/show on mobile
-    if (typeof window === 'undefined' || window.innerWidth >= 768) return;
+  const shouldHide =
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/checkout') ||
+    pathname?.startsWith('/cart') ||
+    pathname?.startsWith('/order');
 
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      // Hide when scrolling down, show when scrolling up
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsVisible(false);
-      } else {
-        setIsVisible(true);
-      }
-      
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
-
-  // Don't show on admin routes or non-mobile
-  if (pathname?.startsWith('/admin')) {
+  if (shouldHide) {
     return null;
   }
 
-  const handleNavClick = (href) => {
+  const handleNavClick = () => {
     // Haptic feedback on navigation
     triggerHaptic(HapticPatterns.LIGHT);
   };
@@ -58,9 +39,7 @@ export function BottomNav() {
         backdrop-blur-lg
         border-t border-gray-200 dark:border-gray-800
         md:hidden
-        transition-transform duration-300 ease-out
         safe-bottom
-        ${isVisible ? 'translate-y-0' : 'translate-y-full'}
       `}
       style={{
         paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
@@ -75,11 +54,11 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              onClick={() => handleNavClick(item.href)}
+              onClick={handleNavClick}
               className={`
                 flex flex-col items-center justify-center
-                min-w-[64px] min-h-[48px]
-                px-2 py-1
+                min-w-[64px] min-h-[56px]
+                px-2 py-2
                 rounded-xl
                 transition-colors duration-150
                 no-select
@@ -97,7 +76,7 @@ export function BottomNav() {
                   strokeWidth={isActive ? 2.5 : 2}
                 />
               </div>
-              <span className="mt-0.5 text-[10px] font-medium">
+              <span className="mt-0.5 text-xs font-medium">
                 {item.label}
               </span>
             </Link>

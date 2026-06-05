@@ -9,6 +9,7 @@ export type AnalyticsEvent =
   | 'checkout_stage_change'
   | 'checkout_proceed_to_payment'
   | 'checkout_validation_failed'
+  | 'checkout_fulfillment_incomplete'
   | 'queue_joined'
   | 'queue_join_failed'
   | 'fulfillment_type_selected'

@@ -4,16 +4,6 @@ import * as path from 'path';
 
 const workspace = process.cwd();
 
-function read(filePath: string): string {
-  // Try tsx/ts first, then jsx/js
-  const exts = ['', '.tsx', '.ts', '.jsx', '.js'];
-  for (const ext of exts) {
-    const full = path.join(workspace, filePath + ext);
-    if (fs.existsSync(full)) return fs.readFileSync(full, 'utf8');
-  }
-  return fs.readFileSync(path.join(workspace, filePath), 'utf8');
-}
-
 function tryRead(filePath: string): string {
   const full = path.join(workspace, filePath);
   if (fs.existsSync(full)) return fs.readFileSync(full, 'utf8');
@@ -27,14 +17,16 @@ function tryRead(filePath: string): string {
 }
 
 describe('Navigation Coherence', () => {
-  it('mobile navigation includes all key desktop destinations', () => {
+  it('mobile navigation is simplified to primary thumb-friendly destinations', () => {
     const header = tryRead('components/Header.jsx');
 
-    expect(header).toContain('href="/markets"');
-    expect(header).toContain('href="/explore"');
-    expect(header).toContain('href="/community"');
-    expect(header).toContain('href="/reviews"');
-    expect(header).toContain('href="/rewards"');
+    expect(header).toContain('const mobileNavItems');
+    expect(header).toContain("href: '/catalog'");
+    expect(header).toContain("href: '/menu'");
+    expect(header).toContain("href: '/markets'");
+    expect(header).toContain("href: '/about'");
+    expect(header).toContain("href: isAuthenticated ? '/profile' : '/login'");
+    expect(header).toContain('min-h-12');
   });
 
   it('product detail reviews tab uses live review component', () => {
@@ -42,6 +34,29 @@ describe('Navigation Coherence', () => {
 
     expect(productClient).toContain('ProductReviews');
     expect(productClient).toContain('<ProductReviews');
+  });
+
+  it('product detail pages serialize a claim-safe storefront product projection', () => {
+    const productPage = tryRead('app/product/[slug]/page.jsx');
+    const productClient = tryRead('app/product/[slug]/ProductDetailClient.jsx');
+
+    expect(productPage).toContain('safeProductCopy');
+    expect(productPage).toContain('serializeProductForClient');
+    expect(productPage).not.toContain('...product');
+    expect(productPage).not.toContain('healthBenefits');
+    expect(productPage).not.toContain('benefitStory');
+    expect(productClient).not.toContain('healthBenefits');
+    expect(productClient).not.toContain('benefitStory');
+  });
+
+  it('cart chrome stays hidden throughout checkout subroutes', () => {
+    const bottomNav = tryRead('components/BottomNav.jsx');
+    const floatingCart = tryRead('components/FloatingCart.jsx');
+    const enhancedFloatingCart = tryRead('components/cart/EnhancedFloatingCart.jsx');
+
+    expect(bottomNav).toContain("pathname?.startsWith('/checkout')");
+    expect(floatingCart).toContain("pathname?.startsWith('/checkout')");
+    expect(enhancedFloatingCart).toContain("pathname?.startsWith('/checkout')");
   });
 
   it('FAQ destinations are consistent with dedicated FAQ route', () => {
