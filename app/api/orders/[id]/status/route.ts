@@ -1,6 +1,20 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
+import { AdminAuthError, requireAdminSession } from '@/lib/auth/unified-admin';
+
+const VALID_ORDER_STATUSES = [
+  'pending', 'payment_processing', 'confirmed', 'making', 'preparing', 'ready',
+  'completed', 'cancelled', 'refunded', 'delivered', 'picked_up', 'shipped', 'fulfilled',
+  'PENDING_PAYMENT', 'PENDING_CONFIRMATION', 'CONFIRMED', 'PREPARING', 'READY',
+  'PICKED_UP', 'CANCELLED', 'REFUNDED', 'PREORDER_PENDING_PAYMENT',
+  'PREORDER_CONFIRMED', 'SHIPPING_PENDING_PAYMENT', 'SHIPPING_CONFIRMED', 'COMPLETED',
+];
+
+const VALID_PAYMENT_STATUSES = [
+  'pending', 'processing', 'paid', 'failed', 'refunded',
+  'PENDING', 'PROCESSING', 'PAID', 'FAILED', 'REFUNDED',
+];
 
 export async function GET(
   request: NextRequest,
@@ -43,25 +57,34 @@ export async function GET(
   }
 }
 
-export async function PUT(
+async function updateOrderStatus(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const admin = await requireAdminSession(request);
     const { id } = await params;
-    const { status, estimatedReady } = await request.json();
+    const { status, estimatedReady, paymentStatus } = await request.json();
     
-    if (!status) {
-      return NextResponse.json({ success: false, error: 'Status is required' }, { status: 400 });
+    if (!status && !paymentStatus && !estimatedReady) {
+      return NextResponse.json({ success: false, error: 'Status update is required' }, { status: 400 });
     }
 
-    const validStatuses = ['pending', 'confirmed', 'making', 'ready', 'completed', 'cancelled', 'refunded'];
-    if (!validStatuses.includes(status)) {
+    if (status && !VALID_ORDER_STATUSES.includes(status)) {
       return NextResponse.json({ success: false, error: 'Invalid status' }, { status: 400 });
     }
 
+    if (paymentStatus && !VALID_PAYMENT_STATUSES.includes(paymentStatus)) {
+      return NextResponse.json({ success: false, error: 'Invalid payment status' }, { status: 400 });
+    }
+
     const { db } = await connectToDatabase();
-    const updateData: Record<string, unknown> = { status, updatedAt: new Date() };
+    const updateData: Record<string, unknown> = {
+      updatedAt: new Date(),
+      statusUpdatedBy: admin.email,
+    };
+    if (status) updateData.status = status;
+    if (paymentStatus) updateData.paymentStatus = paymentStatus;
     if (estimatedReady) updateData.estimatedReady = estimatedReady;
 
     const result = await db.collection('marketorders').findOneAndUpdate(
@@ -79,11 +102,33 @@ export async function PUT(
       order: {
         orderNumber: result.orderNumber || result.orderRef,
         status: result.status,
+        paymentStatus: result.paymentStatus,
         updatedAt: result.updatedAt,
       },
     });
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json(
+        { success: false, error: error.statusCode === 401 ? 'Unauthorized' : 'Admin authentication failed' },
+        { status: error.statusCode || 401 }
+      );
+    }
+
     console.error('Order status update error:', error);
     return NextResponse.json({ success: false, error: 'Failed to update order status' }, { status: 500 });
   }
+}
+
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  return updateOrderStatus(request, context);
+}
+
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  return updateOrderStatus(request, context);
 }

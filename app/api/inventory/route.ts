@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import DailyInventory from '@/models/DailyInventory';
 import { getTodayDateString } from '@/lib/date-utils';
+import { AdminAuthError, requireAdminSession } from '@/lib/auth/unified-admin';
 
 export const runtime = 'nodejs';
 
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     await connectToDatabase();
     
     const today = getTodayDateString();
-    let inventory = await DailyInventory.findOne({
+    const inventory = await DailyInventory.findOne({
       marketId,
       date: { $gte: new Date(today), $lt: new Date(today + 'T23:59:59') },
     });
@@ -67,6 +68,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    const admin = await requireAdminSession(request);
     const body = await request.json();
     const { marketId, items, action } = body;
     
@@ -89,6 +91,7 @@ export async function POST(request: NextRequest) {
         marketId,
         marketName: body.marketName || 'Serenbe Farmers Market',
         date: new Date(today),
+        createdBy: admin.email,
         items: items.map((item: any) => ({
           productId: item.productId,
           name: item.name,
@@ -110,6 +113,8 @@ export async function POST(request: NextRequest) {
       const update: any = {};
       if (isSoldOut !== undefined) update['items.$.isSoldOut'] = isSoldOut;
       if (adjustment) update['items.$.soldCount'] = adjustment;
+      update.updatedBy = admin.email;
+      update.updatedAt = new Date();
       
       await DailyInventory.updateOne(
         {
@@ -130,7 +135,7 @@ export async function POST(request: NextRequest) {
           marketId,
           date: { $gte: new Date(today), $lt: new Date(today + 'T23:59:59') },
         },
-        { $set: { isClosed: true } }
+        { $set: { isClosed: true, closedBy: admin.email, closedAt: new Date() } }
       );
       
       return NextResponse.json({ success: true, message: 'Market closed' });
@@ -138,6 +143,13 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json(
+        { success: false, error: error.statusCode === 401 ? 'Unauthorized' : 'Admin authentication failed' },
+        { status: error.statusCode || 401 }
+      );
+    }
+
     console.error('Inventory update error:', error);
     return NextResponse.json(
       { error: 'Failed to update inventory' },
