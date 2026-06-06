@@ -68,4 +68,20 @@ describe('Route Surface Governance', () => {
     expect(source).toContain("'/profile/rewards'");
     expect(source).toContain("'/account/subscriptions'");
   });
+
+  it('Next and Vercel configs provide real HTTP redirects for retired routes', () => {
+    const nextConfig = read('next.config.js');
+    const vercelConfig = JSON.parse(read('vercel.json'));
+    const redirects = vercelConfig.redirects || [];
+
+    for (const [route, metadata] of retiredPages) {
+      expect(nextConfig, route).toContain(`source: '${route}'`);
+      expect(nextConfig, route).toContain(`destination: '${metadata.destination}'`);
+      expect(redirects).toContainEqual(expect.objectContaining({
+        source: route,
+        destination: metadata.destination,
+        permanent: true,
+      }));
+    }
+  });
 });

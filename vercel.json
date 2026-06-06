@@ -48,14 +48,14 @@
     {
       "source": "/sw.js",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
         { "key": "Service-Worker-Allowed", "value": "/" }
       ]
     },
     {
       "source": "/manifest.json",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
         { "key": "Content-Type", "value": "application/manifest+json" }
       ]
     },
@@ -144,6 +144,31 @@
     }
   ],
   "redirects": [
+    {
+      "source": "/rewards",
+      "destination": "/catalog",
+      "permanent": true
+    },
+    {
+      "source": "/gratitude/rewards",
+      "destination": "/catalog",
+      "permanent": true
+    },
+    {
+      "source": "/reviews",
+      "destination": "/catalog",
+      "permanent": true
+    },
+    {
+      "source": "/community",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/subscriptions",
+      "destination": "/catalog",
+      "permanent": true
+    },
     {
       "source": "/health",
       "destination": "/api/health",

@@ -137,6 +137,31 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/rewards',
+        destination: '/catalog',
+        permanent: true,
+      },
+      {
+        source: '/gratitude/rewards',
+        destination: '/catalog',
+        permanent: true,
+      },
+      {
+        source: '/reviews',
+        destination: '/catalog',
+        permanent: true,
+      },
+      {
+        source: '/community',
+        destination: '/about',
+        permanent: true,
+      },
+      {
+        source: '/subscriptions',
+        destination: '/catalog',
+        permanent: true,
+      },
+      {
         source: '/order',
         destination: '/checkout',
         permanent: false,

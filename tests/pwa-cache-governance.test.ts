@@ -7,6 +7,7 @@ const workspace = process.cwd();
 const sw = fs.readFileSync(path.join(workspace, 'public/sw.js'), 'utf8');
 const pwa = fs.readFileSync(path.join(workspace, 'lib/pwa.ts'), 'utf8');
 const nextConfig = fs.readFileSync(path.join(workspace, 'next.config.js'), 'utf8');
+const vercelConfig = fs.readFileSync(path.join(workspace, 'vercel.json'), 'utf8');
 
 function isCoveredByNetworkOnlyPrefix(apiPrefix: string): boolean {
   const segments = apiPrefix.split('/').filter(Boolean);
@@ -55,5 +56,8 @@ describe('PWA Cache Governance', () => {
     expect(nextConfig).toContain('source: "/manifest.json"');
     expect(nextConfig).toContain('source: "/sw.js"');
     expect(nextConfig).toContain('Cache-Control", value: "no-cache, no-store, must-revalidate"');
+    expect(vercelConfig).toContain('"source": "/manifest.json"');
+    expect(vercelConfig).toContain('"source": "/sw.js"');
+    expect(vercelConfig).toContain('"value": "no-cache, no-store, must-revalidate"');
   });
 });
