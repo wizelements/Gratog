@@ -45,23 +45,23 @@ export function CookieConsent() {
   if (!isMounted || !showBanner) return null;
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-[9998] p-4 sm:p-6">
-      <div className="max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-5 sm:p-6">
-        <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">🍪</span>
+    <div className="fixed bottom-4 left-4 right-4 z-[9998] sm:left-auto sm:max-w-md">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4">
+        <div className="space-y-3">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-lg">🍪</span>
               <h3 className="font-semibold text-gray-900 dark:text-white">
-                Welcome to Taste of Gratitude
+                Cookie preferences
               </h3>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-              We use cookies to enhance your experience with personalized settings
-              designed to support your wellness journey. Accept to enjoy the full experience.
+              We use essential cookies for cart and checkout, plus optional analytics to improve the store.
+              Read our <a href="/privacy#cookies" className="font-medium text-emerald-700 hover:underline">cookie policy</a>.
             </p>
           </div>
-          
-          <div className="flex gap-3 sm:flex-shrink-0">
+
+          <div className="flex justify-end gap-3">
             <button
               onClick={handleDecline}
               className="px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"

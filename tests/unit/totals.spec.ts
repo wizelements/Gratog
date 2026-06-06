@@ -22,7 +22,7 @@ describe('Totals Adapter', () => {
       expect(result.subtotal).toBe(65);
     });
 
-    it('should compute delivery fee for delivery orders', async () => {
+    it('should use the quoted delivery fee for delivery orders', async () => {
       const { computeTotals } = await import('@/adapters/totalsAdapter');
       
       const result = computeTotals({
@@ -30,7 +30,8 @@ describe('Totals Adapter', () => {
           // @ts-ignore — auto-fix
           { id: '1', productId: '1', variationId: 'v1', slug: 'product-1', name: 'Product 1', price: 50, size: 'regular', quantity: 1, image: '', category: 'wellness' }
         ],
-        fulfillmentType: 'delivery'
+        fulfillmentType: 'delivery',
+        deliveryFee: 6.99
       });
       
       expect(result.deliveryFee).toBe(6.99);
@@ -93,8 +94,8 @@ describe('Totals Adapter', () => {
       });
       
       expect(result.couponDiscount).toBe(10);
-      // Total = 50 - 10 + tax (50 * 0.08 = 4) = 44
-      expect(result.total).toBe(44);
+      // Tax is currently handled outside checkout pricing.
+      expect(result.total).toBe(40);
     });
 
     it('should include shipping fee when provided', async () => {
@@ -111,8 +112,8 @@ describe('Totals Adapter', () => {
       
       // Shipping fee is stored in deliveryFee for shipping orders
       expect(result.deliveryFee).toBe(12.99);
-      // Total = 50 + 12.99 + tax (50 * 0.08 = 4) = 66.99
-      expect(result.total).toBeCloseTo(66.99, 2);
+      // Tax is currently handled outside checkout pricing.
+      expect(result.total).toBeCloseTo(62.99, 2);
     });
 
     it('should handle empty cart', async () => {

@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { CreditCard, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 import { formatCurrency } from '@/adapters/totalsAdapter';
-import type { SquareCard } from '@/types/square';
+import type { SquareApplePay, SquareCard, SquareGooglePay } from '@/types/square';
 
 interface SquareConfig {
   applicationId: string;
@@ -56,8 +56,12 @@ export default function SquarePaymentForm({
   const [paymentStep, setPaymentStep] = useState<PaymentStep>('idle');
   const [cardError, setCardError] = useState<string | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
+  const [isApplePayReady, setIsApplePayReady] = useState(false);
+  const [isGooglePayReady, setIsGooglePayReady] = useState(false);
   
   const cardRef = useRef<SquareCard | null>(null);
+  const applePayRef = useRef<SquareApplePay | null>(null);
+  const googlePayRef = useRef<SquareGooglePay | null>(null);
   const initRef = useRef(false);
   
   const idempotencyKey = orderId.slice(0, 36);
@@ -106,6 +110,41 @@ export default function SquarePaymentForm({
         
         cardRef.current = card;
         setIsCardReady(true);
+
+        const amount = (amountCents / 100).toFixed(2);
+        const paymentRequest = payments.paymentRequest({
+          countryCode: 'US',
+          currencyCode: 'USD',
+          total: { amount, label: 'Taste of Gratitude' },
+        });
+
+        if (payments.applePay) {
+          try {
+            const applePay = await payments.applePay(paymentRequest);
+            if (applePay) {
+              applePayRef.current = applePay;
+              setIsApplePayReady(true);
+            }
+          } catch {
+            setIsApplePayReady(false);
+          }
+        }
+
+        if (payments.googlePay) {
+          try {
+            const googlePay = await payments.googlePay(paymentRequest);
+            if (googlePay) {
+              await googlePay.attach('#google-pay-button', {
+                buttonColor: 'default',
+                buttonType: 'long',
+              });
+              googlePayRef.current = googlePay;
+              setIsGooglePayReady(true);
+            }
+          } catch {
+            setIsGooglePayReady(false);
+          }
+        }
       } catch (err) {
         setInitError(err instanceof Error ? err.message : 'Failed to initialize payment form');
       } finally {
@@ -114,28 +153,16 @@ export default function SquarePaymentForm({
     };
     
     initSquare();
-  }, [config]);
+  }, [amountCents, config]);
 
-  const handlePayment = useCallback(async () => {
-    if (!cardRef.current || paymentStep !== 'idle') return;
+  const processPaymentToken = useCallback(async (sourceId: string) => {
+    setPaymentStep('processing');
 
-    setPaymentStep('tokenizing');
-    setCardError(null);
-
-    try {
-      const result = await cardRef.current.tokenize();
-      
-      if (result.status !== 'OK' || !result.token) {
-        throw new Error(result.errors?.[0]?.message || 'Card tokenization failed');
-      }
-
-      setPaymentStep('processing');
-      
       const res = await fetch('/api/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          sourceId: result.token,
+          sourceId,
           amountCents,
           orderId,
           squareOrderId,
@@ -182,18 +209,59 @@ export default function SquarePaymentForm({
           orderAccessTokenExpiresAt: data.orderAccessTokenExpiresAt || null,
         });
       }, 500);
-      
+  }, [amountCents, orderId, squareOrderId, orderAccessToken, customer, idempotencyKey, onSuccess]);
+
+  const handleTokenizationError = useCallback((err: unknown, fallback: string) => {
+    const errorMsg = err instanceof Error ? err.message : fallback;
+    setCardError(errorMsg);
+    setPaymentStep('error');
+    setTimeout(() => {
+      setPaymentStep('idle');
+      setCardError(null);
+    }, 3000);
+    onError(errorMsg);
+  }, [onError]);
+
+  const handlePayment = useCallback(async () => {
+    if (!cardRef.current || paymentStep !== 'idle') return;
+
+    setPaymentStep('tokenizing');
+    setCardError(null);
+
+    try {
+      const result = await cardRef.current.tokenize();
+
+      if (result.status !== 'OK' || !result.token) {
+        throw new Error(result.errors?.[0]?.message || 'Card tokenization failed');
+      }
+
+      await processPaymentToken(result.token);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Payment failed';
-      setCardError(errorMsg);
-      setPaymentStep('error');
-      setTimeout(() => {
-        setPaymentStep('idle');
-        setCardError(null);
-      }, 3000);
-      onError(errorMsg);
+      handleTokenizationError(err, 'Payment failed');
     }
-  }, [paymentStep, amountCents, orderId, squareOrderId, orderAccessToken, customer, idempotencyKey, onSuccess, onError]);
+  }, [paymentStep, processPaymentToken, handleTokenizationError]);
+
+  const handleWalletPayment = useCallback(async (wallet: 'apple' | 'google') => {
+    if (paymentStep !== 'idle') return;
+
+    const paymentSource = wallet === 'apple' ? applePayRef.current : googlePayRef.current;
+    if (!paymentSource) return;
+
+    setPaymentStep('tokenizing');
+    setCardError(null);
+
+    try {
+      const result = await paymentSource.tokenize();
+
+      if (result.status !== 'OK' || !result.token) {
+        throw new Error(result.errors?.[0]?.message || `${wallet === 'apple' ? 'Apple Pay' : 'Google Pay'} tokenization failed`);
+      }
+
+      await processPaymentToken(result.token);
+    } catch (err) {
+      handleTokenizationError(err, `${wallet === 'apple' ? 'Apple Pay' : 'Google Pay'} payment failed`);
+    }
+  }, [paymentStep, processPaymentToken, handleTokenizationError]);
 
   // Error state
   if (initError && !isCardReady) {
@@ -228,6 +296,44 @@ export default function SquarePaymentForm({
 
       {/* Card Form */}
       <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+        {(isApplePayReady || isGooglePayReady || isLoading) && (
+          <div className="mb-6 space-y-3">
+            <p className="text-sm font-medium text-gray-700">Express checkout</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {isApplePayReady && (
+                <button
+                  type="button"
+                  onClick={() => handleWalletPayment('apple')}
+                  disabled={isProcessing || paymentStep === 'success'}
+                  className="min-h-12 rounded-lg bg-black px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-900 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Apple Pay
+                </button>
+              )}
+              <div
+                className={isGooglePayReady ? 'min-h-12' : isLoading ? 'min-h-12 opacity-0 pointer-events-none' : 'hidden'}
+                onClick={() => handleWalletPayment('google')}
+                aria-disabled={isProcessing || paymentStep === 'success'}
+              >
+                <div id="google-pay-button" />
+              </div>
+            </div>
+            {(isApplePayReady || isGooglePayReady) && (
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                  <div className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-white px-2 text-gray-500">or pay by card</span>
+                </div>
+              </div>
+            )}
+            {!isApplePayReady && !isGooglePayReady && isLoading && (
+              <p className="text-xs text-gray-500">Checking wallet availability…</p>
+            )}
+          </div>
+        )}
+
         <div className="flex items-center gap-3 mb-6">
           <CreditCard className="w-6 h-6 text-gray-600" />
           <h2 className="text-lg font-semibold">Card Payment</h2>

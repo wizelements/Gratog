@@ -27,7 +27,9 @@ export default function ShippingForm({ data, onChange, errors = {} }: ShippingFo
     >
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Shipping Address</h3>
-        <p className="text-sm text-gray-600">We ship nationwide via USPS and FedEx</p>
+        <p className="text-sm text-gray-600">
+          We ship eligible products nationwide. Rates are shown here and included in your total before payment.
+        </p>
       </div>
       
       {/* Address Fields */}
@@ -40,7 +42,12 @@ export default function ShippingForm({ data, onChange, errors = {} }: ShippingFo
             onChange={(e) => onChange({ address: { ...data.address, street: e.target.value } })}
             placeholder="123 Main Street"
             className={`mt-1 ${errors['address.street'] ? 'border-red-500' : ''}`}
+            aria-invalid={!!errors['address.street']}
+            aria-describedby={errors['address.street'] ? 'ship-street-error' : undefined}
           />
+          {errors['address.street'] && (
+            <p id="ship-street-error" className="mt-1 text-xs text-red-500">{errors['address.street']}</p>
+          )}
         </div>
         
         <div>
@@ -61,8 +68,13 @@ export default function ShippingForm({ data, onChange, errors = {} }: ShippingFo
               id="ship-city"
               value={data.address.city}
               onChange={(e) => onChange({ address: { ...data.address, city: e.target.value } })}
-              className="mt-1"
+              className={`mt-1 ${errors['address.city'] ? 'border-red-500' : ''}`}
+              aria-invalid={!!errors['address.city']}
+              aria-describedby={errors['address.city'] ? 'ship-city-error' : undefined}
             />
+            {errors['address.city'] && (
+              <p id="ship-city-error" className="mt-1 text-xs text-red-500">{errors['address.city']}</p>
+            )}
           </div>
           <div className="col-span-1">
             <Label htmlFor="ship-state">State *</Label>
@@ -71,8 +83,13 @@ export default function ShippingForm({ data, onChange, errors = {} }: ShippingFo
               value={data.address.state}
               onChange={(e) => onChange({ address: { ...data.address, state: e.target.value.toUpperCase() } })}
               maxLength={2}
-              className="mt-1"
+              className={`mt-1 ${errors['address.state'] ? 'border-red-500' : ''}`}
+              aria-invalid={!!errors['address.state']}
+              aria-describedby={errors['address.state'] ? 'ship-state-error' : undefined}
             />
+            {errors['address.state'] && (
+              <p id="ship-state-error" className="mt-1 text-xs text-red-500">{errors['address.state']}</p>
+            )}
           </div>
           <div className="col-span-2">
             <Label htmlFor="ship-zip">ZIP *</Label>
@@ -81,8 +98,14 @@ export default function ShippingForm({ data, onChange, errors = {} }: ShippingFo
               value={data.address.zip}
               onChange={(e) => onChange({ address: { ...data.address, zip: e.target.value.replace(/\D/g, '').slice(0, 5) } })}
               maxLength={5}
-              className="mt-1"
+              inputMode="numeric"
+              className={`mt-1 ${errors['address.zip'] ? 'border-red-500' : ''}`}
+              aria-invalid={!!errors['address.zip']}
+              aria-describedby={errors['address.zip'] ? 'ship-zip-error' : undefined}
             />
+            {errors['address.zip'] && (
+              <p id="ship-zip-error" className="mt-1 text-xs text-red-500">{errors['address.zip']}</p>
+            )}
           </div>
         </div>
       </div>
@@ -119,6 +142,9 @@ export default function ShippingForm({ data, onChange, errors = {} }: ShippingFo
             </Label>
           ))}
         </RadioGroup>
+        {errors.methodId && (
+          <p className="mt-2 text-xs text-red-500">{errors.methodId}</p>
+        )}
       </div>
     </motion.div>
   );

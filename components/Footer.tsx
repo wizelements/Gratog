@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 // @ts-expect-error lucide-react deprecated brand icons not in type declarations
-import { Facebook, Instagram, Mail } from 'lucide-react';
+import { Facebook, Instagram, Mail, ShieldCheck, Truck, RefreshCw, Lock } from 'lucide-react';
 import NewsletterSignup from '@/components/NewsletterSignup';
 
 export default function Footer() {
@@ -35,6 +35,16 @@ export default function Footer() {
             </p>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#D4AF37]/10 rounded-full text-xs font-semibold text-[#D4AF37]">
               🌿 Local pickup • Small batch
+            </div>
+            <div className="mt-4 space-y-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Lock className="h-4 w-4 text-emerald-600" aria-hidden="true" />
+                Secure Square checkout
+              </div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-emerald-600" aria-hidden="true" />
+                Satisfaction guarantee
+              </div>
             </div>
           </div>
 
@@ -120,6 +130,33 @@ export default function Footer() {
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
                   Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/policies#shipping"
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <Truck className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+                  Shipping Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/policies#refunds"
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <RefreshCw className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+                  Refund Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/privacy#cookies"
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+                  Cookie Policy
                 </Link>
               </li>
             </ul>

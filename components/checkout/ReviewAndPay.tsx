@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, AlertCircle, RefreshCw, CheckCircle, Package, MapPin, Clock, Store } from 'lucide-react';
+import { Lock, AlertCircle, RefreshCw, CheckCircle, Package, MapPin, Clock, Store, Truck, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CartItem } from '@/adapters/cartAdapter';
 import { OrderTotals, formatCurrency } from '@/adapters/totalsAdapter';
@@ -66,6 +66,10 @@ export default function ReviewAndPay({
     if (!fulfillment.pickup?.locationId) return null;
     return Fulfillment.pickupLocations().find((location) => location.id === fulfillment.pickup?.locationId) || null;
   }, [fulfillment.pickup?.locationId]);
+  const shippingMethod = useMemo(() => {
+    if (!fulfillment.shipping?.methodId) return null;
+    return Fulfillment.shippingMethods().find((method) => method.id === fulfillment.shipping?.methodId) || null;
+  }, [fulfillment.shipping?.methodId]);
   
   const validationResult = useMemo(() => {
     const marketId = fulfillment.pickup?.locationId || fulfillment.type;
@@ -128,6 +132,27 @@ export default function ReviewAndPay({
       }
     }
 
+    if (fulfillment.type === 'shipping') {
+      const address = fulfillment.shipping?.address;
+      const hasAddress = Boolean(address?.street && address?.city && address?.state && address?.zip);
+
+      if (!hasAddress) {
+        return {
+          valid: false,
+          code: 'SHIPPING_ADDRESS_REQUIRED',
+          error: 'Complete the shipping address before payment.',
+        };
+      }
+
+      if (!fulfillment.shipping?.methodId) {
+        return {
+          valid: false,
+          code: 'SHIPPING_METHOD_REQUIRED',
+          error: 'Choose a shipping method before payment.',
+        };
+      }
+    }
+
     return { valid: true };
   }, [
     hasPreorderItems,
@@ -138,6 +163,8 @@ export default function ReviewAndPay({
     fulfillment.delivery?.window,
     fulfillment.delivery?.fee,
     fulfillment.delivery?.quotedSubtotal,
+    fulfillment.shipping?.address,
+    fulfillment.shipping?.methodId,
   ]);
 
   const canProceedToPayment = validationResult.valid && fulfillmentReadiness.valid;
@@ -379,7 +406,9 @@ export default function ReviewAndPay({
                   </div>
                   {totals.deliveryFee > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Delivery Fee</span>
+                      <span className="text-gray-600">
+                        {fulfillment.type === 'shipping' ? 'Shipping' : 'Delivery Fee'}
+                      </span>
                       <span>{formatCurrency(totals.deliveryFee)}</span>
                     </div>
                   )}
@@ -430,10 +459,12 @@ export default function ReviewAndPay({
               <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
                 {fulfillment.type === 'pickup' ? (
                   <Clock className="w-4 h-4 text-emerald-700" />
+                ) : fulfillment.type === 'shipping' ? (
+                  <Truck className="w-4 h-4 text-emerald-700" />
                 ) : (
                   <MapPin className="w-4 h-4 text-emerald-700" />
                 )}
-                {fulfillment.type === 'pickup' ? 'Pickup' : 'Delivery'} Details
+                {fulfillment.type === 'pickup' ? 'Pickup' : fulfillment.type === 'shipping' ? 'Shipping' : 'Delivery'} Details
               </h4>
               <div className="text-sm text-gray-600 space-y-1">
                 {fulfillment.type === 'delivery' && fulfillment.delivery && (
@@ -458,6 +489,18 @@ export default function ReviewAndPay({
                     {fulfillment.pickup.date && (
                       <p className="text-emerald-700">
                         Pickup date: {fulfillment.pickup.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                      </p>
+                    )}
+                  </>
+                )}
+                {fulfillment.type === 'shipping' && fulfillment.shipping && (
+                  <>
+                    <p>{fulfillment.shipping.address.street}</p>
+                    {fulfillment.shipping.address.suite && <p>{fulfillment.shipping.address.suite}</p>}
+                    <p>{fulfillment.shipping.address.city}, {fulfillment.shipping.address.state} {fulfillment.shipping.address.zip}</p>
+                    {shippingMethod && (
+                      <p className="text-emerald-700">
+                        {shippingMethod.name}: {formatCurrency(shippingMethod.price)} • {shippingMethod.estimatedDays}
                       </p>
                     )}
                   </>
@@ -519,9 +562,9 @@ export default function ReviewAndPay({
                   )}
                   <div className="flex-1">
                     <h4 className={`font-medium ${validationResult.code?.includes('PREORDER') ? 'text-red-800' : 'text-amber-800'}`}>
-                      {validationResult.code?.includes('PREORDER') 
-                        ? 'Cannot Proceed with Order' 
-                        : 'Market Pickup Required'}
+                      {validationResult.code?.includes('PREORDER')
+                        ? 'Cannot Proceed with Order'
+                        : 'Review Required'}
                     </h4>
                     <p className={`text-sm mt-1 ${validationResult.code?.includes('PREORDER') ? 'text-red-700' : 'text-amber-700'}`}>
                       {validationResult.error}
@@ -537,7 +580,7 @@ export default function ReviewAndPay({
                       >
                         {validationResult.code?.includes('PREORDER')
                           ? 'Edit Cart'
-                          : 'Change to Market Pickup'}
+                          : 'Edit details'}
                       </Button>
                     </div>
                   </div>
@@ -572,6 +615,23 @@ export default function ReviewAndPay({
             )}
 
             {/* Proceed to Payment Button */}
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-900">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-emerald-700" aria-hidden="true" />
+                  Secure Square checkout
+                </div>
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-emerald-700" aria-hidden="true" />
+                  Satisfaction guarantee
+                </div>
+                <div className="flex items-center gap-2">
+                  <Truck className="h-4 w-4 text-emerald-700" aria-hidden="true" />
+                  Fulfillment confirmed before payment
+                </div>
+              </div>
+            </div>
+
             <Button
               onClick={handleProceedToPayment}
               disabled={isCreatingOrder || !canProceedToPayment}
@@ -604,7 +664,7 @@ export default function ReviewAndPay({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Secure Payment</h3>
-                <p className="text-sm text-gray-500">Order #{orderId.substring(0, 8)}</p>
+                <p className="text-sm text-gray-500">Order #{orderId.substring(0, 8)} • encrypted by Square</p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-500">Amount Due</p>
@@ -621,7 +681,7 @@ export default function ReviewAndPay({
               customer={{
                 email: contact.email,
                 name: `${contact.firstName} ${contact.lastName}`,
-                phone: contact.phone
+                phone: contact.phone || undefined
               }}
               onSuccess={handlePaymentSuccess}
               onError={handlePaymentError}

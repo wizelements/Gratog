@@ -2,7 +2,7 @@
 
 /**
  * ContactForm - Collects customer contact information
- * 🎯 UX IMPROVEMENTS: Phone auto-formatting, field validation
+ * 🎯 UX IMPROVEMENTS: Optional phone, phone auto-formatting, field validation
  */
 
 import { motion } from 'framer-motion';
@@ -68,7 +68,7 @@ export default function ContactForm({ contact, onChange, errors = {} }: ContactF
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
         <p className="text-sm text-gray-600 mb-6">
-          We'll use this to send order updates and delivery notifications
+          We'll email your order updates. Add a phone number only if you want SMS or callback support.
         </p>
       </div>
       
@@ -186,7 +186,7 @@ export default function ContactForm({ contact, onChange, errors = {} }: ContactF
       {/* Phone - With Auto-Formatting */}
       <div className="relative">
         <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-          Phone Number *
+          Phone Number <span className="text-gray-400">(Optional)</span>
         </Label>
         <div className="relative mt-1">
           <Input
@@ -231,6 +231,11 @@ export default function ContactForm({ contact, onChange, errors = {} }: ContactF
         {showPhoneError && (
           <p id="phone-help" className="mt-1 text-xs text-amber-600">
             Please enter a complete 10-digit phone number
+          </p>
+        )}
+        {!errors.phone && !showPhoneError && (
+          <p className="mt-1 text-xs text-gray-500">
+            Optional — used only for SMS pickup/delivery updates or support callbacks.
           </p>
         )}
       </div>

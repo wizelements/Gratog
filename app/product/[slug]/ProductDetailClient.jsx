@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ShoppingCart, Loader2, Star, MapPin } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Loader2, Star, MapPin, ShieldCheck, Truck, RefreshCw, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cart-engine';
 
@@ -354,6 +354,20 @@ export default function ProductDetailClient({ product, slug }) {
                 )}
                 Add to Cart
               </Button>
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                <div className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900">
+                  <Lock className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
+                  <span>Secure Square checkout</span>
+                </div>
+                <Link href="/policies#shipping" className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900 hover:bg-emerald-100">
+                  <Truck className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
+                  <span>Pickup, delivery, or shipping details</span>
+                </Link>
+                <Link href="/policies#refunds" className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900 hover:bg-emerald-100">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
+                  <span>Satisfaction guarantee</span>
+                </Link>
+              </div>
             </div>
 
             <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -366,12 +380,15 @@ export default function ProductDetailClient({ product, slug }) {
               </div>
             </div>
 
-            {/* Pickup & Delivery Info */}
+            {/* Pickup, Delivery & Shipping Info */}
             <div className="flex items-start gap-3 text-sm text-gray-600">
               <MapPin className="w-5 h-5 text-emerald-600 flex-shrink-0" />
               <div>
-                <p className="font-medium text-gray-900">Pickup & Delivery</p>
+                <p className="font-medium text-gray-900">Pickup, Delivery & Shipping</p>
                 <p>{pickupGuidance}</p>
+                <p className="mt-1">
+                  Eligible shelf-stable items can ship nationwide; perishable batches are packed carefully and shown with fees before payment.
+                </p>
               </div>
             </div>
           </div>
@@ -383,7 +400,7 @@ export default function ProductDetailClient({ product, slug }) {
             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
               <TabsTrigger value="flavor">Flavor</TabsTrigger>
               <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
-              <TabsTrigger value="care">Storage & Pickup</TabsTrigger>
+              <TabsTrigger value="care">Storage & Fulfillment</TabsTrigger>
               <TabsTrigger value="reviews">Reviews ({reviewSummary.reviewCount})</TabsTrigger>
             </TabsList>
 
@@ -436,8 +453,22 @@ export default function ProductDetailClient({ product, slug }) {
                     <p className="text-gray-700 leading-relaxed">{storageGuidance}</p>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">Pickup</h3>
+                    <h3 className="text-lg font-semibold mb-2">Pickup, delivery, and shipping</h3>
                     <p className="text-gray-700 leading-relaxed">{pickupGuidance}</p>
+                    <div className="mt-4 grid gap-3 text-sm text-gray-700 sm:grid-cols-3">
+                      <Link href="/policies#shipping" className="rounded-lg border border-gray-200 p-3 hover:border-emerald-300">
+                        <Truck className="mb-2 h-5 w-5 text-emerald-700" aria-hidden="true" />
+                        Shipping costs and eligible items are confirmed before payment.
+                      </Link>
+                      <Link href="/policies#refunds" className="rounded-lg border border-gray-200 p-3 hover:border-emerald-300">
+                        <RefreshCw className="mb-2 h-5 w-5 text-emerald-700" aria-hidden="true" />
+                        Refund and replacement requests are reviewed quickly for quality issues.
+                      </Link>
+                      <div className="rounded-lg border border-gray-200 p-3">
+                        <ShieldCheck className="mb-2 h-5 w-5 text-emerald-700" aria-hidden="true" />
+                        Secure checkout and support from a real small-batch team.
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

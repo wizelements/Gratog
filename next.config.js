@@ -137,6 +137,56 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/shop',
+        destination: '/catalog',
+        permanent: true,
+      },
+      {
+        source: '/terms-of-service',
+        destination: '/terms',
+        permanent: true,
+      },
+      {
+        source: '/privacy-policy',
+        destination: '/privacy',
+        permanent: true,
+      },
+      {
+        source: '/cookie-policy',
+        destination: '/privacy#cookies',
+        permanent: true,
+      },
+      {
+        source: '/cookies',
+        destination: '/privacy#cookies',
+        permanent: true,
+      },
+      {
+        source: '/refund-policy',
+        destination: '/policies#refunds',
+        permanent: true,
+      },
+      {
+        source: '/return-policy',
+        destination: '/policies#refunds',
+        permanent: true,
+      },
+      {
+        source: '/returns',
+        destination: '/policies#refunds',
+        permanent: true,
+      },
+      {
+        source: '/shipping-policy',
+        destination: '/policies#shipping',
+        permanent: true,
+      },
+      {
+        source: '/shipping',
+        destination: '/policies#shipping',
+        permanent: true,
+      },
+      {
         source: '/rewards',
         destination: '/catalog',
         permanent: true,

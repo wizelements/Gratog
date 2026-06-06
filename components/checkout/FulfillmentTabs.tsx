@@ -3,11 +3,11 @@
 
 /**
  * FulfillmentTabs - Adaptive fulfillment type selector
- * Shipping removed — customers are directed to contact us for shipping inquiries.
+ * Lets customers choose pickup, eligible local delivery, or nationwide shipping.
  */
 
 import { motion } from 'framer-motion';
-import { MapPin, Truck } from 'lucide-react';
+import { MapPin, Truck, Package } from 'lucide-react';
 import { FulfillmentType } from '@/stores/checkout';
 
 interface FulfillmentTabsProps {
@@ -19,6 +19,7 @@ interface FulfillmentTabsProps {
 const TABS = [
   { value: 'pickup' as FulfillmentType, label: 'Pickup', icon: MapPin, description: 'Pick up at market' },
   { value: 'delivery' as FulfillmentType, label: 'Delivery', icon: Truck, description: 'Home delivery', disabledForPreorder: true },
+  { value: 'shipping' as FulfillmentType, label: 'Shipping', icon: Package, description: 'Ships nationwide', disabledForPreorder: true },
 ];
 
 export default function FulfillmentTabs({ selected, onChange, hasPreorderItems = false }: FulfillmentTabsProps) {
@@ -32,17 +33,17 @@ export default function FulfillmentTabs({ selected, onChange, hasPreorderItems =
               Preorder items are made for market pickup.
             </p>
             <p className="text-sm text-amber-700 mt-1">
-              Choose a pickup location and date below. Delivery is unavailable for preorder products.
+              Choose a pickup location and date below. Delivery and shipping are unavailable for preorder products.
             </p>
           </div>
         </div>
       )}
       
-      <div className="grid grid-cols-2 gap-3 p-1 bg-stone-100 rounded-xl">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-1 bg-stone-100 rounded-xl">
       {TABS.map((tab) => {
         const Icon = tab.icon;
         const isSelected = selected === tab.value;
-        // CRITICAL FIX: Disable delivery tab when preorder items present
+        // CRITICAL FIX: Disable non-pickup tabs when preorder items present
         const isDisabled = hasPreorderItems && tab.disabledForPreorder;
         
         return (

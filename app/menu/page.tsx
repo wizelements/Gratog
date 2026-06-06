@@ -71,18 +71,26 @@ export default function MenuPage() {
             </svg>
           </div>
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-            This Week&apos;s Menu Is Being Prepared
+            This Week&apos;s Printed Menu Is Being Prepared
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            We&apos;re putting the finishing touches on this week&apos;s offerings.
-            Check back soon for our latest creations!
+            You can still shop the live catalog now. Preorders are typically prepared for Saturday market pickup,
+            and the $60 preorder minimum is shown before payment.
           </p>
-          <Link
-            href="/"
-            className="inline-block px-6 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
-          >
-            Back to Home
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/catalog"
+              className="inline-block px-6 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
+            >
+              Browse Live Catalog
+            </Link>
+            <Link
+              href="/markets"
+              className="inline-block px-6 py-2.5 border border-emerald-600 text-emerald-700 rounded-lg hover:bg-emerald-50 transition-colors font-medium"
+            >
+              View Pickup Markets
+            </Link>
+          </div>
         </div>
       </div>
     );

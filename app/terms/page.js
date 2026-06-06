@@ -79,7 +79,7 @@ export default function TermsPage() {
               <ul className="list-disc list-inside space-y-1 text-sm">
                 <li>Orders are confirmed upon successful payment processing</li>
                 <li>We reserve the right to refuse or cancel any order for any reason</li>
-                <li>Order confirmations will be sent via SMS and email</li>
+                <li>Order confirmations will be sent by email; SMS updates are sent only when a phone number is provided</li>
                 <li>Changes to orders may not be possible once processing begins</li>
               </ul>
             </div>
@@ -98,7 +98,7 @@ export default function TermsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Pickup and Delivery</CardTitle>
+            <CardTitle>Pickup, Delivery, and Shipping</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -118,6 +118,15 @@ export default function TermsPage() {
                 <li>Delivery fees vary by location and are calculated at checkout</li>
                 <li>Delivery times are estimates and may vary due to traffic or weather</li>
                 <li>Someone must be available to receive the delivery</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-2">Shipping</h3>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>Eligible items may be shipped nationwide when shipping is selected at checkout</li>
+                <li>Shipping costs and estimated timing are displayed before payment</li>
+                <li>Perishable or preorder-only items may be limited to market pickup</li>
               </ul>
             </div>
           </CardContent>

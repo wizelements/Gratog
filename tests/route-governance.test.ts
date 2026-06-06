@@ -19,6 +19,18 @@ const sitemapSources = [
   'app/sitemap.ts',
   'public/sitemap-0.xml',
 ];
+const conversionRedirects = {
+  '/shop': '/catalog',
+  '/terms-of-service': '/terms',
+  '/privacy-policy': '/privacy',
+  '/cookie-policy': '/privacy#cookies',
+  '/cookies': '/privacy#cookies',
+  '/refund-policy': '/policies#refunds',
+  '/return-policy': '/policies#refunds',
+  '/returns': '/policies#refunds',
+  '/shipping-policy': '/policies#shipping',
+  '/shipping': '/policies#shipping',
+};
 
 describe('Route Surface Governance', () => {
   it('has an explicit source and redirect destination for every retired route', () => {
@@ -80,6 +92,22 @@ describe('Route Surface Governance', () => {
       expect(redirects).toContainEqual(expect.objectContaining({
         source: route,
         destination: metadata.destination,
+        permanent: true,
+      }));
+    }
+  });
+
+  it('conversion-critical aliases redirect instead of 404ing', () => {
+    const nextConfig = read('next.config.js');
+    const vercelConfig = JSON.parse(read('vercel.json'));
+    const redirects = vercelConfig.redirects || [];
+
+    for (const [source, destination] of Object.entries(conversionRedirects)) {
+      expect(nextConfig, source).toContain(`source: '${source}'`);
+      expect(nextConfig, source).toContain(`destination: '${destination}'`);
+      expect(redirects).toContainEqual(expect.objectContaining({
+        source,
+        destination,
         permanent: true,
       }));
     }

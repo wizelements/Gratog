@@ -106,8 +106,9 @@ function validateContact(contact: ContactInfo): void {
   if (!emailRegex.test(contact.email.trim())) {
     throw new OrderCreationError('Invalid email format', 'INVALID_EMAIL', 400);
   }
-  if (!contact.phone?.trim()) {
-    throw new OrderCreationError('Phone number is required', 'MISSING_PHONE', 400);
+  const phoneDigits = contact.phone?.replace(/\D/g, '') || '';
+  if (contact.phone?.trim() && phoneDigits.length !== 10) {
+    throw new OrderCreationError('Phone number must be 10 digits or left blank', 'INVALID_PHONE', 400);
   }
 }
 
@@ -204,7 +205,7 @@ export async function createOrder(
       firstName: sanitizeString(contact.firstName, 50),
       lastName: sanitizeString(contact.lastName, 50),
       email: contact.email.trim().toLowerCase(),
-      phone: contact.phone.trim()
+      phone: contact.phone?.trim() || undefined
     },
     
     // Fulfillment type

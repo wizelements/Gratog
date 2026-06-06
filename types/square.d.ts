@@ -20,22 +20,23 @@ export interface SquareApplePay {
 }
 
 export interface SquareGooglePay {
-  attach: (selector: string) => Promise<void>;
+  attach: (selector: string, options?: { buttonColor?: 'default' | 'black' | 'white'; buttonType?: 'short' | 'long' | 'plain' | 'buy' }) => Promise<void>;
   tokenize: () => Promise<SquareTokenResult>;
   destroy: () => Promise<void>;
 }
 
-export interface SquareApplePayRequest {
+export interface SquarePaymentRequestOptions {
   countryCode: string;
   currencyCode: string;
   total: { amount: string; label: string };
 }
 
-export interface SquareGooglePayRequest {
-  countryCode: string;
-  currencyCode: string;
-  total?: { amount: string };
+export interface SquarePaymentRequest {
+  // PaymentRequest is owned by the Square Web Payments SDK.
 }
+
+export type SquareApplePayRequest = SquarePaymentRequest;
+export type SquareGooglePayRequest = SquarePaymentRequest;
 
 export interface SquareTokenResult {
   status: 'OK' | 'ERROR';
@@ -45,8 +46,9 @@ export interface SquareTokenResult {
 
 export interface SquarePayments {
   card: (options?: SquareCardOptions) => Promise<SquareCard>;
-  applePay?: (request: SquareApplePayRequest) => Promise<SquareApplePay | null>;
-  googlePay?: (request: SquareGooglePayRequest) => Promise<SquareGooglePay | null>;
+  paymentRequest: (options: SquarePaymentRequestOptions) => SquarePaymentRequest;
+  applePay?: (request: SquarePaymentRequest) => Promise<SquareApplePay | null>;
+  googlePay?: (request: SquarePaymentRequest) => Promise<SquareGooglePay | null>;
 }
 
 declare global {

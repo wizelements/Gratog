@@ -137,13 +137,6 @@ function loadPersistedState(): Partial<CheckoutState> {
     
     const parsed = JSON.parse(saved);
     const fulfillment = parsed.fulfillment || initialFulfillment;
-    // Shipping removed from UI — reset stale persisted shipping to pickup
-    if (fulfillment.type === 'shipping') {
-      fulfillment.type = 'pickup';
-      fulfillment.pickup = fulfillment.pickup || initialFulfillment.pickup;
-      // FIX P1-3: Clear old shipping data to prevent mixed fulfillment state
-      delete fulfillment.shipping;
-    }
     // Deserialize pickup date from JSON string back to Date
     if (fulfillment.pickup?.date && typeof fulfillment.pickup.date === 'string') {
       fulfillment.pickup = {
@@ -188,13 +181,18 @@ export const useCheckoutStore = create<CheckoutState>((set, get) => {
   // Load initial cart safely (returns empty array during SSR)
   const initialCart = typeof window !== 'undefined' ? CartAPI.getCart() : [];
   const persisted = loadPersistedState();
+  const persistedFulfillment = persisted.fulfillment || initialFulfillment;
+  const persistedShippingMethod = persistedFulfillment.type === 'shipping'
+    ? shippingMethods().find((method: ShippingMethod) => method.id === persistedFulfillment.shipping?.methodId)
+    : null;
   
   const initialTotals = computeTotals({
     cart: initialCart,
-    fulfillmentType: persisted.fulfillment?.type || 'pickup',
+    fulfillmentType: persistedFulfillment.type,
     tip: persisted.tip || 0,
     couponDiscount: persisted.couponDiscount || 0,
-    deliveryFee: persisted.fulfillment?.delivery?.fee
+    deliveryFee: persistedFulfillment.delivery?.fee,
+    shippingFee: persistedShippingMethod?.price || 0
   });
   
   return {

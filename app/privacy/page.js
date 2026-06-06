@@ -37,8 +37,8 @@ export default function PrivacyPage() {
             <div>
               <h3 className="font-semibold mb-2">Personal Information</h3>
               <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>Name, email address, and phone number when you place an order</li>
-                <li>Delivery address for delivery orders</li>
+                <li>Name, email address, and phone number if you provide one when you place an order</li>
+                <li>Delivery or shipping address for orders that require fulfillment to an address</li>
                 <li>Payment information processed securely through Square</li>
                 <li>Order history and preferences</li>
               </ul>
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
           <CardContent>
             <ul className="list-disc list-inside space-y-2 text-sm">
               <li>Process and fulfill your orders</li>
-              <li>Send order confirmations and updates via SMS and email</li>
+              <li>Send order confirmations and updates via email, plus optional SMS if you provide a phone number</li>
               <li>Provide customer support and respond to inquiries</li>
               <li>Improve our products and services</li>
               <li>Send promotional materials (with your consent)</li>
@@ -126,7 +126,7 @@ export default function PrivacyPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card id="cookies">
           <CardHeader>
             <CardTitle>Cookies and Tracking</CardTitle>
           </CardHeader>

@@ -167,10 +167,10 @@ export default function HomePageClient({
                         className="object-cover"
                         style={{ transform: `translateY(${scrollY * 0.5}px)` }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-stone-950/85 via-emerald-950/75 to-stone-900/85" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-stone-950/75 via-emerald-950/60 to-stone-900/75" />
                 </div>
 
-                <div className="relative z-10 container text-center text-white animate-fade-in text-on-gradient">
+                <div className="relative z-10 container text-center text-white animate-fade-in text-on-gradient drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
                     <p className="mb-6 text-emerald-200 text-lg font-medium">
                         {heroCatalogBadge}
                     </p>

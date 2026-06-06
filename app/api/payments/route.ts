@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 import { RequestContext } from '@/lib/request-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { createPayment, getPayment as getSquarePayment, findOrCreateCustomer, createOrder as createSquareOrder, getSquareConfig } from '@/lib/square-api';
+import type { OrderFulfillment } from '@/lib/square-api';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
 import * as Sentry from '@sentry/nextjs';
@@ -99,6 +100,69 @@ function canAccessOrder(auth: any, order: any): boolean {
   const orderEmail = String(order.customer?.email || order.customerEmail || '').trim().toLowerCase();
   const userEmail = String(auth.userEmail || '').trim().toLowerCase();
   return orderEmail.length > 0 && orderEmail === userEmail;
+}
+
+function buildSquareFulfillments(
+  order: any,
+  customerDisplayName: string,
+  customerPhone?: string
+): OrderFulfillment[] {
+  const fulfillmentType = String(order?.fulfillment?.type || order?.fulfillmentType || '').toLowerCase();
+  const recipient = {
+    displayName: customerDisplayName || 'Taste of Gratitude Customer',
+    phoneNumber: customerPhone || undefined,
+  };
+
+  if (fulfillmentType.includes('shipping')) {
+    const address = order.shippingAddress || order.fulfillment?.address;
+    if (!address?.street || !address?.city || !address?.state || !address?.zip) {
+      return [];
+    }
+
+    return [
+      {
+        type: 'SHIPMENT',
+        state: 'PROPOSED',
+        shipmentDetails: {
+          recipient: {
+            ...recipient,
+            address: {
+              addressLine1: [address.street, address.suite].filter(Boolean).join(', '),
+              locality: address.city,
+              administrativeDistrictLevel1: address.state,
+              postalCode: address.zip,
+              country: 'US',
+            },
+          },
+          shippingNote: [order.shippingService, order.deliveryQuoteMessage || order.fulfillment?.message]
+            .filter(Boolean)
+            .join(' — ') || undefined,
+        },
+      },
+    ];
+  }
+
+  if (fulfillmentType.includes('pickup')) {
+    const pickup = order.pickup || order.fulfillment?.pickup || {};
+    const pickupAt = typeof pickup.date === 'string' && pickup.date.includes('T')
+      ? pickup.date
+      : undefined;
+
+    return [
+      {
+        type: 'PICKUP',
+        state: 'PROPOSED',
+        pickupDetails: {
+          recipient,
+          scheduleType: pickupAt ? 'SCHEDULED' : 'ASAP',
+          pickupAt,
+          note: [pickup.locationId, pickup.instructions].filter(Boolean).join(' — ') || undefined,
+        },
+      },
+    ];
+  }
+
+  return [];
 }
 
 export async function POST(request: NextRequest) {
@@ -654,11 +718,28 @@ export async function POST(request: NextRequest) {
               },
             ];
 
+      if (Number(order.deliveryFeeCents || 0) > 0) {
+        squareLineItems.push({
+          name: order.fulfillmentType === 'shipping' ? 'Shipping' : 'Delivery',
+          quantity: '1',
+          basePriceMoney: { amount: Number(order.deliveryFeeCents), currency },
+        });
+      }
+
+      const customerDisplayName =
+        customerInfo?.name ||
+        order.customerName ||
+        [order.customer?.firstName, order.customer?.lastName].filter(Boolean).join(' ') ||
+        'Taste of Gratitude Customer';
+      const customerPhone = customerInfo?.phone || order.customerPhone || undefined;
+      const squareFulfillments = buildSquareFulfillments(order, customerDisplayName, customerPhone);
+
       try {
         const orderResult = await createSquareOrder({
           referenceId: orderId,
           customerId: squareCustomerId,
           lineItems: squareLineItems,
+          fulfillments: squareFulfillments.length > 0 ? squareFulfillments : undefined,
           metadata: {
             localOrderId: orderId,
             orderNumber: order.orderNumber || '',

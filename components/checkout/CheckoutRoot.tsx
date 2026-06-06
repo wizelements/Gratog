@@ -14,6 +14,7 @@ import ContactForm from './ContactForm';
 import FulfillmentTabs from './FulfillmentTabs';
 import PickupForm from './PickupForm';
 import DeliveryForm from './DeliveryForm';
+import ShippingForm from './ShippingForm';
 import ReviewAndPay from './ReviewAndPay';
 import CheckoutErrorBoundary from './CheckoutErrorBoundary';
 import Link from 'next/link';
@@ -90,7 +91,10 @@ function CheckoutContent() {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
       errors.email = 'Valid email is required';
     }
-    if (!contact.phone.trim()) errors.phone = 'Phone number is required';
+    const phoneDigits = contact.phone.replace(/\D/g, '');
+    if (contact.phone.trim() && phoneDigits.length !== 10) {
+      errors.phone = 'Enter a 10-digit phone number or leave it blank';
+    }
     
     if (Object.keys(errors).length > 0) {
       setValidation({ contact: errors });
@@ -129,6 +133,23 @@ function CheckoutContent() {
         fulfillment.delivery?.quotedSubtotal !== totals.subtotal
       ) {
         errors.deliveryFee = 'Check your delivery fee by mileage before continuing';
+      }
+    } else if (fulfillment.type === 'shipping') {
+      const street = fulfillment.shipping?.address.street || '';
+      const city = fulfillment.shipping?.address.city || '';
+      const state = fulfillment.shipping?.address.state || '';
+      const zip = fulfillment.shipping?.address.zip || '';
+
+      if (!street) errors['address.street'] = 'Street address is required';
+      if (!city) errors['address.city'] = 'City is required';
+      if (!state || state.length !== 2) errors['address.state'] = 'Two-letter state is required';
+      if (!zip) {
+        errors['address.zip'] = 'ZIP code is required';
+      } else if (!/^\d{5}$/.test(zip)) {
+        errors['address.zip'] = 'ZIP code must be 5 digits';
+      }
+      if (!fulfillment.shipping?.methodId) {
+        errors.methodId = 'Choose a shipping method';
       }
     }
     
@@ -239,8 +260,11 @@ function CheckoutContent() {
                     />
 
                     <div className="border-t pt-8">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Pickup or delivery</h3>
-                      <p className="mb-4 text-base text-gray-600">Choose how you want to receive your order. Preorders are made for market pickup.</p>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Pickup, delivery, or shipping</h3>
+                      <p className="mb-4 text-base text-gray-600">
+                        Choose how you want to receive your order. Preorders are made for market pickup;
+                        eligible ready-to-ship items can ship nationwide with fees shown before payment.
+                      </p>
                       <FulfillmentTabs
                         selected={fulfillment.type}
                         hasPreorderItems={hasPreorderItems}
@@ -269,6 +293,13 @@ function CheckoutContent() {
                               subtotal={totals.subtotal}
                               tip={tip}
                               onTipChange={setTip}
+                              errors={validation.fulfillment}
+                            />
+                          )}
+                          {fulfillment.type === 'shipping' && (
+                            <ShippingForm
+                              data={fulfillment.shipping || { address: { street: '', city: '', state: 'GA', zip: '' }, methodId: '' }}
+                              onChange={(data) => setFulfillment({ shipping: { address: { street: '', city: '', state: 'GA', zip: '' }, methodId: '', ...fulfillment.shipping, ...data } })}
                               errors={validation.fulfillment}
                             />
                           )}

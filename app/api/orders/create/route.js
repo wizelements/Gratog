@@ -12,6 +12,7 @@ import { generateOrderAccessToken } from '@/lib/order-access-token';
 import { priceCart, CartPricingError } from '@/lib/cart-pricing';
 import { checkDeliveryRadius } from '@/lib/delivery-radius';
 import { calculateDistanceBasedDeliveryFee } from '@/lib/delivery-fees';
+import { shippingMethods } from '@/adapters/fulfillmentAdapter';
 
 // Order access token TTL — must outlive the longest realistic checkout session.
 // Payment route uses 30m; we use the same so the token survives until pay click.
@@ -52,13 +53,15 @@ export async function POST(request) {
     // the underpayment fix; see lib/cart-pricing.ts and docs REVENUE risk R-C1.
     // -----------------------------------------------------------------------
     let pricing;
-    let deliveryQuote = null;
+    let fulfillmentQuote = null;
     try {
       const couponCode =
         orderData.appliedCoupon?.code ||
         orderData.couponCode ||
         null;
-      const tipCents = dollarsToCents(orderData.deliveryTip);
+      const tipCents = isShippingFulfillment(orderData.fulfillmentType)
+        ? 0
+        : dollarsToCents(orderData.deliveryTip);
 
       const basePricing = await priceCart({
         items: orderData.cart,
@@ -67,12 +70,12 @@ export async function POST(request) {
         tipCents,
       });
 
-      deliveryQuote = await quoteServerDelivery(orderData, basePricing.subtotal);
+      fulfillmentQuote = await quoteServerFulfillment(orderData, basePricing.subtotal);
 
       pricing = await priceCart({
         items: orderData.cart,
         couponCode,
-        deliveryFeeCents: deliveryQuote.feeCents,
+        deliveryFeeCents: fulfillmentQuote.feeCents,
         tipCents,
       });
     } catch (err) {
@@ -102,6 +105,7 @@ export async function POST(request) {
 
     const orderId = randomUUID();
     const timestamp = new Date();
+    const storedFulfillment = buildStoredFulfillment(orderData, fulfillmentQuote);
 
     // Build order object — pricing comes from the server, not the client.
     const enhancedOrder = {
@@ -146,11 +150,18 @@ export async function POST(request) {
       deliveryInstructions: orderData.deliveryInstructions,
       deliveryFee: pricing.deliveryFee,
       deliveryFeeCents: pricing.deliveryFeeCents,
-      deliveryTip: pricing.tip,
-      deliveryTipCents: pricing.tipCents,
-      deliveryDistance: deliveryQuote?.distance ?? orderData.deliveryDistance ?? null,
-      deliveryNearestLocation: deliveryQuote?.nearestLocationName ?? null,
-      deliveryQuoteMessage: deliveryQuote?.message || orderData.deliveryQuoteMessage || null,
+      deliveryTip: isShippingFulfillment(orderData.fulfillmentType) ? 0 : pricing.tip,
+      deliveryTipCents: isShippingFulfillment(orderData.fulfillmentType) ? 0 : pricing.tipCents,
+      deliveryDistance: fulfillmentQuote?.distance ?? orderData.deliveryDistance ?? null,
+      deliveryNearestLocation: fulfillmentQuote?.nearestLocationName ?? null,
+      deliveryQuoteMessage: fulfillmentQuote?.message || orderData.deliveryQuoteMessage || null,
+      pickup: storedFulfillment.type === 'pickup' ? storedFulfillment.pickup : null,
+      pickupLocation: storedFulfillment.pickup?.locationId || null,
+      pickupDate: storedFulfillment.pickup?.date || null,
+      shippingAddress: orderData.shippingAddress,
+      shippingMethod: orderData.shippingMethod,
+      shippingService: fulfillmentQuote?.shippingService || null,
+      fulfillment: storedFulfillment,
 
       // Canonical coupon field — payments/route.ts reads this exact path.
       appliedCoupon: pricing.appliedCoupon
@@ -222,6 +233,7 @@ export async function POST(request) {
               tax: order.tax || 0,
               total: order.total,
             },
+            fulfillment: order.fulfillment || null,
             appliedCoupon: order.appliedCoupon,
           },
         };
@@ -267,6 +279,55 @@ function isDeliveryFulfillment(type) {
   return String(type || '').includes('delivery');
 }
 
+function isShippingFulfillment(type) {
+  return String(type || '').includes('shipping');
+}
+
+function isPickupFulfillment(type) {
+  const value = String(type || '').toLowerCase();
+  return value.includes('pickup') || value === 'preorder';
+}
+
+function buildStoredFulfillment(orderData, quote) {
+  if (isShippingFulfillment(orderData.fulfillmentType)) {
+    return {
+      type: 'shipping',
+      address: orderData.shippingAddress || null,
+      methodId: orderData.shippingMethod || null,
+      service: quote?.shippingService || null,
+      fee: quote?.fee ?? 0,
+      message: quote?.message || null,
+    };
+  }
+
+  if (isDeliveryFulfillment(orderData.fulfillmentType)) {
+    return {
+      type: 'delivery',
+      address: orderData.deliveryAddress || null,
+      window: orderData.deliveryTimeSlot || null,
+      instructions: orderData.deliveryInstructions || null,
+      fee: quote?.fee ?? 0,
+      distance: quote?.distance ?? orderData.deliveryDistance ?? null,
+      nearestLocationName: quote?.nearestLocationName || null,
+      message: quote?.message || orderData.deliveryQuoteMessage || null,
+    };
+  }
+
+  if (isPickupFulfillment(orderData.fulfillmentType)) {
+    const pickup = orderData.pickup || {};
+    return {
+      type: 'pickup',
+      pickup: {
+        locationId: pickup.locationId || orderData.pickupLocation || null,
+        date: pickup.date || orderData.pickupDate || orderData.orderTiming?.requestedDate || null,
+        instructions: pickup.instructions || orderData.pickupInstructions || null,
+      },
+    };
+  }
+
+  return { type: orderData.fulfillmentType || 'pickup' };
+}
+
 function formatDeliveryAddress(address) {
   return [
     address?.street,
@@ -286,7 +347,26 @@ function orderError(message, status, code) {
   return err;
 }
 
-async function quoteServerDelivery(orderData, subtotalDollars) {
+async function quoteServerFulfillment(orderData, subtotalDollars) {
+  if (isShippingFulfillment(orderData.fulfillmentType)) {
+    const address = orderData.shippingAddress;
+    if (!address?.street || !address?.city || !address?.state || !address?.zip) {
+      throw orderError('Shipping address is required', 400, 'SHIPPING_ADDRESS_REQUIRED');
+    }
+
+    const method = shippingMethods().find((option) => option.id === orderData.shippingMethod);
+    if (!method) {
+      throw orderError('Shipping method is required', 400, 'SHIPPING_METHOD_REQUIRED');
+    }
+
+    return {
+      feeCents: dollarsToCents(method.price),
+      fee: method.price,
+      shippingService: method.name,
+      message: `${method.name} selected — estimated ${method.estimatedDays}.`,
+    };
+  }
+
   if (!isDeliveryFulfillment(orderData.fulfillmentType)) {
     return { feeCents: 0 };
   }
