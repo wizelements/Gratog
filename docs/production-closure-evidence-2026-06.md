@@ -1,6 +1,6 @@
 # Production Closure Evidence — June 2026
 
-**Status**: IN-PROGRESS  
+**Status**: COMPLETE EXCEPT CREDENTIAL-GATED ADMIN AUTH SMOKE  
 **Last Updated**: 2026-06-06  
 **Owner**: Taste of Gratitude engineering lane
 
@@ -15,6 +15,9 @@ Evidence ledger for the Gratog/Taste of Gratitude production closure pass. A sur
 | Production URL | `https://tasteofgratitude.shop` |
 | Previous verified commit | `9337583b2c19f475167457aad969463f31c935a2` |
 | Previous verified Vercel deployment | `dpl_8inNwGYFqcE5rYeptwDu4Mu2yvtC` |
+| Closure code commit | `701d9cb309f8d274e1a80e3a1649dd229ddb3e7c` |
+| Closure edge-fix commit | `c357a5fb3fb19114767df5bbff49627d77a26e06` |
+| Final verified Vercel deployment | `dpl_3FgCc8nh9zLPDDgcFKXvfUwC3ftN` |
 | Execution lane | Android Termux + Vercel HTTP verification |
 | Local build/browser policy | No local device build, no local Lighthouse, no local browser E2E |
 
@@ -30,13 +33,13 @@ Evidence ledger for the Gratog/Taste of Gratitude production closure pass. A sur
 
 | Closure Area | Required Evidence | Status |
 | --- | --- | --- |
-| Retired legacy pages | `/rewards`, `/gratitude/rewards`, `/reviews`, `/community`, `/subscriptions` redirect to canonical routes | Pending deployment |
-| Sitemap cleanup | Production sitemap contains no retired routes | Pending deployment |
-| PWA order safety | `sw.js` has no offline order replay and has closure cache version | Pending deployment |
+| Retired legacy pages | `/rewards`, `/gratitude/rewards`, `/reviews`, `/community`, `/subscriptions` redirect to canonical routes | Production HTTP passed |
+| Sitemap cleanup | Production sitemap contains no retired routes | Production HTTP passed |
+| PWA order safety | `sw.js` has no offline order replay and has closure cache version | Production HTTP passed |
 | PWA network truth | Checkout/admin/order/payment/inventory/account surfaces are never runtime/API cached | Source tests passed |
 | Route/API governance | Manifest and tests classify retired routes and critical APIs | Source tests passed |
-| Deployment governance | CI/static gate exists and deployment guard passes | Pending deployment |
-| Skill governance | AMP skill format untouched; governance remains external overlay | Pending final audit |
+| Deployment governance | CI/static gate exists and deployment guard passes | Passed |
+| Skill governance | AMP skill format untouched; governance remains external overlay | Passed |
 | Authenticated admin | Login/session/admin API read smoke with cookie jar | Blocked unless `ADMIN_EMAIL` + `ADMIN_PASSWORD` are supplied |
 
 ## Commands For This Pass
@@ -56,8 +59,32 @@ bash scripts/verify-production-closure.sh
 - `git diff --check` passed.
 - Targeted ESLint on closure files passed with 0 errors.
 - `npm run check:routes` passed with `uncoveredReferences: 0`.
-- `npm run check:route-governance` passed: 2 files, 11 tests.
-- `npx vitest run tests/navigation-coherence.test.ts tests/route-governance.test.ts tests/pwa-cache-governance.test.ts --reporter=verbose` passed: 3 files, 22 tests.
+- `npm run check:route-governance` passed: 2 files, 11 tests before edge-fix and 12 tests after edge-fix.
+- `npx vitest run tests/navigation-coherence.test.ts tests/route-governance.test.ts tests/pwa-cache-governance.test.ts --reporter=verbose` passed: 3 files, 23 tests after edge-fix.
+
+## Deployment Evidence
+
+- Gratog deploy guard passed for `701d9cb3` with PWA/SW version coherence `20260606-closure`; local heavy checks skipped by policy after targeted checks passed.
+- Vercel deployed `701d9cb3` as `dpl_3Zo4csFp9NwXcdvRrQqtEDPkoBLU`; production verification found real blockers: retired routes returned `200` with `NEXT_REDIRECT` payload and SW/manifest headers were `public, max-age=0, must-revalidate`.
+- Root cause: page-level `permanentRedirect()` was not sufficient HTTP truth for these statically generated surfaces, and `vercel.json` header rules overrode `next.config.js` no-store values.
+- Edge fix `c357a5fb` added explicit Vercel/Next redirects and no-store Vercel headers.
+- Vercel deployed `c357a5fb` as `dpl_3FgCc8nh9zLPDDgcFKXvfUwC3ftN`; alias `https://tasteofgratitude.shop` assigned.
+
+## Final Production HTTP Evidence
+
+`bash scripts/verify-production-closure.sh` passed on `https://tasteofgratitude.shop`:
+
+- Public smoke `200`: `/`, `/menu`, `/catalog`, `/markets`, `/checkout`, `/admin/login`, `/api/health`, `/sw.js`, `/manifest.json`.
+- Retired routes `308`: `/rewards -> /catalog`, `/gratitude/rewards -> /catalog`, `/reviews -> /catalog`, `/community -> /about`, `/subscriptions -> /catalog`.
+- Mutation/auth boundaries: `POST /api/orders -> 410`, unauth `POST /api/inventory -> 401`, unauth order-status patch `-> 401`, unauth `/api/admin/orders -> 401`, `/admin` redirects to login.
+- Sitemap excludes retired routes.
+- `sw.js` contains `v13-20260606-closure` and no offline order replay strings.
+- `sw.js` and `manifest.json` return `no-cache, no-store, must-revalidate`.
+
+## Skill Governance Evidence
+
+- `~/.config/agents/skill-governance/registry-overlay.json` parsed as valid JSON.
+- 39 scanned custom skills had 0 native frontmatter regressions.
 
 ## Explicitly Unavailable On This Lane
 
