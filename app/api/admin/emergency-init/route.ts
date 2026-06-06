@@ -97,8 +97,10 @@ export async function POST(request: any) {
     // Create admin user
     console.log('[EMERGENCY-INIT] Creating admin user:', email);
     const passwordHash = await hashPassword(password);
+    const adminId = `admin_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     
     const adminUser = {
+      id: adminId,
       email: email.toLowerCase(),
       passwordHash,
       name: name || 'Admin User',

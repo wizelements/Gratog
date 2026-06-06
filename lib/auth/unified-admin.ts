@@ -16,6 +16,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify, SignJWT } from 'jose';
 import * as bcrypt from 'bcryptjs';
+import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 
@@ -83,6 +84,16 @@ export class AdminAuthError extends Error {
 // ============================================================================
 
 const textEncoder = new TextEncoder();
+
+function getAdminLookupQuery(adminId: string): Record<string, unknown> {
+  const idFilters: Record<string, unknown>[] = [{ id: adminId }];
+
+  if (ObjectId.isValid(adminId)) {
+    idFilters.push({ _id: new ObjectId(adminId) });
+  }
+
+  return idFilters.length === 1 ? idFilters[0] : { $or: idFilters };
+}
 
 function getJwtSecret(): Uint8Array {
   const secret = process.env.JWT_SECRET;
@@ -240,7 +251,7 @@ export async function getAdminSession(request: NextRequest): Promise<AdminSessio
   try {
     const { db } = await connectToDatabase();
     const admin = await db.collection('admin_users').findOne(
-      { id: session.id },
+      getAdminLookupQuery(session.id),
       { projection: { isActive: 1, role: 1 } }
     );
     
@@ -529,7 +540,7 @@ export async function updateAdminLastLogin(adminId: string): Promise<void> {
   const { db } = await connectToDatabase();
   
   await db.collection('admin_users').updateOne(
-    { id: adminId },
+    getAdminLookupQuery(adminId),
     { $set: { lastLogin: new Date() } }
   );
 }

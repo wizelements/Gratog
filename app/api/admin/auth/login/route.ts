@@ -266,9 +266,23 @@ export async function POST(request: NextRequest) {
       rateLimitStore.delete(rateLimitKey);
     }
     
+    const adminId = admin.id || admin._id?.toString();
+
+    if (!adminId) {
+      logger.error('LOGIN', 'Admin record missing both id and _id', {
+        email: normalizedEmail,
+        ip,
+      });
+
+      return NextResponse.json(
+        { success: false, error: 'Login failed' },
+        { status: 500 }
+      );
+    }
+
     // Generate JWT token
     const token = await generateAdminToken({
-      id: admin.id,
+      id: adminId,
       email: admin.email,
       role: admin.role,
       name: admin.name,
@@ -279,7 +293,7 @@ export async function POST(request: NextRequest) {
     
     // Update last login
     await db.collection('admin_users').updateOne(
-      { id: admin.id },
+      admin.id ? { id: admin.id } : { _id: admin._id },
       { 
         $set: { 
           lastLogin: new Date(),
@@ -297,7 +311,7 @@ export async function POST(request: NextRequest) {
     // Audit log
     await db.collection('audit_logs').insertOne({
       timestamp: new Date(),
-      adminId: admin.id,
+      adminId,
       adminEmail: admin.email,
       action: 'LOGIN_SUCCESS',
       resource: 'auth',
@@ -313,7 +327,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       user: {
-        id: admin.id,
+        id: adminId,
         email: admin.email,
         name: admin.name,
         role: admin.role,
