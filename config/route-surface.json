@@ -1,0 +1,99 @@
+{
+  "publicPages": [
+    "/",
+    "/menu",
+    "/catalog",
+    "/markets",
+    "/checkout",
+    "/about",
+    "/contact",
+    "/faq",
+    "/privacy",
+    "/terms"
+  ],
+  "retiredPages": {
+    "/rewards": {
+      "destination": "/catalog",
+      "source": "app/rewards/page.tsx",
+      "reason": "Rewards is not an active storefront promise."
+    },
+    "/gratitude/rewards": {
+      "destination": "/catalog",
+      "source": "app/gratitude/rewards/page.jsx",
+      "reason": "Duplicate legacy rewards surface."
+    },
+    "/reviews": {
+      "destination": "/catalog",
+      "source": "app/reviews/page.jsx",
+      "reason": "Reviews belong on product detail pages, not a standalone sprawl page."
+    },
+    "/community": {
+      "destination": "/about",
+      "source": "app/(site)/community/page.tsx",
+      "reason": "Community story belongs inside the local brand/about surface."
+    },
+    "/subscriptions": {
+      "destination": "/catalog",
+      "source": "app/subscriptions/page.js",
+      "reason": "Subscriptions are not an active purchase model."
+    }
+  },
+  "adminPages": [
+    "/admin",
+    "/admin/login",
+    "/admin/orders",
+    "/admin/menus",
+    "/admin/products",
+    "/admin/markets",
+    "/admin/inventory",
+    "/admin/customers",
+    "/admin/settings"
+  ],
+  "criticalApis": {
+    "networkOnly": [
+      "/api/admin",
+      "/api/auth",
+      "/api/csrf",
+      "/api/orders",
+      "/api/orders/create",
+      "/api/payments",
+      "/api/checkout",
+      "/api/inventory",
+      "/api/cart",
+      "/api/customer"
+    ],
+    "adminProtected": [
+      "/api/admin/orders",
+      "/api/admin/products",
+      "/api/admin/menus",
+      "/api/admin/markets"
+    ],
+    "publicMutations": [
+      {
+        "path": "/api/orders",
+        "allowedStatus": 410,
+        "reason": "Legacy public order mutation is retired."
+      },
+      {
+        "path": "/api/inventory",
+        "allowedStatus": 401,
+        "reason": "Inventory mutation requires authorization."
+      },
+      {
+        "path": "/api/orders/:id/status",
+        "allowedStatus": 401,
+        "reason": "Order status mutation requires authorization."
+      }
+    ]
+  },
+  "pwaNetworkOnlyPages": [
+    "/admin",
+    "/checkout",
+    "/cart",
+    "/order",
+    "/login",
+    "/register",
+    "/profile",
+    "/account"
+  ]
+}

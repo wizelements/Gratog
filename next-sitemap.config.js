@@ -11,6 +11,14 @@ module.exports = {
     '/robots.txt',
     '/sitemap.xml',
     '/server-sitemap.xml',
+    '/rewards',
+    '/gratitude/rewards',
+    '/reviews',
+    '/community',
+    '/subscriptions',
+    '/profile/rewards',
+    '/account/subscriptions',
+    '/account/subscriptions/*',
   ],
   robotsTxtOptions: {
     policies: [
@@ -31,11 +39,11 @@ module.exports = {
     // Custom priority for key pages
     const priorities = {
       '/': 1.0,
+      '/menu': 0.9,
       '/catalog': 0.9,
       '/order': 0.8,
       '/about': 0.7,
       '/explore': 0.7,
-      '/rewards': 0.6,
       '/markets': 0.6,
     };
 

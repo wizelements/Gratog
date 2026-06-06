@@ -1,0 +1,71 @@
+name: Production Closure Governance
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  static-governance:
+    name: Route, PWA, and Navigation Governance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Targeted lint for closure surfaces
+        run: |
+          ESLINT_USE_FLAT_CONFIG=false npx eslint \
+            app/rewards/page.tsx \
+            app/gratitude/rewards/page.jsx \
+            app/reviews/page.jsx \
+            'app/(site)/community/page.tsx' \
+            app/subscriptions/page.js \
+            app/sitemap.ts \
+            lib/pwa.ts \
+            tests/route-governance.test.ts \
+            tests/pwa-cache-governance.test.ts
+
+      - name: Route coverage
+        run: npm run check:routes
+
+      - name: Closure governance tests
+        run: npm run check:route-governance
+
+      - name: Navigation coherence
+        run: npx vitest run tests/navigation-coherence.test.ts --reporter=verbose
+
+      - name: Typecheck truth report
+        continue-on-error: true
+        run: npm run typecheck:ci
+
+      - name: Summary
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          ## Production Closure Governance
+
+          This workflow intentionally avoids Lighthouse and browser E2E because those are not valid on the mobile Termux execution lane.
+
+          Required gates:
+          - targeted lint for closure surfaces
+          - route coverage
+          - retired-route governance
+          - PWA cache governance
+          - navigation coherence
+
+          Typecheck is reported separately so existing historical type debt is visible without hiding it behind a fake pass.
+          EOF

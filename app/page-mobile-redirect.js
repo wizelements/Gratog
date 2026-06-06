@@ -112,12 +112,12 @@ async function getFeaturedReviews() {
 }
 
 export default async function HomePage() {
-  // 🔥 MOBILE DETECTION: Redirect mobile users to /pay
+  // Mobile users go to the implemented checkout path, not retired payment routes.
   const headersList = headers();
   const userAgent = headersList.get('user-agent') || '';
   
   if (isMobileDevice(userAgent)) {
-    redirect('/pay');
+    redirect('/checkout');
   }
 
   // Desktop: Show full site

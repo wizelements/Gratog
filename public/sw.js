@@ -1,6 +1,6 @@
 // AUTO-UPDATE: This version string is replaced at build time by next.config.js headers.
 // The browser byte-compares sw.js on every registration check — any change triggers update.
-const CACHE_VERSION = 'v12-20260511-1';
+const CACHE_VERSION = 'v13-20260606-closure';
 const CACHE_PREFIX = 'gratog';
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${CACHE_VERSION}`;
@@ -12,9 +12,7 @@ const MAX_IMAGE_ENTRIES = 120;
 
 // Files to cache on install
 const PRECACHE_URLS = [
-  '/',
   '/offline.html',
-  '/manifest.json',
   '/images/gratog-bg.PNG?v=20260309-2',
   '/icon-192x192.png',
   '/icon-512x512.png',
@@ -24,12 +22,24 @@ const PRECACHE_URLS = [
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME).then(async (cache) => {
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
       console.log('[SW] Caching precache URLs');
-      await Promise.allSettled(PRECACHE_URLS.map((url) => cache.add(url)));
-    })
+      for (const url of PRECACHE_URLS) {
+        try {
+          const response = await fetch(url, { cache: 'reload' });
+          if (response.ok) {
+            await cache.put(url, response);
+          } else {
+            console.warn('[SW] Precache skipped:', url, response.status);
+          }
+        } catch (error) {
+          console.warn('[SW] Precache failed:', url, error);
+        }
+      }
+      await self.skipWaiting();
+    })()
   );
-  self.skipWaiting();
 });
 
 // Activate event
@@ -54,7 +64,29 @@ self.addEventListener('activate', (event) => {
         })
       );
 
-      // Purge any stale /admin entries from surviving caches
+      // Purge any stale sensitive commerce/admin entries and update infrastructure
+      // from surviving caches. Checkout, orders, payments, inventory, admin, and
+      // account pages must always be network-truth only.
+      const networkOnlyPrefixes = [
+        '/admin',
+        '/checkout',
+        '/cart',
+        '/order',
+        '/login',
+        '/register',
+        '/profile',
+        '/account',
+        '/api/admin',
+        '/api/auth',
+        '/api/csrf',
+        '/api/orders',
+        '/api/payments',
+        '/api/checkout',
+        '/api/inventory',
+        '/api/cart',
+        '/api/customer',
+      ];
+      const infrastructurePaths = ['/sw.js', '/manifest.json'];
       const allCaches = await caches.keys();
       await Promise.all(
         allCaches.map(async (name) => {
@@ -62,7 +94,11 @@ self.addEventListener('activate', (event) => {
           const requests = await cache.keys();
           await Promise.all(
             requests
-              .filter((req) => new URL(req.url).pathname.startsWith('/admin'))
+              .filter((req) => {
+                const pathname = new URL(req.url).pathname;
+                return infrastructurePaths.includes(pathname) ||
+                  networkOnlyPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+              })
               .map((req) => cache.delete(req))
           );
         })
@@ -98,6 +134,10 @@ self.addEventListener('fetch', (event) => {
   const isLocalhost = url.hostname.includes('localhost');
   const isSameOrigin = url.origin === self.location.origin;
   if ((url.protocol !== 'https:' && !isLocalhost) || !isSameOrigin) {
+    return;
+  }
+
+  if (isServiceWorkerInfrastructure(url)) {
     return;
   }
 
@@ -199,6 +239,14 @@ async function networkFirstStrategy(request, options = {}) {
 
 function shouldBypassApiCache(pathname) {
   return pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/api/csrf') ||
+    pathname.startsWith('/api/admin') ||
+    pathname.startsWith('/api/orders') ||
+    pathname.startsWith('/api/payments') ||
+    pathname.startsWith('/api/checkout') ||
+    pathname.startsWith('/api/inventory') ||
+    pathname.startsWith('/api/cart') ||
+    pathname.startsWith('/api/customer') ||
     pathname.startsWith('/api/reviews') ||
     pathname.startsWith('/api/products') ||
     pathname.startsWith('/api/markets') ||
@@ -306,12 +354,25 @@ function isStaticAssetRequest(url) {
     /\.(js|css|woff2?|ttf|eot)$/i.test(url.pathname);
 }
 
-function shouldCacheRuntimeRequest(url) {
-  if (url.pathname.startsWith('/admin')) {
-    return false;
-  }
+function isServiceWorkerInfrastructure(url) {
+  return url.pathname === '/sw.js' ||
+    url.pathname === '/manifest.json' ||
+    url.pathname === '/manifest.webmanifest' ||
+    url.pathname === '/pwa-host-gate.js' ||
+    url.pathname === '/register-sw.js';
+}
 
-  return true;
+function shouldCacheRuntimeRequest(url) {
+  return !(
+    url.pathname.startsWith('/admin') ||
+    url.pathname.startsWith('/checkout') ||
+    url.pathname.startsWith('/cart') ||
+    url.pathname.startsWith('/order') ||
+    url.pathname.startsWith('/login') ||
+    url.pathname.startsWith('/register') ||
+    url.pathname.startsWith('/profile') ||
+    url.pathname.startsWith('/account')
+  );
 }
 
 function isCacheableResponse(response) {
@@ -376,74 +437,6 @@ async function trimCache(cacheName, maxEntries) {
 
   const deletes = keys.slice(0, keys.length - maxEntries).map((request) => cache.delete(request));
   await Promise.all(deletes);
-}
-
-// Background sync for offline orders
-self.addEventListener('sync', (event) => {
-  console.log('[SW] Background sync:', event.tag);
-  if (event.tag === 'sync-orders') {
-    event.waitUntil(syncOrders());
-  }
-});
-
-async function syncOrders() {
-  try {
-    const db = await openDB('GratogDB');
-    const orders = await getAllFromStore(db, 'pendingOrders');
-
-    for (const order of orders) {
-      try {
-        const response = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(order),
-        });
-
-        if (response.ok) {
-          await deleteFromStore(db, 'pendingOrders', order.id);
-        }
-      } catch (error) {
-        console.log('[SW] Sync failed for order:', order.id);
-      }
-    }
-  } catch (error) {
-    console.log('[SW] Background sync failed:', error);
-  }
-}
-
-// Simple IndexedDB helper
-function openDB(name) {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(name, 1);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains('pendingOrders')) {
-        db.createObjectStore('pendingOrders', { keyPath: 'id' });
-      }
-    };
-  });
-}
-
-function getAllFromStore(db, storeName) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, 'readonly');
-    const store = tx.objectStore(storeName);
-    const request = store.getAll();
-    request.onsuccess = () => resolve(request.result || []);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-function deleteFromStore(db, storeName, key) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, 'readwrite');
-    const store = tx.objectStore(storeName);
-    const request = store.delete(key);
-    request.onsuccess = () => resolve(true);
-    request.onerror = () => reject(request.error);
-  });
 }
 
 // Push notifications
