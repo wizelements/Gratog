@@ -24,6 +24,16 @@ export const baseMenuSchema = z.object({
     .url('Must be a valid URL')
     .optional()
     .or(z.literal('')),
+  canvaUrl: z
+    .string()
+    .url('Must be a valid Canva or public design URL')
+    .optional()
+    .or(z.literal('')),
+  printUrl: z
+    .string()
+    .url('Must be a valid printable PDF or image URL')
+    .optional()
+    .or(z.literal('')),
   marketId: z
     .string()
     .optional()
@@ -31,7 +41,9 @@ export const baseMenuSchema = z.object({
   weekStart: z.string().min(1, 'Week start date is required'),
   weekEnd: z.string().min(1, 'Week end date is required'),
   isActive: z.boolean().default(false),
+  isArchived: z.boolean().default(false),
   linkedProducts: z.array(z.string()).optional(),
+  seasonalTags: z.array(z.string().min(1).max(40)).max(8).optional(),
 });
 
 export const createMenuSchema = baseMenuSchema;

@@ -21,16 +21,24 @@ function formatDateRange(start: string, end: string): string {
 
 export default function MenuPage() {
   const [menu, setMenu] = useState<AdminMenu | null>(null);
+  const [menus, setMenus] = useState<AdminMenu[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     async function fetchMenu() {
       try {
-        const res = await fetch('/api/menus/current');
-        const data = await res.json();
-        if (data.success && data.menu) {
-          setMenu(data.menu);
+        const [currentRes, archiveRes] = await Promise.all([
+          fetch('/api/menus/current'),
+          fetch('/api/menus'),
+        ]);
+        const currentData = await currentRes.json();
+        const archiveData = await archiveRes.json();
+        if (currentData.success && currentData.menu) {
+          setMenu(currentData.menu);
+        }
+        if (archiveData.success && Array.isArray(archiveData.menus)) {
+          setMenus(archiveData.menus);
         }
       } catch {
         setError(true);
@@ -40,6 +48,8 @@ export default function MenuPage() {
     }
     fetchMenu();
   }, []);
+
+  const archivedMenus = menus.filter((item) => item.id !== menu?.id);
 
   if (loading) {
     return (
@@ -91,16 +101,40 @@ export default function MenuPage() {
               View Pickup Markets
             </Link>
           </div>
+          {menus.length > 0 && (
+            <div className="mt-8 border-t border-emerald-900/10 pt-6 text-left">
+              <h3 className="text-center text-lg font-semibold text-gray-900 dark:text-gray-100">Past market menus</h3>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {menus.slice(0, 4).map((archived) => (
+                  <a
+                    key={archived.id}
+                    href={archived.imageUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block rounded-xl border border-emerald-100 bg-white p-3 shadow-sm hover:border-emerald-300"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                      {formatDateRange(archived.weekStart, archived.weekEnd)}
+                    </p>
+                    <p className="mt-1 font-medium text-stone-950">{archived.title}</p>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-teal-50 dark:from-gray-950 dark:to-gray-900">
-      <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
+    <div className="min-h-screen bg-[#fbfaf7] text-stone-950">
+      <div className="mx-auto max-w-5xl px-4 py-8 sm:py-12">
         {/* Header */}
         <div className="text-center mb-8 space-y-2">
+          <p className="inline-flex rounded-full border border-emerald-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-800 shadow-sm">
+            Fresh market menu
+          </p>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">
             {menu.title}
           </h1>
@@ -112,6 +146,30 @@ export default function MenuPage() {
               {menu.description}
             </p>
           )}
+          {menu.seasonalTags && menu.seasonalTags.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-2 pt-2">
+              {menu.seasonalTags.map((tag) => (
+                <span key={tag} className="rounded-full bg-white px-3 py-1 text-xs font-medium text-emerald-800 shadow-sm">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="mb-6 grid gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-950 sm:grid-cols-3">
+          <div>
+            <p className="font-semibold">1. Browse this week</p>
+            <p className="mt-1 text-emerald-800">Use the menu as your market preview.</p>
+          </div>
+          <div>
+            <p className="font-semibold">2. Preorder online</p>
+            <p className="mt-1 text-emerald-800">Shop live catalog items before checkout.</p>
+          </div>
+          <div>
+            <p className="font-semibold">3. Pickup or ship</p>
+            <p className="mt-1 text-emerald-800">Fulfillment details are confirmed before payment.</p>
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -124,12 +182,12 @@ export default function MenuPage() {
             🖨️ Print Menu
           </button>
           <a
-            href={menu.imageUrl}
+            href={menu.printUrl || menu.imageUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="px-4 py-2 rounded-lg border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-sm font-medium"
           >
-            🔍 Open Full Size
+            🔍 Open {menu.printUrl ? 'Printable File' : 'Full Size'}
           </a>
           <a
             href="/catalog"
@@ -140,11 +198,12 @@ export default function MenuPage() {
         </div>
 
         {/* Menu Image — pinch-to-zoom on mobile */}
-        <div className="rounded-2xl overflow-hidden shadow-xl bg-white dark:bg-gray-800 border border-emerald-100 dark:border-emerald-900/30">
+        <div className="mx-auto max-w-3xl rounded-[1.5rem] overflow-hidden shadow-xl bg-white dark:bg-gray-800 border border-emerald-100 dark:border-emerald-900/30">
           <img
             src={menu.imageUrl}
             alt={menu.title}
-            className="w-full h-auto"
+            className="h-auto w-full object-contain"
+            loading="eager"
             style={{ touchAction: 'pinch-zoom', maxWidth: '100%' }}
           />
         </div>
@@ -173,6 +232,35 @@ export default function MenuPage() {
             ← Back to Home
           </Link>
         </div>
+
+        {archivedMenus.length > 0 && (
+          <section className="mt-12 border-t border-emerald-900/10 pt-8 print:hidden">
+            <div className="mb-5 text-center">
+              <h2 className="text-2xl font-semibold text-stone-950">Past market menus</h2>
+              <p className="mt-2 text-sm text-stone-600">Archive previous seasonal menus and market drops.</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {archivedMenus.slice(0, 6).map((archived) => (
+                <article key={archived.id} className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+                  <a href={archived.imageUrl} target="_blank" rel="noreferrer" className="block aspect-[4/5] bg-stone-100">
+                    <img src={archived.thumbnailUrl || archived.imageUrl} alt={archived.title} loading="lazy" className="h-full w-full object-cover" />
+                  </a>
+                  <div className="space-y-2 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                      {formatDateRange(archived.weekStart, archived.weekEnd)}
+                    </p>
+                    <h3 className="font-semibold text-stone-950">{archived.title}</h3>
+                    {archived.description && <p className="line-clamp-2 text-sm text-stone-600">{archived.description}</p>}
+                    <div className="flex flex-wrap gap-2 pt-1 text-xs">
+                      <a href={archived.imageUrl} target="_blank" rel="noreferrer" className="rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-800">Open menu</a>
+                      {archived.printUrl && <a href={archived.printUrl} target="_blank" rel="noreferrer" className="rounded-full bg-stone-100 px-3 py-1 font-medium text-stone-700">Print</a>}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

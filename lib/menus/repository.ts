@@ -17,11 +17,15 @@ function documentToAdminMenu(doc: MenuDocument): AdminMenu {
     description: doc.description,
     imageUrl: doc.imageUrl,
     thumbnailUrl: doc.thumbnailUrl,
+    canvaUrl: doc.canvaUrl,
+    printUrl: doc.printUrl,
     marketId: doc.marketId,
     weekStart: doc.weekStart?.toISOString?.() ?? new Date().toISOString(),
     weekEnd: doc.weekEnd?.toISOString?.() ?? new Date().toISOString(),
     isActive: !!doc.isActive,
+    isArchived: !!doc.isArchived,
     linkedProducts: doc.linkedProducts,
+    seasonalTags: doc.seasonalTags,
     createdAt: doc.createdAt?.toISOString?.() ?? new Date().toISOString(),
     updatedAt: doc.updatedAt?.toISOString?.() ?? new Date().toISOString(),
   };
@@ -55,6 +59,27 @@ export async function getActiveMenus(): Promise<AdminMenu[]> {
     return docs.map((doc: any) => documentToAdminMenu(doc));
   } catch (error) {
     logger.error('Menus', 'Failed to fetch active menus', error);
+    throw error;
+  }
+}
+
+export async function getPublicMenus(): Promise<AdminMenu[]> {
+  try {
+    const { db } = await connectToDatabase();
+    const docs = await db
+      .collection(COLLECTION_NAME)
+      .find({
+        $or: [
+          { isActive: true },
+          { isArchived: true },
+        ],
+      })
+      .sort({ isActive: -1, weekStart: -1 })
+      .toArray();
+
+    return docs.map((doc: any) => documentToAdminMenu(doc));
+  } catch (error) {
+    logger.error('Menus', 'Failed to fetch public menus', error);
     throw error;
   }
 }
@@ -96,11 +121,15 @@ export type CreateMenuData = {
   description?: string;
   imageUrl: string;
   thumbnailUrl?: string;
+  canvaUrl?: string;
+  printUrl?: string;
   marketId?: string;
   weekStart: string;
   weekEnd: string;
   isActive?: boolean;
+  isArchived?: boolean;
   linkedProducts?: string[];
+  seasonalTags?: string[];
 };
 
 export async function createMenu(data: CreateMenuData): Promise<AdminMenu> {
@@ -113,11 +142,15 @@ export async function createMenu(data: CreateMenuData): Promise<AdminMenu> {
       description: data.description || '',
       imageUrl: data.imageUrl,
       thumbnailUrl: data.thumbnailUrl || '',
+      canvaUrl: data.canvaUrl || '',
+      printUrl: data.printUrl || '',
       marketId: data.marketId || '',
       weekStart: new Date(data.weekStart),
       weekEnd: new Date(data.weekEnd),
       isActive: data.isActive || false,
+      isArchived: data.isArchived || false,
       linkedProducts: data.linkedProducts || [],
+      seasonalTags: data.seasonalTags || [],
       createdAt: now,
       updatedAt: now,
     };
@@ -135,11 +168,15 @@ export async function createMenu(data: CreateMenuData): Promise<AdminMenu> {
       description: doc.description,
       imageUrl: doc.imageUrl,
       thumbnailUrl: doc.thumbnailUrl,
+      canvaUrl: doc.canvaUrl,
+      printUrl: doc.printUrl,
       marketId: doc.marketId,
       weekStart: doc.weekStart.toISOString(),
       weekEnd: doc.weekEnd.toISOString(),
       isActive: doc.isActive,
+      isArchived: doc.isArchived,
       linkedProducts: doc.linkedProducts,
+      seasonalTags: doc.seasonalTags,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     };
@@ -154,11 +191,15 @@ export interface UpdateMenuData {
   description?: string;
   imageUrl?: string;
   thumbnailUrl?: string;
+  canvaUrl?: string;
+  printUrl?: string;
   marketId?: string;
   weekStart?: string;
   weekEnd?: string;
   isActive?: boolean;
+  isArchived?: boolean;
   linkedProducts?: string[];
+  seasonalTags?: string[];
 }
 
 export async function updateMenu(
@@ -181,9 +222,13 @@ export async function updateMenu(
       'description',
       'imageUrl',
       'thumbnailUrl',
+      'canvaUrl',
+      'printUrl',
       'marketId',
       'isActive',
+      'isArchived',
       'linkedProducts',
+      'seasonalTags',
     ];
 
     for (const field of allowedFields) {
@@ -285,6 +330,7 @@ export async function ensureMenuIndexes(): Promise<void> {
     const collection = db.collection(COLLECTION_NAME);
 
     await collection.createIndex({ isActive: 1 });
+    await collection.createIndex({ isArchived: 1 });
     await collection.createIndex({ weekStart: -1 });
     await collection.createIndex({ marketId: 1 });
 

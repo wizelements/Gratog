@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getActiveMenus } from '@/lib/menus/repository';
+import { getPublicMenus } from '@/lib/menus/repository';
 import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
@@ -14,11 +14,12 @@ const NO_STORE_HEADERS = {
 
 /**
  * GET /api/menus
- * Public: list all active menus
+ * Public: list current and intentionally archived menus.
+ * Inactive, unarchived menus remain private admin drafts.
  */
 export async function GET() {
   try {
-    const menus = await getActiveMenus();
+    const menus = await getPublicMenus();
 
     return NextResponse.json(
       {

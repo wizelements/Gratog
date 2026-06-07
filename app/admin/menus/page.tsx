@@ -50,11 +50,15 @@ const INITIAL_FORM_STATE: CreateMenuInput = {
   description: '',
   imageUrl: '',
   thumbnailUrl: '',
+  canvaUrl: '',
+  printUrl: '',
   marketId: '',
   weekStart: '',
   weekEnd: '',
   isActive: false,
+  isArchived: false,
   linkedProducts: [],
+  seasonalTags: [],
 };
 
 interface FormErrors {
@@ -74,6 +78,14 @@ function formatDateRange(start: string, end: string): string {
   } catch {
     return `${start} – ${end}`;
   }
+}
+
+function parseTagList(value: string): string[] {
+  return Array.from(new Set(value
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+    .slice(0, 8)));
 }
 
 export default function MenusPage() {
@@ -246,11 +258,15 @@ export default function MenusPage() {
       description: menu.description || '',
       imageUrl: menu.imageUrl,
       thumbnailUrl: menu.thumbnailUrl || '',
+      canvaUrl: menu.canvaUrl || '',
+      printUrl: menu.printUrl || '',
       marketId: menu.marketId || '',
       weekStart: menu.weekStart ? menu.weekStart.split('T')[0] : '',
       weekEnd: menu.weekEnd ? menu.weekEnd.split('T')[0] : '',
       isActive: menu.isActive,
+      isArchived: !!menu.isArchived,
       linkedProducts: menu.linkedProducts || [],
+      seasonalTags: menu.seasonalTags || [],
     });
     setFormErrors({});
     setDialogOpen(true);
@@ -396,7 +412,7 @@ export default function MenusPage() {
                         : ''
                     }
                   >
-                    {menu.isActive ? 'Active' : 'Inactive'}
+                    {menu.isActive ? 'Active' : menu.isArchived ? 'Archived' : 'Draft'}
                   </Badge>
                 </div>
               </CardHeader>
@@ -416,6 +432,22 @@ export default function MenusPage() {
                   <p className="text-xs text-muted-foreground">
                     Market: {getMarketName(menu.marketId)}
                   </p>
+                )}
+
+                {(menu.canvaUrl || menu.printUrl || (menu.seasonalTags && menu.seasonalTags.length > 0)) && (
+                  <div className="space-y-2 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
+                    {menu.seasonalTags && menu.seasonalTags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {menu.seasonalTags.map((tag) => (
+                          <span key={tag} className="rounded-full bg-background px-2 py-0.5">{tag}</span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex flex-wrap gap-3">
+                      {menu.canvaUrl && <a href={menu.canvaUrl} target="_blank" rel="noreferrer" className="text-emerald-700 hover:underline">Open Canva source</a>}
+                      {menu.printUrl && <a href={menu.printUrl} target="_blank" rel="noreferrer" className="text-emerald-700 hover:underline">Printable file</a>}
+                    </div>
+                  </div>
                 )}
 
                 <div className="flex items-center justify-between gap-2 pt-3 border-t">
@@ -489,7 +521,7 @@ export default function MenusPage() {
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="imageUrl">Menu Image URL *</Label>
-                <p className="text-xs text-muted-foreground">Paste a public Canva export or image URL. For best results, use a vertical PNG/JPG.</p>
+                <p className="text-xs text-muted-foreground">Paste a public Canva export or image URL. For best results, export a vertical PNG/JPG and host it at a public URL.</p>
                 <Input
                   id="imageUrl"
                   name="imageUrl"
@@ -518,6 +550,45 @@ export default function MenusPage() {
                 {formErrors.thumbnailUrl && (
                   <p className="text-xs text-red-500">{formErrors.thumbnailUrl}</p>
                 )}
+              </div>
+
+              <div className="space-y-2 md:col-span-2 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
+                <Label className="text-emerald-950">Canva workflow</Label>
+                <p className="text-xs leading-5 text-emerald-800">
+                  Keep the editable Canva design link here, publish the exported image above, and add a printable PDF/image URL if you want shoppers or market staff to print the menu.
+                </p>
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="canvaUrl">Editable Canva link (optional)</Label>
+                    <Input
+                      id="canvaUrl"
+                      name="canvaUrl"
+                      type="url"
+                      value={formData.canvaUrl || ''}
+                      onChange={handleInputChange}
+                      placeholder="https://www.canva.com/design/..."
+                      className={formErrors.canvaUrl ? 'border-red-500' : ''}
+                    />
+                    {formErrors.canvaUrl && (
+                      <p className="text-xs text-red-500">{formErrors.canvaUrl}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="printUrl">Printable file URL (optional)</Label>
+                    <Input
+                      id="printUrl"
+                      name="printUrl"
+                      type="url"
+                      value={formData.printUrl || ''}
+                      onChange={handleInputChange}
+                      placeholder="https://.../weekly-menu.pdf"
+                      className={formErrors.printUrl ? 'border-red-500' : ''}
+                    />
+                    {formErrors.printUrl && (
+                      <p className="text-xs text-red-500">{formErrors.printUrl}</p>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -589,7 +660,19 @@ export default function MenusPage() {
               )}
             </div>
 
-            <div className="flex items-center gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="seasonalTags">Seasonal tags (optional)</Label>
+              <Input
+                id="seasonalTags"
+                name="seasonalTagsText"
+                value={(formData.seasonalTags || []).join(', ')}
+                onChange={(e) => setFormData((prev) => ({ ...prev, seasonalTags: parseTagList(e.target.value) }))}
+                placeholder="summer, market favorites, preorder"
+              />
+              <p className="text-xs text-muted-foreground">Comma-separated labels shown on the public menu page.</p>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -597,7 +680,16 @@ export default function MenusPage() {
                   onChange={(e) => handleCheckboxChange('isActive', e.target.checked)}
                   className="h-4 w-4 rounded border-gray-300"
                 />
-                <span className="text-sm">Active</span>
+                <span className="text-sm">Active current menu</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={!!formData.isArchived}
+                  onChange={(e) => handleCheckboxChange('isArchived', e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <span className="text-sm">Public archive</span>
               </label>
             </div>
 

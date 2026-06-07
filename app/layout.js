@@ -1,5 +1,4 @@
 import { Inter } from 'next/font/google';
-import { unstable_cacheLife as cacheLife } from 'next/cache';
 import './globals.css';
 import './styles/mobile-touch.css';
 import './styles/desktop-responsive.css';
@@ -27,9 +26,9 @@ const inter = Inter({
 
 export const metadata = {
   metadataBase: new URL('https://tasteofgratitude.shop'),
-  title: 'Taste of Gratitude | Premium Wildcrafted Sea Moss Gel',
-  description: 'Hand-crafted sea moss gel with 92 essential minerals. Wildcrafted Irish sea moss products for natural wellness. 100% natural, non-GMO, vegan superfood.',
-  keywords: 'sea moss gel, wildcrafted sea moss, Irish sea moss, sea moss products, natural supplements, vegan superfood, holistic wellness',
+  title: 'Taste of Gratitude | Small-Batch Sea Moss & Market Wellness',
+  description: 'Founder-led Atlanta wellness commerce for small-batch sea moss gels, fresh drinks, wellness shots, weekly market menus, pickup, delivery, and eligible shipping.',
+  keywords: 'Taste of Gratitude, Atlanta sea moss, small batch sea moss gel, farmers market wellness, market pickup, wellness shots, fresh drinks',
   authors: [{ name: 'Taste of Gratitude' }],
   creator: 'Taste of Gratitude',
   publisher: 'Taste of Gratitude',
@@ -40,8 +39,8 @@ export const metadata = {
     telephone: false,
   },
   openGraph: {
-    title: 'Taste of Gratitude | Premium Wildcrafted Sea Moss',
-    description: 'Hand-crafted wildcrafted sea moss gel packed with essential minerals for natural wellness.',
+    title: 'Taste of Gratitude | Small-Batch Sea Moss & Market Wellness',
+    description: 'A founder-led Atlanta market wellness brand with weekly menus, small-batch products, and clear online ordering.',
     url: 'https://tasteofgratitude.shop',
     siteName: 'Taste of Gratitude',
     locale: 'en_US',

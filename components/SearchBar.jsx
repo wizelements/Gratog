@@ -11,6 +11,7 @@ import {
   normalizeStorefrontText,
   resolveCategoryAlias
 } from '@/lib/storefront-query';
+import { track } from '@/utils/analytics';
 
 const RECENT_KEY = 'gratog_recent_searches';
 
@@ -108,11 +109,20 @@ export default function SearchBar({ placeholder = 'Search products, benefits, gu
 
   const handleSearch = (searchQuery, category = 'all') => {
     saveRecentSearch(searchQuery);
+    if (searchQuery.trim()) {
+      track('search_query', { query: searchQuery.trim(), category, source: 'global_search' });
+    }
     router.push(buildCatalogRoute({ search: searchQuery, category }));
     setIsOpen(false);
   };
 
   const handleSuggestionSelect = (item) => {
+    track('search_suggestion_selected', {
+      query: item.query,
+      category: item.category,
+      source: 'global_search',
+    });
+
     if (item.href) {
       router.push(item.href);
       setIsOpen(false);

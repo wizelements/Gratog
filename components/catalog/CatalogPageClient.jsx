@@ -15,6 +15,7 @@ import InfoBoardProductCard from '@/components/InfoBoardProductCard';
 import { Sparkles, Grid, List, Droplets, Heart, Award, Search, X, Info, SlidersHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import AnalyticsSystem from '@/lib/analytics';
+import { track } from '@/utils/analytics';
 import Link from 'next/link';
 import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -88,6 +89,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   
   const searchInputRef = useRef(null);
+  const lastTrackedSearchRef = useRef('');
 
   useEffect(() => {
     setProducts(hydratedInitialProducts);
@@ -343,10 +345,32 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
     return () => clearTimeout(timeout);
   }, [searchQuery, updateCatalogUrl]);
 
+  useEffect(() => {
+    const trimmed = searchQuery.trim();
+    const normalized = normalizeStorefrontText(trimmed);
+
+    if (normalized.length < 2 || normalized === lastTrackedSearchRef.current) {
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      lastTrackedSearchRef.current = normalized;
+      track('search_query', {
+        query: trimmed,
+        category: selectedCategory,
+        resultsCount: displayProducts.length,
+        source: 'catalog_search',
+      });
+    }, 700);
+
+    return () => clearTimeout(timeout);
+  }, [searchQuery, selectedCategory, displayProducts.length]);
+
   // Handlers - clean and simple
   const handleCategoryChange = (categoryId) => {
     setSelectedCategory(categoryId);
     setRecommendedIds(null);
+    track('category_view', { category: categoryId, source: 'catalog_filter' });
 
     updateCatalogUrl((params) => {
       params.delete('type');
@@ -362,6 +386,9 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
   const handleHealthBenefitChange = (benefitId) => {
     setSelectedHealthBenefit(benefitId);
     setRecommendedIds(null);
+    if (benefitId !== 'all') {
+      track('ingredient_filter', { ingredient: benefitId, source: 'catalog_filter' });
+    }
   };
 
   const handleSearchChange = (e) => {

@@ -25,6 +25,16 @@ export interface SquareGooglePay {
   destroy: () => Promise<void>;
 }
 
+export interface SquareCashAppPay {
+  attach: (selector: string) => Promise<void>;
+  destroy: () => Promise<boolean>;
+  detach?: () => Promise<boolean>;
+  addEventListener: (
+    event: 'ontokenization',
+    callback: (event: { detail?: { tokenResult?: SquareTokenResult; error?: { message?: string } } }) => void
+  ) => void;
+}
+
 export interface SquarePaymentRequestOptions {
   countryCode: string;
   currencyCode: string;
@@ -39,7 +49,7 @@ export type SquareApplePayRequest = SquarePaymentRequest;
 export type SquareGooglePayRequest = SquarePaymentRequest;
 
 export interface SquareTokenResult {
-  status: 'OK' | 'ERROR';
+  status: 'OK' | 'ERROR' | 'Error' | 'Cancel';
   token?: string;
   errors?: Array<{ type: string; message: string; field?: string }>;
 }
@@ -49,6 +59,7 @@ export interface SquarePayments {
   paymentRequest: (options: SquarePaymentRequestOptions) => SquarePaymentRequest;
   applePay?: (request: SquarePaymentRequest) => Promise<SquareApplePay | null>;
   googlePay?: (request: SquarePaymentRequest) => Promise<SquareGooglePay | null>;
+  cashAppPay?: (request: SquarePaymentRequest, options: { redirectURL: string; referenceId: string }) => Promise<SquareCashAppPay | null>;
 }
 
 declare global {

@@ -9,11 +9,15 @@ export interface MenuDocument {
   description?: string;
   imageUrl: string;
   thumbnailUrl?: string;
+  canvaUrl?: string;
+  printUrl?: string;
   marketId?: string;
   weekStart: Date;
   weekEnd: Date;
   isActive: boolean;
+  isArchived?: boolean;
   linkedProducts?: string[];
+  seasonalTags?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,11 +28,15 @@ export interface AdminMenu {
   description?: string;
   imageUrl: string;
   thumbnailUrl?: string;
+  canvaUrl?: string;
+  printUrl?: string;
   marketId?: string;
   weekStart: string;
   weekEnd: string;
   isActive: boolean;
+  isArchived?: boolean;
   linkedProducts?: string[];
+  seasonalTags?: string[];
   createdAt: string;
   updatedAt: string;
 }

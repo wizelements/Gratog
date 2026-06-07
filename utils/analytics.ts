@@ -5,6 +5,12 @@
 import { logger } from '@/lib/logger';
 
 export type AnalyticsEvent = 
+  | 'product_view'
+  | 'product_add_to_cart'
+  | 'search_query'
+  | 'search_suggestion_selected'
+  | 'category_view'
+  | 'ingredient_filter'
   | 'checkout_started'
   | 'checkout_stage_change'
   | 'checkout_proceed_to_payment'
@@ -45,6 +51,43 @@ export interface AnalyticsProps {
   [key: string]: any;
 }
 
+const SERVER_TRACKED_EVENTS = new Set<string>([
+  'product_view',
+  'product_add_to_cart',
+  'search_query',
+  'search_suggestion_selected',
+  'category_view',
+  'ingredient_filter',
+  'checkout_started',
+  'checkout_abandoned',
+  'fulfillment_type_selected',
+  'order_created',
+  'order_creation_failed',
+  'payment_success',
+  'payment_error',
+]);
+
+function sendServerAnalytics(event: string, props: AnalyticsProps) {
+  if (typeof window === 'undefined' || !SERVER_TRACKED_EVENTS.has(event)) return;
+
+  const payload = JSON.stringify({ event, properties: props });
+  try {
+    if (navigator.sendBeacon) {
+      const sent = navigator.sendBeacon('/api/analytics', new Blob([payload], { type: 'application/json' }));
+      if (sent) return;
+    }
+  } catch {
+    // fall through to fetch
+  }
+
+  fetch('/api/analytics', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: payload,
+    keepalive: true,
+  }).catch(() => undefined);
+}
+
 /**
  * Track analytics event
  * Compatible with existing analytics system via custom DOM events
@@ -58,6 +101,7 @@ export function track(event: AnalyticsEvent, props: AnalyticsProps = {}) {
       detail: { event, ...props, timestamp: new Date().toISOString() }
     })
   );
+  sendServerAnalytics(event, props);
   
   // Also log to console in development
   if (process.env.NODE_ENV === 'development') {

@@ -14,6 +14,7 @@ import Breadcrumbs, { getProductBreadcrumbs } from '@/components/Breadcrumbs';
 import ProductReviews from '@/components/ProductReviews';
 import Script from 'next/script';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
+import { track } from '@/utils/analytics';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop';
 
@@ -94,6 +95,16 @@ export default function ProductDetailClient({ product, slug }) {
     return () => { isCancelled = true; };
   }, [product?.id, product?.slug]);
 
+  useEffect(() => {
+    if (!product?.id && !product?.slug) return;
+
+    track('product_view', {
+      productId: product.id || product.slug,
+      productName: product.name,
+      category: product.category || product.intelligentCategory,
+    });
+  }, [product?.id, product?.slug, product?.name, product?.category, product?.intelligentCategory]);
+
   // Cart functionality
   const handleAddToCart = async () => {
     const variationToAdd = selectedVariation || product.variations?.[0] || {
@@ -112,6 +123,13 @@ export default function ProductDetailClient({ product, slug }) {
     try {
       setIsAdding(true);
       await addToCart(product, variationToAdd, quantity);
+      track('product_add_to_cart', {
+        productId: product.id || product.slug,
+        productName: product.name,
+        category: product.category || product.intelligentCategory,
+        quantity,
+        variation: variationToAdd.name,
+      });
       toast.success(`Added ${quantity} ${variationToAdd.name || ''} ${product.name} to cart`);
     } catch (error) {
       console.error('[GratOG] Error adding to cart:', error);
@@ -159,6 +177,19 @@ export default function ProductDetailClient({ product, slug }) {
   const pickupGuidance = product.isPreorder
     ? 'Preorder items are made for your selected pickup date. Choose your market and pickup day during checkout.'
     : 'Choose market pickup or eligible local delivery during checkout. Pickup details are confirmed before payment.';
+  const routineUse =
+    product.howToUse ||
+    product.usageInstructions ||
+    'Add 1–2 tablespoons to smoothies, tea, juices, bowls, or recipes. Start simple and build it into the routine you already enjoy.';
+  const productStory =
+    product.productStory ||
+    product.story ||
+    `This product is part of Taste of Gratitude's weekly small-batch rhythm: simple ingredients, careful prep, and a calmer way to bring market-made wellness into your routine.`;
+  const intendedUse =
+    product.intendedUse ||
+    product.benefitStory ||
+    'Best for customers who want an approachable, ingredient-forward product that feels easy to use throughout the week.';
+  const customerQuote = product.customerQuote || product.testimonial || '“You can tell it is made with care — it feels fresh, real, and easy to come back to.”';
   const ingredients = Array.isArray(product.ingredients)
     ? product.ingredients
         .map((ingredient) => (typeof ingredient === 'string' ? { name: ingredient } : ingredient))
@@ -402,13 +433,13 @@ export default function ProductDetailClient({ product, slug }) {
           <div className="rounded-xl border border-stone-200 bg-white p-4">
             <h3 className="font-semibold text-gray-900">How to use</h3>
             <p className="mt-2 text-sm leading-6 text-gray-600">
-              Add 1–2 tablespoons to smoothies, tea, juices, bowls, or recipes.
+              {routineUse}
             </p>
           </div>
           <div className="rounded-xl border border-stone-200 bg-white p-4">
             <h3 className="font-semibold text-gray-900">Best for</h3>
             <p className="mt-2 text-sm leading-6 text-gray-600">
-              A simple daily wellness routine made with transparent ingredients.
+              {intendedUse}
             </p>
           </div>
           <div className="rounded-xl border border-stone-200 bg-white p-4">
@@ -418,6 +449,37 @@ export default function ProductDetailClient({ product, slug }) {
             </p>
           </div>
         </div>
+
+        <section className="mt-10 grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
+          <Card className="rounded-2xl border-stone-200 bg-white shadow-sm">
+            <CardContent className="p-6 sm:p-8">
+              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Product story</p>
+              <h2 className="text-2xl font-semibold tracking-tight text-stone-950">Made to feel clear, useful, and real.</h2>
+              <p className="mt-4 text-base leading-8 text-stone-700">{productStory}</p>
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-xl bg-stone-50 p-4">
+                  <p className="font-semibold text-stone-950">Why it exists</p>
+                  <p className="mt-2 text-sm leading-6 text-stone-600">To make weekly wellness feel simple, flavorful, and rooted in a real market experience.</p>
+                </div>
+                <div className="rounded-xl bg-stone-50 p-4">
+                  <p className="font-semibold text-stone-950">Routine fit</p>
+                  <p className="mt-2 text-sm leading-6 text-stone-600">Use it chilled, mix it into what you already drink, or keep it ready for a quick daily spoonful.</p>
+                </div>
+                <div className="rounded-xl bg-stone-50 p-4">
+                  <p className="font-semibold text-stone-950">Freshness promise</p>
+                  <p className="mt-2 text-sm leading-6 text-stone-600">Prepared in small batches with storage guidance and fulfillment expectations shown before payment.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="rounded-2xl border-emerald-100 bg-emerald-50 shadow-sm">
+            <CardContent className="p-6 sm:p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-800">Market note</p>
+              <blockquote className="mt-4 text-xl font-medium leading-8 text-emerald-950">{customerQuote}</blockquote>
+              <p className="mt-4 text-sm text-emerald-800">Real customer language varies by market and review availability; this section keeps social proof visible even while verified reviews load.</p>
+            </CardContent>
+          </Card>
+        </section>
 
         {/* Tabs Section */}
         <div className="mt-16">
@@ -476,6 +538,10 @@ export default function ProductDetailClient({ product, slug }) {
                   <div>
                     <h3 className="text-lg font-semibold mb-2">Storage</h3>
                     <p className="text-gray-700 leading-relaxed">{storageGuidance}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">How to use</h3>
+                    <p className="text-gray-700 leading-relaxed">{routineUse}</p>
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold mb-2">Pickup, delivery, and shipping</h3>

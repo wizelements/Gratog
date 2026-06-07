@@ -23,6 +23,8 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
+  serverExternalPackages: ['mongodb', 'mongoose', 'bcryptjs'],
+  outputFileTracingRoot: __dirname,
 
   // Allow development origins for hot reload
   allowedDevOrigins: ['gratitude-square.preview.emergentagent.com'],
@@ -49,32 +51,10 @@ const nextConfig = {
   experimental: {
     // CSS optimization
     optimizeCss: true,
-    gzipSize: true,
     // React 19 features
     reactCompiler: false, // Enable when ready for React 19 compiler
-    // Server components
-    serverExternalPackages: ['mongodb', 'mongoose', 'bcryptjs'],
     // Enable use cache directive
     useCache: true,
-  },
-
-  // Caching configuration (moved to root, not experimental)
-  cacheLife: {
-    // Static pages - catalog, products
-    static: {
-      staleAge: 86400, // 24 hours
-      expireAge: 604800, // 7 days
-    },
-    // Semi-dynamic - user-specific but cacheable
-    semiDynamic: {
-      staleAge: 60, // 1 minute
-      expireAge: 3600, // 1 hour
-    },
-    // Dynamic - cart, checkout, real-time
-    dynamic: {
-      staleAge: 0,
-      expireAge: 0,
-    },
   },
 
   webpack(config, { dev, isServer }) {

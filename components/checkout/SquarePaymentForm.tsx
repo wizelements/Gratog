@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { CreditCard, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 import { formatCurrency } from '@/adapters/totalsAdapter';
-import type { SquareApplePay, SquareCard, SquareGooglePay } from '@/types/square';
+import type { SquareApplePay, SquareCard, SquareCashAppPay, SquareGooglePay } from '@/types/square';
 
 interface SquareConfig {
   applicationId: string;
@@ -58,10 +58,12 @@ export default function SquarePaymentForm({
   const [initError, setInitError] = useState<string | null>(null);
   const [isApplePayReady, setIsApplePayReady] = useState(false);
   const [isGooglePayReady, setIsGooglePayReady] = useState(false);
+  const [isCashAppPayReady, setIsCashAppPayReady] = useState(false);
   
   const cardRef = useRef<SquareCard | null>(null);
   const applePayRef = useRef<SquareApplePay | null>(null);
   const googlePayRef = useRef<SquareGooglePay | null>(null);
+  const cashAppPayRef = useRef<SquareCashAppPay | null>(null);
   const initRef = useRef(false);
   
   const idempotencyKey = orderId.slice(0, 36);
@@ -143,6 +145,45 @@ export default function SquarePaymentForm({
             }
           } catch {
             setIsGooglePayReady(false);
+          }
+        }
+
+        if (payments.cashAppPay && typeof window !== 'undefined') {
+          try {
+            const cashAppPay = await payments.cashAppPay(paymentRequest, {
+              redirectURL: window.location.href,
+              referenceId: orderId.slice(0, 36),
+            });
+
+            if (cashAppPay) {
+              cashAppPay.addEventListener('ontokenization', async (event) => {
+                const tokenResult = event.detail?.tokenResult;
+                const tokenStatus = tokenResult?.status;
+
+                if (event.detail?.error) {
+                  handleTokenizationError(event.detail.error, event.detail.error.message || 'Cash App Pay failed');
+                  return;
+                }
+
+                if (tokenStatus === 'Cancel') {
+                  setPaymentStep('idle');
+                  setCardError(null);
+                  return;
+                }
+
+                if (tokenStatus !== 'OK' || !tokenResult?.token) {
+                  handleTokenizationError(tokenResult?.errors?.[0]?.message, 'Cash App Pay tokenization failed');
+                  return;
+                }
+
+                await processPaymentToken(tokenResult.token);
+              });
+              await cashAppPay.attach('#cash-app-pay-button');
+              cashAppPayRef.current = cashAppPay;
+              setIsCashAppPayReady(true);
+            }
+          } catch {
+            setIsCashAppPayReady(false);
           }
         }
       } catch (err) {
@@ -296,7 +337,7 @@ export default function SquarePaymentForm({
 
       {/* Card Form */}
       <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-        {(isApplePayReady || isGooglePayReady || isLoading) && (
+        {(isApplePayReady || isGooglePayReady || isCashAppPayReady || isLoading) && (
           <div className="mb-6 space-y-3">
             <p className="text-sm font-medium text-gray-700">Express checkout</p>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -317,8 +358,14 @@ export default function SquarePaymentForm({
               >
                 <div id="google-pay-button" />
               </div>
+              <div
+                className={isCashAppPayReady ? 'min-h-12 sm:col-span-2' : isLoading ? 'min-h-12 opacity-0 pointer-events-none' : 'hidden'}
+                aria-disabled={isProcessing || paymentStep === 'success'}
+              >
+                <div id="cash-app-pay-button" />
+              </div>
             </div>
-            {(isApplePayReady || isGooglePayReady) && (
+            {(isApplePayReady || isGooglePayReady || isCashAppPayReady) && (
               <div className="relative">
                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
                   <div className="w-full border-t border-gray-200" />
@@ -328,7 +375,7 @@ export default function SquarePaymentForm({
                 </div>
               </div>
             )}
-            {!isApplePayReady && !isGooglePayReady && isLoading && (
+            {!isApplePayReady && !isGooglePayReady && !isCashAppPayReady && isLoading && (
               <p className="text-xs text-gray-500">Checking wallet availability…</p>
             )}
           </div>
@@ -402,7 +449,7 @@ export default function SquarePaymentForm({
 
       {/* Security Note */}
       <p className="text-center text-sm text-gray-500">
-        Payment is securely processed by Square.
+        Payment is securely processed by Square. Apple Pay, Google Pay, and Cash App Pay appear when supported by your device, browser, and Square account.
       </p>
     </div>
   );
