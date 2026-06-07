@@ -96,10 +96,13 @@ export default function ProductDetailClient({ product, slug }) {
 
   // Cart functionality
   const handleAddToCart = async () => {
-    if (!selectedVariation) {
-      toast.error('Please select a size option');
-      return;
-    }
+    const variationToAdd = selectedVariation || product.variations?.[0] || {
+      id: product.variationId || product.squareVariationId || product.id,
+      name: product.size || 'Default',
+      price: product.price,
+      priceCents: product.priceCents,
+      sku: product.sku,
+    };
     
     if (product.stock <= 0 && !product.isPreorder) {
       toast.error('This product is currently out of stock');
@@ -108,8 +111,8 @@ export default function ProductDetailClient({ product, slug }) {
 
     try {
       setIsAdding(true);
-      await addToCart(product, selectedVariation, quantity);
-      toast.success(`Added ${quantity} ${selectedVariation.name || ''} ${product.name} to cart`);
+      await addToCart(product, variationToAdd, quantity);
+      toast.success(`Added ${quantity} ${variationToAdd.name || ''} ${product.name} to cart`);
     } catch (error) {
       console.error('[GratOG] Error adding to cart:', error);
       toast.error(error.message || 'Failed to add to cart. Please try again.');
@@ -172,7 +175,7 @@ export default function ProductDetailClient({ product, slug }) {
   const breadcrumbItems = getProductBreadcrumbs(product);
 
   return (
-    <div className="min-h-screen bg-[#fbfaf7]">
+    <div className="min-h-screen bg-[#fbfaf7] pb-24 lg:pb-0">
       <Script id="product-schema" type="application/ld+json">
         {JSON.stringify({
           '@context': 'https://schema.org',
@@ -394,6 +397,28 @@ export default function ProductDetailClient({ product, slug }) {
           </div>
         </div>
 
+        {/* Info Cards */}
+        <div className="grid gap-3 sm:grid-cols-3 mt-6">
+          <div className="rounded-xl border border-stone-200 bg-white p-4">
+            <h3 className="font-semibold text-gray-900">How to use</h3>
+            <p className="mt-2 text-sm leading-6 text-gray-600">
+              Add 1–2 tablespoons to smoothies, tea, juices, bowls, or recipes.
+            </p>
+          </div>
+          <div className="rounded-xl border border-stone-200 bg-white p-4">
+            <h3 className="font-semibold text-gray-900">Best for</h3>
+            <p className="mt-2 text-sm leading-6 text-gray-600">
+              A simple daily wellness routine made with transparent ingredients.
+            </p>
+          </div>
+          <div className="rounded-xl border border-stone-200 bg-white p-4">
+            <h3 className="font-semibold text-gray-900">Keep fresh</h3>
+            <p className="mt-2 text-sm leading-6 text-gray-600">
+              {product.storageInstructions || product.careInstructions || 'Keep refrigerated. Use a clean spoon each time.'}
+            </p>
+          </div>
+        </div>
+
         {/* Tabs Section */}
         <div className="mt-16">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -483,6 +508,33 @@ export default function ProductDetailClient({ product, slug }) {
           </Tabs>
         </div>
 
+        {/* Related Products */}
+        <section className="mt-12 rounded-2xl bg-emerald-50 p-6 text-center">
+          <h2 className="text-xl font-semibold text-gray-900">Want to compare flavors?</h2>
+          <p className="mt-2 text-gray-600">Browse similar market staples in this collection.</p>
+          <a href={`/catalog?category=${encodeURIComponent(product.category || 'all')}`}
+             className="mt-4 inline-block rounded-full bg-emerald-700 px-6 py-3 text-white font-semibold hover:bg-emerald-800">
+            View Similar Products
+          </a>
+        </section>
+
+      </div>
+
+      {/* Mobile Sticky Add-to-Cart Bar */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-emerald-900/10 bg-white/95 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-2xl backdrop-blur lg:hidden">
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-gray-900">{product.name}</p>
+            <p className="text-sm font-bold text-emerald-700">${displayPrice?.toFixed?.(2) || '0.00'}</p>
+          </div>
+          <button
+            onClick={handleAddToCart}
+            disabled={isAdding}
+            className="h-12 rounded-full bg-emerald-700 px-6 text-white font-semibold hover:bg-emerald-800 disabled:opacity-50"
+          >
+            {isAdding ? 'Adding...' : 'Add to Cart'}
+          </button>
+        </div>
       </div>
     </div>
   );

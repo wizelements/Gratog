@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle, Package, Mail, Phone, MapPin, Clock, CreditCard, ArrowRight, Sparkles, Heart, Star } from 'lucide-react';
+import { CheckCircle, Package, Mail, Phone, MapPin, Clock, CreditCard, ArrowRight, Heart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -299,6 +299,34 @@ export default function OrderSuccessPage() {
           )}
         </div>
 
+        {/* Fulfillment-specific instruction card */}
+        {order?.fulfillment?.type?.includes('pickup') && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 mb-6">
+            <h2 className="font-semibold text-amber-900">Pickup instructions</h2>
+            <ul className="mt-3 space-y-2 text-sm text-amber-800">
+              <li>• Look for the Taste of Gratitude booth at your selected market</li>
+              <li>• Mention your order reference at the booth</li>
+              <li>• We&apos;ll email confirmation and text updates if you added a phone number</li>
+            </ul>
+          </div>
+        )}
+        {order?.fulfillment?.type === 'shipping' && (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 mb-6">
+            <h2 className="font-semibold text-emerald-900">Shipping expectations</h2>
+            <p className="mt-2 text-sm text-emerald-800">
+              We&apos;ll prepare eligible items carefully and email tracking once your package is on the way.
+            </p>
+          </div>
+        )}
+        {order?.fulfillment?.type === 'delivery' && (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 mb-6">
+            <h2 className="font-semibold text-emerald-900">Delivery expectations</h2>
+            <p className="mt-2 text-sm text-emerald-800">
+              We&apos;ll deliver during your selected window and contact you if anything changes.
+            </p>
+          </div>
+        )}
+
         <div className="grid md:grid-cols-3 gap-6">
           {/* Order Details */}
           <div className="md:col-span-2 space-y-6">
@@ -472,30 +500,14 @@ export default function OrderSuccessPage() {
               </CardContent>
             </Card>
 
-            {/* 🎯 CONVERSION PSYCHOLOGY: Spin Wheel - OPT-IN version */}
-            {order?.pricing?.total >= 15 && (
-              <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
-                <CardContent className="p-4 text-center">
-                  <Sparkles className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                  <h4 className="font-semibold text-purple-800">Bonus Spins Earned!</h4>
-                  <p className="text-sm text-purple-700 mb-3">
-                    You earned {order?.pricing?.total >= 20 ? Math.floor(order.pricing.total / 20) : 1} spin{order?.pricing?.total >= 40 ? 's' : ''} for this order.
-                  </p>
-                  <Link href={`/profile/rewards?highlight=spin`}>
-                    <Button className="w-full bg-purple-600 hover:bg-purple-700">
-                      <Star className="w-4 h-4 mr-2" />
-                      Spin for Rewards
-                    </Button>
-                  </Link>
-                  <p className="text-xs text-purple-600 mt-2">
-                    Or skip and{' '}
-                    <Link href="/catalog" className="underline">
-                      continue shopping
-                    </Link>
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+            {/* Small-batch appreciation */}
+            <Card className="bg-purple-50 border-purple-200">
+              <CardContent className="p-4 text-center">
+                <Heart className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+                <h4 className="font-semibold text-purple-800">Thanks for supporting small batch</h4>
+                <p className="text-sm text-purple-700">Come back next week for fresh market specials.</p>
+              </CardContent>
+            </Card>
 
             {/* Actions */}
             <div className="space-y-2">
@@ -505,6 +517,9 @@ export default function OrderSuccessPage() {
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
+              <a href="/catalog" className="block text-center rounded-full border border-emerald-700 px-6 py-3 text-emerald-700 font-semibold hover:bg-emerald-50">
+                Shop This Week&apos;s Menu Again
+              </a>
               <Link href={order?.id ? `/order/${order.id}` : '/profile/orders'}>
                 <Button variant="outline" className="w-full">
                   View Full Order Details

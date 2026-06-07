@@ -45,9 +45,9 @@ async function getHomepageCatalogData() {
 
 async function getSocialProof() {
   const fallback = {
-    customers: 'Growing Daily',
-    reviews: 'Fresh Feedback',
-    averageRating: '4.9 / 5.0'
+    customers: null,
+    reviews: null,
+    averageRating: null
   };
 
   try {
@@ -75,8 +75,8 @@ async function getSocialProof() {
     const customers = Array.isArray(uniqueCustomerCount) ? uniqueCustomerCount.length : 0;
 
     return {
-      customers: customers > 0 ? `${customers.toLocaleString()}+` : fallback.customers,
-      reviews: reviews > 0 ? `${reviews.toLocaleString()}+` : fallback.reviews,
+      customers: customers > 0 ? `${customers.toLocaleString()}+` : null,
+      reviews: reviews > 0 ? `${reviews.toLocaleString()}+` : null,
       averageRating: averageRating > 0 ? `${averageRating.toFixed(1)} / 5.0` : fallback.averageRating
     };
   } catch (error) {
@@ -114,8 +114,10 @@ async function getFeaturedReviews() {
 
 export default async function HomePage() {
   // Fetch data in parallel with caching
-  const [{ featuredProducts, initialCatalogCount }] = await Promise.all([
+  const [{ featuredProducts, initialCatalogCount }, socialProof, featuredReviews] = await Promise.all([
     getHomepageCatalogData(),
+    getSocialProof(),
+    getFeaturedReviews(),
   ]);
 
   const organizationSchema = buildHomepageOrganizationSchema();
@@ -129,7 +131,8 @@ export default async function HomePage() {
         initialCatalogCount={initialCatalogCount}
         organizationSchema={organizationSchema}
         faqSchema={faqSchema}
-
+        socialProof={socialProof}
+        featuredReviews={featuredReviews}
       />
     </>
   );

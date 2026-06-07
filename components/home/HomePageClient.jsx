@@ -19,7 +19,9 @@ export default function HomePageClient({
     initialFeaturedProducts = [],
     initialCatalogCount = null,
     organizationSchema,
-    faqSchema
+    faqSchema,
+    socialProof = null,
+    featuredReviews = []
 }) {
     const router = useRouter();
     const [featuredProducts, setFeaturedProducts] = useState(initialFeaturedProducts);
@@ -30,25 +32,9 @@ export default function HomePageClient({
     const [activeAccordion, setActiveAccordion] = useState(null);
     const heroRef = useRef(null);
     const [scrollY, setScrollY] = useState(0);
-
-    const handleViewFeatured = (event) => {
-        const featuredSection = document.getElementById('featured');
-        if (!featuredSection) {
-            return;
-        }
-
-        // Keep hash navigation for deep-linking while preserving smooth in-page scroll.
-        event.preventDefault();
-        if (window.location.hash !== '#featured') {
-            window.history.replaceState(null, '', '/#featured');
-        }
-
-        try {
-            featuredSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } catch {
-            featuredSection.scrollIntoView();
-        }
-    };
+    const hasRealRating = Boolean(socialProof?.averageRating);
+    const hasCustomerCount = Boolean(socialProof?.customers);
+    const hasFeaturedReviews = Array.isArray(featuredReviews) && featuredReviews.length > 0;
 
     useEffect(() => {
         if (initialFeaturedProducts.length > 0) {
@@ -188,30 +174,48 @@ export default function HomePageClient({
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                        <Button
-                            onClick={handleViewFeatured}
-                            size="lg"
-                            className="h-16 px-10 text-lg bg-white text-emerald-800 hover:bg-emerald-50 shadow-md transition-colors font-bold"
-                        >
-                            See This Week&apos;s Menu
-                            <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
+                        <a href="/catalog" className="h-14 px-10 text-lg bg-white text-emerald-800 hover:bg-emerald-50 shadow-md font-bold rounded-full flex items-center justify-center">
+                            Shop This Week
+                        </a>
+                        <a href="/menu" className="h-14 px-10 text-lg border border-white/70 text-white hover:bg-white/10 rounded-full flex items-center justify-center">
+                            View Printed Menu
+                        </a>
                     </div>
 
-                    {/* Trust Signals — simplified */}
+                    {/* Trust Signals — with real social proof when available */}
                     <div className="mt-10 flex flex-wrap justify-center gap-8 text-white/80 text-sm">
                         <span className="flex items-center gap-2">
                             <Shield className="h-4 w-4 text-emerald-300" />
                             100% Wildcrafted
                         </span>
-                        <span className="flex items-center gap-2">
-                            <Heart className="h-4 w-4 text-emerald-300" />
-                            Small Batch
-                        </span>
-                        <span className="flex items-center gap-2">
-                            <Sparkles className="h-4 w-4 text-emerald-300" />
-                            Made for the Market
-                        </span>
+                        {(hasRealRating || hasCustomerCount) && (
+                            <>
+                                {hasRealRating && (
+                                    <span className="flex items-center gap-2">
+                                        <Star className="h-4 w-4 text-emerald-300" />
+                                        {socialProof.averageRating} Rating
+                                    </span>
+                                )}
+                                {hasCustomerCount && (
+                                    <span className="flex items-center gap-2">
+                                        <Heart className="h-4 w-4 text-emerald-300" />
+                                        {socialProof.customers} Happy Customers
+                                    </span>
+                                )}
+                            </>
+                        )}
+                        {!hasRealRating && !hasCustomerCount && (
+                            <>
+                                <span className="flex items-center gap-2">
+                                    <Heart className="h-4 w-4 text-emerald-300" />
+                                    Small Batch
+                                </span>
+                                <span className="flex items-center gap-2">
+                                    <Sparkles className="h-4 w-4 text-emerald-300" />
+                                    Made for the Market
+                                </span>
+                            </>
+                        )}
                     </div>
                 </div>
             </section>
@@ -312,14 +316,14 @@ export default function HomePageClient({
                                                 {product.description || 'Product details are being updated.'}
                                             </p>
 
-                                            <div className="flex items-center gap-1 mb-4">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <Star
-                                                        key={i}
-                                                        className="h-4 w-4 text-yellow-500 fill-yellow-500"
-                                                    />
-                                                ))}
-                                            </div>
+                                            {product.reviewCount > 0 && (
+                                                <div className="flex items-center gap-1 mb-4">
+                                                    <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                                                    <span className="text-sm text-gray-600">
+                                                        {Number(product.averageRating || 5).toFixed(1)} ({product.reviewCount})
+                                                    </span>
+                                                </div>
+                                            )}
 
                                             <div className="flex items-center justify-between">
                                                 <div>
@@ -360,6 +364,43 @@ export default function HomePageClient({
                     )}
                 </div>
             </section>
+
+            {hasFeaturedReviews && (
+                <section className="py-16 bg-white">
+                    <div className="container">
+                        <div className="text-center mb-10">
+                            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-700">Real customer notes</p>
+                            <h2 className="mt-2 text-3xl md:text-4xl font-bold text-gray-900">Fresh feedback from the community</h2>
+                        </div>
+                        <div className="grid gap-6 md:grid-cols-3">
+                            {featuredReviews.map((review, index) => {
+                                const rating = Math.max(0, Math.min(5, Math.round(Number(review.rating) || 0)));
+
+                                return (
+                                    <Card key={`${review.name || 'review'}-${review.createdAt || index}`} className="border border-emerald-100 bg-emerald-50/40">
+                                        <CardContent className="p-6">
+                                            <div className="flex gap-1 mb-4" aria-label={`${rating} out of 5 stars`}>
+                                                {Array.from({ length: rating }).map((_, starIndex) => (
+                                                    <Star key={starIndex} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                                                ))}
+                                            </div>
+                                            <p className="text-gray-700 leading-relaxed line-clamp-4">
+                                                “{review.comment}”
+                                            </p>
+                                            <div className="mt-5 text-sm font-semibold text-gray-900">
+                                                {review.name || 'Taste of Gratitude customer'}
+                                            </div>
+                                            {review.verifiedPurchase && (
+                                                <p className="mt-1 text-xs text-emerald-700">Verified purchase</p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </section>
+            )}
 
             {/* Our Story */}
             <section className="py-16 bg-emerald-700">
@@ -537,25 +578,20 @@ export default function HomePageClient({
                 </div>
             </section>
 
-            <section className="py-16 bg-emerald-700 text-white">
-                <div className="container text-center">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-                        See you at the market this Saturday
-                    </h2>
-                    <p className="text-lg mb-6 text-white/90 max-w-2xl mx-auto">
-                        Browse what&apos;s fresh, place a preorder, or just come say hi at Serenbe or Dunwoody.
+            <section className="py-16 bg-stone-50">
+                <div className="max-w-2xl mx-auto text-center px-4">
+                    <h2 className="text-3xl font-bold text-gray-900">Get the weekly market menu</h2>
+                    <p className="mt-3 text-gray-600">
+                        Want a reminder when the fresh menu drops? Follow us on Instagram or check back weekly.
                     </p>
-                    <Button
-                        onClick={() => router.push('/catalog')}
-                        size="lg"
-                        className="h-14 px-8 text-lg bg-white text-emerald-700 hover:bg-gray-100 shadow-md"
-                    >
-                        Browse This Week&apos;s Menu
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                    <p className="mt-6 text-emerald-200 text-sm">
-                        Get the weekly menu in your inbox — newsletter coming soon
-                    </p>
+                    <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+                        <a href="/menu" className="px-6 py-3 rounded-full bg-emerald-700 text-white font-semibold hover:bg-emerald-800">
+                            See This Week&apos;s Menu
+                        </a>
+                        <a href="https://instagram.com/tasteofgratitude" target="_blank" rel="noopener noreferrer" className="px-6 py-3 rounded-full border border-emerald-700 text-emerald-700 font-semibold hover:bg-emerald-50">
+                            Follow on Instagram
+                        </a>
+                    </div>
                 </div>
             </section>
 

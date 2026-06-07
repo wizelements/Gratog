@@ -26,8 +26,9 @@ import {
 import { hasRealImage, sortProductsByImagePriority } from '@/lib/product-enhancements';
 import {
   getCategoryLabelById,
-  getProductSearchText,
+  getProductSearchRelevanceScore,
   normalizeStorefrontText,
+  productMatchesSearchQuery,
   productMatchesCategory,
   resolveCategoryAlias
 } from '@/lib/storefront-query';
@@ -161,7 +162,6 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
 
     let result = products;
     const normalizedSearchTerm = normalizeStorefrontText(searchQuery);
-    const termTokens = normalizedSearchTerm.split(' ').filter(Boolean);
 
     // Quiz recommendations take priority
     if (recommendedIds) {
@@ -180,55 +180,24 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
 
     // Search filter (works on top of other filters)
     if (normalizedSearchTerm.length >= 2) {
-      result = result.filter(product => {
-        const searchableText = getProductSearchText(product);
-        if (!searchableText) {
-          return false;
-        }
+      result = result.filter(product => productMatchesSearchQuery(product, normalizedSearchTerm));
 
-        if (searchableText.includes(normalizedSearchTerm)) {
-          return true;
-        }
-
-        return termTokens.every((token) => searchableText.includes(token));
-      });
-
-      // Sort search results by relevance
       result = [...result].sort((a, b) => {
         const aName = normalizeStorefrontText(a.name || '');
         const bName = normalizeStorefrontText(b.name || '');
-
-        const getRelevanceScore = (productName, product) => {
-          let score = 0;
-          const searchableText = getProductSearchText(product);
-
-          if (productName === normalizedSearchTerm) {
-            score += 100;
-          } else if (productName.startsWith(normalizedSearchTerm)) {
-            score += 70;
-          } else if (productName.includes(normalizedSearchTerm)) {
-            score += 40;
-          }
-
-          score += termTokens.reduce(
-            (tokenScore, token) => (searchableText.includes(token) ? tokenScore + 8 : tokenScore),
-            0
-          );
-
-          if (hasRealImage(product)) {
-            score += 12;
-          }
-
-          if (product.inStock !== false) {
-            score += 4;
-          }
-
-          return score;
-        };
-
-        const scoreDelta = getRelevanceScore(bName, b) - getRelevanceScore(aName, a);
+        const scoreDelta = getProductSearchRelevanceScore(b, normalizedSearchTerm) - getProductSearchRelevanceScore(a, normalizedSearchTerm);
         if (scoreDelta !== 0) {
           return scoreDelta;
+        }
+
+        const imageDelta = Number(hasRealImage(b)) - Number(hasRealImage(a));
+        if (imageDelta !== 0) {
+          return imageDelta;
+        }
+
+        const stockDelta = Number(b.inStock !== false) - Number(a.inStock !== false);
+        if (stockDelta !== 0) {
+          return stockDelta;
         }
 
         return aName.localeCompare(bName);
@@ -432,28 +401,32 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
   const activeHealthBenefitLabel = healthBenefitCounts.find(b => b.id === selectedHealthBenefit)?.label || selectedHealthBenefit;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#fbfaf5] text-stone-950">
       {/* Header Section */}
-      <section className="bg-background py-16 border-b border-gray-100">
+      <section className="border-b border-emerald-900/10 bg-gradient-to-b from-[#f6f2e8] via-[#fbfaf5] to-white py-10 sm:py-14">
         <div className="container">
-          <div className="text-center mb-12">
-            <p className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">
-              Fresh market menu
+          <div className="mx-auto mb-10 max-w-4xl text-center sm:mb-12">
+            <p className="mb-4 inline-flex rounded-full border border-emerald-200 bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-800 shadow-sm">
+              Fresh market menu • small-batch wellness
             </p>
-            <h1 className="text-4xl md:text-5xl font-bold text-emerald-800 mb-4">Discover Your Wellness</h1>
-            <p className="text-xl text-emerald-700 max-w-3xl mx-auto mb-2">
-              Premium Wildcrafted Sea Moss Products
+            <h1 className="text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-stone-950 md:text-5xl">
+              Shop what feels good for your week.
+            </h1>
+            <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-stone-700">
+              Wildcrafted sea moss gels, fresh drinks, wellness shots, and seasonal market staples prepared with intention.
             </p>
-            <p className="text-lg text-emerald-600 max-w-2xl mx-auto mb-8">
-              Each product is hand-crafted with mineral-rich ingredients from the ocean
-            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2 text-sm font-medium text-emerald-900">
+              <span className="rounded-full bg-white px-4 py-2 shadow-sm">Market pickup</span>
+              <span className="rounded-full bg-white px-4 py-2 shadow-sm">Ingredient-forward</span>
+              <span className="rounded-full bg-white px-4 py-2 shadow-sm">Secure checkout</span>
+            </div>
             {!infoMode ? (
-              <Link href="/catalog?mode=info" className="inline-flex items-center text-sm font-medium text-emerald-700 underline-offset-4 hover:underline">
+              <Link href="/catalog?mode=info" className="mt-6 inline-flex items-center text-sm font-semibold text-emerald-800 underline-offset-4 hover:underline">
                 <Info className="h-4 w-4 mr-2" aria-hidden="true" />
                 View info board mode
               </Link>
             ) : (
-              <Link href="/catalog" className="inline-flex items-center text-sm font-medium text-emerald-700 underline-offset-4 hover:underline">
+              <Link href="/catalog" className="mt-6 inline-flex items-center text-sm font-semibold text-emerald-800 underline-offset-4 hover:underline">
                 <Sparkles className="h-4 w-4 mr-2" aria-hidden="true" />
                 Return to full catalog
               </Link>
@@ -461,18 +434,18 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
             
             {/* Quiz CTA */}
             {!infoMode && !showQuiz && (
-              <Card className="max-w-2xl mx-auto mt-8 bg-white border-gray-200 shadow-sm">
-                <CardContent className="p-6">
+              <Card className="mx-auto mt-8 max-w-2xl rounded-[1.5rem] border-emerald-900/10 bg-white shadow-sm shadow-emerald-950/5">
+                <CardContent className="p-5 sm:p-6">
                   <div className="flex items-center justify-center gap-3 mb-4">
                     <Sparkles className="w-6 h-6 text-emerald-600" aria-hidden="true" />
-                    <h3 className="text-xl font-semibold text-emerald-800">Not sure where to start?</h3>
+                    <h3 className="text-xl font-semibold text-stone-950">Not sure where to start?</h3>
                   </div>
-                  <p className="text-emerald-600 mb-4">
-                    Take our 60-second wellness quiz for personalized recommendations
+                  <p className="mb-5 text-stone-600">
+                    Take the 60-second wellness quiz for a more personal starting point.
                   </p>
                   <Button 
                     onClick={() => setShowQuiz(true)}
-                    className="bg-emerald-600 hover:bg-emerald-700"
+                    className="h-11 rounded-full bg-emerald-700 px-6 hover:bg-emerald-800"
                   >
                     <Sparkles className="mr-2 h-4 w-4" aria-hidden="true" />
                     Take the Quiz
@@ -483,7 +456,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
             
             {/* Info Mode Banner */}
             {infoMode && (
-              <Card className="max-w-2xl mx-auto mt-8 bg-white border-gray-200 shadow-sm">
+              <Card className="max-w-2xl mx-auto mt-8 bg-white border-emerald-900/10 shadow-sm rounded-[1.5rem]">
                 <CardContent className="p-6 text-center">
                   <div className="flex items-center justify-center gap-3 mb-2">
                     <Info className="w-6 h-6 text-emerald-700" aria-hidden="true" />
@@ -502,20 +475,21 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
       </section>
 
       {/* Product Catalog */}
-      <section className="py-16">
+      <section className="py-10 sm:py-14">
         <div className="container">
           {/* Search Bar */}
-          <div className="mb-8">
-            <div className="max-w-xl mx-auto">
+          <div className="mb-6 sm:mb-8">
+            <div className="mx-auto max-w-2xl">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" aria-hidden="true" />
                 <Input
                   ref={searchInputRef}
-                  type="text"
-                  placeholder="Search products, ingredients, or benefits..."
+                  type="search"
+                  inputMode="search"
+                  placeholder="Search ginger, energy, immunity, strawberry..."
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  className="pl-12 pr-12 py-3 text-base rounded-full border-emerald-200 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm"
+                  className="min-h-[52px] rounded-full border-emerald-200 bg-white pl-12 pr-12 text-base shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
                   aria-label="Search products"
                 />
                 {searchQuery && (
@@ -539,7 +513,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
           
           {/* Active Filters - Airbnb-style chips */}
           {hasActiveFilters && (
-            <div className="bg-emerald-50 p-4 rounded-lg mb-6 border border-emerald-200">
+            <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex gap-2 flex-wrap items-center">
                   <span className="text-sm text-gray-600 font-medium">Active:</span>
@@ -610,9 +584,9 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
           )}
 
           {/* Category Filters + View Toggle */}
-          <div className="flex flex-col lg:flex-row justify-between items-center mb-8 gap-4">
+          <div className="mb-8 flex flex-col items-stretch justify-between gap-4 lg:flex-row lg:items-center">
             <div 
-              className="flex flex-wrap gap-2 justify-center lg:justify-start"
+              className="scrollbar-hide -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 lg:mx-0 lg:flex-wrap lg:justify-start lg:overflow-visible lg:px-0 lg:pb-0"
               role="radiogroup"
               aria-label="Filter by category"
             >
@@ -624,10 +598,10 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                   variant={selectedCategory === category.id ? "default" : "outline"}
                   onClick={() => handleCategoryChange(category.id)}
                   disabled={category.isLoading}
-                  className={`transition-all duration-200 ${
-                    selectedCategory === category.id 
-                      ? "bg-emerald-600 hover:bg-emerald-700" 
-                      : "border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                  className={`min-h-[44px] shrink-0 rounded-full px-4 transition-all duration-200 ${
+                    selectedCategory === category.id
+                      ? "bg-emerald-700 hover:bg-emerald-800"
+                      : "border-emerald-200 bg-white text-emerald-800 hover:bg-emerald-50"
                   } ${category.isLoading ? "opacity-70" : ""}`}
                 >
                   {category.icon && <span className="mr-2" aria-hidden="true">{category.icon}</span>}
@@ -637,7 +611,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center gap-2" role="group" aria-label="View mode">
+            <div className="hidden items-center gap-2 lg:flex" role="group" aria-label="View mode">
               <Button
                 variant={viewMode === 'grid' ? "default" : "outline"}
                 size="sm"
@@ -661,7 +635,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
 
           {/* Results Counter */}
           {!loading && (hasActiveFilters || displayCount !== products.length) && (
-            <div className="mb-6 p-4 bg-emerald-50 rounded-lg flex items-center justify-between" aria-live="polite">
+            <div className="mb-6 flex items-center justify-between rounded-2xl bg-white p-4 shadow-sm" aria-live="polite">
               <div className="text-sm text-emerald-700">
                 {recommendedIds ? (
                   <span>Showing <strong>{displayCount}</strong> personalized recommendations</span>
@@ -689,8 +663,8 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
             <>
               <div className={`grid gap-8 ${
                 viewMode === 'grid' 
-                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                  : 'grid-cols-1 lg:grid-cols-2'
+                  ? 'grid-cols-1 gap-y-5 sm:grid-cols-2 lg:grid-cols-3'
+                  : 'grid-cols-1 gap-y-5 lg:grid-cols-2'
               }`}>
                 {displayProducts.map((product) => {
                   if (infoMode) {
@@ -717,14 +691,15 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
               </div>
 
               {displayCount === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground text-lg mb-4">
+                <div className="rounded-[1.75rem] border border-emerald-900/10 bg-white px-5 py-10 text-center shadow-sm">
+                  <p className="mb-2 text-xl font-semibold text-stone-950">No matching products yet.</p>
+                  <p className="mx-auto mb-5 max-w-md text-sm leading-6 text-stone-600">
                     {isSearchMode 
-                      ? `No products found for "${searchQuery}". Try a different search term.`
-                      : 'No products match your filters.'
+                      ? `Try a broader term than "${searchQuery}" — ginger, energy, immunity, lemonade, or sea moss can help.`
+                      : 'Try clearing filters or browsing the full market menu.'
                     }
                   </p>
-                  <Button onClick={clearAllFilters} variant="outline">
+                  <Button onClick={clearAllFilters} variant="outline" className="rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
                     Show All Products
                   </Button>
                 </div>
@@ -736,9 +711,9 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
 
       {/* Trust Indicators */}
       {!loading && !showQuiz && (
-        <section className="py-12 bg-stone-50 border-y border-stone-100">
+        <section className="border-y border-emerald-900/10 bg-white py-10">
           <div className="container">
-            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 text-center">
+            <div className="grid gap-4 text-center md:grid-cols-3">
               <div className="flex items-center gap-3">
                 <div className="bg-emerald-100 w-12 h-12 rounded-full flex items-center justify-center">
                   <Droplets className="h-6 w-6 text-emerald-700" aria-hidden="true" />
@@ -773,18 +748,18 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
 
       {/* CTA Section */}
       {!loading && !showQuiz && (
-        <section className="py-20 bg-emerald-700 text-white">
+        <section className="bg-gradient-to-br from-emerald-700 to-emerald-950 py-16 text-white">
           <div className="container text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Ready to Explore Natural Flavors?
+            <h2 className="mb-5 text-3xl font-semibold tracking-tight md:text-5xl">
+              Want a guided starting point?
             </h2>
-            <p className="text-xl mb-8 text-emerald-100 max-w-2xl mx-auto">
-              Discover our collection of wildcrafted sea moss products.
+            <p className="mx-auto mb-8 max-w-2xl text-lg text-emerald-50/90">
+              Answer a few quick questions and find the Taste of Gratitude products that fit your routine.
             </p>
             <Button
               onClick={() => setShowQuiz(true)}
               size="lg"
-              className="h-14 px-8 text-lg bg-white text-emerald-700 hover:bg-emerald-50 shadow-md transition-colors"
+              className="min-h-[52px] rounded-full bg-white px-8 text-lg text-emerald-900 shadow-md transition-colors hover:bg-emerald-50"
             >
               <Sparkles className="mr-2 h-5 w-5" aria-hidden="true" />
               Take the Quiz

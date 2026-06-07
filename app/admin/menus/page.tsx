@@ -489,6 +489,7 @@ export default function MenusPage() {
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="imageUrl">Menu Image URL *</Label>
+                <p className="text-xs text-muted-foreground">Paste a public Canva export or image URL. For best results, use a vertical PNG/JPG.</p>
                 <Input
                   id="imageUrl"
                   name="imageUrl"

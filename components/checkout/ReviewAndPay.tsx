@@ -447,7 +447,7 @@ export default function ReviewAndPay({
                     <h4 className="font-medium text-amber-800">Preorder items in your cart</h4>
                     <p className="text-sm text-amber-700 mt-1">
                       These items will be freshly prepared for your selected pickup date. 
-                      You&apos;ll receive a text when your order is ready to collect.
+                      We&apos;ll email your confirmation and text updates if you added a phone number.
                     </p>
                   </div>
                 </div>
@@ -616,7 +616,7 @@ export default function ReviewAndPay({
 
             {/* Proceed to Payment Button */}
             <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-900">
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="flex items-center gap-2">
                   <Lock className="h-4 w-4 text-emerald-700" aria-hidden="true" />
                   Secure Square checkout
@@ -628,6 +628,10 @@ export default function ReviewAndPay({
                 <div className="flex items-center gap-2">
                   <Truck className="h-4 w-4 text-emerald-700" aria-hidden="true" />
                   Fulfillment confirmed before payment
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-emerald-700" aria-hidden="true" />
+                  <span className="text-sm text-gray-600">No account required</span>
                 </div>
               </div>
             </div>

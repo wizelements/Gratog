@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Leaf, Heart, Award, Users } from 'lucide-react';
 
@@ -11,7 +10,7 @@ export default function AboutPage() {
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.unsplash.com/photo-1518495973542-4542c06a5843?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwyfHxob2xpc3RpYyUyMHdlbGxuZXNzfGVufDB8fHx8MTc1OTgwOTQzNXww&ixlib=rb-4.1.0&q=85"
-            alt="Jenneisha at the farmers market"
+            alt="Natural wellness ingredients and market-inspired small-batch food"
             fill
             className="object-cover brightness-50"
           />
@@ -60,6 +59,33 @@ export default function AboutPage() {
           </div>
         </div>
 
+      </section>
+
+      {/* Process */}
+      <section className="bg-stone-50 py-16">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-gray-900">How each batch comes together</h2>
+            <p className="mt-3 text-gray-600">
+              Simple ingredients, careful prep, and weekly market freshness.
+            </p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              ['🫧 Soak', 'Wildcrafted sea moss is cleaned and soaked with care before each batch.'],
+              ['🫐 Blend', 'Each flavor is blended in small batches with real, visible ingredients.'],
+              ['🤝 Share', 'Jars are prepared fresh for market pickup, samples, and conversations.'],
+            ].map(([title, text]) => (
+              <div key={title} className="rounded-xl border border-stone-200 bg-white p-6">
+                <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-gray-600">{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="container py-16">
         {/* Values */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="text-center">
@@ -122,12 +148,14 @@ export default function AboutPage() {
             The best way to experience Taste of Gratitude is in person. Try the gel,
             and let me tell you the story behind each flavor.
           </p>
-          <Link
-            href="/markets"
-            className="inline-block bg-[#D4AF37] hover:bg-[#C5A028] text-black font-semibold px-8 py-3 rounded-full transition-colors text-lg"
-          >
-            See Where We&apos;ll Be
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a href="/markets" className="px-8 py-3 rounded-full bg-emerald-700 text-white font-semibold hover:bg-emerald-800">
+              See Where We&apos;ll Be
+            </a>
+            <a href="/catalog" className="px-8 py-3 rounded-full border border-emerald-700 text-emerald-700 font-semibold hover:bg-emerald-50">
+              Shop This Week&apos;s Menu
+            </a>
+          </div>
         </div>
       </section>
     </div>

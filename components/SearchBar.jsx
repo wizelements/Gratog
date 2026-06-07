@@ -12,12 +12,30 @@ import {
   resolveCategoryAlias
 } from '@/lib/storefront-query';
 
+const RECENT_KEY = 'gratog_recent_searches';
+
+function getRecentSearches() {
+  if (typeof window === 'undefined') return [];
+  try {
+    const parsed = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+    return Array.isArray(parsed) ? parsed.filter(q => typeof q === 'string').slice(0, 5) : [];
+  } catch { return []; }
+}
+
+function saveRecentSearch(query) {
+  if (typeof window === 'undefined') return;
+  const trimmed = query.trim();
+  if (!trimmed) return;
+  const next = [trimmed, ...getRecentSearches().filter(q => q !== trimmed)].slice(0, 5);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+}
+
 const POPULAR_SEARCHES = [
-  { query: 'Sea Moss Gel', category: 'Products', trending: true, volume: '2.3k searches' },
-  { query: 'Elderberry Blend', category: 'Products', trending: true, volume: '1.8k searches' },
-  { query: 'How to use sea moss', category: 'Learn', trending: true, volume: '890 searches', href: '/explore/learn' },
-  { query: 'Benefits of sea moss', category: 'Learn', trending: false, volume: '650 searches', href: '/explore' },
-  { query: 'Shipping information', category: 'Help', trending: false, volume: null, href: '/contact' },
+  { query: 'Sea Moss Gel', category: 'Products', trending: true },
+  { query: 'Elderberry Blend', category: 'Products', trending: true },
+  { query: 'How to use sea moss', category: 'Learn', trending: true, href: '/explore/learn' },
+  { query: 'Benefits of sea moss', category: 'Learn', trending: false, href: '/explore' },
+  { query: 'Shipping information', category: 'Help', trending: false, href: '/policies#shipping' },
 ];
 
 const CATEGORY_SHORTCUTS = [
@@ -34,8 +52,7 @@ const DEFAULT_SUGGESTIONS = [
       query: `Browse ${label}`,
       category: 'Category',
       catalogCategory: resolveCategoryAlias(shortcut.category),
-      trending: shortcut.trending,
-      volume: null
+      trending: shortcut.trending
     };
   })
 ].slice(0, 7);
@@ -44,6 +61,7 @@ export default function SearchBar({ placeholder = 'Search products, benefits, gu
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState(() => DEFAULT_SUGGESTIONS);
+  const [recentSearches, setRecentSearches] = useState([]);
   const inputRef = useRef(null);
   const containerRef = useRef(null);
   const router = useRouter();
@@ -53,6 +71,10 @@ export default function SearchBar({ placeholder = 'Search products, benefits, gu
     const currentSearch = (searchParams?.get('search') || searchParams?.get('q') || '').trim();
     setQuery(currentSearch);
   }, [searchParams]);
+
+  useEffect(() => {
+    if (isOpen) setRecentSearches(getRecentSearches());
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -85,6 +107,7 @@ export default function SearchBar({ placeholder = 'Search products, benefits, gu
   };
 
   const handleSearch = (searchQuery, category = 'all') => {
+    saveRecentSearch(searchQuery);
     router.push(buildCatalogRoute({ search: searchQuery, category }));
     setIsOpen(false);
   };
@@ -163,6 +186,17 @@ export default function SearchBar({ placeholder = 'Search products, benefits, gu
           role="listbox"
         >
           <div className="max-h-96 overflow-y-auto">
+            {recentSearches.length > 0 && !query && (
+              <div className="mb-4 px-4 pt-3">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">Recent Searches</h3>
+                {recentSearches.map(q => (
+                  <button key={q} onClick={() => { setQuery(q); handleSearch(q); }}
+                    className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-emerald-50 rounded">
+                    🕐 {q}
+                  </button>
+                ))}
+              </div>
+            )}
             {suggestions.length > 0 ? (
               <>
                 {suggestions.map((item, idx) => (
@@ -186,12 +220,7 @@ export default function SearchBar({ placeholder = 'Search products, benefits, gu
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs text-gray-500">{item.category}</p>
-                          {item.volume && (
-                            <span className="text-xs text-emerald-600">{item.volume}</span>
-                          )}
-                        </div>
+                        <p className="text-xs text-gray-500">{item.category}</p>
                       </div>
                     </div>
                     <span className="text-xs text-gray-400 group-hover:text-gray-600" aria-hidden="true">→</span>
@@ -214,7 +243,7 @@ export default function SearchBar({ placeholder = 'Search products, benefits, gu
               {[
                 { label: 'FAQ', href: '/#faq' },
                 { label: 'Contact', href: '/contact' },
-                { label: 'Shipping', href: '/contact' }
+                { label: 'Shipping', href: '/policies#shipping' }
               ].map((link) => (
                 <Link
                   key={link.label}

@@ -114,6 +114,31 @@ export default function MenuPage() {
           )}
         </div>
 
+        {/* Action Buttons */}
+        <div className="mb-4 flex flex-wrap justify-center gap-3 print:hidden">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="px-4 py-2 rounded-lg border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-sm font-medium"
+          >
+            🖨️ Print Menu
+          </button>
+          <a
+            href={menu.imageUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 rounded-lg border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-sm font-medium"
+          >
+            🔍 Open Full Size
+          </a>
+          <a
+            href="/catalog"
+            className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-medium"
+          >
+            🛒 Shop This Menu
+          </a>
+        </div>
+
         {/* Menu Image — pinch-to-zoom on mobile */}
         <div className="rounded-2xl overflow-hidden shadow-xl bg-white dark:bg-gray-800 border border-emerald-100 dark:border-emerald-900/30">
           <img

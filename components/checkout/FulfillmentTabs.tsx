@@ -17,9 +17,9 @@ interface FulfillmentTabsProps {
 }
 
 const TABS = [
-  { value: 'pickup' as FulfillmentType, label: 'Pickup', icon: MapPin, description: 'Pick up at market' },
-  { value: 'delivery' as FulfillmentType, label: 'Delivery', icon: Truck, description: 'Home delivery', disabledForPreorder: true },
-  { value: 'shipping' as FulfillmentType, label: 'Shipping', icon: Package, description: 'Ships nationwide', disabledForPreorder: true },
+  { value: 'pickup' as FulfillmentType, label: 'Pickup', icon: MapPin, description: 'Market pickup' },
+  { value: 'delivery' as FulfillmentType, label: 'Delivery', icon: Truck, description: 'Atlanta-area only', disabledForPreorder: true },
+  { value: 'shipping' as FulfillmentType, label: 'Shipping', icon: Package, description: 'Eligible items only', disabledForPreorder: true },
 ];
 
 export default function FulfillmentTabs({ selected, onChange, hasPreorderItems = false }: FulfillmentTabsProps) {

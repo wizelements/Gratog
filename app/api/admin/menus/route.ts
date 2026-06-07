@@ -111,6 +111,11 @@ export async function POST(request: any) {
 
     const menu = await createMenu(parsed.data as CreateMenuData);
 
+    // Enforce single-active: deactivate others when creating an active menu
+    if (parsed.data.isActive) {
+      await setActiveMenu(menu.id);
+    }
+
     logger.info('API', 'Menu created by admin', {
       adminEmail: admin.email,
       menuId: menu.id,
@@ -165,6 +170,11 @@ export async function PUT(request: any) {
     const { menuId, ...updateData } = parsed.data;
 
     const menu = await updateMenu(menuId, updateData);
+
+    // Enforce single-active: deactivate others when setting a menu active
+    if (updateData.isActive && menu) {
+      await setActiveMenu(menuId);
+    }
 
     if (!menu) {
       return NextResponse.json(

@@ -228,7 +228,7 @@ function CheckoutContent() {
                     exit={{ opacity: 0, x: 20 }}
                   >
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Review your cart</h2>
-                    <p className="mb-6 text-base text-gray-600">Confirm your items before choosing pickup or delivery.</p>
+                    <p className="mb-6 text-base text-gray-600">Confirm your items before choosing pickup, local delivery, or shipping.</p>
                     <CartSummary
                       cart={cart}
                       totals={totals}

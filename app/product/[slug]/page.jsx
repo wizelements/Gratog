@@ -116,7 +116,7 @@ function serializeProductForClient(product) {
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }) {
-  const { slug } = params;
+  const { slug } = await params;
   
   try {
     const { db } = await connectToDatabase();
@@ -151,7 +151,7 @@ export async function generateMetadata({ params }) {
 
 // Main SSR Page Component
 export default async function ProductPage({ params }) {
-  const { slug } = params;
+  const { slug } = await params;
   
   if (!slug) {
     notFound();
