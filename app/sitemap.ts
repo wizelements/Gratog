@@ -1,7 +1,13 @@
 import { MetadataRoute } from 'next';
 
+function getBaseUrl() {
+  return (process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop')
+    .trim()
+    .replace(/\/+$/, '');
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://tasteofgratitude.shop';
+  const baseUrl = getBaseUrl();
 
   // Static pages
   const staticPages = [
