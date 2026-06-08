@@ -310,11 +310,13 @@ async function sendEmailsAsync(
   const { db } = await connectToDatabase();
   
   // Import email service
-  const { sendEmail } = await import('@/lib/email/service');
+  const emailService = (await import('@/lib/email/service')) as any;
+  const { sendEmail, generateUnsubscribeToken } = emailService;
   
   const BATCH_SIZE = 100;
   let sentCount = 0;
   let failedCount = 0;
+  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop').replace(/\/$/, '');
   
   for (let i = 0; i < recipients.length; i += BATCH_SIZE) {
     const batch = recipients.slice(i, i + BATCH_SIZE);
@@ -323,19 +325,39 @@ async function sendEmailsAsync(
     const _results = await Promise.allSettled(
       batch.map(async (recipient) => {
         try {
+          const normalizedEmail = recipient.email.trim().toLowerCase();
+          const unsubscribeToken = generateUnsubscribeToken(normalizedEmail, normalizedEmail);
+          const listUnsubscribeUrl = `${baseUrl}/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
+          const html = `${campaign.body}
+            <div style="margin-top:32px;padding-top:20px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px;line-height:1.5;">
+              <p style="margin:0 0 8px 0;">You are receiving this because you joined Taste of Gratitude updates or ordered with us.</p>
+              <p style="margin:0;"><a href="${listUnsubscribeUrl}" style="color:#047857;">Unsubscribe from marketing emails</a></p>
+            </div>`;
+
           const result = await sendEmail({
-            to: recipient.email,
+            to: normalizedEmail,
             subject: campaign.subject,
-            html: campaign.body,
+            html,
             text: campaign.body.replace(/<[^\u003e]*>/g, ''), // Strip HTML for text version
+            emailType: 'campaign',
+            template: 'campaign',
+            metadata: {
+              campaignId: campaign.id,
+              campaignName: campaign.name,
+              senderEmail,
+            },
+            listUnsubscribeUrl,
           });
           
           if (result.success) {
             sentCount++;
-            return { success: true, email: recipient.email };
+            return { success: true, email: normalizedEmail };
+          } else if (result.skipped) {
+            failedCount++;
+            return { success: false, email: normalizedEmail, error: result.reason || 'skipped' };
           } else {
             failedCount++;
-            return { success: false, email: recipient.email, error: result.error };
+            return { success: false, email: normalizedEmail, error: result.error };
           }
         } catch (error) {
           failedCount++;

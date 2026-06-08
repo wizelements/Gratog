@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
+import { verifyUnsubscribeToken as verifyServiceUnsubscribeToken } from '@/lib/email/service';
 
 /**
  * Marketing email unsubscribe endpoint.
@@ -61,7 +62,10 @@ function verifyToken(token: string): string | null {
   // any trailing garbage so an attacker can't pad a valid token (Node's
   // `Buffer.from(s, 'hex')` silently truncates at the first invalid pair).
   const m = /^([A-Za-z0-9_-]+)\.([0-9a-f]{64})$/.exec(token);
-  if (!m) return null;
+  if (!m) {
+    const serviceToken = verifyLegacyServiceToken(token);
+    return serviceToken;
+  }
   const [, encEmail, mac] = m;
 
   let email: string;
@@ -82,6 +86,19 @@ function verifyToken(token: string): string | null {
   return email;
 }
 
+function verifyLegacyServiceToken(token: string): string | null {
+  try {
+    const decoded = verifyServiceUnsubscribeToken(token);
+    const email = typeof decoded?.email === 'string'
+      ? decoded.email.trim().toLowerCase()
+      : null;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null;
+    return email;
+  } catch {
+    return null;
+  }
+}
+
 /** Helper exported for email templates: build a working unsubscribe URL. */
 function buildUnsubscribeUrl(baseUrl: string, email: string): string {
   const token = signEmail(email);
@@ -92,20 +109,58 @@ function buildUnsubscribeUrl(baseUrl: string, email: string): string {
 async function markUnsubscribed(email: string, source: string) {
   const { db } = await connectToDatabase();
   const now = new Date();
-  await db.collection('newsletter_subscribers').updateOne(
-    { email },
-    {
-      $set: {
-        email,
-        unsubscribed: true,
-        unsubscribedAt: now,
-        unsubscribedSource: source,
-        updatedAt: now,
+  await Promise.all([
+    db.collection('newsletter_subscribers').updateOne(
+      { email },
+      {
+        $set: {
+          email,
+          unsubscribed: true,
+          unsubscribedAt: now,
+          unsubscribedSource: source,
+          updatedAt: now,
+        },
+        $setOnInsert: { createdAt: now },
       },
-      $setOnInsert: { createdAt: now },
-    },
-    { upsert: true }
-  );
+      { upsert: true }
+    ),
+    db.collection('unsubscribes').updateOne(
+      { email },
+      {
+        $set: {
+          email,
+          unsubscribedAt: now,
+          source,
+          updatedAt: now,
+        },
+        $setOnInsert: { createdAt: now },
+      },
+      { upsert: true }
+    ),
+    db.collection('email_suppressions').updateOne(
+      { email, reason: 'marketing_opt_out' },
+      {
+        $set: {
+          email,
+          reason: 'marketing_opt_out',
+          source,
+          active: true,
+          updatedAt: now,
+        },
+        $setOnInsert: { createdAt: now },
+      },
+      { upsert: true }
+    ),
+    db.collection('user_preferences').updateMany(
+      { email },
+      {
+        $set: {
+          marketing: false,
+          updatedAt: now,
+        },
+      }
+    ),
+  ]);
 }
 
 function safeOkResponse() {

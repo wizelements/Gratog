@@ -24,6 +24,9 @@ const INDEXES = {
     { key: { 'customer.email': 1 }, name: 'idx_orders_customer_email' },
     { key: { status: 1, createdAt: -1 }, name: 'idx_orders_status_created' },
     { key: { paymentStatus: 1 }, name: 'idx_orders_payment_status' },
+    { key: { paymentStatus: 1, createdAt: 1 }, name: 'idx_orders_payment_created' },
+    { key: { abandonedAt: 1 }, sparse: true, name: 'idx_orders_abandoned_at' },
+    { key: { abandonedRecoverySentAt: 1 }, sparse: true, name: 'idx_orders_abandoned_recovery_sent' },
     { key: { squarePaymentId: 1 }, name: 'idx_orders_square_payment' },
     { key: { orderNumber: 1 }, unique: true, sparse: true, name: 'idx_orders_number' },
     { key: { 'metadata.preorderDate': 1 }, sparse: true, name: 'idx_orders_preorder_date' },
@@ -132,8 +135,28 @@ const INDEXES = {
     },
     { key: { to: 1, createdAt: -1 }, name: 'idx_email_sends_to_created' },
     { key: { orderId: 1 }, sparse: true, name: 'idx_email_sends_order' },
+    { key: { campaignId: 1 }, sparse: true, name: 'idx_email_sends_campaign' },
+    { key: { emailType: 1, createdAt: -1 }, name: 'idx_email_sends_type_created' },
     { key: { status: 1, createdAt: -1 }, name: 'idx_email_sends_status_created' },
     { key: { template: 1, createdAt: -1 }, name: 'idx_email_sends_template_created' },
+  ],
+
+  // Resend webhook delivery ledger / idempotency
+  resend_webhook_events: [
+    { key: { svixId: 1 }, unique: true, sparse: true, name: 'idx_resend_webhooks_svix' },
+    { key: { messageId: 1, createdAt: -1 }, sparse: true, name: 'idx_resend_webhooks_message' },
+    { key: { status: 1, createdAt: -1 }, name: 'idx_resend_webhooks_status_created' },
+  ],
+
+  // Email suppressions from unsubscribes, bounces, and complaints
+  email_suppressions: [
+    { key: { email: 1, reason: 1 }, unique: true, name: 'idx_email_suppressions_email_reason' },
+    { key: { active: 1, updatedAt: -1 }, name: 'idx_email_suppressions_active_updated' },
+  ],
+
+  unsubscribes: [
+    { key: { email: 1 }, name: 'idx_unsubscribes_email' },
+    { key: { unsubscribedAt: -1 }, name: 'idx_unsubscribes_at' },
   ],
 
   // Contact form submissions

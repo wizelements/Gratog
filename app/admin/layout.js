@@ -18,6 +18,7 @@ import {
   ExternalLink,
   MapPin,
   CalendarDays,
+  Mail,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -31,6 +32,7 @@ const navigation = [
   { name: 'Markets', href: '/admin/markets', icon: MapPin },
   { name: 'Inventory', href: '/admin/inventory', icon: Warehouse },
   { name: 'Customers', href: '/admin/customers', icon: Users },
+  { name: 'Email Health', href: '/admin/emails', icon: Mail },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 

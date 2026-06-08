@@ -187,7 +187,6 @@ export default function ProductDetailClient({ product, slug }) {
     `This product is part of Taste of Gratitude's weekly small-batch rhythm: simple ingredients, careful prep, and a calmer way to bring market-made wellness into your routine.`;
   const intendedUse =
     product.intendedUse ||
-    product.benefitStory ||
     'Best for customers who want an approachable, ingredient-forward product that feels easy to use throughout the week.';
   const customerQuote = product.customerQuote || product.testimonial || '“You can tell it is made with care — it feels fresh, real, and easy to come back to.”';
   const ingredients = Array.isArray(product.ingredients)

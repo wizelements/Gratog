@@ -5,8 +5,6 @@ Disallow: /admin
 Disallow: /admin/*
 Disallow: /api
 Disallow: /api/*
-Disallow: /test-auth
-Disallow: /diagnostic
 
 # Googlebot
 User-agent: Googlebot
