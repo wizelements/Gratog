@@ -177,19 +177,23 @@ describe('URL Consistency - Critical Config Files', () => {
     }
   });
   
-  it('public/robots.txt should use production domain', () => {
-    const robotsPath = path.join(WORKSPACE, 'public/robots.txt');
+  it('App Router robots metadata should use production domain and fail closed', () => {
+    const robotsPath = path.join(WORKSPACE, 'app/robots.ts');
     const content = fs.readFileSync(robotsPath, 'utf8');
     
     expect(content).toContain(PRODUCTION_DOMAIN);
+    expect(content).toContain('VERCEL_ENV');
+    expect(content).toContain("disallow: '/'");
     expect(content).not.toContain('gratog.vercel.app');
   });
   
-  it('next-sitemap.config.js should use production domain', () => {
-    const configPath = path.join(WORKSPACE, 'next-sitemap.config.js');
+  it('App Router sitemap metadata should use production domain and fail closed', () => {
+    const configPath = path.join(WORKSPACE, 'app/sitemap.ts');
     const content = fs.readFileSync(configPath, 'utf8');
     
     expect(content).toContain(PRODUCTION_DOMAIN);
+    expect(content).toContain('VERCEL_ENV');
+    expect(content).toContain('return []');
   });
 });
 

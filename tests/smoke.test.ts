@@ -134,14 +134,16 @@ describe('Environment Consistency', () => {
     expect(content).not.toContain('gratog.vercel.app');
   });
   
-  it('robots.txt should point to production domain', () => {
+  it('App Router robots metadata should point to production domain and fail closed', () => {
     const fs = require('fs');
     const path = require('path');
     
-    const robotsPath = path.join(process.cwd(), 'public/robots.txt');
+    const robotsPath = path.join(process.cwd(), 'app/robots.ts');
     const content = fs.readFileSync(robotsPath, 'utf8');
     
     expect(content).toContain('tasteofgratitude.shop');
+    expect(content).toContain('VERCEL_ENV');
+    expect(content).toContain("disallow: '/'");
     expect(content).not.toContain('gratog.vercel.app');
   });
 });
@@ -211,7 +213,8 @@ describe('Critical Files Exist', () => {
     'middleware.ts',
     'next.config.js',
     'vercel.json',
-    'public/robots.txt',
+    'app/robots.ts',
+    'app/sitemap.ts',
   ];
   
   criticalFiles.forEach(file => {

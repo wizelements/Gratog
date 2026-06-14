@@ -1,10 +1,11 @@
 import * as Sentry from '@sentry/nextjs';
+import type { Event, SamplingContext } from '@sentry/types';
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   
   // ISS-057 FIX: Use tracesSampler for higher sampling on payment/checkout routes
-  tracesSampler(samplingContext) {
+  tracesSampler(samplingContext: SamplingContext) {
     const url = samplingContext?.request?.url || '';
     // 100% sampling for payment-critical routes
     if (url.includes('/api/payments') || url.includes('/api/checkout') || url.includes('/api/orders/create') || url.includes('/api/square-webhook')) {
@@ -21,7 +22,7 @@ Sentry.init({
   release: process.env.VERCEL_GIT_COMMIT_SHA,
   
   // Filter sensitive data
-  beforeSend(event) {
+  beforeSend(event: Event) {
     // Remove sensitive headers
     if (event.request?.headers) {
       delete event.request.headers['authorization'];

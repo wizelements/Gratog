@@ -29,6 +29,7 @@ for (const envFile of ['.env.local', '.env', '.env.production']) {
 
 const args = new Set(process.argv.slice(2));
 const shouldExecute = args.has('--execute');
+const target = parseTarget(process.argv.slice(2));
 const baseUrl = normalizeBaseUrl(
   process.env.MENU_PUBLIC_BASE_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
@@ -74,8 +75,16 @@ async function main() {
   printPlan();
 
   if (!shouldExecute) {
-    console.log('\nDry run only. Pass --execute after the menu assets are deployed.');
+    console.log('\nDry run only. Pass --target staging|production --execute after the menu assets are deployed.');
     return;
+  }
+
+  if (!target) {
+    throw new Error('Execution requires --target staging or --target production.');
+  }
+
+  if (target === 'production' && baseUrl !== 'https://tasteofgratitude.shop') {
+    throw new Error(`Production menu upsert requires MENU_PUBLIC_BASE_URL=https://tasteofgratitude.shop (got ${baseUrl}).`);
   }
 
   if (!process.env.MONGODB_URI) {
@@ -92,6 +101,15 @@ async function main() {
     const db = client.db(process.env.DB_NAME || mongoTarget.dbName || undefined);
     const collection = db.collection('menus');
     const now = new Date();
+
+    const activeMenus = await collection.find(
+      { isActive: true },
+      { projection: { _id: 1, title: 1, imageUrl: 1, weekStart: 1 } }
+    ).toArray();
+
+    if (activeMenus.length > 1) {
+      throw new Error(`Refusing to upsert while ${activeMenus.length} active menus exist. Resolve duplicates first.`);
+    }
 
     const upsertResult = await collection.findOneAndUpdate(
       { imageUrl: menuDocument.imageUrl },
@@ -135,6 +153,7 @@ async function main() {
 function printPlan() {
   const printable = {
     ...menuDocument,
+    target: target || 'dry-run-unspecified',
     weekStart: menuDocument.weekStart.toISOString(),
     weekEnd: menuDocument.weekEnd.toISOString(),
     sourceSha256: actualSourceSha256,
@@ -177,6 +196,19 @@ function describeMongoTarget(uri) {
     host: parsed.host,
     dbName: parsed.pathname.replace(/^\//, ''),
   };
+}
+
+function parseTarget(argv) {
+  const targetFlag = argv.find((arg) => arg.startsWith('--target='));
+  const target = targetFlag
+    ? targetFlag.slice('--target='.length)
+    : argv[argv.indexOf('--target') + 1];
+
+  if (!target || target.startsWith('--')) return null;
+  if (!['staging', 'production'].includes(target)) {
+    throw new Error(`Invalid target "${target}". Use staging or production.`);
+  }
+  return target;
 }
 
 main().catch((error) => {

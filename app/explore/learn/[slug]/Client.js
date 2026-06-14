@@ -55,12 +55,12 @@ function getNextLessonId(lessons, currentLessonId) {
   return lessons[currentIndex + 1].id;
 }
 
-export default function LearningModulePage() {
+export default function LearningModulePage({ initialSlug = '' }) {
   const params = useParams();
   const router = useRouter();
   const { isAuthenticated, loading: authLoading } = useAuth();
 
-  const moduleSlug = String(params?.slug || '').trim().toLowerCase();
+  const moduleSlug = String(params?.slug || initialSlug || '').trim().toLowerCase();
   const [publicModule, setPublicModule] = useState(null);
   const [learnerModule, setLearnerModule] = useState(null);
   const [progress, setProgress] = useState(null);

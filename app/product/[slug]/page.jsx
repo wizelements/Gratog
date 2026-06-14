@@ -141,6 +141,9 @@ export async function generateMetadata({ params }) {
     return {
       title: `${product.name} | Taste of Gratitude`,
       description,
+      alternates: {
+        canonical: `/product/${product.slug || slug}`,
+      },
       openGraph: {
         title: product.name,
         description,

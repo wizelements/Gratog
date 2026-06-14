@@ -90,6 +90,5 @@ const MarketOrderSchema = new Schema<IMarketOrder>({
 MarketOrderSchema.index({ marketId: 1, status: 1, createdAt: -1 });
 MarketOrderSchema.index({ status: 1, createdAt: -1 });
 MarketOrderSchema.index({ customerPhone: 1 });
-MarketOrderSchema.index({ orderNumber: 1 });
 
 export default mongoose.models.MarketOrder || mongoose.model<IMarketOrder>('MarketOrder', MarketOrderSchema);

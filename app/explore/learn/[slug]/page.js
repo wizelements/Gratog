@@ -3,6 +3,8 @@ export const revalidate = 0;
 
 import Client from './Client';
 
-export default function LearnPage({ params }) {
-  return <Client params={params} />;
+export default async function LearnPage({ params }) {
+  const { slug } = await params;
+
+  return <Client initialSlug={slug} />;
 }

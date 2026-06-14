@@ -1,6 +1,6 @@
 // AUTO-UPDATE: This version string is replaced at build time by next.config.js headers.
 // The browser byte-compares sw.js on every registration check — any change triggers update.
-const CACHE_VERSION = 'v13-20260606-closure';
+const CACHE_VERSION = 'v14-20260614-hardening';
 const CACHE_PREFIX = 'gratog';
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${CACHE_VERSION}`;
@@ -76,6 +76,8 @@ self.addEventListener('activate', (event) => {
         '/register',
         '/profile',
         '/account',
+        '/preorder',
+        '/vendor',
         '/api/admin',
         '/api/auth',
         '/api/csrf',
@@ -85,6 +87,10 @@ self.addEventListener('activate', (event) => {
         '/api/inventory',
         '/api/cart',
         '/api/customer',
+        '/api/webhooks',
+        '/api/preorder',
+        '/api/returns',
+        '/api/subscriptions',
       ];
       const infrastructurePaths = ['/sw.js', '/manifest.json'];
       const allCaches = await caches.keys();
@@ -247,6 +253,10 @@ function shouldBypassApiCache(pathname) {
     pathname.startsWith('/api/inventory') ||
     pathname.startsWith('/api/cart') ||
     pathname.startsWith('/api/customer') ||
+    pathname.startsWith('/api/webhooks') ||
+    pathname.startsWith('/api/preorder') ||
+    pathname.startsWith('/api/returns') ||
+    pathname.startsWith('/api/subscriptions') ||
     pathname.startsWith('/api/reviews') ||
     pathname.startsWith('/api/products') ||
     pathname.startsWith('/api/markets') ||
@@ -371,7 +381,9 @@ function shouldCacheRuntimeRequest(url) {
     url.pathname.startsWith('/login') ||
     url.pathname.startsWith('/register') ||
     url.pathname.startsWith('/profile') ||
-    url.pathname.startsWith('/account')
+    url.pathname.startsWith('/account') ||
+    url.pathname.startsWith('/preorder') ||
+    url.pathname.startsWith('/vendor')
   );
 }
 

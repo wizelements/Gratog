@@ -20,8 +20,8 @@ function isCoveredByNetworkOnlyPrefix(apiPrefix: string): boolean {
 
 describe('PWA Cache Governance', () => {
   it('uses a bumped closure service worker version in both registration and cache names', () => {
-    expect(sw).toContain("const CACHE_VERSION = 'v13-20260606-closure'");
-    expect(pwa).toContain("const SERVICE_WORKER_VERSION = '20260606-closure'");
+    expect(sw).toContain("const CACHE_VERSION = 'v14-20260614-hardening'");
+    expect(pwa).toContain("const SERVICE_WORKER_VERSION = '20260614-hardening'");
   });
 
   it('does not queue or replay offline orders', () => {
@@ -59,5 +59,16 @@ describe('PWA Cache Governance', () => {
     expect(vercelConfig).toContain('"source": "/manifest.json"');
     expect(vercelConfig).toContain('"source": "/sw.js"');
     expect(vercelConfig).toContain('"value": "no-cache, no-store, must-revalidate"');
+  });
+
+  it('sends no-store and noindex headers for sensitive commerce/admin pages', () => {
+    for (const pagePrefix of ['/admin', '/cart', '/checkout', '/order']) {
+      expect(nextConfig).toContain(`source: "${pagePrefix}/:path*"`);
+      expect(vercelConfig).toContain(`"source": "${pagePrefix}/:path*"`);
+    }
+    expect(nextConfig).toContain('private, no-cache, no-store, max-age=0, must-revalidate');
+    expect(nextConfig).toContain('X-Robots-Tag", value: "noindex, nofollow"');
+    expect(vercelConfig).toContain('private, no-cache, no-store, max-age=0, must-revalidate');
+    expect(vercelConfig).toContain('noindex, nofollow');
   });
 });

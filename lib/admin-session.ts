@@ -9,7 +9,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify, SignJWT } from 'jose';
+import { jwtVerify } from 'jose/jwt/verify';
+import { SignJWT } from 'jose/jwt/sign';
 
 export type AdminRole = 'admin' | 'super_admin';
 

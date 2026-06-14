@@ -1,13 +1,44 @@
 import { MetadataRoute } from 'next';
 
-function getBaseUrl() {
-  return (process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop')
-    .trim()
-    .replace(/\/+$/, '');
+const PRODUCTION_ORIGIN = 'https://tasteofgratitude.shop';
+
+export const revalidate = 3600;
+
+function normalizeOrigin(origin: string | undefined) {
+  return origin?.trim().replace(/\/+$/, '');
+}
+
+function isIndexableDeployment() {
+  if (process.env.VERCEL_ENV) {
+    return process.env.VERCEL_ENV === 'production';
+  }
+
+  return [process.env.NEXT_PUBLIC_BASE_URL, process.env.NEXT_PUBLIC_SITE_URL]
+    .some((origin) => normalizeOrigin(origin) === PRODUCTION_ORIGIN);
+}
+
+function toProductEntries(data: unknown): Array<{ slug?: string; id: string; updatedAt?: string }> {
+  if (Array.isArray(data)) return data as Array<{ slug?: string; id: string; updatedAt?: string }>;
+  if (!data || typeof data !== 'object') return [];
+
+  const payload = data as {
+    products?: Array<{ slug?: string; id: string; updatedAt?: string }>;
+    data?: Array<{ slug?: string; id: string; updatedAt?: string }>;
+    items?: Array<{ slug?: string; id: string; updatedAt?: string }>;
+  };
+
+  if (Array.isArray(payload.products)) return payload.products;
+  if (Array.isArray(payload.data)) return payload.data;
+  if (Array.isArray(payload.items)) return payload.items;
+  return [];
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = getBaseUrl();
+  if (!isIndexableDeployment()) {
+    return [];
+  }
+
+  const baseUrl = PRODUCTION_ORIGIN;
 
   // Static pages
   const staticPages = [
@@ -41,10 +72,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
     if (res.ok) {
       const data = await res.json();
-      const products = data.products || [];
-      productEntries = products.map((product: { slug?: string; id: string }) => ({
+      const products = toProductEntries(data);
+      productEntries = products.filter((product) => product.slug || product.id).map((product) => ({
         url: `${baseUrl}/product/${product.slug || product.id}`,
-        lastModified: new Date(),
+        lastModified: product.updatedAt ? new Date(product.updatedAt) : new Date(),
         changeFrequency: 'weekly' as const satisfies 'weekly',
         priority: 0.8,
       }));

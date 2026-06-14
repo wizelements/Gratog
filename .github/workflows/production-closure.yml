@@ -9,9 +9,24 @@ on:
 
 jobs:
   static-governance:
-    name: Route, PWA, and Navigation Governance
+    name: Linux Node 22 Production Hardening Gate
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NODE_ENV: production
+      VERCEL_ENV: preview
+      SQUARE_ENVIRONMENT: sandbox
+      SQUARE_ACCESS_TOKEN: ci-square-token-placeholder
+      SQUARE_APPLICATION_ID: ci-square-app-placeholder
+      SQUARE_LOCATION_ID: ci-square-location-placeholder
+      SQUARE_WEBHOOK_SIGNATURE_KEY: ci-square-webhook-placeholder
+      RESEND_WEBHOOK_SECRET: ci-resend-webhook-placeholder
+      JWT_SECRET: ci-jwt-secret-at-least-32-characters-long
+      ADMIN_SETUP_SECRET: ci-admin-setup-secret
 
     steps:
       - name: Checkout
@@ -20,11 +35,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Static deploy guard
+        run: scripts/gratog-deploy-guard.sh --target production --dry-run
 
       - name: Targeted lint for closure surfaces
         run: |
@@ -34,6 +52,7 @@ jobs:
             app/reviews/page.jsx \
             'app/(site)/community/page.tsx' \
             app/subscriptions/page.js \
+            app/robots.ts \
             app/sitemap.ts \
             lib/pwa.ts \
             tests/route-governance.test.ts \
@@ -48,9 +67,11 @@ jobs:
       - name: Navigation coherence
         run: npx vitest run tests/navigation-coherence.test.ts --reporter=verbose
 
-      - name: Typecheck truth report
-        continue-on-error: true
+      - name: Typecheck
         run: npm run typecheck:ci
+
+      - name: Production build on Linux
+        run: npm run build
 
       - name: Summary
         if: always()
@@ -58,14 +79,17 @@ jobs:
           cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
           ## Production Closure Governance
 
-          This workflow intentionally avoids Lighthouse and browser E2E because those are not valid on the mobile Termux execution lane.
+          This workflow is the authoritative Linux/Node 22 gate for work that cannot be proven on the mobile Termux execution lane.
 
           Required gates:
+          - deploy guard static governance
           - targeted lint for closure surfaces
           - route coverage
           - retired-route governance
           - PWA cache governance
           - navigation coherence
+          - strict TypeScript check
+          - production Next.js build
 
-          Typecheck is reported separately so existing historical type debt is visible without hiding it behind a fake pass.
+          Browser E2E and Lighthouse remain in their dedicated workflows because they are slower and require browser/system dependencies.
           EOF

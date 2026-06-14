@@ -17,7 +17,6 @@ const storefrontNavigationFiles = [
 ];
 const sitemapSources = [
   'app/sitemap.ts',
-  'public/sitemap-0.xml',
 ];
 const conversionRedirects = {
   '/shop': '/catalog',
@@ -72,13 +71,18 @@ describe('Route Surface Governance', () => {
     }
   });
 
-  it('next-sitemap explicitly excludes retired routes and account-sprawl variants', () => {
-    const source = read('next-sitemap.config.js');
-    for (const [route] of retiredPages) {
-      expect(source).toContain(`'${route}'`);
-    }
-    expect(source).toContain("'/profile/rewards'");
-    expect(source).toContain("'/account/subscriptions'");
+  it('uses App Router metadata routes as the only robots/sitemap source of truth', () => {
+    expect(fs.existsSync(path.join(workspace, 'app/robots.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(workspace, 'app/sitemap.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(workspace, 'next-sitemap.config.js'))).toBe(false);
+    expect(fs.existsSync(path.join(workspace, 'public/robots.txt'))).toBe(false);
+    expect(fs.existsSync(path.join(workspace, 'public/sitemap.xml'))).toBe(false);
+    expect(fs.existsSync(path.join(workspace, 'public/sitemap-0.xml'))).toBe(false);
+
+    const packageJson = JSON.parse(read('package.json'));
+    expect(packageJson.scripts?.postbuild || '').not.toContain('next-sitemap');
+    expect(packageJson.dependencies || {}).not.toHaveProperty('next-sitemap');
+    expect(packageJson.devDependencies || {}).not.toHaveProperty('next-sitemap');
   });
 
   it('Next and Vercel configs provide real HTTP redirects for retired routes', () => {

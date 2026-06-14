@@ -3,6 +3,8 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   openAnalyzer: false, // Don't auto-open browser
 });
 
+const isNonProductionDeployment = process.env.VERCEL_ENV !== 'production';
+
 const nextConfig = {
   // Next.js 15 + Turbopack compatible configuration
   turbopack: {
@@ -207,7 +209,19 @@ const nextConfig = {
   },
 
   async headers() {
+    const nonProductionNoindexHeaders = isNonProductionDeployment
+      ? [
+          {
+            source: "/:path*",
+            headers: [
+              { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+            ],
+          },
+        ]
+      : [];
+
     return [
+      ...nonProductionNoindexHeaders,
       {
         source: "/(.*)",
         headers: [
@@ -223,6 +237,35 @@ const nextConfig = {
           { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, OPTIONS" },
           { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization" },
           { key: "Access-Control-Allow-Credentials", value: "false" },
+          { key: "Cache-Control", value: "no-store" },
+        ],
+      },
+      {
+        source: "/admin/:path*",
+        headers: [
+          { key: "Cache-Control", value: "private, no-cache, no-store, max-age=0, must-revalidate" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+      {
+        source: "/cart/:path*",
+        headers: [
+          { key: "Cache-Control", value: "private, no-cache, no-store, max-age=0, must-revalidate" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+      {
+        source: "/checkout/:path*",
+        headers: [
+          { key: "Cache-Control", value: "private, no-cache, no-store, max-age=0, must-revalidate" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+      {
+        source: "/order/:path*",
+        headers: [
+          { key: "Cache-Control", value: "private, no-cache, no-store, max-age=0, must-revalidate" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
         ],
       },
       {

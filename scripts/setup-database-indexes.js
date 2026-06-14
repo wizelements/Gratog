@@ -10,9 +10,15 @@
 const { MongoClient } = require('mongodb');
 
 const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URL;
+const args = new Set(process.argv.slice(2));
+const shouldExecute = args.has('--execute');
 
-if (!MONGODB_URI) {
-  console.error('❌ Error: MONGODB_URI or MONGO_URL environment variable required');
+if (!shouldExecute) {
+  console.log('Dry run only. Pass --execute to create indexes after reviewing duplicate preflight output.');
+}
+
+if (!MONGODB_URI && shouldExecute) {
+  console.error('❌ Error: MONGODB_URI or MONGO_URL environment variable required when using --execute');
   process.exit(1);
 }
 
@@ -46,12 +52,29 @@ const INDEXES = {
 
   // Products/catalog
   products: [
-    { key: { slug: 1 }, unique: true, name: 'idx_products_slug' },
+    {
+      key: { slug: 1 },
+      unique: true,
+      partialFilterExpression: { slug: { $type: 'string' } },
+      name: 'idx_products_slug',
+    },
     { key: { category: 1, 'metadata.featured': 1 }, name: 'idx_products_category_featured' },
     { key: { available: 1 }, name: 'idx_products_available' },
     { key: { purchaseStatus: 1 }, name: 'idx_products_purchase_status' },
     { key: { 'metadata.featured': 1 }, sparse: true, name: 'idx_products_featured' },
     { key: { updatedAt: -1 }, name: 'idx_products_updated' },
+  ],
+
+  // Weekly menu state - enforce only one active menu at a time.
+  menus: [
+    {
+      key: { isActive: 1 },
+      unique: true,
+      partialFilterExpression: { isActive: true },
+      name: 'idx_menus_one_active',
+    },
+    { key: { weekStart: -1 }, name: 'idx_menus_week_start' },
+    { key: { isArchived: 1, weekStart: -1 }, name: 'idx_menus_archived_week' },
   ],
 
   // Product reviews
@@ -143,9 +166,32 @@ const INDEXES = {
 
   // Resend webhook delivery ledger / idempotency
   resend_webhook_events: [
-    { key: { svixId: 1 }, unique: true, sparse: true, name: 'idx_resend_webhooks_svix' },
+    {
+      key: { svixId: 1 },
+      unique: true,
+      partialFilterExpression: { svixId: { $type: 'string' } },
+      name: 'idx_resend_webhooks_svix',
+    },
     { key: { messageId: 1, createdAt: -1 }, sparse: true, name: 'idx_resend_webhooks_message' },
     { key: { status: 1, createdAt: -1 }, name: 'idx_resend_webhooks_status_created' },
+  ],
+
+  // Square webhook idempotency ledger.
+  webhook_events_processed: [
+    {
+      key: { eventId: 1 },
+      unique: true,
+      partialFilterExpression: { eventId: { $type: 'string' } },
+      name: 'idx_square_webhooks_event_id',
+    },
+    { key: { eventType: 1, processedAt: -1 }, name: 'idx_square_webhooks_type_processed' },
+    { key: { status: 1, lastAttemptAt: -1 }, name: 'idx_square_webhooks_status_attempt' },
+  ],
+
+  // Distributed idempotency fallback for order creation and retries.
+  idempotency_keys: [
+    { key: { key: 1 }, unique: true, name: 'idx_idempotency_key' },
+    { key: { expiresAt: 1 }, expireAfterSeconds: 0, name: 'idx_idempotency_expires' },
   ],
 
   // Email suppressions from unsubscribes, bounces, and complaints
@@ -173,8 +219,75 @@ const INDEXES = {
   ],
 };
 
+const DUPLICATE_PREFLIGHTS = [
+  {
+    collection: 'products',
+    label: 'product slug',
+    match: { slug: { $type: 'string' } },
+    groupBy: '$slug',
+  },
+  {
+    collection: 'menus',
+    label: 'active menu',
+    match: { isActive: true },
+    groupBy: '$isActive',
+  },
+  {
+    collection: 'resend_webhook_events',
+    label: 'Resend Svix id',
+    match: { svixId: { $type: 'string' } },
+    groupBy: '$svixId',
+  },
+  {
+    collection: 'webhook_events_processed',
+    label: 'Square webhook event id',
+    match: { eventId: { $type: 'string' } },
+    groupBy: '$eventId',
+  },
+  {
+    collection: 'idempotency_keys',
+    label: 'idempotency key',
+    match: { key: { $type: 'string' } },
+    groupBy: '$key',
+  },
+];
+
+async function assertNoDuplicateKeys(db) {
+  console.log('🔎 Running unique-index duplicate preflight...\n');
+
+  const failures = [];
+  for (const check of DUPLICATE_PREFLIGHTS) {
+    const duplicates = await db.collection(check.collection).aggregate([
+      { $match: check.match },
+      { $group: { _id: check.groupBy, count: { $sum: 1 }, ids: { $push: '$_id' } } },
+      { $match: { count: { $gt: 1 } } },
+      { $limit: 20 },
+    ]).toArray();
+
+    if (duplicates.length > 0) {
+      failures.push({ check, duplicates });
+      console.error(`   ❌ ${check.collection}: duplicate ${check.label} values found`);
+      for (const duplicate of duplicates.slice(0, 5)) {
+        console.error(`      value=${String(duplicate._id)} count=${duplicate.count} ids=${duplicate.ids.slice(0, 5).join(',')}`);
+      }
+    } else {
+      console.log(`   ✅ ${check.collection}: no duplicate ${check.label} values`);
+    }
+  }
+
+  if (failures.length > 0) {
+    throw new Error('Duplicate preflight failed. Resolve duplicates before creating unique indexes.');
+  }
+}
+
 async function setupIndexes() {
   console.log('🔧 Setting up database indexes...\n');
+
+  if (!MONGODB_URI) {
+    console.log('No MongoDB URI present; printed dry-run plan only.');
+    console.log(JSON.stringify(INDEXES, null, 2));
+    return;
+  }
 
   const client = new MongoClient(MONGODB_URI, {
     maxPoolSize: 5,
@@ -185,6 +298,13 @@ async function setupIndexes() {
     console.log('✅ Connected to MongoDB\n');
 
     const db = client.db();
+
+    await assertNoDuplicateKeys(db);
+
+    if (!shouldExecute) {
+      console.log('\nDry run complete. No indexes were created. Re-run with --execute during a low-traffic window.');
+      return;
+    }
 
     for (const [collectionName, indexes] of Object.entries(INDEXES)) {
       console.log(`📁 Collection: ${collectionName}`);

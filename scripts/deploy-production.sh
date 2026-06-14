@@ -111,28 +111,12 @@ setTimeout(() => {
 }, 2000);
 " &
 
-# 12. Generate robots.txt
-print_status "Generating robots.txt..."
-cat > public/robots.txt << EOF
-User-agent: *
-Allow: /
-
-# Important pages
-Allow: /catalog
-Allow: /about
-Allow: /contact
-Allow: /order
-
-# Sitemaps
-Sitemap: https://tasteofgratitude.shop/sitemap.xml
-
-# Disallow admin and API routes
-Disallow: /admin/
-Disallow: /api/
-
-# SEO optimization
-Crawl-delay: 1
-EOF
+# 12. Confirm App Router SEO metadata routes
+print_status "Using App Router metadata routes for robots.txt and sitemap.xml..."
+if [ ! -f "app/robots.ts" ] || [ ! -f "app/sitemap.ts" ]; then
+    print_error "Missing App Router SEO metadata routes"
+    exit 1
+fi
 
 # 13. Create .htaccess for Apache (if needed)
 print_status "Creating .htaccess file..."
@@ -175,7 +159,8 @@ print_status "Running final production checks..."
 # Check critical files exist
 CRITICAL_FILES=(
     ".next/standalone/server.js"
-    "public/robots.txt"
+    "app/robots.ts"
+    "app/sitemap.ts"
     ".env"
 )
 
@@ -205,7 +190,7 @@ echo "7. Set up monitoring and backups"
 echo ""
 echo "Important files created:"
 echo "- .next/standalone/server.js (Production server)"
-echo "- public/robots.txt (SEO)"
+echo "- app/robots.ts + app/sitemap.ts (SEO metadata routes)"
 echo "- .env (Environment variables)"
 echo ""
 print_warning "Remember to:"

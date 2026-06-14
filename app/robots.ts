@@ -1,23 +1,66 @@
 import { MetadataRoute } from 'next';
 
-function getBaseUrl() {
-  return (process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop')
-    .trim()
-    .replace(/\/+$/, '');
+const PRODUCTION_ORIGIN = 'https://tasteofgratitude.shop';
+const BLOCKED_PATHS = [
+  '/admin',
+  '/admin/',
+  '/api',
+  '/api/',
+  '/account',
+  '/account/',
+  '/cart',
+  '/cart/',
+  '/checkout',
+  '/checkout/',
+  '/forgot-password',
+  '/login',
+  '/order',
+  '/order/',
+  '/preorder',
+  '/preorder/',
+  '/profile',
+  '/profile/',
+  '/register',
+  '/reset-password',
+  '/unsubscribe',
+  '/vendor',
+  '/vendor/',
+];
+
+function normalizeOrigin(origin: string | undefined) {
+  return origin?.trim().replace(/\/+$/, '');
+}
+
+function isIndexableDeployment() {
+  if (process.env.VERCEL_ENV) {
+    return process.env.VERCEL_ENV === 'production';
+  }
+
+  return [process.env.NEXT_PUBLIC_BASE_URL, process.env.NEXT_PUBLIC_SITE_URL]
+    .some((origin) => normalizeOrigin(origin) === PRODUCTION_ORIGIN);
 }
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = getBaseUrl();
+  if (!isIndexableDeployment()) {
+    return {
+      rules: [
+        {
+          userAgent: '*',
+          disallow: '/',
+        },
+      ],
+    };
+  }
   
   return {
     rules: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin/', '/api/'],
+        disallow: BLOCKED_PATHS,
       },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
-    host: baseUrl,
+    sitemap: `${PRODUCTION_ORIGIN}/sitemap.xml`,
+    host: PRODUCTION_ORIGIN,
   };
 }

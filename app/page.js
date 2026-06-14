@@ -1,6 +1,12 @@
 export const dynamic = 'force-static';
 export const revalidate = 300; // Revalidate every 5 minutes
 
+export const metadata = {
+  alternates: {
+    canonical: '/',
+  },
+};
+
 /**
  * 🚀 Gratog Homepage - Static with ISR
  * 
