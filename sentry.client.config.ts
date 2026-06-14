@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/nextjs';
-import type { Event, EventHint } from '@sentry/types';
+import type { ErrorEvent, EventHint } from '@sentry/nextjs';
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -40,7 +40,7 @@ Sentry.init({
     'Non-Error promise rejection captured',
   ],
   
-  beforeSend(event: Event, _hint: EventHint) {
+  beforeSend(event: ErrorEvent, _hint: EventHint) {
     // Filter out admin auth errors from monitoring
     if (event.exception?.values?.[0]?.value?.includes('admin_token')) {
       return null;
