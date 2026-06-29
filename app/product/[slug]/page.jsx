@@ -2,6 +2,11 @@ import { notFound } from 'next/navigation';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { UNIFIED_PRODUCTS_COLLECTION } from '@/lib/product-sync-engine';
 import ProductDetailClient from './ProductDetailClient';
+import {
+  getProductBySlugOrId,
+  mergeWithCuratedProduct,
+  toStorefrontProduct,
+} from '@/data/products';
 
 function buildSlugFilter(slug) {
   return {
@@ -28,9 +33,8 @@ const STORAGE_COPY_FALLBACK = 'Keep refrigerated. Use a clean spoon each time an
 
 const PRODUCT_CLAIM_PATTERNS = [
   /\b92\s+(?:essential\s+)?minerals?\b/i,
-  /\b(?:cure|treat|prevent|heal|detox(?:ify)?|cleanse|alkali[sz]e)\b/i,
-  /\b(?:health benefits?|immune|immunity|anti-inflammatory|inflammation|thyroid|arthritis|joints?|gut|digestion|digestive|skin|hair|weight loss|libido|blood pressure|diabetes|cancer)\b/i,
-  /\b(?:supports?|boosts?|improves?|strengthens?)\s+(?:your\s+)?(?:immune|immunity|digestion|gut|skin|hair|thyroid|joints?|energy)\b/i,
+  /\b(?:cure|treat|prevent|heal)\b/i,
+  /\b(?:arthritis|diabetes|cancer|blood pressure|thyroid disease)\b/i,
 ];
 
 function safeProductCopy(value, fallback = PRODUCT_COPY_FALLBACK) {
@@ -69,7 +73,8 @@ function serializeIngredient(ingredient) {
   };
 }
 
-function serializeProductForClient(product) {
+function serializeProductForClient(sourceProduct) {
+  const product = mergeWithCuratedProduct(sourceProduct);
   const images = Array.isArray(product.images) ? product.images.filter(Boolean) : [];
   const variations = Array.isArray(product.variations) ? product.variations.map(serializeVariation) : [];
   const ingredients = Array.isArray(product.ingredients)
@@ -84,9 +89,13 @@ function serializeProductForClient(product) {
     slug: product.slug || productId,
     name: product.name,
     category: product.category,
+    categoryLabel: product.categoryLabel,
+    displayCategory: product.displayCategory,
     intelligentCategory: product.intelligentCategory,
-    description: safeProductCopy(product.description),
+    categoryData: product.categoryData,
+    description: safeProductCopy(product.shortDescription || product.description),
     shortDescription: safeProductCopy(product.shortDescription, ''),
+    fullDescription: safeProductCopy(product.fullDescription || product.productStory || product.story || product.description, ''),
     productStory: safeProductCopy(product.productStory || product.story, ''),
     story: safeProductCopy(product.story, ''),
     howToUse: safeProductCopy(product.howToUse || product.usageInstructions, ''),
@@ -111,8 +120,23 @@ function serializeProductForClient(product) {
     variationId: product.variationId,
     squareVariationId: product.squareVariationId,
     squareData: product.squareData?.variationId ? { variationId: product.squareData.variationId } : undefined,
+    checkoutReady: product.checkoutReady,
+    checkoutUnavailableReason: product.checkoutUnavailableReason,
     marketExclusive: product.marketExclusive,
     fulfillmentType: product.fulfillmentType,
+    activeWeeklyMenu: product.activeWeeklyMenu,
+    weeklyStatus: product.weeklyStatus,
+    soldOut: product.soldOut,
+    preorderOnly: product.preorderOnly,
+    marketPickupOnly: product.marketPickupOnly,
+    seasonal: product.seasonal,
+    wellnessSupport: Array.isArray(product.wellnessSupport) ? product.wellnessSupport : [],
+    recommendedUse: safeProductCopy(product.recommendedUse || product.howToUse || product.usageInstructions, ''),
+    allergens: Array.isArray(product.allergens) ? product.allergens : [],
+    pickupAvailability: safeProductCopy(product.pickupAvailability, ''),
+    shippingAvailability: safeProductCopy(product.shippingAvailability, ''),
+    inventoryStatus: product.inventoryStatus,
+    pairings: Array.isArray(product.pairings) ? product.pairings : [],
     variations,
     ingredients,
     createdAt: product.createdAt?.toISOString?.() || product.createdAt,
@@ -127,7 +151,8 @@ export async function generateMetadata({ params }) {
   
   try {
     const { db } = await connectToDatabase();
-    const product = await findProductBySlug(db, slug);
+    const curatedProduct = getProductBySlugOrId(slug);
+    const product = await findProductBySlug(db, slug) || (curatedProduct ? toStorefrontProduct(curatedProduct) : null);
     
     if (!product) {
       return {
@@ -136,22 +161,36 @@ export async function generateMetadata({ params }) {
       };
     }
     
-    const description = safeProductCopy(product.description).substring(0, 160);
+    const enrichedProduct = mergeWithCuratedProduct(product);
+    const description = safeProductCopy(enrichedProduct.seoDescription || enrichedProduct.shortDescription || enrichedProduct.description).substring(0, 160);
 
     return {
-      title: `${product.name} | Taste of Gratitude`,
+      title: enrichedProduct.seoTitle || `${enrichedProduct.name} | Taste of Gratitude`,
       description,
       alternates: {
-        canonical: `/product/${product.slug || slug}`,
+        canonical: `/product/${enrichedProduct.slug || slug}`,
       },
       openGraph: {
-        title: product.name,
+        title: enrichedProduct.name,
         description,
-        images: product.images?.[0] || product.image ? [{ url: product.images?.[0] || product.image }] : []
+        images: enrichedProduct.images?.[0] || enrichedProduct.image ? [{ url: enrichedProduct.images?.[0] || enrichedProduct.image }] : []
       }
     };
   } catch (error) {
     console.error('[Product Metadata] Error:', error);
+    const curatedProduct = getProductBySlugOrId(slug);
+    if (curatedProduct) {
+      return {
+        title: curatedProduct.seoTitle,
+        description: curatedProduct.seoDescription,
+        alternates: { canonical: `/product/${curatedProduct.slug}` },
+        openGraph: {
+          title: curatedProduct.name,
+          description: curatedProduct.seoDescription,
+          images: [{ url: curatedProduct.image }]
+        }
+      };
+    }
     return {
       title: 'Product | Taste of Gratitude',
       description: PRODUCT_COPY_FALLBACK
@@ -171,7 +210,8 @@ export default async function ProductPage({ params }) {
     const { db } = await connectToDatabase();
     
     // Fetch product from database (unified_products first, then products)
-    const product = await findProductBySlug(db, slug);
+    const curatedProduct = getProductBySlugOrId(slug);
+    const product = await findProductBySlug(db, slug) || (curatedProduct ? toStorefrontProduct(curatedProduct) : null);
     
     if (!product) {
       console.log(`[Product SSR] Product not found for slug: ${slug}`);
@@ -187,6 +227,10 @@ export default async function ProductPage({ params }) {
     
   } catch (error) {
     console.error('[Product SSR] Error fetching product:', error);
+    const curatedProduct = getProductBySlugOrId(slug);
+    if (curatedProduct) {
+      return <ProductDetailClient product={serializeProductForClient(toStorefrontProduct(curatedProduct))} slug={slug} />;
+    }
     // Return null to show error state
     return <ProductDetailClient product={null} slug={slug} />;
   }

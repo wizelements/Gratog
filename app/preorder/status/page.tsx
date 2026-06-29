@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -13,6 +13,7 @@ import {
   Phone,
   ArrowLeft,
   RefreshCw,
+  Loader2,
   // @ts-ignore — auto-fix
   CheckCircle2,
   AlertCircle,
@@ -25,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { track } from '@/utils/analytics';
 
 // Status types
 const STATUS_CONFIG = {
@@ -55,41 +57,67 @@ const STATUS_CONFIG = {
 };
 
 interface PreorderStatus {
-  waitlistNumber: number;
+  orderNumber?: string;
+  marketId?: string;
+  waitlistNumber: number | string;
   currentPosition: number;
   status: keyof typeof STATUS_CONFIG;
   marketName: string;
-  marketAddress: string;
+  marketAddress?: string;
   pickupDate: string;
   pickupHours: string;
   items: Array<{ name: string; quantity: number; price: number }>;
   total: number;
-  estimatedTime: string;
+  estimatedTime?: string | null;
 }
 
-// Mock data - in production, fetch from API
-const MOCK_ORDERS: Record<string, PreorderStatus> = {
-  "123": {
-    waitlistNumber: 15,
-    currentPosition: 8,
-    status: "pending",
-    marketName: "Serenbe Farmers Market",
-    marketAddress: "10640 Serenbe Trail, Chattahoochee Hills, GA 30268",
-    pickupDate: "Saturday, May 3rd",
-    pickupHours: "9:00 AM - 1:00 PM",
-    items: [
-      { name: "Basil Sea Moss Gel", quantity: 2, price: 25 },
-      { name: "Calmwaters", quantity: 1, price: 30 },
-    ],
-    total: 80,
-    estimatedTime: "~16 minutes",
-  },
-};
+function normalizeStatus(status: string): keyof typeof STATUS_CONFIG {
+  const normalized = String(status || '').toUpperCase();
+  if (normalized === 'PREPARING') return 'preparing';
+  if (normalized === 'READY') return 'ready';
+  if (normalized === 'PICKED_UP' || normalized === 'COMPLETED') return 'completed';
+  return 'pending';
+}
+
+function toOrderStatus(preorder: any): PreorderStatus {
+  return {
+    orderNumber: preorder.orderNumber,
+    marketId: preorder.marketId,
+    waitlistNumber: preorder.waitlistNumber || preorder.orderNumber,
+    currentPosition: Number(preorder.queuePosition || preorder.waitlistPosition || 1),
+    status: normalizeStatus(preorder.status),
+    marketName: preorder.pickupLocation || preorder.marketName || 'Taste of Gratitude market pickup',
+    marketAddress: preorder.marketAddress || '',
+    pickupDate: preorder.pickupDate || 'Next market pickup',
+    pickupHours: preorder.pickupHours || 'See market details',
+    items: Array.isArray(preorder.items) ? preorder.items : [],
+    total: Number(preorder.total || preorder.subtotal || 0),
+    estimatedTime: preorder.estimatedReadyTime || null,
+  };
+}
+
+function getLookupParam(value: string) {
+  const trimmed = value.trim();
+  const upper = trimmed.toUpperCase();
+  const digits = trimmed.replace(/\D/g, '');
+
+  if (upper.startsWith('PRE-')) return { key: 'orderNumber', value: trimmed };
+  if (/^[A-Z]{1,3}-/.test(upper)) return { key: 'waitlistNumber', value: trimmed };
+  if (digits.length >= 7) return { key: 'phone', value: trimmed };
+  return { key: 'waitlistNumber', value: trimmed };
+}
+
+function getStatusProgress(status: keyof typeof STATUS_CONFIG, currentPosition: number) {
+  if (status === 'completed') return 100;
+  if (status === 'ready') return 90;
+  if (status === 'preparing') return 65;
+  return Math.max(12, Math.min(45, 52 - Math.max(1, currentPosition) * 4));
+}
 
 function OrderStatusCard({ order }: { order: PreorderStatus }) {
   const status = STATUS_CONFIG[order.status];
   const StatusIcon = status.icon;
-  const progress = Math.max(0, 100 - (order.currentPosition / order.waitlistNumber) * 100);
+  const progress = getStatusProgress(order.status, order.currentPosition);
 
   return (
     <Card className="border-2">
@@ -122,7 +150,7 @@ function OrderStatusCard({ order }: { order: PreorderStatus }) {
             />
           </div>
           <p className="text-sm text-gray-600">{status.message}</p>
-          {order.status === 'pending' && (
+          {order.status === 'pending' && order.estimatedTime && (
             <p className="text-sm text-emerald-600 font-medium">
               Estimated wait: {order.estimatedTime}
             </p>
@@ -137,7 +165,7 @@ function OrderStatusCard({ order }: { order: PreorderStatus }) {
             <MapPin className="w-5 h-5 text-emerald-600 mt-0.5" />
             <div>
               <div className="font-medium">{order.marketName}</div>
-              <div className="text-sm text-gray-500">{order.marketAddress}</div>
+              {order.marketAddress && <div className="text-sm text-gray-500">{order.marketAddress}</div>}
             </div>
           </div>
 
@@ -188,7 +216,26 @@ function OrderStatusCard({ order }: { order: PreorderStatus }) {
   );
 }
 
+function OrderStatusLoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="text-center">
+        <Loader2 className="w-10 h-10 text-emerald-600 animate-spin mx-auto mb-4" />
+        <p className="text-gray-600">Loading order lookup...</p>
+      </div>
+    </div>
+  );
+}
+
 export default function OrderStatusPage() {
+  return (
+    <Suspense fallback={<OrderStatusLoadingFallback />}>
+      <OrderStatusContent />
+    </Suspense>
+  );
+}
+
+function OrderStatusContent() {
   const searchParams = useSearchParams();
   const initialOrderId = searchParams.get("order");
   
@@ -196,36 +243,55 @@ export default function OrderStatusPage() {
   const [order, setOrder] = useState<PreorderStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [autoLookupDone, setAutoLookupDone] = useState(false);
 
-  const handleLookup = async () => {
-    if (!orderId.trim()) {
-      setError("Please enter your waitlist number");
+  const handleLookup = async (lookupValue = orderId) => {
+    if (!lookupValue.trim()) {
+      setError("Please enter your waitlist number, preorder number, or phone");
       return;
     }
 
     setIsLoading(true);
     setError("");
 
-    // Simulate API call
-    setTimeout(() => {
-      const found = MOCK_ORDERS[orderId];
-      if (found) {
-        setOrder(found);
-      } else {
-        setError("Order not found. Please check your waitlist number.");
-        setOrder(null);
+    try {
+      const trimmed = lookupValue.trim();
+      const { key: param, value } = getLookupParam(trimmed);
+      const response = await fetch(`/api/preorder/status?${param}=${encodeURIComponent(value)}`, {
+        cache: 'no-store',
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Preorder not found.');
       }
+
+      const nextOrder = toOrderStatus(data.preorder);
+      setOrder(nextOrder);
+      track('preorder_status_viewed', {
+        orderNumber: nextOrder.orderNumber,
+        waitlistNumber: nextOrder.waitlistNumber,
+        marketId: nextOrder.marketId || null,
+        lookupType: param,
+      });
+    } catch (err: any) {
+      setError(err.message || "Order not found. Please check your number.");
+      setOrder(null);
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
+
+  useEffect(() => {
+    if (!initialOrderId || autoLookupDone) return;
+    setAutoLookupDone(true);
+    handleLookup(initialOrderId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialOrderId, autoLookupDone]);
 
   const handleRefresh = () => {
     if (order) {
-      // Simulate position update
-      setOrder({
-        ...order,
-        currentPosition: Math.max(1, order.currentPosition - 1),
-      });
+      handleLookup();
     }
   };
 
@@ -251,9 +317,9 @@ export default function OrderStatusPage() {
                   <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Ticket className="w-8 h-8 text-emerald-600" />
                   </div>
-                  <h2 className="font-semibold text-lg">Enter your waitlist number</h2>
+                  <h2 className="font-semibold text-lg">Enter your waitlist, preorder, or phone</h2>
                   <p className="text-sm text-gray-500 mt-1">
-                    Check your position in line and order status
+                    Check your position in line and order status from the live preorder system.
                   </p>
                 </div>
 
@@ -261,12 +327,12 @@ export default function OrderStatusPage() {
                   <div>
                     <Label htmlFor="orderId">
                       <Ticket className="w-4 h-4 inline mr-1" />
-                      Waitlist Number
+                      Waitlist, preorder, or phone
                     </Label>
                     <Input
                       id="orderId"
                       type="text"
-                      placeholder="e.g., 123"
+                      placeholder="e.g., S-1201, PRE-..., or phone"
                       value={orderId}
                       onChange={(e) => setOrderId(e.target.value)}
                       className="mt-1 text-center text-lg"
@@ -280,12 +346,12 @@ export default function OrderStatusPage() {
                   )}
 
                   <Button 
-                    onClick={handleLookup}
+                    onClick={() => handleLookup()}
                     disabled={isLoading}
                     className="w-full"
                   >
                     {isLoading ? (
-                      <>Checking...t</>
+                      <>Checking...</>
                     ) : (
                       <>Check Status</>
                     )}
@@ -297,7 +363,7 @@ export default function OrderStatusPage() {
             <div className="text-center">
               <p className="text-sm text-gray-500">
                 Don't have a waitlist number?{" "}
-                <Link href="/markets" className="text-emerald-600 hover:underline">
+                <Link href="/preorder" className="text-emerald-600 hover:underline">
                   Place a preorder
                 </Link>
               </p>
@@ -317,12 +383,23 @@ export default function OrderStatusPage() {
 
             <OrderStatusCard order={order} />
 
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Button asChild className="rounded-full bg-emerald-700 text-white hover:bg-emerald-800">
+                <Link href={order.marketId ? `/preorder?market=${encodeURIComponent(order.marketId)}&utm_source=status_reorder&utm_campaign=passive_preorder_funnel` : '/preorder?utm_source=status_reorder&utm_campaign=passive_preorder_funnel'}>
+                  Reorder for pickup
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
+                <Link href="/markets">View market details</Link>
+              </Button>
+            </div>
+
             <div className="text-center">
               <p className="text-sm text-gray-500">
-                Questions? Call or text us at{" "}
-                <a href="tel:+1234567890" className="text-emerald-600 hover:underline">
-                  (123) 456-7890
-                </a>
+                Questions?{" "}
+                <Link href="/contact" className="text-emerald-600 hover:underline">
+                  Contact Taste of Gratitude
+                </Link>
               </p>
             </div>
           </div>

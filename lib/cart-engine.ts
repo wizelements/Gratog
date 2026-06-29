@@ -303,6 +303,13 @@ export function normalizeProduct(product: any): CartItem {
  */
 export function addToCart(productOrItem: any, arg2?: any, arg3?: any): { success: boolean; error?: string } {
   try {
+    if (productOrItem?.checkoutReady === false) {
+      return {
+        success: false,
+        error: productOrItem.checkoutUnavailableReason || 'This product is not connected to checkout yet. Please check current market availability.',
+      };
+    }
+
     const storage = getSafeLocalStorage();
     if (!storage) {
       logger.warn('No localStorage, using in-memory cart');

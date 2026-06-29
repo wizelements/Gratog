@@ -27,15 +27,15 @@ const faqCategories = [
     questions: [
       {
         question: 'What is sea moss and what are its benefits?',
-        answer: 'Sea moss (Irish moss) is a nutrient-rich seaweed containing 92 of the 102 minerals our bodies need. Benefits include immune support, improved digestion, thyroid health, skin health, energy boost, and overall wellness. Our sea moss is wild-harvested and sustainably sourced.'
+        answer: 'Sea moss (Irish moss) is a mineral-rich seaweed that customers often use as part of a daily wellness routine. Taste of Gratitude keeps the education ingredient-focused and avoids medical claims: choose the products that fit your flavor, routine, and guidance from your healthcare provider.'
       },
       {
         question: 'How should I consume sea moss gel?',
-        answer: 'Take 1-2 tablespoons daily. You can consume it directly, add it to smoothies, teas, juices, or use it in recipes as a thickening agent. For best results, take it on an empty stomach in the morning. Store refrigerated and use within 3-4 weeks.'
+        answer: 'Most customers start with 1-2 tablespoons in smoothies, teas, juices, bowls, or as a chilled spoonful. Store refrigerated, use a clean spoon, and follow the freshness window on your product label.'
       },
       {
         question: 'Are your products organic and all-natural?',
-        answer: 'Yes! All our sea moss products are 100% natural, organic, and free from preservatives. We use wild-harvested sea moss and organic ingredients in our flavored blends. No artificial colors, flavors, or additives.'
+        answer: 'Our weekly menu is ingredient-forward, small-batch, and made with real fruits, herbs, roots, sea moss, alkaline water, agave, or honey depending on the product. Check each product page for its full ingredient list and allergens.'
       },
       {
         question: 'What is the shelf life of sea moss products?',
@@ -70,7 +70,7 @@ const faqCategories = [
       },
       {
         question: 'Do you offer bulk or wholesale pricing?',
-        answer: `Yes! We offer special pricing for bulk orders (10+ items) and wholesale opportunities for retailers, wellness centers, and health practitioners. Contact us at ${WHOLESALE_EMAIL} for pricing details.`
+        answer: `Yes. Visit /wholesale or email ${WHOLESALE_EMAIL} for retail, studio, office, community event, and recurring partner order conversations.`
       },
       {
         question: 'How do I use a coupon code?',
@@ -85,7 +85,7 @@ const faqCategories = [
     questions: [
       {
         question: 'Where can I pick up my order?',
-        answer: 'We have pickup available at: (1) Serenbe Farmers Market - Saturdays 9 AM-1 PM, 10950 Hutcheson Ferry Rd, Palmetto, GA, (2) East Atlanta Village Market - Sundays 11 AM-4 PM, 477 Flat Shoals Ave SE, Atlanta, GA. Select your preferred market at checkout.'
+        answer: 'Current market pickup is structured around Serenbe Farmers Market and Dunwoody Farmers Market. Select your preferred market at checkout and check /markets for current pickup windows and preorder guidance.'
       },
       {
         question: 'Do you offer local delivery?',
@@ -116,11 +116,11 @@ const faqCategories = [
     questions: [
       {
         question: 'What is the Gratitude Passport?',
-        answer: 'Our Gratitude Passport is a digital rewards program where you earn stamps for purchases, challenges, and engagement. Collect stamps to unlock rewards: 2 stamps = free 2oz shot, 5 stamps = 15% discount, 10 stamps = level up with exclusive perks!'
+        answer: 'The Gratitude Passport is the rewards direction for recurring customers. The frontend is prepared for loyalty, referrals, reviews, and reorder reminders while the backend reward rules are finalized.'
       },
       {
         question: 'How do I earn stamps?',
-        answer: 'Earn stamps by: (1) Making purchases (1 stamp per order), (2) Completing the Fit Quiz, (3) Participating in UGC challenges like #SpicyBloomChallenge, (4) Attending market events, (5) Referring friends. Check your passport at /passport to track your progress.'
+        answer: 'Future rewards can be tied to purchases, quiz completions, market visits, referrals, reviews, and community participation. Join the weekly list so you hear when rewards go live.'
       },
       {
         question: 'What is the Spin & Win wheel?',
@@ -139,15 +139,15 @@ const faqCategories = [
     questions: [
       {
         question: 'What is the #SpicyBloomChallenge?',
-        answer: 'Our Spicy Bloom Challenge encourages you to try our ginger-turmeric sea moss products and share your wellness journey on social media. Post a creative photo/video with #SpicyBloomChallenge, tag us, and earn 50 XP + a chance to be featured on our community page!'
+        answer: 'Spicy Bloom is the tart floral wellness shot with hibiscus, citrus, cranberry, jalapeño heat, and sea moss. Community challenges can feature customer routines, market pickup moments, and honest product reactions when campaigns are active.'
       },
       {
         question: 'How do I participate in community challenges?',
-        answer: 'Visit /ugc/spicy-bloom to see active challenges. Follow the guidelines (use specific hashtags, tag our social media accounts, share genuine content), submit your post, and earn rewards. We feature the best submissions on our social media and website.'
+        answer: 'Follow Taste of Gratitude on Instagram and join weekly menu updates. When a challenge is active, we will share the hashtag, rules, reward, and submission path clearly before asking customers to post.'
       },
       {
         question: 'Can I share my sea moss journey on your platform?',
-        answer: `Absolutely! We love hearing wellness stories. Share your photos, videos, and testimonials by tagging us on Instagram (@tasteofgratitude), submitting through our UGC challenge pages, or emailing ${SUPPORT_EMAIL}. You might be featured!`
+        answer: `Absolutely! We love hearing wellness stories. Share your photos, videos, and testimonials by tagging us on Instagram (@tasteofgratitude) or emailing ${SUPPORT_EMAIL}. You might be featured when we request community stories.`
       },
       {
         question: 'Do you offer wellness workshops or events?',
@@ -180,7 +180,7 @@ const faqCategories = [
       },
       {
         question: 'Can I visit your facility or kitchen?',
-        answer: 'Our commercial kitchen follows strict health and safety regulations and is not open for public visits. However, you can meet us at our market locations (Serenbe and East Atlanta Village) where we are happy to answer questions and show you our products in person!'
+        answer: 'Our prep space is not open for public visits, but you can meet the team at active market locations such as Serenbe and Dunwoody when scheduled. Check /markets for current pickup details.'
       }
     ]
   }

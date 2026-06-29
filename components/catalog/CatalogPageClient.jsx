@@ -11,6 +11,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import EnhancedProductCard from '@/components/EnhancedProductCard';
 import ProductCard from '@/components/ProductCard';
 import InfoBoardProductCard from '@/components/InfoBoardProductCard';
+import RetentionForm from '@/components/RetentionForm';
 
 import { Sparkles, Grid, List, Droplets, Heart, Award, Search, X, Info, SlidersHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
@@ -84,7 +85,6 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
   const [recommendedIds, setRecommendedIds] = useState(null);
   
   // UI state
-  const [showQuiz, setShowQuiz] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   
@@ -460,7 +460,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
             )}
             
             {/* Quiz CTA */}
-            {!infoMode && !showQuiz && (
+            {!infoMode && (
               <Card className="mx-auto mt-8 max-w-2xl rounded-[1.5rem] border-emerald-900/10 bg-white shadow-sm shadow-emerald-950/5">
                 <CardContent className="p-5 sm:p-6">
                   <div className="flex items-center justify-center gap-3 mb-4">
@@ -470,12 +470,14 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                   <p className="mb-5 text-stone-600">
                     Take the 60-second wellness quiz for a more personal starting point.
                   </p>
-                  <Button 
-                    onClick={() => setShowQuiz(true)}
+                  <Button
+                    asChild
                     className="h-11 rounded-full bg-emerald-700 px-6 hover:bg-emerald-800"
                   >
-                    <Sparkles className="mr-2 h-4 w-4" aria-hidden="true" />
-                    Take the Quiz
+                    <Link href="/quiz">
+                      <Sparkles className="mr-2 h-4 w-4" aria-hidden="true" />
+                      Take the Quiz
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -500,6 +502,39 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
           
         </div>
       </section>
+
+      {!infoMode && (
+        <section className="border-b border-emerald-900/10 bg-white py-6">
+          <div className="container grid gap-4 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Passive menu funnel</p>
+              <h2 className="mt-2 text-2xl font-semibold text-stone-950">New here? Get the weekly menu text before you reserve.</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+                Browse today, then let us text the next menu drop, pickup reminder, and market-specific preorder link when batches are open.
+              </p>
+              <Button asChild variant="outline" className="mt-4 h-11 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
+                <Link
+                  href="/preorder?utm_source=catalog_banner&utm_campaign=passive_preorder_funnel"
+                  onClick={() => track('catalog_preorder_click', { source: 'catalog_lead_banner' })}
+                >
+                  Already know your pickup? Reserve now
+                </Link>
+              </Button>
+            </div>
+            <RetentionForm
+              intent="weekly_menu_texts"
+              source="catalog_page"
+              title="Text me the weekly menu"
+              description="One low-friction text with the menu, pickup reminders, and preorder window before market day."
+              cta="Text me the menu"
+              collectEmail={false}
+              collectPhone
+              metadata={{ sourceCampaign: 'passive_preorder_funnel', category: selectedCategory }}
+              compact
+            />
+          </div>
+        </section>
+      )}
 
       {/* Product Catalog */}
       <section className="py-10 sm:py-14">
@@ -737,7 +772,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
       </section>
 
       {/* Trust Indicators */}
-      {!loading && !showQuiz && (
+      {!loading && (
         <section className="border-y border-emerald-900/10 bg-white py-10">
           <div className="container">
             <div className="grid gap-4 text-center md:grid-cols-3">
@@ -774,7 +809,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
       )}
 
       {/* CTA Section */}
-      {!loading && !showQuiz && (
+      {!loading && (
         <section className="bg-gradient-to-br from-emerald-700 to-emerald-950 py-16 text-white">
           <div className="container text-center">
             <h2 className="mb-5 text-3xl font-semibold tracking-tight md:text-5xl">
@@ -784,12 +819,14 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
               Answer a few quick questions and find the Taste of Gratitude products that fit your routine.
             </p>
             <Button
-              onClick={() => setShowQuiz(true)}
+              asChild
               size="lg"
               className="min-h-[52px] rounded-full bg-white px-8 text-lg text-emerald-900 shadow-md transition-colors hover:bg-emerald-50"
             >
-              <Sparkles className="mr-2 h-5 w-5" aria-hidden="true" />
-              Take the Quiz
+              <Link href="/quiz">
+                <Sparkles className="mr-2 h-5 w-5" aria-hidden="true" />
+                Take the Quiz
+              </Link>
             </Button>
             <p className="mt-6 text-xs text-emerald-200 max-w-2xl mx-auto">
               *These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease.

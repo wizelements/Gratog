@@ -16,7 +16,7 @@ export default function Footer() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
             <div className="flex items-center gap-2 text-emerald-800">
               <Mail className="h-5 w-5 text-emerald-600" />
-              <span className="font-medium text-sm">Join our wellness community</span>
+              <span className="font-medium text-sm">Get weekly menu drops, pickup reminders, and restock notes</span>
             </div>
             <NewsletterSignup variant="inline" />
           </div>
@@ -50,7 +50,7 @@ export default function Footer() {
 
           {/* Quick Links */}
           <nav aria-label="Quick links">
-            <h4 className="font-semibold mb-4 text-lg">Quick Links</h4>
+            <h4 className="font-semibold mb-4 text-lg">Shop & Discover</h4>
             <ul className="space-y-3 text-sm">
               <li>
                 <Link
@@ -58,7 +58,16 @@ export default function Footer() {
                   className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
-                  Weekly Menu
+                  Shop This Week
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/quiz"
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Wellness Quiz
                 </Link>
               </li>
 
@@ -78,6 +87,15 @@ export default function Footer() {
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
                   Shop
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/wholesale"
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Wholesale
                 </Link>
               </li>
               <li>
@@ -112,6 +130,24 @@ export default function Footer() {
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
                   FAQ
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/contact"
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/policies"
+                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  Policies
                 </Link>
               </li>
               <li>
@@ -166,7 +202,7 @@ export default function Footer() {
           <div>
             <h4 id="social-heading" className="font-semibold mb-4 text-lg">Connect With Us</h4>
             <p className="text-sm text-muted-foreground mb-4">
-              Follow us for wellness tips, recipes, and special offers!
+              Follow the weekly menu, market booth updates, and customer routines.
             </p>
             <div className="flex space-x-3" role="list" aria-labelledby="social-heading">
               <a

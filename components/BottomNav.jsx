@@ -2,15 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ShoppingBag, ShoppingCart, ClipboardList, User } from 'lucide-react';
+import { Home, ShoppingBag, ShoppingCart, CalendarDays, Sparkles } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/haptics';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
+  { href: '/menu', label: 'Menu', icon: CalendarDays },
   { href: '/catalog', label: 'Shop', icon: ShoppingBag },
+  { href: '/quiz', label: 'Quiz', icon: Sparkles },
   { href: '/checkout', label: 'Cart', icon: ShoppingCart },
-  { href: '/profile/orders', label: 'Orders', icon: ClipboardList },
-  { href: '/account', label: 'Account', icon: User },
 ];
 
 export function BottomNav() {

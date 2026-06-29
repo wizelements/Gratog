@@ -16,16 +16,21 @@ export default function Header() {
   const isActive = (path) => pathname === path || pathname?.startsWith(`${path}/`);
   const isMobileActive = (path) => pathname === path || pathname?.startsWith(`${path}/`);
   const desktopNavItems = [
-    { href: '/menu', label: 'Menu' },
-    { href: '/markets', label: 'Markets' },
+    { href: '/menu', label: "This Week's Menu" },
     { href: '/catalog', label: 'Shop' },
+    { href: '/quiz', label: 'Quiz' },
+    { href: '/markets', label: 'Markets' },
     { href: '/about', label: 'About' },
+    { href: '/wholesale', label: 'Wholesale' },
   ];
   const mobileNavItems = [
+    { href: '/menu', label: "This Week's Menu" },
     { href: '/catalog', label: 'Shop' },
-    { href: '/menu', label: 'Menu' },
+    { href: '/quiz', label: 'Wellness Quiz' },
     { href: '/markets', label: 'Markets' },
     { href: '/about', label: 'Our Story' },
+    { href: '/wholesale', label: 'Wholesale' },
+    { href: '/contact', label: 'Contact' },
     {
       href: isAuthenticated ? '/profile' : '/login',
       label: isAuthenticated ? 'Account' : 'Login',
@@ -46,7 +51,7 @@ export default function Header() {
           </span>
         </Link>
 
-        <nav className="hidden md:flex flex-1 items-center justify-center gap-8" aria-label="Main navigation">
+        <nav className="hidden md:flex flex-1 items-center justify-center gap-5 lg:gap-7" aria-label="Main navigation">
           {desktopNavItems.map((item) => (
             <Link
               key={item.href}
@@ -64,6 +69,13 @@ export default function Header() {
         {/* Right Side Controls */}
         <div className="hidden md:flex items-center gap-2 flex-shrink-0">
           <CartBadge />
+          <Button
+            asChild
+            size="sm"
+            className="rounded-full bg-emerald-700 text-white hover:bg-emerald-800"
+          >
+            <Link href="/quiz">Start Here</Link>
+          </Button>
           {isAuthenticated ? (
             <Button
               asChild

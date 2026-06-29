@@ -38,14 +38,6 @@ export async function GET(request) {
       'DHA Dunwoody Farmers Market': {
         address: 'DHA Dunwoody Farmers Market, Brook Run Park, 4770 N Peachtree Rd, Dunwoody, GA 30338',
         description: 'Visit us at DHA Dunwoody Farmers Market for fresh sea moss products'
-      },
-      'East Atlanta Village': {
-        address: 'East Atlanta Village Market, East Atlanta, GA',
-        description: 'Find us at the EAV Market with our full product lineup'
-      },
-      'Ponce City Market': {
-        address: 'Ponce City Market, 675 Ponce De Leon Ave NE, Atlanta, GA 30308',
-        description: 'Taste of Gratitude at Ponce City Market'
       }
     };
     

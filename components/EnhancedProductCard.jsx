@@ -52,7 +52,11 @@ export default function EnhancedProductCard({ product }) {
   const visibleIngredients = product.ingredients?.slice(0, 2) || [];
   const remainingIngredients = (product.ingredients?.length || 0) - 2;
   const lowStockThreshold = product.lowStockThreshold || 5;
-  const availabilityLabel = product.stock !== null && product.stock !== undefined && product.stock <= 0
+  const availabilityLabel = product.soldOut || product.inventoryStatus === 'sold_out'
+    ? 'Sold out'
+    : product.preorderOnly || product.isPreorder
+      ? 'Preorder for market pickup'
+      : product.stock !== null && product.stock !== undefined && product.stock <= 0
     ? 'Preorder for Saturday pickup'
     : product.stock !== null && product.stock !== undefined && product.stock <= lowStockThreshold
       ? `Limited stock (${product.stock} left)`

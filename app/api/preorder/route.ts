@@ -9,14 +9,122 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { generatePreorderNumber, getEstimatedWaitTime } from '@/lib/preorder/waitlist';
 import { getNextWaitlistNumber, createPreorder, findPreorderByOrderNumber } from '@/lib/preorder/repository';
-import { MARKET_CONFIGS, isValidMarketId, getNextMarketDate, PREORDER_RULES } from '@/lib/preorder/rules';
+import { MARKET_CONFIGS, isPastCutoff, isValidMarketId, getNextMarketDate, PREORDER_RULES } from '@/lib/preorder/rules';
 import { notifySquareTeam } from '@/lib/preorder/square-notifications';
 import { createLogger } from '@/lib/logger';
 import { sanitizeObject } from '@/lib/validation/sanitize';
 import { validateCustomerData } from '@/lib/validation/customer';
 import { validatePreorderMinimum } from '@/lib/cart-engine';
+import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 
 const logger = createLogger('PreorderAPI');
+
+function normalizeLookupKey(value: any) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function isUnavailableForPreorder(product: any) {
+  return product?.available === false ||
+    product?.soldOut === true ||
+    product?.inventoryStatus === 'sold_out' ||
+    product?.inventoryStatus === 'inactive' ||
+    product?.weeklyStatus === 'inactive';
+}
+
+function addLookupEntry(lookup: Map<string, any>, key: any, entry: any) {
+  const normalized = normalizeLookupKey(key);
+  if (normalized && !lookup.has(normalized)) {
+    lookup.set(normalized, entry);
+  }
+}
+
+function buildCatalogLookup(products: any[]) {
+  const lookup = new Map<string, any>();
+
+  products.forEach((product) => {
+    if (isUnavailableForPreorder(product)) return;
+
+    const variations = Array.isArray(product.variations) ? product.variations : [];
+    const defaultVariation = variations[0] || null;
+    const productEntry = { product, variation: defaultVariation };
+
+    [
+      product.id,
+      product.productId,
+      product.slug,
+      product.name,
+      product.curatedProductId,
+      product.variationId,
+      product.catalogObjectId,
+      product.squareVariationId,
+      product.squareData?.variationId,
+    ].forEach((key) => addLookupEntry(lookup, key, productEntry));
+
+    variations.forEach((variation: any) => {
+      const variationEntry = { product, variation };
+      [variation.id, variation.variationId, variation.catalogObjectId, variation.sku, `${product.id}:${variation.id}`]
+        .forEach((key) => addLookupEntry(lookup, key, variationEntry));
+    });
+  });
+
+  return lookup;
+}
+
+function getPreorderMetadata(data: any) {
+  const metadata = data?.metadata && typeof data.metadata === 'object' ? data.metadata : {};
+  return {
+    ...metadata,
+    source: metadata.source || data?.source || 'preorder_page',
+    utmSource: metadata.utmSource || data?.utmSource || null,
+    utmCampaign: metadata.utmCampaign || data?.utmCampaign || null,
+    capturedAt: new Date().toISOString(),
+  };
+}
+
+async function resolvePreorderCartItems(submittedItems: any[]) {
+  const snapshot = await getStorefrontCatalogSnapshot({});
+  const lookup = buildCatalogLookup(snapshot.products || []);
+
+  return submittedItems.map((item: any) => {
+    const lookupKey = [
+      item.variationId,
+      item.catalogObjectId,
+      item.productId,
+      item.id,
+      item.slug,
+      item.name,
+    ].map(normalizeLookupKey).find((key) => lookup.has(key));
+
+    if (!lookupKey) {
+      throw new Error(`${item.name || item.id || 'An item'} is no longer available for preorder.`);
+    }
+
+    const { product, variation } = lookup.get(lookupKey);
+    const price = Number(variation?.price ?? product.price ?? ((product.priceCents || 0) / 100));
+    const priceCents = Number(variation?.priceCents ?? product.priceCents ?? Math.round(price * 100));
+    const quantity = Math.max(1, Math.min(99, Number(item.quantity) || 1));
+
+    if (!Number.isFinite(price) || price <= 0) {
+      throw new Error(`${product.name} is missing a valid preorder price.`);
+    }
+
+    return {
+      id: product.id || product.slug || lookupKey,
+      productId: product.id || product.slug || lookupKey,
+      slug: product.slug || product.id,
+      variationId: variation?.id || product.variationId || product.catalogObjectId || product.id,
+      catalogObjectId: product.catalogObjectId || product.variationId || variation?.id || product.id,
+      price,
+      priceCents,
+      quantity,
+      isPreorder: true,
+      category: product.category || product.intelligentCategory || '',
+      name: product.name,
+      size: variation?.name || product.size || item.size || null,
+      imageUrl: product.image || product.displayImage || product.images?.[0] || null,
+    };
+  });
+}
 
 export async function POST(request: any) {
   try {
@@ -39,6 +147,13 @@ export async function POST(request: any) {
       );
     }
 
+    if (isPastCutoff(data.marketId)) {
+      return NextResponse.json(
+        { success: false, error: 'This market preorder window has closed. Please choose the next weekly menu drop or visit the booth for walk-up availability.' },
+        { status: 400 }
+      );
+    }
+
     if (!data.items || !Array.isArray(data.items) || data.items.length === 0) {
       return NextResponse.json(
         { success: false, error: 'Your preorder is empty' },
@@ -55,18 +170,7 @@ export async function POST(request: any) {
       );
     }
 
-    const preorderCartItems = data.items.map((item: any) => ({
-      ...item,
-      id: item.productId || item.id,
-      productId: item.productId || item.id,
-      variationId: item.variationId || item.productId || item.id,
-      catalogObjectId: item.catalogObjectId || item.variationId || item.productId || item.id,
-      price: Number(item.price) || 0,
-      quantity: Number(item.quantity) || 1,
-      isPreorder: true,
-      category: item.category || '',
-      name: item.name || '',
-    }));
+    const preorderCartItems = await resolvePreorderCartItems(data.items);
 
     // Calculate totals
     const subtotal = preorderCartItems.reduce((sum: number, item: any) => {
@@ -106,6 +210,7 @@ export async function POST(request: any) {
 
     const orderNumber = generatePreorderNumber();
     const total = subtotal; // TAX_RATE is 0 for market sales
+    const preorderMetadata = getPreorderMetadata(data);
 
     const items = preorderCartItems.map((item: any) => ({
       productId: item.productId || item.id,
@@ -134,6 +239,10 @@ export async function POST(request: any) {
       paymentMethod: 'PAY_AT_PICKUP',
       paymentStatus: 'PENDING',
       notes: data.notes || null,
+      metadata: preorderMetadata,
+      source: preorderMetadata.source,
+      utmSource: preorderMetadata.utmSource,
+      utmCampaign: preorderMetadata.utmCampaign,
       queuePosition: counter,
       pickupLocation: marketConfig.name,
       pickupDate: pickupDateStr,
@@ -186,6 +295,7 @@ export async function POST(request: any) {
         pickupDate: pickupDateStr,
         pickupHours: marketConfig.hours,
         estimatedTime: getEstimatedWaitTime(counter),
+        marketId: data.marketId,
       },
     });
   } catch (error: any) {
@@ -237,6 +347,7 @@ export async function GET(request: any) {
         waitlistNumber: preorder.waitlistNumber,
         status: preorder.status,
         message: getStatusMessage(preorder.status),
+        marketId: preorder.marketId,
         pickupLocation: preorder.pickupLocation || preorder.marketName,
         pickupDate: preorder.pickupDate,
         pickupHours: preorder.pickupHours,

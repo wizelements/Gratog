@@ -15,6 +15,8 @@ import ProductReviews from '@/components/ProductReviews';
 import Script from 'next/script';
 import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
 import { track } from '@/utils/analytics';
+import RetentionForm from '@/components/RetentionForm';
+import { getActiveProducts, getProductBySlugOrId } from '@/data/products';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop';
 
@@ -54,6 +56,19 @@ export default function ProductDetailClient({ product, slug }) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState('flavor');
   const [reviewSummary, setReviewSummary] = useState(DEFAULT_REVIEW_SUMMARY);
+  const checkoutReady = product?.checkoutReady !== false;
+  const isMarketOnly = Boolean(
+    product?.marketPickupOnly ||
+    product?.preorderOnly ||
+    product?.isPreorder ||
+    product?.fulfillmentType === 'market_pickup' ||
+    product?.fulfillmentType === 'market_pickup_only'
+  );
+  const showMarketLeadCapture = Boolean(product) && (!checkoutReady || isMarketOnly);
+  const canAddToCart = Boolean(product) && checkoutReady && !isMarketOnly;
+  const preorderSource = encodeURIComponent(product?.slug || product?.id || slug || 'product_detail');
+  const preorderHref = `/preorder?utm_source=product_${preorderSource}&utm_campaign=passive_preorder_funnel`;
+  const productCategoryLabel = product?.categoryLabel || product?.displayCategory || product?.category || product?.intelligentCategory || 'Weekly market item';
 
   // Set default variation on mount
   useEffect(() => {
@@ -105,8 +120,27 @@ export default function ProductDetailClient({ product, slug }) {
     });
   }, [product?.id, product?.slug, product?.name, product?.category, product?.intelligentCategory]);
 
+  useEffect(() => {
+    if (!showMarketLeadCapture || (!product?.id && !product?.slug)) return;
+
+    track('product_lead_capture_shown', {
+      productId: product.id || product.slug,
+      productName: product.name,
+      category: product.category || product.intelligentCategory,
+      checkoutReady,
+      isMarketOnly,
+    });
+  }, [showMarketLeadCapture, product?.id, product?.slug, product?.name, product?.category, product?.intelligentCategory, checkoutReady, isMarketOnly]);
+
   // Cart functionality
   const handleAddToCart = async () => {
+    if (!canAddToCart) {
+      toast.message('This item is handled through market pickup.', {
+        description: product?.checkoutUnavailableReason || 'Join weekly texts or reserve through the market preorder flow.',
+      });
+      return;
+    }
+
     const variationToAdd = selectedVariation || product.variations?.[0] || {
       id: product.variationId || product.squareVariationId || product.id,
       name: product.size || 'Default',
@@ -122,7 +156,10 @@ export default function ProductDetailClient({ product, slug }) {
 
     try {
       setIsAdding(true);
-      await addToCart(product, variationToAdd, quantity);
+      const result = addToCart(product, variationToAdd, quantity);
+      if (!result?.success) {
+        throw new Error(result?.error || 'Failed to add to cart. Please try again.');
+      }
       track('product_add_to_cart', {
         productId: product.id || product.slug,
         productName: product.name,
@@ -163,6 +200,11 @@ export default function ProductDetailClient({ product, slug }) {
 
   const displayPrice = selectedVariation?.price || product.price;
   const stockStatus = product.stock > 0 ? 'in_stock' : product.isPreorder ? 'preorder' : 'out_of_stock';
+  const schemaAvailability = stockStatus === 'preorder'
+    ? 'https://schema.org/PreOrder'
+    : stockStatus === 'in_stock'
+      ? 'https://schema.org/InStock'
+      : 'https://schema.org/OutOfStock';
   const flavorNotes =
     product.flavorNotes ||
     product.tastingNotes ||
@@ -170,6 +212,11 @@ export default function ProductDetailClient({ product, slug }) {
     product.shortDescription ||
     product.description ||
     'Small-batch sea moss gel with a smooth chilled texture and naturally simple ingredients.';
+  const fullDescription =
+    product.fullDescription ||
+    product.productStory ||
+    product.story ||
+    product.description;
   const storageGuidance =
     product.storageInstructions ||
     product.careInstructions ||
@@ -178,6 +225,7 @@ export default function ProductDetailClient({ product, slug }) {
     ? 'Preorder items are made for your selected pickup date. Choose your market and pickup day during checkout.'
     : 'Choose market pickup or eligible local delivery during checkout. Pickup details are confirmed before payment.';
   const routineUse =
+    product.recommendedUse ||
     product.howToUse ||
     product.usageInstructions ||
     'Add 1–2 tablespoons to smoothies, tea, juices, bowls, or recipes. Start simple and build it into the routine you already enjoy.';
@@ -187,8 +235,20 @@ export default function ProductDetailClient({ product, slug }) {
     `This product is part of Taste of Gratitude's weekly small-batch rhythm: simple ingredients, careful prep, and a calmer way to bring market-made wellness into your routine.`;
   const intendedUse =
     product.intendedUse ||
+    (Array.isArray(product.wellnessSupport) && product.wellnessSupport.length > 0 ? product.wellnessSupport.join(', ') : '') ||
     'Best for customers who want an approachable, ingredient-forward product that feels easy to use throughout the week.';
   const customerQuote = product.customerQuote || product.testimonial || '“You can tell it is made with care — it feels fresh, real, and easy to come back to.”';
+  const wellnessSupport = Array.isArray(product.wellnessSupport) ? product.wellnessSupport : [];
+  const allergens = Array.isArray(product.allergens) ? product.allergens.filter(Boolean) : [];
+  const pickupInfo = product.pickupAvailability || pickupGuidance;
+  const shippingInfo = product.shippingAvailability || 'Eligible items and shipping fees are confirmed before payment.';
+  const pairingProducts = (Array.isArray(product.pairings) ? product.pairings : [])
+    .map((id) => getProductBySlugOrId(id))
+    .filter(Boolean)
+    .slice(0, 3);
+  const relatedProducts = pairingProducts.length > 0
+    ? pairingProducts
+    : getActiveProducts().filter((item) => item.slug !== product.slug).slice(0, 3);
   const ingredients = Array.isArray(product.ingredients)
     ? product.ingredients
         .map((ingredient) => (typeof ingredient === 'string' ? { name: ingredient } : ingredient))
@@ -223,7 +283,7 @@ export default function ProductDetailClient({ product, slug }) {
             url: `${BASE_URL}/product/${slug}`,
             price: displayPrice,
             priceCurrency: 'USD',
-            availability: stockStatus === 'in_stock' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            availability: schemaAvailability,
             itemOffered: {
               '@type': 'Product',
               name: product.name
@@ -293,7 +353,7 @@ export default function ProductDetailClient({ product, slug }) {
             {/* Header */}
             <div>
               <p className="mb-2 text-sm font-medium uppercase tracking-[0.18em] text-emerald-700">
-                {product.category}
+                {productCategoryLabel}
               </p>
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">{product.name}</h1>
               
@@ -322,7 +382,10 @@ export default function ProductDetailClient({ product, slug }) {
             </div>
 
             {/* Description */}
-            <p className="text-base text-gray-700 leading-relaxed">{product.description}</p>
+            <div className="space-y-3 text-base text-gray-700 leading-relaxed">
+              <p>{product.description}</p>
+              {fullDescription && fullDescription !== product.description && <p>{fullDescription}</p>}
+            </div>
 
             {/* Variations */}
             {product.variations?.length > 0 && (
@@ -352,64 +415,145 @@ export default function ProductDetailClient({ product, slug }) {
             )}
 
             {/* Quantity */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-11 h-11 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50"
-                  aria-label="Decrease quantity"
-                >
-                  -
-                </button>
-                <span className="w-12 text-center font-medium">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="w-11 h-11 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50"
-                  aria-label="Increase quantity"
-                >
-                  +
-                </button>
+            {canAddToCart && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="w-11 h-11 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50"
+                    aria-label="Decrease quantity"
+                  >
+                    -
+                  </button>
+                  <span className="w-12 text-center font-medium">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="w-11 h-11 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50"
+                    aria-label="Increase quantity"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Actions */}
             <div>
-              <Button
-                onClick={handleAddToCart}
-                disabled={isAdding || (!selectedVariation && product.variations?.length > 0)}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 text-lg"
-              >
-                {isAdding ? (
-                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                ) : (
-                  <ShoppingCart className="w-5 h-5 mr-2" />
-                )}
-                Add to Cart
-              </Button>
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-                <div className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900">
-                  <Lock className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
-                  <span>Secure Square checkout</span>
+              {canAddToCart ? (
+                <Button
+                  onClick={handleAddToCart}
+                  disabled={isAdding || (!selectedVariation && product.variations?.length > 0)}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 text-lg"
+                >
+                  {isAdding ? (
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  ) : (
+                    <ShoppingCart className="w-5 h-5 mr-2" />
+                  )}
+                  Add to Cart
+                </Button>
+              ) : (
+                <div className="space-y-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                  <div>
+                    <p className="font-semibold text-amber-950">Made for weekly market pickup.</p>
+                    <p className="mt-2 text-sm leading-6 text-amber-900">
+                      {product.checkoutUnavailableReason || 'This item works best through the weekly menu and market preorder rhythm. Get the menu text first, then reserve when your pickup window opens.'}
+                    </p>
+                  </div>
+                  <RetentionForm
+                    intent="weekly_menu_texts"
+                    source={`product_${product.slug || product.id}`}
+                    title="Text me when this week’s menu drops"
+                    description="Get the market menu, pickup reminder, and reservation link before the next batch closes."
+                    cta="Text me the menu"
+                    collectEmail={false}
+                    collectPhone
+                    metadata={{
+                      productId: product.id || product.slug,
+                      productName: product.name,
+                      category: product.category || product.intelligentCategory,
+                      sourceCampaign: 'passive_preorder_funnel',
+                    }}
+                    compact
+                  />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Button asChild className="h-11 rounded-full bg-emerald-700 text-white hover:bg-emerald-800">
+                      <Link
+                        href={preorderHref}
+                        onClick={() => track('product_preorder_click', { productId: product.id || product.slug, productName: product.name, source: 'product_market_fallback' })}
+                      >
+                        Reserve for pickup
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-11 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
+                      <Link href="/markets">View markets</Link>
+                    </Button>
+                  </div>
                 </div>
-                <Link href="/policies#shipping" className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900 hover:bg-emerald-100">
-                  <Truck className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
-                  <span>Pickup, delivery, or shipping details</span>
-                </Link>
-                <Link href="/policies#refunds" className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900 hover:bg-emerald-100">
-                  <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
-                  <span>Satisfaction guarantee</span>
-                </Link>
-              </div>
+              )}
+              {canAddToCart ? (
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                  <div className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900">
+                    <Lock className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
+                    <span>Secure Square checkout</span>
+                  </div>
+                  <Link href="/policies#shipping" className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900 hover:bg-emerald-100">
+                    <Truck className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
+                    <span>Pickup, delivery, or shipping details</span>
+                  </Link>
+                  <Link href="/policies#refunds" className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900 hover:bg-emerald-100">
+                    <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
+                    <span>Satisfaction guarantee</span>
+                  </Link>
+                </div>
+              ) : (
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                  <Link href="/markets" className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900 hover:bg-emerald-100">
+                    <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
+                    <span>Ask at the next market pickup</span>
+                  </Link>
+                  <Link href="/quiz" className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900 hover:bg-emerald-100">
+                    <RefreshCw className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
+                    <span>Find an available backup</span>
+                  </Link>
+                </div>
+              )}
+              {canAddToCart && (
+                <div className="mt-4">
+                <RetentionForm
+                  intent="weekly_menu_texts"
+                  source={`product_${product.slug || product.id}`}
+                  title="Want the next menu drop?"
+                  description="Join weekly texts for limited-batch reminders and pickup updates."
+                  cta="Join weekly texts"
+                  collectEmail={false}
+                  collectPhone
+                  metadata={{
+                    productId: product.id || product.slug,
+                    productName: product.name,
+                    category: product.category || product.intelligentCategory,
+                    sourceCampaign: 'passive_preorder_funnel',
+                  }}
+                  compact
+                />
+                </div>
+              )}
             </div>
 
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h3 className="font-semibold text-gray-900 mb-3">What to expect</h3>
               <div className="space-y-3 text-base text-gray-700 leading-relaxed">
                 <p>{flavorNotes}</p>
-                <p className="text-gray-600">
-                  Made in small batches with transparent ingredients and simple pickup guidance below.
-                </p>
+                {wellnessSupport.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {wellnessSupport.map((support) => (
+                      <span key={support} className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
+                        {support}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -418,9 +562,9 @@ export default function ProductDetailClient({ product, slug }) {
               <MapPin className="w-5 h-5 text-emerald-600 flex-shrink-0" />
               <div>
                 <p className="font-medium text-gray-900">Pickup, Delivery & Shipping</p>
-                <p>{pickupGuidance}</p>
+                <p>{pickupInfo}</p>
                 <p className="mt-1">
-                  Eligible shelf-stable items can ship nationwide; perishable batches are packed carefully and shown with fees before payment.
+                  {shippingInfo}
                 </p>
               </div>
             </div>
@@ -436,7 +580,7 @@ export default function ProductDetailClient({ product, slug }) {
             </p>
           </div>
           <div className="rounded-xl border border-stone-200 bg-white p-4">
-            <h3 className="font-semibold text-gray-900">Best for</h3>
+            <h3 className="font-semibold text-gray-900">What it supports</h3>
             <p className="mt-2 text-sm leading-6 text-gray-600">
               {intendedUse}
             </p>
@@ -527,6 +671,10 @@ export default function ProductDetailClient({ product, slug }) {
                   ) : (
                     <p className="text-gray-600">Premium wildcrafted sea moss with natural ingredients.</p>
                   )}
+                  <div className="mt-6 rounded-xl bg-stone-50 p-4 text-sm text-stone-700">
+                    <p className="font-semibold text-stone-950">Allergens & sensitivities</p>
+                    <p className="mt-1">{allergens.length > 0 ? allergens.join(', ') : 'No major allergens listed for this product.'}</p>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -544,7 +692,8 @@ export default function ProductDetailClient({ product, slug }) {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold mb-2">Pickup, delivery, and shipping</h3>
-                    <p className="text-gray-700 leading-relaxed">{pickupGuidance}</p>
+                    <p className="text-gray-700 leading-relaxed">{pickupInfo}</p>
+                    <p className="mt-2 text-gray-700 leading-relaxed">{shippingInfo}</p>
                     <div className="mt-4 grid gap-3 text-sm text-gray-700 sm:grid-cols-3">
                       <Link href="/policies#shipping" className="rounded-lg border border-gray-200 p-3 hover:border-emerald-300">
                         <Truck className="mb-2 h-5 w-5 text-emerald-700" aria-hidden="true" />
@@ -573,14 +722,27 @@ export default function ProductDetailClient({ product, slug }) {
           </Tabs>
         </div>
 
-        {/* Related Products */}
-        <section className="mt-12 rounded-2xl bg-emerald-50 p-6 text-center">
-          <h2 className="text-xl font-semibold text-gray-900">Want to compare flavors?</h2>
-          <p className="mt-2 text-gray-600">Browse similar market staples in this collection.</p>
-          <a href={`/catalog?category=${encodeURIComponent(product.category || 'all')}`}
-             className="mt-4 inline-block rounded-full bg-emerald-700 px-6 py-3 text-white font-semibold hover:bg-emerald-800">
-            View Similar Products
-          </a>
+        <section className="mt-12 rounded-2xl bg-emerald-50 p-6">
+          <div className="mb-5 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Pairs well with</p>
+            <h2 className="mt-2 text-2xl font-semibold text-gray-900">Build a weekly routine around this product.</h2>
+            <p className="mt-2 text-gray-600">These pairings come from the curated weekly market product source.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {relatedProducts.map((related) => (
+              <Link key={related.id} href={`/product/${related.slug}`} className="rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                <p className="text-sm font-semibold text-stone-950">{related.name}</p>
+                <p className="mt-1 text-xs leading-5 text-stone-600">{related.shortDescription}</p>
+                <p className="mt-3 text-sm font-bold text-emerald-800">${related.price.toFixed(2)}</p>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-6 text-center">
+            <a href={`/catalog?category=${encodeURIComponent(product.category || 'all')}`}
+               className="inline-block rounded-full bg-emerald-700 px-6 py-3 text-white font-semibold hover:bg-emerald-800">
+              View Similar Products
+            </a>
+          </div>
         </section>
 
       </div>
@@ -592,13 +754,23 @@ export default function ProductDetailClient({ product, slug }) {
             <p className="truncate text-sm font-semibold text-gray-900">{product.name}</p>
             <p className="text-sm font-bold text-emerald-700">${displayPrice?.toFixed?.(2) || '0.00'}</p>
           </div>
-          <button
-            onClick={handleAddToCart}
-            disabled={isAdding}
-            className="h-12 rounded-full bg-emerald-700 px-6 text-white font-semibold hover:bg-emerald-800 disabled:opacity-50"
-          >
-            {isAdding ? 'Adding...' : 'Add to Cart'}
-          </button>
+          {canAddToCart ? (
+            <button
+              onClick={handleAddToCart}
+              disabled={isAdding}
+              className="h-12 rounded-full bg-emerald-700 px-6 text-white font-semibold hover:bg-emerald-800 disabled:opacity-50"
+            >
+              {isAdding ? 'Adding...' : 'Add to Cart'}
+            </button>
+          ) : (
+            <Link
+              href={preorderHref}
+              onClick={() => track('product_preorder_click', { productId: product.id || product.slug, productName: product.name, source: 'product_mobile_sticky' })}
+              className="h-12 rounded-full bg-emerald-700 px-6 py-3 text-center font-semibold text-white hover:bg-emerald-800"
+            >
+              Reserve
+            </Link>
+          )}
         </div>
       </div>
     </div>

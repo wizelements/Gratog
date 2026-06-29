@@ -7,10 +7,22 @@ import { logger } from '@/lib/logger';
 export type AnalyticsEvent = 
   | 'product_view'
   | 'product_add_to_cart'
+  | 'product_lead_capture_shown'
+  | 'product_preorder_click'
   | 'search_query'
   | 'search_suggestion_selected'
   | 'category_view'
   | 'ingredient_filter'
+  | 'lead_form_view'
+  | 'lead_captured'
+  | 'home_preorder_click'
+  | 'catalog_preorder_click'
+  | 'market_preorder_click'
+  | 'preorder_started'
+  | 'preorder_market_selected'
+  | 'preorder_submitted'
+  | 'preorder_minimum_error'
+  | 'preorder_status_viewed'
   | 'checkout_started'
   | 'checkout_stage_change'
   | 'checkout_proceed_to_payment'
@@ -54,10 +66,22 @@ export interface AnalyticsProps {
 const SERVER_TRACKED_EVENTS = new Set<string>([
   'product_view',
   'product_add_to_cart',
+  'product_lead_capture_shown',
+  'product_preorder_click',
   'search_query',
   'search_suggestion_selected',
   'category_view',
   'ingredient_filter',
+  'lead_form_view',
+  'lead_captured',
+  'home_preorder_click',
+  'catalog_preorder_click',
+  'market_preorder_click',
+  'preorder_started',
+  'preorder_market_selected',
+  'preorder_submitted',
+  'preorder_minimum_error',
+  'preorder_status_viewed',
   'checkout_started',
   'checkout_abandoned',
   'fulfillment_type_selected',

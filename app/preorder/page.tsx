@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, useRef } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { 
   ShoppingCart, 
@@ -26,6 +26,8 @@ import { Label } from "@/components/ui/label";
 
 import { toast } from "sonner";
 import Link from "next/link";
+import RetentionForm from "@/components/RetentionForm";
+import { track } from "@/utils/analytics";
 
 // Day-of-week labels
 const DAY_LABELS: Record<number, string> = {
@@ -74,6 +76,9 @@ interface MarketData {
 // Product type from Square
 interface PreorderItem {
   id: string;
+  slug?: string;
+  variationId?: string;
+  catalogObjectId?: string;
   name: string;
   size: string;
   price: number;
@@ -90,7 +95,55 @@ interface PreorderItem {
 
 const PREORDER_MINIMUM = 60;
 
+function normalizeCategoryText(value: unknown): string {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getPreorderCategory(product: any): string {
+  const raw = normalizeCategoryText(
+    product?.category ||
+    product?.categoryId ||
+    product?.categoryLabel ||
+    product?.displayCategory ||
+    product?.intelligentCategory ||
+    product?.categoryData?.name
+  );
+  const name = normalizeCategoryText(product?.name);
+  const haystack = `${raw} ${name}`.trim();
+
+  if (haystack.includes('shot')) return 'shots';
+  if (haystack.includes('refresher')) return 'refreshers';
+  if (haystack.includes('gel') || haystack.includes('moss') || raw === 'gels') return 'gels';
+  if (haystack.includes('lemonade') || haystack.includes('juice') || haystack.includes('drink') || raw === 'lemonades') return 'lemonades';
+
+  return raw || 'specials';
+}
+
+function getPreorderCategoryEmoji(category: string, fallback = '🛍️') {
+  if (category === 'gels') return '🌿';
+  if (category === 'lemonades') return '🍋';
+  if (category === 'refreshers') return '🍹';
+  if (category === 'shots') return '🥃';
+  return fallback;
+}
+
 // Horizontal scroll category section
+function PreorderLoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex items-center justify-center px-4">
+      <div className="text-center">
+        <Loader2 className="w-10 h-10 text-emerald-600 animate-spin mx-auto mb-4" />
+        <p className="text-gray-600">Loading preorder options...</p>
+      </div>
+    </div>
+  );
+}
+
 function CategorySection({ 
   title, 
   emoji, 
@@ -221,8 +274,20 @@ function CategorySection({
 }
 
 export default function PreorderPage() {
+  return (
+    <Suspense fallback={<PreorderLoadingFallback />}>
+      <PreorderPageContent />
+    </Suspense>
+  );
+}
+
+function PreorderPageContent() {
   const searchParams = useSearchParams();
   const marketId = searchParams.get("market");
+  const utmSource = searchParams.get("utm_source") || searchParams.get("source") || "direct";
+  const utmCampaign = searchParams.get("utm_campaign") || "passive_preorder_funnel";
+  const sourceCategory = searchParams.get("category") || null;
+  const sourceProduct = searchParams.get("product") || null;
   
   const [step, setStep] = useState<"market" | "items" | "checkout">("market");
   const [selectedMarket, setSelectedMarket] = useState<MarketData | null>(null);
@@ -237,6 +302,19 @@ export default function PreorderPage() {
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
+  const preorderStartedTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if (preorderStartedTrackedRef.current) return;
+    preorderStartedTrackedRef.current = true;
+    track('preorder_started', {
+      marketId: marketId || null,
+      utmSource,
+      utmCampaign,
+      category: sourceCategory,
+      product: sourceProduct,
+    });
+  }, [marketId, utmSource, utmCampaign, sourceCategory, sourceProduct]);
 
   // Fetch markets from API
   useEffect(() => {
@@ -288,36 +366,20 @@ export default function PreorderPage() {
         const transformedProducts = (data.products || [])
           .filter((p: any) => p.available !== false && (p.inStock !== false || p.isPreorder === true || p.purchaseStatus === 'preorder'))
           .map((p: any) => {
+            const defaultVariation = Array.isArray(p.variations) ? p.variations[0] : null;
             const name = (p.name || '').toLowerCase();
-            let category = p.category || 'specials';
-            let emoji = p.emoji || '🛍️';
-            
-            // Auto-categorize if not set
-            if (!category || category === 'specials') {
-              if (name.includes('lemonade')) {
-                category = 'lemonades';
-                emoji = '🍋';
-              } else if (name.includes('juice')) {
-                category = 'juices';
-                emoji = '🧃';
-              } else if (name.includes('moss') || name.includes('gel')) {
-                category = 'sea-moss';
-                emoji = '🌿';
-              } else if (name.includes('refresher')) {
-                category = 'refreshers';
-                emoji = '🍹';
-              } else if (name.includes('shot')) {
-                category = 'shots';
-                emoji = '🥃';
-              }
-            }
+            const category = getPreorderCategory(p);
+            const emoji = getPreorderCategoryEmoji(category, p.emoji || '🛍️');
             
             return {
               id: p.id,
+              slug: p.slug,
+              variationId: p.variationId || defaultVariation?.id,
+              catalogObjectId: p.catalogObjectId || p.variationId || defaultVariation?.id,
               name: p.name,
-              size: p.size || 'Regular',
-              price: p.price || (p.priceCents || 0) / 100,
-              priceCents: p.priceCents || Math.round((p.price || 0) * 100),
+              size: defaultVariation?.name || p.size || 'Regular',
+              price: defaultVariation?.price || p.price || (p.priceCents || 0) / 100,
+              priceCents: defaultVariation?.priceCents || p.priceCents || Math.round((p.price || 0) * 100),
               category,
               emoji,
               available: p.stockQuantity || 99,
@@ -349,9 +411,15 @@ export default function PreorderPage() {
       if (market) {
         setSelectedMarket(market);
         setStep("items");
+        track('preorder_market_selected', {
+          marketId: market.id,
+          source: 'query_param',
+          utmSource,
+          utmCampaign,
+        });
       }
     }
-  }, [marketId, markets, selectedMarket]);
+  }, [marketId, markets, selectedMarket, utmSource, utmCampaign]);
 
   const cartTotal = Object.entries(cart).reduce((sum, [id, qty]) => {
     const item = products.find(p => p.id === id);
@@ -363,6 +431,8 @@ export default function PreorderPage() {
   const preorderSubtotal = cartTotal;
   const preorderMinimumMet = preorderSubtotal === 0 || preorderSubtotal >= PREORDER_MINIMUM;
   const preorderRulesMet = preorderMinimumMet;
+  const preorderRemaining = Math.max(0, PREORDER_MINIMUM - preorderSubtotal);
+  const preorderProgress = Math.min(100, Math.round((preorderSubtotal / PREORDER_MINIMUM) * 100));
 
   const updateCart = (id: string, delta: number) => {
     setCart(prev => {
@@ -380,8 +450,14 @@ export default function PreorderPage() {
     if (!selectedMarket) return;
 
     if (!preorderRulesMet) {
+      track('preorder_minimum_error', {
+        marketId: selectedMarket.id,
+        subtotal: preorderSubtotal,
+        remaining: preorderRemaining,
+        itemCount: cartItemCount,
+      });
       toast.error(
-        `Preorders require a $${PREORDER_MINIMUM.toFixed(2)} minimum. Add $${(PREORDER_MINIMUM - preorderSubtotal).toFixed(2)} more.`
+        `Preorders require a $${PREORDER_MINIMUM.toFixed(2)} minimum. Add $${preorderRemaining.toFixed(2)} more.`
       );
       return;
     }
@@ -394,6 +470,9 @@ export default function PreorderPage() {
         return {
           id,
           productId: id,
+          slug: product?.slug,
+          variationId: product?.variationId,
+          catalogObjectId: product?.catalogObjectId,
           name: product?.name || id,
           quantity: qty,
           price: product?.price || 0,
@@ -411,7 +490,15 @@ export default function PreorderPage() {
           marketId: selectedMarket.id,
           customer,
           items: orderItems,
-          total: cartTotal
+          total: cartTotal,
+          metadata: {
+            source: 'preorder_page',
+            utmSource,
+            utmCampaign,
+            landingMarketId: marketId || null,
+            category: sourceCategory,
+            product: sourceProduct,
+          }
         })
       });
 
@@ -425,6 +512,15 @@ export default function PreorderPage() {
         setWaitlistNumber(nextWaitlistNumber);
         setWaitlistPosition(preorder.waitlistPosition || data.waitlistPosition || null);
         setOrderComplete(true);
+        track('preorder_submitted', {
+          marketId: selectedMarket.id,
+          total: cartTotal,
+          itemCount: cartItemCount,
+          orderNumber: preorder.orderNumber || data.orderNumber || "",
+          waitlistNumber: nextWaitlistNumber,
+          utmSource,
+          utmCampaign,
+        });
         toast.success(`Preorder placed! Your number is ${nextWaitlistNumber}`);
       } else {
         toast.error(data.error || 'Failed to place preorder');
@@ -444,11 +540,9 @@ export default function PreorderPage() {
   }, {} as Record<string, PreorderItem[]>);
 
   const categoryOrder: { key: string; label: string; emoji: string }[] = [
-    { key: 'sea-moss', label: 'Sea Moss Gels', emoji: '🌿' },
+    { key: 'gels', label: 'Sea Moss Gels', emoji: '🌿' },
     { key: 'lemonades', label: 'Lemonades', emoji: '🍋' },
-    { key: 'juices', label: 'Fresh Juices', emoji: '🧃' },
     { key: 'refreshers', label: 'Refreshers', emoji: '🍹' },
-
     { key: 'shots', label: 'Wellness Shots', emoji: '🥃' },
     { key: 'specials', label: 'Specials', emoji: '✨' },
   ];
@@ -498,11 +592,18 @@ export default function PreorderPage() {
                 </p>
               </div>
 
-              <Link href="/markets">
-                <Button className="w-full mt-6 bg-emerald-600 hover:bg-emerald-700">
-                  Back to Markets
-                </Button>
-              </Link>
+              <div className="mt-6 grid gap-3">
+                <Link href={`/preorder/status?order=${encodeURIComponent(orderNumber || waitlistNumber)}`}>
+                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
+                    Check Pickup Status
+                  </Button>
+                </Link>
+                <Link href="/markets">
+                  <Button variant="outline" className="w-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
+                    Back to Markets
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -552,6 +653,12 @@ export default function PreorderPage() {
                   onClick={() => {
                     setSelectedMarket(market);
                     setStep("items");
+                    track('preorder_market_selected', {
+                      marketId: market.id,
+                      source: 'market_step',
+                      utmSource,
+                      utmCampaign,
+                    });
                   }}
                   className="w-full p-5 bg-white rounded-2xl border-2 border-gray-100 hover:border-emerald-500 transition-all text-left shadow-sm hover:shadow-md"
                 >
@@ -566,6 +673,22 @@ export default function PreorderPage() {
                 </button>
               ))
             )}
+          </div>
+
+          <div className="mt-6">
+            <RetentionForm
+              intent="weekly_menu_texts"
+              source="preorder_market_step"
+              title="Not ready to preorder?"
+              description="Get the next weekly menu text, pickup reminder, and preorder window before market day. If you are unsure which market is closest, tell us your area."
+              cta="Text me the weekly menu"
+              collectEmail={false}
+              collectPhone
+              collectMessage
+              messagePlaceholder="Optional: what neighborhood or market is closest to you?"
+              metadata={{ sourceCampaign: 'passive_preorder_funnel', landingMarketId: marketId || null, utmSource, utmCampaign }}
+              compact
+            />
           </div>
         </div>
       </div>
@@ -604,6 +727,28 @@ export default function PreorderPage() {
 
         {/* Products */}
         <div className="py-4">
+          {selectedMarket && (
+            <div className="mx-4 mb-4 rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
+                {marketId ? 'Market preselected from your link' : 'Selected pickup market'}
+              </p>
+              <h2 className="mt-1 font-semibold text-gray-900">Reserve your batch for {selectedMarket.name}</h2>
+              <p className="mt-1 text-sm leading-6 text-gray-600">
+                ${PREORDER_MINIMUM} reservation minimum • pay at pickup • {selectedMarket.day}s, {selectedMarket.displayHours}
+              </p>
+              {cartItemCount > 0 && (
+                <div className="mt-3">
+                  <div className="mb-1 flex justify-between text-xs font-medium text-gray-600">
+                    <span>${preorderSubtotal.toFixed(2)} reserved</span>
+                    <span>{preorderMinimumMet ? 'Minimum met' : `$${preorderRemaining.toFixed(2)} to go`}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                    <div className="h-full rounded-full bg-emerald-600 transition-all" style={{ width: `${preorderProgress}%` }} />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           {loadingProducts ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Loader2 className="w-10 h-10 text-emerald-600 animate-spin mb-4" />
@@ -613,6 +758,19 @@ export default function PreorderPage() {
             <div className="text-center py-20 px-4">
               <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
               <p className="text-gray-600">No products available. Please try again later.</p>
+              <div className="mt-6 text-left max-w-md mx-auto">
+                <RetentionForm
+                  intent="weekly_menu_texts"
+                  source="preorder_empty_products"
+                  title="Want the menu when it drops?"
+                  description="Leave your phone number and we’ll send the next weekly menu and pickup reminder."
+                  cta="Notify me"
+                  collectEmail={false}
+                  collectPhone
+                  metadata={{ sourceCampaign: 'passive_preorder_funnel', marketId: selectedMarket?.id || null, utmSource, utmCampaign }}
+                  compact
+                />
+              </div>
             </div>
           ) : (
             <>
@@ -620,7 +778,7 @@ export default function PreorderPage() {
                 <h2 className="font-semibold text-amber-900">Samples at the booth. Preorders for intentional wellness.</h2>
                 <p className="text-sm text-amber-800 mt-1">
                   If you want to try first, visit us at the market. If you are stocking up for your routine,
-                  reserve ahead — preorders have a ${PREORDER_MINIMUM} minimum.
+                  reserve ahead — the ${PREORDER_MINIMUM} reservation minimum helps us prep your batch fresh.
                 </p>
               </div>
 
@@ -643,7 +801,7 @@ export default function PreorderPage() {
                     className="w-full bg-emerald-600 hover:bg-emerald-700 shadow-lg text-lg h-14 rounded-xl"
                   >
                     <ShoppingCart className="w-5 h-5 mr-2" />
-                    Checkout · {cartItemCount} items · ${cartTotal.toFixed(2)}
+                    {preorderMinimumMet ? 'Checkout' : `Add $${preorderRemaining.toFixed(2)} to reserve`} · {cartItemCount} items
                     <ChevronRight className="w-5 h-5 ml-2" />
                   </Button>
                 </div>
@@ -713,8 +871,11 @@ export default function PreorderPage() {
                 <p className={`${preorderRulesMet ? 'text-emerald-700' : 'text-amber-700'} mt-1`}>
                   {preorderMinimumMet
                     ? `Preorder subtotal: $${preorderSubtotal.toFixed(2)}.`
-                    : `$${PREORDER_MINIMUM.toFixed(2)} minimum required. Add $${(PREORDER_MINIMUM - preorderSubtotal).toFixed(2)} more.`}
+                    : `$${PREORDER_MINIMUM.toFixed(2)} batch reservation minimum. Add $${preorderRemaining.toFixed(2)} more.`}
                 </p>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/80">
+                  <div className="h-full rounded-full bg-emerald-600 transition-all" style={{ width: `${preorderProgress}%` }} />
+                </div>
               </div>
             )}
           </CardContent>

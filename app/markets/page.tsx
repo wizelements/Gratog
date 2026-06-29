@@ -19,12 +19,14 @@ import {
   SunMedium,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import RetentionForm from '@/components/RetentionForm';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { track } from '@/utils/analytics';
 
 const DAY_LABELS: Record<number, string> = {
   0: 'Sunday',
@@ -156,7 +158,7 @@ function MarketCard({ market }: { market: PublicMarket }) {
   const mapsUrl = market.mapsUrl || `https://maps.google.com/?q=${encodeURIComponent(fullAddress)}`;
 
   return (
-    <article className="flex h-full flex-col rounded-[1.75rem] border border-emerald-900/10 bg-white p-5 shadow-sm shadow-emerald-950/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-950/10">
+    <article id={market.id} className="flex h-full scroll-mt-24 flex-col rounded-[1.75rem] border border-emerald-900/10 bg-white p-5 shadow-sm shadow-emerald-950/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-950/10">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -215,11 +217,28 @@ function MarketCard({ market }: { market: PublicMarket }) {
         <span className="font-semibold text-stone-950">Parking:</span> {meta.parkingNotes}
       </div>
 
+      <div className="mt-5">
+        <RetentionForm
+          intent="weekly_menu_texts"
+          source={`markets_page_${market.id}`}
+          title={`Text me ${market.shortName || market.name} reminders`}
+          description={`Get the weekly menu, cutoff reminder, and preorder link for ${market.shortName || market.name}.`}
+          cta="Text me market reminders"
+          collectEmail={false}
+          collectPhone
+          metadata={{ marketId: market.id, sourceCampaign: 'passive_preorder_funnel' }}
+          compact
+        />
+      </div>
+
       <div className="mt-auto grid gap-3 pt-5 sm:grid-cols-2">
         <Button asChild className="h-12 rounded-full bg-emerald-700 text-white hover:bg-emerald-800">
-          <Link href={`/preorder?market=${encodeURIComponent(market.id)}`}>
+          <Link
+            href={`/preorder?market=${encodeURIComponent(market.id)}&utm_source=markets_page&utm_campaign=passive_preorder_funnel`}
+            onClick={() => track('market_preorder_click', { source: 'markets_page_card', marketId: market.id })}
+          >
             <ShoppingBag className="h-4 w-4" aria-hidden="true" />
-            Preorder
+            Preorder pickup
           </Link>
         </Button>
         <Button asChild variant="outline" className="h-12 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
@@ -293,22 +312,29 @@ function ProductPreviewCard({ product }: { product: ProductItem }) {
 
 function getCategoryAndEmoji(product: any) {
   const name = (product.name || '').toLowerCase();
-  let category = product.category || 'specials';
+  const rawCategory = String(
+    product.category ||
+    product.categoryId ||
+    product.categoryLabel ||
+    product.displayCategory ||
+    product.intelligentCategory ||
+    product.categoryData?.name ||
+    ''
+  ).toLowerCase();
+  const haystack = `${rawCategory} ${name}`;
+  let category = 'specials';
   let emoji = product.emoji || '🛍️';
 
-  if (name.includes('lemonade')) {
+  if (haystack.includes('lemonade') || haystack.includes('juice') || haystack.includes('drink') || rawCategory === 'lemonades') {
     category = 'lemonades';
     emoji = '🍋';
-  } else if (name.includes('juice')) {
-    category = 'juices';
-    emoji = '🧃';
-  } else if (name.includes('moss') || name.includes('gel')) {
+  } else if (haystack.includes('moss') || haystack.includes('gel') || rawCategory === 'gels') {
     category = 'sea-moss';
     emoji = '🌿';
-  } else if (name.includes('refresher')) {
+  } else if (haystack.includes('refresher')) {
     category = 'refreshers';
     emoji = '🍹';
-  } else if (name.includes('shot')) {
+  } else if (haystack.includes('shot')) {
     category = 'shots';
     emoji = '🥃';
   }
@@ -358,30 +384,30 @@ export default function MarketsPage() {
         console.error('Failed to fetch products:', error);
         setProducts([
           {
-            id: 'fallback-golden-glow',
-            name: 'Golden Glow Sea Moss Gel',
+            id: 'fallback-golden-glow-gel',
+            name: 'Golden Glow Gel',
             category: 'sea-moss',
             emoji: '🌿',
-            price: 25,
+            price: 36,
             isPopular: true,
-            description: 'Signature wildcrafted sea moss gel',
+            description: 'Pineapple, orange, turmeric, ginger, honey, and sea moss in a golden gel.',
           },
           {
-            id: 'fallback-lemonade',
-            name: 'Fresh Sea Moss Lemonade',
+            id: 'fallback-kissed-by-gods',
+            name: 'Kissed by Gods',
             category: 'lemonades',
             emoji: '🍋',
-            price: 5.99,
-            description: 'Refreshing blend with wildcrafted sea moss',
+            price: 11,
+            description: 'Basil, chlorophyll, ginger, lemon, sea moss, agave, and alkaline water.',
           },
           {
-            id: 'fallback-shot',
-            name: 'Immunity Shot',
+            id: 'fallback-grateful-defense',
+            name: 'Grateful Defense',
             category: 'shots',
             emoji: '🥃',
-            price: 4.99,
+            price: 5,
             isNew: true,
-            description: 'Ginger, turmeric, and sea moss support',
+            description: 'Elderberry, cranberry, apple, ginger, lemon, echinacea, sea moss, and alkaline water.',
           },
         ]);
       } finally {
@@ -451,16 +477,16 @@ export default function MarketsPage() {
 
             <div className="mt-7 grid gap-3 sm:flex sm:flex-wrap">
               <Button asChild className="min-h-[52px] rounded-full bg-emerald-700 px-7 text-base font-semibold text-white shadow-lg shadow-emerald-900/15 hover:bg-emerald-800">
-                <Link href="/preorder">
-                  <ShoppingBag className="h-5 w-5" aria-hidden="true" />
-                  Shop This Week
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="min-h-[52px] rounded-full border-emerald-200 bg-white px-7 text-base font-semibold text-emerald-900 hover:bg-emerald-50">
                 <a href="#market-list">
                   <MapPin className="h-5 w-5" aria-hidden="true" />
-                  Find Market
+                  Choose your market
                 </a>
+              </Button>
+              <Button asChild variant="outline" className="min-h-[52px] rounded-full border-emerald-200 bg-white px-7 text-base font-semibold text-emerald-900 hover:bg-emerald-50">
+                <Link href="/preorder?utm_source=markets_hero&utm_campaign=passive_preorder_funnel" onClick={() => track('market_preorder_click', { source: 'markets_page_hero' })}>
+                  <ShoppingBag className="h-5 w-5" aria-hidden="true" />
+                  Already ready? Preorder
+                </Link>
               </Button>
             </div>
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Link from 'next/link';
 import { ShoppingCart, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -15,7 +16,8 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
   const [isAdding, setIsAdding] = useState(false);
   const [added, setAdded] = useState(false);
 
-  const isPreorder = product?.stock != null && product.stock <= 0;
+  const checkoutReady = product?.checkoutReady !== false;
+  const isPreorder = Boolean(product?.isPreorder || product?.preorderOnly || (product?.stock != null && product.stock <= 0));
   const purchaseStatus = isPreorder ? 'preorder' : 'in_stock';
 
   const handleAddToCart = useCallback(async (e) => {
@@ -24,6 +26,13 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
 
     if (!product) {
       toast.error('Product information missing');
+      return;
+    }
+
+    if (!checkoutReady) {
+      toast.message('This item is not connected to checkout yet.', {
+        description: product.checkoutUnavailableReason || 'Join weekly texts or ask at the market for current availability.',
+      });
       return;
     }
 
@@ -37,7 +46,10 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
       const addPromise = new Promise((resolve, reject) => {
         try {
           // Pass selectedVariant as third parameter to addToCart
-          addToCart(product, 1, selectedVariant);
+          const result = addToCart(product, 1, selectedVariant);
+          if (!result?.success) {
+            throw new Error(result?.error || 'Could not add item to cart');
+          }
           resolve({ 
             name: product.name, 
             status: purchaseStatus,
@@ -93,7 +105,17 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
     } finally {
       setIsAdding(false);
     }
-  }, [product, selectedVariant, isAdding, added, purchaseStatus]);
+  }, [product, selectedVariant, isAdding, added, purchaseStatus, checkoutReady]);
+
+  if (!checkoutReady) {
+    const productHref = product?.slug || product?.id ? `/product/${product.slug || product.id}` : '/catalog';
+
+    return (
+      <Button asChild variant={variant} className={`relative ${className}`}>
+        <Link href={productHref}>View details</Link>
+      </Button>
+    );
+  }
 
   return (
     <Button

@@ -6,7 +6,6 @@
 export const MARKET_CONFIGS = {
   'serenbe': { prefix: 'S', day: 'Saturday', hours: '9:00 AM - 1:00 PM', name: 'Serenbe Farmers Market', cutoffDay: 'Friday', cutoffHour: 18 },
   'dunwoody': { prefix: 'D', day: 'Saturday', hours: '9:00 AM - 12:00 PM', name: 'Dunwoody Farmers Market', cutoffDay: 'Friday', cutoffHour: 18 },
-  'sandy-springs': { prefix: 'SS', day: 'Sunday', hours: '10:00 AM - 1:00 PM', name: 'Sandy Springs Farmers Market', cutoffDay: 'Saturday', cutoffHour: 18 },
 } as const;
 
 export type MarketId = keyof typeof MARKET_CONFIGS;

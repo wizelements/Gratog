@@ -37,7 +37,7 @@ async function getHomepageCatalogData() {
   }
 
   return {
-    featuredProducts: snapshot.products.slice(0, 6),
+    featuredProducts: snapshot.products,
     initialCatalogCount: snapshot.isFallback ? null : snapshot.totalCount
   };
 }

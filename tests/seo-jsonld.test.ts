@@ -5,12 +5,16 @@ import { JsonLd } from '@/components/JsonLd';
 import { buildHomepageFaqSchema, buildHomepageOrganizationSchema } from '@/seo/schemas';
 
 describe('SEO Schema Module', () => {
-  it('builds organization schema as pure data', () => {
+  it('builds homepage organization/local business graph as pure data', () => {
     const schema = buildHomepageOrganizationSchema();
+    const graph = schema['@graph'];
+    const organization = graph.find((item) => item['@type'] === 'Organization');
+    const localBusiness = graph.find((item) => item['@type'] === 'LocalBusiness');
 
-    expect(schema['@type']).toBe('Organization');
-    expect(schema.name).toBe('Taste of Gratitude');
-    expect(Array.isArray(schema.sameAs)).toBe(true);
+    expect(Array.isArray(graph)).toBe(true);
+    expect(organization?.name).toBe('Taste of Gratitude');
+    expect(Array.isArray(organization?.sameAs)).toBe(true);
+    expect(localBusiness?.address?.addressLocality).toBe('Atlanta');
   });
 
   it('builds faq schema as pure data', () => {

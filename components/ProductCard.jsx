@@ -49,7 +49,11 @@ export default function ProductCard({ product }) {
     || '';
 
   const lowStockThreshold = product.lowStockThreshold || 5;
-  const availabilityLabel = product.stock !== null && product.stock !== undefined && product.stock <= 0
+  const availabilityLabel = product.soldOut || product.inventoryStatus === 'sold_out'
+    ? 'Sold out'
+    : product.preorderOnly || product.isPreorder
+      ? 'Preorder for market pickup'
+      : product.stock !== null && product.stock !== undefined && product.stock <= 0
     ? 'Preorder for Saturday pickup'
     : product.stock !== null && product.stock !== undefined && product.stock <= lowStockThreshold
       ? `Limited stock (${product.stock} left)`

@@ -2,8 +2,32 @@ export const dynamic = 'force-static';
 export const revalidate = 300; // Revalidate every 5 minutes
 
 export const metadata = {
+  title: 'Taste of Gratitude | Weekly Sea Moss Menu & Atlanta Farmers Market Wellness',
+  description: 'Shop small-batch sea moss gels, wellness drinks, refreshers, and shots from Taste of Gratitude. Weekly menu drops for Atlanta farmers market pickup.',
+  keywords: [
+    'small-batch sea moss Atlanta',
+    'Atlanta farmers market juices',
+    'wildcrafted sea moss gel Atlanta',
+    'wellness drinks Atlanta',
+    'Taste of Gratitude weekly menu',
+  ],
   alternates: {
     canonical: '/',
+  },
+  openGraph: {
+    title: 'Taste of Gratitude | Weekly Sea Moss Market Menu',
+    description: 'Fresh weekly sea moss gels, lemonades, refreshers, and wellness shots for Atlanta market pickup.',
+    url: 'https://tasteofgratitude.shop',
+    siteName: 'Taste of Gratitude',
+    images: [{ url: '/images/gratog-bg.PNG', width: 1200, height: 630, alt: 'Taste of Gratitude weekly market wellness products' }],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Taste of Gratitude | Weekly Sea Moss Market Menu',
+    description: 'Small-batch sea moss gels and wellness drinks for Atlanta farmers market pickup.',
+    images: ['/images/gratog-bg.PNG'],
   },
 };
 
@@ -16,7 +40,6 @@ export const metadata = {
  * - Mobile detection moved to client component
  */
 
-import { LiveLocationBanner } from '@/components/market/LiveLocationBanner';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 import { logger } from '@/lib/logger';
@@ -44,7 +67,7 @@ async function getHomepageCatalogData() {
   });
 
   return {
-    featuredProducts: availableProducts.slice(0, 6),
+    featuredProducts: availableProducts,
     initialCatalogCount: snapshot.isFallback ? null : availableProducts.length
   };
 }
@@ -130,16 +153,13 @@ export default async function HomePage() {
   const faqSchema = buildHomepageFaqSchema();
 
   return (
-    <>
-      <LiveLocationBanner />
-      <HomePageClient
-        initialFeaturedProducts={featuredProducts}
-        initialCatalogCount={initialCatalogCount}
-        organizationSchema={organizationSchema}
-        faqSchema={faqSchema}
-        socialProof={socialProof}
-        featuredReviews={featuredReviews}
-      />
-    </>
+    <HomePageClient
+      initialFeaturedProducts={featuredProducts}
+      initialCatalogCount={initialCatalogCount}
+      organizationSchema={organizationSchema}
+      faqSchema={faqSchema}
+      socialProof={socialProof}
+      featuredReviews={featuredReviews}
+    />
   );
 }

@@ -5,7 +5,7 @@ export const OrganizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Taste of Gratitude',
-  description: 'Premium wildcrafted sea moss and holistic wellness products. Hand-crafted in Atlanta with 92 essential minerals.',
+  description: 'Small-batch wildcrafted sea moss gels, wellness drinks, refreshers, and shots prepared for Atlanta market pickup.',
   url: 'https://tasteofgratitude.shop',
   logo: 'https://tasteofgratitude.shop/logo.png',
   image: 'https://tasteofgratitude.shop/og/brand.jpg',
@@ -103,8 +103,8 @@ export function ProductSchema(product, reviews) {
     additionalProperty: [
       {
         '@type': 'PropertyValue',
-        name: 'Minerals',
-        value: '92 Essential Minerals from Wildcrafted Sea Moss'
+        name: 'Routine',
+        value: 'Mineral-focused small-batch sea moss wellness product'
       },
       {
         '@type': 'PropertyValue',
@@ -317,14 +317,46 @@ export function injectSchema(schema) {
 export function buildHomepageOrganizationSchema() {
   return {
     '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'Taste of Gratitude',
-    description: 'Premium wildcrafted sea moss gel and wellness products with 92 essential minerals',
-    url: 'https://tasteofgratitude.shop',
-    logo: 'https://tasteofgratitude.shop/logo.png',
-    sameAs: [
-      'https://www.instagram.com/tasteofgratitude',
-      'https://www.facebook.com/tasteofgratitude'
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': 'https://tasteofgratitude.shop/#organization',
+        name: 'Taste of Gratitude',
+        description: 'Atlanta farmers market wellness brand offering small-batch sea moss gels, wellness drinks, refreshers, and shots.',
+        url: 'https://tasteofgratitude.shop',
+        logo: 'https://tasteofgratitude.shop/logo.png',
+        image: 'https://tasteofgratitude.shop/images/gratog-bg.PNG',
+        sameAs: [
+          'https://www.instagram.com/tasteofgratitude',
+          'https://www.facebook.com/tasteofgratitude'
+        ]
+      },
+      {
+        '@type': 'LocalBusiness',
+        '@id': 'https://tasteofgratitude.shop/#localbusiness',
+        name: 'Taste of Gratitude',
+        description: 'Small-batch sea moss Atlanta wellness brand serving weekly market menu drops and local farmers market pickup.',
+        url: 'https://tasteofgratitude.shop',
+        image: 'https://tasteofgratitude.shop/images/gratog-bg.PNG',
+        priceRange: '$$',
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: 'Atlanta',
+          addressRegion: 'GA',
+          addressCountry: 'US'
+        },
+        areaServed: [
+          { '@type': 'City', name: 'Atlanta' },
+          { '@type': 'State', name: 'Georgia' }
+        ],
+        makesOffer: [
+          { '@type': 'Offer', itemOffered: { '@type': 'Product', name: 'Wildcrafted sea moss gel' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Product', name: 'Atlanta farmers market juices' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Product', name: 'Wellness drinks Atlanta' } }
+        ],
+        paymentAccepted: 'Square, credit card, debit card',
+        hasMenu: 'https://tasteofgratitude.shop/catalog'
+      }
     ]
   };
 }
@@ -336,10 +368,10 @@ export function buildHomepageFaqSchema() {
     mainEntity: [
       {
         '@type': 'Question',
-        name: 'What is sea moss and what are its benefits?',
+        name: 'What is sea moss?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Sea moss (Chondrus crispus), also known as Irish moss, is a species of red algae that contains 92 of the 102 essential minerals our bodies need. It supports immune function, thyroid health, digestive wellness, and provides natural energy.'
+          text: 'Sea moss is a red seaweed traditionally used in Caribbean and Irish kitchens. Taste of Gratitude blends it into smooth gels and drinks that customers can add to everyday wellness routines.'
         }
       },
       {
@@ -347,7 +379,7 @@ export function buildHomepageFaqSchema() {
         name: 'How do I use sea moss gel?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Take 1-2 tablespoons daily. Add it to smoothies, teas, soups, or consume directly. It can also be applied topically for skin health. Store refrigerated and use within 3-4 weeks.'
+          text: 'Use 1-2 tablespoons in smoothies, teas, bowls, soups, or recipes. Keep refrigerated, use a clean spoon, and follow the freshness window on the label.'
         }
       },
       {
@@ -355,7 +387,7 @@ export function buildHomepageFaqSchema() {
         name: 'Is your sea moss wildcrafted or pool-grown?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'All our sea moss is 100% wildcrafted from pristine ocean waters. We never use pool-grown or farmed sea moss, ensuring maximum mineral content and authenticity.'
+          text: 'Taste of Gratitude uses wildcrafted sea moss and keeps each product page transparent about ingredients, allergens, and routine fit.'
         }
       },
       {
@@ -363,7 +395,7 @@ export function buildHomepageFaqSchema() {
         name: 'What makes Taste of Gratitude sea moss different?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'We hand-craft every jar with wildcrafted sea moss, test for purity, and infuse unique flavors like elderberry and lemonade. Our products are 100% natural, vegan, non-GMO, and made with gratitude.'
+          text: 'Taste of Gratitude is a weekly farmers market wellness brand. Products are made in small batches, tied to menu drops, and supported by market pickup, education, and founder-led guidance.'
         }
       }
     ]

@@ -57,6 +57,7 @@ export async function GET(request: any) {
         waitlistNumber: preorder.waitlistNumber,
         status: preorder.status,
         statusMessage: getStatusMessage(preorder.status),
+        marketId: preorder.marketId,
         queuePosition: preorder.queuePosition ?? null,
         estimatedReadyTime: calculateReadyTime(preorder.queuePosition),
         pickupLocation: preorder.pickupLocation || preorder.marketName,

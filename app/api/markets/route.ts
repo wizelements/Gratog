@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getActiveMarkets } from '@/lib/markets/repository';
 import { logger } from '@/lib/logger';
+import { getActiveMarketPickups } from '@/data/markets';
 import {
   buildMarketAddressLine,
   getCanonicalMarketDirectionsUrl,
@@ -42,7 +43,9 @@ function normalizePublicMarket(market: Record<string, any>) {
  */
 export async function GET() {
   try {
-    const markets = (await getActiveMarkets()).map((market) => normalizePublicMarket(market));
+    const dbMarkets = await getActiveMarkets();
+    const markets = (dbMarkets.length > 0 ? dbMarkets : getActiveMarketPickups())
+      .map((market) => normalizePublicMarket(market));
 
     return NextResponse.json(
       {
@@ -54,6 +57,19 @@ export async function GET() {
     );
   } catch (error: any) {
     logger.error('API', 'Public markets fetch error', error);
+    const fallbackMarkets = getActiveMarketPickups();
+
+    if (fallbackMarkets.length > 0) {
+      return NextResponse.json(
+        {
+          success: true,
+          markets: fallbackMarkets,
+          count: fallbackMarkets.length,
+          source: 'curated_market_fallback'
+        },
+        { headers: NO_STORE_HEADERS }
+      );
+    }
 
     return NextResponse.json(
       {
