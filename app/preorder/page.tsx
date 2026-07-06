@@ -444,6 +444,10 @@ function PreorderPageContent() {
   const preorderRemaining = Math.max(0, PREORDER_MINIMUM - preorderSubtotal);
   const preorderProgress = Math.min(100, Math.round((preorderSubtotal / PREORDER_MINIMUM) * 100));
 
+  const deliveryMinCents = Number(process.env.PREORDER_DELIVERY_MIN_CENTS || 5000);
+  const deliveryMinDollars = deliveryMinCents / 100;
+  const deliveryAvailable = Math.round(cartTotal * 100) >= deliveryMinCents;
+
   const orderTotal = cartTotal + (fulfillment.type === 'delivery' ? (fulfillment.deliveryFee || 0) / 100 : 0);
 
   const updateCart = (id: string, delta: number) => {
@@ -947,13 +951,19 @@ function PreorderPageContent() {
                   setFulfillment((prev) => ({ ...prev, type: 'delivery' }));
                   track('delivery_toggle', { type: 'delivery', marketId: selectedMarket?.id });
                 }}
-                className={`rounded-xl border p-3 text-left text-sm font-medium transition ${fulfillment.type === 'delivery' ? 'border-emerald-600 bg-emerald-50 text-emerald-900' : 'border-gray-200 bg-white text-gray-700'}`}
+                className={`rounded-xl border p-3 text-left text-sm font-medium transition ${fulfillment.type === 'delivery' ? 'border-emerald-600 bg-emerald-50 text-emerald-900' : 'border-gray-200 bg-white text-gray-700'} ${!deliveryAvailable ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!deliveryAvailable}
               >
                 Local delivery
+                {!deliveryAvailable && (
+                  <span className="block text-xs font-normal text-gray-500 mt-1">
+                    Available on ${deliveryMinDollars.toFixed(2)}+ orders
+                  </span>
+                )}
               </button>
             </div>
 
-            {fulfillment.type === 'delivery' && (
+            {fulfillment.type === 'delivery' && deliveryAvailable && (
               <div className="space-y-3">
                 <div>
                   <Label htmlFor="delivery-zip" className="text-gray-700">Delivery ZIP code</Label>
@@ -1083,7 +1093,7 @@ function PreorderPageContent() {
           </Button>
           <Button
             onClick={handleSubmitPreorder}
-            disabled={isSubmitting || cartItemCount === 0 || !customer.name || !customer.phone || !preorderRulesMet || (fulfillment.type === 'delivery' && !fulfillment.address?.zip)}
+            disabled={isSubmitting || cartItemCount === 0 || !customer.name || !customer.phone || !preorderRulesMet || (fulfillment.type === 'delivery' && (!deliveryAvailable || !fulfillment.address?.zip))}
             className="flex-1 h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700"
           >
             {isSubmitting ? (

@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 import resend from '@/lib/email/resend-client';
 
 const DEFAULT_INACTIVE_DAYS = 21;
+const DEFAULT_COUPON_CODE = process.env.WINBACK_COUPON_CODE || 'WINBACK10';
 const MAX_LIMIT = 200;
 
 interface WinbackRequest {
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
   const daysInactive = Math.min(Math.max(Number(raw.daysInactive) || DEFAULT_INACTIVE_DAYS, 7), 365);
   const dryRun = raw.dryRun === true;
   const limit = Math.min(Math.max(Number(raw.limit) || 50, 1), MAX_LIMIT);
-  const couponCode = raw.couponCode || process.env.WINBACK_COUPON_CODE || 'WELCOME15';
+  const couponCode = raw.couponCode || process.env.WINBACK_COUPON_CODE || DEFAULT_COUPON_CODE;
 
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - daysInactive);
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
     const { db } = await connectToDatabase();
 
     // Find subscribers who joined but never preordered, or who have not received a communication recently.
+    // Exclude anyone who already received a winback offer (one per customer).
     const leads = await db
       .collection('newsletter_subscribers')
       .find({
@@ -60,6 +62,7 @@ export async function POST(request: NextRequest) {
             ],
           },
           { createdAt: { $lte: cutoff } },
+          { $or: [{ receivedWinback: { $ne: true } }, { receivedWinback: { $exists: false } }] },
         ],
       })
       .limit(limit)
@@ -121,7 +124,7 @@ export async function POST(request: NextRequest) {
       if (!dryRun) {
         await db.collection('newsletter_subscribers').updateOne(
           { _id: lead._id },
-          { $set: { lastCommunicationAt: new Date(), updatedAt: new Date() } }
+          { $set: { lastCommunicationAt: new Date(), updatedAt: new Date(), receivedWinback: true } }
         );
         await db.collection('communication_logs').insertOne({
           leadId: lead._id,
