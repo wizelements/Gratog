@@ -9,6 +9,7 @@ import {
   User, 
   Phone, 
   Mail,
+  ShoppingBag,
   ChevronRight,
   ChevronLeft,
   Check,
@@ -27,6 +28,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Link from "next/link";
 import RetentionForm from "@/components/RetentionForm";
+import BundleSuggestions from "@/components/preorder/BundleSuggestions";
+import { getDeliveryZoneByZip, calculateDynamicDeliveryFee } from "@/lib/delivery-zones";
 import { track } from "@/utils/analytics";
 
 // Day-of-week labels
@@ -297,6 +300,7 @@ function PreorderPageContent() {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [cart, setCart] = useState<Record<string, number>>({});
   const [customer, setCustomer] = useState({ name: "", phone: "", email: "" });
+  const [fulfillment, setFulfillment] = useState<{ type: 'pickup' | 'delivery'; address?: { zip?: string; line1?: string; city?: string; state?: string }; deliveryFee?: number; deliveryZone?: any }>({ type: 'pickup' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [waitlistNumber, setWaitlistNumber] = useState("");
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
@@ -428,11 +432,19 @@ function PreorderPageContent() {
 
   const cartItemCount = Object.values(cart).reduce((a, b) => a + b, 0);
 
+  const cartCategoryCounts = Object.entries(cart).reduce((acc, [id, qty]) => {
+    const item = products.find(p => p.id === id);
+    if (item?.category) acc[item.category] = (acc[item.category] || 0) + qty;
+    return acc;
+  }, {} as Record<string, number>);
+
   const preorderSubtotal = cartTotal;
   const preorderMinimumMet = preorderSubtotal === 0 || preorderSubtotal >= PREORDER_MINIMUM;
   const preorderRulesMet = preorderMinimumMet;
   const preorderRemaining = Math.max(0, PREORDER_MINIMUM - preorderSubtotal);
   const preorderProgress = Math.min(100, Math.round((preorderSubtotal / PREORDER_MINIMUM) * 100));
+
+  const orderTotal = cartTotal + (fulfillment.type === 'delivery' ? (fulfillment.deliveryFee || 0) / 100 : 0);
 
   const updateCart = (id: string, delta: number) => {
     setCart(prev => {
@@ -491,6 +503,12 @@ function PreorderPageContent() {
           customer,
           items: orderItems,
           total: cartTotal,
+          fulfillment: fulfillment.type === 'delivery' ? {
+            type: 'delivery',
+            address: fulfillment.address,
+            fee: fulfillment.deliveryFee || 0,
+            zone: fulfillment.deliveryZone?.name || null,
+          } : { type: 'pickup' },
           metadata: {
             source: 'preorder_page',
             utmSource,
@@ -782,6 +800,15 @@ function PreorderPageContent() {
                 </p>
               </div>
 
+              {cartItemCount > 0 && (
+                <BundleSuggestions
+                  cartTotal={cartTotal}
+                  cartCategoryCounts={cartCategoryCounts}
+                  marketId={selectedMarket?.id || marketId}
+                  context="items"
+                />
+              )}
+
               {categoryOrder.map(({ key, label, emoji }) => (
                 <CategorySection
                   key={key}
@@ -894,6 +921,86 @@ function PreorderPageContent() {
           </CardContent>
         </Card>
 
+        {/* Fulfillment selection */}
+        <Card className="mb-6 border-0 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <ShoppingBag className="w-5 h-5 text-emerald-600" />
+              Fulfillment
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setFulfillment({ type: 'pickup' });
+                  track('delivery_toggle', { type: 'pickup', marketId: selectedMarket?.id });
+                }}
+                className={`rounded-xl border p-3 text-left text-sm font-medium transition ${fulfillment.type === 'pickup' ? 'border-emerald-600 bg-emerald-50 text-emerald-900' : 'border-gray-200 bg-white text-gray-700'}`}
+              >
+                Market pickup
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFulfillment((prev) => ({ ...prev, type: 'delivery' }));
+                  track('delivery_toggle', { type: 'delivery', marketId: selectedMarket?.id });
+                }}
+                className={`rounded-xl border p-3 text-left text-sm font-medium transition ${fulfillment.type === 'delivery' ? 'border-emerald-600 bg-emerald-50 text-emerald-900' : 'border-gray-200 bg-white text-gray-700'}`}
+              >
+                Local delivery
+              </button>
+            </div>
+
+            {fulfillment.type === 'delivery' && (
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="delivery-zip" className="text-gray-700">Delivery ZIP code</Label>
+                  <Input
+                    id="delivery-zip"
+                    value={fulfillment.address?.zip || ''}
+                    onChange={(e) => {
+                      const zip = e.target.value.replace(/\D/g, '').slice(0, 5);
+                      const zone = getDeliveryZoneByZip(zip);
+                      const quote = zip.length === 5
+                        ? calculateDynamicDeliveryFee(zip, Math.round(cartTotal * 100))
+                        : null;
+                      setFulfillment({
+                        type: 'delivery',
+                        address: { ...fulfillment.address, zip },
+                        deliveryZone: zone,
+                        deliveryFee: quote ? quote.fee : undefined,
+                      });
+                      if (quote && zip.length === 5) {
+                        track('delivery_quote', {
+                          zip,
+                          zone: zone?.name,
+                          fee: quote.fee,
+                          freeDelivery: quote.freeDelivery,
+                        });
+                      }
+                    }}
+                    placeholder="30310"
+                    className="mt-2 h-12 rounded-xl"
+                    maxLength={5}
+                  />
+                </div>
+                {fulfillment.deliveryFee !== undefined && fulfillment.address?.zip?.length === 5 && (
+                  <div className={`rounded-xl border p-3 text-sm ${fulfillment.deliveryFee === 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>
+                    {fulfillment.deliveryFee === 0 ? (
+                      <p>✅ Free delivery in {fulfillment.deliveryZone?.name}</p>
+                    ) : (
+                      <p>Delivery to {fulfillment.deliveryZone?.name}: ${(fulfillment.deliveryFee / 100).toFixed(2)}</p>
+                    )}
+                  </div>
+                )}
+                <p className="text-xs text-gray-500">Local delivery available in metro Atlanta. Enter ZIP for a quote.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Customer Info */}
         <Card className="border-0 shadow-sm">
           <CardHeader className="pb-3">
@@ -976,7 +1083,7 @@ function PreorderPageContent() {
           </Button>
           <Button
             onClick={handleSubmitPreorder}
-            disabled={isSubmitting || cartItemCount === 0 || !customer.name || !customer.phone || !preorderRulesMet}
+            disabled={isSubmitting || cartItemCount === 0 || !customer.name || !customer.phone || !preorderRulesMet || (fulfillment.type === 'delivery' && !fulfillment.address?.zip)}
             className="flex-1 h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700"
           >
             {isSubmitting ? (
@@ -985,7 +1092,7 @@ function PreorderPageContent() {
                 Placing Order...
               </>
             ) : (
-              `Place Preorder · $${cartTotal.toFixed(2)}`
+              `Place Preorder · $${orderTotal.toFixed(2)}`
             )}
           </Button>
         </div>

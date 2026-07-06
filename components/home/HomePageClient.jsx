@@ -220,7 +220,9 @@ export default function HomePageClient({
             </p>
             <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
               <Button asChild className="h-14 rounded-full bg-white px-8 text-base font-bold text-emerald-950 hover:bg-emerald-50">
-                <a href="#weekly-texts">Get Menu Texts</a>
+                <Link href="/weekly-menu?utm_source=homepage_hero&utm_campaign=passive_preorder_funnel" onClick={() => track('home_preorder_click', { source: 'homepage_hero_weekly_menu_cta' })}>
+                  Get Menu Texts
+                </Link>
               </Button>
               <Button asChild variant="outline" className="h-14 rounded-full border-white/30 bg-transparent px-8 text-base font-bold text-white hover:bg-white/10 hover:text-white">
                 <Link href="/catalog">Shop This Week</Link>
@@ -430,6 +432,13 @@ export default function HomePageClient({
             {BUNDLES.slice(0, 3).map((bundle) => (
               <BundleCard key={bundle.id} bundle={bundle} />
             ))}
+          </div>
+          <div className="mt-8 text-center">
+            <Button asChild variant="outline" className="h-12 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
+              <Link href="/weekly-menu?utm_source=homepage_bundles&utm_campaign=passive_preorder_funnel">
+                View weekly menu and build a box →
+              </Link>
+            </Button>
           </div>
         </div>
       </section>

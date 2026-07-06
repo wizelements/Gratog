@@ -246,11 +246,6 @@
       "permanent": true
     },
     {
-      "source": "/subscriptions",
-      "destination": "/catalog",
-      "permanent": true
-    },
-    {
       "source": "/health",
       "destination": "/api/health",
       "permanent": false
@@ -286,6 +281,14 @@
     {
       "path": "/api/cron/daily-report",
       "schedule": "0 14 * * 1-5"
+    },
+    {
+      "path": "/api/markets/warm",
+      "schedule": "0 18 * * 3"
+    },
+    {
+      "path": "/api/retention/winback",
+      "schedule": "0 14 * * 0"
     }
   ]
 }

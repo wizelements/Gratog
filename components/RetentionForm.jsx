@@ -18,15 +18,21 @@ export default function RetentionForm({
   collectPhone = false,
   requireEmail = false,
   collectMessage = false,
+  collectMarket = false,
+  marketOptions: marketOptionsProp = [],
+  defaultMarket = '',
   messagePlaceholder = 'Tell us what you are interested in.',
   compact = false,
+  onSuccess,
 }) {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '', website: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '', website: '', marketId: defaultMarket || '' });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const safeMetadata = metadata && typeof metadata === 'object' ? metadata : {};
   const metadataKey = JSON.stringify(safeMetadata);
+  const marketOptions = collectMarket && Array.isArray(marketOptionsProp) ? marketOptionsProp : [];
+  const finalDefaultMarket = defaultMarket || '';
 
   useEffect(() => {
     track('lead_form_view', { intent, source, ...safeMetadata });
@@ -52,6 +58,7 @@ export default function RetentionForm({
           source,
           metadata: {
             ...safeMetadata,
+            marketId: form.marketId || safeMetadata.marketId || safeMetadata.landingMarketId || null,
             path: typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : undefined,
           },
         }),
@@ -66,10 +73,12 @@ export default function RetentionForm({
         hasEmail: Boolean(form.email),
         hasPhone: Boolean(form.phone),
         persisted: data.persisted !== false,
+        marketId: form.marketId || safeMetadata.marketId || safeMetadata.landingMarketId || null,
         ...safeMetadata,
       });
       setSuccess(true);
-      setForm({ name: '', email: '', phone: '', message: '', website: '' });
+      setForm({ name: '', email: '', phone: '', message: '', website: '', marketId: defaultMarket || '' });
+      if (typeof onSuccess === 'function') onSuccess(data);
     } catch (err) {
       setError(err.message || 'Please try again.');
     } finally {
@@ -107,6 +116,21 @@ export default function RetentionForm({
         )}
         {collectPhone && (
           <Input name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="Phone for menu texts" autoComplete="tel" required />
+        )}
+        {collectMarket && marketOptions.length > 0 && (
+          <select
+            name="marketId"
+            value={form.marketId}
+            onChange={handleChange}
+            className="h-11 w-full rounded-md border border-stone-300 bg-white px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            <option value="">Any market / not sure yet</option>
+            {marketOptions.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
         )}
         {collectMessage && (
           <Textarea

@@ -23,6 +23,17 @@ export type AnalyticsEvent =
   | 'preorder_submitted'
   | 'preorder_minimum_error'
   | 'preorder_status_viewed'
+  | 'weeklymenu_view'
+  | 'weeklymenu_preorder_click'
+  | 'weeklymenu_lead_submit'
+  | 'bundle_suggestion_view'
+  | 'bundle_suggestion_click'
+  | 'delivery_toggle'
+  | 'delivery_quote'
+  | 'gratitude_box_view'
+  | 'gratitude_box_submit'
+  | 'winback_send'
+  | 'weekly_warm_send'
   | 'checkout_started'
   | 'checkout_stage_change'
   | 'checkout_proceed_to_payment'
@@ -82,6 +93,17 @@ const SERVER_TRACKED_EVENTS = new Set<string>([
   'preorder_submitted',
   'preorder_minimum_error',
   'preorder_status_viewed',
+  'weeklymenu_view',
+  'weeklymenu_preorder_click',
+  'weeklymenu_lead_submit',
+  'bundle_suggestion_view',
+  'bundle_suggestion_click',
+  'delivery_toggle',
+  'delivery_quote',
+  'gratitude_box_view',
+  'gratitude_box_submit',
+  'winback_send',
+  'weekly_warm_send',
   'checkout_started',
   'checkout_abandoned',
   'fulfillment_type_selected',
