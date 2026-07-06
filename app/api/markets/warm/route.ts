@@ -6,12 +6,6 @@ import { logger } from '@/lib/logger';
 import resend from '@/lib/email/resend-client';
 import { getActiveMarketPickups } from '@/data/markets';
 import { getWeeklyMenuProducts, WEEKLY_MENU } from '@/data/weeklyMenu';
-import twilio from 'twilio';
-
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const fromNumber = process.env.TWILIO_PHONE_NUMBER || '4047899960';
-const twilioClient = accountSid && authToken ? twilio(accountSid, authToken) : null;
 
 interface WarmRequest {
   marketId?: string;
@@ -84,60 +78,37 @@ export async function POST(request: NextRequest) {
     const results = {
       sent: 0,
       skipped: 0,
-      sms: 0,
       email: 0,
       errors: 0,
       dryRun,
       marketId,
-      recipients: [] as Array<{ channel: 'sms' | 'email'; to: string; ok: boolean; error?: string }>,
+      recipients: [] as Array<{ channel: 'email'; to: string; ok: boolean; error?: string }>,
     };
 
+    const emailSubject = raw.subject || `This week at ${marketName}: ${WEEKLY_MENU.title}`;
+    const emailHtml = `
+      <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; color: #1c1917;">
+        <h2 style="color: #047857;">${WEEKLY_MENU.title}</h2>
+        <p>${WEEKLY_MENU.preorderLanguage}</p>
+        <p><strong>This week:</strong> ${featuredProducts}</p>
+        <p>Pickup at ${marketName}.</p>
+        <p>
+          <a href="https://tasteofgratitude.shop/weekly-menu?market=${marketSlug}&utm_source=weekly_warm_email" style="display:inline-block;padding:12px 24px;background:#047857;color:#fff;border-radius:9999px;text-decoration:none;">
+            View weekly menu
+          </a>
+        </p>
+        <p style="font-size:12px;color:#78716c;margin-top:24px;">
+          You received this because you signed up for weekly menu updates.
+          <a href="https://tasteofgratitude.shop/unsubscribe?email=${encodeURIComponent('{{email}}')}">Unsubscribe</a>.
+        </p>
+      </div>
+    `;
+
     for (const lead of leads) {
-      const phone = lead.phone || lead.metadata?.phone;
       const email = lead.email || lead.metadata?.email;
       const leadMarketId = lead.marketInterest || lead.metadata?.marketId || marketId;
       const market = activeMarkets.find((m) => m.id === leadMarketId) || targetMarket;
       const marketSlug = market?.id || 'serenbe';
-
-      const smsBody = raw.message ||
-        `Fresh weekly menu is live at Taste of Gratitude. This week: ${featuredProducts}. Reserve for ${marketName} pickup: https://tasteofgratitude.shop/weekly-menu?market=${marketSlug} — Reply STOP to opt out.`;
-
-      const emailSubject = raw.subject || `This week at ${marketName}: ${WEEKLY_MENU.title}`;
-      const emailHtml = `
-        <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; color: #1c1917;">
-          <h2 style="color: #047857;">${WEEKLY_MENU.title}</h2>
-          <p>${WEEKLY_MENU.preorderLanguage}</p>
-          <p><strong>This week:</strong> ${featuredProducts}</p>
-          <p>
-            <a href="https://tasteofgratitude.shop/weekly-menu?market=${marketSlug}&utm_source=weekly_warm_email" style="display:inline-block;padding:12px 24px;background:#047857;color:#fff;border-radius:9999px;text-decoration:none;">
-              View weekly menu
-            </a>
-          </p>
-          <p style="font-size:12px;color:#78716c;margin-top:24px;">
-            You received this because you signed up for weekly menu updates.
-            <a href="https://tasteofgratitude.shop/unsubscribe?email=${encodeURIComponent(email || '')}">Unsubscribe</a> or reply STOP to SMS.
-          </p>
-        </div>
-      `;
-
-      if (phone && twilioClient && !dryRun) {
-        try {
-          await twilioClient.messages.create({
-            body: smsBody,
-            from: `+1${fromNumber.replace(/\D/g, '')}`,
-            to: `+1${String(phone).replace(/\D/g, '')}`,
-          });
-          results.sent += 1;
-          results.sms += 1;
-          results.recipients.push({ channel: 'sms', to: String(phone), ok: true });
-        } catch (err) {
-          results.errors += 1;
-          results.recipients.push({ channel: 'sms', to: String(phone), ok: false, error: (err as Error).message });
-          logger.warn('WeeklyWarm', 'SMS send failed', { phone, error: (err as Error).message });
-        }
-      } else if (phone && dryRun) {
-        results.recipients.push({ channel: 'sms', to: String(phone), ok: true });
-      }
 
       if (email && resend && !dryRun) {
         try {
@@ -145,7 +116,7 @@ export async function POST(request: NextRequest) {
             from: 'Taste of Gratitude <community@tasteofgratitude.shop>',
             to: email,
             subject: emailSubject,
-            html: emailHtml,
+            html: emailHtml.replace('{{email}}', encodeURIComponent(email)),
           });
           results.sent += 1;
           results.email += 1;
@@ -159,17 +130,15 @@ export async function POST(request: NextRequest) {
         results.recipients.push({ channel: 'email', to: email, ok: true });
       }
 
-      if (!phone && !email) {
+      if (!email) {
         results.skipped += 1;
       }
 
-      // Log send record
       if (!dryRun) {
         await db.collection('communication_logs').insertOne({
           leadId: lead._id,
           type: 'weekly_warm',
           marketId: leadMarketId,
-          phone,
           email,
           sentAt: new Date(),
           success: results.recipients[results.recipients.length - 1]?.ok ?? false,
@@ -181,7 +150,6 @@ export async function POST(request: NextRequest) {
       success: true,
       sent: results.sent,
       skipped: results.skipped,
-      sms: results.sms,
       email: results.email,
       errors: results.errors,
       dryRun,

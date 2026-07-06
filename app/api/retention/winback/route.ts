@@ -4,12 +4,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import resend from '@/lib/email/resend-client';
-import twilio from 'twilio';
-
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const fromNumber = process.env.TWILIO_PHONE_NUMBER || '4047899960';
-const twilioClient = accountSid && authToken ? twilio(accountSid, authToken) : null;
 
 const DEFAULT_INACTIVE_DAYS = 21;
 const MAX_LIMIT = 200;
@@ -74,16 +68,12 @@ export async function POST(request: NextRequest) {
     const results = {
       sent: 0,
       skipped: 0,
-      sms: 0,
       email: 0,
       errors: 0,
       dryRun,
       daysInactive,
-      recipients: [] as Array<{ channel: 'sms' | 'email'; to: string; ok: boolean; error?: string }>,
+      recipients: [] as Array<{ channel: 'email'; to: string; ok: boolean; error?: string }>,
     };
-
-    const smsBody = raw.message ||
-      `We miss you at Taste of Gratitude. Come back with code ${couponCode} for a discount on your next preorder. Reserve at https://tasteofgratitude.shop/preorder — Reply STOP to opt out.`;
 
     const emailSubject = 'We saved something for you';
     const emailHtml = `
@@ -96,33 +86,13 @@ export async function POST(request: NextRequest) {
           </a>
         </p>
         <p style="font-size:12px;color:#78716c;margin-top:24px;">
-          <a href="https://tasteofgratitude.shop/unsubscribe?email={{email}}">Unsubscribe</a> or reply STOP to SMS.
+          <a href="https://tasteofgratitude.shop/unsubscribe?email={{email}}">Unsubscribe</a>.
         </p>
       </div>
     `;
 
     for (const lead of leads) {
-      const phone = lead.phone;
       const email = lead.email;
-
-      if (phone && twilioClient && !dryRun) {
-        try {
-          await twilioClient.messages.create({
-            body: smsBody,
-            from: `+1${fromNumber.replace(/\D/g, '')}`,
-            to: `+1${String(phone).replace(/\D/g, '')}`,
-          });
-          results.sent += 1;
-          results.sms += 1;
-          results.recipients.push({ channel: 'sms', to: String(phone), ok: true });
-        } catch (err) {
-          results.errors += 1;
-          results.recipients.push({ channel: 'sms', to: String(phone), ok: false, error: (err as Error).message });
-          logger.warn('Winback', 'SMS send failed', { phone, error: (err as Error).message });
-        }
-      } else if (phone && dryRun) {
-        results.recipients.push({ channel: 'sms', to: String(phone), ok: true });
-      }
 
       if (email && resend && !dryRun) {
         try {
@@ -144,7 +114,7 @@ export async function POST(request: NextRequest) {
         results.recipients.push({ channel: 'email', to: email, ok: true });
       }
 
-      if (!phone && !email) {
+      if (!email) {
         results.skipped += 1;
       }
 
@@ -156,7 +126,6 @@ export async function POST(request: NextRequest) {
         await db.collection('communication_logs').insertOne({
           leadId: lead._id,
           type: 'winback',
-          phone,
           email,
           couponCode,
           sentAt: new Date(),
@@ -169,7 +138,6 @@ export async function POST(request: NextRequest) {
       success: true,
       sent: results.sent,
       skipped: results.skipped,
-      sms: results.sms,
       email: results.email,
       errors: results.errors,
       dryRun,
