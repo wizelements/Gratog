@@ -641,7 +641,7 @@ export default function ProductDetailClient({ product, slug }) {
                     <h3 className="text-lg font-semibold mb-4">Flavor & texture</h3>
                     <p className="text-gray-700 whitespace-pre-line leading-relaxed">{flavorNotes}</p>
                     <p className="mt-4 text-gray-600 leading-relaxed">
-                      Each batch is meant to be enjoyed chilled, folded into a daily ritual, or mixed into your favorite drink or bowl.
+                      Each batch is meant to be enjoyed chilled, folded into a daily routine, or mixed into your favorite drink or bowl.
                     </p>
                   </div>
                 </CardContent>

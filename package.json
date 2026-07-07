@@ -51,7 +51,10 @@
     "analyze": "ANALYZE=true npm run build",
     "analyze:server": "ANALYZE=true ANALYZE_SERVER=true npm run build",
     "predeploy": "npm run build",
-    "deploy:safe": "vercel --prod"
+    "deploy:safe": "vercel --prod",
+    "tog:check": "node scripts/tog-funnel-check.js",
+    "tog:notify": "node scripts/tog-telegram-notify.js",
+    "tog:notify:dry": "node scripts/tog-telegram-notify.js --dry-run"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",

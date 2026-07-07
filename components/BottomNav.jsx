@@ -7,7 +7,7 @@ import { triggerHaptic, HapticPatterns } from '@/lib/haptics';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
-  { href: '/menu', label: 'Menu', icon: CalendarDays },
+  { href: '/weekly-menu', label: 'Menu', icon: CalendarDays },
   { href: '/catalog', label: 'Shop', icon: ShoppingBag },
   { href: '/quiz', label: 'Quiz', icon: Sparkles },
   { href: '/checkout', label: 'Cart', icon: ShoppingCart },

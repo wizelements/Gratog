@@ -90,7 +90,7 @@ export function getQuizRecommendation(answers: QuizAnswers): QuizRecommendation 
   const bundle = BUNDLES.find((item) => item.id === SUPPORT_TO_BUNDLE[answers.support]) || BUNDLES[0];
 
   const cadence = answers.frequency === 'daily'
-    ? 'Because you want daily support, start with a product that can become a simple repeat ritual.'
+    ? 'Because you want daily support, start with a product that can become a simple repeat routine.'
     : answers.frequency === 'trying for first time'
       ? 'Because you are trying Taste of Gratitude for the first time, this keeps the flavor approachable and the routine easy.'
       : 'Because you want flexible support, this gives you a clear starting point without overcommitting.';

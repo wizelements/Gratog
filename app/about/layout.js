@@ -1,6 +1,6 @@
 export const metadata = {
   title: 'Founder Story | Taste of Gratitude',
-  description: 'Meet the founder behind Taste of Gratitude and learn how a personal sea moss ritual became an Atlanta farmers market wellness brand.',
+  description: 'Meet the founder behind Taste of Gratitude and learn how a personal sea moss routine became an Atlanta farmers market wellness brand.',
   alternates: { canonical: '/about' },
   openGraph: {
     title: 'Founder Story | Taste of Gratitude',

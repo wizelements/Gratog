@@ -16,7 +16,7 @@ export default function Header() {
   const isActive = (path) => pathname === path || pathname?.startsWith(`${path}/`);
   const isMobileActive = (path) => pathname === path || pathname?.startsWith(`${path}/`);
   const desktopNavItems = [
-    { href: '/menu', label: "This Week's Menu" },
+    { href: '/weekly-menu', label: "This Week's Menu" },
     { href: '/catalog', label: 'Shop' },
     { href: '/quiz', label: 'Quiz' },
     { href: '/markets', label: 'Markets' },
@@ -24,7 +24,7 @@ export default function Header() {
     { href: '/wholesale', label: 'Wholesale' },
   ];
   const mobileNavItems = [
-    { href: '/menu', label: "This Week's Menu" },
+    { href: '/weekly-menu', label: "This Week's Menu" },
     { href: '/catalog', label: 'Shop' },
     { href: '/quiz', label: 'Wellness Quiz' },
     { href: '/markets', label: 'Markets' },
@@ -44,9 +44,9 @@ export default function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2 group flex-shrink-0">
           <div className="relative">
-            <ShoppingBag className="h-6 w-6 text-[#D4AF37] transition-transform group-hover:scale-105" />
+            <ShoppingBag className="h-6 w-6 text-emerald-700 transition-transform group-hover:scale-105" />
           </div>
-          <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#D4AF37] to-[#8B7355] bg-clip-text text-transparent hidden sm:inline">
+          <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-emerald-700 to-emerald-500 bg-clip-text text-transparent hidden sm:inline">
             Taste of Gratitude
           </span>
         </Link>
@@ -56,8 +56,8 @@ export default function Header() {
             <Link
               key={item.href}
               href={item.href}
-              className={`text-sm font-medium transition-colors hover:text-[#D4AF37] ${
-                isActive(item.href) ? 'text-[#D4AF37]' : 'text-gray-800'
+              className={`text-sm font-medium transition-colors hover:text-emerald-700 ${
+                isActive(item.href) ? 'text-emerald-700' : 'text-gray-800'
               }`}
               aria-current={isActive(item.href) ? 'page' : undefined}
             >
@@ -107,7 +107,7 @@ export default function Header() {
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden hover:bg-[#D4AF37]/10"
+          className="md:hidden hover:bg-emerald-700/10"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           aria-expanded={isMenuOpen}
@@ -131,8 +131,8 @@ export default function Header() {
                     href={item.href}
                     className={`flex min-h-12 items-center rounded-lg px-4 text-base font-medium transition-colors ${
                       active
-                        ? 'bg-[#D4AF37]/15 text-[#8B7355]'
-                        : 'text-gray-800 hover:bg-gray-50 hover:text-[#8B7355]'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'text-gray-800 hover:bg-gray-50 hover:text-emerald-800'
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                     aria-current={active ? 'page' : undefined}

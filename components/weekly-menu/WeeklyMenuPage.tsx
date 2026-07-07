@@ -37,7 +37,7 @@ interface WeeklyProduct {
 interface WeeklyMenuPageProps {
   markets: MarketOption[];
   weeklyProducts: WeeklyProduct[];
-  weeklyMenu: { title: string; preorderLanguage: string; pickupLanguage: string };
+  weeklyMenu: { title: string; preorderLanguage: string; pickupLanguage: string; dateRange?: string; weekStart?: string; weekEnd?: string };
 }
 
 export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: WeeklyMenuPageProps) {
@@ -49,7 +49,7 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
         <div className="container grid gap-10 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
           <div>
             <p className="mb-5 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-50">
-              Fresh weekly drop • small-batch
+              Fresh weekly drop • {weeklyMenu.dateRange || 'small-batch'}
             </p>
             <h1 className="max-w-4xl text-balance text-4xl font-semibold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
               Get the weekly menu before market day.
@@ -114,6 +114,9 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">This week&apos;s menu</p>
               <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">Fresh this week.</h2>
+              {weeklyMenu.dateRange && (
+                <p className="mt-2 text-sm font-semibold text-emerald-800">{weeklyMenu.dateRange}</p>
+              )}
               <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">{weeklyMenu.pickupLanguage}</p>
             </div>
           </div>

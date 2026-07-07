@@ -38,7 +38,7 @@ export default function AboutPage() {
               in my own kitchen. Not for a business. Just for me.
             </p>
             <p>
-              It became a quiet ritual. Soaking, blending, pouring — there was something grounding
+              It became a quiet weekly routine. Soaking, blending, pouring — there was something grounding
               about the process. I started feeling better. More present. More grateful for the small
               things. So I made a jar for my mom. Then my sister. Then a neighbor. Before I knew it,
               people were asking, <em>&ldquo;Can you make me one too?&rdquo;</em>
@@ -91,7 +91,7 @@ export default function AboutPage() {
           <Card className="text-center">
             <CardContent className="pt-6">
               <div className="icon-container mx-auto mb-4">
-                <Leaf className="h-8 w-8 text-[#D4AF37]" />
+                <Leaf className="h-8 w-8 text-emerald-700" />
               </div>
               <h3 className="font-semibold mb-2">Ingredients You Can See</h3>
               <p className="text-sm text-muted-foreground">
@@ -103,7 +103,7 @@ export default function AboutPage() {
           <Card className="text-center">
             <CardContent className="pt-6">
               <div className="icon-container mx-auto mb-4">
-                <Heart className="h-8 w-8 text-[#D4AF37]" />
+                <Heart className="h-8 w-8 text-emerald-700" />
               </div>
               <h3 className="font-semibold mb-2">Small Batch, Big Intention</h3>
               <p className="text-sm text-muted-foreground">
@@ -115,7 +115,7 @@ export default function AboutPage() {
           <Card className="text-center">
             <CardContent className="pt-6">
               <div className="icon-container mx-auto mb-4">
-                <Award className="h-8 w-8 text-[#D4AF37]" />
+                <Award className="h-8 w-8 text-emerald-700" />
               </div>
               <h3 className="font-semibold mb-2">Wildcrafted Sourcing</h3>
               <p className="text-sm text-muted-foreground">
@@ -127,7 +127,7 @@ export default function AboutPage() {
           <Card className="text-center">
             <CardContent className="pt-6">
               <div className="icon-container mx-auto mb-4">
-                <Users className="h-8 w-8 text-[#D4AF37]" />
+                <Users className="h-8 w-8 text-emerald-700" />
               </div>
               <h3 className="font-semibold mb-2">Real Market Presence</h3>
               <p className="text-sm text-muted-foreground">

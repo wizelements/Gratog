@@ -1,0 +1,849 @@
+{
+  "version": 1,
+  "project": "taste-of-gratitude",
+  "updatedAt": "2026-07-07T01:26:42.649Z",
+  "tasks": [
+    {
+      "id": "bug-20260706-2329",
+      "created_at": "2026-07-07T01:22:33.979Z",
+      "last_seen": "2026-07-07T01:25:18.575Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route / unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "bug-20260706-2386",
+      "created_at": "2026-07-07T01:22:39.298Z",
+      "last_seen": "2026-07-07T01:24:06.674Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route /menu unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/menu",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/menu"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "bug-20260706-5426",
+      "created_at": "2026-07-07T01:22:44.558Z",
+      "last_seen": "2026-07-07T01:24:11.924Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route /weekly-menu unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/weekly-menu",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/weekly-menu"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "bug-20260706-8681",
+      "created_at": "2026-07-07T01:22:49.891Z",
+      "last_seen": "2026-07-07T01:25:24.970Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route /catalog unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/catalog",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/catalog"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "bug-20260706-5935",
+      "created_at": "2026-07-07T01:22:55.878Z",
+      "last_seen": "2026-07-07T01:25:35.569Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route /markets unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/markets",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/markets"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "bug-20260706-9818",
+      "created_at": "2026-07-07T01:23:01.069Z",
+      "last_seen": "2026-07-07T01:24:32.840Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route /about unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/about",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/about"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "bug-20260706-1681",
+      "created_at": "2026-07-07T01:23:07.389Z",
+      "last_seen": "2026-07-07T01:24:48.832Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route /policies unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/policies",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/policies"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "bug-20260706-1712",
+      "created_at": "2026-07-07T01:23:14.018Z",
+      "last_seen": "2026-07-07T01:24:10.810Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route /faq unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/faq",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/faq"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "bug-20260706-5610",
+      "created_at": "2026-07-07T01:23:20.924Z",
+      "last_seen": "2026-07-07T01:26:01.932Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route /checkout unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/checkout",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/checkout"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "product-page-20260706-0364",
+      "created_at": "2026-07-07T01:23:26.169Z",
+      "last_seen": "2026-07-07T01:25:16.712Z",
+      "priority": "P1",
+      "category": "product-page",
+      "title": "Product page /product/kissed-by-gods unreachable",
+      "evidence": "HTTP timeout",
+      "impact": "Product pages are the core conversion surface",
+      "recommended_fix": "Check product page data fetching and Square dependencies",
+      "files_likely_involved": [
+        "live:/product/kissed-by-gods"
+      ],
+      "estimated_effort": "small",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "product-page-20260706-2772",
+      "created_at": "2026-07-07T01:23:32.022Z",
+      "last_seen": "2026-07-07T01:26:08.819Z",
+      "priority": "P1",
+      "category": "product-page",
+      "title": "Product page /product/strawberry-bliss unreachable",
+      "evidence": "HTTP timeout",
+      "impact": "Product pages are the core conversion surface",
+      "recommended_fix": "Check product page data fetching and Square dependencies",
+      "files_likely_involved": [
+        "live:/product/strawberry-bliss"
+      ],
+      "estimated_effort": "small",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "product-page-20260706-8219",
+      "created_at": "2026-07-07T01:23:37.272Z",
+      "last_seen": "2026-07-07T01:26:15.192Z",
+      "priority": "P1",
+      "category": "product-page",
+      "title": "Product page /product/black-minerals unreachable",
+      "evidence": "HTTP timeout",
+      "impact": "Product pages are the core conversion surface",
+      "recommended_fix": "Check product page data fetching and Square dependencies",
+      "files_likely_involved": [
+        "live:/product/black-minerals"
+      ],
+      "estimated_effort": "small",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "product-page-20260706-3686",
+      "created_at": "2026-07-07T01:23:43.407Z",
+      "last_seen": "2026-07-07T01:26:26.002Z",
+      "priority": "P1",
+      "category": "product-page",
+      "title": "Product page /product/peach-lemonade unreachable",
+      "evidence": "HTTP timeout",
+      "impact": "Product pages are the core conversion surface",
+      "recommended_fix": "Check product page data fetching and Square dependencies",
+      "files_likely_involved": [
+        "live:/product/peach-lemonade"
+      ],
+      "estimated_effort": "small",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "product-page-20260706-9123",
+      "created_at": "2026-07-07T01:23:49.243Z",
+      "last_seen": "2026-07-07T01:25:31.517Z",
+      "priority": "P1",
+      "category": "product-page",
+      "title": "Product page /product/peach-sea-moss-fizz unreachable",
+      "evidence": "HTTP timeout",
+      "impact": "Product pages are the core conversion surface",
+      "recommended_fix": "Check product page data fetching and Square dependencies",
+      "files_likely_involved": [
+        "live:/product/peach-sea-moss-fizz"
+      ],
+      "estimated_effort": "small",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-2872",
+      "created_at": "2026-07-07T01:23:54.057Z",
+      "last_seen": "2026-07-07T01:26:41.834Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in page.js",
+      "evidence": "Found \"41:              It became a quiet ritual. Soaking, blending, pouring — there wa...\" in app/about/page.js",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/about/page.js"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-3476",
+      "created_at": "2026-07-07T01:23:54.057Z",
+      "last_seen": "2026-07-07T01:26:41.834Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in layout.js",
+      "evidence": "Found \"3:  description: 'Meet the founder behind Taste of Gratitude and learn how a per...\" in app/about/layout.js",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/about/layout.js"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-6229",
+      "created_at": "2026-07-07T01:23:54.058Z",
+      "last_seen": "2026-07-07T01:26:41.834Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in route.ts",
+      "evidence": "Found \"83:      secure: process.env.NODE_ENV === 'production',...\" in app/api/auth/login/route.ts",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/api/auth/login/route.ts"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-7981",
+      "created_at": "2026-07-07T01:23:54.058Z",
+      "last_seen": "2026-07-07T01:26:41.835Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in route.ts",
+      "evidence": "Found \"10:    secure: process.env.NODE_ENV === 'production',...\" in app/api/auth/logout/route.ts",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/api/auth/logout/route.ts"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-7941",
+      "created_at": "2026-07-07T01:23:54.058Z",
+      "last_seen": "2026-07-07T01:26:41.835Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in route.ts",
+      "evidence": "Found \"99:      secure: process.env.NODE_ENV === 'production',...\" in app/api/auth/register/route.ts",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/api/auth/register/route.ts"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-9101",
+      "created_at": "2026-07-07T01:23:54.058Z",
+      "last_seen": "2026-07-07T01:26:41.835Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in route.ts",
+      "evidence": "Found \"116:            <p style=\"font-size:16px;line-height:1.7;margin:0 0 20px;\">You s...\" in app/api/cron/cleanup-abandoned-orders/route.ts",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/api/cron/cleanup-abandoned-orders/route.ts"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-8316",
+      "created_at": "2026-07-07T01:23:54.058Z",
+      "last_seen": "2026-07-07T01:26:41.836Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in route.js",
+      "evidence": "Found \"3:import SecureRewardsSystem from '@/lib/rewards-secure';...\" in app/api/rewards/passport/route.js",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/api/rewards/passport/route.js"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-2643",
+      "created_at": "2026-07-07T01:23:54.059Z",
+      "last_seen": "2026-07-07T01:26:41.836Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in route.ts",
+      "evidence": "Found \"16:  frequency: z.enum(['weekly', 'biweekly', 'monthly']).default('weekly'),...\" in app/api/subscriptions/gratitude-box/route.ts",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/api/subscriptions/gratitude-box/route.ts"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-1050",
+      "created_at": "2026-07-07T01:23:54.059Z",
+      "last_seen": "2026-07-07T01:26:41.836Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in route.ts",
+      "evidence": "Found \"31:    'dev-only-insecure-unsubscribe-secret'...\" in app/api/unsubscribe/route.ts",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/api/unsubscribe/route.ts"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-0118",
+      "created_at": "2026-07-07T01:23:54.059Z",
+      "last_seen": "2026-07-07T01:26:41.836Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in route.ts",
+      "evidence": "Found \"92:    // Compare signatures securely...\" in app/api/webhooks/square/route.ts",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/api/webhooks/square/route.ts"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-4646",
+      "created_at": "2026-07-07T01:23:54.059Z",
+      "last_seen": "2026-07-07T01:26:41.836Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in route.ts",
+      "evidence": "Found \"20:    frequency: z.string().min(1),...\" in app/api/quiz/route.ts",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/api/quiz/route.ts"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-1458",
+      "created_at": "2026-07-07T01:23:54.059Z",
+      "last_seen": "2026-07-07T01:26:41.836Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in page.tsx",
+      "evidence": "Found \"7:  description: 'Complete your order with secure checkout powered by Square'...\" in app/checkout/page.tsx",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/checkout/page.tsx"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-6492",
+      "created_at": "2026-07-07T01:23:54.060Z",
+      "last_seen": "2026-07-07T01:26:41.836Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in page.js",
+      "evidence": "Found \"346:              adding items individually ensures you get the same secure Squa...\" in app/checkout/square/page.js",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/checkout/square/page.js"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-3705",
+      "created_at": "2026-07-07T01:23:54.060Z",
+      "last_seen": "2026-07-07T01:26:41.837Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in page.js",
+      "evidence": "Found \"61:        answer: 'Browse our catalog, add products to your cart, and proceed t...\" in app/faq/page.js",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/faq/page.js"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-8053",
+      "created_at": "2026-07-07T01:23:54.060Z",
+      "last_seen": "2026-07-07T01:26:41.837Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in page.tsx",
+      "evidence": "Found \"93:  { icon: Shield, label: 'Secure checkout before payment' },...\" in app/markets/page.tsx",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/markets/page.tsx"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-0979",
+      "created_at": "2026-07-07T01:23:54.060Z",
+      "last_seen": "2026-07-07T01:26:41.837Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in page.js",
+      "evidence": "Found \"87:                We accept major credit cards and debit cards. Payment is proc...\" in app/policies/page.js",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/policies/page.js"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-8954",
+      "created_at": "2026-07-07T01:23:54.060Z",
+      "last_seen": "2026-07-07T01:26:41.837Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in page.js",
+      "evidence": "Found \"42:                <li>Payment information processed securely through Square</li...\" in app/privacy/page.js",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/privacy/page.js"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "copy-20260706-0673",
+      "created_at": "2026-07-07T01:23:54.060Z",
+      "last_seen": "2026-07-07T01:26:41.837Z",
+      "priority": "P1",
+      "category": "copy",
+      "title": "Banned brand word in ProductDetailClient.jsx",
+      "evidence": "Found \"499:                    <span>Secure Square checkout</span>...\" in app/product/[slug]/ProductDetailClient.jsx",
+      "impact": "Weakens authentic founder-led brand voice",
+      "recommended_fix": "Replace with approved language per brand lock (routine, practice, weekly batch, support)",
+      "files_likely_involved": [
+        "app/product/[slug]/ProductDetailClient.jsx"
+      ],
+      "estimated_effort": "small",
+      "approval_required": true,
+      "safe_auto_fix": true,
+      "status": "new"
+    },
+    {
+      "id": "compliance-20260706-6740",
+      "created_at": "2026-07-07T01:23:54.669Z",
+      "last_seen": "2026-07-07T01:26:42.194Z",
+      "priority": "P0",
+      "category": "compliance",
+      "title": "Public ingredient/explore pages contain risky health claims",
+      "evidence": "Files: data/ingredients/shared-ingredients.ts, 25, 30, 43, 54, 65 +37 more. Examples: immune support, gut health, inflammation, blood pressure, joint pain.",
+      "impact": "FDA disclaimer alone does not make medical-sounding claims compliant; risk of ad/policy takedown",
+      "recommended_fix": "Rewrite ingredient descriptions to focus on taste, origin, and how the product fits a routine. Remove disease/condition claims.",
+      "files_likely_involved": [
+        "data/ingredients/shared-ingredients.ts",
+        "25",
+        "30",
+        "43",
+        "54",
+        "65",
+        "66",
+        "76",
+        "90",
+        "119"
+      ],
+      "estimated_effort": "large",
+      "approval_required": true,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "trust-20260706-5279",
+      "created_at": "2026-07-07T01:23:55.415Z",
+      "last_seen": "2026-07-07T01:26:42.593Z",
+      "priority": "P1",
+      "category": "trust",
+      "title": "Gold-gradient luxury styling in header/footer and key pages",
+      "evidence": "Found 60 uses of #D4AF37/#8B7355 in 47, 49, 59, 60, 110",
+      "impact": "Looks influencer-luxury, not small-batch founder-led",
+      "recommended_fix": "Replace gold gradient with emerald/stone palette already used elsewhere",
+      "files_likely_involved": [
+        "components/Header.jsx",
+        "components/Footer.tsx"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "menu-20260706-2719",
+      "created_at": "2026-07-07T01:23:55.429Z",
+      "last_seen": "2026-07-07T01:26:42.615Z",
+      "priority": "P1",
+      "category": "menu",
+      "title": "Static weekly menu has no visible date range",
+      "evidence": "WEEKLY_MENU in data/weeklyMenu.ts lacks week_start/week_end; customers cannot confirm freshness",
+      "impact": "Stale-looking menu reduces urgency and trust",
+      "recommended_fix": "Add week_start, week_end, and display them on /weekly-menu and /",
+      "files_likely_involved": [
+        "data/weeklyMenu.ts",
+        "components/weekly-menu/WeeklyMenuPage.tsx",
+        "app/weekly-menu/page.tsx"
+      ],
+      "estimated_effort": "small",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "menu-20260706-2541",
+      "created_at": "2026-07-07T01:23:55.430Z",
+      "last_seen": "2026-07-07T01:26:42.617Z",
+      "priority": "P0",
+      "category": "menu",
+      "title": "Two parallel weekly menu pages (/menu and /weekly-menu)",
+      "evidence": "/menu fetches MongoDB admin menus; /weekly-menu renders static products.ts. Risk of inconsistent data.",
+      "impact": "Confuses customers and operators; one page can become stale without warning",
+      "recommended_fix": "Pick one canonical source. For Telegram-driven intake, standardize on static weekly-menus/ files and redirect /menu to /weekly-menu.",
+      "files_likely_involved": [
+        "app/menu/page.tsx",
+        "app/weekly-menu/page.tsx",
+        "data/weeklyMenu.ts"
+      ],
+      "estimated_effort": "large",
+      "approval_required": true,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "bug-20260706-2514",
+      "created_at": "2026-07-07T01:23:16.180Z",
+      "last_seen": "2026-07-07T01:25:41.926Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route /wholesale unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/wholesale",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/wholesale"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "bug-20260706-3659",
+      "created_at": "2026-07-07T01:23:33.556Z",
+      "last_seen": "2026-07-07T01:25:55.567Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route /preorder unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/preorder",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/preorder"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "bug-20260706-9353",
+      "created_at": "2026-07-07T01:23:38.808Z",
+      "last_seen": "2026-07-07T01:25:06.174Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route /subscriptions/gratitude-box unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/subscriptions/gratitude-box",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/subscriptions/gratitude-box"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "product-page-20260706-0946",
+      "created_at": "2026-07-07T01:23:45.639Z",
+      "last_seen": "2026-07-07T01:25:21.865Z",
+      "priority": "P1",
+      "category": "product-page",
+      "title": "Product page /product/supplemint unreachable",
+      "evidence": "HTTP timeout",
+      "impact": "Product pages are the core conversion surface",
+      "recommended_fix": "Check product page data fetching and Square dependencies",
+      "files_likely_involved": [
+        "live:/product/supplemint"
+      ],
+      "estimated_effort": "small",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "product-page-20260706-5623",
+      "created_at": "2026-07-07T01:23:56.667Z",
+      "last_seen": "2026-07-07T01:26:20.733Z",
+      "priority": "P1",
+      "category": "product-page",
+      "title": "Product page /product/calm-waters unreachable",
+      "evidence": "HTTP timeout",
+      "impact": "Product pages are the core conversion surface",
+      "recommended_fix": "Check product page data fetching and Square dependencies",
+      "files_likely_involved": [
+        "live:/product/calm-waters"
+      ],
+      "estimated_effort": "small",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "product-page-20260706-2174",
+      "created_at": "2026-07-07T01:24:02.433Z",
+      "last_seen": "2026-07-07T01:26:31.264Z",
+      "priority": "P1",
+      "category": "product-page",
+      "title": "Product page /product/peach-refresher unreachable",
+      "evidence": "HTTP timeout",
+      "impact": "Product pages are the core conversion surface",
+      "recommended_fix": "Check product page data fetching and Square dependencies",
+      "files_likely_involved": [
+        "live:/product/peach-refresher"
+      ],
+      "estimated_effort": "small",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "product-page-20260706-8120",
+      "created_at": "2026-07-07T01:24:13.212Z",
+      "last_seen": "2026-07-07T01:26:37.776Z",
+      "priority": "P1",
+      "category": "product-page",
+      "title": "Product page /product/strawberry-rose-ginger unreachable",
+      "evidence": "HTTP timeout",
+      "impact": "Product pages are the core conversion surface",
+      "recommended_fix": "Check product page data fetching and Square dependencies",
+      "files_likely_involved": [
+        "live:/product/strawberry-rose-ginger"
+      ],
+      "estimated_effort": "small",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "bug-20260706-8253",
+      "created_at": "2026-07-07T01:23:54.393Z",
+      "last_seen": "2026-07-07T01:25:47.466Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route /contact unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/contact",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/contact"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "bug-20260706-8417",
+      "created_at": "2026-07-07T01:24:04.971Z",
+      "last_seen": "2026-07-07T01:24:54.500Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route /terms unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/terms",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/terms"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    },
+    {
+      "id": "bug-20260706-2732",
+      "created_at": "2026-07-07T01:24:22.283Z",
+      "last_seen": "2026-07-07T01:25:30.283Z",
+      "priority": "P1",
+      "category": "bug",
+      "title": "Route /quiz unreachable or slow",
+      "evidence": "HTTP timeout from https://tasteofgratitude.shop/quiz",
+      "impact": "Blocks funnel entry or conversion",
+      "recommended_fix": "Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches",
+      "files_likely_involved": [
+        "live:/quiz"
+      ],
+      "estimated_effort": "medium",
+      "approval_required": false,
+      "safe_auto_fix": false,
+      "status": "new"
+    }
+  ]
+}

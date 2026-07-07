@@ -45,7 +45,7 @@ export default function WholesalePage() {
               Wholesale • partnerships • community wellness
             </p>
             <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl">
-              Bring the weekly Taste of Gratitude ritual to your people.
+              Bring the weekly Taste of Gratitude routine to your people.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90">
               We support aligned retailers, wellness studios, offices, markets, and community partners with small-batch products, education, and repeatable pickup-ready ordering.

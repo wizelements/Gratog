@@ -213,7 +213,7 @@ export default function HomePageClient({
               {WEEKLY_MENU.eyebrow} • {catalogBadge}
             </p>
             <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-              Your weekly farmers market wellness ritual starts here.
+              Your weekly farmers market wellness routine starts here.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90 sm:text-xl">
               Taste of Gratitude is a fresh weekly menu of sea moss gels, lemonades, refreshers, and shots made in small batches for local pickup, education, and repeat wellness routines.
@@ -367,7 +367,7 @@ export default function HomePageClient({
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Founder story</p>
             <h2 className="mt-2 text-4xl font-semibold tracking-tight text-stone-950">Built from a health journey, then shared at the farmers market.</h2>
             <div className="mt-5 space-y-4 text-base leading-8 text-stone-700">
-              <p>Taste of Gratitude began as Jenneisha&apos;s personal wellness ritual: soaking, blending, and sharing sea moss with family before it became a market table.</p>
+              <p>Taste of Gratitude began as Jenneisha&apos;s personal wellness routine: soaking, blending, and sharing sea moss with family before it became a market table.</p>
               <p>The brand works because customers do not just buy a drink. They learn how sea moss fits into smoothies, teas, daily minerals, hydration, and weekly routines — then they come back.</p>
             </div>
             <Button asChild variant="outline" className="mt-6 h-12 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">

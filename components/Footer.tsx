@@ -27,13 +27,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div>
-            <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-[#D4AF37] to-[#8B7355] bg-clip-text text-transparent">
+            <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-[emerald-600] to-[emerald-700] bg-clip-text text-transparent">
               Taste of Gratitude
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
               Fresh small-batch sea moss for weekly market pickup, local delivery, and repeat wellness routines.
             </p>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#D4AF37]/10 rounded-full text-xs font-semibold text-[#D4AF37]">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[emerald-600]/10 rounded-full text-xs font-semibold text-[emerald-600]">
               🌿 Local pickup • Small batch
             </div>
             <div className="mt-4 space-y-2 text-xs text-muted-foreground">
@@ -54,19 +54,19 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li>
                 <Link
-                  href="/menu"
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  href="/weekly-menu"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
                   Shop This Week
                 </Link>
               </li>
               <li>
                 <Link
                   href="/quiz"
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
                   Wellness Quiz
                 </Link>
               </li>
@@ -74,45 +74,45 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/markets" 
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
                   Find Us at Markets
                 </Link>
               </li>
               <li>
                 <Link
                   href="/catalog"
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
                   Shop
                 </Link>
               </li>
               <li>
                 <Link
                   href="/wholesale"
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
                   Wholesale
                 </Link>
               </li>
               <li>
                 <Link 
                   href="/about" 
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
                   Our Story
                 </Link>
               </li>
               <li>
                 <Link 
                   href="/contact" 
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
                   Contact Us
                 </Link>
               </li>
@@ -126,52 +126,52 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/faq" 
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
                   FAQ
                 </Link>
               </li>
               <li>
                 <Link
                   href="/contact"
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
                   Contact
                 </Link>
               </li>
               <li>
                 <Link
                   href="/policies"
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
                   Policies
                 </Link>
               </li>
               <li>
                 <Link 
                   href="/terms" 
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
                   Terms of Service
                 </Link>
               </li>
               <li>
                 <Link 
                   href="/privacy" 
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[#D4AF37] transition-all" />
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
                   Privacy Policy
                 </Link>
               </li>
               <li>
                 <Link
                   href="/policies#shipping"
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
                   <Truck className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
                   Shipping Policy
@@ -180,7 +180,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/policies#refunds"
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
                   <RefreshCw className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
                   Refund Policy
@@ -189,7 +189,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/privacy#cookies"
-                  className="text-muted-foreground hover:text-[#D4AF37] transition-colors inline-flex items-center gap-2 group"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
                   <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
                   Cookie Policy
@@ -242,7 +242,7 @@ export default function Footer() {
             Consult your healthcare provider before use, especially if pregnant, nursing, or have thyroid conditions.
           </p>
           <p className="text-sm text-muted-foreground text-center">
-            &copy; {new Date().getFullYear()} Taste of Gratitude. Crafted with ❤️ for your wellness journey.
+            &copy; {new Date().getFullYear()} Taste of Gratitude. Crafted with ❤️ for your weekly routine.
           </p>
         </div>
       </div>
