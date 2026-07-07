@@ -119,7 +119,7 @@ export default function PrivacyPage() {
             </ul>
             <p className="text-sm mt-4">
               To exercise these rights, contact us at{' '}
-              <a href={`mailto:${PRIVACY_EMAIL}`} className="text-[#D4AF37] hover:underline">
+              <a href={`mailto:${PRIVACY_EMAIL}`} className="text--emerald-500 hover:underline">
                 {PRIVACY_EMAIL}
               </a>
             </p>

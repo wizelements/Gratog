@@ -79,7 +79,7 @@ export default function CouponInput({
           {!appliedCoupon && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <Tag className="h-4 w-4 text-[#D4AF37]" />
+                <Tag className="h-4 w-4 text--emerald-500" />
                 <span className="text-sm font-medium">Have a coupon?</span>
               </div>
               
@@ -97,7 +97,7 @@ export default function CouponInput({
                   onClick={validateCoupon}
                   disabled={!couponCode.trim() || disabled || isValidating}
                   variant="outline"
-                  className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white"
+                  className="border--emerald-500 text--emerald-500 hover:bg--emerald-500 hover:text-white"
                 >
                   {isValidating ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

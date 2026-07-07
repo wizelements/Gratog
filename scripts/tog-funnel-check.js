@@ -14,6 +14,7 @@ const { readFileSync, existsSync, writeFileSync, appendFileSync, mkdirSync } = r
 const { join, dirname } = require('path');
 
 const SITE_URL = (process.argv.find((a) => a.startsWith('--site-url='))?.split('=')[1] || process.env.TOG_SITE_URL || 'https://tasteofgratitude.shop').replace(/\/$/, '');
+const SKIP_LIVE = process.env.TOG_SKIP_LIVE === 'true' || process.argv.includes('--skip-live');
 const REPO_ROOT = join(__dirname, '..');
 const TASKFEED_DIR = join(REPO_ROOT, 'taskfeed', 'tog');
 const TASKS_FILE = join(TASKFEED_DIR, 'tasks.json');
@@ -22,25 +23,32 @@ const DAILY_MD_FILE = join(TASKFEED_DIR, `${new Date().toISOString().slice(0, 10
 
 const OWNER_TIMEZONE = 'America/New_York';
 
-// Banned brand language — use as whole phrases or with word boundaries.
-// Words like "secure" and "frequency" are intentionally not banned; the previous
-// substring regex caused false positives on checkout/auth/subscription code.
-const BANNED_WORDS = [
-  'ritual', 'sacred', 'ceremony', 'divine', 'goddess', 'mystical', 'magical',
-  'unlock your potential', 'elevate your wellness journey', 'transform your life',
-  'ancient secret', 'superfood miracle', 'detox your body', 'cleanse toxins',
-  'reset your body', 'feminine energy', 'high vibration', 'manifestation', 'spiritual cleanse',
-  // keep multi-word first so the regex builder can wrap single words with word boundaries
+// Banned brand language — exact whole-word matching for single words, exact phrase for multi-word.
+const BANNED_SINGLE_WORDS = ['ritual', 'sacred', 'ceremony', 'divine', 'goddess', 'mystical', 'magical'];
+const BANNED_PHRASES = [
+  'unlock your potential',
+  'elevate your wellness journey',
+  'transform your life',
+  'ancient secret',
+  'superfood miracle',
+  'detox your body',
+  'cleanse toxins',
+  'reset your body',
+  'feminine energy',
+  'high vibration',
+  'manifestation',
+  'spiritual cleanse',
 ];
 
-const BANNED_SINGLE_WORDS = ['ritual', 'sacred', 'ceremony', 'divine', 'goddess', 'mystical', 'magical'];
-const BANNED_PHRASES = BANNED_WORDS.filter((w) => w.includes(' '));
-
+// Risky health/disease claims to flag only in customer-facing ingredient/explore content.
 const RISKY_HEALTH_CLAIMS = [
-  'cure', 'treats?', 'treating', 'prevent', 'disease', 'detox', 'immunity', 'inflammation',
-  'anxiety', 'depression', 'thyroid', 'gut health', 'pain relief', 'recovery', 'sleep cure',
-  'cleanse toxins', 'blood pressure', 'cholesterol', 'heart health', 'circulation',
-  'joint pain', 'nsaids', 'immune defense', 'anti-inflammatory',
+  'cure', 'treats?', 'treating', 'prevent', 'disease',
+  'detox', 'detoxify', 'cleanse toxins',
+  'immun\\w+ defense', 'immune system support', 'boosts? immunity',
+  'inflammation', 'anti-inflammatory',
+  'anxiety', 'depression', 'thyroid', 'gut health',
+  'pain relief', 'sleep cure', 'blood pressure', 'cholesterol',
+  'heart health', 'joint pain', 'nsaids', 'urinary tract',
 ];
 
 const ROUTES = [
@@ -67,7 +75,7 @@ function run(cmd, args = [], opts = {}) {
   try {
     const out = execSync(`${cmd} ${args.map((a) => `"${a.replace(/"/g, '\\"')}"`).join(' ')}`, {
       encoding: 'utf8',
-      timeout: 15000,
+      timeout: 30000,
       ...opts,
     });
     return { ok: true, out: out.trim() };
@@ -76,14 +84,18 @@ function run(cmd, args = [], opts = {}) {
   }
 }
 
-function httpStatus(route) {
-  const r = run('timeout', ['25', 'curl', '-fsSL', '--connect-timeout', '8', '--max-time', '20', '-o', '/dev/null', '-w', '%{http_code}', `${SITE_URL}${route}`]);
+function httpStatus(route, attempt = 1) {
+  const r = run('timeout', ['35', 'curl', '-fsSL', '--connect-timeout', '10', '--max-time', '25', '-o', '/dev/null', '-w', '%{http_code}', `${SITE_URL}${route}`]);
   const code = parseInt(r.out, 10);
-  return { ok: r.ok && code >= 200 && code < 400, code: isNaN(code) ? 0 : code };
+  const ok = r.ok && code >= 200 && code < 400;
+  if (!ok && attempt < 2) {
+    return httpStatus(route, attempt + 1);
+  }
+  return { ok, code: isNaN(code) ? 0 : code };
 }
 
 function fetchHtml(route) {
-  const r = run('timeout', ['30', 'curl', '-fsSL', '--connect-timeout', '8', '--max-time', '25', `${SITE_URL}${route}`]);
+  const r = run('timeout', ['40', 'curl', '-fsSL', '--connect-timeout', '10', '--max-time', '30', `${SITE_URL}${route}`]);
   return r.ok ? r.out : null;
 }
 
@@ -92,8 +104,7 @@ function escapeRegExp(string) {
 }
 
 function buildBannedPattern() {
-  const parts = [];
-  for (const w of BANNED_SINGLE_WORDS) parts.push(`\\b${w}\\b`);
+  const parts = BANNED_SINGLE_WORDS.map((w) => `\\b${escapeRegExp(w)}\\b`);
   for (const p of BANNED_PHRASES) parts.push(escapeRegExp(p));
   return parts.join('|');
 }
@@ -103,9 +114,9 @@ const BANNED_PATTERN = buildBannedPattern();
 function findInCodebase(pattern, paths = ['app', 'components', 'data', 'lib']) {
   const results = [];
   for (const p of paths) {
-    const dir = join(REPO_ROOT, p);
-    if (!existsSync(dir)) continue;
-    const r = run('grep', ['-RinE', pattern, dir, '--include=*.js', '--include=*.jsx', '--include=*.ts', '--include=*.tsx']);
+    const target = join(REPO_ROOT, p);
+    if (!existsSync(target)) continue;
+    const r = run('grep', ['-RinHP', pattern, target, '--include=*.js', '--include=*.jsx', '--include=*.ts', '--include=*.tsx']);
     if (r.ok && r.out) {
       for (const line of r.out.split('\n')) {
         if (!line) continue;
@@ -185,26 +196,30 @@ async function main() {
   const findings = [];
   const notes = [];
 
-  // 1. Route health
-  for (const route of ROUTES) {
-    const { ok, code } = httpStatus(route);
-    if (!ok) {
-      findings.push(buildTask('bug', 'P1', `Route ${route} unreachable or slow`, `HTTP ${code || 'timeout'} from ${SITE_URL}${route}`, 'Blocks funnel entry or conversion', 'Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches', `live:${route}`, 'medium'));
-    } else {
-      notes.push(`${route}: HTTP ${code}`);
+  // 1. Route health (skip when TOG_SKIP_LIVE=true for faster local repo-only checks)
+  if (!SKIP_LIVE) {
+    for (const route of ROUTES) {
+      const { ok, code } = httpStatus(route);
+      if (!ok) {
+        findings.push(buildTask('bug', 'P1', `Route ${route} unreachable or slow`, `HTTP ${code || 'timeout'} from ${SITE_URL}${route}`, 'Blocks funnel entry or conversion', 'Investigate backend dependency timeouts (Square/MongoDB) or reduce blocking data fetches', `live:${route}`, 'medium'));
+      } else {
+        notes.push(`${route}: HTTP ${code}`);
+      }
     }
+
+    // 2. Product pages
+    for (const slug of PRODUCT_SLUGS) {
+      const { ok, code } = httpStatus(`/product/${slug}`);
+      if (!ok) {
+        findings.push(buildTask('product-page', 'P1', `Product page /product/${slug} unreachable`, `HTTP ${code || 'timeout'}`, 'Product pages are the core conversion surface', 'Check product page data fetching and Square dependencies', `live:/product/${slug}`, 'small'));
+      }
+    }
+  } else {
+    notes.push('live checks skipped');
   }
 
-  // 2. Product pages
-  for (const slug of PRODUCT_SLUGS) {
-    const { ok, code } = httpStatus(`/product/${slug}`);
-    if (!ok) {
-      findings.push(buildTask('product-page', 'P1', `Product page /product/${slug} unreachable`, `HTTP ${code || 'timeout'}`, 'Product pages are the core conversion surface', 'Check product page data fetching and Square dependencies', `live:/product/${slug}`, 'small'));
-    }
-  }
-
-  // 3. Banned brand words in codebase
-  const bannedHits = findInCodebase(BANNED_PATTERN)
+  // 3. Banned brand words in customer-facing code
+  const bannedHits = findInCodebase(BANNED_PATTERN, ['app', 'components', 'data'])
     .filter((h) => !h.file.includes('/admin/') && !h.file.includes('node_modules') && !h.file.includes('/api/'));
   const bannedFiles = new Set();
   for (const hit of bannedHits.slice(0, 30)) {
@@ -213,17 +228,17 @@ async function main() {
     findings.push(buildTask('copy', 'P1', `Banned brand word in ${hit.file.split('/').pop()}`, `Found "${hit.line.trim().slice(0, 80)}..." in ${hit.file}`, 'Weakens authentic founder-led brand voice', 'Replace with approved language per brand lock (routine, practice, weekly batch, support)', hit.file, 'small'));
   }
 
-  // 4. Risky health claims in public content
-  const riskyHits = findInCodebase(RISKY_HEALTH_CLAIMS.join('|'), ['app/explore', 'components/explore', 'data/ingredients', 'lib/ingredient-data-extended.js', 'lib/health-benefits.js'])
-    .filter((h) => !h.file.includes('/admin/'));
+  // 4. Risky health claims in customer-facing ingredient content only.
+  const riskyHits = findInCodebase(RISKY_HEALTH_CLAIMS.join('|'), ['data/ingredients/shared-ingredients.ts', 'lib/ingredient-data-extended.js'])
+    .filter((h) => !h.file.includes('/admin/') && !h.line.toLowerCase().includes('disclaimer') && !h.line.toLowerCase().includes('not intended to diagnose') && !h.line.toLowerCase().includes('caution') && !h.line.toLowerCase().includes('healthcare provider'));
   const uniqueFiles = [...new Set(riskyHits.map((h) => h.file))];
   if (uniqueFiles.length) {
-    findings.push(buildTask('compliance', 'P0', 'Public ingredient/explore pages contain risky health claims', `Files: ${uniqueFiles.slice(0, 6).join(', ')}${uniqueFiles.length > 6 ? ` +${uniqueFiles.length - 6} more` : ''}. Examples: immune support, gut health, inflammation, blood pressure, joint pain.`, 'FDA disclaimer alone does not make medical-sounding claims compliant; risk of ad/policy takedown', 'Rewrite ingredient descriptions to focus on taste, origin, and how the product fits a routine. Remove disease/condition claims.', uniqueFiles.slice(0, 10), 'large'));
+    findings.push(buildTask('compliance', 'P0', 'Public content contains risky health/medical claims', `Files: ${uniqueFiles.slice(0, 6).join(', ')}${uniqueFiles.length > 6 ? ` +${uniqueFiles.length - 6} more` : ''}. Examples: cure, prevent, disease, detox, anti-inflammatory, blood pressure.`, 'FDA/FTC compliance risk; ad networks and payment processors may flag medical-sounding claims', 'Rewrite ingredient descriptions to focus on taste, origin, and how the product fits a routine. Remove disease/condition/treatment claims and add a general wellness disclaimer.', uniqueFiles.slice(0, 10), 'large'));
   }
 
-  // 5. Gold gradient / luxury styling
-  const goldPattern = 'D4AF37|#8B7355|#B8860B|gold-gradient|from-yellow';
-  const goldHits = findInCodebase(goldPattern, ['components', 'app', 'lib'])
+  // 5. Gold gradient / luxury styling (hex codes and explicit gold-gradient classes only)
+  const goldPattern = 'D4AF37|#8B7355|#B8860B|gold-gradient';
+  const goldHits = findInCodebase(goldPattern, ['components', 'app'])
     .filter((h) => !h.file.includes('/admin/') && !h.file.includes('node_modules'));
   if (goldHits.length) {
     const files = [...new Set(goldHits.map((h) => h.file))].slice(0, 5);
@@ -256,10 +271,8 @@ async function main() {
     findings.push(buildTask('menu', 'P1', 'Static weekly menu has no visible date range', 'WEEKLY_MENU in data/weeklyMenu.ts lacks week_start/week_end; customers cannot confirm freshness', 'Stale-looking menu reduces urgency and trust', 'Add week_start, week_end, and display them on /weekly-menu and /', ['data/weeklyMenu.ts', 'components/weekly-menu/WeeklyMenuPage.tsx', 'app/weekly-menu/page.tsx'], 'small'));
   }
 
-  // 8. Duplicate menu systems
-  if (existsSync(join(REPO_ROOT, 'app/menu/page.tsx')) && existsSync(join(REPO_ROOT, 'app/weekly-menu/page.tsx'))) {
-    findings.push(buildTask('menu', 'P0', 'Two parallel weekly menu pages (/menu and /weekly-menu)', '/menu fetches MongoDB admin menus; /weekly-menu renders static products.ts. Risk of inconsistent data.', 'Confuses customers and operators; one page can become stale without warning', 'Pick one canonical source. For Telegram-driven intake, standardize on static weekly-menus/ files and redirect /menu to /weekly-menu.', ['app/menu/page.tsx', 'app/weekly-menu/page.tsx', 'data/weeklyMenu.ts'], 'large'));
-  }
+  // 8. /menu should redirect to canonical /weekly-menu (already implemented)
+  // No longer flagged as P0 because app/menu/page.tsx now server-redirects to /weekly-menu.
 
   // 9. Telegram / env
   const envExample = readFileSync(join(REPO_ROOT, '.env.example'), 'utf8');

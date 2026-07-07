@@ -114,7 +114,7 @@ export default function MegaMenu({ trigger = 'Catalog', onClick }) {
       onMouseLeave={handleMouseLeave}
     >
       <button
-        className="text-sm font-medium transition-all hover:text-[#D4AF37] relative group/button flex items-center gap-1 py-2"
+        className="text-sm font-medium transition-all hover:text--emerald-500 relative group/button flex items-center gap-1 py-2"
         onClick={handleClick}
       >
         {trigger}
@@ -126,14 +126,14 @@ export default function MegaMenu({ trigger = 'Catalog', onClick }) {
       {/* Mega Menu Dropdown */}
       {isOpen && (
         <div
-          className="absolute left-0 top-full mt-0 bg-white border-t-4 border-[#D4AF37] shadow-md rounded-b-lg min-w-max z-50"
+          className="absolute left-0 top-full mt-0 bg-white border-t-4 border--emerald-500 shadow-md rounded-b-lg min-w-max z-50"
           role="menu"
         >
           <div className="grid grid-cols-2 gap-8 p-6 min-w-[600px]">
             {menuConfig.sections.map((section, idx) => (
               <div key={idx} className="space-y-3">
                 <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-                  {idx === 0 && <Icon className="h-4 w-4 text-[#D4AF37]" />}
+                  {idx === 0 && <Icon className="h-4 w-4 text--emerald-500" />}
                   {section.title}
                 </h3>
                 <ul className="space-y-2">
@@ -141,11 +141,11 @@ export default function MegaMenu({ trigger = 'Catalog', onClick }) {
                     <li key={item.href}>
                       <Link
                         href={item.href}
-                        className="text-sm text-gray-700 hover:text-[#D4AF37] transition-colors flex items-center gap-2 group"
+                        className="text-sm text-gray-700 hover:text--emerald-500 transition-colors flex items-center gap-2 group"
                         onClick={() => setIsOpen(false)}
                         role="menuitem"
                       >
-                        <span className="h-1.5 w-1.5 bg-[#D4AF37] rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <span className="h-1.5 w-1.5 bg--emerald-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                         {item.label}
                       </Link>
                     </li>
@@ -156,7 +156,7 @@ export default function MegaMenu({ trigger = 'Catalog', onClick }) {
           </div>
 
           {/* Menu Footer with Featured */}
-          <div className="border-t bg-gradient-to-r from-[#D4AF37]/5 to-teal-100/5 px-6 py-4">
+          <div className="border-t bg-gradient-to-r from--emerald-500/5 to-teal-100/5 px-6 py-4">
             <p className="text-xs text-gray-600 mb-2 font-medium">Featured</p>
             <div className="flex gap-4 flex-wrap">
               {[
@@ -167,7 +167,7 @@ export default function MegaMenu({ trigger = 'Catalog', onClick }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-sm font-medium text-[#D4AF37] hover:underline"
+                  className="text-sm font-medium text--emerald-500 hover:underline"
                   onClick={() => setIsOpen(false)}
                   role="menuitem"
                 >

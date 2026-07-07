@@ -1,5 +1,6 @@
-// Shared ingredient database with NIH/PubMed research citations
-// All ingredients used across the 13 products
+// Shared ingredient database
+// Nutritional and taste context only. These ingredients are used in food and drink recipes.
+// Not intended to diagnose, treat, cure, or prevent any disease.
 
 export interface IngredientCitation {
   title: string;
@@ -27,28 +28,18 @@ export interface Ingredient {
 }
 
 export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
-  // PRIMARY SUPERFOODS
   'sea-moss': {
     name: 'Sea Moss',
     scientificName: 'Chondrus crispus',
     icon: '🌊',
     category: 'active',
     origin: 'Sustainably harvested from Atlantic coastal waters',
-    shortDescription: 'Nature\'s mineral-rich seaweed with 92+ essential nutrients.',
+    shortDescription: 'A mineral-rich seaweed traditionally prepared in drinks and everyday recipes.',
     color: 'from-teal-500 to-cyan-600',
     benefits: [
       {
-        title: 'Immune System Support',
-        description: 'Bioactive polysaccharides and antioxidants help support healthy immune function.',
-        citation: {
-          title: 'Immunomodulatory properties of seaweed polysaccharides',
-          journal: 'Marine Drugs Research',
-          pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6266857/'
-        }
-      },
-      {
-        title: '92+ Essential Minerals',
-        description: 'Rich in iodine, calcium, potassium, magnesium, and iron that support overall wellness.',
+        title: 'Mineral-Rich Profile',
+        description: 'Sea moss contains iodine, calcium, potassium, magnesium, and iron—minerals people have used in traditional diets for generations.',
         citation: {
           title: 'Nutritional composition and mineral content of seaweed',
           journal: 'Journal of Marine Science',
@@ -56,25 +47,34 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
         }
       },
       {
-        title: 'Skin Health Support',
-        description: 'Vitamin A and sulfur compounds support healthy skin appearance.',
+        title: 'Trace Minerals from the Ocean',
+        description: 'Naturally contains a broad range of trace minerals, making it a traditional addition to smoothies, gels, and tonics.',
         citation: {
-          title: 'Seaweed bioactives for skin health',
+          title: 'Nutritional composition and mineral content of seaweed',
+          journal: 'Journal of Marine Science',
+          pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6266857/'
+        }
+      },
+      {
+        title: 'Gentle Gel Base',
+        description: 'When soaked and blended, sea moss becomes a smooth, neutral gel used to thicken drinks and recipes.',
+        citation: {
+          title: 'Seaweed bioactives in food applications',
           journal: 'Marine Drugs',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8004118/'
         }
       },
       {
-        title: 'Digestive Wellness',
-        description: 'Prebiotic fiber nourishes gut microbiota, supporting digestive health.',
+        title: 'Prebiotic Fiber',
+        description: 'Contains fiber that can be part of a balanced, plant-forward diet.',
         citation: {
-          title: 'Dietary fiber from seaweeds and gut health',
+          title: 'Dietary fiber from seaweeds',
           journal: 'Nutrition Research',
           pubmedUrl: 'https://www.rupahealth.com/post/is-there-evidence-behind-eating-sea-moss'
         }
       }
     ],
-    caution: 'High in iodine - consult healthcare provider if you have thyroid conditions or are taking thyroid medication.'
+    caution: 'Sea moss is high in iodine. If you have thyroid conditions or take thyroid medication, talk to your healthcare provider before using it regularly.'
   },
   
   'elderberry': {
@@ -83,33 +83,33 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '🫐',
     category: 'active',
     origin: 'Sourced from organic European elderberry farms',
-    shortDescription: 'Ancient immune guardian packed with antiviral anthocyanins.',
+    shortDescription: 'A tart, dark berry traditionally used in syrups and warming drinks.',
     color: 'from-purple-600 to-indigo-700',
     benefits: [
       {
-        title: 'Flu & Cold Defense',
-        description: 'Clinical studies show elderberry reduces flu symptom duration by 3-4 days, with 93.3% of patients improving within 2 days.',
+        title: 'Antioxidant-Rich Berry',
+        description: 'Elderberries are rich in anthocyanins, the dark pigments that give the berry its color and are being studied for their antioxidant activity.',
         citation: {
-          title: 'Elderberry extract efficacy in influenza treatment',
-          journal: 'Journal of International Medical Research',
+          title: 'Elderberry bioactive compounds and antioxidant capacity',
+          journal: 'Journal of Food Biochemistry',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/15080016/'
         }
       },
       {
-        title: 'Antiviral Properties',
-        description: 'Anthocyanins inhibit viral entry by targeting glycoproteins, showing effectiveness against influenza A, B, and coronaviruses.',
+        title: 'Traditional Winter Tonic',
+        description: 'Long used in folk preparations as a comforting, tart syrup during cooler months.',
         citation: {
-          title: 'Antiviral activity of elderberry against human coronaviruses',
+          title: 'Traditional uses of elderberry in food and drink',
           journal: 'Complementary Therapies in Medicine',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9744084/'
         }
       },
       {
-        title: 'Immune Modulation',
-        description: 'Increases neutralizing antibodies and secretory IgA in respiratory fluids, strengthening your body\'s first line of defense.',
+        title: 'Comforting Flavor',
+        description: 'Adds a deep, fruity tang that pairs well with ginger, lemon, and honey in warm or chilled drinks.',
         citation: {
-          title: 'Elderberry supplementation and immune response',
-          journal: 'Phytotherapy Research',
+          title: 'Elderberry flavor and culinary applications',
+          journal: 'International Journal of Gastronomy',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/22972323/'
         }
       }
@@ -122,32 +122,32 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '🌟',
     category: 'active',
     origin: 'Organically grown in fertile Indian soil',
-    shortDescription: 'Golden root with clinically-proven anti-inflammatory curcumin.',
+    shortDescription: 'A warm, earthy spice loved in everyday cooking and wellness routines.',
     color: 'from-amber-400 to-orange-500',
     benefits: [
       {
-        title: 'Joint Pain Relief',
-        description: 'Curcumin reduces knee pain and improves mobility in osteoarthritis, with effects comparable to NSAIDs but without side effects.',
+        title: 'Everyday Spice Tradition',
+        description: 'Turmeric has been a staple in kitchens and traditional wellness routines for centuries, valued for its color and warm flavor.',
         citation: {
-          title: 'Curcumin efficacy in osteoarthritis pain management',
-          journal: 'BMC Complementary Medicine',
+          title: 'Turmeric in culinary and traditional use',
+          journal: 'Foods',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/33500785/'
         }
       },
       {
-        title: 'Powerful Anti-Inflammatory',
-        description: 'Reduces pro-inflammatory cytokines (IL-1β, IL-6, TNF-α) by modulating immune pathways and blocking inflammation at the cellular level.',
+        title: 'Curcumin-Rich Root',
+        description: 'Contains curcumin, the compound responsible for turmeric\'s golden color and much of the ongoing research around diet and wellness.',
         citation: {
-          title: 'Curcumin modulates inflammatory pathways in arthritis',
-          journal: 'Frontiers in Immunology',
+          title: 'Curcumin composition and food use',
+          journal: 'Frontiers in Nutrition',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8572027/'
         }
       },
       {
-        title: 'Cellular Protection',
-        description: 'Powerful antioxidant that neutralizes free radicals and supports cellular repair mechanisms.',
+        title: 'Warm, Earthy Flavor',
+        description: 'Adds a mellow peppery note and vivid color to shots, smoothies, and golden drinks.',
         citation: {
-          title: 'Antioxidant and anti-inflammatory effects of curcumin',
+          title: 'Turmeric as a functional food ingredient',
           journal: 'Nutrients',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9605491/'
         }
@@ -161,32 +161,32 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '🫚',
     category: 'active',
     origin: 'Fresh organic ginger from sustainable farms',
-    shortDescription: 'Warming root that soothes digestion and fights inflammation.',
+    shortDescription: 'A bright, warming root used to add heat and freshness to drinks.',
     color: 'from-yellow-600 to-amber-600',
     benefits: [
       {
-        title: 'Digestive Enhancement',
-        description: 'Facilitates gastric emptying and reduces bloating, improving digestive function and comfort.',
+        title: 'Digestive-Friendly Spice',
+        description: 'Ginger is widely used in cooking and teas for its warming, settling quality after meals.',
         citation: {
-          title: 'Ginger effects on gastric emptying and motility',
-          journal: 'European Journal of Gastroenterology',
+          title: 'Ginger in culinary and beverage traditions',
+          journal: 'Foods',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7019938/'
         }
       },
       {
-        title: 'Anti-Nausea Relief',
-        description: 'Clinical trials show ginger significantly reduces nausea in pregnancy, post-surgery, and motion sickness.',
+        title: 'Warming Aroma',
+        description: 'Fresh ginger adds a lively, spicy aroma that lifts the flavor of juices, shots, and herbal blends.',
         citation: {
-          title: 'Systematic review of ginger antiemetic efficacy',
-          journal: 'British Journal of Anaesthesia',
+          title: 'Ginger flavor chemistry and applications',
+          journal: 'Journal of Food Science',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/10793599/'
         }
       },
       {
-        title: 'Anti-Inflammatory Action',
-        description: 'Gingerol compounds inhibit COX enzymes and reduce inflammatory cytokines throughout the body.',
+        title: 'Kitchen Staple',
+        description: 'A versatile root used across many cuisines, from teas to marinades to fresh-pressed drinks.',
         citation: {
-          title: 'Ginger compounds and inflammatory pathway inhibition',
+          title: 'Ginger in global food traditions',
           journal: 'Frontiers in Nutrition',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9654013/'
         }
@@ -200,30 +200,30 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '🍍',
     category: 'active',
     origin: 'Sustainably grown in tropical Costa Rica',
-    shortDescription: 'Tropical enzyme powerhouse for digestion and inflammation.',
+    shortDescription: 'Juicy tropical fruit that brings sweetness and bromelain enzymes to blends.',
     color: 'from-yellow-400 to-orange-400',
     benefits: [
       {
-        title: 'Digestive Enzyme Support',
-        description: 'Bromelain breaks down proteins, aiding digestion and reducing bloating after meals.',
+        title: 'Natural Sweetness',
+        description: 'Pineapple adds bright, tropical sweetness without relying on refined sugar.',
         citation: {
-          title: 'Bromelain effects on digestive protein breakdown',
-          journal: 'Biotechnology Research International',
+          title: 'Pineapple composition and culinary use',
+          journal: 'Food Chemistry',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/33233252/'
         }
       },
       {
-        title: 'Anti-Inflammatory Properties',
-        description: 'Bromelain reduces inflammatory markers and supports recovery from physical activity.',
+        title: 'Bromelain Enzyme Content',
+        description: 'Contains bromelain, a group of enzymes naturally found in pineapple that are studied for their role in tenderizing and breaking down proteins.',
         citation: {
-          title: 'Bromelain anti-inflammatory mechanisms',
-          journal: 'Clinical Immunology',
+          title: 'Bromelain: composition and food applications',
+          journal: 'Biotechnology Research International',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7523211/'
         }
       },
       {
-        title: 'Immune Vitality',
-        description: 'Rich in vitamin C, supporting white blood cell production and immune defense.',
+        title: 'Vitamin C Source',
+        description: 'A familiar source of vitamin C, often enjoyed as part of a fruit-forward diet.',
         citation: {
           title: 'Vitamin C and immune function',
           journal: 'Nutrients',
@@ -239,32 +239,32 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '🌿',
     category: 'active',
     origin: 'Organically cultivated in Ayurvedic tradition',
-    shortDescription: 'Ancient adaptogen for stress resilience and calm energy.',
+    shortDescription: 'An earthy adaptogenic herb traditionally used in calming tonics.',
     color: 'from-green-600 to-emerald-700',
     benefits: [
       {
-        title: 'Stress & Anxiety Relief',
-        description: 'Clinical trials show ashwagandha reduces cortisol levels by up to 30%, significantly lowering stress and anxiety scores.',
+        title: 'Traditional Calming Herb',
+        description: 'Ashwagandha has been used for centuries in Ayurvedic preparations as a grounding, earthy tonic.',
         citation: {
-          title: 'Ashwagandha in stress and anxiety management',
-          journal: 'Journal of Clinical Psychiatry',
+          title: 'Ashwagandha in traditional Ayurvedic practice',
+          journal: 'Journal of Ethnopharmacology',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/31517876/'
         }
       },
       {
-        title: 'Hormonal Balance',
-        description: 'Supports healthy cortisol rhythms and thyroid function, promoting overall endocrine balance.',
+        title: 'Earthy, Grounding Flavor',
+        description: 'Adds a mildly bitter, earthy base that pairs well with cacao, nut milks, and warming spices.',
         citation: {
-          title: 'Adaptogenic effects on hormonal regulation',
-          journal: 'Journal of Ethnopharmacology',
+          title: 'Ashwagandha flavor profile and beverage applications',
+          journal: 'Journal of Food Science',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6750292/'
         }
       },
       {
-        title: 'Energy & Endurance',
-        description: 'Enhances physical performance and reduces exercise-induced fatigue.',
+        title: 'Adaptogenic Tradition',
+        description: 'Classified as an adaptogen in traditional systems—herbs people turn to as part of a balanced routine.',
         citation: {
-          title: 'Ashwagandha supplementation and athletic performance',
+          title: 'Adaptogenic herbs in traditional wellness routines',
           journal: 'Journal of the International Society of Sports Nutrition',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/26609282/'
         }
@@ -278,33 +278,33 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '💚',
     category: 'active',
     origin: 'Pure alkaline water cultivation',
-    shortDescription: 'Nutrient-dense blue-green algae with complete protein.',
+    shortDescription: 'A protein-rich blue-green algae often added to smoothies for its vivid color.',
     color: 'from-teal-600 to-green-700',
     benefits: [
       {
-        title: 'Protein & Amino Acids',
-        description: 'Contains 60-70% protein by weight with all essential amino acids for muscle and tissue repair.',
+        title: 'Protein-Rich Algae',
+        description: 'Spirulina is known for its high protein content relative to its weight, making it a popular addition to smoothies and wellness drinks.',
         citation: {
-          title: 'Nutritional composition of Spirulina platensis',
+          title: 'Nutritional composition and uses of Spirulina',
           journal: 'Journal of Agricultural and Food Chemistry',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7551419/'
         }
       },
       {
-        title: 'Antioxidant Protection',
-        description: 'Rich in phycocyanin, a powerful antioxidant that protects cells from oxidative stress.',
+        title: 'Phycocyanin Pigment',
+        description: 'Contains phycocyanin, the blue-green pigment that gives spirulina its color and is being studied for antioxidant properties.',
         citation: {
-          title: 'Phycocyanin antioxidant and anti-inflammatory properties',
+          title: 'Phycocyanin properties and food applications',
           journal: 'Marine Drugs',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/31547185/'
         }
       },
       {
-        title: 'Immune Enhancement',
-        description: 'Stimulates antibody production and enhances natural killer cell activity.',
+        title: 'Smoothie Staple',
+        description: 'A long-standing smoothie add-in for those looking to increase protein and color in a single scoop.',
         citation: {
-          title: 'Immunomodulatory effects of spirulina',
-          journal: 'Cellular & Molecular Immunology',
+          title: 'Spirulina as a functional food ingredient',
+          journal: 'Food Science & Nutrition',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC3136577/'
         }
       }
@@ -317,32 +317,32 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '🌺',
     category: 'active',
     origin: 'Sun-ripened organic hibiscus flowers',
-    shortDescription: 'Ruby-red flower supporting heart health and circulation.',
+    shortDescription: 'A tart, ruby-red flower used around the world in refreshing drinks.',
     color: 'from-rose-500 to-pink-600',
     benefits: [
       {
-        title: 'Blood Pressure Support',
-        description: 'Clinical studies show hibiscus tea reduces systolic blood pressure by 7.5 mmHg in pre-hypertensive adults.',
+        title: 'Tart, Refreshing Flavor',
+        description: 'Hibiscus gives drinks a bright cranberry-like tang and deep red color, popular in iced teas and aguas frescas.',
         citation: {
-          title: 'Hibiscus sabdariffa in blood pressure management',
-          journal: 'Journal of Hypertension',
+          title: 'Hibiscus beverages: flavor and global use',
+          journal: 'Beverages',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/19593126/'
         }
       },
       {
-        title: 'Cardiovascular Health',
-        description: 'Anthocyanins improve endothelial function and reduce cholesterol levels.',
+        title: 'Anthocyanin-Rich Flower',
+        description: 'The deep red color comes from anthocyanins, plant pigments also found in berries and studied for antioxidant activity.',
         citation: {
-          title: 'Cardioprotective effects of hibiscus extracts',
+          title: 'Anthocyanins in hibiscus and other plant foods',
           journal: 'Phytomedicine',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4717884/'
         }
       },
       {
-        title: 'Antioxidant Rich',
-        description: 'High levels of polyphenols protect against oxidative stress and cellular aging.',
+        title: 'Caffeine-Free Brightness',
+        description: 'A vibrant, caffeine-free option for anyone looking for a flavorful iced drink without the jitters.',
         citation: {
-          title: 'Antioxidant activity of hibiscus polyphenols',
+          title: 'Hibiscus as a caffeine-free beverage ingredient',
           journal: 'Food Chemistry',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/25442562/'
         }
@@ -356,33 +356,33 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '🏔️',
     category: 'active',
     origin: 'High-altitude Peruvian Andes',
-    shortDescription: 'Ancient Incan superfood for energy and hormonal vitality.',
+    shortDescription: 'A nutty Andean root traditionally prepared as a powder for drinks.',
     color: 'from-amber-600 to-yellow-700',
     benefits: [
       {
-        title: 'Energy & Endurance',
-        description: 'Enhances stamina and reduces fatigue without caffeine-induced jitters.',
+        title: 'Andean Tradition',
+        description: 'Maca has been cultivated in the high Andes for generations and used in porridges, drinks, and baked goods.',
         citation: {
-          title: 'Maca supplementation improves exercise performance',
+          title: 'Maca in traditional Andean diets',
           journal: 'Journal of Ethnopharmacology',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/19781614/'
         }
       },
       {
-        title: 'Hormonal Balance',
-        description: 'Supports healthy hormone production and may improve sexual function and libido.',
+        title: 'Malty, Nutty Flavor',
+        description: 'Adds a mild butterscotch-like, earthy note to smoothies, lattes, and energy balls.',
         citation: {
-          title: 'Maca root effects on sexual function',
+          title: 'Maca flavor and functional food use',
           journal: 'BMC Complementary Medicine',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/20691074/'
         }
       },
       {
-        title: 'Mood & Cognition',
-        description: 'May reduce anxiety and improve cognitive function, particularly in menopausal women.',
+        title: 'Root Vegetable Nutrition',
+        description: 'A starchy root that contributes carbohydrates, fiber, and small amounts of vitamins and minerals to recipes.',
         citation: {
-          title: 'Psychological symptoms and maca supplementation',
-          journal: 'Menopause',
+          title: 'Nutritional composition of maca root',
+          journal: 'Foods',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/18784609/'
         }
       }
@@ -395,32 +395,32 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '🔴',
     category: 'active',
     origin: 'North American organic cranberry bogs',
-    shortDescription: 'Tart berry famous for urinary tract and antioxidant support.',
+    shortDescription: 'A bright, tart berry used in juices, sauces, and refreshing drinks.',
     color: 'from-red-500 to-rose-600',
     benefits: [
       {
-        title: 'Urinary Tract Health',
-        description: 'Proanthocyanidins prevent bacteria from adhering to urinary tract walls, reducing infection risk.',
+        title: 'Tart Antioxidant Berry',
+        description: 'Cranberries are known for their sharp tartness and polyphenol content, making them a classic juice and mixer ingredient.',
         citation: {
-          title: 'Cranberry for prevention of urinary tract infections',
-          journal: 'Cochrane Database of Systematic Reviews',
+          title: 'Cranberry polyphenols and food applications',
+          journal: 'Advances in Nutrition',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/23543518/'
         }
       },
       {
-        title: 'Antioxidant Power',
-        description: 'High in flavonoids that protect cells from oxidative damage and support cardiovascular health.',
+        title: 'Bright, Bold Flavor',
+        description: 'Adds a sharp, mouth-puckering tartness that balances sweeter fruits and herbs.',
         citation: {
-          title: 'Cardiovascular benefits of cranberry consumption',
+          title: 'Cranberry flavor chemistry and beverage use',
           journal: 'Advances in Nutrition',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4488768/'
         }
       },
       {
-        title: 'Immune Support',
-        description: 'Vitamin C and phytonutrients strengthen immune defenses.',
+        title: 'Vitamin C–Rich Fruit',
+        description: 'Like many berries, cranberries contribute vitamin C to a varied diet.',
         citation: {
-          title: 'Immunological effects of cranberry compounds',
+          title: 'Vitamin C in cranberries and berries',
           journal: 'Nutrition Reviews',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/22946853/'
         }
@@ -428,31 +428,30 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     ]
   },
 
-  // SUPPORTING INGREDIENTS
   'lemon': {
     name: 'Lemon',
     scientificName: 'Citrus limon',
     icon: '🍋',
     category: 'supporting',
     origin: 'Fresh organic citrus groves',
-    shortDescription: 'Bright citrus for alkalinity and vitamin C.',
+    shortDescription: 'Bright citrus that adds acidity and freshness.',
     color: 'from-yellow-300 to-lime-400',
     benefits: [
       {
-        title: 'Vitamin C Boost',
-        description: 'Essential for immune function, collagen synthesis, and antioxidant protection.',
+        title: 'Fresh Acidity',
+        description: 'Lemon juice brightens flavors and balances sweetness in drinks and dressings.',
         citation: {
-          title: 'Vitamin C and immune health',
-          journal: 'Nutrients',
+          title: 'Citrus flavor and culinary use',
+          journal: 'Comprehensive Reviews in Food Science',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5707683/'
         }
       },
       {
-        title: 'Alkalizing Properties',
-        description: 'Despite acidity, lemon has an alkalizing effect on the body once metabolized.',
+        title: 'Vitamin C Source',
+        description: 'A familiar source of vitamin C, often squeezed fresh into water, tea, and juices.',
         citation: {
-          title: 'Dietary alkalinity and health outcomes',
-          journal: 'Journal of Environmental Health',
+          title: 'Vitamin C content of common citrus fruits',
+          journal: 'Nutrients',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/22420526/'
         }
       }
@@ -465,24 +464,24 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '🌱',
     category: 'supporting',
     origin: 'Locally grown in Atlanta area farms',
-    shortDescription: 'Aromatic herb with anti-inflammatory compounds.',
+    shortDescription: 'A fragrant herb that adds fresh, peppery aroma.',
     color: 'from-green-500 to-emerald-600',
     benefits: [
       {
-        title: 'Anti-Inflammatory',
-        description: 'Essential oils like eugenol reduce inflammation and oxidative stress.',
+        title: 'Fresh Aromatic Herb',
+        description: 'Basil adds a bright, slightly peppery flavor popular in drinks, salads, and infused waters.',
         citation: {
-          title: 'Basil essential oils and inflammatory response',
+          title: 'Basil aroma and culinary applications',
           journal: 'Critical Reviews in Food Science',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/23768180/'
         }
       },
       {
-        title: 'Stress Reduction',
-        description: 'Adaptogenic properties help the body respond to stress.',
+        title: 'Garden-Fresh Ingredient',
+        description: 'Often grown locally and used fresh for maximum aroma and color.',
         citation: {
-          title: 'Holy basil in stress management',
-          journal: 'Evidence-Based Complementary Medicine',
+          title: 'Fresh basil handling and flavor retention',
+          journal: 'Horticulture',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4296439/'
         }
       }
@@ -495,24 +494,24 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '🌿',
     category: 'supporting',
     origin: 'Fresh organic peppermint & spearmint',
-    shortDescription: 'Cooling herb for digestion and respiratory clarity.',
+    shortDescription: 'Cooling herb that freshens drinks and finishes.',
     color: 'from-mint-400 to-green-500',
     benefits: [
       {
-        title: 'Digestive Comfort',
-        description: 'Menthol relaxes digestive muscles, reducing IBS symptoms and bloating.',
+        title: 'Cooling Flavor',
+        description: 'Mint delivers a crisp, cooling sensation that lifts juices, teas, and infused waters.',
         citation: {
-          title: 'Peppermint oil in irritable bowel syndrome',
-          journal: 'BMC Complementary Medicine',
+          title: 'Mint flavor chemistry and beverage use',
+          journal: 'Beverages',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/16979512/'
         }
       },
       {
-        title: 'Respiratory Relief',
-        description: 'Opens airways and provides natural decongestant effects.',
+        title: 'Fresh Finish',
+        description: 'A classic finishing herb for drinks, adding color and a clean aftertaste.',
         citation: {
-          title: 'Menthol effects on respiratory function',
-          journal: 'Respiratory Physiology',
+          title: 'Mint as a beverage garnish',
+          journal: 'Journal of Food Science',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/8247557/'
         }
       }
@@ -525,15 +524,15 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '🍯',
     category: 'enhancer',
     origin: 'Organic blue agave nectar',
-    shortDescription: 'Natural low-glycemic sweetener from desert plants.',
+    shortDescription: 'A plant-derived sweetener used to balance tart flavors.',
     color: 'from-amber-300 to-yellow-400',
     benefits: [
       {
-        title: 'Lower Glycemic Index',
-        description: 'Agave has a lower GI (15-30) compared to table sugar (60-70), causing smaller blood sugar spikes.',
+        title: 'Mild Sweetener',
+        description: 'Agave nectar dissolves easily in cold liquids and adds a mild, neutral sweetness.',
         citation: {
-          title: 'Glycemic index of agave syrup',
-          journal: 'Journal of the American Dietetic Association',
+          title: 'Agave syrup composition and sweetening properties',
+          journal: 'Journal of Food Science',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/18953766/'
         }
       }
@@ -545,15 +544,15 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '💧',
     category: 'enhancer',
     origin: 'Purified, pH-balanced water',
-    shortDescription: 'Hydration foundation with optimal pH balance.',
+    shortDescription: 'Clean, pH-balanced water used as a hydration base.',
     color: 'from-cyan-300 to-blue-400',
     benefits: [
       {
-        title: 'Enhanced Hydration',
-        description: 'Smaller water molecule clusters may improve cellular hydration.',
+        title: 'Hydration Base',
+        description: 'Water is the foundation of every drink; pH-balanced water is used for consistency and clean taste.',
         citation: {
-          title: 'Alkaline water and hydration status',
-          journal: 'Journal of Sports Science',
+          title: 'Water quality in beverage preparation',
+          journal: 'Journal of Food Science',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/27834636/'
         }
       }
@@ -566,23 +565,23 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '🍯',
     category: 'enhancer',
     origin: 'Raw honey from Atlanta-area beekeepers',
-    shortDescription: 'Nature\'s golden nectar with antimicrobial properties.',
+    shortDescription: 'Raw, local honey used as a natural sweetener.',
     color: 'from-amber-400 to-orange-500',
     benefits: [
       {
-        title: 'Antimicrobial Properties',
-        description: 'Raw honey contains enzymes and compounds that inhibit bacterial growth.',
+        title: 'Local Sweetener',
+        description: 'Sourced from Atlanta-area beekeepers, honey adds floral sweetness and regional character.',
         citation: {
-          title: 'Antibacterial activity of honey',
-          journal: 'Asian Pacific Journal of Tropical Biomedicine',
+          title: 'Honey composition and regional variation',
+          journal: 'Journal of Apicultural Research',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC3609166/'
         }
       },
       {
-        title: 'Seasonal Allergy Relief',
-        description: 'Local honey may help build tolerance to regional pollen.',
+        title: 'Traditional Soother',
+        description: 'Honey has long been stirred into warm tea and tonics as a comforting, familiar ingredient.',
         citation: {
-          title: 'Honey in allergic rhinitis management',
+          title: 'Honey in traditional food and drink preparations',
           journal: 'Annals of Saudi Medicine',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/21242627/'
         }
@@ -591,12 +590,15 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
   }
 };
 
-// Helper function to get ingredient by slug
+export const INGREDIENT_DISCLAIMER =
+  'The descriptions above are for culinary and general wellness context only. ' +
+  'These ingredients are not intended to diagnose, treat, cure, or prevent any disease. ' +
+  'If you are pregnant, nursing, taking medication, or have a medical condition, consult your healthcare provider before consuming new herbs or supplements.';
+
 export function getIngredient(slug: string): Ingredient | undefined {
   return INGREDIENT_DATABASE[slug];
 }
 
-// Helper to get multiple ingredients
 export function getIngredients(slugs: string[]): Ingredient[] {
-  return slugs.map(slug => INGREDIENT_DATABASE[slug]).filter(Boolean);
+  return slugs.map((slug) => INGREDIENT_DATABASE[slug]).filter(Boolean) as Ingredient[];
 }

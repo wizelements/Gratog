@@ -112,20 +112,20 @@ export default function HelpCenter() {
                     item.action();
                     setIsOpen(false);
                   }}
-                  className="w-full text-left p-3 hover:bg-gray-50 rounded-lg border border-gray-200 hover:border-[#D4AF37] transition-all group"
+                  className="w-full text-left p-3 hover:bg-gray-50 rounded-lg border border-gray-200 hover:border--emerald-500 transition-all group"
                   role="menuitem"
                 >
                   <div className="flex items-start gap-3">
-                    <Icon className="h-5 w-5 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+                    <Icon className="h-5 w-5 text--emerald-500 flex-shrink-0 mt-0.5" />
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-gray-900 text-sm group-hover:text-[#D4AF37]">
+                      <p className="font-semibold text-gray-900 text-sm group-hover:text--emerald-500">
                         {item.title}
                       </p>
                       <p className="text-xs text-gray-600 truncate">
                         {item.description}
                       </p>
                     </div>
-                    <span className="text-gray-400 group-hover:text-[#D4AF37] flex-shrink-0">
+                    <span className="text-gray-400 group-hover:text--emerald-500 flex-shrink-0">
                       →
                     </span>
                   </div>
@@ -149,7 +149,7 @@ export default function HelpCenter() {
                 <Link
                   key={topic.title}
                   href={topic.href}
-                  className="block px-2 py-1.5 text-gray-600 hover:text-[#D4AF37] hover:bg-gray-50 rounded transition-colors"
+                  className="block px-2 py-1.5 text-gray-600 hover:text--emerald-500 hover:bg-gray-50 rounded transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
                   • {topic.title}

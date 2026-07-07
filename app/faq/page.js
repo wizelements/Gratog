@@ -43,11 +43,11 @@ const faqCategories = [
       },
       {
         question: 'Can I take sea moss if I have thyroid issues?',
-        answer: 'Sea moss is rich in iodine which supports thyroid function. However, if you have hyperthyroidism or are on thyroid medication, please consult your healthcare provider before consuming sea moss products.'
+        answer: 'Sea moss is naturally high in iodine. If you have a thyroid condition, are pregnant or nursing, or take thyroid medication, talk to your healthcare provider before adding sea moss to your routine.'
       },
       {
         question: 'Are there any side effects?',
-        answer: 'Sea moss is generally safe for most people. Some may experience mild digestive adjustment in the first few days. Start with a smaller dose and gradually increase. If you have iodine sensitivity, thyroid conditions, or are pregnant/nursing, consult your doctor first.'
+        answer: 'Most people enjoy sea moss as part of a balanced diet. Some may notice mild digestive adjustment when first starting. Begin with a smaller serving and see how your body responds. If you have iodine sensitivity, thyroid conditions, or are pregnant/nursing, consult your healthcare provider first.'
       }
     ]
   },
@@ -193,11 +193,11 @@ function FAQItem({ question, answer }) {
     <div className="border-b last:border-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-4 flex items-start justify-between text-left hover:text-[#D4AF37] transition-colors group"
+        className="w-full py-4 flex items-start justify-between text-left hover:text--emerald-500 transition-colors group"
       >
         <span className="font-medium pr-8 flex-1">{question}</span>
         <ChevronDown
-          className={`h-5 w-5 text-[#D4AF37] transition-transform flex-shrink-0 ${
+          className={`h-5 w-5 text--emerald-500 transition-transform flex-shrink-0 ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
@@ -217,10 +217,10 @@ function FAQCategory({ category }) {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <CardContent className="p-0">
-        <div className="bg-gradient-to-r from-[#D4AF37]/10 to-[#8B7355]/10 p-4 border-b">
+        <div className="bg-gradient-to-r from--emerald-500/10 to--emerald-600/10 p-4 border-b">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#D4AF37]/20 flex items-center justify-center">
-              <Icon className="h-5 w-5 text-[#D4AF37]" />
+            <div className="w-10 h-10 rounded-full bg--emerald-500/20 flex items-center justify-center">
+              <Icon className="h-5 w-5 text--emerald-500" />
             </div>
             <h3 className="font-semibold text-lg">{category.title}</h3>
           </div>
@@ -242,7 +242,7 @@ export default function FAQPage() {
       <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 border-b">
         <div className="container py-16">
           <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#D4AF37]/10 rounded-full text-sm font-semibold text-[#D4AF37] mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg--emerald-500/10 rounded-full text-sm font-semibold text--emerald-500 mb-6">
               <HelpCircle className="h-4 w-4" />
               Frequently Asked Questions
             </div>
@@ -266,7 +266,7 @@ export default function FAQPage() {
       </div>
 
       {/* Still Have Questions */}
-      <div className="bg-gradient-to-br from-[#D4AF37]/10 via-[#8B7355]/10 to-[#D4AF37]/10 border-y">
+      <div className="bg-gradient-to-br from--emerald-500/10 via--emerald-600/10 to--emerald-500/10 border-y">
         <div className="container py-16">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-4">Still Have Questions?</h2>
@@ -276,7 +276,7 @@ export default function FAQPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 rounded-full bg-[#D4AF37]/20 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 rounded-full bg--emerald-500/20 flex items-center justify-center mx-auto mb-4">
                     📧
                   </div>
                   <h3 className="font-semibold mb-2">Email Us</h3>
@@ -285,7 +285,7 @@ export default function FAQPage() {
                   </p>
                   <a
                     href={`mailto:${SUPPORT_EMAIL}`}
-                    className="text-sm text-[#D4AF37] hover:underline font-medium"
+                    className="text-sm text--emerald-500 hover:underline font-medium"
                   >
                     {SUPPORT_EMAIL}
                   </a>
@@ -294,7 +294,7 @@ export default function FAQPage() {
 
               <Card className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 rounded-full bg-[#D4AF37]/20 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 rounded-full bg--emerald-500/20 flex items-center justify-center mx-auto mb-4">
                     📞
                   </div>
                   <h3 className="font-semibold mb-2">Phone Support</h3>
@@ -303,7 +303,7 @@ export default function FAQPage() {
                   </p>
                   <a
                     href={PHONE_SUPPORT_LINK}
-                    className="text-sm text-[#D4AF37] hover:underline font-medium"
+                    className="text-sm text--emerald-500 hover:underline font-medium"
                   >
                     {PHONE_SUPPORT_LABEL}
                   </a>
@@ -312,7 +312,7 @@ export default function FAQPage() {
 
               <Card className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 rounded-full bg-[#D4AF37]/20 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 rounded-full bg--emerald-500/20 flex items-center justify-center mx-auto mb-4">
                     🛍️
                   </div>
                   <h3 className="font-semibold mb-2">Visit Markets</h3>
@@ -321,7 +321,7 @@ export default function FAQPage() {
                   </p>
                   <a
                     href="/markets"
-                    className="text-sm text-[#D4AF37] hover:underline font-medium"
+                    className="text-sm text--emerald-500 hover:underline font-medium"
                   >
                     See Market Locations
                   </a>

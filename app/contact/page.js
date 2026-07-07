@@ -74,12 +74,12 @@ export default function ContactPage() {
           <Card className="text-center">
             <CardContent className="pt-6">
               <div className="icon-container mx-auto mb-4">
-                <Mail className="h-6 w-6 text-[#D4AF37]" />
+                <Mail className="h-6 w-6 text--emerald-500" />
               </div>
               <h3 className="font-semibold mb-2">Email</h3>
               <a
                 href={`mailto:${SUPPORT_EMAIL}`}
-                className="text-sm text-muted-foreground hover:text-[#D4AF37] transition-colors"
+                className="text-sm text-muted-foreground hover:text--emerald-500 transition-colors"
               >
                 {SUPPORT_EMAIL}
               </a>
@@ -89,20 +89,20 @@ export default function ContactPage() {
           <Card className="text-center">
             <CardContent className="pt-6">
               <div className="icon-container mx-auto mb-4">
-                <Phone className="h-6 w-6 text-[#D4AF37]" />
+                <Phone className="h-6 w-6 text--emerald-500" />
               </div>
               <h3 className="font-semibold mb-2">Phone</h3>
               {HAS_PUBLIC_PHONE ? (
                 <a
                   href={CONTACT_PHONE_HREF}
-                  className="text-sm text-muted-foreground hover:text-[#D4AF37] transition-colors"
+                  className="text-sm text-muted-foreground hover:text--emerald-500 transition-colors"
                 >
                   {CONTACT_PHONE_DISPLAY}
                 </a>
               ) : (
                 <a
                   href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Phone Support Request')}`}
-                  className="text-sm text-muted-foreground hover:text-[#D4AF37] transition-colors"
+                  className="text-sm text-muted-foreground hover:text--emerald-500 transition-colors"
                 >
                   Request a callback by email
                 </a>
@@ -114,7 +114,7 @@ export default function ContactPage() {
           <Card className="text-center">
             <CardContent className="pt-6">
               <div className="icon-container mx-auto mb-4">
-                <MapPin className="h-6 w-6 text-[#D4AF37]" />
+                <MapPin className="h-6 w-6 text--emerald-500" />
               </div>
               <h3 className="font-semibold mb-2">Location</h3>
               <p className="text-sm text-muted-foreground">
@@ -186,7 +186,7 @@ export default function ContactPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-[#D4AF37] hover:bg-[#B8941F] text-white"
+                className="w-full bg--emerald-500 hover:bg--emerald-600 text-white"
                 size="lg"
               >
                 {isSubmitting ? 'Sending...' : 'Send Message'}

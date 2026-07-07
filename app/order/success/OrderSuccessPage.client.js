@@ -133,10 +133,10 @@ export default function OrderSuccessPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#D4AF37]/5 to-background flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from--emerald-500/5 to-background flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardContent className="p-8 text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-[#D4AF37]" />
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text--emerald-500" />
             <h3 className="text-lg font-semibold mb-2">Loading Order Details</h3>
             <p className="text-muted-foreground">Please wait while we fetch your order information...</p>
           </CardContent>
@@ -164,7 +164,7 @@ export default function OrderSuccessPage() {
               </Button>
               <Button
                 onClick={() => router.push('/')}
-                className="flex-1 bg-[#D4AF37] hover:bg-[#B8941F]"
+                className="flex-1 bg--emerald-500 hover:bg--emerald-600"
               >
                 <Home className="mr-2 h-4 w-4" />
                 Home
@@ -223,10 +223,10 @@ export default function OrderSuccessPage() {
               {(order?.fulfillment?.type === 'pickup_market' || order?.fulfillment?.type === 'pickup_dunwoody') && (
                 <div className="space-y-4">
                   {/* Pickup Code */}
-                  <div className="bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/5 border-2 border-[#D4AF37] rounded-lg p-6">
+                  <div className="bg-gradient-to-r from--emerald-500/20 to--emerald-500/5 border-2 border--emerald-500 rounded-lg p-6">
                     <div className="text-center">
                       <div className="text-sm text-muted-foreground mb-2 font-semibold">🎫 Your Pickup Code</div>
-                      <div className="text-5xl font-bold text-[#D4AF37] mb-3 tracking-wider">
+                      <div className="text-5xl font-bold text--emerald-500 mb-3 tracking-wider">
                         {order.orderNumber}
                       </div>
                       <div className="text-sm text-muted-foreground mb-4">
@@ -391,7 +391,7 @@ export default function OrderSuccessPage() {
                           {item.size} • Quantity: {item.quantity}
                         </div>
                         {item.rewardPoints && (
-                          <Badge className="mt-1 text-xs bg-[#D4AF37]/10 text-[#D4AF37]">
+                          <Badge className="mt-1 text-xs bg--emerald-500/10 text--emerald-500">
                             +{item.rewardPoints * item.quantity} pts
                           </Badge>
                         )}
@@ -428,7 +428,7 @@ export default function OrderSuccessPage() {
                   
                   <div className="border-t pt-2 flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span className="text-[#D4AF37]">${order?.pricing?.total?.toFixed(2) || order?.total?.toFixed(2)}</span>
+                    <span className="text--emerald-500">${order?.pricing?.total?.toFixed(2) || order?.total?.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -437,10 +437,10 @@ export default function OrderSuccessPage() {
 
           {/* Rewards Card */}
           {userPassport && (
-            <Card className="bg-gradient-to-r from-[#D4AF37]/5 to-[#D4AF37]/10 border-[#D4AF37]/20">
+            <Card className="bg-gradient-to-r from--emerald-500/5 to--emerald-500/10 border--emerald-500/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Star className="h-5 w-5 text-[#D4AF37]" />
+                  <Star className="h-5 w-5 text--emerald-500" />
                   Your Rewards
                 </CardTitle>
               </CardHeader>
@@ -455,7 +455,7 @@ export default function OrderSuccessPage() {
                   </div>
                   <div>
                     <div className="text-center p-4 bg-white/50 rounded-lg">
-                      <div className="text-2xl font-bold text-[#D4AF37] mb-1">{userPassport.points || 0}</div>
+                      <div className="text-2xl font-bold text--emerald-500 mb-1">{userPassport.points || 0}</div>
                       <div className="font-semibold">Reward Points</div>
                       <div className="text-sm text-muted-foreground">Available Balance</div>
                     </div>
@@ -497,7 +497,7 @@ export default function OrderSuccessPage() {
                 </div>
                 
                 <div className="flex items-start gap-3">
-                  <div className="h-5 w-5 bg-[#D4AF37] rounded-full mt-1 flex items-center justify-center">
+                  <div className="h-5 w-5 bg--emerald-500 rounded-full mt-1 flex items-center justify-center">
                     <div className="h-2 w-2 bg-white rounded-full"></div>
                   </div>
                   <div>
@@ -536,7 +536,7 @@ export default function OrderSuccessPage() {
             </Button>
             <Button
               onClick={() => router.push('/')}
-              className="flex-1 max-w-48 bg-[#D4AF37] hover:bg-[#B8941F]"
+              className="flex-1 max-w-48 bg--emerald-500 hover:bg--emerald-600"
             >
               <Home className="mr-2 h-4 w-4" />
               Back to Home

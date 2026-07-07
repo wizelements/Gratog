@@ -17,7 +17,7 @@ export default function SkipLinks() {
         <a
           key={link.href}
           href={link.href}
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-white focus:px-4 focus:py-2 focus:text-black focus:rounded-md focus:shadow-lg focus:ring-2 focus:ring-[#D4AF37] focus:ring-offset-2 focus:font-medium focus:text-sm"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-white focus:px-4 focus:py-2 focus:text-black focus:rounded-md focus:shadow-lg focus:ring-2 focus:ring--emerald-500 focus:ring-offset-2 focus:font-medium focus:text-sm"
         >
           {link.label}
         </a>
