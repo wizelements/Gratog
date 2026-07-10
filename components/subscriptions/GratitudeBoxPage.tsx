@@ -40,6 +40,7 @@ export default function GratitudeBoxPage({ markets, bundles }: GratitudeBoxPageP
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [paymentUrl, setPaymentUrl] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -62,12 +63,18 @@ export default function GratitudeBoxPage({ markets, bundles }: GratitudeBoxPageP
       });
       const data = await response.json();
       if (data.success) {
+        const nextPaymentUrl = data.payment?.url || '';
+        setPaymentUrl(nextPaymentUrl);
         setSuccess(true);
         track('gratitude_box_submit', {
           marketId: form.marketId,
           bundleId: form.bundleId,
           frequency: form.frequency,
+          status: nextPaymentUrl ? 'pending_payment' : 'waitlist',
         });
+        if (nextPaymentUrl) {
+          window.location.assign(nextPaymentUrl);
+        }
       } else {
         setError(data.error || 'Something went wrong');
       }
@@ -109,18 +116,28 @@ export default function GratitudeBoxPage({ markets, bundles }: GratitudeBoxPageP
           <div className="rounded-[2rem] border border-white/20 bg-white/95 p-5 text-stone-950 shadow-2xl shadow-emerald-950/40">
             <div className="rounded-[1.5rem] bg-emerald-50 p-4">
               <Package className="h-6 w-6 text-emerald-700" aria-hidden="true" />
-              <h2 className="mt-3 text-2xl font-semibold text-stone-950">Join the waitlist</h2>
+              <h2 className="mt-3 text-2xl font-semibold text-stone-950">Reserve your paid pilot box</h2>
               <p className="mt-2 text-sm leading-6 text-stone-600">
-                We are onboarding subscription members market by market. Reserve your spot and we will text you when billing is live.
+                If online payment is available, your first pilot box is reserved through secure Square checkout. If payment is not configured, we will keep you on the waitlist.
               </p>
               {success ? (
                 <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
                   <CheckCircle className="h-8 w-8 text-emerald-600" aria-hidden="true" />
-                  <p className="mt-3 font-semibold text-emerald-900">You are on the list.</p>
-                  <p className="mt-1 text-sm text-emerald-700">We will text you before your first Gratitude Box week.</p>
-                  <Button asChild className="mt-4 rounded-full bg-emerald-700 text-white hover:bg-emerald-800">
-                    <Link href="/weekly-menu">View this week&apos;s menu</Link>
-                  </Button>
+                  <p className="mt-3 font-semibold text-emerald-900">{paymentUrl ? 'Payment link ready.' : 'You are on the list.'}</p>
+                  <p className="mt-1 text-sm text-emerald-700">
+                    {paymentUrl
+                      ? 'Complete secure Square checkout to reserve your first Gratitude Box pilot week.'
+                      : 'We will text you before your first Gratitude Box week.'}
+                  </p>
+                  {paymentUrl ? (
+                    <Button asChild className="mt-4 rounded-full bg-emerald-700 text-white hover:bg-emerald-800">
+                      <a href={paymentUrl}>Complete secure payment</a>
+                    </Button>
+                  ) : (
+                    <Button asChild className="mt-4 rounded-full bg-emerald-700 text-white hover:bg-emerald-800">
+                      <Link href="/weekly-menu">View this week&apos;s menu</Link>
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="mt-5 space-y-4">
@@ -178,10 +195,10 @@ export default function GratitudeBoxPage({ markets, bundles }: GratitudeBoxPageP
                     disabled={loading}
                     className="w-full rounded-full bg-emerald-700 py-6 text-white hover:bg-emerald-800"
                   >
-                    {loading ? 'Saving your spot...' : 'Reserve my Gratitude Box'}
+                    {loading ? 'Creating secure checkout...' : 'Reserve my paid pilot box'}
                     <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
                   </Button>
-                  <p className="text-xs text-stone-500">No charge today. We will notify you before the first box is billed.</p>
+                  <p className="text-xs text-stone-500">Secure Square checkout is used when payment is configured. Otherwise this saves a waitlist request only.</p>
                 </form>
               )}
             </div>

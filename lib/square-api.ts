@@ -352,6 +352,120 @@ export async function getOrder(orderId: string): Promise<SquareResponse<{ order:
   return squareRequest(`/v2/orders/${orderId}`);
 }
 
+export interface CreatePaymentLinkRequest extends CreateOrderRequest {
+  description?: string;
+  redirectUrl?: string;
+  buyerEmail?: string;
+  buyerPhone?: string;
+}
+
+export interface PaymentLinkResult {
+  id: string;
+  version?: number;
+  orderId?: string;
+  url: string;
+  createdAt?: string;
+}
+
+export async function createPaymentLink(
+  req: CreatePaymentLinkRequest
+): Promise<SquareResponse<{ paymentLink: PaymentLinkResult }>> {
+  const locationId = getLocationId();
+  const idempotencyKey = req.idempotencyKey || randomUUID();
+
+  const lineItems = req.lineItems.map(item => {
+    const lineItem: Record<string, unknown> = {
+      name: item.name,
+      quantity: item.quantity,
+    };
+
+    if (item.catalogObjectId && item.catalogObjectId.length > 20 && /^[A-Z0-9]+$/i.test(item.catalogObjectId)) {
+      lineItem.catalog_object_id = item.catalogObjectId;
+    }
+
+    if (item.basePriceMoney) {
+      lineItem.base_price_money = {
+        amount: item.basePriceMoney.amount,
+        currency: item.basePriceMoney.currency
+      };
+    }
+
+    if (item.note) {
+      lineItem.note = item.note;
+    }
+
+    return lineItem;
+  });
+
+  const fulfillments = req.fulfillments?.map(f => ({
+    type: f.type,
+    state: f.state,
+    pickup_details: f.pickupDetails ? {
+      recipient: {
+        display_name: f.pickupDetails.recipient.displayName,
+        phone_number: f.pickupDetails.recipient.phoneNumber
+      },
+      schedule_type: f.pickupDetails.scheduleType,
+      pickup_at: f.pickupDetails.pickupAt,
+      note: f.pickupDetails.note
+    } : undefined,
+    shipment_details: f.shipmentDetails ? {
+      recipient: {
+        display_name: f.shipmentDetails.recipient.displayName,
+        phone_number: f.shipmentDetails.recipient.phoneNumber,
+        address: f.shipmentDetails.recipient.address ? {
+          address_line_1: f.shipmentDetails.recipient.address.addressLine1,
+          locality: f.shipmentDetails.recipient.address.locality,
+          administrative_district_level_1: f.shipmentDetails.recipient.address.administrativeDistrictLevel1,
+          postal_code: f.shipmentDetails.recipient.address.postalCode,
+          country: f.shipmentDetails.recipient.address.country || 'US'
+        } : undefined
+      },
+      shipping_note: f.shipmentDetails.shippingNote,
+      expected_shipped_at: f.shipmentDetails.expectedShippedAt
+    } : undefined
+  }));
+
+  const result = await squareRequest<{ payment_link: any }>('/v2/online-checkout/payment-links', 'POST', {
+    idempotency_key: idempotencyKey,
+    description: req.description,
+    order: {
+      location_id: locationId,
+      reference_id: req.referenceId,
+      customer_id: req.customerId,
+      line_items: lineItems,
+      fulfillments,
+      metadata: sanitizeMetadata(req.metadata)
+    },
+    checkout_options: req.redirectUrl ? {
+      redirect_url: req.redirectUrl,
+      ask_for_shipping_address: false,
+    } : undefined,
+    pre_populated_data: (req.buyerEmail || req.buyerPhone) ? {
+      buyer_email: req.buyerEmail,
+      buyer_phone_number: req.buyerPhone,
+    } : undefined,
+  });
+
+  if (result.success && result.data?.payment_link) {
+    const raw = result.data.payment_link;
+    return {
+      success: true,
+      data: {
+        paymentLink: {
+          id: raw.id,
+          version: raw.version,
+          orderId: raw.order_id,
+          url: raw.url,
+          createdAt: raw.created_at,
+        }
+      }
+    };
+  }
+
+  return { success: false, errors: result.errors };
+}
+
 export async function updateOrderState(
   orderId: string,
   state: 'COMPLETED' | 'CANCELED',

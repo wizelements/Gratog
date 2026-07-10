@@ -15,12 +15,18 @@ export type AnalyticsEvent =
   | 'ingredient_filter'
   | 'lead_form_view'
   | 'lead_captured'
+  | 'lead_capture_submitted'
+  | 'lead_capture_failed'
   | 'home_preorder_click'
   | 'catalog_preorder_click'
   | 'market_preorder_click'
   | 'preorder_started'
   | 'preorder_market_selected'
+  | 'preorder_item_added'
+  | 'preorder_item_removed'
+  | 'preorder_checkout_viewed'
   | 'preorder_submitted'
+  | 'preorder_failed'
   | 'preorder_minimum_error'
   | 'preorder_status_viewed'
   | 'weeklymenu_view'
@@ -85,12 +91,18 @@ const SERVER_TRACKED_EVENTS = new Set<string>([
   'ingredient_filter',
   'lead_form_view',
   'lead_captured',
+  'lead_capture_submitted',
+  'lead_capture_failed',
   'home_preorder_click',
   'catalog_preorder_click',
   'market_preorder_click',
   'preorder_started',
   'preorder_market_selected',
+  'preorder_item_added',
+  'preorder_item_removed',
+  'preorder_checkout_viewed',
   'preorder_submitted',
+  'preorder_failed',
   'preorder_minimum_error',
   'preorder_status_viewed',
   'weeklymenu_view',
@@ -105,12 +117,39 @@ const SERVER_TRACKED_EVENTS = new Set<string>([
   'winback_send',
   'weekly_warm_send',
   'checkout_started',
+  'checkout_stage_change',
+  'checkout_proceed_to_payment',
+  'checkout_validation_failed',
+  'checkout_fulfillment_incomplete',
   'checkout_abandoned',
   'fulfillment_type_selected',
+  'contact_completed',
+  'queue_joined',
+  'queue_join_failed',
   'order_created',
   'order_creation_failed',
+  'payment_initiated',
+  'payment_completed',
+  'payment_failed',
   'payment_success',
   'payment_error',
+  'payment_form_loaded',
+  'payment_tokenize_failed',
+  'checkout_payment_start',
+  'checkout_payment_sdk_load_success',
+  'checkout_payment_sdk_load_timeout',
+  'checkout_square_init_success',
+  'checkout_square_init_timeout',
+  'checkout_payment_mount_success',
+  'checkout_payment_mount_timeout',
+  'checkout_payment_ready',
+  'checkout_payment_processing',
+  'checkout_payment_success',
+  'checkout_payment_loading_sdk_fail',
+  'checkout_payment_initializing_fail',
+  'checkout_payment_mounting_fail',
+  'checkout_payment_processing_fail',
+  'field_completion_time',
 ]);
 
 function sendServerAnalytics(event: string, props: AnalyticsProps) {

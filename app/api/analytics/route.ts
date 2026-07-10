@@ -10,16 +10,75 @@ export const runtime = 'nodejs';
 const CLIENT_EVENT_MAP: Record<string, string> = {
   product_view: EVENT_TYPES.PRODUCT_VIEW,
   product_add_to_cart: EVENT_TYPES.PRODUCT_ADD_TO_CART,
+  product_lead_capture_shown: 'product_lead_capture_shown',
+  product_preorder_click: 'product_preorder_click',
   search_query: EVENT_TYPES.SEARCH_QUERY,
   search_suggestion_selected: EVENT_TYPES.SEARCH_QUERY,
   category_view: EVENT_TYPES.CATEGORY_VIEW,
   ingredient_filter: EVENT_TYPES.INGREDIENT_FILTER,
+  lead_form_view: 'lead_form_view',
+  lead_captured: 'lead_captured',
+  lead_capture_submitted: 'lead_capture_submitted',
+  lead_capture_failed: 'lead_capture_failed',
+  home_preorder_click: 'home_preorder_click',
+  catalog_preorder_click: 'catalog_preorder_click',
+  market_preorder_click: 'market_preorder_click',
+  preorder_view: 'preorder_view',
+  preorder_started: 'preorder_started',
+  preorder_market_selected: 'preorder_market_selected',
+  preorder_item_added: 'preorder_item_added',
+  preorder_item_removed: 'preorder_item_removed',
+  preorder_checkout_viewed: 'preorder_checkout_viewed',
+  preorder_submitted: 'preorder_submitted',
+  preorder_failed: 'preorder_failed',
+  preorder_minimum_error: 'preorder_minimum_error',
+  preorder_status_viewed: 'preorder_status_viewed',
+  weeklymenu_view: 'weeklymenu_view',
+  weeklymenu_preorder_click: 'weeklymenu_preorder_click',
+  weeklymenu_lead_submit: 'weeklymenu_lead_submit',
+  bundle_suggestion_view: 'bundle_suggestion_view',
+  bundle_suggestion_click: 'bundle_suggestion_click',
+  delivery_toggle: 'delivery_toggle',
+  delivery_quote: 'delivery_quote',
+  gratitude_box_view: 'gratitude_box_view',
+  gratitude_box_submit: 'gratitude_box_submit',
+  winback_send: 'winback_send',
+  weekly_warm_send: 'weekly_warm_send',
   checkout_started: EVENT_TYPES.CHECKOUT_START,
   checkout_start: EVENT_TYPES.CHECKOUT_START,
+  checkout_stage_change: 'checkout_stage_change',
+  checkout_proceed_to_payment: 'checkout_proceed_to_payment',
+  checkout_validation_failed: 'checkout_validation_failed',
+  checkout_fulfillment_incomplete: 'checkout_fulfillment_incomplete',
   checkout_abandoned: EVENT_TYPES.CHECKOUT_ABANDON,
+  fulfillment_type_selected: 'fulfillment_type_selected',
+  contact_completed: 'contact_completed',
+  queue_joined: 'queue_joined',
+  queue_join_failed: 'queue_join_failed',
   order_created: EVENT_TYPES.CHECKOUT_START,
+  order_creation_failed: 'order_creation_failed',
+  payment_initiated: EVENT_TYPES.PAYMENT_INITIATED,
+  payment_completed: EVENT_TYPES.PAYMENT_SUCCESS,
+  payment_failed: EVENT_TYPES.PAYMENT_FAILED,
   payment_success: EVENT_TYPES.PAYMENT_SUCCESS,
   payment_error: EVENT_TYPES.PAYMENT_FAILED,
+  payment_form_loaded: 'payment_form_loaded',
+  payment_tokenize_failed: 'payment_tokenize_failed',
+  checkout_payment_start: 'checkout_payment_start',
+  checkout_payment_sdk_load_success: 'checkout_payment_sdk_load_success',
+  checkout_payment_sdk_load_timeout: 'checkout_payment_sdk_load_timeout',
+  checkout_square_init_success: 'checkout_square_init_success',
+  checkout_square_init_timeout: 'checkout_square_init_timeout',
+  checkout_payment_mount_success: 'checkout_payment_mount_success',
+  checkout_payment_mount_timeout: 'checkout_payment_mount_timeout',
+  checkout_payment_ready: 'checkout_payment_ready',
+  checkout_payment_processing: 'checkout_payment_processing',
+  checkout_payment_success: 'checkout_payment_success',
+  checkout_payment_loading_sdk_fail: 'checkout_payment_loading_sdk_fail',
+  checkout_payment_initializing_fail: 'checkout_payment_initializing_fail',
+  checkout_payment_mounting_fail: 'checkout_payment_mounting_fail',
+  checkout_payment_processing_fail: 'checkout_payment_processing_fail',
+  field_completion_time: 'field_completion_time',
 };
 
 function sanitizeMetricKey(value: unknown): string {
@@ -42,12 +101,44 @@ function sanitizeAnalyticsData(eventType: string, properties: Record<string, any
     'resultsCount',
     'ingredient',
     'fulfillmentType',
+    'type',
     'marketId',
+    'marketName',
     'orderId',
+    'orderNumber',
+    'waitlistNumber',
     'total',
     'amount',
+    'subtotal',
+    'cartTotal',
+    'remaining',
+    'itemCount',
+    'quantity',
+    'price',
+    'zip',
+    'zone',
+    'fee',
+    'freeDelivery',
+    'field',
+    'time_ms',
     'error',
     'code',
+    'source',
+    'path',
+    'intent',
+    'stage',
+    'step',
+    'reason',
+    'form',
+    'route',
+    'href',
+    'bundleId',
+    'frequency',
+    'utmSource',
+    'utmCampaign',
+    'recipientCount',
+    'dryRun',
+    'status',
   ];
 
   for (const key of allowedKeys) {
@@ -208,13 +299,18 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const rawEvent = String(body.event || body.type || '').trim();
-    const eventType = CLIENT_EVENT_MAP[rawEvent];
+    const eventType = CLIENT_EVENT_MAP[rawEvent] || (/^checkout_payment_[a-z0-9_-]+_fail$/i.test(rawEvent) ? rawEvent : undefined);
 
     if (!eventType) {
       return NextResponse.json({ success: false, error: 'Unsupported analytics event' }, { status: 400 });
     }
 
-    const properties = body.properties && typeof body.properties === 'object' ? body.properties : {};
+    const properties = body.properties && typeof body.properties === 'object' ? { ...body.properties } : {};
+    for (const key of ['source', 'path', 'intent', 'marketId', 'orderId', 'total', 'amount']) {
+      if (body[key] !== undefined && properties[key] === undefined) {
+        properties[key] = body[key];
+      }
+    }
     const data = sanitizeAnalyticsData(eventType, properties);
     const forwardedFor = request.headers.get('x-forwarded-for') || '';
 

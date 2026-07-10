@@ -126,6 +126,15 @@ async function findLocalOrder(db: any, payment: any): Promise<any | null> {
       });
       return marketOrder;
     }
+
+    const subscriptionIntent = await db.collection('subscription_intents').findOne({ id: payment.reference_id });
+    if (subscriptionIntent) {
+      logger.debug('Webhook', 'Found subscription intent via payment.reference_id', {
+        subscriptionIntentId: subscriptionIntent.id,
+        referenceId: payment.reference_id,
+      });
+      return subscriptionIntent;
+    }
   }
   
   // Strategy 2: Use Square order_id to look up order with that squareOrderId
@@ -148,6 +157,15 @@ async function findLocalOrder(db: any, payment: any): Promise<any | null> {
         squareOrderId: payment.order_id 
       });
       return marketOrder;
+    }
+
+    const subscriptionIntent = await db.collection('subscription_intents').findOne({ squareOrderId: payment.order_id });
+    if (subscriptionIntent) {
+      logger.debug('Webhook', 'Found subscription intent via squareOrderId', {
+        subscriptionIntentId: subscriptionIntent.id,
+        squareOrderId: payment.order_id,
+      });
+      return subscriptionIntent;
     }
   }
   
@@ -268,6 +286,7 @@ async function updateOrderStatusSafe(
     });
     
     if (marketOrder) {
+      const previousStatus = marketOrder.status;
       const currentPrecedence = STATUS_PRECEDENCE[marketOrder.status] || 0;
       const newPrecedence = STATUS_PRECEDENCE[newStatus] || 0;
       
@@ -296,18 +315,30 @@ async function updateOrderStatusSafe(
       
       // Update MarketOrder
       marketOrder.status = mappedStatus as any;
+      marketOrder.paymentProvider = 'square';
+      if (updateFields.squareOrderId) {
+        marketOrder.squareOrderId = updateFields.squareOrderId;
+      }
       if (updateFields.squarePaymentId) {
-        marketOrder.squareOrderId = updateFields.squarePaymentId;
+        marketOrder.squarePaymentId = updateFields.squarePaymentId;
+      }
+      if (typeof updateFields.amountPaid === 'number') {
+        marketOrder.amountPaid = updateFields.amountPaid;
+      }
+      if (typeof updateFields.balanceDue === 'number') {
+        marketOrder.balanceDue = updateFields.balanceDue;
       }
       if (updateFields.paidAt) {
         marketOrder.paymentStatus = 'PAID';
+      } else if (newStatus === 'payment_failed') {
+        marketOrder.paymentStatus = 'FAILED';
       }
       await marketOrder.save();
       
       logger.info('Webhook', 'MarketOrder status updated', {
         orderId: marketOrder._id.toString(),
         orderNumber: marketOrder.orderNumber,
-        previousStatus: marketOrder.status,
+        previousStatus,
         newStatus: mappedStatus
       });
       
@@ -318,6 +349,42 @@ async function updateOrderStatusSafe(
       orderId,
       error: marketOrderError instanceof Error ? marketOrderError.message : String(marketOrderError)
     });
+  }
+
+  const subscriptionStatus = newStatus === 'CONFIRMED'
+    ? 'active_pilot'
+    : newStatus === 'payment_failed'
+      ? 'payment_failed'
+      : 'pending_payment';
+  const subscriptionBillingStatus = newStatus === 'CONFIRMED'
+    ? 'paid'
+    : newStatus === 'payment_failed'
+      ? 'failed'
+      : 'pending_payment';
+  const subscriptionUpdate = await db.collection('subscription_intents').updateOne(
+    { id: orderId },
+    {
+      $set: {
+        status: subscriptionStatus,
+        billingStatus: subscriptionBillingStatus,
+        paymentProvider: 'square',
+        squareOrderId: updateFields.squareOrderId,
+        squarePaymentId: updateFields.squarePaymentId,
+        amountPaid: updateFields.amountPaid,
+        balanceDue: updateFields.balanceDue,
+        paidAt: updateFields.paidAt,
+        paymentStatus: updateFields.paymentStatus,
+        updatedAt: new Date(),
+      }
+    }
+  );
+  if (subscriptionUpdate.modifiedCount > 0) {
+    logger.info('Webhook', 'Subscription intent payment status updated', {
+      orderId,
+      newStatus: subscriptionStatus,
+      billingStatus: subscriptionBillingStatus,
+    });
+    return true;
   }
   
   logger.warn('Webhook', 'Order not found for status update', { orderId });
@@ -622,6 +689,7 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
   
   // Build update fields
   const updateFields: Record<string, any> = {
+    squareOrderId: payment.order_id,
     squarePaymentId: payment.id,
     paymentStatus: payment.status,
     receiptUrl: payment.receipt_url,
@@ -631,6 +699,9 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
   
   if (isCompleted) {
     updateFields.paidAt = new Date().toISOString();
+    const paidAmountCents = Number(payment.total_money?.amount ?? payment.amount_money?.amount ?? 0);
+    updateFields.amountPaid = paidAmountCents > 0 ? paidAmountCents / 100 : undefined;
+    updateFields.balanceDue = 0;
   }
   
   // Update with precedence check

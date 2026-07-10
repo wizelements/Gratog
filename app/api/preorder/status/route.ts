@@ -66,6 +66,12 @@ export async function GET(request: any) {
         items: preorder.items,
         subtotal: preorder.subtotal,
         total: preorder.total,
+        paymentMethod: preorder.paymentMethod,
+        paymentProvider: preorder.paymentProvider,
+        paymentStatus: preorder.paymentStatus,
+        amountPaid: preorder.amountPaid ?? 0,
+        balanceDue: preorder.balanceDue ?? preorder.total,
+        paymentUrl: preorder.paymentStatus === 'PENDING' ? preorder.paymentUrl || null : null,
         customer: {
           name: preorder.customerName,
           phone: preorder.customerPhone,
@@ -94,7 +100,8 @@ export async function POST(request: any) {
     const { orderNumber, status, staffKey } = data;
 
     // Staff authentication
-    if (staffKey !== process.env.PREORDER_STAFF_KEY) {
+    const configuredStaffKey = process.env.PREORDER_STAFF_KEY;
+    if (!configuredStaffKey || staffKey !== configuredStaffKey) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }

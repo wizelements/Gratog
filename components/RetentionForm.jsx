@@ -67,7 +67,7 @@ export default function RetentionForm({
       if (!response.ok || !data.success) {
         throw new Error(data.error || 'Please try again.');
       }
-      track('lead_captured', {
+      track('lead_capture_submitted', {
         intent,
         source,
         hasEmail: Boolean(form.email),
@@ -80,6 +80,13 @@ export default function RetentionForm({
       setForm({ name: '', email: '', phone: '', message: '', website: '', marketId: defaultMarket || '' });
       if (typeof onSuccess === 'function') onSuccess(data);
     } catch (err) {
+      track('lead_capture_failed', {
+        intent,
+        source,
+        error: err.message || 'unknown',
+        marketId: form.marketId || safeMetadata.marketId || safeMetadata.landingMarketId || null,
+        ...safeMetadata,
+      });
       setError(err.message || 'Please try again.');
     } finally {
       setLoading(false);

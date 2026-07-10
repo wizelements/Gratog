@@ -69,6 +69,8 @@ interface PreorderStatus {
   items: Array<{ name: string; quantity: number; price: number }>;
   total: number;
   estimatedTime?: string | null;
+  customerEmail?: string | null;
+  customerPhone?: string | null;
 }
 
 function normalizeStatus(status: string): keyof typeof STATUS_CONFIG {
@@ -93,6 +95,8 @@ function toOrderStatus(preorder: any): PreorderStatus {
     items: Array.isArray(preorder.items) ? preorder.items : [],
     total: Number(preorder.total || preorder.subtotal || 0),
     estimatedTime: preorder.estimatedReadyTime || null,
+    customerEmail: preorder.customer?.email || preorder.customerEmail || null,
+    customerPhone: preorder.customer?.phone || preorder.customerPhone || null,
   };
 }
 
@@ -112,6 +116,126 @@ function getStatusProgress(status: keyof typeof STATUS_CONFIG, currentPosition: 
   if (status === 'ready') return 90;
   if (status === 'preparing') return 65;
   return Math.max(12, Math.min(45, 52 - Math.max(1, currentPosition) * 4));
+}
+
+function StatusBanner({ confirm, cancel }: { confirm?: string | null; cancel?: string | null }) {
+  if (confirm === 'confirmed') {
+    return (
+      <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
+        <strong>Pickup confirmed.</strong> We will have your order ready at the market. You can still check status here anytime.
+      </div>
+    );
+  }
+  if (confirm === 'already_confirmed') {
+    return (
+      <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
+        Your pickup was already confirmed. See you at the market.
+      </div>
+    );
+  }
+  if (cancel === 'cancelled') {
+    return (
+      <div className="p-4 rounded-xl bg-stone-100 border border-stone-200 text-stone-700 text-sm">
+        Your preorder has been cancelled. If this was a mistake, please place a new preorder or contact us.
+      </div>
+    );
+  }
+  if (cancel === 'already_cancelled') {
+    return (
+      <div className="p-4 rounded-xl bg-stone-100 border border-stone-200 text-stone-700 text-sm">
+        This order was already cancelled.
+      </div>
+    );
+  }
+  return null;
+}
+
+function RetentionCTA({ order }: { order: PreorderStatus }) {
+  const [state, setState] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [email, setEmail] = useState(order.customerEmail || '');
+
+  const submit = async (emailToUse: string) => {
+    if (!emailToUse || !emailToUse.includes('@')) return;
+    setState('submitting');
+    try {
+      const response = await fetch('/api/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: emailToUse.toLowerCase().trim(),
+          intent: 'weekly_menu_texts',
+          source: 'preorder_status_followup',
+          metadata: {
+            marketId: order.marketId || null,
+            orderNumber: order.orderNumber || null,
+          },
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || 'Try again.');
+      track('lead_capture_submitted', {
+        intent: 'weekly_menu_texts',
+        source: 'preorder_status_followup',
+        hasEmail: true,
+        marketId: order.marketId || null,
+        orderNumber: order.orderNumber || null,
+      });
+      setState('success');
+    } catch (err: any) {
+      track('lead_capture_failed', {
+        intent: 'weekly_menu_texts',
+        source: 'preorder_status_followup',
+        error: err.message || 'unknown',
+        marketId: order.marketId || null,
+      });
+      setState('error');
+    }
+  };
+
+  if (state === 'success') {
+    return (
+      <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
+        <strong>You are on the list.</strong> We will email you next week&apos;s menu for this market.
+      </div>
+    );
+  }
+
+  const hasEmail = Boolean(order.customerEmail);
+
+  return (
+    <div className="p-4 rounded-xl border border-emerald-100 bg-white">
+      <h3 className="font-semibold text-stone-900 text-sm mb-1">Get next week&apos;s menu</h3>
+      {hasEmail ? (
+        <p className="text-sm text-stone-600 mb-3">
+          We can email {order.customerEmail} the menu for {order.marketName || 'this market'} next week.
+        </p>
+      ) : (
+        <p className="text-sm text-stone-600 mb-3">
+          Add your email to get the next menu drop. We do not send texts without an explicit text opt-in.
+        </p>
+      )}
+      <div className="flex gap-2">
+        <Input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email address"
+          className="flex-1 text-sm"
+          disabled={state === 'submitting'}
+        />
+        <Button
+          onClick={() => submit(email)}
+          disabled={state === 'submitting' || !email.includes('@')}
+          className="bg-emerald-700 text-white hover:bg-emerald-800 text-sm"
+        >
+          {state === 'submitting' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Email me the menu'}
+        </Button>
+      </div>
+      {state === 'error' && (
+        <p className="text-xs text-red-600 mt-2">Something went wrong. Please try again.</p>
+      )}
+    </div>
+  );
 }
 
 function OrderStatusCard({ order }: { order: PreorderStatus }) {
@@ -382,6 +506,10 @@ function OrderStatusContent() {
             </div>
 
             <OrderStatusCard order={order} />
+
+            <StatusBanner confirm={searchParams.get('confirm')} cancel={searchParams.get('cancel')} />
+
+            <RetentionCTA order={order} />
 
             <div className="grid gap-3 sm:grid-cols-2">
               <Button asChild className="rounded-full bg-emerald-700 text-white hover:bg-emerald-800">

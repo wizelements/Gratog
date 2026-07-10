@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { generatePreorderNumber, getEstimatedWaitTime } from '@/lib/preorder/waitlist';
-import { getNextWaitlistNumber, createPreorder, findPreorderByOrderNumber } from '@/lib/preorder/repository';
+import { getNextWaitlistNumber, createPreorder, findPreorderByOrderNumber, updatePreorderPaymentFields } from '@/lib/preorder/repository';
 import { MARKET_CONFIGS, isPastCutoff, isValidMarketId, getNextMarketDate, PREORDER_RULES } from '@/lib/preorder/rules';
 import { notifySquareTeam } from '@/lib/preorder/square-notifications';
 import { createLogger } from '@/lib/logger';
@@ -16,6 +16,7 @@ import { sanitizeObject } from '@/lib/validation/sanitize';
 import { validateCustomerData } from '@/lib/validation/customer';
 import { validatePreorderMinimum } from '@/lib/cart-engine';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
+import { createPaymentLink } from '@/lib/square-api';
 
 const logger = createLogger('PreorderAPI');
 
@@ -79,6 +80,14 @@ function getPreorderMetadata(data: any) {
     utmCampaign: metadata.utmCampaign || data?.utmCampaign || null,
     capturedAt: new Date().toISOString(),
   };
+}
+
+function isSquarePaymentConfigured() {
+  return Boolean(process.env.SQUARE_ACCESS_TOKEN && process.env.SQUARE_LOCATION_ID);
+}
+
+function getAppBaseUrl(request: any) {
+  return (process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || new URL(request.url).origin).replace(/\/$/, '');
 }
 
 async function resolvePreorderCartItems(submittedItems: any[]) {
@@ -192,6 +201,18 @@ export async function POST(request: any) {
       );
     }
 
+    const payAtPickupFallback = data.paymentMode === 'pay_at_pickup';
+    if (!payAtPickupFallback && !isSquarePaymentConfigured()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Online preorder payment is not configured. Please contact Taste of Gratitude to order manually.',
+          code: 'PAYMENT_CONFIGURATION_MISSING',
+        },
+        { status: 503 }
+      );
+    }
+
     // Get market info from centralized config
     const marketConfig = MARKET_CONFIGS[data.marketId as keyof typeof MARKET_CONFIGS];
     const pickupDate = getNextMarketDate(marketConfig.day);
@@ -211,6 +232,7 @@ export async function POST(request: any) {
     const orderNumber = generatePreorderNumber();
     const total = subtotal; // TAX_RATE is 0 for market sales
     const preorderMetadata = getPreorderMetadata(data);
+    const totalCents = Math.round(total * 100);
 
     const items = preorderCartItems.map((item: any) => ({
       productId: item.productId || item.id,
@@ -235,9 +257,13 @@ export async function POST(request: any) {
       subtotal,
       tax: PREORDER_RULES.TAX_RATE,
       total,
-      status: 'PENDING_CONFIRMATION',
-      paymentMethod: 'PAY_AT_PICKUP',
+      totalCents,
+      status: payAtPickupFallback ? 'PENDING_CONFIRMATION' : 'PENDING_PAYMENT',
+      paymentMethod: payAtPickupFallback ? 'PAY_AT_PICKUP' : 'SQUARE_ONLINE',
+      paymentProvider: payAtPickupFallback ? 'manual' : 'square',
       paymentStatus: 'PENDING',
+      amountPaid: 0,
+      balanceDue: total,
       notes: data.notes || null,
       metadata: preorderMetadata,
       source: preorderMetadata.source,
@@ -250,6 +276,83 @@ export async function POST(request: any) {
       pickupHours: marketConfig.hours,
     });
 
+    let payment: null | {
+      provider: 'square';
+      status: 'PENDING';
+      url: string;
+      paymentLinkId: string;
+      squareOrderId?: string;
+      amountDue: number;
+    } = null;
+
+    if (!payAtPickupFallback) {
+      const appBaseUrl = getAppBaseUrl(request);
+      const paymentLineItems = preorderCartItems.map((item: any) => ({
+        catalogObjectId: item.catalogObjectId,
+        name: String(item.name || 'Preorder item').slice(0, 255),
+        quantity: String(item.quantity || 1),
+        basePriceMoney: { amount: Number(item.priceCents) || Math.round((Number(item.price) || 0) * 100), currency: 'USD' },
+      }));
+
+      const paymentResult = await createPaymentLink({
+        referenceId: orderNumber,
+        lineItems: paymentLineItems,
+        description: `Taste of Gratitude preorder ${orderNumber}`,
+        redirectUrl: `${appBaseUrl}/preorder/status?orderNumber=${encodeURIComponent(orderNumber)}&payment=return`,
+        buyerEmail: data.customer.email || undefined,
+        buyerPhone: data.customer.phone || undefined,
+        metadata: {
+          localOrderId: orderNumber,
+          orderNumber,
+          waitlistNumber,
+          source: 'preorder_payment_link',
+        },
+        idempotencyKey: `preorder_link_${orderNumber}`,
+      });
+
+      const paymentLink = paymentResult.data?.paymentLink;
+      if (!paymentResult.success || !paymentLink?.url) {
+        const detail = paymentResult.errors?.[0]?.detail || paymentResult.errors?.[0]?.code || 'Square payment link creation failed';
+        await updatePreorderPaymentFields(orderNumber, {
+          paymentStatus: 'FAILED',
+          paymentError: detail,
+          paymentProvider: 'square',
+          amountPaid: 0,
+          balanceDue: total,
+        });
+
+        logger.error('Preorder payment link creation failed', { orderNumber, detail });
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Could not create secure payment link. Please try again or contact Taste of Gratitude.',
+            code: 'PAYMENT_LINK_FAILED',
+            orderNumber,
+          },
+          { status: 502 }
+        );
+      }
+
+      await updatePreorderPaymentFields(orderNumber, {
+        paymentLinkId: paymentLink.id,
+        paymentUrl: paymentLink.url,
+        squareOrderId: paymentLink.orderId || null,
+        paymentProvider: 'square',
+        paymentStatus: 'PENDING',
+        amountPaid: 0,
+        balanceDue: total,
+      });
+
+      payment = {
+        provider: 'square',
+        status: 'PENDING',
+        url: paymentLink.url,
+        paymentLinkId: paymentLink.id,
+        squareOrderId: paymentLink.orderId,
+        amountDue: total,
+      };
+    }
+
     logger.info('Preorder persisted to MongoDB', {
       orderNumber,
       waitlistNumber,
@@ -257,27 +360,29 @@ export async function POST(request: any) {
       _id: dbOrder._id,
     });
 
-    // Notify Square team (non-blocking)
-    notifySquareTeam({
-      orderNumber,
-      waitlistNumber,
-      customer: {
-        name: data.customer.name,
-        email: data.customer.email,
-        phone: data.customer.phone,
-      },
-      items,
-      pickupLocation: marketConfig.name,
-      pickupDate: pickupDateStr,
-      pickupHours: marketConfig.hours,
-      subtotal,
-      notes: data.notes || null,
-    }).catch((err: any) => {
-      logger.error('Failed to notify Square team', {
-        error: err.message,
+    if (payAtPickupFallback) {
+      // Manual/admin fallback only. Normal storefront preorders require online payment first.
+      notifySquareTeam({
         orderNumber,
+        waitlistNumber,
+        customer: {
+          name: data.customer.name,
+          email: data.customer.email,
+          phone: data.customer.phone,
+        },
+        items,
+        pickupLocation: marketConfig.name,
+        pickupDate: pickupDateStr,
+        pickupHours: marketConfig.hours,
+        subtotal,
+        notes: data.notes || null,
+      }).catch((err: any) => {
+        logger.error('Failed to notify Square team', {
+          error: err.message,
+          orderNumber,
+        });
       });
-    });
+    }
 
     return NextResponse.json({
       success: true,
@@ -296,7 +401,9 @@ export async function POST(request: any) {
         pickupHours: marketConfig.hours,
         estimatedTime: getEstimatedWaitTime(counter),
         marketId: data.marketId,
+        paymentStatus: payAtPickupFallback ? 'PENDING' : 'PENDING_PAYMENT',
       },
+      payment,
     });
   } catch (error: any) {
     logger.error('Preorder creation error', { error: error.message });
@@ -354,6 +461,12 @@ export async function GET(request: any) {
         items: preorder.items,
         subtotal: preorder.subtotal,
         total: preorder.total,
+        paymentMethod: preorder.paymentMethod,
+        paymentProvider: preorder.paymentProvider,
+        paymentStatus: preorder.paymentStatus,
+        amountPaid: preorder.amountPaid ?? 0,
+        balanceDue: preorder.balanceDue ?? preorder.total,
+        paymentUrl: preorder.paymentStatus === 'PENDING' ? preorder.paymentUrl || null : null,
         customer: {
           name: preorder.customerName,
           phone: preorder.customerPhone,
