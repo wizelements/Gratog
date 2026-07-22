@@ -61,19 +61,19 @@ export async function POST(request: NextRequest) {
         bundle: recommendation.bundle.id,
         reason: recommendation.reason,
       },
-      source: 'wellness_quiz',
+      source: 'product_quiz',
       createdAt: now,
       updatedAt: now,
     });
 
     await db.collection('lead_intents').updateOne(
-      { email: normalizedEmail, intent: 'wellness_quiz' },
+      { email: normalizedEmail, intent: 'product_quiz' },
       {
         $set: {
           email: normalizedEmail,
           phone: customer.phone?.trim() || null,
           name: customer.name?.trim() || null,
-          intent: 'wellness_quiz',
+          intent: 'product_quiz',
           source: 'quiz',
           metadata: { answers, recommendation: recommendation.primary.id, smsOptIn: Boolean(customer.smsOptIn) },
           updatedAt: now,

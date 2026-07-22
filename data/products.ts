@@ -87,7 +87,7 @@ export const PRODUCTS: MarketProduct[] = [
     sizes: ['16oz bottle'],
     ingredients: ['Basil', 'Chlorophyll', 'Ginger', 'Lemon', 'Sea Moss', 'Agave', 'Alkaline Water'],
     shortDescription: 'A bright green lemonade with basil, ginger, lemon, chlorophyll, and sea moss.',
-    fullDescription: 'Kissed by Gods is the green drink customers ask about first at the market: herbaceous basil, zesty lemon, warming ginger, chlorophyll, and mineral-rich sea moss blended into a crisp lemonade that feels clean without tasting grassy.',
+    fullDescription: 'Kissed by Gods is the green drink customers ask about first at the market: herbaceous basil, zesty lemon, warming ginger, chlorophyll, and sea moss blended into a crisp lemonade that feels clean without tasting grassy.',
     flavorNotes: 'Fresh basil up front, bright lemon in the middle, and a gentle ginger finish.',
     wellnessSupport: ['Daily minerals', 'Hydration routine', 'Green reset', 'Gentle energy'],
     recommendedUse: 'Sip chilled in the morning, after a walk, or as your first green drink of the week.',
@@ -505,16 +505,16 @@ export const PRODUCTS: MarketProduct[] = [
   {
     id: 'healing-harmony-gel',
     slug: 'healing-harmony-gel',
-    name: 'Healing Harmony Gel',
+    name: 'Soursop Spice Sea Moss Gel',
     category: 'gels',
     weeklyStatus: 'active',
     price: 35,
     sizes: ['16oz jar'],
     ingredients: ['Sea Moss', 'Soursop', 'Cinnamon', 'Star Anise', 'Alkaline Water'],
     shortDescription: 'A warm-spiced soursop sea moss gel with cinnamon and star anise.',
-    fullDescription: 'Healing Harmony Gel is a warm, aromatic jar with soursop, cinnamon, star anise, sea moss, and alkaline water. It is comforting without being heavy and fits beautifully into teas, smoothies, and evening routines.',
+    fullDescription: 'Soursop Spice Sea Moss Gel is a warm, aromatic jar with soursop, cinnamon, star anise, sea moss, and alkaline water. It is comforting without being heavy and fits beautifully into teas, smoothies, and evening routines.',
     flavorNotes: 'Creamy soursop, warm cinnamon, aromatic anise, and a smooth finish.',
-    wellnessSupport: ['Immune routine', 'Digestion routine', 'Evening routine', 'Daily minerals'],
+    wellnessSupport: ['Evening routine', 'Warm-spice flavor', 'Daily spoonful'],
     recommendedUse: 'Add 1–2 tablespoons to tea, smoothies, oats, or take chilled when you want a cozy gel.',
     allergens: [],
     pickupAvailability: 'Prepared in weekly gel batches; preorder recommended.',
@@ -523,15 +523,15 @@ export const PRODUCTS: MarketProduct[] = [
     featured: true,
     seasonal: false,
     image: 'https://127690646.cdn6.editmysite.com/uploads/1/2/7/6/127690646/ZHB653PNM4Q6HSEPML2YQRPP.jpeg',
-    seoTitle: 'Healing Harmony Soursop Sea Moss Gel | Taste of Gratitude',
-    seoDescription: 'Healing Harmony Gel blends sea moss, soursop, cinnamon, and star anise for a warm weekly wellness routine.',
+    seoTitle: 'Soursop Spice Sea Moss Gel | Taste of Gratitude',
+    seoDescription: 'Soursop Spice Sea Moss Gel blends sea moss, soursop, cinnamon, and star anise for a warm weekly wellness routine.',
     activeWeeklyMenu: true,
     soldOut: false,
     preorderOnly: true,
     marketPickupOnly: false,
     squareProductUrl: 'https://tasteofgratitude.shop/s/order?add=healing-harmony',
     pairings: ['supplemint', 'grateful-defense'],
-    tags: ['gel', 'soursop', 'warm-spice', 'immune'],
+    tags: ['gel', 'soursop', 'warm-spice', 'evening'],
   },
   {
     id: 'elderberry-apple-gel',
@@ -543,9 +543,9 @@ export const PRODUCTS: MarketProduct[] = [
     sizes: ['16oz jar'],
     ingredients: ['Sea Moss', 'Elderberry', 'Apple', 'Ginger', 'Lemon', 'Alkaline Water'],
     shortDescription: 'Elderberry, apple, ginger, lemon, and sea moss in a fruit-forward gel.',
-    fullDescription: 'Elderberry Apple Gel is a fruit-forward jar for weekly immune-season routines. Elderberry and apple make it familiar, ginger and lemon keep it bright, and sea moss anchors the gel in the Taste of Gratitude mineral routine.',
+    fullDescription: 'Elderberry Apple Gel is a fruit-forward jar for weekly routines. Elderberry and apple make it familiar, ginger and lemon keep it bright, and sea moss anchors the gel in the Taste of Gratitude routine.',
     flavorNotes: 'Deep berry, apple sweetness, lemon brightness, and ginger warmth.',
-    wellnessSupport: ['Immune routine', 'Daily minerals', 'Family-friendly flavor'],
+    wellnessSupport: ['Fruit-forward flavor', 'Daily routine', 'Family-friendly flavor'],
     recommendedUse: 'Take chilled by the spoonful or blend into smoothies when you want a berry-forward gel.',
     allergens: [],
     pickupAvailability: 'Prepared in weekly gel batches; preorder recommended.',
@@ -562,7 +562,7 @@ export const PRODUCTS: MarketProduct[] = [
     marketPickupOnly: false,
     squareProductUrl: 'https://tasteofgratitude.shop/s/order?add=elderberry-moss',
     pairings: ['strawberry-bliss', 'grateful-defense'],
-    tags: ['gel', 'elderberry', 'apple', 'immune'],
+    tags: ['gel', 'elderberry', 'apple', 'routine'],
   },
   {
     id: 'golden-glow-gel',
@@ -607,7 +607,7 @@ export const PRODUCTS: MarketProduct[] = [
     shortDescription: 'A hibiscus-cranberry sea moss gel with citrus, ginger, turmeric, and bee pollen.',
     fullDescription: 'Floral Tide Gel is the bold floral jar: hibiscus, cranberry, pineapple, orange, lemon, turmeric, ginger, agave, bee pollen, and sea moss. It is tart, colorful, and made for customers who like layered flavor.',
     flavorNotes: 'Tart hibiscus, cranberry depth, citrus brightness, and ginger warmth.',
-    wellnessSupport: ['Skin/glow routine', 'Immune routine', 'Daily minerals', 'Flavor adventure'],
+    wellnessSupport: ['Glow routine', 'Daily routine', 'Flavor adventure'],
     recommendedUse: 'Take chilled, blend into berry smoothies, or pair with Strawberry Rose Ginger for a floral routine.',
     allergens: ['Bee pollen'],
     pickupAvailability: 'Prepared in weekly gel batches; preorder recommended.',
@@ -638,7 +638,7 @@ export const PRODUCTS: MarketProduct[] = [
     shortDescription: 'A tart floral wellness shot with jalapeño heat, citrus, cranberry, hibiscus, and sea moss.',
     fullDescription: 'Spicy Bloom is the quick market wake-up: tart hibiscus and cranberry, tropical pineapple and orange, lemon, jalapeño heat, agave, and sea moss. It is small but memorable.',
     flavorNotes: 'Tart floral fruit with a jalapeño finish.',
-    wellnessSupport: ['Energy routine', 'Immune routine', 'Quick reset', 'Daily minerals'],
+    wellnessSupport: ['Energy routine', 'Daily routine', 'Quick reset'],
     recommendedUse: 'Take chilled as a 2oz shot before a busy day or pair it with a sweeter lemonade.',
     allergens: [],
     pickupAvailability: 'Prepared for weekly market pickup; limited shot batches move quickly.',
@@ -660,16 +660,16 @@ export const PRODUCTS: MarketProduct[] = [
   {
     id: 'grateful-defense',
     slug: 'grateful-defense',
-    name: 'Grateful Defense',
+    name: 'Elderberry Ginger Shot',
     category: 'shots',
     weeklyStatus: 'active',
     price: 5,
     sizes: ['2oz shot'],
     ingredients: ['Elderberry', 'Cranberry', 'Apple', 'Ginger', 'Lemon', 'Echinacea', 'Sea Moss', 'Alkaline Water'],
     shortDescription: 'An elderberry, echinacea, ginger, lemon, cranberry, apple, and sea moss shot.',
-    fullDescription: 'Grateful Defense is the grab-and-go shot for immune-season routines: elderberry, cranberry, apple, ginger, lemon, echinacea, sea moss, and alkaline water in a concentrated 2oz bottle.',
+    fullDescription: 'Elderberry Ginger Shot is a grab-and-go berry-forward shot: elderberry, cranberry, apple, ginger, lemon, echinacea, sea moss, and alkaline water in a concentrated 2oz bottle.',
     flavorNotes: 'Deep berry, tart cranberry, lemon brightness, and a ginger finish.',
-    wellnessSupport: ['Immune routine', 'Daily minerals', 'Travel-day routine', 'Quick reset'],
+    wellnessSupport: ['Travel-day routine', 'Quick reset', 'Berry-forward flavor'],
     recommendedUse: 'Take chilled before errands, travel, market days, or whenever you want a quick elderberry-forward shot.',
     allergens: [],
     pickupAvailability: 'Prepared for weekly market pickup; limited shot batches move quickly.',
@@ -678,15 +678,15 @@ export const PRODUCTS: MarketProduct[] = [
     featured: true,
     seasonal: false,
     image: 'https://127690646.cdn6.editmysite.com/uploads/1/2/7/6/127690646/7G2QSRNEWAACVG3DXL27W7KO.jpeg',
-    seoTitle: 'Grateful Defense Elderberry Sea Moss Shot | Taste of Gratitude',
-    seoDescription: 'Grateful Defense is an elderberry, cranberry, apple, ginger, lemon, echinacea, and sea moss shot for Atlanta pickup.',
+    seoTitle: 'Elderberry Ginger Sea Moss Shot | Taste of Gratitude',
+    seoDescription: 'Elderberry Ginger Shot is an elderberry, cranberry, apple, ginger, lemon, echinacea, and sea moss shot for Atlanta pickup.',
     activeWeeklyMenu: true,
     soldOut: false,
     preorderOnly: true,
     marketPickupOnly: true,
     squareProductUrl: 'https://tasteofgratitude.shop/s/order?add=gratitude-defense',
     pairings: ['elderberry-apple-gel', 'supplemint', 'black-minerals'],
-    tags: ['shot', 'elderberry', 'immune', 'ginger'],
+    tags: ['shot', 'elderberry', 'ginger', 'berry'],
   },
   {
     id: 'boba-discontinued',
@@ -778,7 +778,7 @@ export const PRODUCTS: MarketProduct[] = [
   archivedProduct('elderberry-moss', 'Elderberry Moss', 'Elderberry Moss is archived as legacy catalog history. Elderberry Apple Gel is the current active elderberry gel path.'),
   archivedProduct('pineapple-basil', 'Pineapple Basil', 'Pineapple Basil is archived as an older seasonal drink so it does not appear in the active weekly menu.'),
   archivedProduct('apple-cranberry', 'Apple Cranberry', 'Apple Cranberry is archived as an older seasonal drink so current refreshers stay accurate.'),
-  archivedProduct('grateful-guardian', 'Grateful Guardian', 'Grateful Guardian is archived as legacy product history. Grateful Defense is the current shot positioned for immune-season routines.'),
+  archivedProduct('grateful-guardian', 'Grateful Guardian', 'Grateful Guardian is archived as legacy product history. Elderberry Ginger Shot is the current elderberry-forward shot in the weekly menu.'),
   archivedProduct('rejuvenate', 'Rejuvenate', 'Rejuvenate is archived as a discontinued catalog item and should not appear in the current weekly market menu.'),
 ];
 
@@ -786,7 +786,7 @@ const CATEGORY_LABELS: Record<ProductCategory, string> = {
   lemonades: 'Lemonades & Drinks',
   refreshers: 'Refreshers',
   gels: 'Sea Moss Gels',
-  shots: 'Wellness Shots',
+  shots: 'Shots',
   bundles: 'Bundles',
   inactive: 'Archived',
 };
@@ -804,20 +804,18 @@ const TAXONOMY_CATEGORY_LABELS: Record<ProductCategory, string> = {
   lemonades: 'Lemonades & Juices',
   refreshers: 'Refreshers',
   gels: 'Sea Moss Gels',
-  shots: 'Wellness Shots',
+  shots: 'Shots',
   bundles: 'Bundles & Seasonal',
   inactive: 'Archived',
 };
 
-const WELLNESS_TO_PRODUCT_IDS: Record<string, string[]> = {
-  digestion: ['supplemint', 'cucumber-mint-ginger', 'healing-harmony-gel'],
-  energy: ['kissed-by-gods', 'black-minerals', 'spicy-bloom'],
-  immunity: ['grateful-defense', 'elderberry-apple-gel', 'healing-harmony-gel'],
-  'skin/glow': ['golden-glow-gel', 'floral-tide-gel', 'strawberry-rose-ginger'],
-  stress: ['blue-lotus-gel', 'calm-waters', 'cucumber-mint-ginger'],
-  hydration: ['calm-waters', 'electric-melon', 'peach-refresher'],
-  'weight support': ['grateful-greens-gel', 'black-minerals', 'kissed-by-gods'],
-  'daily minerals': ['grateful-greens-gel', 'kissed-by-gods', 'black-minerals'],
+const FLAVOR_TO_PRODUCT_IDS: Record<string, string[]> = {
+  'berry-forward': ['elderberry-apple-gel', 'strawberry-rose-ginger', 'grateful-defense'],
+  'tropical': ['kissed-by-gods', 'electric-melon', 'pineapple-ginger-blast'],
+  'green-fresh': ['grateful-greens-gel', 'supplemint', 'cucumber-mint-ginger'],
+  'light-hydrating': ['calm-waters', 'cucumber-mint-ginger', 'peach-refresher'],
+  'warm-spiced': ['spicy-bloom', 'soursop-spice-sea-moss-gel', 'kissed-by-gods'],
+  'first-timer-variety': ['strawberry-bliss', 'calm-waters', 'grateful-greens-gel'],
 };
 
 export function normalizeProductKey(value: unknown): string {
@@ -880,10 +878,14 @@ export function getInStockProducts() {
   return getActiveProducts().filter((product) => !product.soldOut && product.inventoryStatus !== 'sold_out');
 }
 
-export function getRecommendedProductsForGoal(goal: string) {
-  const ids = WELLNESS_TO_PRODUCT_IDS[goal] || WELLNESS_TO_PRODUCT_IDS['daily minerals'];
+export function getRecommendedProductsForFlavor(flavor: string) {
+  const normalized = normalizeProductKey(flavor);
+  const ids = FLAVOR_TO_PRODUCT_IDS[normalized] || FLAVOR_TO_PRODUCT_IDS['first-timer-variety'];
   return ids.map((id) => getProductBySlugOrId(id)).filter(Boolean) as MarketProduct[];
 }
+
+// Deprecated alias kept for compatibility during the flavor-direction migration.
+export const getRecommendedProductsForGoal = getRecommendedProductsForFlavor;
 
 export function getCategoryLabel(category: ProductCategory | string) {
   return CATEGORY_LABELS[category as ProductCategory] || String(category || 'Wellness');

@@ -402,7 +402,7 @@ export default function MarketsPage() {
           },
           {
             id: 'fallback-grateful-defense',
-            name: 'Grateful Defense',
+            name: 'Elderberry Ginger Shot',
             category: 'shots',
             emoji: '🥃',
             price: 5,
