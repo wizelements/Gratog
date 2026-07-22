@@ -110,7 +110,7 @@ export default function IngredientDetailPage() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-semibold text-white capitalize mb-2">{benefit}</h3>
-                    <p className="text-white/60">Supports your wellness journey naturally</p>
+                    <p className="text-white/60">Supports your weekly routine naturally</p>
                   </div>
                 </CardContent>
               </Card>

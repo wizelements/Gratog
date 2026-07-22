@@ -77,7 +77,7 @@ function LoginContent() {
             <span className="text-2xl font-bold text-emerald-900">Taste of Gratitude</span>
           </Link>
           <h1 className="text-3xl font-bold text-emerald-900 mb-2">Welcome Back</h1>
-          <p className="text-emerald-700">Sign in to your wellness journey</p>
+          <p className="text-emerald-700">Sign in to your weekly routine</p>
         </div>
 
         {/* Login Form */}

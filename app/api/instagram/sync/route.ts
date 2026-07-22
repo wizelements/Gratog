@@ -190,7 +190,7 @@ function generateMetaDescription(caption: string = ''): string {
     .trim()
     .substring(0, 155);
 
-  return cleanCaption || 'Discover our latest wellness journey updates, sea moss recipes, and community highlights from Taste of Gratitude.';
+  return cleanCaption || 'Discover our latest weekly routine updates, sea moss recipes, and community highlights from Taste of Gratitude.';
 }
 
 // Webhook handler for real-time Instagram updates

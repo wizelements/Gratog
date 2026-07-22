@@ -119,19 +119,14 @@ export function generateMetadata(config: MetaConfig, baseUrl: string) {
  */
 export function getHomeMetadata(baseUrl: string) {
   return generateMetadata({
-    title: 'Premium Wildcrafted Sea Moss Gel - 92 Essential Minerals',
-    description: 'Shop wildcrafted Irish sea moss gel packed with 92 essential minerals. Hand-crafted for immune support, thyroid health, and wellness. 100% natural, vegan superfood. Available at Atlanta-area farmers markets.',
+    title: 'Taste of Gratitude | Small-Batch Sea Moss Gels & Fresh Drinks',
+    description: 'Shop small-batch sea moss gels, fresh drinks, refreshers, and shots from Taste of Gratitude. Weekly menu drops for Atlanta farmers market pickup.',
     keywords: [
-      'sea moss gel',
-      'wildcrafted sea moss',
-      'Irish sea moss',
-      'sea moss benefits',
-      '92 minerals',
-      'immune support',
-      'thyroid health',
-      'vegan superfood',
-      'natural supplements',
-      'holistic wellness',
+      'sea moss gel Atlanta',
+      'small-batch sea moss',
+      'Atlanta farmers market drinks',
+      'fresh sea moss drinks',
+      'Taste of Gratitude menu',
       'Atlanta sea moss',
       'buy sea moss online',
     ],
@@ -153,12 +148,11 @@ export function getProductMetadata(product: {
 }, baseUrl: string) {
   // Extract key benefits from description for keywords
   const benefitKeywords = [
-    'immune support',
-    'thyroid health',
-    'digestive health',
-    'energy boost',
-    'skin health',
-    '92 minerals',
+    'fresh drinks',
+    'sea moss gel',
+    'farmers market pickup',
+    'small-batch',
+    'weekly menu',
   ];
 
   const keywords = [
@@ -173,7 +167,7 @@ export function getProductMetadata(product: {
 
   return generateMetadata({
     title: product.name,
-    description: product.description || `Premium ${product.name} - Wildcrafted sea moss gel with 92 essential minerals. ${product.price.toFixed(2)}. Order online for fast delivery.`,
+    description: product.description || `${product.name} from Taste of Gratitude. Small-batch sea moss gel, drinks, and shots for Atlanta farmers market pickup. $${product.price.toFixed(2)}.`,
     keywords,
     image: product.image,
     url: `/product/${product.slug}`,
@@ -188,15 +182,15 @@ export function getProductMetadata(product: {
  */
 export function getCategoryMetadata(category: string, baseUrl: string) {
   const categoryDescriptions: Record<string, string> = {
-    'sea-moss-gel': 'Browse our wildcrafted sea moss gel collection. Pure, hand-crafted Irish sea moss packed with 92 essential minerals for optimal wellness.',
-    'elderberry': 'Elderberry-infused sea moss products for immune support. Natural, wildcrafted ingredients for your health.',
-    'lemonade': 'Refreshing sea moss lemonade blends. Delicious superfood drinks packed with minerals and vitamins.',
-    'gift-sets': 'Sea moss gift sets perfect for wellness enthusiasts. Curated collections of our best-selling products.',
+    'sea-moss-gel': 'Browse our small-batch sea moss gel collection. Hand-crafted with simple ingredients for Atlanta farmers market pickup.',
+    'elderberry': 'Elderberry-flavored sea moss products. Real ingredients for your weekly routine.',
+    'lemonade': 'Refreshing sea moss lemonade blends. Fresh, small-batch drinks for market pickup.',
+    'gift-sets': 'Curated Taste of Gratitude sets. Great for trying the weekly menu or sharing with friends.',
   };
 
   return generateMetadata({
     title: `${category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Products`,
-    description: categoryDescriptions[category] || `Shop ${category} products from Taste of Gratitude. Premium wildcrafted sea moss and natural wellness products.`,
+    description: categoryDescriptions[category] || `Shop ${category} products from Taste of Gratitude. Small-batch sea moss gels, drinks, and shots for Atlanta farmers market pickup.`,
     keywords: [category, 'sea moss', 'wellness', 'natural supplements', 'buy online'],
     url: `/catalog?category=${category}`,
   }, baseUrl);

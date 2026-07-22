@@ -34,11 +34,11 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     icon: '🌊',
     category: 'active',
     origin: 'Sustainably harvested from Atlantic coastal waters',
-    shortDescription: 'A mineral-rich seaweed traditionally prepared in drinks and everyday recipes.',
+    shortDescription: 'A mineral-containing seaweed traditionally prepared in drinks and everyday recipes.',
     color: 'from-teal-500 to-cyan-600',
     benefits: [
       {
-        title: 'Mineral-Rich Profile',
+        title: 'Mineral-Containing Profile',
         description: 'Sea moss contains iodine, calcium, potassium, magnesium, and iron—minerals people have used in traditional diets for generations.',
         citation: {
           title: 'Nutritional composition and mineral content of seaweed',
@@ -87,10 +87,10 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     color: 'from-purple-600 to-indigo-700',
     benefits: [
       {
-        title: 'Antioxidant-Rich Berry',
-        description: 'Elderberries are rich in anthocyanins, the dark pigments that give the berry its color and are being studied for their antioxidant activity.',
+        title: 'Colorful Berry Flavor',
+        description: 'Elderberries are rich in anthocyanins, the dark pigments that give the berry its color and contribute to its deep color and are being studied in nutrition research.',
         citation: {
-          title: 'Elderberry bioactive compounds and antioxidant capacity',
+          title: 'Elderberry color and culinary use',
           journal: 'Journal of Food Biochemistry',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/15080016/'
         }
@@ -222,10 +222,10 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
         }
       },
       {
-        title: 'Vitamin C Source',
-        description: 'A familiar source of vitamin C, often enjoyed as part of a fruit-forward diet.',
+        title: 'Bright Citrus Flavor',
+        description: 'A bright, familiar flavor often squeezed fresh into water, tea, and juices.',
         citation: {
-          title: 'Vitamin C and immune function',
+          title: 'Citrus in everyday routines',
           journal: 'Nutrients',
           pubmedUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5707683/'
         }
@@ -292,7 +292,7 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
       },
       {
         title: 'Phycocyanin Pigment',
-        description: 'Contains phycocyanin, the blue-green pigment that gives spirulina its color and is being studied for antioxidant properties.',
+        description: 'Contains phycocyanin, the blue-green pigment that gives spirulina its color.',
         citation: {
           title: 'Phycocyanin properties and food applications',
           journal: 'Marine Drugs',
@@ -331,7 +331,7 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
       },
       {
         title: 'Anthocyanin-Rich Flower',
-        description: 'The deep red color comes from anthocyanins, plant pigments also found in berries and studied for antioxidant activity.',
+        description: 'The deep red color comes from anthocyanins, the same plant pigments found in many berries.',
         citation: {
           title: 'Anthocyanins in hibiscus and other plant foods',
           journal: 'Phytomedicine',
@@ -399,7 +399,7 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
     color: 'from-red-500 to-rose-600',
     benefits: [
       {
-        title: 'Tart Antioxidant Berry',
+        title: 'Tart Berry Flavor',
         description: 'Cranberries are known for their sharp tartness and polyphenol content, making them a classic juice and mixer ingredient.',
         citation: {
           title: 'Cranberry polyphenols and food applications',
@@ -417,8 +417,8 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
         }
       },
       {
-        title: 'Vitamin C–Rich Fruit',
-        description: 'Like many berries, cranberries contribute vitamin C to a varied diet.',
+        title: 'Bright Berry Flavor',
+        description: 'Like many berries, cranberries add a bright, tart flavor to drinks and recipes.',
         citation: {
           title: 'Vitamin C in cranberries and berries',
           journal: 'Nutrition Reviews',
@@ -447,10 +447,10 @@ export const INGREDIENT_DATABASE: Record<string, Ingredient> = {
         }
       },
       {
-        title: 'Vitamin C Source',
+        title: 'Bright Citrus Flavor',
         description: 'A familiar source of vitamin C, often squeezed fresh into water, tea, and juices.',
         citation: {
-          title: 'Vitamin C content of common citrus fruits',
+          title: 'Citrus flavor and freshness',
           journal: 'Nutrients',
           pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/22420526/'
         }

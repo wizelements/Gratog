@@ -39,14 +39,14 @@ export default function AboutPage() {
             </p>
             <p>
               It became a quiet weekly routine. Soaking, blending, pouring — there was something grounding
-              about the process. I started feeling better. More present. More grateful for the small
+              about the process. The routine itself made me feel more present and more grateful for the small
               things. So I made a jar for my mom. Then my sister. Then a neighbor. Before I knew it,
               people were asking, <em>&ldquo;Can you make me one too?&rdquo;</em>
             </p>
             <p>
               That&apos;s how Taste of Gratitude was born — not from a business plan, but from a
               kitchen full of mason jars and a feeling I wanted to share. The name came naturally.
-              Every jar I made reminded me of what I was grateful for: my health coming back,
+              Every jar I made reminded me of what I was grateful for: my energy shifting,
               my family showing up, the chance to create something with my hands.
             </p>
             <p>
@@ -72,7 +72,7 @@ export default function AboutPage() {
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {[
-              ['🫧 Soak', 'Wildcrafted sea moss is cleaned and soaked with care before each batch.'],
+              ['🫧 Soak', 'Sea moss is cleaned and soaked with care before each batch.'],
               ['🫐 Blend', 'Each flavor is blended in small batches with real, visible ingredients.'],
               ['🤝 Share', 'Jars are prepared fresh for market pickup, samples, and conversations.'],
             ].map(([title, text]) => (
@@ -117,9 +117,9 @@ export default function AboutPage() {
               <div className="icon-container mx-auto mb-4">
                 <Award className="h-8 w-8 text-emerald-700" />
               </div>
-              <h3 className="font-semibold mb-2">Wildcrafted Sourcing</h3>
+              <h3 className="font-semibold mb-2">Sourced with Care</h3>
               <p className="text-sm text-muted-foreground">
-                Our sea moss is wildcrafted from clean ocean waters — never pool-grown, never artificial.
+                We select sea moss and ingredients from suppliers we trust for quality and transparency, and we are working toward documented wildcrafting verification.
               </p>
             </CardContent>
           </Card>
@@ -152,7 +152,7 @@ export default function AboutPage() {
             <a href="/markets" className="px-8 py-3 rounded-full bg-emerald-700 text-white font-semibold hover:bg-emerald-800">
               See Where We&apos;ll Be
             </a>
-            <a href="/catalog" className="px-8 py-3 rounded-full border border-emerald-700 text-emerald-700 font-semibold hover:bg-emerald-50">
+            <a href="/weekly-menu" className="px-8 py-3 rounded-full border border-emerald-700 text-emerald-700 font-semibold hover:bg-emerald-50">
               Shop This Week&apos;s Menu
             </a>
           </div>

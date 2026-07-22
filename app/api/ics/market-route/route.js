@@ -64,9 +64,9 @@ DTSTAMP:${formatICSDate(new Date())}
 DTSTART:${formatICSDate(startDateTime)}
 DTEND:${formatICSDate(endDateTime)}
 SUMMARY:Taste of Gratitude at ${market}
-DESCRIPTION:${location.description}. Come discover our wildcrafted sea moss products!
+DESCRIPTION:${location.description}. Come discover our small-batch sea moss drinks and gels!
 LOCATION:${location.address}
-CATEGORIES:Market,Health,Wellness
+CATEGORIES:Market,Food,Local
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT

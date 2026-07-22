@@ -191,10 +191,10 @@ export default function InstagramPostPage() {
           {/* Related Products CTA */}
           <div className="mt-12 bg-primary/5 rounded-lg p-8 text-center">
             <h2 className="text-2xl font-bold text-foreground mb-4">
-              🌿 Nourish Your Wellness Journey
+              🌿 Explore Small-Batch Sea Moss & Drinks
             </h2>
             <p className="text-muted-foreground mb-6">
-              Discover our premium sea moss products crafted with gratitude and wildcrafted ingredients
+              Discover our premium sea moss products crafted with gratitude and carefully sourced ingredients
             </p>
             <a
               href="/catalog"

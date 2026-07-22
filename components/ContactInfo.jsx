@@ -70,7 +70,7 @@ export default function ContactInfo() {
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Have questions about our products or your order? Our friendly team is ready
-            to assist you on your wellness journey.
+            to assist you on your weekly routine.
           </p>
         </div>
 

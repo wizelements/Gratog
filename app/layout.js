@@ -26,9 +26,9 @@ const inter = Inter({
 
 export const metadata = {
   metadataBase: new URL('https://tasteofgratitude.shop'),
-  title: 'Taste of Gratitude | Small-Batch Sea Moss & Market Wellness',
-  description: 'Founder-led Atlanta wellness commerce for small-batch sea moss gels, fresh drinks, wellness shots, weekly market menus, pickup, delivery, and eligible shipping.',
-  keywords: 'Taste of Gratitude, Atlanta sea moss, small batch sea moss gel, farmers market wellness, market pickup, wellness shots, fresh drinks',
+  title: 'Taste of Gratitude | Small-Batch Sea Moss & Market Fresh Drinks',
+  description: 'Founder-led Atlanta market brand for small-batch sea moss gels, fresh drinks, shots, weekly market menus, pickup, delivery, and eligible shipping.',
+  keywords: 'Taste of Gratitude, Atlanta sea moss, small batch sea moss gel, farmers market drinks, market pickup, fresh shots, fresh drinks',
   authors: [{ name: 'Taste of Gratitude' }],
   creator: 'Taste of Gratitude',
   publisher: 'Taste of Gratitude',
@@ -39,8 +39,8 @@ export const metadata = {
     telephone: false,
   },
   openGraph: {
-    title: 'Taste of Gratitude | Small-Batch Sea Moss & Market Wellness',
-    description: 'A founder-led Atlanta market wellness brand with weekly menus, small-batch products, and clear online ordering.',
+    title: 'Taste of Gratitude | Small-Batch Sea Moss & Market Fresh Drinks',
+    description: 'A founder-led Atlanta market brand with weekly menus, small-batch products, and clear online ordering.',
     url: 'https://tasteofgratitude.shop',
     siteName: 'Taste of Gratitude',
     locale: 'en_US',
@@ -50,14 +50,14 @@ export const metadata = {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Taste of Gratitude - Premium Wildcrafted Sea Moss Products',
+        alt: 'Taste of Gratitude - Small-Batch Sea Moss Products',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Taste of Gratitude | Premium Wildcrafted Sea Moss Gel',
-    description: 'Hand-crafted wildcrafted sea moss gel with essential minerals. 100% natural superfood for wellness.',
+    title: 'Taste of Gratitude | Small-Batch Sea Moss Gel',
+    description: 'Hand-crafted small-batch sea moss gel and fresh market drinks made with simple ingredients.'
     images: ['/og-image.jpg'],
   },
   robots: {

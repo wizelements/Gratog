@@ -16,11 +16,11 @@ import { Search, X, Sparkles, Leaf, QrCode } from 'lucide-react';
 /**
  * Info Board Page
  * 
- * Kiosk-ready wellness discovery board
- * NO SELLING - Pure product information with health benefit filters
+ * Kiosk-ready product discovery board
+ * NO SELLING - Pure product information with flavor and ingredient filters
  * 
  * Features:
- * - Health benefit filtering (Immunity, Digestion, Energy, etc.)
+ * - Flavor and ingredient filtering (Berry, Ginger, Hydrating, etc.)
  * - Category organization
  * - Ingredient-forward display
  * - Large, readable typography
@@ -135,7 +135,7 @@ export default function InfoBoardPage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-emerald-800">Taste of Gratitude</h1>
-                <p className="text-xs text-emerald-600">Wildcrafted Sea Moss Wellness</p>
+                <p className="text-xs text-emerald-600">Small-Batch Sea Moss & Fresh Drinks</p>
               </div>
             </div>
             
@@ -160,12 +160,11 @@ export default function InfoBoardPage() {
           </Badge>
           
           <h2 className="text-3xl md:text-4xl font-bold mb-3">
-            Discover Your Wellness Journey
+            Discover Small-Batch Sea Moss & Drinks
           </h2>
           
           <p className="text-lg text-emerald-100 max-w-2xl mx-auto mb-6">
-            Explore our wildcrafted sea moss products, each infused with 92 essential minerals.
-            Filter by your wellness goals to find the perfect match.
+            Explore our small-batch sea moss products. Filter by ingredient direction to find a flavor you like.
           </p>
           
           {/* Search Bar */}
@@ -310,7 +309,7 @@ export default function InfoBoardPage() {
             <span className="font-semibold text-white">Taste of Gratitude</span>
           </div>
           <p className="text-sm mb-4">
-            Wildcrafted Sea Moss • 92 Essential Minerals • Atlanta, GA
+            Small-Batch Sea Moss • Simple Ingredients • Atlanta, GA
           </p>
           <div className="flex items-center justify-center gap-4 text-sm">
             <span>Find us at local markets</span>

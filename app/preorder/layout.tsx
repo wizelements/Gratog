@@ -1,6 +1,6 @@
 export const metadata = {
   title: 'Preorder | Taste of Gratitude',
-  description: 'Preorder your sea moss gel and wellness drinks. Skip the line at the market!'
+  description: 'Preorder small-batch sea moss gel, drinks, and shots for market pickup.'
 };
 
 export default function PreorderLayout({ children }: { children: React.ReactNode }) {

@@ -183,7 +183,7 @@ export function getLocationKeywords(city: string, state: string): string[] {
 export function getLocalSEOMetadata(location: MarketLocation) {
   return {
     title: `Wildcrafted Sea Moss at ${location.name} | Taste of Gratitude`,
-    description: `Find us at ${location.name} in ${location.city}, ${location.state}. Premium wildcrafted sea moss gel with 92 essential minerals. ${location.hours}. ${location.description}`,
+    description: `Find us at ${location.name} in ${location.city}, ${location.state}. Small-batch sea moss gel and fresh drinks. ${location.hours}. ${location.description}`,
     keywords: getLocationKeywords(location.city, location.state),
   };
 }

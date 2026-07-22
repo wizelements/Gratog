@@ -14,7 +14,7 @@ export default function ProductCard({ product }) {
   const [selectedVariant, setSelectedVariant] = useState(null);
   
   const fallbackImage = PRODUCT_IMAGE_FALLBACK_SRC;
-  const productAlt = product.imageAlt || `${product.name} - Premium wildcrafted sea moss product`;
+  const productAlt = product.imageAlt || `${product.name} - Small-batch sea moss product`;
   
   const getProductImage = () => {
     if (typeof product.displayImage === 'string' && product.displayImage.trim()) {

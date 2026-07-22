@@ -41,24 +41,24 @@ export function HeroSection() {
 
             {/* Title */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight">
-              Nature's
+              Small-Batch
               <br />
               <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                Superfood Tradition
+                Sea Moss & Drinks
               </span>
             </h1>
 
             {/* Description */}
             <p className="mt-6 text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-xl mx-auto lg:mx-0">
-              Handcrafted wildcrafted sea moss gel from pristine ocean waters. 
-              A natural addition to your daily wellness routine.*
+              Handcrafted small-batch sea moss gel and fresh drinks from Atlanta farmers markets. 
+              A simple, ingredient-forward addition to your weekly routine.
             </p>
 
             {/* Stats */}
             <div className="mt-8 flex flex-wrap justify-center lg:justify-start gap-8">
               {[
-                { value: '92+', label: 'Minerals' },
-                { value: '14K+', label: 'Years of Use' },
+                { value: 'Weekly', label: 'Fresh menu' },
+                { value: '2', label: 'Atlanta markets' },
               ].map((stat, index) => (
                 <motion.div
                   key={stat.label}
@@ -122,7 +122,7 @@ export function HeroSection() {
                   </div>
                   <div>
                     <div className="font-semibold text-gray-900 dark:text-white">Premium Quality</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">100% Wildcrafted</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">100% Small-batch</div>
                   </div>
                 </div>
               </motion.div>

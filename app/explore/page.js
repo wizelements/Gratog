@@ -135,7 +135,7 @@ export default function ExploreHomepage() {
         <div className="container mx-auto text-center">
           <div className="max-w-3xl mx-auto bg-gradient-to-br from-emerald-500/20 to-green-600/20 border border-emerald-500/30 rounded-2xl p-12">
             <h2 className="text-4xl font-bold text-white mb-4">
-              Ready to Start Your Wellness Journey?
+              Ready to Start Your Weekly Menu?
             </h2>
             <p className="text-xl text-white/80 mb-8">
               Discover the power of natural ingredients through interactive exploration

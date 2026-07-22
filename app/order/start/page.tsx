@@ -21,7 +21,7 @@ const MARKETS = [
     address: '10640 Serenbe Trail, Chattahoochee Hills, GA 30268',
     hours: { open: '09:00', close: '13:00' },
     days: ['Saturday'],
-    description: 'Handcrafted sea moss gel and juices every Saturday',
+    description: 'Handcrafted sea moss gel and fresh juices every Saturday',
     parkingInfo: 'Free parking at the Farmhouse',
   },
   {
@@ -31,7 +31,7 @@ const MARKETS = [
     address: 'Dunwoody Farmhouse, Dunwoody, GA 30338',
     hours: { open: '08:00', close: '12:00' },
     days: ['Saturday'],
-    description: 'Fresh sea moss products and wellness drinks',
+    description: 'Fresh sea moss products and drinks',
     parkingInfo: 'Free parking at the Dunwoody Farmhouse',
   },
   {
@@ -41,7 +41,7 @@ const MARKETS = [
     address: '6100 Lake Forrest Dr, Sandy Springs, GA 30328',
     hours: { open: '08:00', close: '12:00' },
     days: ['Saturday'],
-    description: 'Saturday morning wellness essentials',
+    description: 'Saturday morning market essentials',
     parkingInfo: 'Free lot parking',
   },
 ];

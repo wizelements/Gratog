@@ -69,7 +69,7 @@ export default function OrdersPage() {
           <CardContent className="p-12 text-center">
             <Package className="h-16 w-16 text-emerald-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-emerald-900 mb-2">No orders yet</h3>
-            <p className="text-emerald-600 mb-6">Start your wellness journey by placing your first order!</p>
+            <p className="text-emerald-600 mb-6">Start your weekly routine by placing your first order!</p>
             <Link href="/catalog">
               <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
                 Shop Now

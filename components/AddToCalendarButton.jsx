@@ -18,7 +18,7 @@ const CALENDAR_SERVICES = [
       const params = new URLSearchParams({
         text: `Taste of Gratitude at ${event.marketName}`,
         dates: `${formatGoogleDate(startDate)}/${formatGoogleDate(endDate)}`,
-        details: `Visit us at ${event.marketName} for fresh sea moss products! Discover our wildcrafted wellness blends.`,
+        details: `Visit us at ${event.marketName} for fresh small-batch sea moss products! Discover our carefully sourced drinks, gels, and shots.`,
         location: event.address,
         sf: 'true' // Show only free calendars
       });

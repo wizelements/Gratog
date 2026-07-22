@@ -27,15 +27,15 @@ const faqCategories = [
     questions: [
       {
         question: 'What is sea moss and what are its benefits?',
-        answer: 'Sea moss (Irish moss) is a mineral-rich seaweed that customers often use as part of a daily wellness routine. Taste of Gratitude keeps the education ingredient-focused and avoids medical claims: choose the products that fit your flavor, routine, and guidance from your healthcare provider.'
+        answer: 'Sea moss (Irish moss) is a mineral-containing seaweed that customers often use as part of a daily routine. Taste of Gratitude keeps the education ingredient-focused and avoids medical claims: choose the products that fit your flavor, routine, and guidance from your healthcare provider.'
       },
       {
         question: 'How should I consume sea moss gel?',
         answer: 'Most customers start with 1-2 tablespoons in smoothies, teas, juices, bowls, or as a chilled spoonful. Store refrigerated, use a clean spoon, and follow the freshness window on your product label.'
       },
       {
-        question: 'Are your products organic and all-natural?',
-        answer: 'Our weekly menu is ingredient-forward, small-batch, and made with real fruits, herbs, roots, sea moss, alkaline water, agave, or honey depending on the product. Check each product page for its full ingredient list and allergens.'
+        question: 'Are your products made with clean ingredients?',
+        answer: 'Our weekly menu is ingredient-forward, small-batch, and made with real fruits, herbs, roots, sea moss, alkaline water, agave, or honey depending on the product. We avoid using "all-natural" as a broad marketing claim; instead, check each product page for its full ingredient list and allergens.'
       },
       {
         question: 'What is the shelf life of sea moss products?',
@@ -89,7 +89,7 @@ const faqCategories = [
       },
       {
         question: 'Do you offer local delivery?',
-        answer: 'Yes! We offer same-day and next-day delivery to select ZIP codes in South Fulton, Atlanta Metro, Decatur, and surrounding areas. Enter your ZIP code at checkout to see if delivery is available in your area. Delivery fees vary by zone ($12-$18).'
+        answer: 'Where available, we offer same-day and next-day delivery to select ZIP codes in South Fulton, Atlanta Metro, Decatur, and surrounding areas. Enter your ZIP code at checkout to see if delivery is available in your area. Delivery fees vary by zone ($12-$18).'
       },
       {
         question: 'What are your shipping options?',
@@ -109,49 +109,37 @@ const faqCategories = [
       }
     ]
   },
-  {
+    {
     id: 'rewards',
     title: 'Rewards & Loyalty',
     icon: Heart,
     questions: [
       {
-        question: 'What is the Gratitude Passport?',
-        answer: 'The Gratitude Passport is the rewards direction for recurring customers. The frontend is prepared for loyalty, referrals, reviews, and reorder reminders while the backend reward rules are finalized.'
+        question: 'Will Taste of Gratitude have a rewards program?',
+        answer: 'We are building a rewards direction for recurring customers, including loyalty, referrals, reviews, and reorder reminders. Join the weekly menu email list to be first to know when the Gratitude Passport goes live.'
       },
       {
-        question: 'How do I earn stamps?',
-        answer: 'Future rewards can be tied to purchases, quiz completions, market visits, referrals, reviews, and community participation. Join the weekly list so you hear when rewards go live.'
-      },
-      {
-        question: 'What is the Spin & Win wheel?',
-        answer: 'New customers get one free spin to win instant discounts ($1-$5 off). Provide your email to spin. Prizes are valid for 24 hours. Existing customers can earn additional spins through our rewards program.'
-      },
-      {
-        question: 'How do I redeem my rewards?',
-        answer: 'Rewards automatically generate coupon codes that are emailed to you when earned. Simply enter the coupon code at checkout to apply your discount or free item. Check your Gratitude Passport to see available rewards.'
+        question: 'Can I get coupons or discounts right now?',
+        answer: 'Promotional codes are emailed to newsletter subscribers and announced at market pickups. Sign up for the weekly menu email to receive current offers.'
       }
     ]
   },
-  {
+    {
     id: 'community',
     title: 'Community & Challenges',
     icon: HelpCircle,
     questions: [
       {
-        question: 'What is the #SpicyBloomChallenge?',
-        answer: 'Spicy Bloom is the tart floral wellness shot with hibiscus, citrus, cranberry, jalapeño heat, and sea moss. Community challenges can feature customer routines, market pickup moments, and honest product reactions when campaigns are active.'
-      },
-      {
-        question: 'How do I participate in community challenges?',
-        answer: 'Follow Taste of Gratitude on Instagram and join weekly menu updates. When a challenge is active, we will share the hashtag, rules, reward, and submission path clearly before asking customers to post.'
-      },
-      {
-        question: 'Can I share my sea moss journey on your platform?',
-        answer: `Absolutely! We love hearing wellness stories. Share your photos, videos, and testimonials by tagging us on Instagram (@tasteofgratitude) or emailing ${SUPPORT_EMAIL}. You might be featured when we request community stories.`
+        question: 'Are community challenges active?',
+        answer: 'Community challenges are planned for future market seasons. When active, we will share the hashtag, rules, reward, and submission path clearly before asking customers to post. Follow us on Instagram (@tasteofgratitude) and join the weekly email for announcements.'
       },
       {
         question: 'Do you offer wellness workshops or events?',
-        answer: 'Yes! We host seasonal workshops at our market locations covering topics like sea moss benefits, healthy recipes, and holistic wellness. Follow us on social media or subscribe to our newsletter for event announcements.'
+        answer: 'Seasonal workshops at our market locations are in planning. Subscribe to the newsletter or follow us on social media for event announcements.'
+      },
+      {
+        question: 'Can I share my sea moss journey on your platform?',
+        answer: `Absolutely! We love hearing honest customer stories. Share your photos, videos, and testimonials by tagging us on Instagram (@tasteofgratitude) or emailing ${SUPPORT_EMAIL}. You might be featured when we request community stories.`
       }
     ]
   },
@@ -176,7 +164,7 @@ const faqCategories = [
       },
       {
         question: 'How do I track my order?',
-        answer: 'You will receive an email with tracking information once your order ships. For pickup orders, you will get a confirmation email with market location and hours. For delivery orders, you will receive SMS/email updates on delivery status.'
+        answer: 'You will receive an email with tracking information once your order ships. For pickup orders, you will get a confirmation email with market location and hours. For delivery orders, you will receive email updates on delivery status.'
       },
       {
         question: 'Can I visit your facility or kitchen?',
@@ -193,11 +181,11 @@ function FAQItem({ question, answer }) {
     <div className="border-b last:border-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-4 flex items-start justify-between text-left hover:text--emerald-500 transition-colors group"
+        className="w-full py-4 flex items-start justify-between text-left hover:text-emerald-500 transition-colors group"
       >
         <span className="font-medium pr-8 flex-1">{question}</span>
         <ChevronDown
-          className={`h-5 w-5 text--emerald-500 transition-transform flex-shrink-0 ${
+          className={`h-5 w-5 text-emerald-500 transition-transform flex-shrink-0 ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
@@ -217,10 +205,10 @@ function FAQCategory({ category }) {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <CardContent className="p-0">
-        <div className="bg-gradient-to-r from--emerald-500/10 to--emerald-600/10 p-4 border-b">
+        <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 p-4 border-b">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg--emerald-500/20 flex items-center justify-center">
-              <Icon className="h-5 w-5 text--emerald-500" />
+            <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+              <Icon className="h-5 w-5 text-emerald-500" />
             </div>
             <h3 className="font-semibold text-lg">{category.title}</h3>
           </div>
@@ -242,7 +230,7 @@ export default function FAQPage() {
       <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 border-b">
         <div className="container py-16">
           <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg--emerald-500/10 rounded-full text-sm font-semibold text--emerald-500 mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-full text-sm font-semibold text-emerald-500 mb-6">
               <HelpCircle className="h-4 w-4" />
               Frequently Asked Questions
             </div>
@@ -266,7 +254,7 @@ export default function FAQPage() {
       </div>
 
       {/* Still Have Questions */}
-      <div className="bg-gradient-to-br from--emerald-500/10 via--emerald-600/10 to--emerald-500/10 border-y">
+      <div className="bg-gradient-to-br from-emerald-500/10 via-emerald-600/10 to-emerald-500/10 border-y">
         <div className="container py-16">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-4">Still Have Questions?</h2>
@@ -276,7 +264,7 @@ export default function FAQPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 rounded-full bg--emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
                     📧
                   </div>
                   <h3 className="font-semibold mb-2">Email Us</h3>
@@ -285,7 +273,7 @@ export default function FAQPage() {
                   </p>
                   <a
                     href={`mailto:${SUPPORT_EMAIL}`}
-                    className="text-sm text--emerald-500 hover:underline font-medium"
+                    className="text-sm text-emerald-500 hover:underline font-medium"
                   >
                     {SUPPORT_EMAIL}
                   </a>
@@ -294,7 +282,7 @@ export default function FAQPage() {
 
               <Card className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 rounded-full bg--emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
                     📞
                   </div>
                   <h3 className="font-semibold mb-2">Phone Support</h3>
@@ -303,7 +291,7 @@ export default function FAQPage() {
                   </p>
                   <a
                     href={PHONE_SUPPORT_LINK}
-                    className="text-sm text--emerald-500 hover:underline font-medium"
+                    className="text-sm text-emerald-500 hover:underline font-medium"
                   >
                     {PHONE_SUPPORT_LABEL}
                   </a>
@@ -312,7 +300,7 @@ export default function FAQPage() {
 
               <Card className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 rounded-full bg--emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
                     🛍️
                   </div>
                   <h3 className="font-semibold mb-2">Visit Markets</h3>
@@ -321,7 +309,7 @@ export default function FAQPage() {
                   </p>
                   <a
                     href="/markets"
-                    className="text-sm text--emerald-500 hover:underline font-medium"
+                    className="text-sm text-emerald-500 hover:underline font-medium"
                   >
                     See Market Locations
                   </a>

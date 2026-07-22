@@ -235,7 +235,7 @@ export default function RegisterPage() {
             <Leaf className="h-8 w-8 text-emerald-600" />
             <span className="text-2xl font-bold text-emerald-900">Taste of Gratitude</span>
           </Link>
-          <h1 className="text-3xl font-bold text-emerald-900 mb-2">Start Your Wellness Journey</h1>
+          <h1 className="text-3xl font-bold text-emerald-900 mb-2">Start Your Weekly Menu</h1>
           <p className="text-emerald-700">Create an account to unlock exclusive rewards and personalized recommendations</p>
         </div>
 

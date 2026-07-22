@@ -277,7 +277,7 @@ export default function NewCampaignPage() {
                 <Label htmlFor="subject">Email Subject *</Label>
                 <Input
                   id="subject"
-                  placeholder="e.g., Your Summer Wellness Journey Starts Here"
+                  placeholder="e.g., Your Summer Weekly Menu Starts Here"
                   value={campaignData.subject}
                   onChange={(e) => setCampaignData({ ...campaignData, subject: e.target.value })}
                 />
