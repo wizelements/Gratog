@@ -5,8 +5,8 @@ import {
   ArrowRight,
   CheckCircle,
   Clock,
+  Mail,
   MapPin,
-  MessageCircle,
   Package,
   ShoppingBag,
   Sparkles,
@@ -84,20 +84,20 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
 
           <div className="rounded-[2rem] border border-white/20 bg-white/95 p-5 text-stone-950 shadow-2xl shadow-emerald-950/40">
             <div className="rounded-[1.5rem] bg-emerald-50 p-4">
-              <MessageCircle className="h-6 w-6 text-emerald-700" aria-hidden="true" />
-              <h2 className="mt-3 text-2xl font-semibold text-stone-950">Weekly menu texts</h2>
+              <Mail className="h-6 w-6 text-emerald-700" aria-hidden="true" />
+              <h2 className="mt-3 text-2xl font-semibold text-stone-950">Weekly menu email</h2>
               <p className="mt-2 text-sm leading-6 text-stone-600">
-                Drop your number and pick your preferred market. We send one menu text before market day with a direct preorder link.
+                Drop your email and pick your preferred market. We send one menu email before market day with a direct preorder link.
               </p>
               <div className="mt-5">
                 <RetentionForm
-                  intent="weekly_menu_texts"
+                  intent="weekly_menu_email"
                   source="weekly_menu_landing"
-                  title="Text me the menu"
+                  title="Email me the menu"
                   description=""
-                  cta="Text me the menu"
-                  collectEmail={false}
-                  collectPhone
+                  cta="Email me the menu"
+                  collectEmail
+                  collectPhone={false}
                   collectMarket
                   marketOptions={marketOptions}
                   compact
@@ -160,7 +160,7 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {[
-              { icon: MessageCircle, title: 'Get the menu text', text: 'Know what is fresh before you arrive.' },
+              { icon: Mail, title: 'Get the menu email', text: 'Know what is fresh before you arrive.' },
               { icon: ShoppingBag, title: 'Reserve your batch', text: 'Use the direct link to preorder for your market.' },
               { icon: Package, title: 'Pick up fresh', text: 'Grab your order at the booth and taste what is new.' },
             ].map(({ icon: Icon, title, text }, index) => (
@@ -183,7 +183,7 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
             <Sparkles className="h-8 w-8 text-emerald-200" aria-hidden="true" />
             <h2 className="mt-4 text-3xl font-semibold tracking-tight">Join the Gratitude Box waitlist.</h2>
             <p className="mt-3 text-emerald-50/90">
-              A reserved weekly box of gels, drinks, and shots at your chosen market. Pause or skip any week.
+              A reserved weekly box of gels, drinks, and shots at your chosen market. Join the pilot waitlist to be first in line when the program opens.
             </p>
             <Button asChild className="mt-6 h-12 rounded-full bg-white px-6 text-emerald-950 hover:bg-emerald-50">
               <Link href="/subscriptions/gratitude-box">
@@ -222,10 +222,10 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
           <div>
             <h2 className="text-3xl font-semibold tracking-tight">Not ready to preorder yet?</h2>
             <p className="mt-3 max-w-2xl text-emerald-50/90">
-              Get one text per week with the menu and a direct preorder link. No spam. Reply STOP to opt out.
+              Get one email per week with the menu and a direct preorder link. No spam. Unsubscribe anytime.
             </p>
             <div className="mt-5 grid gap-2 text-sm text-emerald-50/90 sm:grid-cols-3">
-              {['Weekly menu texts', 'Market reminders', 'First access to limited batches'].map((item) => (
+              {['Weekly menu emails', 'Market reminders', 'First access to limited batches'].map((item) => (
                 <p key={item} className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-emerald-200" aria-hidden="true" />
                   {item}
@@ -234,13 +234,13 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
             </div>
           </div>
           <RetentionForm
-            intent="weekly_menu_texts"
+            intent="weekly_menu_email"
             source="weekly_menu_footer"
-            title="Get weekly menu texts"
-            description="Drop your number and preferred market."
-            cta="Text me the menu"
-            collectEmail={false}
-            collectPhone
+            title="Get weekly menu emails"
+            description="Drop your email and preferred market."
+            cta="Email me the menu"
+            collectEmail
+            collectPhone={false}
             collectMarket
             marketOptions={marketOptions}
           />

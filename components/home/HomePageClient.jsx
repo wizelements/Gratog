@@ -7,13 +7,12 @@ import {
   CheckCircle2,
   Clock,
   Heart,
+  Mail,
   MapPin,
-  MessageCircle,
   Package,
   Repeat,
   ShoppingBag,
   Sparkles,
-  Star,
   Store,
   Users,
 } from 'lucide-react';
@@ -46,9 +45,9 @@ const STAT_CARDS = [
 
 const ORDERING_STEPS = [
   {
-    icon: MessageCircle,
+    icon: Mail,
     title: 'Join the weekly menu',
-    text: 'Start with a low-friction text so you know what is fresh before market day.',
+    text: 'Start with the weekly email so you know what is fresh before market day.',
   },
   {
     icon: ShoppingBag,
@@ -67,29 +66,6 @@ const ORDERING_STEPS = [
   },
 ];
 
-const RETENTION_PROMPTS = [
-  {
-    title: 'Reorder reminder',
-    text: 'Get a nudge before your weekly staples usually run out.',
-    intent: 'reorder_reminder',
-  },
-  {
-    title: 'Referral prompt',
-    text: 'Send a friend to the booth and get notified when referral rewards go live.',
-    intent: 'referral_prompt',
-  },
-  {
-    title: 'Review request',
-    text: 'Share what you tried so new customers know where to start.',
-    intent: 'review_request',
-  },
-  {
-    title: 'Subscription waitlist',
-    text: 'Be first to know when weekly wellness boxes can recur automatically.',
-    intent: 'subscription_waitlist',
-  },
-];
-
 function ingredientPreview(product) {
   return product.ingredients.slice(0, 3).join(', ');
 }
@@ -103,7 +79,7 @@ function availabilityLabel(product) {
 
 function ProductMarketCard({ product, priority = false, commerceProduct = null }) {
   const storefrontProduct = useMemo(() => commerceProduct || toStorefrontProduct(product), [commerceProduct, product]);
-  const benefit = product.wellnessSupport[0] || 'Weekly wellness';
+  const productSize = product.sizes?.[0] || '';
 
   return (
     <Card className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-emerald-900/10 bg-white shadow-sm shadow-emerald-950/5 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-950/10">
@@ -128,11 +104,10 @@ function ProductMarketCard({ product, priority = false, commerceProduct = null }
               {product.name}
             </Link>
           </div>
-          <p className="shrink-0 text-lg font-bold text-emerald-800">${product.price.toFixed(2)}</p>
+          <p className="shrink-0 text-lg font-bold text-emerald-800">${product.price.toFixed(2)}{productSize && <span className="ml-1 text-xs font-medium text-stone-500">· {productSize}</span>}</p>
         </div>
         <p className="text-sm leading-6 text-stone-600">{product.shortDescription}</p>
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-800">{benefit}</span>
           <span className="rounded-full bg-stone-100 px-3 py-1 font-medium text-stone-700">{ingredientPreview(product)}</span>
         </div>
         <div className="mt-auto pt-5">
@@ -175,7 +150,6 @@ export default function HomePageClient({
   initialCatalogCount = null,
   organizationSchema,
   faqSchema,
-  featuredReviews = [],
 }) {
   const [activeCategory, setActiveCategory] = useState('all');
   const weeklyProducts = useMemo(() => getWeeklyMenuProducts(activeCategory), [activeCategory]);
@@ -195,7 +169,6 @@ export default function HomePageClient({
     commerceProductByKey.get(normalizeProductKey(product.slug)) ||
     commerceProductByKey.get(normalizeProductKey(product.name)) ||
     null;
-  const hasFeaturedReviews = Array.isArray(featuredReviews) && featuredReviews.length > 0;
   const totalWeeklyItems = getWeeklyMenuProducts('all').length;
   const catalogBadge = Number.isFinite(initialCatalogCount) && initialCatalogCount > 0
     ? `${initialCatalogCount} live catalog items`
@@ -213,22 +186,19 @@ export default function HomePageClient({
               {WEEKLY_MENU.eyebrow} • {catalogBadge}
             </p>
             <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-              Your weekly farmers market wellness routine starts here.
+              Fresh sea moss gels, drinks, and shots for Atlanta farmers market pickup.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90 sm:text-xl">
-              Taste of Gratitude is a fresh weekly menu of sea moss gels, lemonades, refreshers, and shots made in small batches for local pickup, education, and repeat wellness routines.
+              A new small-batch menu drops every week. Preorder online, then pick up fresh at Serenbe or Dunwoody.
             </p>
             <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
               <Button asChild className="h-14 rounded-full bg-white px-8 text-base font-bold text-emerald-950 hover:bg-emerald-50">
                 <Link href="/weekly-menu?utm_source=homepage_hero&utm_campaign=passive_preorder_funnel" onClick={() => track('home_preorder_click', { source: 'homepage_hero_weekly_menu_cta' })}>
-                  Get Menu Texts
+                  View this week&apos;s menu
                 </Link>
               </Button>
               <Button asChild variant="outline" className="h-14 rounded-full border-white/30 bg-transparent px-8 text-base font-bold text-white hover:bg-white/10 hover:text-white">
-                <Link href="/catalog">Shop This Week</Link>
-              </Button>
-              <Button asChild variant="outline" className="h-14 rounded-full border-white/30 bg-transparent px-8 text-base font-bold text-white hover:bg-white/10 hover:text-white">
-                <Link href="/quiz">Take the Wellness Quiz</Link>
+                <Link href="/markets">Find a market</Link>
               </Button>
             </div>
             <p className="mt-4 text-sm text-emerald-50/80">
@@ -250,12 +220,12 @@ export default function HomePageClient({
               ))}
             </div>
           </div>
-          <div id="weekly-texts" className="rounded-[2rem] border border-white/20 bg-white/95 p-4 text-stone-950 shadow-2xl shadow-emerald-950/40 sm:p-5">
+          <div id="weekly-emails" className="rounded-[2rem] border border-white/20 bg-white/95 p-4 text-stone-950 shadow-2xl shadow-emerald-950/40 sm:p-5">
             <div className="overflow-hidden rounded-[1.5rem] bg-stone-100">
               <img src="/images/gratog-bg.PNG" alt="Taste of Gratitude market products" className="h-64 w-full object-cover sm:h-80" />
             </div>
             <div className="mt-5 grid gap-4 sm:grid-cols-3">
-              {['Menu text', 'Reserve', 'Pickup'].map((item, index) => (
+              {['Menu email', 'Reserve', 'Pickup'].map((item, index) => (
                 <div key={item} className="rounded-2xl bg-emerald-50 p-3 text-center">
                   <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">0{index + 1}</p>
                   <p className="font-semibold text-emerald-950">{item}</p>
@@ -264,13 +234,13 @@ export default function HomePageClient({
             </div>
             <div className="mt-5">
               <RetentionForm
-                intent="weekly_menu_texts"
+                intent="weekly_menu_email"
                 source="homepage_hero"
-                title="Get weekly menu texts"
-                description="Drop your number for menu drops, limited-batch reminders, and pickup updates before market day."
-                cta="Text me the menu"
-                collectEmail={false}
-                collectPhone
+                title="Get weekly menu emails"
+                description="Join the email list for this week’s menu, limited-batch reminders, and pickup updates."
+                cta="Email me the menu"
+                collectEmail
+                collectPhone={false}
                 metadata={{ sourceCampaign: 'passive_preorder_funnel' }}
                 compact
               />
@@ -350,9 +320,9 @@ export default function HomePageClient({
           <div className="sticky top-24 rounded-[2rem] border border-emerald-900/10 bg-emerald-950 p-6 text-white shadow-xl shadow-emerald-950/15">
             <Sparkles className="h-8 w-8 text-emerald-200" aria-hidden="true" />
             <h2 className="mt-4 text-3xl font-semibold">Find your starting point.</h2>
-            <p className="mt-3 leading-7 text-emerald-50/90">Answer four questions and get a primary product, backup product, and bundle suggestion based on your wellness goal, product preference, cadence, and avoid list.</p>
+            <p className="mt-3 leading-7 text-emerald-50/90">Answer four questions and get a primary product, backup product, and bundle suggestion based on your flavor preference, product format, cadence, and avoid list.</p>
             <Button asChild className="mt-6 h-12 rounded-full bg-white px-6 text-emerald-950 hover:bg-emerald-50">
-              <Link href="/quiz">Take the Wellness Quiz <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+              <Link href="/quiz">Take the Product Quiz <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
             </Button>
           </div>
         </div>
@@ -367,8 +337,8 @@ export default function HomePageClient({
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Founder story</p>
             <h2 className="mt-2 text-4xl font-semibold tracking-tight text-stone-950">Built from a health journey, then shared at the farmers market.</h2>
             <div className="mt-5 space-y-4 text-base leading-8 text-stone-700">
-              <p>Taste of Gratitude began as Jenneisha&apos;s personal wellness routine: soaking, blending, and sharing sea moss with family before it became a market table.</p>
-              <p>The brand works because customers do not just buy a drink. They learn how sea moss fits into smoothies, teas, daily minerals, hydration, and weekly routines — then they come back.</p>
+              <p>Taste of Gratitude began as Jenneisha&apos;s personal routine: soaking, blending, and sharing sea moss with family before it became a market table.</p>
+              <p>The brand works because customers do not just buy a drink. They learn how sea moss fits into smoothies, teas, hydration, and weekly routines — then they come back.</p>
             </div>
             <Button asChild variant="outline" className="mt-6 h-12 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
               <Link href="/about">Read the story</Link>
@@ -426,7 +396,7 @@ export default function HomePageClient({
         <div className="container">
           <div className="mb-8 text-center">
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Bundle system</p>
-            <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">Subscription-ready boxes without waiting on backend automation.</h2>
+            <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">Build a box from this week’s menu.</h2>
           </div>
           <div className="grid gap-5 lg:grid-cols-3">
             {BUNDLES.slice(0, 3).map((bundle) => (
@@ -448,22 +418,10 @@ export default function HomePageClient({
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Community proof</p>
             <h2 className="mt-2 text-3xl font-semibold text-stone-950">A farmers market brand grows through real routines.</h2>
-            <div className="mt-6 grid gap-4">
-              {hasFeaturedReviews ? featuredReviews.map((review, index) => (
-                <blockquote key={`${review.name || 'review'}-${index}`} className="rounded-[1.5rem] border border-stone-200 bg-white p-5 shadow-sm">
-                  <div className="mb-3 flex gap-1 text-yellow-500" aria-label={`${review.rating} star review`}>
-                    {Array.from({ length: Math.max(1, Math.round(Number(review.rating) || 5)) }).map((_, starIndex) => <Star key={starIndex} className="h-4 w-4 fill-current" aria-hidden="true" />)}
-                  </div>
-                  <p className="leading-7 text-stone-700">“{review.comment}”</p>
-                  <footer className="mt-4 text-sm font-semibold text-stone-950">{review.name || 'Taste of Gratitude customer'}</footer>
-                </blockquote>
-              )) : [
-                'The booth makes wellness feel approachable, not intimidating.',
-                'I love being able to taste, ask questions, and come back the next week.',
-                'The drinks make sea moss easy to work into my routine.',
-              ].map((quote) => (
-                <blockquote key={quote} className="rounded-[1.5rem] border border-stone-200 bg-white p-5 shadow-sm leading-7 text-stone-700">“{quote}”</blockquote>
-              ))}
+            <div className="mt-6 rounded-[1.5rem] border border-stone-200 bg-white p-5 shadow-sm">
+              <p className="leading-7 text-stone-700">
+                Real customer reviews will appear here as they are collected. If you have tried Taste of Gratitude, share your review at the market or email us.
+              </p>
             </div>
           </div>
           <div className="grid gap-4">
@@ -475,26 +433,6 @@ export default function HomePageClient({
                 <Link href="/wholesale">Wholesale inquiry</Link>
               </Button>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {RETENTION_PROMPTS.map((prompt) => (
-                <div key={prompt.intent} className="rounded-[1.5rem] border border-emerald-900/10 bg-white p-4 shadow-sm">
-                  <MessageCircle className="h-5 w-5 text-emerald-700" aria-hidden="true" />
-                  <h3 className="mt-3 font-semibold text-stone-950">{prompt.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-stone-600">{prompt.text}</p>
-                  <div className="mt-4">
-                    <RetentionForm
-                      intent={prompt.intent}
-                      source="homepage_retention_prompt"
-                      title={prompt.title}
-                      description={prompt.text}
-                      cta="Notify me"
-                      collectPhone={prompt.intent === 'reorder_reminder' || prompt.intent === 'subscription_waitlist'}
-                      compact
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
@@ -504,9 +442,9 @@ export default function HomePageClient({
           <div>
             <Heart className="h-8 w-8 text-emerald-200" aria-hidden="true" />
             <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">Keep the weekly routine going.</h2>
-            <p className="mt-3 max-w-2xl leading-7 text-emerald-50/90">Join the email list for menu drops, sea moss education, market reminders, subscription updates, referral prompts, and review requests.</p>
+            <p className="mt-3 max-w-2xl leading-7 text-emerald-50/90">Join the email list for menu drops, sea moss education, market reminders, and early subscription updates.</p>
             <div className="mt-5 grid gap-2 text-sm text-emerald-50/90 sm:grid-cols-3">
-              {['Weekly menu drops', 'Market pickup reminders', 'Subscription waitlist'].map((item) => (
+              {['Weekly menu drops', 'Market pickup reminders', 'Product education'].map((item) => (
                 <p key={item} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-200" aria-hidden="true" />{item}</p>
               ))}
             </div>
@@ -514,7 +452,7 @@ export default function HomePageClient({
           <RetentionForm
             intent="email_signup"
             source="homepage_retention_footer"
-            title="Join the wellness community"
+            title="Join the weekly menu email"
             description="Get the next menu, product education, reorder reminders, and early subscription updates."
             cta="Join weekly emails"
           />

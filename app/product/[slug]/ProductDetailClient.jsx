@@ -232,13 +232,11 @@ export default function ProductDetailClient({ product, slug }) {
   const productStory =
     product.productStory ||
     product.story ||
-    `This product is part of Taste of Gratitude's weekly small-batch rhythm: simple ingredients, careful prep, and a calmer way to bring market-made wellness into your routine.`;
+    `This product is part of Taste of Gratitude's weekly small-batch rhythm: simple ingredients, careful prep, and a calmer way to bring market-made freshness into your routine.`;
   const intendedUse =
     product.intendedUse ||
-    (Array.isArray(product.wellnessSupport) && product.wellnessSupport.length > 0 ? product.wellnessSupport.join(', ') : '') ||
     'Best for customers who want an approachable, ingredient-forward product that feels easy to use throughout the week.';
   const customerQuote = product.customerQuote || product.testimonial || '“You can tell it is made with care — it feels fresh, real, and easy to come back to.”';
-  const wellnessSupport = Array.isArray(product.wellnessSupport) ? product.wellnessSupport : [];
   const allergens = Array.isArray(product.allergens) ? product.allergens.filter(Boolean) : [];
   const pickupInfo = product.pickupAvailability || pickupGuidance;
   const shippingInfo = product.shippingAvailability || 'Eligible items and shipping fees are confirmed before payment.';
@@ -458,7 +456,7 @@ export default function ProductDetailClient({ product, slug }) {
                   <div>
                     <p className="font-semibold text-amber-950">Made for weekly market pickup.</p>
                     <p className="mt-2 text-sm leading-6 text-amber-900">
-                      {product.checkoutUnavailableReason || 'This item works best through the weekly menu and market preorder rhythm. Get the menu text first, then reserve when your pickup window opens.'}
+                      {product.checkoutUnavailableReason || 'This item works best through the weekly menu and market preorder rhythm. Get the menu email first, then reserve when your pickup window opens.'}
                     </p>
                   </div>
                   <RetentionForm
@@ -545,15 +543,6 @@ export default function ProductDetailClient({ product, slug }) {
               <h3 className="font-semibold text-gray-900 mb-3">What to expect</h3>
               <div className="space-y-3 text-base text-gray-700 leading-relaxed">
                 <p>{flavorNotes}</p>
-                {wellnessSupport.length > 0 && (
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {wellnessSupport.map((support) => (
-                      <span key={support} className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
-                        {support}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
 
@@ -669,7 +658,7 @@ export default function ProductDetailClient({ product, slug }) {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-600">Premium wildcrafted sea moss with natural ingredients.</p>
+                    <p className="text-gray-600">Small-batch sea moss product with simple ingredients.</p>
                   )}
                   <div className="mt-6 rounded-xl bg-stone-50 p-4 text-sm text-stone-700">
                     <p className="font-semibold text-stone-950">Allergens & sensitivities</p>

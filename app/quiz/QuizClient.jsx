@@ -10,7 +10,7 @@ import { QUIZ_QUESTIONS, getQuizRecommendation } from '@/data/quiz';
 import { toStorefrontProduct } from '@/data/products';
 
 const INITIAL_ANSWERS = {
-  support: 'daily minerals',
+  support: 'first-timer variety',
   productType: 'not sure',
   frequency: 'trying for first time',
   avoid: 'none',
@@ -18,7 +18,7 @@ const INITIAL_ANSWERS = {
 
 export default function QuizClient() {
   const [answers, setAnswers] = useState(INITIAL_ANSWERS);
-  const [customer, setCustomer] = useState({ name: '', email: '', phone: '', smsOptIn: true });
+  const [customer, setCustomer] = useState({ name: '', email: '', phone: '', smsOptIn: false });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -60,7 +60,7 @@ export default function QuizClient() {
       <section className="border-b border-emerald-900/10 bg-gradient-to-b from-[#f6f2e8] via-[#fbfaf5] to-white py-12 sm:py-16">
         <div className="container max-w-5xl text-center">
           <p className="mb-4 inline-flex rounded-full border border-emerald-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-800 shadow-sm">
-            Wellness quiz • personalized weekly path
+            Product quiz • personalized weekly path
           </p>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-6xl">Find your Taste of Gratitude starting point.</h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-stone-700">
@@ -73,7 +73,7 @@ export default function QuizClient() {
         <form onSubmit={handleSubmit} className="rounded-[2rem] border border-emerald-900/10 bg-white p-5 shadow-sm sm:p-7">
           <div className="mb-6 flex items-center gap-3">
             <Sparkles className="h-6 w-6 text-emerald-700" aria-hidden="true" />
-            <h2 className="text-2xl font-semibold text-stone-950">Your routine</h2>
+            <h2 className="text-2xl font-semibold text-stone-950">Your preferences</h2>
           </div>
 
           <div className="space-y-7">
@@ -104,10 +104,10 @@ export default function QuizClient() {
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <Input value={customer.name} onChange={(event) => setCustomer((current) => ({ ...current, name: event.target.value }))} placeholder="Name (optional)" />
                 <Input type="email" value={customer.email} onChange={(event) => setCustomer((current) => ({ ...current, email: event.target.value }))} placeholder="Email address" required />
-                <Input type="tel" value={customer.phone} onChange={(event) => setCustomer((current) => ({ ...current, phone: event.target.value }))} placeholder="Phone for menu texts (optional)" />
+                <Input type="tel" value={customer.phone} onChange={(event) => setCustomer((current) => ({ ...current, phone: event.target.value }))} placeholder="Phone for menu alerts (optional when SMS is connected)" />
                 <label className="flex items-center gap-2 text-sm text-emerald-900">
                   <input type="checkbox" checked={customer.smsOptIn} onChange={(event) => setCustomer((current) => ({ ...current, smsOptIn: event.target.checked }))} />
-                  Send weekly menu texts when SMS is connected
+                  Send weekly menu alerts when SMS is connected
                 </label>
               </div>
             </div>
@@ -136,7 +136,7 @@ export default function QuizClient() {
               <h3 className="mt-2 text-xl font-semibold text-stone-950">{recommendation.primary.name}</h3>
               <p className="mt-2 text-sm leading-6 text-stone-600">{recommendation.primary.shortDescription}</p>
               <div className="mt-4 flex flex-wrap gap-2 text-xs">
-                {recommendation.primary.wellnessSupport.slice(0, 3).map((tag) => <span key={tag} className="rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-800">{tag}</span>)}
+                {recommendation.primary.ingredients.slice(0, 4).map((tag) => <span key={tag} className="rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-800">{tag}</span>)}
               </div>
               <QuickAddButton product={primaryStorefront} selectedVariant={primaryStorefront.variations?.[0]} className="mt-4 h-11 w-full rounded-full bg-emerald-700 text-white hover:bg-emerald-800" />
             </div>

@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       { upsert: true }
     );
 
-    if ((document.email || document.phone) && ['weekly_menu_texts', 'email_signup', 'subscription_waitlist', 'preorder_intent_no_market'].includes(document.intent)) {
+    if ((document.email || document.phone) && ['weekly_menu_email', 'email_signup', 'subscription_waitlist', 'preorder_intent_no_market'].includes(document.intent)) {
       await db.collection('newsletter_subscribers').updateOne(
         document.email ? { email: document.email } : { phone: document.phone },
         {

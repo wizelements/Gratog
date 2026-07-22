@@ -440,7 +440,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
               Shop what feels good for your week.
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-stone-700">
-              Wildcrafted sea moss gels, fresh drinks, wellness shots, and seasonal market staples prepared with intention.
+              Wildcrafted sea moss gels, fresh drinks, shots, and seasonal market staples prepared with intention.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-2 text-sm font-medium text-emerald-900">
               <span className="rounded-full bg-white px-4 py-2 shadow-sm">Market pickup</span>
@@ -492,7 +492,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                     <h3 className="text-xl font-semibold text-gray-900">Info Board Mode</h3>
                   </div>
                   <p className="text-gray-600">
-                    Explore products by wellness goals. Filter by health benefits to find what supports your journey.
+                    Explore products by flavor and ingredient direction. Filter by preference tags to discover your next favorite.
                   </p>
                 </CardContent>
               </Card>
@@ -508,7 +508,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
           <div className="container grid gap-4 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Passive menu funnel</p>
-              <h2 className="mt-2 text-2xl font-semibold text-stone-950">New here? Get the weekly menu text before you reserve.</h2>
+              <h2 className="mt-2 text-2xl font-semibold text-stone-950">New here? Get the weekly menu email before you reserve.</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
                 Browse today, then let us text the next menu drop, pickup reminder, and market-specific preorder link when batches are open.
               </p>
@@ -548,7 +548,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                   ref={searchInputRef}
                   type="search"
                   inputMode="search"
-                  placeholder="Search ginger, energy, immunity, strawberry..."
+                  placeholder="Search ginger, berry, hydrating, strawberry..."
                   value={searchQuery}
                   onChange={handleSearchChange}
                   className="min-h-[52px] rounded-full border-emerald-200 bg-white pl-12 pr-12 text-base shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
@@ -757,7 +757,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                   <p className="mb-2 text-xl font-semibold text-stone-950">No matching products yet.</p>
                   <p className="mx-auto mb-5 max-w-md text-sm leading-6 text-stone-600">
                     {isSearchMode 
-                      ? `Try a broader term than "${searchQuery}" — ginger, energy, immunity, lemonade, or sea moss can help.`
+                      ? `Try a broader term than "${searchQuery}" — ginger, berry, hydrating, lemonade, or sea moss can help.`
                       : 'Try clearing filters or browsing the full market menu.'
                     }
                   </p>
@@ -781,7 +781,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                   <Droplets className="h-6 w-6 text-emerald-700" aria-hidden="true" />
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-gray-900">100% Wildcrafted</p>
+                  <p className="font-semibold text-gray-900">100% Small-batch</p>
                   <p className="text-sm text-gray-600">Rich Mineral Content</p>
                 </div>
               </div>

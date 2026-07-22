@@ -122,7 +122,7 @@ export default function RetentionForm({
           <Input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email address" autoComplete="email" required={!collectPhone || requireEmail} />
         )}
         {collectPhone && (
-          <Input name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="Phone for menu texts" autoComplete="tel" required />
+          <Input name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="Phone for menu alerts (optional when SMS is connected)" autoComplete="tel" required />
         )}
         {collectMarket && marketOptions.length > 0 && (
           <select
@@ -153,7 +153,12 @@ export default function RetentionForm({
           {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : null}
           {cta}
         </Button>
-        <p className="text-xs leading-5 text-stone-500">No spam. Reply STOP to opt out of texts when SMS automation is connected.</p>
+        {collectPhone && (
+          <p className="text-xs leading-5 text-stone-500">No spam. Reply STOP to opt out of texts when SMS automation is connected.</p>
+        )}
+        {!collectPhone && (
+          <p className="text-xs leading-5 text-stone-500">No spam. Unsubscribe anytime from the weekly email.</p>
+        )}
       </form>
     </div>
   );

@@ -753,7 +753,7 @@ function PreorderPageContent() {
               intent="weekly_menu_texts"
               source="preorder_market_step"
               title="Not ready to preorder?"
-              description="Get the next weekly menu text, pickup reminder, and preorder window before market day. If you are unsure which market is closest, tell us your area."
+              description="Get the next weekly menu email, pickup reminder, and preorder window before market day. If you are unsure which market is closest, tell us your area."
               cta="Text me the weekly menu"
               collectEmail={false}
               collectPhone
