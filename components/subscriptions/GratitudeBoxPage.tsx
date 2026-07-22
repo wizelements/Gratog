@@ -48,8 +48,8 @@ export default function GratitudeBoxPage({ markets, bundles }: GratitudeBoxPageP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.email && !form.phone) {
-      setError('Email or phone is required');
+    if (!form.email) {
+      setError('Email is required to join the pilot waitlist');
       return;
     }
     setLoading(true);
@@ -91,19 +91,19 @@ export default function GratitudeBoxPage({ markets, bundles }: GratitudeBoxPageP
         <div className="container grid gap-10 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
           <div>
             <p className="mb-5 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-50">
-              Weekly subscription waitlist
+              Gratitude Box pilot / waitlist
             </p>
             <h1 className="max-w-4xl text-balance text-4xl font-semibold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
-              The Gratitude Box: a reserved weekly batch.
+              The Gratitude Box: a reserved market pickup box.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90 sm:text-xl">
-              A curated box of gels, drinks, and shots set aside at your market every week. Pause, skip, or cancel anytime.
+              A curated box of gels, drinks, and shots set aside at your market. Join the pilot: reserve one box at a time while we build recurring billing.
             </p>
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
               {[
-                { label: 'Set weekly box', value: 'Reserved' },
+                { label: 'Pilot box', value: 'Reserved' },
                 { label: 'Pickup', value: 'Your market' },
-                { label: 'Flexibility', value: 'Pause anytime' },
+                { label: 'Commitment', value: 'One box at a time' },
               ].map((stat) => (
                 <div key={stat.label} className="rounded-2xl border border-white/15 bg-white/10 p-4">
                   <p className="text-xs uppercase tracking-[0.16em] text-emerald-100">{stat.label}</p>
@@ -127,7 +127,7 @@ export default function GratitudeBoxPage({ markets, bundles }: GratitudeBoxPageP
                   <p className="mt-1 text-sm text-emerald-700">
                     {paymentUrl
                       ? 'Complete secure Square checkout to reserve your first Gratitude Box pilot week.'
-                      : 'We will text you before your first Gratitude Box week.'}
+                      : 'We will email you before your first Gratitude Box pilot week.'}
                   </p>
                   {paymentUrl ? (
                     <Button asChild className="mt-4 rounded-full bg-emerald-700 text-white hover:bg-emerald-800">
@@ -147,13 +147,13 @@ export default function GratitudeBoxPage({ markets, bundles }: GratitudeBoxPageP
                       <Input id="name" name="name" value={form.name} onChange={handleChange} placeholder="Your name" className="mt-1 rounded-xl" />
                     </div>
                     <div>
-                      <Label htmlFor="phone" className="text-stone-700">Phone *</Label>
-                      <Input id="phone" name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="(555) 123-4567" className="mt-1 rounded-xl" required />
+                      <Label htmlFor="phone" className="text-stone-700">Phone</Label>
+                      <Input id="phone" name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="(555) 123-4567" className="mt-1 rounded-xl" />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="email" className="text-stone-700">Email</Label>
-                    <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} placeholder="you@example.com" className="mt-1 rounded-xl" />
+                    <Label htmlFor="email" className="text-stone-700">Email *</Label>
+                    <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} placeholder="you@example.com" className="mt-1 rounded-xl" required />
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
@@ -210,13 +210,13 @@ export default function GratitudeBoxPage({ markets, bundles }: GratitudeBoxPageP
         <div className="container">
           <div className="mb-8 text-center">
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">How it works</p>
-            <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">A simple weekly rhythm.</h2>
+            <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">A simple pilot process.</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {[
-              { icon: Package, title: 'Pick your box', text: 'Choose a featured bundle or build your own recurring mix.' },
+              { icon: Package, title: 'Pick your box', text: 'Choose a featured bundle or build your own mix for the week.' },
               { icon: Calendar, title: 'Set your market', text: 'We set aside your batch for pickup at your chosen market.' },
-              { icon: Pause, title: 'Stay flexible', text: 'Skip a week, pause, or cancel before billing each cycle.' },
+              { icon: Pause, title: 'Stay flexible', text: 'Pilot members can pause or skip before the next box cycle is billed.' },
             ].map(({ icon: Icon, title, text }, index) => (
               <div key={title} className="rounded-[1.5rem] border border-stone-200 bg-white p-5">
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-emerald-700 text-white">
@@ -237,12 +237,12 @@ export default function GratitudeBoxPage({ markets, bundles }: GratitudeBoxPageP
             <Sparkles className="h-8 w-8 text-emerald-200" aria-hidden="true" />
             <h2 className="mt-4 text-3xl font-semibold tracking-tight">Not ready for a subscription?</h2>
             <p className="mt-3 max-w-2xl text-emerald-50/90">
-              Get one text per week with the menu and a direct preorder link. No spam. Reply STOP to opt out.
+              Get the weekly menu by email with a direct preorder link. No spam. Unsubscribe anytime.
             </p>
           </div>
           <div className="flex justify-end">
             <Button asChild variant="outline" className="h-12 rounded-full border-white/30 bg-transparent px-8 text-white hover:bg-white/10">
-              <Link href="/weekly-menu">Join weekly menu texts →</Link>
+              <Link href="/weekly-menu">Join weekly menu emails →</Link>
             </Button>
           </div>
         </div>

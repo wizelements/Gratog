@@ -6,8 +6,8 @@ import { getActiveMarketPickups } from '@/data/markets';
 import { BUNDLES, getFeaturedBundles } from '@/data/bundles';
 
 export const metadata: Metadata = {
-  title: 'Gratitude Box Weekly Subscription | Taste of Gratitude',
-  description: 'Reserve a weekly box of sea moss gels, lemonades, refreshers, and wellness shots for pickup at your Atlanta farmers market. Pause or skip any week.',
+  title: 'Gratitude Box Pilot | Taste of Gratitude',
+  description: 'Reserve a curated box of sea moss gels, lemonades, refreshers, and wellness shots for pickup at your Atlanta farmers market. One box at a time while we build recurring billing.',
   alternates: { canonical: '/subscriptions/gratitude-box' },
 };
 

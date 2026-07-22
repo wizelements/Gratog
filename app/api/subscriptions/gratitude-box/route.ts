@@ -11,7 +11,7 @@ import { BUNDLES } from '@/data/bundles';
 
 const SubscriptionSchema = z.object({
   name: z.string().max(120).optional().or(z.literal('')),
-  email: z.string().email().optional().or(z.literal('')),
+  email: z.string().email(),
   phone: z.string().max(40).optional().or(z.literal('')),
   marketId: z.string().min(1).max(80),
   bundleId: z.string().min(1).max(80),
@@ -45,8 +45,8 @@ export async function POST(request: NextRequest) {
   }
 
   const data = parsed.data;
-  if (!data.email && !data.phone) {
-    return NextResponse.json({ success: false, error: 'Email or phone is required' }, { status: 400 });
+  if (!data.email) {
+    return NextResponse.json({ success: false, error: 'Email is required' }, { status: 400 });
   }
 
   const paymentConfigured = isSquarePaymentConfigured();
