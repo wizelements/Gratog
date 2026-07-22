@@ -1,6 +1,6 @@
 export const metadata = {
   title: 'Contact Taste of Gratitude',
-  description: 'Contact Taste of Gratitude for order support, market pickup questions, weekly menu help, wholesale conversations, and wellness product guidance.',
+  description: 'Contact Taste of Gratitude for order support, market pickup questions, weekly menu help, wholesale conversations, and product guidance.',
   alternates: { canonical: '/contact' },
   openGraph: {
     title: 'Contact Taste of Gratitude',

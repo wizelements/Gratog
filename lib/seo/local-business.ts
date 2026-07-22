@@ -80,7 +80,7 @@ export function getMarketEventSchema(location: MarketLocation, date: string, bas
     '@context': 'https://schema.org',
     '@type': 'Event',
     name: `Taste of Gratitude at ${location.name}`,
-    description: `Visit our booth for wildcrafted sea moss gel and wellness products at ${location.name}. ${location.description}`,
+    description: `Visit our booth for sea moss gel and products at ${location.name}. ${location.description}`,
     image: `${baseUrl}/images/market-event.jpg`,
     
     startDate: `${date}T${openTime.replace(':', '')}:00`,
@@ -164,7 +164,7 @@ export function getLocationKeywords(city: string, state: string): string[] {
   return [
     `sea moss ${city}`,
     `sea moss gel ${city}`,
-    `wildcrafted sea moss ${city} ${state}`,
+    `sea moss ${city} ${state}`,
     `buy sea moss ${city}`,
     `sea moss near me ${city}`,
     `Irish moss ${city}`,

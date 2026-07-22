@@ -50,7 +50,7 @@ export default function NotFound() {
               Page Not Found
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              We couldn't find the page you're looking for. But don't worry, there's plenty of wellness to explore!
+              We couldn't find the page you're looking for. But don't worry, there's plenty to explore!
             </p>
           </div>
 

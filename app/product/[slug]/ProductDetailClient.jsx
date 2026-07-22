@@ -591,7 +591,7 @@ export default function ProductDetailClient({ product, slug }) {
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-xl bg-stone-50 p-4">
                   <p className="font-semibold text-stone-950">Why it exists</p>
-                  <p className="mt-2 text-sm leading-6 text-stone-600">To make weekly wellness feel simple, flavorful, and rooted in a real market experience.</p>
+                  <p className="mt-2 text-sm leading-6 text-stone-600">To make weekly routine feel simple, flavorful, and rooted in a real market experience.</p>
                 </div>
                 <div className="rounded-xl bg-stone-50 p-4">
                   <p className="font-semibold text-stone-950">Routine fit</p>

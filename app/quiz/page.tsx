@@ -2,7 +2,7 @@ import QuizClient from './QuizClient';
 
 export const metadata = {
   title: 'Wellness Quiz | Taste of Gratitude',
-  description: 'Take the Taste of Gratitude wellness quiz to find sea moss gels, drinks, refreshers, shots, and bundles for your weekly routine.',
+  description: 'Take the Taste of Gratitude quiz to find sea moss gels, drinks, refreshers, shots, and bundles for your weekly routine.',
   alternates: { canonical: '/quiz' },
   openGraph: {
     title: 'Taste of Gratitude Wellness Quiz',

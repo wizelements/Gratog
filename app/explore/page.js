@@ -13,7 +13,7 @@ export default function ExploreHomepage() {
       id: 'ingredients',
       icon: <Sparkles className="h-8 w-8" />,
       title: 'Ingredient Explorer',
-      description: 'Discover 46 powerful ingredients and their wellness benefits',
+      description: 'Discover 46 powerful ingredients and their flavor stories',
       color: 'from-emerald-500 to-green-600',
       href: '/explore/ingredients',
       emoji: '🌿'

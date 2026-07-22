@@ -246,6 +246,11 @@
       "permanent": true
     },
     {
+      "source": "/subscriptions",
+      "destination": "/catalog",
+      "permanent": true
+    },
+    {
       "source": "/health",
       "destination": "/api/health",
       "permanent": false

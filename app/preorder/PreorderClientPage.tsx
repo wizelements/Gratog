@@ -856,7 +856,7 @@ function PreorderPageContent() {
           ) : (
             <>
               <div className="mx-4 mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
-                <h2 className="font-semibold text-amber-900">Samples at the booth. Preorders for intentional wellness.</h2>
+                <h2 className="font-semibold text-amber-900">Samples at the booth. Preorders for intentional routine.</h2>
                 <p className="text-sm text-amber-800 mt-1">
                   If you want to try first, visit us at the market. If you are stocking up for your routine,
                   reserve ahead — the ${PREORDER_MINIMUM} reservation minimum helps us prep your batch fresh.

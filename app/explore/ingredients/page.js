@@ -57,7 +57,7 @@ export default function IngredientsPage() {
             Ingredient Explorer
           </h1>
           <p className="text-xl text-emerald-300 mb-8 max-w-2xl mx-auto">
-            Discover {ingredients.length} powerful ingredients and their wellness benefits
+            Discover {ingredients.length} powerful ingredients and their flavor stories
           </p>
           <div className="flex items-center justify-center gap-2 text-white/60">
             <Sparkles className="h-5 w-5 text-emerald-400" />

@@ -158,7 +158,7 @@ export function getProductMetadata(product: {
   const keywords = [
     product.name.toLowerCase(),
     'sea moss gel',
-    'wildcrafted sea moss',
+    'sea moss',
     product.category,
     ...benefitKeywords,
     'buy online',
@@ -228,7 +228,7 @@ export function getBlogMetadata(post: {
 export function getFAQMetadata(baseUrl: string) {
   return generateMetadata({
     title: 'Frequently Asked Questions - Sea Moss Guide',
-    description: 'Common questions about sea moss gel, benefits, usage, storage, and more. Expert answers to help you get the most from your wildcrafted sea moss.',
+    description: 'Common questions about sea moss gel, benefits, usage, storage, and more. Expert answers to help you get the most from your sea moss.',
     keywords: [
       'sea moss FAQ',
       'sea moss questions',
@@ -248,10 +248,10 @@ export function getFAQMetadata(baseUrl: string) {
 export function getAboutMetadata(baseUrl: string) {
   return generateMetadata({
     title: 'About Us - Premium Wildcrafted Sea Moss',
-    description: 'Learn about Taste of Gratitude. Our story, mission, and commitment to providing the highest quality wildcrafted sea moss products from pristine ocean waters.',
+    description: 'Learn about Taste of Gratitude. Our story, mission, and commitment to providing the highest quality sea moss products from pristine ocean waters.',
     keywords: [
       'about taste of gratitude',
-      'wildcrafted sea moss',
+      'sea moss',
       'sustainable harvesting',
       'organic sea moss',
       'sea moss company',

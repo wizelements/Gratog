@@ -5,7 +5,7 @@ export const OrganizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Taste of Gratitude',
-  description: 'Small-batch wildcrafted sea moss gels, wellness drinks, refreshers, and shots prepared for Atlanta market pickup.',
+  description: 'Small-batch sea moss gels, drinks, refreshers, and shots prepared for Atlanta market pickup.',
   url: 'https://tasteofgratitude.shop',
   logo: 'https://tasteofgratitude.shop/logo.png',
   image: 'https://tasteofgratitude.shop/og/brand.jpg',
@@ -70,7 +70,7 @@ export function ProductSchema(product, reviews) {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
-    description: product.description || `Premium wildcrafted ${product.name} from Taste of Gratitude`,
+    description: product.description || `Premium ${product.name} from Taste of Gratitude`,
     image: product.image || product.images?.[0] || 'https://tasteofgratitude.shop/og/product-default.jpg',
     brand: {
       '@type': 'Brand',
@@ -104,7 +104,7 @@ export function ProductSchema(product, reviews) {
       {
         '@type': 'PropertyValue',
         name: 'Routine',
-        value: 'Mineral-focused small-batch sea moss wellness product'
+        value: 'Small-batch sea moss gel or drink'
       },
       {
         '@type': 'PropertyValue',
@@ -226,7 +226,7 @@ export function SubscriptionSchema() {
     '@type': 'Product',
     '@id': 'https://tasteofgratitude.shop/subscriptions',
     name: 'Taste of Gratitude Subscription Plans',
-    description: 'Flexible wellness subscriptions with premium wildcrafted sea moss products',
+    description: 'Flexible reserved boxes with premium sea moss products',
     brand: { '@type': 'Brand', name: 'Taste of Gratitude' },
     offers: [
       {
@@ -322,7 +322,7 @@ export function buildHomepageOrganizationSchema() {
         '@type': 'Organization',
         '@id': 'https://tasteofgratitude.shop/#organization',
         name: 'Taste of Gratitude',
-        description: 'Atlanta farmers market wellness brand offering small-batch sea moss gels, wellness drinks, refreshers, and shots.',
+        description: 'Atlanta farmers market brand offering small-batch sea moss gels, drinks, refreshers, and shots.',
         url: 'https://tasteofgratitude.shop',
         logo: 'https://tasteofgratitude.shop/logo.png',
         image: 'https://tasteofgratitude.shop/images/gratog-bg.PNG',
@@ -335,7 +335,7 @@ export function buildHomepageOrganizationSchema() {
         '@type': 'LocalBusiness',
         '@id': 'https://tasteofgratitude.shop/#localbusiness',
         name: 'Taste of Gratitude',
-        description: 'Small-batch sea moss Atlanta wellness brand serving weekly market menu drops and local farmers market pickup.',
+        description: 'Small-batch Atlanta sea moss brand serving weekly market menu drops and local farmers market pickup.',
         url: 'https://tasteofgratitude.shop',
         image: 'https://tasteofgratitude.shop/images/gratog-bg.PNG',
         priceRange: '$$',
@@ -371,7 +371,7 @@ export function buildHomepageFaqSchema() {
         name: 'What is sea moss?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Sea moss is a red seaweed traditionally used in Caribbean and Irish kitchens. Taste of Gratitude blends it into smooth gels and drinks that customers can add to everyday wellness routines.'
+          text: 'Sea moss is a red seaweed traditionally used in Caribbean and Irish kitchens. Taste of Gratitude blends it into smooth gels and drinks that customers can add to everyday routines.'
         }
       },
       {
@@ -384,10 +384,10 @@ export function buildHomepageFaqSchema() {
       },
       {
         '@type': 'Question',
-        name: 'Is your sea moss wildcrafted or pool-grown?',
+        name: 'Is your sea moss or pool-grown?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Taste of Gratitude uses wildcrafted sea moss and keeps each product page transparent about ingredients, allergens, and routine fit.'
+          text: 'Taste of Gratitude uses sea moss and keeps each product page transparent about ingredients, allergens, and routine fit.'
         }
       },
       {
@@ -395,7 +395,7 @@ export function buildHomepageFaqSchema() {
         name: 'What makes Taste of Gratitude sea moss different?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Taste of Gratitude is a weekly farmers market wellness brand. Products are made in small batches, tied to menu drops, and supported by market pickup, education, and founder-led guidance.'
+          text: 'Taste of Gratitude is a weekly farmers market brand. Products are made in small batches, tied to menu drops, and supported by market pickup, education, and founder-led guidance.'
         }
       }
     ]
