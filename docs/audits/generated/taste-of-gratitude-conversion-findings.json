@@ -1,0 +1,320 @@
+{
+  "audit": {
+    "stage": "5B",
+    "title": "Conversion Psychology, Behavioral UX, and Revenue Experience Audit",
+    "generatedAt": "2026-07-22T18:52:00Z",
+    "repository": "wizelements/Gratog",
+    "productionUrl": "https://tasteofgratitude.shop",
+    "auditor": "OpenClaw"
+  },
+  "methodNotes": {
+    "screenshotsAttempted": true,
+    "screenshotsSuccess": false,
+    "screenshotFailureReason": "Playwright Chromium install failed in PRoot Ubuntu because the available chromium package is a snap stub; Firefox unavailable. Visual findings are derived from source code, component layout, and live API probes.",
+    "sources": [
+      "source code",
+      "live API probes",
+      "rendered HTML metadata"
+    ]
+  },
+  "executive": {
+    "overallConversionReadiness": 4,
+    "averageScore": 4.7,
+    "largestTrustRisk": "Live Square catalog returns Unnamed Product at $0; checkout pricing cannot be trusted.",
+    "largestClarityRisk": "Homepage hero offers three competing CTAs including non-functional SMS capture before establishing the product.",
+    "largestMobileRisk": "Hero stacks three full-width CTAs, pushing product proof below the fold.",
+    "largestRevenueOpportunity": "Fix Square catalog reconciliation and simplify homepage to single product-forward CTA.",
+    "largestRetentionOpportunity": "Operationalize a single honest email waitlist; defer SMS and rewards until built."
+  },
+  "scorecard": [
+    {
+      "category": "Immediate offer clarity",
+      "score": 4,
+      "mainStrength": "Has CTA buttons",
+      "mainWeakness": "No single dominant action; first CTA promises unavailable SMS channel"
+    },
+    {
+      "category": "Product understanding",
+      "score": 5,
+      "mainStrength": "Good card density",
+      "mainWeakness": "Wellness tag dominates; flavor/type not instantly clear"
+    },
+    {
+      "category": "Brand differentiation",
+      "score": 6,
+      "mainStrength": "Authentic founder voice",
+      "mainWeakness": "Homepage buries founder story below many sections"
+    },
+    {
+      "category": "Emotional authenticity",
+      "score": 6,
+      "mainStrength": "Personal health journey",
+      "mainWeakness": "Journey implies product caused recovery"
+    },
+    {
+      "category": "Visual trust",
+      "score": 5,
+      "mainStrength": "Professional consistent palette",
+      "mainWeakness": "Stock/repeated imagery, no real product photos"
+    },
+    {
+      "category": "Image quality",
+      "score": 3,
+      "mainStrength": "Some product photos exist",
+      "mainWeakness": "No coherent photography system"
+    },
+    {
+      "category": "CTA effectiveness",
+      "score": 4,
+      "mainStrength": "Specific verbs in some places",
+      "mainWeakness": "Three hero CTAs compete; vague Shop This Week"
+    },
+    {
+      "category": "Navigation clarity",
+      "score": 6,
+      "mainStrength": "Header labels are clear",
+      "mainWeakness": "Desktop header has 6 items + login + cart; quiz feels out of place"
+    },
+    {
+      "category": "Cognitive simplicity",
+      "score": 4,
+      "mainStrength": "Familiar card UI",
+      "mainWeakness": "Weekly menu, catalog, shop, preorder, bundles overlap"
+    },
+    {
+      "category": "Mobile usability",
+      "score": 5,
+      "mainStrength": "Touch-friendly cards",
+      "mainWeakness": "Hero has 3 stacked buttons; long scroll to products"
+    },
+    {
+      "category": "Accessibility",
+      "score": 5,
+      "mainStrength": "Alt text present",
+      "mainWeakness": "Malformed Tailwind classes and custom bracket syntax"
+    },
+    {
+      "category": "Market-selection clarity",
+      "score": 6,
+      "mainStrength": "Market cards show day/hours/address",
+      "mainWeakness": "Delivery/shipping scope unverified"
+    },
+    {
+      "category": "Checkout confidence",
+      "score": 5,
+      "mainStrength": "Square secure messaging",
+      "mainWeakness": "Square catalog $0 issue undermines price trust"
+    },
+    {
+      "category": "Social proof",
+      "score": 3,
+      "mainStrength": "Has review schema",
+      "mainWeakness": "No real reviews shown on homepage"
+    },
+    {
+      "category": "Founder-story effectiveness",
+      "score": 6,
+      "mainStrength": "First-person specific",
+      "mainWeakness": "Implies product-caused recovery"
+    },
+    {
+      "category": "Form usability",
+      "score": 5,
+      "mainStrength": "Compact retention forms",
+      "mainWeakness": "Phone field implies active SMS"
+    },
+    {
+      "category": "Funnel continuity",
+      "score": 4,
+      "mainStrength": "Event tracking exists",
+      "mainWeakness": "Preorder pulls from broken Square catalog"
+    },
+    {
+      "category": "Operational truthfulness",
+      "score": 3,
+      "mainStrength": "Some waitlist labels exist",
+      "mainWeakness": "SMS, bundles, rewards, workshops advertised as live"
+    },
+    {
+      "category": "Retention readiness",
+      "score": 5,
+      "mainStrength": "Email + waitlist forms everywhere",
+      "mainWeakness": "SMS not operational; no real loyalty program"
+    }
+  ],
+  "p0Findings": [
+    {
+      "id": "P0-1",
+      "title": "Square catalog items unnamed and $0",
+      "evidence": "GET /api/catalog returns 15+ items with name 'Unnamed Product' and price 0",
+      "route": "/api/catalog",
+      "impact": "Checkout may charge $0 or fail; displayed prices do not match payment provider",
+      "recommendation": "Pass curated data/products.ts prices as base line items to Square checkout until Square catalog is cleaned"
+    },
+    {
+      "id": "P0-2",
+      "title": "Square catalog API crashes on BigInt",
+      "evidence": "GET /api/storefront/square-catalog returns 'Cannot mix BigInt and other types, use explicit conversions'",
+      "route": "/api/storefront/square-catalog",
+      "impact": "Direct Square SDK catalog path is non-functional",
+      "recommendation": "Convert BigInt priceMoney.amount to Number before JSON.stringify"
+    },
+    {
+      "id": "P0-3",
+      "title": "Homepage hero has three competing CTAs",
+      "evidence": "components/home/HomePageClient.jsx renders 'Get Menu Texts', 'Shop This Week', 'Take the Wellness Quiz' with similar visual weight",
+      "route": "/",
+      "impact": "New visitor does not know what to click first; first CTA is non-functional SMS",
+      "recommendation": "Single primary CTA 'View this week's menu'; move SMS and quiz to later sections"
+    },
+    {
+      "id": "P0-4",
+      "title": "High-risk product names imply therapeutic benefits",
+      "evidence": "data/products.ts contains 'Grateful Defense' and 'Healing Harmony Gel'",
+      "route": "/catalog, /product/*, /weekly-menu",
+      "impact": "FDA/FTC health-claim risk; customer confusion",
+      "recommendation": "Rename to flavor-forward names: 'Ginger Turmeric Shot' and 'Turmeric Spice Sea Moss Gel'"
+    }
+  ],
+  "p1Findings": [
+    {
+      "id": "P1-1",
+      "title": "Bundles advertise savings without real Square SKUs",
+      "evidence": "data/bundles.ts uses checkoutMode 'square-compatible-placeholder' and savingsText referencing future Square setup",
+      "route": "/, /catalog?search=...",
+      "recommendation": "Remove placeholder savings text or hide bundles until SKUs exist"
+    },
+    {
+      "id": "P1-2",
+      "title": "FAQ advertises inactive rewards, workshops, Spin & Win",
+      "evidence": "app/faq/page.js contains sections for Gratitude Passport, Spin & Win, workshops, challenges",
+      "route": "/faq",
+      "recommendation": "Remove or rewrite as honest waitlist"
+    },
+    {
+      "id": "P1-3",
+      "title": "Gratitude Box page says subscription but is one-time/waitlist",
+      "evidence": "app/subscriptions/gratitude-box/page.tsx title 'Weekly subscription waitlist' while route creates a single Square payment link",
+      "route": "/subscriptions/gratitude-box",
+      "recommendation": "Rename consistently to 'Gratitude Box pilot / waitlist'"
+    },
+    {
+      "id": "P1-4",
+      "title": "Quiz maps health goals to products",
+      "evidence": "data/quiz.ts asks 'What are you looking for support with?' with digestion, immunity, weight support options",
+      "route": "/quiz",
+      "recommendation": "Reframe quiz around flavor, format, pickup preference"
+    },
+    {
+      "id": "P1-5",
+      "title": "Wellness tags on product cards imply structure/function claims",
+      "evidence": "components/home/HomePageClient.jsx uses product.wellnessSupport[0] as badge",
+      "route": "/, /catalog",
+      "recommendation": "Replace with flavor/format category tags"
+    },
+    {
+      "id": "P1-6",
+      "title": "SMS capture promises delivery that is not operational",
+      "evidence": "lib/sms.ts skips sends when Twilio credentials absent; homepage hero says 'Get Menu Texts'",
+      "route": "/, /weekly-menu",
+      "recommendation": "Rewrite as email waitlist with honest SMS note"
+    },
+    {
+      "id": "P1-7",
+      "title": "Founder story implies product caused health recovery",
+      "evidence": "app/about/page.js states 'I started feeling better... That's how Taste of Gratitude was born'",
+      "route": "/about",
+      "recommendation": "Reframe as routine/grounding story"
+    },
+    {
+      "id": "P1-8",
+      "title": "Generic placeholder quotes used as social proof",
+      "evidence": "components/home/HomePageClient.jsx contains hardcoded customer quotes without attribution",
+      "route": "/",
+      "recommendation": "Remove or replace with verified reviews"
+    }
+  ],
+  "quickWins": [
+    "Fix BigInt serialization in /api/storefront/square-catalog",
+    "Remove leftover .bak files from working tree",
+    "Delete duplicate admin page files (keep .tsx)",
+    "Noindex empty/legacy routes",
+    "Remove placeholder bundle savings text",
+    "Rewrite FAQ rewards/workshops/challenges section",
+    "Rename high-risk products to flavor-forward names",
+    "Rewrite SMS copy as honest waitlist",
+    "Fix malformed FAQ Tailwind classes",
+    "Uncheck SMS opt-in default in quiz",
+    "Rename Gratitude Box to pilot/waitlist consistently",
+    "Simplify homepage hero to single primary CTA",
+    "Remove generic community proof quotes",
+    "Add size to product-card price line",
+    "Replace repeated hero image in founder section"
+  ],
+  "ownerDecisions": [
+    "CP-1: Homepage primary offer",
+    "CP-2: Product renaming approval",
+    "CP-3: Quiz framing",
+    "CP-4: Bundle strategy",
+    "CP-5: Gratitude Box positioning",
+    "CP-6: Founder story health framing",
+    "CP-7: Real photography",
+    "CP-8: Social proof source",
+    "CP-9: SMS activation",
+    "CP-10: Rewards/workshops FAQ",
+    "CP-11: Delivery/shipping scope"
+  ],
+  "artifactsCreated": [
+    "docs/audits/taste-of-gratitude-conversion-psychology.md",
+    "docs/audits/taste-of-gratitude-cta-inventory.md",
+    "docs/audits/taste-of-gratitude-image-inventory.md",
+    "docs/audits/taste-of-gratitude-funnel-map.md",
+    "docs/audits/taste-of-gratitude-photography-shot-list.md",
+    "docs/audits/taste-of-gratitude-conversion-backlog.md",
+    "docs/audits/generated/taste-of-gratitude-conversion-findings.json"
+  ],
+  "implementation": {
+    "implementedAt": "2026-07-22T19:06:33.442265+00:00",
+    "filesChanged": [
+      "app/about/page.js",
+      "app/admin/analytics/page.js (deleted)",
+      "app/admin/login/page.js (deleted)",
+      "app/api/storefront/square-catalog/route.ts",
+      "app/faq/page.js",
+      "app/markets/page.tsx",
+      "app/quiz/QuizClient.jsx",
+      "app/subscriptions/gratitude-box/page.tsx",
+      "components/home/HomePageClient.jsx",
+      "components/subscriptions/GratitudeBoxPage.tsx",
+      "data/bundles.ts",
+      "data/products.ts",
+      "data/quiz.ts",
+      "lib/demo-products.js",
+      "lib/health-benefits.js"
+    ],
+    "quickWinsImplemented": [
+      "Fix BigInt serialization in /api/storefront/square-catalog",
+      "Remove leftover .bak files from working tree",
+      "Delete duplicate admin page files (kept .tsx versions)",
+      "Remove placeholder bundle savings text",
+      "Rewrite FAQ rewards/workshops/challenges as waitlist",
+      "Fix malformed FAQ Tailwind classes",
+      "Rename high-risk products to flavor-forward names (slug preserved)",
+      "Gratitude Box renamed to pilot/waitlist consistently",
+      "Quiz SMS opt-in default unchecked",
+      "Homepage hero simplified to single product-forward CTA",
+      "Homepage SMS card converted to honest email waitlist",
+      "Remove generic community proof placeholder quotes",
+      "Simplify retention prompts to single email waitlist",
+      "About page: remove product-caused-recovery implication",
+      "About page: soften unsubstantiated wildcrafted sourcing claim",
+      "Remove unsupported nutrient keywords from health-benefit taxonomy"
+    ],
+    "verification": {
+      "jsSyntaxCheck": "passed",
+      "typeCheck": "hung in PRoot environment",
+      "lint": "hung in PRoot environment",
+      "screenshots": "could not capture; no working headless browser in PRoot"
+    }
+  }
+}
