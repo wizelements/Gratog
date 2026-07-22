@@ -39,10 +39,48 @@ This file records the probes and checks performed during the audit. It will be u
 | About page | Read `app/about/page.js` | Removed product-caused-recovery implication; softened sourcing claim |
 | Health-benefit keywords | Grep `lib/health-benefits.js` | Removed "92 minerals", "mineral rich", "antioxidants", "vitamin c", "collagen", "elasticity" |
 | JS syntax | `node --check` | `app/about/page.js`, `app/faq/page.js`, `lib/health-benefits.js`, `lib/demo-products.js` pass |
-| Type check | `npx tsc --noEmit --skipLibCheck` | **Hung / could not complete in PRoot** — risk noted |
-| Lint | `npx eslint` on changed files | **Hung / could not complete in PRoot** — risk noted |
+| `npx vitest run tests/square-price-serializer.test.ts` | PRoot | **Passed (30/30)** — earlier in session; later attempts hung due to environment degradation | Serializer unit tests green |
+| Type check | `npx tsc --noEmit --skipLibCheck` | **Hung / could not complete in PRoot** — must run in normal environment | Risk noted |
+| Lint | `npx eslint` on changed files | **Hung / could not complete in PRoot** — must run in normal environment | Risk noted |
 
----
+## Post-Implementation Changes (2026-07-22 continuation)
+
+| Change | Files | Status |
+|---|---|---|
+| Homepage retention end-to-end | `components/home/HomePageClient.jsx`, `app/page.js`, `app/page-mobile-redirect.js`, `components/RetentionForm.jsx`, `app/api/lead/route.ts`, `app/weekly-menu/page.tsx`, `components/weekly-menu/WeeklyMenuPage.tsx`, `app/preorder/PreorderClientPage.tsx`, `app/product/[slug]/ProductDetailClient.jsx`, `app/quiz/QuizClient.jsx`, `components/catalog/CatalogPageClient.jsx` | Implemented; not visually verified |
+| Square serializer + route validation | `lib/square-price-serializer.ts`, `app/api/storefront/square-catalog/route.ts`, `tests/square-price-serializer.test.ts` | Implemented; serializer tests pass; route type-check/lint not run |
+| Health-goal filter → flavor preference | `lib/health-benefits.js`, `data/quiz.ts`, `data/products.ts` | Implemented; key rename + ingredient signals |
+| Claims cleanup repository-wide | `app/info-board/page.js`, `components/catalog/CatalogPageClient.jsx`, `app/faq/page.js`, `app/about/page.js`, `lib/seo/*`, `lib/email-templates.js`, `lib/email/templates.js`, `data/ingredients/shared-ingredients.ts`, `lib/ingredient-data-extended.js`, `lib/ingredient-taxonomy.js`, `app/explore/*`, auth pages, `app/api/ics/market-route/route.js` | Implemented; remaining learning-module health education noted |
+| Product/bundle display names | `data/products.ts`, `data/bundles.ts`, `app/markets/page.tsx`, `lib/demo-products.js` | Implemented; stable slugs preserved |
+| Gratitude Box pilot waitlist | `app/subscriptions/gratitude-box/page.tsx`, `components/subscriptions/GratitudeBoxPage.tsx`, `app/api/subscriptions/gratitude-box/route.ts` | Implemented |
+| Duplicate/backup file cleanup | `app/admin/analytics/page.js`, `app/admin/login/page.js`, `components/checkout/SquarePaymentForm.tsx.bak` | Removed |
+
+## Commits (local, not pushed)
+
+| Hash | Subject |
+|---|---|
+| `03c27b8b` | fix(home): align retention and menu prompts with active email capability |
+| `33d14497` | fix(content): remove unsupported health and sourcing claims |
+| `035e3503` | refactor(discovery): replace health-goal filtering with product preferences |
+| `04a2e51b` | fix(marketing): align Gratitude Box with pilot waitlist status |
+| `cb3ff0cf` | fix(storefront): validate and serialize Square catalog pricing |
+| `f4c95a67` | docs(audit): stage 5b evidence and deletion ledger |
+| `1dfebeb9` | docs(audit): stage 5b read-only audit artifacts |
+
+## Unrelated modifications left uncommitted
+
+- `lib/square-api.ts`
+- `package.json`
+- `package-lock.json`
+- `scripts/verify-square-auth.js` (mode change only)
+
+## Still blocked / not verified
+
+- Type-check, lint, and full test suite (PRoot environment hangs).
+- Vercel preview deployment and screenshots (no working headless browser; no deploy performed).
+- End-to-end checkout, webhook, and email delivery.
+- Mobile navigation and 404/error states across breakpoints.
+- Lighthouse, structured-data validation, broken-link crawl.
 
 ## Not Yet Verified (Requires Implementation or Owner Input)
 

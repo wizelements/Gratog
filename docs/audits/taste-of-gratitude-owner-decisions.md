@@ -12,48 +12,31 @@ This register collects business decisions that cannot be inferred from the repos
 
 ## D1 — Canonical price authority
 
-**Question:** When a customer checks out, should the price come from Square catalog or from the curated `data/products.ts` prices displayed on the site?
+**Status:** Resolved by safe default.
 
-**Evidence:**
-- `/api/catalog` returns Square items as `"Unnamed Product"` / `$0`.
-- `/api/storefront/square-catalog` crashes on BigInt serialization.
-- Homepage/weekly menu/catalog show curated prices ($10–$25).
+**Decision:** Use `data/products.ts` as the temporary canonical authority for customer-facing product names, stable slugs, descriptions, and published storefront prices. Square remains the payment processor; prices are passed as ad-hoc line-item base prices until the Square catalog is cleaned.
 
-**Risk:** If Square data is used, customers will be charged $0 or checkout will fail. If curated data is used, Square catalog remains dirty.
-
-**Proposed safe default:** Treat `data/products.ts` as canonical for the customer-facing site and pass curated prices to Square as ad-hoc line-item base prices in `createPaymentLink` until Square catalog is cleaned.
-
-**Owner answer:** __________________________________________________
+**Owner answer:** Adopted safe default — `data/products.ts` is canonical until Square catalog is reconciled.
 
 ---
 
 ## D2 — Square catalog cleanup
 
-**Question:** Should the existing Square catalog items be renamed and priced in Square, or should the site stop relying on Square catalog for product metadata?
+**Status:** Resolved by safe default.
 
-**Evidence:**
-- 15+ Square items live with no name/price.
-- No mapping table connects curated slugs to Square IDs.
+**Decision:** The site no longer relies on Square catalog for customer-facing metadata. Unnamed/$0 Square records are rejected by the storefront serializer and are not shown as purchasable. Owner may clean Square catalog later; the application will accept valid mapped records when they appear.
 
-**Risk:** Square is the payment provider; ad-hoc pricing bypasses Square catalog but still works.
-
-**Proposed safe default:** Clean Square catalog manually (owner) for the items that should be live, then add `squareId`/`variationId` to `data/products.ts`. Until then, use curated prices at checkout.
-
-**Owner answer:** __________________________________________________
+**Owner answer:** Adopted safe default — Square catalog is not the customer-facing authority until cleaned.
 
 ---
 
 ## D3 — Product slug ↔ Square ID mapping
 
-**Question:** Who provides the correct Square `itemId` and `variationId` for each curated product?
+**Status:** Resolved by safe default.
 
-**Evidence:**
-- `data/products.ts` does not contain Square IDs for curated items.
-- Sitemap currently lists `/product/<square-id>` URLs.
+**Decision:** Until owner provides Square IDs, checkout uses curated product prices and names. A mapping table can be added to `data/products.ts` when Square IDs are available.
 
-**Proposed safe default:** Owner logs into Square Dashboard → Items and provides the mapping; I will add it to a new `squareMapping` field in `data/products.ts` and update the sitemap.
-
-**Owner answer / mapping sheet:** __________________________________________________
+**Owner answer:** Adopted safe default — mapping table deferred until Square catalog is cleaned.
 
 ---
 
