@@ -143,3 +143,27 @@ Each claim is classified using FDA/FTC guidance categories. This is a technical/
 | P2 | Reduce repetition of "weekly routine" / "wellness journey" | homepage, FAQ, retention forms |
 | P2 | Verify and qualify sourcing claims | `app/about/page.js` |
 | P2 | Verify and qualify shipping/delivery claims | `app/faq/page.js`, `lib/delivery-zones.ts` |
+
+## 8. Email-template claims classification (2026-07-23)
+
+Active surfaces (routed to customers):
+
+| Claim / wording | Source | Public surface | Claim type | Risk | Disposition |
+|---|---|---|---|---|---|
+| "wellness community" / "wellness journey" / "wellness tips" | `lib/resend-email.js` | welcome, newsletter confirmation, review confirmation, rewards | General wellness / lifestyle framing | Low-Medium | **Fixed** — replaced with "community", "weekly routine", "recipe tips" |
+| "Premium Wildcrafted Sea Moss" | `lib/resend-email.js` | email footer | Unsupported sourcing claim | Medium | **Fixed** — replaced with "Premium Sea Moss" |
+| "Nourish Your Wellness Journey" | `lib/resend-email.js` | newsletter confirmation header | General wellness / vague benefit | Low | **Fixed** — replaced with "Your Weekly Menu Awaits" |
+| "Your wellness boost arrives!" | `lib/resend-email.js` | order status email | Implied functional benefit | Low-Medium | **Fixed** — replaced with "Your market order is here!" |
+| "this journey to better health" | `lib/resend-email.js` | welcome email | Implied health improvement | Medium | **Fixed** — replaced with "this weekly routine" |
+| "2 stamps = Free 2oz wellness shot" / "VIP wellness club status" | `lib/resend-email.js` | rewards email | Wellness framing of loyalty program | Low | **Fixed** — replaced with "2oz shot" / "VIP market club status"; left "Wellness Shots" product category name untouched (owner decision #8) |
+| "Wellness Streak" / "Positive wellness habit" / "wellness check-in" | `lib/email/templates.js` | challenge streak email | Wellness framing of habit feature | Low | **Fixed** — replaced with "Weekly Streak" / "Positive weekly habit" / "weekly check-in" |
+
+Inactive / dead code (no callers found):
+
+| Claim / wording | Source | Status | Disposition |
+|---|---|---|---|
+| "wellness products" / "wellness routine" / "daily wellness anchor" / "Resume your wellness routine" / "Come Back to Your Wellness Journey" | `lib/email-templates.js` | No imports in the codebase; dead code | **Inactive** — leave as-is or delete file if no revival planned |
+| Goal-based quiz emails: "Boost Immunity", "Gut Health", "Natural Energy", "Radiant Glow", "Calm Focus", "Immune Support - Boost your natural defenses", "Wildcrafted and small-batch crafted", fake testimonial "I already feel more energized! My immune system feels stronger" | `lib/quiz-emails.js` | No callers; quiz now returns flavor preferences | **Inactive** — leave as-is or delete file; if reactivated, must be rewritten to flavor-based recommendations and remove fake testimonial |
+| "wellness journey begins", "vibrant wellness", "transform your health", "Premium Wildcrafted Sea Moss" | `lib/nurture-sequence.js` | No imports in the codebase | **Inactive** — leave as-is or delete file |
+| "Enjoy your wellness boost!" | `lib/order-status-notifier.js` | No callers found | **Inactive** — leave as-is or delete if unused |
+

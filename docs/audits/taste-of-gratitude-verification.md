@@ -178,3 +178,48 @@ Removed wildcrafted/wellness/superfood language from `lib/seo/local-business.ts`
 - End-to-end lead creation, checkout, webhook, and email flows on a runtime with real credentials.
 - Screenshots and accessibility scan (no headless browser on this device).
 - Gate 8 classification of email templates and internal copy surfaces.
+
+## 2026-07-23 — Final email cleanup and lint verification
+
+### Email claims cleanup commit
+
+| Hash | Subject |
+|---|---|
+| `e9e534a2` | fix(email): remove wellness/wildcrafted claims from active transactional emails |
+
+Updated active transactional copy in `lib/resend-email.js` and `lib/email/templates.js`:
+- Replaced "wellness community" / "wellness journey" / "wellness tips" with "community", "weekly routine", "recipe tips".
+- Replaced "Premium Wildcrafted Sea Moss" footer with "Premium Sea Moss".
+- Replaced "wellness boost" / "wellness club" with "market order" / "market club".
+- Replaced "wellness check-in" / "Wellness Streak" with "weekly check-in" / "Weekly Streak".
+- Left product display names (e.g. "Wellness Shots") untouched per owner decision #8.
+
+### Full lint run
+
+| Check | Result |
+|---|---|
+| `npm run lint` | Exit 0; only pre-existing warnings (unused variables) remain; no new errors from Stage 5B changes |
+
+### Final commit ledger on `audit/tog-stage5b-verification`
+
+| Hash | Subject |
+|---|---|
+| `03c27b8b` | fix(home): align retention and menu prompts with active email capability |
+| `33d14497` | fix(content): remove unsupported health and sourcing claims |
+| `035e3503` | refactor(discovery): replace health-goal filtering with product preferences |
+| `04a2e51b` | fix(marketing): align Gratitude Box with pilot waitlist status |
+| `cb3ff0cf` | fix(storefront): validate and serialize Square catalog pricing |
+| `f4c95a67` | docs(audit): stage 5b evidence and deletion ledger |
+| `1dfebeb9` | docs(audit): stage 5b read-only audit artifacts |
+| `9b2e4400` | docs(audit): update verification and owner-decision register |
+| `7986a2e9` | fix(stage5b): add missing /subscriptions redirect and remove remaining public wellness/wildcrafted claims |
+| `9857caee` | fix(stage5b): repair build syntax errors and stale gate expectations |
+| `ae102563` | fix(seo): remove remaining wildcrafted, wellness, and superfood claims from SEO surfaces |
+| `e9e534a2` | fix(email): remove wellness/wildcrafted claims from active transactional emails |
+| `2d8bd9e5` | docs(audit): record stage 5b CI repair session evidence |
+
+### Final status
+
+- Branch `audit/tog-stage5b-verification` is green on CI, Vercel preview, local `npm run build`, and local `npm run lint`.
+- Local `main` and the unrelated pre-existing stash remain untouched.
+- Remaining work before merge: screenshots/accessibility evidence on a browser-capable host, and owner approval of renamed products / "Wellness Shots" category name.
