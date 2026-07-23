@@ -41,7 +41,7 @@ export function getRecipeSchema(recipe: {
       position: index + 1,
       text: step,
     })),
-    keywords: 'sea moss smoothie, healthy recipe, superfood, wellness drink',
+    keywords: 'sea moss smoothie, sea moss recipe, fresh market drinks',
   };
 }
 

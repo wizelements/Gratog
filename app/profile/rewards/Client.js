@@ -37,7 +37,7 @@ export default function RewardsPage() {
     {
       name: 'Free 2oz Shot',
       points: 100,
-      description: 'Redeem for a complimentary 2oz wellness shot',
+      description: 'Redeem for a complimentary 2oz shot',
       icon: Gift,
       color: 'from-emerald-400 to-teal-500'
     },

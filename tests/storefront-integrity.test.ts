@@ -14,7 +14,7 @@ describe('storefront-integrity', () => {
         name: 'Mango Sea Moss Gel',
         slug: 'mango-sea-moss-gel',
         description: 'Fresh mango sea moss gel made in small batches for daily wellness support.',
-        benefitStory: 'Crafted weekly with wildcrafted sea moss and real fruit for mineral-rich nutrition.',
+        benefitStory: 'Crafted weekly with sea moss and real fruit for clean, simple ingredients.',
         image: 'https://cdn.example.com/mango-gel.jpg',
         images: ['https://cdn.example.com/mango-gel.jpg'],
         ingredients: [{ name: 'Sea Moss', benefits: ['Mineral support'] }, { name: 'Mango' }],

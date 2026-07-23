@@ -80,7 +80,7 @@ export function getMarketEventSchema(location: MarketLocation, date: string, bas
     '@context': 'https://schema.org',
     '@type': 'Event',
     name: `Taste of Gratitude at ${location.name}`,
-    description: `Visit our booth for wildcrafted sea moss gel and wellness products at ${location.name}. ${location.description}`,
+    description: `Visit our booth for sea moss gel and products at ${location.name}. ${location.description}`,
     image: `${baseUrl}/images/market-event.jpg`,
     
     startDate: `${date}T${openTime.replace(':', '')}:00`,
@@ -149,7 +149,7 @@ export function getServiceSchema(baseUrl: string) {
           '@type': 'Offer',
           itemOffered: {
             '@type': 'Product',
-            name: 'Wildcrafted Sea Moss Gel',
+            name: 'Sea Moss Gel',
           },
         },
       ],
@@ -164,14 +164,13 @@ export function getLocationKeywords(city: string, state: string): string[] {
   return [
     `sea moss ${city}`,
     `sea moss gel ${city}`,
-    `wildcrafted sea moss ${city} ${state}`,
+    `sea moss ${city} ${state}`,
     `buy sea moss ${city}`,
     `sea moss near me ${city}`,
     `Irish moss ${city}`,
     `sea moss delivery ${city}`,
     `farmers market ${city}`,
     `natural supplements ${city}`,
-    `holistic wellness ${city}`,
     `${city} sea moss vendor`,
     `${city} farmers market sea moss`,
   ];
@@ -182,7 +181,7 @@ export function getLocationKeywords(city: string, state: string): string[] {
  */
 export function getLocalSEOMetadata(location: MarketLocation) {
   return {
-    title: `Wildcrafted Sea Moss at ${location.name} | Taste of Gratitude`,
+    title: `Sea Moss at ${location.name} | Taste of Gratitude`,
     description: `Find us at ${location.name} in ${location.city}, ${location.state}. Small-batch sea moss gel and fresh drinks. ${location.hours}. ${location.description}`,
     keywords: getLocationKeywords(location.city, location.state),
   };
@@ -212,7 +211,7 @@ export const atlantaMarkets: MarketLocation[] = [
     lat: 33.9354,
     lng: -84.2943,
     hours: '09:00-12:00',
-    description: 'Community market hosted at Brook Run Park in Dunwoody with local wellness vendors and fresh seasonal goods.',
+    description: 'Community market hosted at Brook Run Park in Dunwoody with local vendors and fresh seasonal goods.',
   },
 ];
 

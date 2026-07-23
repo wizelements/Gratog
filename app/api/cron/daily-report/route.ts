@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import MarketOrder from '@/models/MarketOrder';
 import DailyInventory from '@/models/DailyInventory';
-import { sendDailyReport } from '@/lib/sms';
+import { sendOwnerAlert, buildDailyReportAlert } from '@/lib/owner-alerts';
 
 export const runtime = 'nodejs';
 
@@ -94,20 +94,18 @@ export async function GET(request: NextRequest) {
       markets: Array.from(new Set(orders.map(o => o.marketName))),
     };
 
-    // Send SMS report
-    let smsSent = false;
-    if (process.env.ADMIN_PHONE) {
-      try {
-        await sendDailyReport(process.env.ADMIN_PHONE, report);
-        smsSent = true;
-      } catch (err) {
-        console.error('Failed to send SMS report:', err);
-      }
+    // Send owner alert (Telegram + Resend fallback). No SMS.
+    let alertSent = false;
+    try {
+      const alertResult = await sendOwnerAlert(buildDailyReportAlert(report));
+      alertSent = Boolean(alertResult.telegram?.ok || alertResult.email?.ok);
+    } catch (err) {
+      console.error('Failed to send daily report owner alert:', err);
     }
 
     return NextResponse.json({
       success: true,
-      smsSent,
+      alertSent,
       report,
     });
   } catch (error) {

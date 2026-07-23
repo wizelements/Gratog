@@ -287,7 +287,7 @@ export default function SettingsPage() {
                     Challenge Updates
                   </Label>
                   <p className="text-sm text-emerald-600 mt-1">
-                    Receive updates about your wellness streak and milestones
+                    Receive updates about your weekly streak and milestones
                   </p>
                 </div>
                 <Switch

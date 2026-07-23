@@ -17,6 +17,9 @@
     },
     "app/api/cron/cleanup-abandoned-orders/route.ts": {
       "maxDuration": 60
+    },
+    "app/api/cron/owner-alerts/route.ts": {
+      "maxDuration": 30
     }
   },
   "env": {
@@ -246,6 +249,11 @@
       "permanent": true
     },
     {
+      "source": "/subscriptions",
+      "destination": "/catalog",
+      "permanent": true
+    },
+    {
       "source": "/health",
       "destination": "/api/health",
       "permanent": false
@@ -289,6 +297,10 @@
     {
       "path": "/api/retention/winback",
       "schedule": "0 14 * * 0"
+    },
+    {
+      "path": "/api/cron/owner-alerts",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

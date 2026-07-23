@@ -5,11 +5,11 @@ import { getFeaturedBundles } from '@/data/bundles';
 
 export const metadata = {
   title: 'Wholesale & Partner Inquiries | Taste of Gratitude',
-  description: 'Partner with Taste of Gratitude for Atlanta wellness retail, market collaborations, wholesale sea moss gels, drinks, shots, and recurring community wellness orders.',
+  description: 'Partner with Taste of Gratitude for Atlanta retail, market collaborations, wholesale sea moss gels, drinks, shots, and recurring community orders.',
   alternates: { canonical: '/wholesale' },
   openGraph: {
     title: 'Wholesale & Partner Inquiries | Taste of Gratitude',
-    description: 'Bring small-batch Taste of Gratitude wellness products to your shop, studio, market, or community event.',
+    description: 'Bring small-batch Taste of Gratitude products to your shop, studio, market, or community event.',
     url: 'https://tasteofgratitude.shop/wholesale',
     images: [{ url: '/images/gratog-bg.PNG', width: 1200, height: 630 }],
   },
@@ -18,13 +18,13 @@ export const metadata = {
 const PARTNER_TYPES = [
   {
     icon: Store,
-    title: 'Retail + wellness shops',
+    title: 'Retail + shops',
     text: 'Wholesale-ready gels, drinks, shots, and seasonal drops for aligned local shelves.',
   },
   {
     icon: Building2,
     title: 'Studios + community spaces',
-    text: 'Pickup-friendly wellness boxes for yoga studios, gyms, spas, salons, and offices.',
+    text: 'Pickup-friendly boxes for yoga studios, gyms, spas, salons, and offices.',
   },
   {
     icon: Users,
@@ -42,7 +42,7 @@ export default function WholesalePage() {
         <div className="container grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div>
             <p className="mb-5 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-50">
-              Wholesale • partnerships • community wellness
+              Wholesale • partnerships • community
             </p>
             <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl">
               Bring the weekly Taste of Gratitude routine to your people.

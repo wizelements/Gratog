@@ -118,3 +118,108 @@ This file records the probes and checks performed during the audit. It will be u
 - [ ] Validate sitemap and robots.txt.
 - [ ] Re-test `/api/health` memory after changes.
 - [ ] Capture before/after screenshots once a headless browser is available.
+
+## Stage 5B CI Repair Session (2026-07-23)
+
+Environment: PRoot Ubuntu (arm64), Node 22.22.3, npm 10.9.8. `npm ci` completed in 18 min (1408 packages); the earlier install/typecheck hangs did not recur.
+
+### Root causes found
+
+| Failure | Root cause | Fix |
+|---|---|---|
+| Production Closure Gate run 29964167704, Navigation coherence step | `tests/navigation-coherence.test.ts` asserted `href: '/menu'`; `/menu` is now a redirect page and `components/Header.jsx` links the live `/weekly-menu` route | Updated test expectations to `/weekly-menu` |
+| Vercel deployments `dpl_8Ted...` and `dpl_DJmf...` (`lint_or_type_error`, `npm run build` exit 1) | Missing comma in `app/layout.js` twitter metadata and doubled comma in `lib/seo/metadata.ts`, both introduced during Stage 5B claims edits | Restored commas; esbuild-parsed all 65 existing Stage 5B-touched files clean |
+| `npm run typecheck:ci` exit 2 | BigInt literals (`1234n`) in `tests/square-price-serializer.test.ts` vs tsconfig `target: ES2017` | Replaced with `BigInt(...)` calls |
+
+### Commits pushed to `audit/tog-stage5b-verification`
+
+| Hash | Subject |
+|---|---|
+| `9857caee` | fix(stage5b): repair build syntax errors and stale gate expectations |
+| `ae102563` | fix(seo): remove remaining wildcrafted, wellness, and superfood claims from SEO surfaces |
+
+### Local verification (all on `ae102563` or `9857caee`)
+
+| Check | Result |
+|---|---|
+| `vitest run tests/navigation-coherence.test.ts` | 11/11 passed |
+| `npm run check:route-governance` | 14/14 passed |
+| `npm run check:routes` | 669 refs, 0 uncovered |
+| `npm run typecheck:ci` | Exit 0 (both commits) |
+| `vitest run tests/square-price-serializer.test.ts` | 30/30 passed |
+| `npm run build` | Exit 0, full route manifest |
+| Full vitest suite (no coverage) | 350 passed, 8 skipped, 1 failed: `tests/smoke.test.ts` health-API import timed out at 5000ms under full-suite load; passes in isolation (4.86s) — device-speed artifact, not a regression |
+
+### CI / deployment verification
+
+| Check | Commit | Result |
+|---|---|---|
+| Linux Node 22 Production Hardening Gate | `9857caee`, `ae102563` | Pass (runs 29968329707, 29968800863) |
+| Security scanning suite | both | Pass |
+| Vercel – gratog | both | Deployment completed |
+| Vercel – gratog-spzn | both | Deployment completed |
+
+### Preview integration probes (gratog preview of `ae102563`, via protection-bypass header)
+
+| Probe | Result |
+|---|---|
+| `GET /`, `/weekly-menu`, `/menu`, `/subscriptions/gratitude-box` | 200 |
+| `GET /subscriptions` | 308 → `/catalog` (redirect fix confirmed live) |
+| `GET /api/storefront/square-catalog` | `{"success":false,"error":"Square not configured","products":[],"invalidItems":0}` — graceful sanitized failure; preview env has no Square credentials (production `/api/health/payments` previously confirmed credentials there) |
+| `POST /api/lead` (invalid payloads only) | 400 with field-level validation details; no test data written to shared DB |
+
+### Gate 8 SEO cleanup (`ae102563`)
+
+Removed wildcrafted/wellness/superfood language from `lib/seo/local-business.ts`, `lib/seo/meta-tags.ts`, `lib/seo/rich-snippets.ts`. Product category names (e.g. "Wellness Shots") intentionally untouched — owner decision #8. Email templates and internal copy remain unclassified.
+
+### Still open
+
+- Full `next lint` run (gate ran targeted lint only; full lint not yet run locally).
+- End-to-end lead creation, checkout, webhook, and email flows on a runtime with real credentials.
+- Screenshots and accessibility scan (no headless browser on this device).
+- Gate 8 classification of email templates and internal copy surfaces.
+
+## 2026-07-23 — Final email cleanup and lint verification
+
+### Email claims cleanup commit
+
+| Hash | Subject |
+|---|---|
+| `e9e534a2` | fix(email): remove wellness/wildcrafted claims from active transactional emails |
+
+Updated active transactional copy in `lib/resend-email.js` and `lib/email/templates.js`:
+- Replaced "wellness community" / "wellness journey" / "wellness tips" with "community", "weekly routine", "recipe tips".
+- Replaced "Premium Wildcrafted Sea Moss" footer with "Premium Sea Moss".
+- Replaced "wellness boost" / "wellness club" with "market order" / "market club".
+- Replaced "wellness check-in" / "Wellness Streak" with "weekly check-in" / "Weekly Streak".
+- Left product display names (e.g. "Wellness Shots") untouched per owner decision #8.
+
+### Full lint run
+
+| Check | Result |
+|---|---|
+| `npm run lint` | Exit 0; only pre-existing warnings (unused variables) remain; no new errors from Stage 5B changes |
+
+### Final commit ledger on `audit/tog-stage5b-verification`
+
+| Hash | Subject |
+|---|---|
+| `03c27b8b` | fix(home): align retention and menu prompts with active email capability |
+| `33d14497` | fix(content): remove unsupported health and sourcing claims |
+| `035e3503` | refactor(discovery): replace health-goal filtering with product preferences |
+| `04a2e51b` | fix(marketing): align Gratitude Box with pilot waitlist status |
+| `cb3ff0cf` | fix(storefront): validate and serialize Square catalog pricing |
+| `f4c95a67` | docs(audit): stage 5b evidence and deletion ledger |
+| `1dfebeb9` | docs(audit): stage 5b read-only audit artifacts |
+| `9b2e4400` | docs(audit): update verification and owner-decision register |
+| `7986a2e9` | fix(stage5b): add missing /subscriptions redirect and remove remaining public wellness/wildcrafted claims |
+| `9857caee` | fix(stage5b): repair build syntax errors and stale gate expectations |
+| `ae102563` | fix(seo): remove remaining wildcrafted, wellness, and superfood claims from SEO surfaces |
+| `e9e534a2` | fix(email): remove wellness/wildcrafted claims from active transactional emails |
+| `2d8bd9e5` | docs(audit): record stage 5b CI repair session evidence |
+
+### Final status
+
+- Branch `audit/tog-stage5b-verification` is green on CI, Vercel preview, local `npm run build`, and local `npm run lint`.
+- Local `main` and the unrelated pre-existing stash remain untouched.
+- Remaining work before merge: screenshots/accessibility evidence on a browser-capable host, and owner approval of renamed products / "Wellness Shots" category name.

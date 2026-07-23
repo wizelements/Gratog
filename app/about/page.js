@@ -10,7 +10,7 @@ export default function AboutPage() {
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.unsplash.com/photo-1518495973542-4542c06a5843?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwyfHxob2xpc3RpYyUyMHdlbGxuZXNzfGVufDB8fHx8MTc1OTgwOTQzNXww&ixlib=rb-4.1.0&q=85"
-            alt="Natural wellness ingredients and market-inspired small-batch food"
+            alt="Natural market ingredients and market-inspired small-batch food"
             fill
             className="object-cover brightness-50"
           />

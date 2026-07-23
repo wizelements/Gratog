@@ -7,7 +7,7 @@ export const revalidate = 300;
 
 export const metadata = {
   title: 'Shop Weekly Market Products | Taste of Gratitude',
-  description: 'Shop the current Taste of Gratitude weekly market catalog: sea moss gels, fresh lemonades, refreshers, wellness shots, and pickup-ready staples.',
+  description: 'Shop the current Taste of Gratitude weekly market catalog: sea moss gels, fresh lemonades, refreshers, shots, and pickup-ready staples.',
   alternates: { canonical: '/catalog' },
   openGraph: {
     title: 'Shop Taste of Gratitude Weekly Market Products',

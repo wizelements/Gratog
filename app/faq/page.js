@@ -134,7 +134,7 @@ const faqCategories = [
         answer: 'Community challenges are planned for future market seasons. When active, we will share the hashtag, rules, reward, and submission path clearly before asking customers to post. Follow us on Instagram (@tasteofgratitude) and join the weekly email for announcements.'
       },
       {
-        question: 'Do you offer wellness workshops or events?',
+        question: 'Do you offer market events or pop-ups?',
         answer: 'Seasonal workshops at our market locations are in planning. Subscribe to the newsletter or follow us on social media for event announcements.'
       },
       {
@@ -160,7 +160,7 @@ const faqCategories = [
       },
       {
         question: 'Do you have a satisfaction guarantee?',
-        answer: 'Yes! We stand behind our products 100%. If you are not completely satisfied with your purchase, contact us within 7 days and we will make it right with a refund, replacement, or store credit. Your wellness journey is our priority.'
+        answer: 'Yes! We stand behind our products 100%. If you are not completely satisfied with your purchase, contact us within 7 days and we will make it right with a refund, replacement, or store credit. Your satisfaction is our priority.'
       },
       {
         question: 'How do I track my order?',
@@ -238,7 +238,7 @@ export default function FAQPage() {
               We're Here to Help
             </h1>
             <p className="text-lg text-muted-foreground">
-              Find answers to common questions about our products, ordering process, and wellness benefits.
+              Find answers to common questions about our products, ordering process, and flavor and routine.
             </p>
           </div>
         </div>

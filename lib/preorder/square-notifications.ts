@@ -4,6 +4,7 @@
  */
 
 import { logger } from '@/lib/logger';
+import { sendOwnerAlert } from '@/lib/owner-alerts';
 
 const SQUARE_CHAT_WEBHOOK_URL = process.env.SQUARE_CHAT_WEBHOOK_URL;
 const SQUARE_TEAM_EMAIL = process.env.SQUARE_TEAM_EMAIL || 'team@tasteofgratitude.shop';
@@ -214,44 +215,36 @@ export async function sendSquareTeamEmail(preorder: any) {
 }
 
 /**
- * Send SMS notification for preorder
+ * Send owner alert for preorder.
+ *
+ * No-SMS design: Telegram/Resend owner alert replaces the old Twilio SMS path.
  */
-export async function sendPreorderSMS(preorder: any) {
+export async function sendPreorderOwnerAlert(preorder: any) {
   try {
-    const smsModule = await import('@/lib/sms') as any;
-    
-    const { _customer, orderNumber, waitlistNumber, pickupLocation, pickupDate, items } = preorder;
-    
-    // Build condensed item list for SMS
+    const { orderNumber, waitlistNumber, pickupLocation, pickupDate, items } = preorder;
+
     const itemSummary = items
       .slice(0, 3)
       .map((item: any) => `${item.quantity}x ${item.name}`)
       .join(', ');
-    
     const moreItems = items.length > 3 ? ` +${items.length - 3} more` : '';
     const total = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
-    
-    const message = `🛒 Taste of Gratitude Preorder #${orderNumber}
-🎫 Waitlist #${waitlistNumber}
 
-📋 ${itemSummary}${moreItems}
-💰 Total: $${total.toFixed(2)}
-📍 ${pickupLocation}
-📅 ${pickupDate}
-
-Reply CONFIRM to accept this preorder.`;
-
-    await smsModule.sendAdminNotification({
-      orderNumber,
-      customerName: preorder.customer?.name || 'Customer',
-      total,
+    await sendOwnerAlert({
+      sourceEventId: `preorder:${orderNumber}`,
+      category: 'preorder',
+      severity: 'info',
+      title: `Preorder #${orderNumber} submitted`,
+      body: `Waitlist #${waitlistNumber}\n📋 ${itemSummary}${moreItems}\n💰 Total: $${total.toFixed(2)}\n📍 ${pickupLocation}\n📅 ${pickupDate}`,
+      channel: 'all',
+      eventAt: new Date().toISOString(),
     });
-    
-    logger.info('PreorderNotifications', 'Preorder SMS sent', { orderNumber, waitlistNumber });
+
+    logger.info('PreorderNotifications', 'Preorder owner alert sent', { orderNumber, waitlistNumber });
     return { sent: true };
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    logger.error('PreorderNotifications', 'Failed to send preorder SMS', {
+    logger.error('PreorderNotifications', 'Failed to send preorder owner alert', {
       error: errMsg,
       orderNumber: preorder.orderNumber,
     });
@@ -263,10 +256,13 @@ Reply CONFIRM to accept this preorder.`;
  * Main notification function - sends to all configured channels
  */
 export async function notifySquareTeam(preorder: any) {
-  const results = {
+  const results: {
+    chat: { sent: boolean };
+    email: { sent: boolean };
+    ownerAlert?: { sent?: boolean; error?: string };
+  } = {
     chat: { sent: false },
     email: { sent: false },
-    sms: { sent: false },
   };
   
   // Try Square chat webhook first
@@ -277,10 +273,9 @@ export async function notifySquareTeam(preorder: any) {
   // Always send email as fallback/backup
   results.email = await sendSquareTeamEmail(preorder);
   
-  // Send SMS if staff phone is configured
-  if (process.env.STAFF_PHONE) {
-    results.sms = await sendPreorderSMS(preorder);
-  }
+  // Send owner alert (Telegram + Resend fallback) regardless of STAFF_PHONE.
+  // The old Twilio SMS path has been removed.
+  results.ownerAlert = await sendPreorderOwnerAlert(preorder);
   
   const anySent = results.chat.sent || results.email.sent || results.sms.sent;
   
@@ -289,7 +284,7 @@ export async function notifySquareTeam(preorder: any) {
     waitlistNumber: preorder.waitlistNumber,
     chat: results.chat.sent,
     email: results.email.sent,
-    sms: results.sms.sent,
+    ownerAlert: results.ownerAlert?.sent,
   });
   
   return { success: anySent, results };

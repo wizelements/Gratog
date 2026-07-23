@@ -9,13 +9,13 @@ import {
 
 describe('safeSquareCents', () => {
   it('converts a valid positive BigInt cents value', () => {
-    const result = safeSquareCents(1234n);
+    const result = safeSquareCents(BigInt(1234));
     expect(result.cents).toBe(1234);
     expect(result.status).toBe('valid');
   });
 
   it('returns zero for explicit 0n BigInt', () => {
-    const result = safeSquareCents(0n);
+    const result = safeSquareCents(BigInt(0));
     expect(result.cents).toBe(0);
     expect(result.status).toBe('zero');
   });
@@ -33,13 +33,13 @@ describe('safeSquareCents', () => {
   });
 
   it('returns invalid for negative BigInt', () => {
-    const result = safeSquareCents(-100n);
+    const result = safeSquareCents(BigInt(-100));
     expect(result.cents).toBe(-100);
     expect(result.status).toBe('invalid');
   });
 
   it('returns invalid for unreasonably large amount', () => {
-    const result = safeSquareCents(10_000_000_00n); // $1,000,000 in cents
+    const result = safeSquareCents(BigInt(10_000_000_00)); // $1,000,000 in cents
     expect(result.cents).toBe(10_000_000_00);
     expect(result.status).toBe('invalid');
   });

@@ -472,7 +472,7 @@ export default function MarketsPage() {
               Meet Taste of Gratitude at the market, then reserve what nourishes your week.
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-700 sm:text-xl">
-              Founder-led sea moss blends, lemonades, juices, and wellness staples made in small batches for local pickup, samples, and real conversation.
+              Founder-led sea moss blends, lemonades, juices, and market staples made in small batches for local pickup, samples, and real conversation.
             </p>
 
             <div className="mt-7 grid gap-3 sm:flex sm:flex-wrap">
