@@ -96,16 +96,21 @@ export async function GET(request: NextRequest) {
 
     // Send owner alert (Telegram + Resend fallback). No SMS.
     let alertSent = false;
+    let alertResult: any = null;
+    let alertError: string | null = null;
     try {
-      const alertResult = await sendOwnerAlert(buildDailyReportAlert(report));
+      alertResult = await sendOwnerAlert(buildDailyReportAlert(report));
       alertSent = Boolean(alertResult.telegram?.ok || alertResult.email?.ok);
     } catch (err) {
+      alertError = err instanceof Error ? err.message : String(err);
       console.error('Failed to send daily report owner alert:', err);
     }
 
     return NextResponse.json({
       success: true,
       alertSent,
+      alertResult,
+      alertError,
       report,
     });
   } catch (error) {
