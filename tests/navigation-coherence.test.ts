@@ -22,7 +22,7 @@ describe('Navigation Coherence', () => {
 
     expect(header).toContain('const mobileNavItems');
     expect(header).toContain("href: '/catalog'");
-    expect(header).toContain("href: '/menu'");
+    expect(header).toContain("href: '/weekly-menu'");
     expect(header).toContain("href: '/markets'");
     expect(header).toContain("href: '/about'");
     expect(header).toContain("href: isAuthenticated ? '/profile' : '/login'");
@@ -33,7 +33,7 @@ describe('Navigation Coherence', () => {
     const header = tryRead('components/Header.jsx');
 
     expect(header).toContain('const desktopNavItems');
-    expect(header).toContain("href: '/menu'");
+    expect(header).toContain("href: '/weekly-menu'");
     expect(header).toContain("href: '/markets'");
     expect(header).toContain("href: '/catalog'");
     expect(header).toContain("href: '/about'");

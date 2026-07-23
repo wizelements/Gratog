@@ -143,7 +143,7 @@ export function generatePageMeta(
       'sea moss',
       'weekly menu',
       SITE_NAME.toLowerCase(),
-    ].join(', '),,
+    ].join(', '),
     authors: options?.author ? [{ name: options.author }] : [{ name: SITE_NAME }],
     creator: SITE_NAME,
     publisher: SITE_NAME,

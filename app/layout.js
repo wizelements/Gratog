@@ -57,7 +57,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Taste of Gratitude | Small-Batch Sea Moss Gel',
-    description: 'Hand-crafted small-batch sea moss gel and fresh market drinks made with simple ingredients.'
+    description: 'Hand-crafted small-batch sea moss gel and fresh market drinks made with simple ingredients.',
     images: ['/og-image.jpg'],
   },
   robots: {
