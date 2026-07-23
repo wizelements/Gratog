@@ -76,13 +76,12 @@ export async function enqueueOwnerAlert(
   const { db } = await connectToDatabase();
   const ts = now();
 
-  const upsertDoc: Omit<QueueItem, '_id'> = {
+  const upsertDoc: Omit<QueueItem, '_id' | 'updatedAt'> = {
     ...event,
     status: 'pending',
     attempts: 0,
     maxAttempts: options.maxAttempts ?? DEFAULT_MAX_ATTEMPTS,
     createdAt: ts,
-    updatedAt: ts,
   };
 
   try {
