@@ -46,8 +46,12 @@ const getTelegramConfig = () => ({
   token: process.env.TELEGRAM_BOT_TOKEN,
   chatId: process.env.TELEGRAM_CHAT_ID,
 });
-function getAlertEmail(): string | undefined {
-  return process.env.ALERT_EMAIL;
+function getAlertEmail(): string | string[] | undefined {
+  const raw = process.env.ALERT_EMAIL;
+  if (!raw) return undefined;
+  const emails = raw.split(',').map(s => s.trim()).filter(Boolean);
+  if (emails.length === 0) return undefined;
+  return emails.length === 1 ? emails[0] : emails;
 }
 
 function now(): string {

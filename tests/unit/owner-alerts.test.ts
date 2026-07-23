@@ -238,4 +238,18 @@ describe('Owner alert router', () => {
     expect(results[0].telegram?.ok).toBe(true);
     expect(mockCollection.updateOne).toHaveBeenCalled();
   });
+
+  it('splits comma-separated ALERT_EMAIL into multiple recipients', async () => {
+    process.env.ALERT_EMAIL = 'owner@tasteofgratitude.shop,fallback@tasteofgratitude.shop';
+    mockCollection.findOne.mockResolvedValue(mockPendingItem());
+
+    const result = await sendOwnerAlert(baseEvent);
+
+    expect(result.email?.ok).toBe(true);
+    expect(sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: ['owner@tasteofgratitude.shop', 'fallback@tasteofgratitude.shop'],
+      })
+    );
+  });
 });
