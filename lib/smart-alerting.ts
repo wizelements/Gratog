@@ -3,6 +3,7 @@
  * Intelligent notifications based on error thresholds, severity, and patterns
  */
 
+import { sendOwnerAlert } from '@/lib/owner-alerts';
 export interface AlertRule {
   id: string;
   name: string;
@@ -32,7 +33,7 @@ export interface Alert {
   message: string;
 }
 
-export type AlertChannel = 'slack' | 'email' | 'sms' | 'pagerduty' | 'github';
+export type AlertChannel = 'slack' | 'email' | 'telegram' | 'pagerduty' | 'github';
 
 /**
  * Default alert rules based on industry standards
@@ -51,7 +52,7 @@ const DEFAULT_RULES: AlertRule[] = [
     name: 'Critical Error Spike',
     condition: (m) => m.errorCount > 50, // > 50 errors in 5 min
     severity: 'critical',
-    channels: ['slack', 'pagerduty', 'sms'],
+    channels: ['slack', 'pagerduty', 'telegram'],
     cooldown: 600000, // 10 minutes
   },
   {
@@ -193,8 +194,8 @@ class SmartAlerter {
           case 'email':
             await this.sendEmailAlert(alert);
             break;
-          case 'sms':
-            await this.sendSMSAlert(alert);
+          case 'telegram':
+            await this.sendTelegramAlert(alert);
             break;
           case 'pagerduty':
             await this.sendPagerDutyAlert(alert);
@@ -258,6 +259,21 @@ class SmartAlerter {
   }
 
   /**
+   * Send Telegram owner alert
+   */
+  private async sendTelegramAlert(alert: Alert): Promise<void> {
+    await sendOwnerAlert({
+      sourceEventId: `alert:${alert.id}`,
+      category: 'system',
+      severity: alert.rule.severity === 'critical' ? 'critical' : alert.rule.severity === 'high' ? 'warning' : 'info',
+      title: alert.rule.name,
+      body: alert.message,
+      channel: 'all',
+      eventAt: alert.timestamp.toISOString(),
+    });
+  }
+
+  /**
    * Send email notification
    */
   private async sendEmailAlert(alert: Alert): Promise<void> {
@@ -273,23 +289,6 @@ class SmartAlerter {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ to: email, subject, body }),
-    });
-  }
-
-  /**
-   * Send SMS notification (for critical alerts only)
-   */
-  private async sendSMSAlert(alert: Alert): Promise<void> {
-    const phoneNumber = process.env.ALERT_PHONE;
-    if (!phoneNumber) return;
-
-    // Integrate with SMS service (Twilio, etc.)
-    const message = `🚨 ${alert.rule.name}\n${alert.message}`;
-
-    await fetch(`${process.env.VERCEL_URL}/api/sms/alert`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to: phoneNumber, message }),
     });
   }
 

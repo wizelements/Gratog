@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import MarketOrder from '@/models/MarketOrder';
 import DailyInventory from '@/models/DailyInventory';
-import { sendDailyReport } from '@/lib/sms';
 
 export const runtime = 'nodejs';
 
@@ -17,7 +16,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const marketId = searchParams.get('marketId') || 'serenbe-farmers-market';
     const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
-    const sendSms = searchParams.get('sendSms') === 'true';
 
     await connectToDatabase();
 
@@ -109,15 +107,6 @@ export async function GET(request: NextRequest) {
         payAtPickup: orders.filter(o => o.paymentMethod === 'PAY_AT_PICKUP').length,
       },
     };
-
-    // Send SMS report if requested
-    if (sendSms) {
-      try {
-        await sendDailyReport(process.env.ADMIN_PHONE || '', report);
-      } catch (smsError) {
-        console.error('Failed to send daily report SMS:', smsError);
-      }
-    }
 
     return NextResponse.json(report);
   } catch (error) {
