@@ -191,7 +191,7 @@ export function getCategoryMetadata(category: string, baseUrl: string) {
   return generateMetadata({
     title: `${category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Products`,
     description: categoryDescriptions[category] || `Shop ${category} products from Taste of Gratitude. Small-batch sea moss gels, drinks, and shots for Atlanta farmers market pickup.`,
-    keywords: [category, 'sea moss', 'wellness', 'natural supplements', 'buy online'],
+    keywords: [category, 'sea moss', 'natural supplements', 'buy online'],
     url: `/catalog?category=${category}`,
   }, baseUrl);
 }
@@ -212,7 +212,7 @@ export function getBlogMetadata(post: {
   return generateMetadata({
     title: post.title,
     description: post.excerpt,
-    keywords: post.tags || ['sea moss', 'wellness', 'health', 'nutrition'],
+    keywords: post.tags || ['sea moss', 'health', 'nutrition'],
     image: post.image || '/og-image-blog.jpg',
     url: `/blog/${post.slug}`,
     type: 'article',
@@ -247,7 +247,7 @@ export function getFAQMetadata(baseUrl: string) {
  */
 export function getAboutMetadata(baseUrl: string) {
   return generateMetadata({
-    title: 'About Us - Premium Wildcrafted Sea Moss',
+    title: 'About Us - Small-Batch Sea Moss',
     description: 'Learn about Taste of Gratitude. Our story, mission, and commitment to providing the highest quality sea moss products from pristine ocean waters.',
     keywords: [
       'about taste of gratitude',
@@ -255,7 +255,7 @@ export function getAboutMetadata(baseUrl: string) {
       'sustainable harvesting',
       'organic sea moss',
       'sea moss company',
-      'Atlanta wellness',
+      'Atlanta sea moss',
     ],
     url: '/about',
   }, baseUrl);
