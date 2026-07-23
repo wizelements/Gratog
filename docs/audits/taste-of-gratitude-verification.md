@@ -118,3 +118,63 @@ This file records the probes and checks performed during the audit. It will be u
 - [ ] Validate sitemap and robots.txt.
 - [ ] Re-test `/api/health` memory after changes.
 - [ ] Capture before/after screenshots once a headless browser is available.
+
+## Stage 5B CI Repair Session (2026-07-23)
+
+Environment: PRoot Ubuntu (arm64), Node 22.22.3, npm 10.9.8. `npm ci` completed in 18 min (1408 packages); the earlier install/typecheck hangs did not recur.
+
+### Root causes found
+
+| Failure | Root cause | Fix |
+|---|---|---|
+| Production Closure Gate run 29964167704, Navigation coherence step | `tests/navigation-coherence.test.ts` asserted `href: '/menu'`; `/menu` is now a redirect page and `components/Header.jsx` links the live `/weekly-menu` route | Updated test expectations to `/weekly-menu` |
+| Vercel deployments `dpl_8Ted...` and `dpl_DJmf...` (`lint_or_type_error`, `npm run build` exit 1) | Missing comma in `app/layout.js` twitter metadata and doubled comma in `lib/seo/metadata.ts`, both introduced during Stage 5B claims edits | Restored commas; esbuild-parsed all 65 existing Stage 5B-touched files clean |
+| `npm run typecheck:ci` exit 2 | BigInt literals (`1234n`) in `tests/square-price-serializer.test.ts` vs tsconfig `target: ES2017` | Replaced with `BigInt(...)` calls |
+
+### Commits pushed to `audit/tog-stage5b-verification`
+
+| Hash | Subject |
+|---|---|
+| `9857caee` | fix(stage5b): repair build syntax errors and stale gate expectations |
+| `ae102563` | fix(seo): remove remaining wildcrafted, wellness, and superfood claims from SEO surfaces |
+
+### Local verification (all on `ae102563` or `9857caee`)
+
+| Check | Result |
+|---|---|
+| `vitest run tests/navigation-coherence.test.ts` | 11/11 passed |
+| `npm run check:route-governance` | 14/14 passed |
+| `npm run check:routes` | 669 refs, 0 uncovered |
+| `npm run typecheck:ci` | Exit 0 (both commits) |
+| `vitest run tests/square-price-serializer.test.ts` | 30/30 passed |
+| `npm run build` | Exit 0, full route manifest |
+| Full vitest suite (no coverage) | 350 passed, 8 skipped, 1 failed: `tests/smoke.test.ts` health-API import timed out at 5000ms under full-suite load; passes in isolation (4.86s) — device-speed artifact, not a regression |
+
+### CI / deployment verification
+
+| Check | Commit | Result |
+|---|---|---|
+| Linux Node 22 Production Hardening Gate | `9857caee`, `ae102563` | Pass (runs 29968329707, 29968800863) |
+| Security scanning suite | both | Pass |
+| Vercel – gratog | both | Deployment completed |
+| Vercel – gratog-spzn | both | Deployment completed |
+
+### Preview integration probes (gratog preview of `ae102563`, via protection-bypass header)
+
+| Probe | Result |
+|---|---|
+| `GET /`, `/weekly-menu`, `/menu`, `/subscriptions/gratitude-box` | 200 |
+| `GET /subscriptions` | 308 → `/catalog` (redirect fix confirmed live) |
+| `GET /api/storefront/square-catalog` | `{"success":false,"error":"Square not configured","products":[],"invalidItems":0}` — graceful sanitized failure; preview env has no Square credentials (production `/api/health/payments` previously confirmed credentials there) |
+| `POST /api/lead` (invalid payloads only) | 400 with field-level validation details; no test data written to shared DB |
+
+### Gate 8 SEO cleanup (`ae102563`)
+
+Removed wildcrafted/wellness/superfood language from `lib/seo/local-business.ts`, `lib/seo/meta-tags.ts`, `lib/seo/rich-snippets.ts`. Product category names (e.g. "Wellness Shots") intentionally untouched — owner decision #8. Email templates and internal copy remain unclassified.
+
+### Still open
+
+- Full `next lint` run (gate ran targeted lint only; full lint not yet run locally).
+- End-to-end lead creation, checkout, webhook, and email flows on a runtime with real credentials.
+- Screenshots and accessibility scan (no headless browser on this device).
+- Gate 8 classification of email templates and internal copy surfaces.
