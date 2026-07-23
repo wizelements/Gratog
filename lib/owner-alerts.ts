@@ -30,6 +30,7 @@ import {
   claimAlert,
   markAlertSent,
   markAlertFailed,
+  getOwnerAlertQueueStats,
   type OwnerAlertEvent,
   type QueueItem,
 } from '@/lib/event-queue';
@@ -250,3 +251,5 @@ export function buildDailyReportAlert(report: {
     eventAt: now(),
   };
 }
+
+export { getOwnerAlertQueueStats };
