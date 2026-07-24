@@ -3,7 +3,7 @@
 **Remediation:** OPEE Master System Remediation  
 **Branch:** `fix/tog-master-system-remediation` from `feat/fresh-batch-request-system` (`060490c2`)  
 **Date:** 2026-07-24  
-**Status:** Stage 1 in progress — P0-001 fixed
+**Status:** Stage 1 in progress — P0-001 fixed, P0-002 fixed
 
 ---
 
@@ -65,9 +65,9 @@
 | **Root cause** | Hardening refactor applied `requireAdminSession` to setup routes without preserving the public first-run exception. |
 | **Recommended fix** | Remove `requireAdminSession` from setup/emergency-init `POST` handlers. Keep setup secret, rate limiting, disabled-after-use or env-disabled logic, and audit logging. Add `ADMIN_SETUP_DISABLED=true` and `EMERGENCY_INIT_DISABLED=true` defaults for production. |
 | **Owner decision required** | NO |
-| **Implementation status** | open |
-| **Verification status** | unverified |
-| **Commit reference** | TBD |
+| **Implementation status** | fixed |
+| **Verification status** | unit-tested |
+| **Commit reference** | 79306165 |
 
 ---
 
@@ -192,9 +192,9 @@
 | **Security impact** | Medium-high: any admin can create another admin if they know the emergency secret. |
 | **Recommended fix** | Remove `/api/admin/emergency-init` if `/api/admin/setup` is fixed; otherwise restrict it to `super_admin` and require explicit owner approval. |
 | **Owner decision required** | NO |
-| **Implementation status** | open |
-| **Verification status** | unverified |
-| **Commit reference** | TBD |
+| **Implementation status** | fixed (resolved by P0-002 fix — requireAdminSession removed; route now works for bootstrap) |
+| **Verification status** | unit-tested |
+| **Commit reference** | 79306165 |
 
 ---
 

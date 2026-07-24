@@ -130,7 +130,6 @@ function serializeProductForClient(sourceProduct) {
     preorderOnly: product.preorderOnly,
     marketPickupOnly: product.marketPickupOnly,
     seasonal: product.seasonal,
-    wellnessSupport: Array.isArray(product.wellnessSupport) ? product.wellnessSupport : [],
     recommendedUse: safeProductCopy(product.recommendedUse || product.howToUse || product.usageInstructions, ''),
     allergens: Array.isArray(product.allergens) ? product.allergens : [],
     pickupAvailability: safeProductCopy(product.pickupAvailability, ''),

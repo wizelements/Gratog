@@ -606,7 +606,7 @@ function PreorderPageContent() {
     { key: 'gels', label: 'Sea Moss Gels', emoji: '🌿' },
     { key: 'lemonades', label: 'Lemonades', emoji: '🍋' },
     { key: 'refreshers', label: 'Refreshers', emoji: '🍹' },
-    { key: 'shots', label: 'Wellness Shots', emoji: '🥃' },
+    { key: 'shots', label: 'Shots', emoji: '🥃' },
     { key: 'specials', label: 'Specials', emoji: '✨' },
   ];
 
