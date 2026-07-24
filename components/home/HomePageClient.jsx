@@ -37,10 +37,22 @@ import {
 } from '@/data/weeklyMenu';
 import { track } from '@/utils/analytics';
 
-const STAT_CARDS = [
-  { label: 'Fresh menu', value: 'Each week' },
-  { label: 'Pickup', value: 'At the booth' },
-  { label: 'Made in', value: 'Small batches' },
+const FLAVOR_PROFILE_LINKS = [
+  { label: 'Tropical', href: '/request-a-flavor?profile=tropical' },
+  { label: 'Berry-forward', href: '/request-a-flavor?profile=berry-forward' },
+  { label: 'Citrus', href: '/request-a-flavor?profile=citrus' },
+  { label: 'Ginger-forward', href: '/request-a-flavor?profile=ginger-forward' },
+  { label: 'Mint-forward', href: '/request-a-flavor?profile=mint-forward' },
+  { label: 'Herbal', href: '/request-a-flavor?profile=herbal' },
+  { label: 'Creamy or coconut', href: '/request-a-flavor?profile=creamy-coconut' },
+  { label: 'Blue spirulina', href: '/request-a-flavor?profile=blue-spirulina' },
+  { label: 'Surprise me', href: '/request-a-flavor?profile=surprise-me' },
+];
+
+const CUSTOMER_PATHS = [
+  { icon: Users, title: 'Join a shared batch', text: 'Add your request to a pooled flavor batch. We confirm the batch once demand reaches the threshold.' },
+  { icon: Package, title: 'Request a microbatch', text: 'Need a smaller custom run? We may offer a dedicated batch option with a setup fee after owner review.' },
+  { icon: Store, title: 'Sample at the market', text: 'Meet us at Serenbe or Dunwoody to taste what is fresh before you reserve a larger size.' },
 ];
 
 const ORDERING_STEPS = [
@@ -169,7 +181,6 @@ export default function HomePageClient({
     commerceProductByKey.get(normalizeProductKey(product.name)) ||
     null;
   const totalWeeklyItems = getWeeklyMenuProducts('all').length;
-  const catalogBadge = `${totalWeeklyItems} items on this week's menu`;
 
   return (
     <main className="min-h-screen bg-[#fbfaf5] text-stone-950">
@@ -180,67 +191,63 @@ export default function HomePageClient({
         <div className="container grid gap-10 py-12 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
           <div>
             <p className="mb-5 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-50">
-              {WEEKLY_MENU.eyebrow} • {catalogBadge}
+              Fresh batches guided by customer requests
             </p>
             <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-              Fresh sea moss gels, drinks, and shots for Atlanta farmers market pickup.
+              Tell us what you want to sip next.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90 sm:text-xl">
-              A new small-batch menu drops every week. Preorder online, then pick up fresh at Serenbe or Dunwoody.
+              Request a flavor, reserve a gallon, or meet us at the market to sample what is fresh. We confirm availability before you pay.
             </p>
             <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
               <Button asChild className="h-14 rounded-full bg-white px-8 text-base font-bold text-emerald-950 hover:bg-emerald-50">
-                <Link href="/weekly-menu?utm_source=homepage_hero&utm_campaign=weekly_menu_drop" onClick={() => track('home_preorder_click', { source: 'homepage_hero_weekly_menu_cta' })}>
-                  View this week&apos;s menu
+                <Link href="/request-a-flavor" onClick={() => track('click_request_flavor', { source: 'homepage_hero' })}>
+                  Request a flavor
                 </Link>
               </Button>
               <Button asChild variant="outline" className="h-14 rounded-full border-white/30 bg-transparent px-8 text-base font-bold text-white hover:bg-white/10 hover:text-white">
-                <Link href="/markets">Find a market</Link>
+                <Link href="/markets" onClick={() => track('click_find_market', { source: 'homepage_hero' })}>
+                  Find a market
+                </Link>
               </Button>
             </div>
             <p className="mt-4 text-sm text-emerald-50/80">
-              Picking up every week?{' '}
-              <Link
-                href="/preorder"
-                onClick={() => track('home_preorder_click', { source: 'homepage_hero_regular_link' })}
-                className="font-semibold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
-              >
-                Reserve your market pickup →
-              </Link>
+              Requests help us plan. Your request becomes an order only after we confirm the flavor, quantity, price, and pickup details.
             </p>
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
-              {STAT_CARDS.map((stat) => (
-                <div key={stat.label} className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                  <p className="text-xs uppercase tracking-[0.16em] text-emerald-100">{stat.label}</p>
-                  <p className="mt-1 font-semibold text-white">{stat.value}</p>
+              {CUSTOMER_PATHS.map((path) => (
+                <div key={path.title} className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                  <path.icon className="mb-2 h-5 w-5 text-emerald-200" aria-hidden="true" />
+                  <p className="text-xs uppercase tracking-[0.16em] text-emerald-100">{path.title}</p>
+                  <p className="mt-1 text-sm leading-5 text-white/90">{path.text}</p>
                 </div>
               ))}
             </div>
           </div>
-          <div id="weekly-emails" className="rounded-[2rem] border border-white/20 bg-white/95 p-4 text-stone-950 shadow-2xl shadow-emerald-950/40 sm:p-5">
-            <div className="overflow-hidden rounded-[1.5rem] bg-stone-100">
-              <img src="/images/gratog-bg.PNG" alt="Taste of Gratitude market products" className="h-64 w-full object-cover sm:h-80" />
-            </div>
-            <div className="mt-5 grid gap-4 sm:grid-cols-3">
-              {['Menu email', 'Reserve', 'Pickup'].map((item, index) => (
-                <div key={item} className="rounded-2xl bg-emerald-50 p-3 text-center">
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">0{index + 1}</p>
-                  <p className="font-semibold text-emerald-950">{item}</p>
-                </div>
+          <div className="rounded-[2rem] border border-white/20 bg-white/95 p-5 text-stone-950 shadow-2xl shadow-emerald-950/40">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Popular flavor profiles</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {FLAVOR_PROFILE_LINKS.map((profile) => (
+                <Link
+                  key={profile.label}
+                  href={profile.href}
+                  className="rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-emerald-900 hover:bg-emerald-50"
+                  onClick={() => track('select_flavor_profile', { source: 'homepage_hero', profile: profile.label })}
+                >
+                  {profile.label}
+                </Link>
               ))}
             </div>
-            <div className="mt-5">
-              <RetentionForm
-                intent="weekly_menu_email"
-                source="homepage_hero"
-                title="Get weekly menu emails"
-                description="Join the email list for this week’s menu, limited-batch reminders, and pickup updates."
-                cta="Email me the menu"
-                collectEmail
-                collectPhone={false}
-                metadata={{ sourceCampaign: 'weekly_menu_drop' }}
-                compact
-              />
+            <div className="mt-6 rounded-[1.5rem] bg-emerald-50 p-4">
+              <p className="text-sm font-semibold text-emerald-950">Weekly menu still available</p>
+              <p className="mt-1 text-sm leading-6 text-emerald-800">
+                See what is already confirmed for this week, then request anything that is missing.
+              </p>
+              <Button asChild variant="outline" className="mt-3 h-11 w-full rounded-full border-emerald-300 text-emerald-900 hover:bg-emerald-100">
+                <Link href="/weekly-menu" onClick={() => track('view_weekly_menu', { source: 'homepage_hero' })}>
+                  View this week&apos;s menu
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
