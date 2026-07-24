@@ -11,8 +11,6 @@ const QuizSchema = z.object({
   customer: z.object({
     name: z.string().max(120).optional().or(z.literal('')),
     email: z.string().email(),
-    phone: z.string().max(40).optional().or(z.literal('')),
-    smsOptIn: z.boolean().optional().default(false),
   }),
   answers: z.object({
     support: z.string().min(1),
@@ -51,8 +49,6 @@ export async function POST(request: NextRequest) {
       customer: {
         name: customer.name?.trim() || null,
         email: normalizedEmail,
-        phone: customer.phone?.trim() || null,
-        smsOptIn: Boolean(customer.smsOptIn),
       },
       answers,
       recommendations: {
@@ -71,11 +67,10 @@ export async function POST(request: NextRequest) {
       {
         $set: {
           email: normalizedEmail,
-          phone: customer.phone?.trim() || null,
           name: customer.name?.trim() || null,
           intent: 'product_quiz',
           source: 'quiz',
-          metadata: { answers, recommendation: recommendation.primary.id, smsOptIn: Boolean(customer.smsOptIn) },
+          metadata: { answers, recommendation: recommendation.primary.id },
           updatedAt: now,
           status: 'new',
         },

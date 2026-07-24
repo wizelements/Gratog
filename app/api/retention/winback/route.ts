@@ -76,7 +76,7 @@ async function handleWinbackRequest(request: NextRequest, raw: WinbackRequest) {
     const leads = await db
       .collection('newsletter_subscribers')
       .find({
-        $or: [{ intent: 'weekly_menu_texts' }, { intent: 'email_signup' }, { intent: 'subscription_waitlist' }],
+        $or: [{ intent: 'weekly_menu_email' }, { intent: 'weekly_menu_texts' }, { intent: 'email_signup' }, { intent: 'subscription_waitlist' }],
         $and: [
           { $or: [{ optedOut: { $ne: true } }, { optedOut: { $exists: false } }] },
           {

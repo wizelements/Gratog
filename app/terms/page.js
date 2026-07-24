@@ -79,7 +79,7 @@ export default function TermsPage() {
               <ul className="list-disc list-inside space-y-1 text-sm">
                 <li>Orders are confirmed upon successful payment processing</li>
                 <li>We reserve the right to refuse or cancel any order for any reason</li>
-                <li>Order confirmations will be sent by email; SMS updates are sent only when a phone number is provided</li>
+                <li>Order confirmations and available order updates will be sent by email</li>
                 <li>Changes to orders may not be possible once processing begins</li>
               </ul>
             </div>

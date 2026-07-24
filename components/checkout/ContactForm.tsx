@@ -68,7 +68,7 @@ export default function ContactForm({ contact, onChange, errors = {} }: ContactF
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
         <p className="text-sm text-gray-600 mb-6">
-          We'll email your order updates. Add a phone number only if you want SMS or callback support.
+          We&apos;ll email your order updates. A phone number is optional and used only if we need to contact you directly about fulfillment.
         </p>
       </div>
       
@@ -235,7 +235,7 @@ export default function ContactForm({ contact, onChange, errors = {} }: ContactF
         )}
         {!errors.phone && !showPhoneError && (
           <p className="mt-1 text-xs text-gray-500">
-            Optional — used only for SMS pickup/delivery updates or support callbacks.
+            Optional — used only if we need to contact you directly about this order.
           </p>
         )}
       </div>

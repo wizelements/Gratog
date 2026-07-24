@@ -447,7 +447,7 @@ export default function ReviewAndPay({
                     <h4 className="font-medium text-amber-800">Preorder items in your cart</h4>
                     <p className="text-sm text-amber-700 mt-1">
                       These items will be freshly prepared for your selected pickup date. 
-                      We&apos;ll email your confirmation and text updates if you added a phone number.
+                      We&apos;ll email your confirmation and any available order updates.
                     </p>
                   </div>
                 </div>

@@ -57,7 +57,7 @@ export default function TelegramAlertsPage() {
               <li>Tap the button to open the Taste of Gratitude bot.</li>
               <li>Press Start. That is the opt-in.</li>
               <li>You get one short message when the weekly menu drops.</li>
-              <li>No spam. Reply STOP anytime.</li>
+              <li>You can mute or block the bot in Telegram at any time.</li>
             </ul>
 
             {botUrl ? (
