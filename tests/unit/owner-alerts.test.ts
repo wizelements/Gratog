@@ -29,7 +29,7 @@ const mockHandles = vi.hoisted(() => {
 // ============================================================================
 
 vi.mock('@/lib/resend-email', () => ({
-  sendEmail: vi.fn().mockResolvedValue({ success: true, id: 'resend_msg_123' }),
+  sendEmail: vi.fn().mockResolvedValue({ success: true, messageId: 'resend_msg_123' }),
 }));
 
 vi.mock('@/lib/logger', () => ({
@@ -63,6 +63,8 @@ import {
   formatTelegramMessage,
 } from '@/lib/owner-alerts';
 import { sendEmail } from '@/lib/resend-email';
+import { ObjectId } from 'mongodb';
+import { notifySquareTeam } from '@/lib/preorder/square-notifications';
 
 const mockCollection = mockHandles.mockCollection;
 const mockDb = mockHandles.mockDb;
@@ -82,7 +84,7 @@ const baseEvent = {
 
 function mockPendingItem(overrides = {}) {
   return {
-    _id: 'queue_item_001',
+    _id: new ObjectId('64b000000000000000000001'),
     ...baseEvent,
     status: 'pending',
     attempts: 0,
@@ -100,7 +102,7 @@ function mockPendingItem(overrides = {}) {
 describe('Owner alert router', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCollection.findOneAndUpdate.mockResolvedValue({ value: null });
+    mockCollection.findOneAndUpdate.mockResolvedValue(mockPendingItem());
     mockCollection.findOne.mockResolvedValue(null);
     mockCollection.updateOne.mockResolvedValue({ modifiedCount: 1 });
     mockCollection.find.mockReturnValue({
@@ -117,8 +119,6 @@ describe('Owner alert router', () => {
   });
 
   it('queues an alert and falls back to Resend when Telegram is not configured', async () => {
-    mockCollection.findOne.mockResolvedValue(mockPendingItem());
-
     const result = await sendOwnerAlert(baseEvent);
 
     expect(result.queued).toBe(true);
@@ -126,6 +126,16 @@ describe('Owner alert router', () => {
     expect(result.telegram?.ok).toBe(false);
     expect(result.email?.ok).toBe(true);
     expect(sendEmail).toHaveBeenCalled();
+    expect(mockCollection.updateOne).toHaveBeenNthCalledWith(
+      1,
+      { _id: expect.any(ObjectId), status: { $in: ['pending', 'failed'] } },
+      expect.objectContaining({ $set: expect.objectContaining({ status: 'sending' }), $inc: { attempts: 1 } })
+    );
+    expect(mockCollection.updateOne).toHaveBeenNthCalledWith(
+      2,
+      { _id: expect.any(ObjectId) },
+      expect.objectContaining({ $set: expect.objectContaining({ status: 'sent' }) })
+    );
   });
 
   it('attempts Telegram when configured and skips Resend on success', async () => {
@@ -136,8 +146,6 @@ describe('Owner alert router', () => {
       ok: true,
       json: vi.fn().mockResolvedValue({ ok: true, result: { message_id: 42 } }),
     });
-
-    mockCollection.findOne.mockResolvedValue(mockPendingItem());
 
     const result = await sendOwnerAlert(baseEvent);
 
@@ -163,8 +171,6 @@ describe('Owner alert router', () => {
       status: 401,
       text: vi.fn().mockResolvedValue('Unauthorized'),
     });
-
-    mockCollection.findOne.mockResolvedValue(mockPendingItem());
 
     const result = await sendOwnerAlert(baseEvent);
 
@@ -222,8 +228,7 @@ describe('Owner alert router', () => {
       json: vi.fn().mockResolvedValue({ ok: true, result: { message_id: 99 } }),
     });
 
-    const pending = mockPendingItem({ _id: 'q_1' });
-    mockCollection.findOne.mockResolvedValue(pending);
+    const pending = mockPendingItem({ _id: new ObjectId('000000000000000000000002') });
     mockCollection.find.mockReturnValue({
       sort: vi.fn().mockReturnValue({
         limit: vi.fn().mockReturnValue({
@@ -236,20 +241,77 @@ describe('Owner alert router', () => {
 
     expect(results.length).toBe(1);
     expect(results[0].telegram?.ok).toBe(true);
-    expect(mockCollection.updateOne).toHaveBeenCalled();
+    expect(mockCollection.find).toHaveBeenCalledWith({ status: { $in: ['pending', 'failed'] } });
+    expect(mockCollection.findOneAndUpdate).not.toHaveBeenCalled();
+    expect(mockCollection.updateOne).toHaveBeenCalledTimes(2);
+    expect(mockCollection.updateOne).toHaveBeenLastCalledWith(
+      { _id: pending._id },
+      expect.objectContaining({ $set: expect.objectContaining({ status: 'sent' }) })
+    );
   });
 
   it('splits comma-separated ALERT_EMAIL into multiple recipients', async () => {
     process.env.ALERT_EMAIL = 'owner@tasteofgratitude.shop,fallback@tasteofgratitude.shop';
-    mockCollection.findOne.mockResolvedValue(mockPendingItem());
-
     const result = await sendOwnerAlert(baseEvent);
 
     expect(result.email?.ok).toBe(true);
+    expect(sendEmail).toHaveBeenCalledTimes(1);
     expect(sendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: ['owner@tasteofgratitude.shop', 'fallback@tasteofgratitude.shop'],
       })
     );
+  });
+
+  it('retries failed alerts and dead-letters the final unsuccessful attempt', async () => {
+    delete process.env.ALERT_EMAIL;
+    const failed = mockPendingItem({
+      _id: new ObjectId('000000000000000000000003'),
+      status: 'failed',
+      attempts: 4,
+      maxAttempts: 5,
+    });
+    mockCollection.find.mockReturnValue({
+      sort: vi.fn().mockReturnValue({
+        limit: vi.fn().mockReturnValue({ toArray: vi.fn().mockResolvedValue([failed]) }),
+      }),
+    });
+
+    const results = await processOwnerAlertQueue(10);
+
+    expect(results).toHaveLength(1);
+    expect(mockCollection.updateOne).toHaveBeenLastCalledWith(
+      { _id: failed._id },
+      expect.objectContaining({ $set: expect.objectContaining({ status: 'dead_letter' }) })
+    );
+  });
+
+  it('reports preorder notification failure when no channel delivers', async () => {
+    delete process.env.ALERT_EMAIL;
+    vi.mocked(sendEmail).mockResolvedValue({ success: false, error: 'email unavailable', provider: 'resend' });
+
+    const result = await notifySquareTeam({
+      orderNumber: 'TOG-FAIL-1',
+      waitlistNumber: 12,
+      customer: { name: 'Test Customer', phone: '4045550100' },
+      pickupLocation: 'Test Market',
+      pickupDate: '2026-07-25',
+      items: [{ name: 'Test Drink', quantity: 1, price: 9 }],
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.results.email.sent).toBe(false);
+    expect(result.results.ownerAlert?.sent).toBe(false);
+  });
+
+  it('does not deliver an event that is already sent or claimed', async () => {
+    mockCollection.findOneAndUpdate.mockResolvedValue(mockPendingItem({ status: 'sent' }));
+    mockCollection.updateOne.mockResolvedValue({ modifiedCount: 0 });
+
+    const result = await sendOwnerAlert(baseEvent);
+
+    expect(result).toEqual({ queued: true });
+    expect(sendEmail).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 });

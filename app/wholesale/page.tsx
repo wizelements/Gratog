@@ -5,7 +5,7 @@ import { getFeaturedBundles } from '@/data/bundles';
 
 export const metadata = {
   title: 'Wholesale & Partner Inquiries | Taste of Gratitude',
-  description: 'Partner with Taste of Gratitude for Atlanta retail, market collaborations, wholesale sea moss gels, drinks, shots, and recurring community orders.',
+  description: 'Partner with Taste of Gratitude for Atlanta retail, market collaborations, and wholesale sea moss gels, drinks, refreshers, and shots.',
   alternates: { canonical: '/wholesale' },
   openGraph: {
     title: 'Wholesale & Partner Inquiries | Taste of Gratitude',
@@ -19,7 +19,7 @@ const PARTNER_TYPES = [
   {
     icon: Store,
     title: 'Retail + shops',
-    text: 'Wholesale-ready gels, drinks, shots, and seasonal drops for aligned local shelves.',
+    text: 'Small-batch gels, drinks, shots, and seasonal releases for local shelves.',
   },
   {
     icon: Building2,
@@ -29,7 +29,7 @@ const PARTNER_TYPES = [
   {
     icon: Users,
     title: 'Markets + collaborations',
-    text: 'Partner on pop-ups, tastings, founder education, referral incentives, and recurring routines.',
+    text: 'Partner on pop-ups, tastings, product education, referral offers, and repeat orders.',
   },
 ];
 
@@ -45,10 +45,10 @@ export default function WholesalePage() {
               Wholesale • partnerships • community
             </p>
             <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl">
-              Bring the weekly Taste of Gratitude routine to your people.
+              Bring Taste of Gratitude products to your customers.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90">
-              We support aligned retailers, wellness studios, offices, markets, and community partners with small-batch products, education, and repeatable pickup-ready ordering.
+              We work with retailers, studios, offices, markets, and community partners on small-batch products, product education, and coordinated pickup or local delivery.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="#wholesale-inquiry" className="rounded-full bg-white px-7 py-3 font-bold text-emerald-950 hover:bg-emerald-50">
@@ -62,7 +62,7 @@ export default function WholesalePage() {
           <div className="rounded-[2rem] border border-white/15 bg-white/10 p-6 backdrop-blur">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-100">Partner fit</p>
             <div className="mt-5 grid gap-3">
-              {['Atlanta-area pickup or coordinated local delivery', 'Small-batch quantities planned around weekly menus', 'Product education for sea moss, juices, shots, and routines', 'Future subscription and referral programs ready to layer in'].map((item) => (
+              {['Atlanta-area pickup or coordinated local delivery', 'Small-batch quantities planned around current menus', 'Product details for sea moss gels, drinks, refreshers, and shots', 'A personal follow-up on availability, pricing, and timing'].map((item) => (
                 <div key={item} className="flex items-start gap-3 rounded-2xl bg-white/10 p-3 text-sm text-emerald-50">
                   <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-200" aria-hidden="true" />
                   {item}
@@ -97,10 +97,10 @@ export default function WholesalePage() {
       <section className="bg-white py-12 sm:py-16">
         <div className="container grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Bundle-ready structure</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Start with products customers already understand.</h2>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Suggested assortments</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Start with a mix of familiar flavors and formats.</h2>
             <p className="mt-4 leading-8 text-stone-700">
-              The current data model supports bundle SKUs once Square bundle inventory is ready. For now, each bundle can be fulfilled as individual Square-compatible products.
+              These curated sets show possible product mixes. We will confirm current availability, quantities, and itemized pricing for every partner order.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -126,7 +126,7 @@ export default function WholesalePage() {
             </div>
             <div className="flex gap-3 rounded-2xl bg-white p-4 shadow-sm">
               <Store className="mt-1 h-5 w-5 shrink-0 text-emerald-700" aria-hidden="true" />
-              <p>We will follow up with availability, product fit, Square-compatible order structure, and next steps.</p>
+              <p>We will follow up with availability, product fit, itemized pricing, and next steps.</p>
             </div>
           </div>
         </div>
@@ -134,7 +134,7 @@ export default function WholesalePage() {
           intent="wholesale_inquiry"
           source="wholesale_page"
           title="Start a partner conversation"
-          description="No broken forms or vague placeholders — this safely captures your inquiry now and stores it for future automation."
+          description="Share a few details about your business and order. We will follow up personally with availability and next steps."
           cta="Send wholesale inquiry"
           collectPhone
           requireEmail

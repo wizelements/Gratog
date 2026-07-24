@@ -189,7 +189,7 @@ export default function OrderSuccessPage() {
             </p>
             {order?.customer && (
               <p className="text-sm text-muted-foreground">
-                ✅ SMS sent to {order.customer.phone} • 📧 Email sent to {order.customer.email}
+                📧 Confirmation details are sent by email to {order.customer.email}
               </p>
             )}
             {order?.isFallback && (
@@ -491,7 +491,7 @@ export default function OrderSuccessPage() {
                   <div>
                     <div className="font-medium">Order Confirmation Sent</div>
                     <div className="text-sm text-muted-foreground">
-                      We've sent confirmation details to {order?.customer?.email} and {order?.customer?.phone}
+                      We&apos;ve sent confirmation details to {order?.customer?.email}
                     </div>
                   </div>
                 </div>

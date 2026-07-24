@@ -156,7 +156,7 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
         <div className="container">
           <div className="mb-8 text-center">
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">How it works</p>
-            <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">A low-friction weekly rhythm.</h2>
+            <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">Three simple steps from menu to pickup.</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {[

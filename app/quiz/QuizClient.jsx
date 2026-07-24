@@ -18,7 +18,7 @@ const INITIAL_ANSWERS = {
 
 export default function QuizClient() {
   const [answers, setAnswers] = useState(INITIAL_ANSWERS);
-  const [customer, setCustomer] = useState({ name: '', email: '', phone: '', smsOptIn: false });
+  const [customer, setCustomer] = useState({ name: '', email: '' });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -64,7 +64,7 @@ export default function QuizClient() {
           </p>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-6xl">Find your Taste of Gratitude starting point.</h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-stone-700">
-            Answer four quick questions. We&apos;ll recommend a product, a backup, and a bundle path for your routine.
+            Answer four quick questions. We&apos;ll recommend a product, a backup, and a curated set based on your preferences.
           </p>
         </div>
       </section>
@@ -100,16 +100,12 @@ export default function QuizClient() {
             ))}
 
             <div className="rounded-2xl bg-emerald-50 p-4">
-              <p className="font-semibold text-emerald-950">Where should we send your results?</p>
+              <p className="font-semibold text-emerald-950">Save your quiz response</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <Input value={customer.name} onChange={(event) => setCustomer((current) => ({ ...current, name: event.target.value }))} placeholder="Name (optional)" />
                 <Input type="email" value={customer.email} onChange={(event) => setCustomer((current) => ({ ...current, email: event.target.value }))} placeholder="Email address" required />
-                <Input type="tel" value={customer.phone} onChange={(event) => setCustomer((current) => ({ ...current, phone: event.target.value }))} placeholder="Phone for menu alerts (optional when SMS is connected)" />
-                <label className="flex items-center gap-2 text-sm text-emerald-900">
-                  <input type="checkbox" checked={customer.smsOptIn} onChange={(event) => setCustomer((current) => ({ ...current, smsOptIn: event.target.checked }))} />
-                  Send weekly menu alerts when SMS is connected
-                </label>
               </div>
+              <p className="mt-2 text-xs text-emerald-800">Your recommendations appear on this page after you submit.</p>
             </div>
           </div>
 

@@ -17,6 +17,17 @@ const LeadSchema = z.object({
   website: z.string().optional(),
 });
 
+const EMAIL_REQUIRED_INTENTS = new Set([
+  'weekly_menu_email',
+  'email_signup',
+  'subscription_waitlist',
+  'preorder_intent_no_market',
+]);
+
+function intentRequiresEmail(intent: string): boolean {
+  return EMAIL_REQUIRED_INTENTS.has(intent);
+}
+
 export async function POST(request: NextRequest) {
   let raw: unknown;
   try {
@@ -40,6 +51,9 @@ export async function POST(request: NextRequest) {
 
   if (!lead.email && !lead.phone) {
     return NextResponse.json({ success: false, error: 'Email or phone is required' }, { status: 400 });
+  }
+  if (intentRequiresEmail(lead.intent) && !lead.email) {
+    return NextResponse.json({ success: false, error: 'Email is required for this signup' }, { status: 400 });
   }
 
   const id = randomUUID();
@@ -81,9 +95,9 @@ export async function POST(request: NextRequest) {
       { upsert: true }
     );
 
-    if ((document.email || document.phone) && ['weekly_menu_email', 'email_signup', 'subscription_waitlist', 'preorder_intent_no_market'].includes(document.intent)) {
+    if (document.email && intentRequiresEmail(document.intent)) {
       await db.collection('newsletter_subscribers').updateOne(
-        document.email ? { email: document.email } : { phone: document.phone },
+        { email: document.email },
         {
           $set: {
             email: document.email,
@@ -108,11 +122,11 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({
-      success: true,
+      success: false,
       persisted: false,
       id,
-      message: 'Thanks — your interest was captured. We will connect this automation soon.',
-    });
+      error: 'We could not save your signup. Please try again shortly.',
+    }, { status: 503 });
   }
 
   return NextResponse.json({

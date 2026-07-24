@@ -36,8 +36,7 @@ async function getHomepageCatalogData() {
   }
 
   return {
-    featuredProducts: snapshot.products,
-    initialCatalogCount: snapshot.isFallback ? null : snapshot.totalCount
+    featuredProducts: snapshot.products
   };
 }
 
@@ -53,7 +52,7 @@ export default async function HomePage() {
   }
 
   // Desktop: Show full site
-  const { featuredProducts, initialCatalogCount } = await getHomepageCatalogData();
+  const { featuredProducts } = await getHomepageCatalogData();
 
   const organizationSchema = buildHomepageOrganizationSchema();
   const faqSchema = buildHomepageFaqSchema();
@@ -63,7 +62,6 @@ export default async function HomePage() {
       <LiveLocationBanner />
       <HomePageClient
         initialFeaturedProducts={featuredProducts}
-        initialCatalogCount={initialCatalogCount}
         organizationSchema={organizationSchema}
         faqSchema={faqSchema}
       />

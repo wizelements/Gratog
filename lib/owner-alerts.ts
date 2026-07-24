@@ -47,12 +47,9 @@ const getTelegramConfig = () => ({
   token: process.env.TELEGRAM_BOT_TOKEN,
   chatId: process.env.TELEGRAM_CHAT_ID,
 });
-function getAlertEmail(): string | string[] | undefined {
+function getAlertEmails(): string[] {
   const raw = process.env.ALERT_EMAIL;
-  if (!raw) return undefined;
-  const emails = raw.split(',').map(s => s.trim()).filter(Boolean);
-  if (emails.length === 0) return undefined;
-  return emails.length === 1 ? emails[0] : emails;
+  return raw?.split(',').map((email) => email.trim()).filter(Boolean) ?? [];
 }
 
 function now(): string {
@@ -114,25 +111,24 @@ async function sendTelegramMessage(text: string): Promise<{ ok: boolean; message
 }
 
 async function sendResendFallback(event: OwnerAlertEvent): Promise<{ ok: boolean; messageId?: string; error?: string }> {
-  const to = getAlertEmail();
-  if (!to) {
+  const recipients = getAlertEmails();
+  if (recipients.length === 0) {
     return { ok: false, error: 'No ALERT_EMAIL configured for fallback' };
   }
 
   try {
     const result = await sendEmail({
-      to,
+      to: recipients,
       subject: `[${event.severity.toUpperCase()}] ${event.title}`,
       text: `${event.title}\n\n${event.body}\n\nRef: ${event.sourceEventId}${event.actionUrl ? `\nLink: ${event.actionUrl}` : ''}`,
       emailType: 'alert',
       template: 'owner_alert',
     });
-
     if (!result?.success) {
       throw new Error(result?.error || 'Resend returned unsuccessful result');
     }
 
-    return { ok: true, messageId: result.id };
+    return { ok: true, messageId: result.messageId };
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err);
     logger.error('OwnerAlert', 'Resend fallback failed', { error });
@@ -147,6 +143,22 @@ async function sendResendFallback(event: OwnerAlertEvent): Promise<{ ok: boolean
  */
 export async function sendOwnerAlert(event: OwnerAlertEvent): Promise<OwnerAlertResult> {
   const item = await enqueueOwnerAlert(event);
+  if (!await claimAlert(item._id)) {
+    return { queued: true };
+  }
+
+  const result = await deliverOwnerAlert(event);
+  const anyChannelOk = result.telegram?.ok || result.email?.ok;
+  if (anyChannelOk) {
+    await markAlertSent(item._id, result);
+  } else {
+    await markAlertFailed(item._id, { ...item, attempts: item.attempts + 1 }, result.telegram?.error || result.email?.error || 'Unknown failure');
+  }
+  return result;
+}
+
+/** Deliver an already-claimed event without enqueueing it again. */
+async function deliverOwnerAlert(event: OwnerAlertEvent): Promise<OwnerAlertResult> {
   const result: OwnerAlertResult = { queued: true };
 
   const { token, chatId } = getTelegramConfig();
@@ -189,24 +201,24 @@ export async function processOwnerAlertQueue(limit = 10): Promise<OwnerAlertResu
   const results: OwnerAlertResult[] = [];
 
   for (const item of pending) {
-    const claimed = await claimAlert(item._id as string);
+    const claimed = await claimAlert(item._id);
     if (!claimed) continue;
 
     try {
-      const delivered = await sendOwnerAlert(item);
+      const delivered = await deliverOwnerAlert(item);
 
-      // `sendOwnerAlert` re-enqueues by sourceEventId. We still need to mark
-      // the originally claimed item sent/failed.
+      // Deliver the claimed item directly; queue consumers must not re-enqueue.
       const anyChannelOk = delivered.telegram?.ok || delivered.email?.ok;
       if (anyChannelOk) {
-        await markAlertSent(item._id as string, delivered);
+        await markAlertSent(item._id, delivered);
       } else {
-        await markAlertFailed(item._id as string, item, delivered.telegram?.error || delivered.email?.error || 'Unknown failure');
+        await markAlertFailed(item._id, { ...item, attempts: item.attempts + 1 }, delivered.telegram?.error || delivered.email?.error || 'Unknown failure');
       }
       results.push(delivered);
-    } catch (err) {
-      await markAlertFailed(item._id as string, item, err);
-      results.push({ queued: true, telegram: { ok: false, error: String(err) } });
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      await markAlertFailed(item._id, { ...item, attempts: item.attempts + 1 }, error);
+      results.push({ queued: true, telegram: { ok: false, error: error.message } });
     }
   }
 

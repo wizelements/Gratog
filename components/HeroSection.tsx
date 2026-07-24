@@ -103,7 +103,7 @@ export function HeroSection() {
             <div className="relative aspect-square lg:aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl">
               <Image
                 src="https://images.unsplash.com/photo-1556228720-195a672e8a05?w=800&q=80"
-                alt="Premium Sea Moss Products"
+                alt="Taste of Gratitude small-batch sea moss products"
                 fill
                 className="object-cover"
                 priority
@@ -121,8 +121,8 @@ export function HeroSection() {
                     <Star className="w-6 h-6 text-emerald-600 dark:text-emerald-400 fill-current" />
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900 dark:text-white">Premium Quality</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">100% Small-batch</div>
+                    <div className="font-semibold text-gray-900 dark:text-white">Made in small batches</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Prepared for market pickup</div>
                   </div>
                 </div>
               </motion.div>

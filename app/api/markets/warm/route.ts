@@ -104,7 +104,7 @@ async function handleWarmRequest(request: NextRequest, raw: WarmRequest) {
     const { db } = await connectToDatabase();
 
     const query: Record<string, unknown> = {
-      $or: [{ intent: 'weekly_menu_texts' }, { intent: 'preorder_intent_no_market' }, { intent: 'email_signup' }],
+      $or: [{ intent: 'weekly_menu_email' }, { intent: 'weekly_menu_texts' }, { intent: 'preorder_intent_no_market' }, { intent: 'email_signup' }],
       optedOut: { $ne: true },
     };
 

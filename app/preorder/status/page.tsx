@@ -163,7 +163,7 @@ function RetentionCTA({ order }: { order: PreorderStatus }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: emailToUse.toLowerCase().trim(),
-          intent: 'weekly_menu_texts',
+          intent: 'weekly_menu_email',
           source: 'preorder_status_followup',
           metadata: {
             marketId: order.marketId || null,
@@ -174,7 +174,7 @@ function RetentionCTA({ order }: { order: PreorderStatus }) {
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'Try again.');
       track('lead_capture_submitted', {
-        intent: 'weekly_menu_texts',
+        intent: 'weekly_menu_email',
         source: 'preorder_status_followup',
         hasEmail: true,
         marketId: order.marketId || null,
@@ -183,7 +183,7 @@ function RetentionCTA({ order }: { order: PreorderStatus }) {
       setState('success');
     } catch (err: any) {
       track('lead_capture_failed', {
-        intent: 'weekly_menu_texts',
+        intent: 'weekly_menu_email',
         source: 'preorder_status_followup',
         error: err.message || 'unknown',
         marketId: order.marketId || null,
@@ -513,7 +513,7 @@ function OrderStatusContent() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <Button asChild className="rounded-full bg-emerald-700 text-white hover:bg-emerald-800">
-                <Link href={order.marketId ? `/preorder?market=${encodeURIComponent(order.marketId)}&utm_source=status_reorder&utm_campaign=passive_preorder_funnel` : '/preorder?utm_source=status_reorder&utm_campaign=passive_preorder_funnel'}>
+                <Link href={order.marketId ? `/preorder?market=${encodeURIComponent(order.marketId)}&utm_source=status_reorder&utm_campaign=weekly_menu_drop` : '/preorder?utm_source=status_reorder&utm_campaign=weekly_menu_drop'}>
                   Reorder for pickup
                 </Link>
               </Button>

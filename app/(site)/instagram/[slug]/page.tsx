@@ -194,7 +194,7 @@ export default function InstagramPostPage() {
               🌿 Explore Small-Batch Sea Moss & Drinks
             </h2>
             <p className="text-muted-foreground mb-6">
-              Discover our premium sea moss products crafted with gratitude and carefully sourced ingredients
+              Discover our small-batch sea moss gels, drinks, refreshers, and shots made with carefully selected ingredients
             </p>
             <a
               href="/catalog"

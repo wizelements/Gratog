@@ -32,7 +32,7 @@ export function getOrganizationSchema(baseUrl: string) {
     alternateName: 'ToG',
     url: baseUrl,
     logo: `${baseUrl}/images/logo.png`,
-    description: 'Premium sea moss gel and natural products. Hand-crafted with  for optimal health.',
+    description: 'Small-batch sea moss gels, fresh drinks, refreshers, and shots for Atlanta farmers market pickup.',
     email: CONTACT_EMAIL,
     ...(HAS_PUBLIC_PHONE ? { telephone: CONTACT_PHONE_TEL } : {}),
     address: {
@@ -162,7 +162,7 @@ export function getLocalBusinessSchema(baseUrl: string) {
     url: baseUrl,
     logo: `${baseUrl}/images/logo.png`,
     image: `${baseUrl}/images/store-front.jpg`,
-    description: 'Premium sea moss gel and natural products available at local farmers markets.',
+    description: 'Small-batch sea moss gels, fresh drinks, refreshers, and shots available at Atlanta-area farmers markets.',
     address: {
       '@type': 'PostalAddress',
       addressLocality: 'Atlanta',

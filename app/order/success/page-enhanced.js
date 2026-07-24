@@ -306,7 +306,7 @@ export default function OrderSuccessPage() {
             <ul className="mt-3 space-y-2 text-sm text-amber-800">
               <li>• Look for the Taste of Gratitude booth at your selected market</li>
               <li>• Mention your order reference at the booth</li>
-              <li>• We&apos;ll email confirmation and text updates if you added a phone number</li>
+              <li>• Check your email for confirmation and any available order updates</li>
             </ul>
           </div>
         )}

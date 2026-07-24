@@ -31,7 +31,7 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
 
     if (!checkoutReady) {
       toast.message('This item is not connected to checkout yet.', {
-        description: product.checkoutUnavailableReason || 'Join weekly texts or ask at the market for current availability.',
+        description: product.checkoutUnavailableReason || 'Join the weekly menu email or ask at the market for current availability.',
       });
       return;
     }

@@ -20,6 +20,7 @@
 
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
+import { ObjectId, type Db } from 'mongodb';
 
 export type OwnerAlertSeverity = 'info' | 'warning' | 'critical';
 export type OwnerAlertChannel = 'telegram' | 'email' | 'all';
@@ -46,7 +47,7 @@ export interface OwnerAlertEvent {
 }
 
 export interface QueueItem extends OwnerAlertEvent {
-  _id?: string;
+  _id: ObjectId;
   status: OwnerAlertStatus;
   attempts: number;
   maxAttempts: number;
@@ -74,6 +75,7 @@ export async function enqueueOwnerAlert(
   options: { maxAttempts?: number } = {}
 ): Promise<QueueItem> {
   const { db } = await connectToDatabase();
+  const collection = (db as Db).collection<QueueItem>(COLLECTION);
   const ts = now();
 
   const upsertDoc: Omit<QueueItem, '_id' | 'updatedAt'> = {
@@ -85,7 +87,7 @@ export async function enqueueOwnerAlert(
   };
 
   try {
-    const result = await db.collection<QueueItem>(COLLECTION).findOneAndUpdate(
+    const item = await collection.findOneAndUpdate(
       { sourceEventId: event.sourceEventId },
       {
         $setOnInsert: upsertDoc,
@@ -94,7 +96,6 @@ export async function enqueueOwnerAlert(
       { upsert: true, returnDocument: 'after' }
     );
 
-    const item = result.value ?? (await db.collection<QueueItem>(COLLECTION).findOne({ sourceEventId: event.sourceEventId }));
     if (!item) {
       throw new Error('enqueueOwnerAlert: item not found after upsert');
     }
@@ -106,21 +107,22 @@ export async function enqueueOwnerAlert(
     }
 
     return item;
-  } catch (err) {
-    logger.error('EventQueue', 'Failed to enqueue owner alert', { sourceEventId: event.sourceEventId, error: err?.message });
+  } catch (err: unknown) {
+    const error = err instanceof Error ? err.message : String(err);
+    logger.error('EventQueue', 'Failed to enqueue owner alert', { sourceEventId: event.sourceEventId, error });
     throw err;
   }
 }
 
 /**
- * Fetch pending owner alerts that are ready to be processed.
+ * Fetch pending or previously failed owner alerts that are ready to be retried.
  * `limit` is intentionally small to keep delivery safe and observable.
  */
 export async function fetchPendingOwnerAlerts(limit = 10): Promise<QueueItem[]> {
   const { db } = await connectToDatabase();
-  return db
+  return (db as Db)
     .collection<QueueItem>(COLLECTION)
-    .find({ status: 'pending' })
+    .find({ status: { $in: ['pending', 'failed'] } })
     .sort({ severity: 1, createdAt: 1 })
     .limit(limit)
     .toArray();
@@ -129,9 +131,9 @@ export async function fetchPendingOwnerAlerts(limit = 10): Promise<QueueItem[]> 
 /**
  * Mark an alert as sending. Returns false if another worker claimed it.
  */
-export async function claimAlert(id: string): Promise<boolean> {
+export async function claimAlert(id: ObjectId): Promise<boolean> {
   const { db } = await connectToDatabase();
-  const result = await db.collection<QueueItem>(COLLECTION).updateOne(
+  const result = await (db as Db).collection<QueueItem>(COLLECTION).updateOne(
     { _id: id, status: { $in: ['pending', 'failed'] } },
     { $set: { status: 'sending', updatedAt: now() }, $inc: { attempts: 1 } }
   );
@@ -142,11 +144,11 @@ export async function claimAlert(id: string): Promise<boolean> {
  * Mark an alert as successfully sent.
  */
 export async function markAlertSent(
-  id: string,
+  id: ObjectId,
   result: Record<string, unknown>
 ): Promise<void> {
   const { db } = await connectToDatabase();
-  await db.collection<QueueItem>(COLLECTION).updateOne(
+  await (db as Db).collection<QueueItem>(COLLECTION).updateOne(
     { _id: id },
     {
       $set: {
@@ -154,8 +156,8 @@ export async function markAlertSent(
         sentAt: now(),
         result,
         updatedAt: now(),
-        error: undefined,
       },
+      $unset: { error: '' },
     }
   );
 }
@@ -164,7 +166,7 @@ export async function markAlertSent(
  * Mark an alert as failed. If max attempts exceeded, moves to dead_letter.
  */
 export async function markAlertFailed(
-  id: string,
+  id: ObjectId,
   item: Pick<QueueItem, 'attempts' | 'maxAttempts'>,
   error: Error | string
 ): Promise<void> {
@@ -172,7 +174,7 @@ export async function markAlertFailed(
   const errorMessage = error instanceof Error ? error.message : String(error);
   const isDeadLetter = item.attempts >= item.maxAttempts;
 
-  await db.collection<QueueItem>(COLLECTION).updateOne(
+  await (db as Db).collection<QueueItem>(COLLECTION).updateOne(
     { _id: id },
     {
       $set: {
@@ -197,9 +199,9 @@ export async function markAlertFailed(
  */
 export async function getOwnerAlertQueueStats(): Promise<Record<OwnerAlertStatus | string, number>> {
   const { db } = await connectToDatabase();
-  const docs = await db
+  const docs = await (db as Db)
     .collection<QueueItem>(COLLECTION)
-    .aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }])
+    .aggregate<{ _id: OwnerAlertStatus; count: number }>([{ $group: { _id: '$status', count: { $sum: 1 } } }])
     .toArray();
   return Object.fromEntries(docs.map((d) => [d._id, d.count]));
 }

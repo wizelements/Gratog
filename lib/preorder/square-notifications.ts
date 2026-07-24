@@ -192,7 +192,7 @@ export async function sendSquareTeamEmail(preorder: any) {
 </body>
 </html>`;
 
-    await sendEmail({
+    const result = await sendEmail({
       to: SQUARE_TEAM_EMAIL,
       subject: `🛒 Preorder #${orderNumber} - Waitlist #${waitlistNumber} | ${customer.name}`,
       html,
@@ -201,6 +201,9 @@ export async function sendSquareTeamEmail(preorder: any) {
       emailType: 'preorder_notification',
       from: SQUARE_TEAM_EMAIL,
     });
+    if (!result?.success) {
+      throw new Error(result?.error || 'Email provider returned an unsuccessful result');
+    }
     
     logger.info('PreorderNotifications', 'Square team email sent', { orderNumber, waitlistNumber });
     return { sent: true };
@@ -230,7 +233,7 @@ export async function sendPreorderOwnerAlert(preorder: any) {
     const moreItems = items.length > 3 ? ` +${items.length - 3} more` : '';
     const total = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
 
-    await sendOwnerAlert({
+    const result = await sendOwnerAlert({
       sourceEventId: `preorder:${orderNumber}`,
       category: 'preorder',
       severity: 'info',
@@ -239,6 +242,9 @@ export async function sendPreorderOwnerAlert(preorder: any) {
       channel: 'all',
       eventAt: new Date().toISOString(),
     });
+    if (!result.telegram?.ok && !result.email?.ok) {
+      return { sent: false, error: result.telegram?.error || result.email?.error || 'Owner alert queued but not delivered' };
+    }
 
     logger.info('PreorderNotifications', 'Preorder owner alert sent', { orderNumber, waitlistNumber });
     return { sent: true };
@@ -277,7 +283,7 @@ export async function notifySquareTeam(preorder: any) {
   // The old Twilio SMS path has been removed.
   results.ownerAlert = await sendPreorderOwnerAlert(preorder);
   
-  const anySent = results.chat.sent || results.email.sent || results.sms.sent;
+  const anySent = results.chat.sent || results.email.sent || results.ownerAlert?.sent === true;
   
   logger.info('PreorderNotifications', 'Square team notifications complete', {
     orderNumber: preorder.orderNumber,

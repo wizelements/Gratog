@@ -31,7 +31,7 @@ export default function Footer() {
               Taste of Gratitude
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              Fresh small-batch sea moss for weekly market pickup, local delivery, and repeat wellness routines.
+              Small-batch sea moss gels, drinks, refreshers, and shots for Atlanta market pickup and eligible local delivery.
             </p>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[emerald-600]/10 rounded-full text-xs font-semibold text-[emerald-600]">
               🌿 Local pickup • Small batch
@@ -43,7 +43,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-emerald-600" aria-hidden="true" />
-                Satisfaction guarantee
+                Refund and replacement policy
               </div>
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function Footer() {
                   className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
-                  Wellness Quiz
+                  Product Quiz
                 </Link>
               </li>
 
@@ -202,7 +202,7 @@ export default function Footer() {
           <div>
             <h4 id="social-heading" className="font-semibold mb-4 text-lg">Connect With Us</h4>
             <p className="text-sm text-muted-foreground mb-4">
-              Follow the weekly menu, market booth updates, and customer routines.
+              Follow new menus, market booth updates, and fresh product photos.
             </p>
             <div className="flex space-x-3" role="list" aria-labelledby="social-heading">
               <a
@@ -242,7 +242,7 @@ export default function Footer() {
             Consult your healthcare provider before use, especially if pregnant, nursing, or have thyroid conditions.
           </p>
           <p className="text-sm text-muted-foreground text-center">
-            &copy; {new Date().getFullYear()} Taste of Gratitude. Crafted with ❤️ for your weekly routine.
+            &copy; {new Date().getFullYear()} Taste of Gratitude. Made in small batches for Atlanta market days.
           </p>
         </div>
       </div>

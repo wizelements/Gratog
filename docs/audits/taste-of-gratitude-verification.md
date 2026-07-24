@@ -223,3 +223,35 @@ Updated active transactional copy in `lib/resend-email.js` and `lib/email/templa
 - Branch `audit/tog-stage5b-verification` is green on CI, Vercel preview, local `npm run build`, and local `npm run lint`.
 - Local `main` and the unrelated pre-existing stash remain untouched.
 - Remaining work before merge: screenshots/accessibility evidence on a browser-capable host, and owner approval of renamed products / "Wellness Shots" category name.
+
+## 2026-07-24 — Content, trust, and no-SMS alignment continuation
+
+Branch: `feat/content-seo-cleanup` from `7adef13a`.
+
+### Implemented
+
+- Replaced internal funnel, bundle-roadmap, and repetitive routine language on the homepage, weekly menu, markets, wholesale, catalog, quiz, product detail, and shared footer/metadata surfaces.
+- Rewrote active curated product descriptions and display attributes around ingredients, flavor, format, and use instead of unsupported energy, stress, recovery, weight, glow, or mineral-support implications.
+- Kept claim-safe product display names (`Elderberry Ginger Shot`, `Soursop Spice Sea Moss Gel`) while preserving stable legacy IDs/slugs and Square links.
+- Removed unavailable bundle-savings copy; curated sets now state that individual item prices apply.
+- Removed the invented product-page fallback testimonial. Customer quotes now render only when supplied by product data.
+- Converted active weekly-menu acquisition forms from unavailable SMS promises to the existing `weekly_menu_email` lead/newsletter path.
+- Updated privacy and terms copy to remove the retired Twilio/SMS provider promise.
+- Added `tests/content-quality.test.ts` to guard these trust and capability contracts.
+- Corrected the homepage badge to use the curated weekly-menu product count rather than relabeling the full catalog count.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `npx vitest run tests/content-quality.test.ts tests/navigation-coherence.test.ts --reporter=verbose` | Pass — 17/17 |
+| `npm run lint` | Exit 0; repository-wide pre-existing warnings remain, with no lint errors |
+| `npm run build` | Exit 0; 68/68 static pages generated. Build used curated fallback products because local `MONGODB_URI` is intentionally absent |
+| `npm run typecheck:ci` | Blocked by 13 pre-existing errors in the merged no-SMS subsystem (`lib/event-queue.ts`, `lib/owner-alerts.ts`, `lib/preorder/square-notifications.ts`); none of those files are changed in this cleanup |
+| Independent diff review | Found and fixed one homepage count-label blocker; confirmed `/api/lead` email and `/api/quiz` request compatibility |
+
+### Still open
+
+- Preview deployment and visual/accessibility inspection require explicit approval because deployment is an external action.
+- End-to-end email delivery, checkout, webhook, and authenticated account flows require a credentialed runtime.
+- The account and legacy order-success surfaces still contain SMS-related behavior outside this content-acquisition cleanup and should be reconciled with the no-SMS architecture in a dedicated functional pass.

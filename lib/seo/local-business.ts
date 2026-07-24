@@ -170,7 +170,7 @@ export function getLocationKeywords(city: string, state: string): string[] {
     `Irish moss ${city}`,
     `sea moss delivery ${city}`,
     `farmers market ${city}`,
-    `natural supplements ${city}`,
+    `small-batch sea moss ${city}`,
     `${city} sea moss vendor`,
     `${city} farmers market sea moss`,
   ];

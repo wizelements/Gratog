@@ -287,7 +287,7 @@ function PreorderPageContent() {
   const searchParams = useSearchParams();
   const marketId = searchParams.get("market");
   const utmSource = searchParams.get("utm_source") || searchParams.get("source") || "direct";
-  const utmCampaign = searchParams.get("utm_campaign") || "passive_preorder_funnel";
+  const utmCampaign = searchParams.get("utm_campaign") || "weekly_menu_drop";
   const sourceCategory = searchParams.get("category") || null;
   const sourceProduct = searchParams.get("product") || null;
   
@@ -750,16 +750,16 @@ function PreorderPageContent() {
 
           <div className="mt-6">
             <RetentionForm
-              intent="weekly_menu_texts"
+              intent="weekly_menu_email"
               source="preorder_market_step"
               title="Not ready to preorder?"
               description="Get the next weekly menu email, pickup reminder, and preorder window before market day. If you are unsure which market is closest, tell us your area."
-              cta="Text me the weekly menu"
-              collectEmail={false}
-              collectPhone
+              cta="Email me the weekly menu"
+              collectEmail
+              collectPhone={false}
               collectMessage
               messagePlaceholder="Optional: what neighborhood or market is closest to you?"
-              metadata={{ sourceCampaign: 'passive_preorder_funnel', landingMarketId: marketId || null, utmSource, utmCampaign }}
+              metadata={{ sourceCampaign: 'weekly_menu_drop', landingMarketId: marketId || null, utmSource, utmCampaign }}
               compact
             />
           </div>
@@ -841,14 +841,14 @@ function PreorderPageContent() {
               <p className="text-gray-600">No products available. Please try again later.</p>
               <div className="mt-6 text-left max-w-md mx-auto">
                 <RetentionForm
-                  intent="weekly_menu_texts"
+                  intent="weekly_menu_email"
                   source="preorder_empty_products"
                   title="Want the menu when it drops?"
-                  description="Leave your phone number and we’ll send the next weekly menu and pickup reminder."
+                  description="Leave your email and we’ll send the next weekly menu and pickup reminder."
                   cta="Notify me"
-                  collectEmail={false}
-                  collectPhone
-                  metadata={{ sourceCampaign: 'passive_preorder_funnel', marketId: selectedMarket?.id || null, utmSource, utmCampaign }}
+                  collectEmail
+                  collectPhone={false}
+                  metadata={{ sourceCampaign: 'weekly_menu_drop', marketId: selectedMarket?.id || null, utmSource, utmCampaign }}
                   compact
                 />
               </div>
@@ -856,9 +856,9 @@ function PreorderPageContent() {
           ) : (
             <>
               <div className="mx-4 mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
-                <h2 className="font-semibold text-amber-900">Samples at the booth. Preorders for intentional routine.</h2>
+                <h2 className="font-semibold text-amber-900">Sample at the booth or reserve your favorites ahead.</h2>
                 <p className="text-sm text-amber-800 mt-1">
-                  If you want to try first, visit us at the market. If you are stocking up for your routine,
+                  If you want to try first, visit us at the market. If you already know what you want,
                   reserve ahead — the ${PREORDER_MINIMUM} reservation minimum helps us prep your batch fresh.
                 </p>
               </div>

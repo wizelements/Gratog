@@ -63,7 +63,7 @@ export default function PrivacyPage() {
           <CardContent>
             <ul className="list-disc list-inside space-y-2 text-sm">
               <li>Process and fulfill your orders</li>
-              <li>Send order confirmations and updates via email, plus optional SMS if you provide a phone number</li>
+              <li>Send order confirmations and updates by email</li>
               <li>Provide customer support and respond to inquiries</li>
               <li>Improve our products and services</li>
               <li>Send promotional materials (with your consent)</li>
@@ -82,7 +82,7 @@ export default function PrivacyPage() {
               We do not sell, rent, or share your personal information with third parties except in the following circumstances:
             </p>
             <ul className="list-disc list-inside space-y-1 text-sm">
-              <li><strong>Service Providers:</strong> Square for payment processing, Twilio for SMS, Resend for email</li>
+              <li><strong>Service Providers:</strong> Square for payment processing and Resend for email</li>
               <li><strong>Legal Requirements:</strong> When required by law or to protect our rights</li>
               <li><strong>Business Transfers:</strong> In the event of a merger or acquisition</li>
               <li><strong>With Your Consent:</strong> Any other sharing with your explicit permission</li>
