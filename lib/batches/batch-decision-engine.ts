@@ -56,6 +56,10 @@ export interface DecisionContext {
   upcomingMarket: boolean;
   /** How many custom microbatches the owner has already scheduled this week. */
   weeklyMicrobatchCount: number;
+  /** Product slug for price/category lookup. */
+  productSlug: string | null;
+  /** Product category fallback. */
+  productCategory: ProductCategory | null;
 }
 
 function formatGallons(g: number): string {

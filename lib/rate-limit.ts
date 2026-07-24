@@ -131,3 +131,19 @@ export function createRateLimitHeaders(result: RateLimitResult): Record<string, 
     'X-RateLimit-Reset': result.reset.toString(),
   };
 }
+
+const freshBatchRequestLimiter = new RateLimiter({ interval: 60000 });
+
+export async function rateLimitByIp(
+  request: NextRequest,
+  limit: number = 10,
+  _intervalMs: number = 60000
+): Promise<{ ok: boolean; headers?: Record<string, string> }> {
+  const ip = getClientIP(request);
+  const result = freshBatchRequestLimiter.check(ip, limit);
+
+  return {
+    ok: result.success,
+    headers: createRateLimitHeaders(result),
+  };
+}
