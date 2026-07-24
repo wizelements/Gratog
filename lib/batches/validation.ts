@@ -88,7 +88,6 @@ export const freshBatchRequestInputSchema = z
     notes: notesSchema,
     requestSource: requestSourceSchema.default('homepage_hero'),
     marketingEmailConsent: consentSchema,
-    smsConsent: consentSchema,
   })
   .refine(
     (data) => {
@@ -102,21 +101,7 @@ export const freshBatchRequestInputSchema = z
       path: ['flavor'],
     }
   )
-  .refine(
-    (data) => {
-      // If phone is provided, SMS consent must be explicitly false unless phone is present.
-      // The schema already defaults false. This rule just enforces that consent cannot be
-      // silently derived from the presence of a phone number.
-      if (!data.phone || data.phone.trim().length === 0) {
-        return data.smsConsent === false;
-      }
-      return true;
-    },
-    {
-      message: 'SMS consent requires a phone number.',
-      path: ['smsConsent'],
-    }
-  );
+;
 
 export type FreshBatchRequestInput = z.infer<typeof freshBatchRequestInputSchema>;
 

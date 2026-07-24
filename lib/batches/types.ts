@@ -70,7 +70,6 @@ export interface FreshBatchRequest {
   id: string;
   email: string;
   phone: string | null;
-  smsConsent: boolean;
   marketingEmailConsent: boolean;
   requestedProductSlug: string | null;
   requestedProductName: string | null;

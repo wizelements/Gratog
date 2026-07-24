@@ -64,7 +64,6 @@ interface FormState {
   needByDate: string;
   notes: string;
   marketingEmailConsent: boolean;
-  smsConsent: boolean;
 }
 
 export default function RequestFlavorClient({ source = 'homepage_hero' }: RequestFlavorClientProps) {
@@ -80,7 +79,6 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
     needByDate: '',
     notes: '',
     marketingEmailConsent: false,
-    smsConsent: false,
   });
 
   const [loading, setLoading] = useState(false);
@@ -128,10 +126,6 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
       if (selected < min) errors.needByDate = 'Need-by date must be at least 48 hours away.';
     }
 
-    if (form.smsConsent && !form.phone.trim()) {
-      errors.smsConsent = 'Please enter a phone number to receive SMS updates.';
-    }
-
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -156,7 +150,6 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
       notes: form.notes.trim() || null,
       requestSource: source,
       marketingEmailConsent: form.marketingEmailConsent,
-      smsConsent: form.smsConsent,
     };
 
     try {
@@ -410,24 +403,6 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
 
       <fieldset className="rounded-xl border border-stone-200 p-4">
         <legend className="px-2 text-sm font-medium text-stone-700">Communication preferences</legend>
-        <div className="mt-2 flex items-start gap-3">
-          <input
-            id="smsConsent"
-            name="smsConsent"
-            type="checkbox"
-            checked={form.smsConsent}
-            onChange={(e) => updateField('smsConsent', e.target.checked)}
-            className="mt-1 h-4 w-4 rounded border-stone-300"
-          />
-          <label htmlFor="smsConsent" className="text-sm leading-5 text-stone-700">
-            Send me text updates about this request. Standard rates may apply.
-          </label>
-        </div>
-        {fieldErrors.smsConsent && (
-          <p id="sms-error" className="mt-1.5 text-sm text-red-700" role="alert">
-            {fieldErrors.smsConsent}
-          </p>
-        )}
         <div className="mt-3 flex items-start gap-3">
           <input
             id="marketingEmailConsent"

@@ -78,7 +78,6 @@ export async function POST(request: NextRequest) {
   const requestDoc: Omit<FreshBatchRequest, 'id' | 'createdAt' | 'updatedAt'> = {
     email: parsed.email,
     phone: parsed.phone?.trim() || null,
-    smsConsent: parsed.smsConsent,
     marketingEmailConsent: parsed.marketingEmailConsent,
     requestedProductSlug: parsed.requestedProductSlug || null,
     requestedProductName: product?.name ?? null,
