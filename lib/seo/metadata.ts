@@ -40,7 +40,7 @@ export function generateProductMeta(product: ProductMeta): Metadata {
 
   const title = `${product.name} | ${SITE_NAME}`;
   const description = product.description || 
-    `Premium ${product.name} - Small-batch sea moss. $${product.price.toFixed(2)}. Order online for farmers market pickup.`;
+    `${product.name} from Taste of Gratitude. Small-batch sea moss gel, drinks, and shots for Atlanta farmers market pickup. $${product.price.toFixed(2)}.`;
 
   return {
     metadataBase: new URL(BASE_URL),
@@ -209,7 +209,7 @@ export function generateCatalogMeta(category?: string): Metadata {
 
   const title = category ? `${categoryName} | Shop ${SITE_NAME}` : `Shop All Products | ${SITE_NAME}`;
   const description = category
-    ? `Browse our ${categoryName} collection. Premium sea moss products for weekly routines.`
+    ? `Browse our ${categoryName} collection of small-batch sea moss products.`
     : 'Shop our complete collection of sea moss gel, lemonades, drinks, and shots. Available at Atlanta-area farmers markets and for local delivery.';
 
   return generatePageMeta(title, description, category ? `/catalog?category=${category}` : '/catalog', {
@@ -248,8 +248,8 @@ export function generateHomeMeta(): Metadata {
     publisher: SITE_NAME,
 
     openGraph: {
-      title: `Premium Sea Moss Gel | ${SITE_NAME}`,
-      description: 'Shop Irish sea moss gel. Hand-crafted for flavor, routine, and community.',
+      title: `Small-Batch Sea Moss Gel | ${SITE_NAME}`,
+      description: 'Shop small-batch sea moss gels, fresh drinks, refreshers, and shots for Atlanta farmers market pickup.',
       url: BASE_URL,
       siteName: SITE_NAME,
       locale: 'en_US',
@@ -259,15 +259,15 @@ export function generateHomeMeta(): Metadata {
           url: `${BASE_URL}${DEFAULT_OG_IMAGE}`,
           width: 1200,
           height: 630,
-          alt: `${SITE_NAME} - Premium Sea Moss`,
+          alt: `${SITE_NAME} small-batch sea moss products`,
         },
       ],
     },
 
     twitter: {
       card: 'summary_large_image',
-      title: `Premium Sea Moss Gel | ${SITE_NAME}`,
-      description: 'Shop Irish sea moss gel. 100% plant-based.',
+      title: `Small-Batch Sea Moss Gel | ${SITE_NAME}`,
+      description: 'Shop small-batch sea moss gels, fresh drinks, refreshers, and shots for Atlanta farmers market pickup.',
       images: [`${BASE_URL}${DEFAULT_OG_IMAGE}`],
       creator: '@taste_gratitude',
       site: '@taste_gratitude',

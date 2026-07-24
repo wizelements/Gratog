@@ -156,7 +156,7 @@ export default function InfoBoardPage() {
         <div className="container mx-auto px-4 text-center">
           <Badge className="mb-4 bg-white/20 text-white border-white/30 px-4 py-1.5">
             <Sparkles className="h-4 w-4 mr-2" />
-            {loading ? 'Loading...' : `${products.length} Premium Products`}
+            {loading ? 'Loading...' : `${products.length} Small-Batch Products`}
           </Badge>
           
           <h2 className="text-3xl md:text-4xl font-bold mb-3">

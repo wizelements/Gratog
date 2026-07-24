@@ -162,7 +162,7 @@ export function getProductMetadata(product: {
     product.category,
     ...benefitKeywords,
     'buy online',
-    'natural supplement',
+    'small-batch sea moss',
   ];
 
   return generateMetadata({
@@ -183,7 +183,7 @@ export function getProductMetadata(product: {
 export function getCategoryMetadata(category: string, baseUrl: string) {
   const categoryDescriptions: Record<string, string> = {
     'sea-moss-gel': 'Browse our small-batch sea moss gel collection. Hand-crafted with simple ingredients for Atlanta farmers market pickup.',
-    'elderberry': 'Elderberry-flavored sea moss products. Real ingredients for your weekly routine.',
+    'elderberry': 'Browse elderberry-flavored sea moss gels and shots made in small batches for Atlanta farmers market pickup.',
     'lemonade': 'Refreshing sea moss lemonade blends. Fresh, small-batch drinks for market pickup.',
     'gift-sets': 'Curated Taste of Gratitude sets. Great for trying the weekly menu or sharing with friends.',
   };
@@ -191,7 +191,7 @@ export function getCategoryMetadata(category: string, baseUrl: string) {
   return generateMetadata({
     title: `${category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Products`,
     description: categoryDescriptions[category] || `Shop ${category} products from Taste of Gratitude. Small-batch sea moss gels, drinks, and shots for Atlanta farmers market pickup.`,
-    keywords: [category, 'sea moss', 'natural supplements', 'buy online'],
+    keywords: [category, 'sea moss', 'small-batch products', 'buy online'],
     url: `/catalog?category=${category}`,
   }, baseUrl);
 }
