@@ -38,31 +38,31 @@ import {
 import { track } from '@/utils/analytics';
 
 const STAT_CARDS = [
-  { label: 'Weekly rhythm', value: 'Menu drops' },
-  { label: 'Fulfillment', value: 'Market pickup' },
-  { label: 'Batch style', value: 'Small-batch' },
+  { label: 'Fresh menu', value: 'Each week' },
+  { label: 'Pickup', value: 'At the booth' },
+  { label: 'Made in', value: 'Small batches' },
 ];
 
 const ORDERING_STEPS = [
   {
     icon: Mail,
-    title: 'Join the weekly menu',
+    title: 'Get the menu',
     text: 'Start with the weekly email so you know what is fresh before market day.',
   },
   {
     icon: ShoppingBag,
     title: 'Reserve your batch',
-    text: 'When you already know what you want, use preorder to hold weekly staples for pickup.',
+    text: 'Use preorder to hold the gels, drinks, refreshers, and shots you want for pickup.',
   },
   {
     icon: Package,
     title: 'Pick up fresh',
-    text: 'Grab your reserved gels, drinks, refreshers, and shots at the booth.',
+    text: 'Grab your reserved order at the booth during market hours.',
   },
   {
     icon: Repeat,
-    title: 'Reorder next week',
-    text: 'Join reminders so your routine continues with the next menu drop.',
+    title: 'Come back next week',
+    text: 'Sign up for menu reminders so you see the next batch first.',
   },
 ];
 
@@ -72,8 +72,8 @@ function ingredientPreview(product) {
 
 function availabilityLabel(product) {
   if (product.soldOut || product.inventoryStatus === 'sold_out') return 'Sold out';
-  if (product.inventoryStatus === 'limited' || product.weeklyStatus === 'limited') return 'Limited batch';
-  if (product.preorderOnly) return 'Preorder';
+  if (product.inventoryStatus === 'limited' || product.weeklyStatus === 'limited') return 'Small batch';
+  if (product.preorderOnly) return 'Reserve for pickup';
   return 'Available this week';
 }
 
@@ -127,7 +127,7 @@ function BundleCard({ bundle }) {
 
   return (
     <article className="rounded-[1.5rem] border border-emerald-900/10 bg-white p-5 shadow-sm">
-      <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Bundle-ready</p>
+      <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Curated set</p>
       <h3 className="text-xl font-semibold text-stone-950">{bundle.name}</h3>
       <p className="mt-2 text-sm leading-6 text-stone-600">{bundle.description}</p>
       <div className="mt-4 flex flex-wrap gap-2">
@@ -147,7 +147,6 @@ function BundleCard({ bundle }) {
 
 export default function HomePageClient({
   initialFeaturedProducts = [],
-  initialCatalogCount = null,
   organizationSchema,
   faqSchema,
 }) {
@@ -170,9 +169,7 @@ export default function HomePageClient({
     commerceProductByKey.get(normalizeProductKey(product.name)) ||
     null;
   const totalWeeklyItems = getWeeklyMenuProducts('all').length;
-  const catalogBadge = Number.isFinite(initialCatalogCount) && initialCatalogCount > 0
-    ? `${initialCatalogCount} live catalog items`
-    : `${totalWeeklyItems} weekly menu items`;
+  const catalogBadge = `${totalWeeklyItems} items on this week's menu`;
 
   return (
     <main className="min-h-screen bg-[#fbfaf5] text-stone-950">
@@ -193,7 +190,7 @@ export default function HomePageClient({
             </p>
             <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
               <Button asChild className="h-14 rounded-full bg-white px-8 text-base font-bold text-emerald-950 hover:bg-emerald-50">
-                <Link href="/weekly-menu?utm_source=homepage_hero&utm_campaign=passive_preorder_funnel" onClick={() => track('home_preorder_click', { source: 'homepage_hero_weekly_menu_cta' })}>
+                <Link href="/weekly-menu?utm_source=homepage_hero&utm_campaign=weekly_menu_drop" onClick={() => track('home_preorder_click', { source: 'homepage_hero_weekly_menu_cta' })}>
                   View this week&apos;s menu
                 </Link>
               </Button>
@@ -202,7 +199,7 @@ export default function HomePageClient({
               </Button>
             </div>
             <p className="mt-4 text-sm text-emerald-50/80">
-              Already a market regular?{' '}
+              Picking up every week?{' '}
               <Link
                 href="/preorder"
                 onClick={() => track('home_preorder_click', { source: 'homepage_hero_regular_link' })}
@@ -241,7 +238,7 @@ export default function HomePageClient({
                 cta="Email me the menu"
                 collectEmail
                 collectPhone={false}
-                metadata={{ sourceCampaign: 'passive_preorder_funnel' }}
+                metadata={{ sourceCampaign: 'weekly_menu_drop' }}
                 compact
               />
             </div>
@@ -254,11 +251,11 @@ export default function HomePageClient({
           <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">{WEEKLY_MENU.title}</p>
-              <h2 className="mt-2 text-4xl font-semibold tracking-tight text-stone-950 sm:text-5xl">Fresh this week, not a stale catalog.</h2>
+              <h2 className="mt-2 text-4xl font-semibold tracking-tight text-stone-950 sm:text-5xl">Fresh this week, made in small batches.</h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">{WEEKLY_MENU.preorderLanguage}</p>
             </div>
             <Button asChild className="h-12 rounded-full bg-emerald-700 px-6 text-white hover:bg-emerald-800">
-              <Link href="/catalog">Open Full Shop</Link>
+              <Link href="/catalog">Shop the full menu</Link>
             </Button>
           </div>
           <div className="mb-8 flex gap-2 overflow-x-auto pb-2 scrollbar-hide" role="tablist" aria-label="Filter weekly menu">
@@ -289,7 +286,7 @@ export default function HomePageClient({
         <div className="container">
           <div className="mb-8 text-center">
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">How ordering works</p>
-            <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">A market rhythm customers can repeat.</h2>
+            <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">A simple way to order every week.</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-4">
             {ORDERING_STEPS.map(({ icon: Icon, title, text }, index) => (
@@ -335,10 +332,10 @@ export default function HomePageClient({
           </div>
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Founder story</p>
-            <h2 className="mt-2 text-4xl font-semibold tracking-tight text-stone-950">Built from a health journey, then shared at the farmers market.</h2>
+            <h2 className="mt-2 text-4xl font-semibold tracking-tight text-stone-950">Started at home, then shared at the farmers market.</h2>
             <div className="mt-5 space-y-4 text-base leading-8 text-stone-700">
-              <p>Taste of Gratitude began as Jenneisha&apos;s personal routine: soaking, blending, and sharing sea moss with family before it became a market table.</p>
-              <p>The brand works because customers do not just buy a drink. They learn how sea moss fits into smoothies, teas, hydration, and weekly routines — then they come back.</p>
+              <p>Taste of Gratitude began with Jenneisha soaking, blending, and sharing sea moss with family before bringing it to the farmers market.</p>
+              <p>The brand works because customers do not just buy a drink. They learn how sea moss fits into smoothies, teas, and everyday drinks — then they come back.</p>
             </div>
             <Button asChild variant="outline" className="mt-6 h-12 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
               <Link href="/about">Read the story</Link>
@@ -376,7 +373,7 @@ export default function HomePageClient({
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
                   <Button asChild className="h-11 rounded-full bg-emerald-700 text-white hover:bg-emerald-800">
                     <Link
-                      href={`/preorder?market=${encodeURIComponent(market.id)}&utm_source=homepage_market&utm_campaign=passive_preorder_funnel`}
+                      href={`/preorder?market=${encodeURIComponent(market.id)}&utm_source=homepage_market&utm_campaign=weekly_menu_drop`}
                       onClick={() => track('home_preorder_click', { source: 'homepage_market_card', marketId: market.id })}
                     >
                       Reserve pickup
@@ -395,8 +392,8 @@ export default function HomePageClient({
       <section id="benefits" className="scroll-mt-24 bg-white py-14">
         <div className="container">
           <div className="mb-8 text-center">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Bundle system</p>
-            <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">Build a box from this week’s menu.</h2>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Curated picks</p>
+            <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">Try a ready-made set from this week’s menu.</h2>
           </div>
           <div className="grid gap-5 lg:grid-cols-3">
             {BUNDLES.slice(0, 3).map((bundle) => (
@@ -405,7 +402,7 @@ export default function HomePageClient({
           </div>
           <div className="mt-8 text-center">
             <Button asChild variant="outline" className="h-12 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
-              <Link href="/weekly-menu?utm_source=homepage_bundles&utm_campaign=passive_preorder_funnel">
+              <Link href="/weekly-menu?utm_source=homepage_bundles&utm_campaign=weekly_menu_drop">
                 View weekly menu and build a box →
               </Link>
             </Button>
@@ -417,7 +414,7 @@ export default function HomePageClient({
         <div className="container grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-start">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Community proof</p>
-            <h2 className="mt-2 text-3xl font-semibold text-stone-950">A farmers market brand grows through real routines.</h2>
+            <h2 className="mt-2 text-3xl font-semibold text-stone-950">Built through real farmers market conversations.</h2>
             <div className="mt-6 rounded-[1.5rem] border border-stone-200 bg-white p-5 shadow-sm">
               <p className="leading-7 text-stone-700">
                 Real customer reviews will appear here as they are collected. If you have tried Taste of Gratitude, share your review at the market or email us.
@@ -428,7 +425,7 @@ export default function HomePageClient({
             <div className="rounded-[2rem] bg-emerald-950 p-6 text-white">
               <Users className="h-8 w-8 text-emerald-200" aria-hidden="true" />
               <h3 className="mt-4 text-2xl font-semibold">Wholesale and partner inquiries</h3>
-              <p className="mt-3 leading-7 text-emerald-50/90">Wellness studios, retailers, cafes, and market partners can start a low-friction inquiry now, even before wholesale automation is fully connected.</p>
+              <p className="mt-3 leading-7 text-emerald-50/90">Studios, retailers, cafes, and market partners can tell us what they need and receive a personal follow-up on products, quantities, and pickup or delivery.</p>
               <Button asChild className="mt-6 h-12 rounded-full bg-white px-6 text-emerald-950 hover:bg-emerald-50">
                 <Link href="/wholesale">Wholesale inquiry</Link>
               </Button>
@@ -441,8 +438,8 @@ export default function HomePageClient({
         <div className="container grid gap-6 lg:grid-cols-[1fr_0.8fr] lg:items-center">
           <div>
             <Heart className="h-8 w-8 text-emerald-200" aria-hidden="true" />
-            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">Keep the weekly routine going.</h2>
-            <p className="mt-3 max-w-2xl leading-7 text-emerald-50/90">Join the email list for menu drops, sea moss education, market reminders, and early subscription updates.</p>
+            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">See what we are making next.</h2>
+            <p className="mt-3 max-w-2xl leading-7 text-emerald-50/90">Join the email list for new menus, ingredient notes, market reminders, and product updates.</p>
             <div className="mt-5 grid gap-2 text-sm text-emerald-50/90 sm:grid-cols-3">
               {['Weekly menu drops', 'Market pickup reminders', 'Product education'].map((item) => (
                 <p key={item} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-200" aria-hidden="true" />{item}</p>
@@ -453,7 +450,7 @@ export default function HomePageClient({
             intent="email_signup"
             source="homepage_retention_footer"
             title="Join the weekly menu email"
-            description="Get the next menu, product education, reorder reminders, and early subscription updates."
+            description="Get the next menu, ingredient notes, pickup reminders, and new-product updates."
             cta="Join weekly emails"
           />
         </div>

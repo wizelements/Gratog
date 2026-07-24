@@ -507,14 +507,14 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
         <section className="border-b border-emerald-900/10 bg-white py-6">
           <div className="container grid gap-4 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Passive menu funnel</p>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Weekly menu email</p>
               <h2 className="mt-2 text-2xl font-semibold text-stone-950">New here? Get the weekly menu email before you reserve.</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-                Browse today, then let us text the next menu drop, pickup reminder, and market-specific preorder link when batches are open.
+                Browse today, then get the next menu, pickup reminder, and market-specific preorder link by email when batches are open.
               </p>
               <Button asChild variant="outline" className="mt-4 h-11 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
                 <Link
-                  href="/preorder?utm_source=catalog_banner&utm_campaign=passive_preorder_funnel"
+                  href="/preorder?utm_source=catalog_banner&utm_campaign=weekly_menu_drop"
                   onClick={() => track('catalog_preorder_click', { source: 'catalog_lead_banner' })}
                 >
                   Already know your pickup? Reserve now
@@ -522,14 +522,14 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
               </Button>
             </div>
             <RetentionForm
-              intent="weekly_menu_texts"
+              intent="weekly_menu_email"
               source="catalog_page"
-              title="Text me the weekly menu"
-              description="One low-friction text with the menu, pickup reminders, and preorder window before market day."
-              cta="Text me the menu"
-              collectEmail={false}
-              collectPhone
-              metadata={{ sourceCampaign: 'passive_preorder_funnel', category: selectedCategory }}
+              title="Email me the weekly menu"
+              description="Get the menu, pickup reminders, and preorder window before market day."
+              cta="Email me the menu"
+              collectEmail
+              collectPhone={false}
+              metadata={{ sourceCampaign: 'weekly_menu_drop', category: selectedCategory }}
               compact
             />
           </div>

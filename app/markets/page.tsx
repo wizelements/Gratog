@@ -90,18 +90,18 @@ interface ProductItem {
 
 const TRUST_POINTS = [
   { icon: Package, label: 'Small-batch weekly prep' },
-  { icon: Shield, label: 'Secure checkout before payment' },
+  { icon: Shield, label: 'Order details confirmed before payment' },
   { icon: Sparkles, label: 'Samples + founder-led market care' },
 ];
 
 const EXPERIENCE_STEPS = [
   {
     title: 'Preorder to reserve your batch',
-    text: 'Choose what you want before market day so your weekly routine is held aside and ready for pickup.',
+    text: 'Choose what you want before market day so your order is held aside and ready for pickup.',
   },
   {
     title: 'Walk up for samples and discovery',
-    text: 'Stop by the booth to taste what is fresh, ask questions, and learn which blends fit your routine.',
+    text: 'Stop by the booth to taste what is fresh, ask questions, and compare flavors and formats.',
   },
   {
     title: 'Prepared fresh in small runs',
@@ -219,14 +219,14 @@ function MarketCard({ market }: { market: PublicMarket }) {
 
       <div className="mt-5">
         <RetentionForm
-          intent="weekly_menu_texts"
+          intent="weekly_menu_email"
           source={`markets_page_${market.id}`}
-          title={`Text me ${market.shortName || market.name} reminders`}
+          title={`Email me ${market.shortName || market.name} reminders`}
           description={`Get the weekly menu, cutoff reminder, and preorder link for ${market.shortName || market.name}.`}
-          cta="Text me market reminders"
-          collectEmail={false}
-          collectPhone
-          metadata={{ marketId: market.id, sourceCampaign: 'passive_preorder_funnel' }}
+          cta="Email me market reminders"
+          collectEmail
+          collectPhone={false}
+          metadata={{ marketId: market.id, sourceCampaign: 'weekly_menu_drop' }}
           compact
         />
       </div>
@@ -234,7 +234,7 @@ function MarketCard({ market }: { market: PublicMarket }) {
       <div className="mt-auto grid gap-3 pt-5 sm:grid-cols-2">
         <Button asChild className="h-12 rounded-full bg-emerald-700 text-white hover:bg-emerald-800">
           <Link
-            href={`/preorder?market=${encodeURIComponent(market.id)}&utm_source=markets_page&utm_campaign=passive_preorder_funnel`}
+            href={`/preorder?market=${encodeURIComponent(market.id)}&utm_source=markets_page&utm_campaign=weekly_menu_drop`}
             onClick={() => track('market_preorder_click', { source: 'markets_page_card', marketId: market.id })}
           >
             <ShoppingBag className="h-4 w-4" aria-hidden="true" />
@@ -483,7 +483,7 @@ export default function MarketsPage() {
                 </a>
               </Button>
               <Button asChild variant="outline" className="min-h-[52px] rounded-full border-emerald-200 bg-white px-7 text-base font-semibold text-emerald-900 hover:bg-emerald-50">
-                <Link href="/preorder?utm_source=markets_hero&utm_campaign=passive_preorder_funnel" onClick={() => track('market_preorder_click', { source: 'markets_page_hero' })}>
+                <Link href="/preorder?utm_source=markets_hero&utm_campaign=weekly_menu_drop" onClick={() => track('market_preorder_click', { source: 'markets_page_hero' })}>
                   <ShoppingBag className="h-5 w-5" aria-hidden="true" />
                   Already ready? Preorder
                 </Link>
@@ -549,7 +549,7 @@ export default function MarketsPage() {
             <div className="rounded-[1.75rem] border border-amber-200 bg-amber-50 p-6 text-center">
               <HelpCircle className="mx-auto mb-3 h-8 w-8 text-amber-600" aria-hidden="true" />
               <p className="font-semibold text-amber-950">{marketsError}</p>
-              <p className="mt-1 text-sm text-amber-800">You can still browse the live catalog or start a preorder while we refresh market details.</p>
+              <p className="mt-1 text-sm text-amber-800">You can still browse the current menu or start a preorder while we refresh market details.</p>
               <Button asChild className="mt-5 rounded-full bg-emerald-700 text-white hover:bg-emerald-800">
                 <Link href="/catalog">Browse Catalog</Link>
               </Button>
@@ -650,7 +650,7 @@ export default function MarketsPage() {
             <div>
               <h2 className="text-3xl font-semibold tracking-tight">Ready to reserve your weekly batch?</h2>
               <p className="mt-3 max-w-2xl text-emerald-50/90">
-                Start with the live catalog, choose pickup or shipping at checkout, and get clear next steps after payment.
+                Start with the current menu, choose pickup or eligible shipping at checkout, and review the details before payment.
               </p>
             </div>
             <div className="grid gap-3 sm:flex">

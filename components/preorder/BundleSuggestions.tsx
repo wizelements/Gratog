@@ -28,7 +28,7 @@ export default function BundleSuggestions({ cartTotal, cartCategoryCounts = {}, 
 
   if (!bundle) return null;
 
-  const href = `/preorder?bundle=${encodeURIComponent(bundle.slug)}&market=${encodeURIComponent(marketId || '')}&utm_source=preorder_bundle&utm_campaign=passive_preorder_funnel`;
+  const href = `/preorder?bundle=${encodeURIComponent(bundle.slug)}&market=${encodeURIComponent(marketId || '')}&utm_source=preorder_bundle&utm_campaign=weekly_menu_drop`;
 
   return (
     <div className="mx-4 mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
@@ -54,7 +54,7 @@ export default function BundleSuggestions({ cartTotal, cartCategoryCounts = {}, 
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm" className="rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-100">
-              <Link href="/weekly-menu?utm_source=preorder_bundle&utm_campaign=passive_preorder_funnel">
+              <Link href="/weekly-menu?utm_source=preorder_bundle&utm_campaign=weekly_menu_drop">
                 View weekly menu
               </Link>
             </Button>

@@ -66,8 +66,7 @@ async function getHomepageCatalogData() {
   });
 
   return {
-    featuredProducts: availableProducts,
-    initialCatalogCount: snapshot.isFallback ? null : availableProducts.length
+    featuredProducts: availableProducts
   };
 }
 
@@ -75,7 +74,7 @@ async function getHomepageCatalogData() {
 
 export default async function HomePage() {
   // Fetch data in parallel with caching
-  const { featuredProducts, initialCatalogCount } = await getHomepageCatalogData();
+  const { featuredProducts } = await getHomepageCatalogData();
 
   const organizationSchema = buildHomepageOrganizationSchema();
   const faqSchema = buildHomepageFaqSchema();
@@ -83,7 +82,6 @@ export default async function HomePage() {
   return (
     <HomePageClient
       initialFeaturedProducts={featuredProducts}
-      initialCatalogCount={initialCatalogCount}
       organizationSchema={organizationSchema}
       faqSchema={faqSchema}
     />
