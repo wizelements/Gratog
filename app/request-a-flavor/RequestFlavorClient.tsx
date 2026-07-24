@@ -5,9 +5,7 @@ import Link from 'next/link';
 import {
   ArrowRight,
   CheckCircle2,
-  ChevronDown,
   Loader2,
-  MapPin,
   HelpCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';

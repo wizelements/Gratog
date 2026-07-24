@@ -136,8 +136,7 @@ const freshBatchRequestLimiter = new RateLimiter({ interval: 60000 });
 
 export async function rateLimitByIp(
   request: NextRequest,
-  limit: number = 10,
-  _intervalMs: number = 60000
+  limit: number = 10
 ): Promise<{ ok: boolean; headers?: Record<string, string> }> {
   const ip = getClientIP(request);
   const result = freshBatchRequestLimiter.check(ip, limit);

@@ -2,32 +2,31 @@ export const dynamic = 'force-static';
 export const revalidate = 300; // Revalidate every 5 minutes
 
 export const metadata = {
-  title: 'Taste of Gratitude | Weekly Sea Moss Menu & Atlanta Farmers Market Fresh Drinks',
-  description: 'Shop small-batch sea moss gels, fresh drinks, refreshers, and shots from Taste of Gratitude. Weekly menu drops for Atlanta farmers market pickup.',
+  title: 'Taste of Gratitude | Request a Flavor, Reserve a Gallon, or Meet Us at the Market',
+  description: 'Request a flavor, reserve a gallon, or meet us at the market to sample fresh sea moss drinks and gels. We confirm availability before you pay.',
   keywords: [
     'small-batch sea moss Atlanta',
     'Atlanta farmers market juices',
     'sea moss gel Atlanta',
     'fresh drinks Atlanta',
-    'Taste of Gratitude weekly menu',
+    'Taste of Gratitude request a flavor',
+    'gallon order Atlanta farmers market',
   ],
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Taste of Gratitude | Weekly Sea Moss Market Menu',
-    description: 'Fresh weekly sea moss gels, lemonades, refreshers, and shots for Atlanta market pickup.',
+    title: 'Taste of Gratitude | Request a Flavor',
+    description: 'Request a flavor, reserve a gallon, or meet us at the market to sample fresh sea moss drinks and gels. We confirm availability before you pay.',
     url: 'https://tasteofgratitude.shop',
     siteName: 'Taste of Gratitude',
-    images: [{ url: '/images/gratog-bg.PNG', width: 1200, height: 630, alt: 'Taste of Gratitude weekly market fresh products' }],
     locale: 'en_US',
     type: 'website',
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Taste of Gratitude | Weekly Sea Moss Market Menu',
-    description: 'Small-batch sea moss gels and fresh drinks for Atlanta farmers market pickup.',
-    images: ['/images/gratog-bg.PNG'],
+    card: 'summary',
+    title: 'Taste of Gratitude | Request a Flavor',
+    description: 'Request a flavor, reserve a gallon, or meet us at the market to sample fresh sea moss drinks and gels.',
   },
 };
 
