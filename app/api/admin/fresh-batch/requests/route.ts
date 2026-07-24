@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminSession } from '@/lib/auth/unified-admin';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
+import { isValidRequestTransition } from '@/lib/batches/state-machine';
+import { logRequestStatusChange } from '@/lib/batches/audit-log';
+import type { FreshBatchRequest, RequestStatus } from '@/lib/batches/types';
 
 const COLLECTION = 'fresh_batch_requests';
 
@@ -84,13 +87,46 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const { db } = await connectToDatabase();
-    const update: Record<string, unknown> = { status: body.status, updatedAt: new Date() };
+    const targetStatus = body.status as RequestStatus;
+
+    // Fetch current states to validate transitions and audit-log each change.
+    const existing = await db
+      .collection<FreshBatchRequest>(COLLECTION)
+      .find({ id: { $in: body.ids } })
+      .toArray();
+
+    const invalid = existing.filter((r) => !isValidRequestTransition(r.status, targetStatus));
+    if (invalid.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid state transition for some requests',
+          details: invalid.map((r) => ({ id: r.id, from: r.status, to: targetStatus })),
+        },
+        { status: 409 }
+      );
+    }
+
+    const update: Record<string, unknown> = { status: targetStatus, updatedAt: new Date() };
     if (body.ownerNotes !== undefined) update.ownerNotes = body.ownerNotes;
 
     const result = await db.collection(COLLECTION).updateMany(
       { id: { $in: body.ids } },
       { $set: update }
     );
+
+    // Append audit-log entries asynchronously; failures are logged, not surfaced.
+    const actor = admin.email || 'unknown';
+    existing.forEach((r) => {
+      logRequestStatusChange(r.id, actor, r.status, targetStatus, body.ownerNotes).catch(
+        (err) => {
+          logger.warn('AdminFreshBatch', 'Audit log failed', {
+            requestId: r.id,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      );
+    });
 
     return NextResponse.json({
       success: true,

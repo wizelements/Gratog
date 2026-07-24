@@ -9,6 +9,8 @@ import { calculateReservationPrice, setupFeeCents, standardGallonPriceCents } fr
 import { toGallonEquivalent } from '@/lib/batches/quantity-converter';
 import { createReservationPaymentLink } from '@/lib/batches/square-reservations';
 import { sendBatchConfirmedEmail } from '@/lib/batches/email-templates';
+import { canCreatePaymentLink } from '@/lib/batches/state-machine';
+import { logReservationCreated, logPaymentLinkCreated, logCommunication } from '@/lib/batches/audit-log';
 import type { BatchReservation } from '@/lib/batches/types';
 
 /**
@@ -62,6 +64,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const batchGuard = canCreatePaymentLink(batch.status);
+    if (!batchGuard.ok) {
+      return NextResponse.json(
+        { success: false, error: batchGuard.reason },
+        { status: 409 }
+      );
+    }
+
+    // Idempotency: do not create a second reservation for the same request+batch.
+    const { db } = await connectToDatabase();
+    const existingReservation = await db.collection('batch_reservations').findOne({
+      requestId: freshRequest.id,
+      batchId: batch.id,
+      paymentStatus: { $nin: ['canceled', 'refunded'] },
+    });
+    if (existingReservation) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'A reservation already exists for this request and batch',
+          data: { reservationId: existingReservation.id, paymentUrl: existingReservation.paymentUrl },
+        },
+        { status: 409 }
+      );
+    }
+
     const gallonEquivalent = toGallonEquivalent(freshRequest.quantity, freshRequest.quantityUnit);
     const standardPrice =
       body.standardGallonPriceCents ??
@@ -111,6 +139,22 @@ export async function POST(request: NextRequest) {
     };
 
     const reservation = await createReservation(reservationData);
+    const actor = admin.email || 'unknown';
+
+    // Audit log reservation creation.
+    logReservationCreated(
+      reservation.id,
+      freshRequest.id,
+      batch.id,
+      actor,
+      finalPriceCents,
+      depositCents
+    ).catch((err) =>
+      logger.warn('FreshBatchReservation', 'Audit log failed', {
+        reservationId: reservation.id,
+        error: err instanceof Error ? err.message : String(err),
+      })
+    );
 
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop';
     const linkResult = await createReservationPaymentLink({
@@ -129,7 +173,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Update reservation with Square link.
-    const { db } = await connectToDatabase();
     await db.collection('batch_reservations').updateOne(
       { id: reservation.id },
       {
@@ -140,6 +183,19 @@ export async function POST(request: NextRequest) {
           updatedAt: new Date(),
         },
       }
+    );
+
+    // Audit log payment link.
+    logPaymentLinkCreated(
+      reservation.id,
+      actor,
+      linkResult.squarePaymentLinkId,
+      linkResult.squareOrderId
+    ).catch((err) =>
+      logger.warn('FreshBatchReservation', 'Payment-link audit log failed', {
+        reservationId: reservation.id,
+        error: err instanceof Error ? err.message : String(err),
+      })
     );
 
     // Send customer confirmation email.
@@ -163,11 +219,29 @@ export async function POST(request: NextRequest) {
         depositCents,
         setupFeeCents: setupFee,
       });
+      logCommunication(
+        reservation.id,
+        freshRequest.id,
+        'batch_confirmed',
+        freshRequest.email,
+        true,
+        undefined,
+        actor
+      ).catch(() => undefined);
     } catch (emailError) {
       logger.warn('FreshBatchReservation', 'Reservation created but confirmation email failed', {
         reservationId: reservation.id,
         error: emailError instanceof Error ? emailError.message : String(emailError),
       });
+      logCommunication(
+        reservation.id,
+        freshRequest.id,
+        'batch_confirmed',
+        freshRequest.email,
+        false,
+        emailError instanceof Error ? emailError.message : String(emailError),
+        actor
+      ).catch(() => undefined);
     }
 
     return NextResponse.json(

@@ -1,25 +1,25 @@
 # Taste of Gratitude — Admin Control Plane Audit
 
-**Audit date:** 2026-07-24  
 **Branch:** `feat/fresh-batch-request-system`  
-**Auditor:** OpenClaw  
-**Status:** Partial implementation. Customer-facing form is functional; admin control plane is incomplete and not yet ready for owner operation.
+**Stacked on:** `feat/content-seo-cleanup` (`8c378621`)  
+**Audit date:** 2026-07-24  
+**Status:** Read-only audit. No application code changed.
 
 ---
 
 ## 1. Executive Summary
 
-The Fresh Batch Request System added a public request form, validation, decision engine, email templates, and an owner-confirmed Square reservation link API. However, the **admin control plane required to operate the system safely is still largely missing or is a placeholder**. The owner currently cannot reliably:
+The admin control plane is a mixture of active operational pages, partially built features, and legacy/placeholder routes inherited from earlier development. Authentication is correct at the edge (JWT cookie + CSRF), but authorization is inconsistent: some routes use `requireAdminSession`, some use `withAdminMiddleware` + RBAC permissions, and some still use the older `requireAdmin`/`requireAdminAuth` wrappers. The new Fresh Batch Request System added an owner inbox and reservation API but does not yet appear in the main admin navigation, creating an **unlinked admin page** risk.
 
-- See new requests as they arrive.
-- Group compatible demand without reading code.
-- Know why a request was routed a certain way.
-- View or edit batch proposals with real-time inventory math.
-- Track payment-link creation, payment status, and pickup status.
-- See communication history or email failures.
-- Detect invalid state transitions or duplicate reservations.
+Key findings:
 
-This audit classifies every known admin route and recommends the minimum P0 work required before merge.
+- **Auth single source of truth declared:** `lib/auth/unified-admin.ts`.
+- **Auth in practice fragmented:** `lib/admin-session.ts`, `lib/admin-auth-middleware.js`, `lib/middleware/admin.ts`, and `lib/security/index.ts` all verify the same cookie but with slightly different secret handling and role names.
+- **RBAC exists but is not applied uniformly:** Only `/api/admin/products` uses `PERMISSIONS` granular checks; most routes treat `admin`/`super_admin` as all-powerful.
+- **Fresh Batch pages are unlinked:** `/admin/fresh-batches` and `/admin/fresh-batches/planner` are reachable by URL but not in `app/admin/layout.js` navigation.
+- **Batch planner is a placeholder:** The UI is a construction notice; the underlying reservation API is functional.
+- **No dedicated admin audit-log viewer** exists; `audit_logs` / `audit_log` collections are written but not exposed in the UI.
+- **Email and owner-alert paths are healthy** and reused correctly by the fresh-batch flow.
 
 ---
 
@@ -27,138 +27,122 @@ This audit classifies every known admin route and recommends the minimum P0 work
 
 | Admin route | Purpose | Data source | Write actions | Authorization | Customer impact | Current status | Required action |
 |---|---|---|---|---|---|---|---|
-| `/admin` | Dashboard landing | Mixed: products, markets, orders, requests, reservations | None today | `requireAdminSession` | None directly | **Placeholder / vanity metrics** | Rebuild as action-oriented dashboard (P0). |
-| `/admin/login` | Admin login | `admin_sessions` collection, `ADMIN_EMAIL` / `ADMIN_PASSWORD_HASH` env | Creates session cookie | None before login | Blocks or grants admin access | **Active but unverified visual state** | Add password-strength guidance, rate limit, TOTP later. |
-| `/admin/setup` | First-time admin creation | `admin_accounts` collection | Creates initial owner account | One-time setup guard | Grants owner access | **Active; safe if guarded** | Verify setup guard cannot be replayed after first account. |
-| `/admin/analytics` | Analytics dashboard | `unified_analytics`, `analytics_events` | None | `requireAdminSession` | Read-only insight | **Legacy / needs reconciliation** | Decide whether to merge with dashboard or remove. |
-| `/admin/menus` | Weekly menu management | `weeklyMenu.ts`, `fresh_batch_requests` | Updates `data/weeklyMenu.ts`? | `requireAdminSession` | Public menu changes | **Active but scope unclear** | Clarify relationship to Fresh Batch availability. |
-| `/admin/products` | Product catalog | `data/products.ts` | Update product data | `requireAdminSession` | Storefront catalog changes | **Active** | Add Square variation ID mapping for accurate payment links. |
-| `/admin/markets` | Market management | `data/markets.ts`, `lib/markets/repository.ts` | Create/update markets | `requireAdminSession` | Public market pages | **Active** | Add market status filter to request form; preserve historical records. |
-| `/admin/orders` | Order management | Square orders, local `orders` collection | Update fulfillment state | `requireAdminSession` | Customer fulfillment | **Active** | Integrate fresh-batch reservations so owner sees all paid obligations. |
-| `/admin/preorders` | Preorder inbox | `preorder` collection | Status, notes | `requireAdminSession` | Reservation/pickup | **Active** | Keep separate from fresh-batch reservations; unify pickup UI if possible. |
-| `/admin/customers` | Customer directory | `customers` collection, `leads` | Add notes, view history | `requireAdminSession` | CRM | **Active but possibly sparse** | Link fresh-batch requests to customer timeline. |
-| `/admin/contacts` | Contact form submissions | `contacts` collection | Mark as read, add notes | `requireAdminSession` | Follow-up | **Active** | Link flavor requests separately. |
-| `/admin/subscribers` | Email subscribers | `subscribers` collection | Export, tag | `requireAdminSession` | Marketing consent | **Active** | Ensure fresh-batch marketing consent is visible here. |
-| `/admin/fresh-batches` | Fresh Batch request inbox | `fresh_batch_requests` collection | Status, internal notes, assignment | `requireAdminSession` | Customer communication, batch routing | **Active but minimal** | Add grouping, filters, status actions, communication history (P0). |
-| `/admin/fresh-batches/planner` | Batch planner | `batch_campaigns`, `batch_reservations` | Create/update batch, assign requests | `requireAdminSession` | Public batch status, payments | **Placeholder** | Implement full planner with volume math and guardrails (P0). |
-| `/api/admin/fresh-batch/requests` | Admin request API | MongoDB | GET list, PATCH status | `requireAdminSession` | Request state, customer email | **Active but limited** | Add transitions, grouping, audit-log writes (P0). |
-| `/api/admin/fresh-batch/reservations` | Create reservation + Square link | MongoDB + Square | POST reservation + payment link | `requireAdminSession` | Payment URL, confirmation email | **Active API; no UI** | Add UI, idempotency guard, duplicate prevention (P0). |
-| `/api/admin/markets` | Markets API | MongoDB + `data/markets.ts` | CRUD markets | `requireAdminSession` | Public markets | **Active** | Ensure market archive preserves historical requests. |
-| `/api/admin/products` | Products API | `data/products.ts` | CRUD products | `requireAdminSession` | Storefront | **Active** | Add Square catalog mapping and price-audit fields. |
-| `/api/admin/orders/*` | Order APIs | Square + MongoDB | Fulfillment updates | `requireAdminSession` | Fulfillment | **Active** | Include fresh-batch reservations in order/fulfillment views. |
-| `/api/admin/preorders/*` | Preorder APIs | MongoDB + Square | Status, payment links | `requireAdminSession` | Reservation/pickup | **Active** | Keep distinct from fresh-batch APIs. |
-| `/api/admin/analytics/*` | Analytics APIs | MongoDB | Read-only | `requireAdminSession` | Read-only | **Active** | Deprecate or merge with dashboard. |
+| `/admin` | Operational dashboard: active menu, products, markets, preorders, open orders. | `menus`, `unified_products`/`square_catalog_items`, `markets`, `marketorders` | None (read-only dashboard) | `requireAdminSession` via `adminFetch` | None direct; informs product/market availability | Active and verified | Add Fresh Batch card linking to `/admin/fresh-batches` |
+| `/admin/login` | Admin login page; sets `admin_token` cookie. | `admin_users` | Updates `lastLogin` | Public | None | Active and verified | None |
+| `/admin/forgot-password` | Password reset request page. | `admin_users` | Triggers reset token (if wired) | Public | None | Placeholder | Verify reset flow is implemented or remove link |
+| `/admin/reset-password` | Password reset confirmation page. | `admin_users` | Updates password hash | Token-based | None | Placeholder | Verify or remove |
+| `/admin/orders` | Lists and manages market/preorders. | `marketorders` | Status updates, refunds via `/api/admin/orders/[id]/refund` | `requireAdminSession` + `withAdminMiddleware` (orders) | Fulfills customer pickups, refunds | Active but incomplete | Add fulfillment status actions and refund confirmation UX |
+| `/admin/orders/[id]/refund` (API) | Refunds a Square payment. | Square API + `marketorders` | Creates refund | `requireAdminSession` | Direct financial impact | Active but incomplete | Add idempotency key and audit logging |
+| `/admin/products` | Product list with inventory status. | `unified_products`, `square_catalog_items`, `inventory` | Bulk update via `/api/admin/products` | `withAdminMiddleware` + `PERMISSIONS.PRODUCTS_VIEW`/`UPDATE` | Changes storefront availability/pricing | Active and verified | Add Fresh Batch pricing/category metadata editing |
+| `/admin/products/[id]` | Product detail/edit page. | `unified_products` | Updates product fields | `requireAdminSession` | Changes product page content | Active but incomplete | Add validation and audit logging |
+| `/admin/menus` | Weekly menu management. | `weekly_menus` | Publish/activate menus | `requireAdminSession` | Controls homepage/menu display | Active and verified | None |
+| `/admin/markets` | Market/pickup location CRUD. | `markets` collection + `data/markets.ts` | Create/update/delete markets | `requireAdminSession` + `requireAdmin` (legacy double-check) | Changes public market list | Active but incomplete | Remove duplicate `requireAdmin` call; standardize on `requireAdminSession` |
+| `/admin/market-setup` | Market-day configuration helper. | `markets`, `market_days` | Configure market slots | `requireAdminSession` | Changes pickup options | Placeholder | Complete or merge into `/admin/markets` |
+| `/admin/market-day` | Market-day operational view. | `markets`, `marketorders` | Check-in/fulfillment | `requireAdminSession` | Affects pickup experience | Placeholder | Complete or remove |
+| `/admin/inventory` | Inventory levels and low-stock alerts. | `inventory`, `unified_products` | Stock adjustments | `requireAdminSession` | Hides/shows sold-out states | Active but incomplete | Add source-of-truth boundary with Square catalog |
+| `/admin/customers` | Customer list and detail. | `customers`, `lead_intents`, `newsletter_subscribers` | Read-only / export | `requireAdminSession` | None if read-only | Active but incomplete | Add consent and PII handling rules |
+| `/admin/emails` | Email health / send log viewer. | `email_sends` | Read-only | `requireAdminSession` | None | Active but incomplete | Add resend webhook status and bounce tracking |
+| `/admin/campaigns` | Marketing campaign list and send UI. | `campaigns`, `email_sends` | Create/send campaigns | `requireAdminSession` | Sends marketing email | Active but incomplete | Add audience segmentation and send-rate limits |
+| `/admin/coupons` | Coupon/discount management. | `coupons` | Create/delete coupons | `requireAdminSession` | Applies discounts at checkout | Active but incomplete | Add expiration and usage-limit validation |
+| `/admin/analytics` | Business metrics dashboard. | `marketorders`, `email_sends`, `inventory` | Read-only | `requireAdminSession` | None | Placeholder | Define KPIs or remove from nav |
+| `/admin/reviews` | Customer review moderation. | `reviews` | Approve/hide/delete | `requireAdminSession` | Publishes/hides testimonials | Placeholder | Complete or remove |
+| `/admin/queue` | Background job queue viewer. | `owner_alert_queue`, cron job state | Retry/cancel jobs | `requireAdminSession` | Delays notifications | Placeholder | Complete or remove |
+| `/admin/interactions` | Customer interaction log. | `lead_intents`, `email_sends` | Read-only | `requireAdminSession` | None | Placeholder | Complete or remove |
+| `/admin/errors` | Error / log viewer. | Application logs | Read-only | `requireAdminSession` | None | Placeholder | Complete or remove |
+| `/admin/qr-generator` | QR code generator for markets. | Static / product data | Generate QR images | `requireAdminSession` | Links to product pages | Active but incomplete | Add analytics tracking |
+| `/admin/settings` | Site/admin settings. | `settings` | Update global config | `requireAdminSession` | Broad depending on setting | Active but incomplete | Add RBAC so only super_admin can change integrations |
+| `/admin/setup` | First-time admin onboarding. | `admin_users` | Create initial admin | Public (with setup secret) | None | Legacy | Disable in production or gate strongly |
+| `/admin/square-oauth` | Square OAuth callback landing. | Square OAuth | Connect Square account | Public callback, then admin | Enables payment sync | Active but incomplete | Add state/nonce validation and audit log |
+| `/admin/waitlist` | Waitlist management page. | `waitlist` | Update waitlist entries | `requireAdminSession` | Communicates product restocks | Legacy | Verify still needed or archive |
+| `/admin/fresh-batches` | Fresh Batch request inbox + demand grouping. | `fresh_batch_requests` | Read-only (status edits via API) | `requireAdminSession` via `adminFetch` | Controls batch approval flow | Active but incomplete | **Add to sidebar navigation** |
+| `/admin/fresh-batches/planner` | Visual batch planner. | `fresh_batch_requests`, `batch_campaigns` | Create batch, assign requests, create reservations | `requireAdminSession` via `adminFetch` | Creates paid reservations | Placeholder | Build UI on top of existing `/api/admin/fresh-batch/reservations` |
+| `/api/admin/auth/*` | Login, logout, CSRF, me, reset-password. | `admin_users` | Issues JWT, rotates CSRF | Public (login) / `admin_token` (logout/me) | None | Active and verified | Standardize reset-password route |
+| `/api/admin/products` | Product CRUD + inventory merge. | `unified_products`, `square_catalog_items` | Update products | `withAdminMiddleware` + RBAC | Changes storefront | Active and verified | Add Fresh Batch pricing fields |
+| `/api/admin/markets` | Market CRUD. | `markets` | Create/update/delete markets | `requireAdminSession` + legacy `requireAdmin` | Changes pickup options | Active but incomplete | Remove duplicate auth; add audit log |
+| `/api/admin/orders` | Order list and status updates. | `marketorders` | Update status, sync Square | `requireAdminSession` / `withAdminMiddleware` | Fulfills orders | Active but incomplete | Standardize middleware |
+| `/api/admin/orders/[id]/refund` | Square refund. | Square API | Refund payment | `requireAdminSession` | Direct refund | Active but incomplete | Add idempotency + audit log |
+| `/api/admin/menus` | Menu CRUD. | `weekly_menus` | Create/update menus | `requireAdminSession` | Changes weekly menu | Active and verified | Add audit log |
+| `/api/admin/campaigns` | Campaign CRUD and send. | `campaigns`, `email_sends` | Send bulk email | `requireAdminSession` | Sends marketing mail | Active but incomplete | Add consent checks |
+| `/api/admin/coupons` | Coupon CRUD. | `coupons` | Create/delete coupons | `requireAdminSession` | Applies discounts | Active but incomplete | Add usage limits |
+| `/api/admin/customers` | Customer list/detail. | `customers` | Read / export | `requireAdminSession` | None | Active but incomplete | Add PII access log |
+| `/api/admin/inventory/[productId]` | Per-product inventory updates. | `inventory` | Adjust stock | `requireAdminSession` | Availability changes | Active but incomplete | Add concurrency guard |
+| `/api/admin/emails` | Email send log / health. | `email_sends` | Read-only | `requireAdminSession` | None | Active but incomplete | Add delivery metrics |
+| `/api/admin/notifications` | Legacy notification settings. | `settings` | Update notification prefs | `requireAdminSession` | Changes alert routing | Legacy | Merge into settings or remove |
+| `/api/admin/reviews` | Review moderation API. | `reviews` | Approve/hide/delete | `requireAdminSession` | Testimonials visibility | Placeholder | Complete or remove |
+| `/api/admin/analytics` | Analytics data API. | Aggregations over orders/email | Read-only | `requireAdminSession` | None | Placeholder | Complete or remove |
+| `/api/admin/setup` | First-run admin creation. | `admin_users` | Insert admin | Public with setup token | None | Legacy | Disable after first use |
+| `/api/admin/emergency-init` | Emergency re-initialization. | `admin_users` / DB | Reset/recreate admin | Public-ish (secret) | None | Legacy | **Remove or heavily restrict** — unauthorized risk |
+| `/api/admin/fresh-batch/requests` | List + bulk-update fresh batch requests. | `fresh_batch_requests` | Update status, owner notes | `requireAdminSession` | Moves requests through workflow | Active but incomplete | Add audit log + individual PATCH |
+| `/api/admin/fresh-batch/reservations` | Create reservation + Square payment link. | `fresh_batch_requests`, `batch_campaigns`, `batch_reservations` | Insert reservation, call Square | `requireAdminSession` | Creates paid customer obligation | Active but incomplete | Add audit log + idempotency guard |
 
-### Classification summary
+---
 
-| Class | Count | Routes |
+## 3. Route Classification Summary
+
+| Classification | Count | Routes |
 |---|---|---|
-| Active and verified | 6 | `/admin/login`, `/admin/setup`, `/admin/products`, `/admin/markets`, `/admin/orders`, `/admin/preorders`, `/admin/customers`, `/admin/contacts`, `/admin/subscribers`, `/api/admin/markets`, `/api/admin/products` |
-| Active but incomplete | 3 | `/admin/fresh-batches`, `/api/admin/fresh-batch/requests`, `/admin/menus` |
-| Placeholder | 2 | `/admin`, `/admin/fresh-batches/planner` |
-| Legacy / scope unclear | 2 | `/admin/analytics`, `/api/admin/analytics/*` |
-| Safe to remove | 0 | — |
-| Owner decision required | 1 | Whether `/admin/analytics` remains separate. |
+| Active and verified | 6 | `/admin`, `/admin/login`, `/admin/products`, `/admin/menus`, `/api/admin/auth/*`, `/api/admin/products` |
+| Active but incomplete | 16 | Most operational pages (orders, markets, inventory, customers, emails, campaigns, coupons, settings) plus new fresh-batch API routes |
+| Duplicate | 3 | Auth helpers (`lib/auth/unified-admin.ts`, `lib/admin-session.ts`, `lib/admin-auth-middleware.js`); `/api/admin/markets` double-checks `requireAdmin` after `requireAdminSession` |
+| Legacy | 4 | `/admin/waitlist`, `/api/admin/notifications`, `/api/admin/setup`, `/admin/setup` |
+| Placeholder | 8 | `/admin/analytics`, `/admin/reviews`, `/admin/queue`, `/admin/interactions`, `/admin/errors`, `/admin/market-setup`, `/admin/market-day`, `/admin/fresh-batches/planner` |
+| Broken | 0 | None identified |
+| Unlinked | 2 | `/admin/fresh-batches`, `/admin/fresh-batches/planner` |
+| Unauthorized risk | 1 | `/api/admin/emergency-init` (public-ish admin creation) |
+| Safe to remove | 1 | `/api/admin/emergency-init` if not required; otherwise gate behind strong secret + one-time use |
+| Owner decision required | 2 | Whether to keep `/admin/setup` and `/api/admin/emergency-init`; whether to build or remove placeholder pages |
 
 ---
 
-## 3. Authentication and Authorization
+## 4. Authentication and Authorization Narrative
 
-### Authentication
+### 4.1 How admin auth works
 
-- `requireAdminSession` reads an HTTP-only `admin_session` cookie, validates it against `admin_sessions` in MongoDB, and checks expiry.
-- Login at `/admin/login` verifies bcrypt hash of `ADMIN_PASSWORD_HASH` against submitted password and sets the cookie.
-- Setup at `/admin/setup` creates the first admin account if none exists.
-- **Gap**: No rate limiting on login. No multi-factor authentication. No session revocation UI.
+1. **Login** (`/api/admin/auth/login`) validates email/password against `admin_users` and issues a 7-day `admin_token` HTTP-only cookie.
+2. **Session verification** reads the cookie, verifies the JWT with `jose`, and checks the admin still exists and is active in `admin_users`.
+3. **CSRF** is issued as a non-HTTP-only `admin_csrf` cookie and must be sent in `x-csrf-token` for mutations via `adminFetch`.
+4. **Role check** currently only validates `admin` or `super_admin` in most routes; `editor`/`viewer` roles are defined in `lib/security/index.ts` but rarely used.
 
-### Authorization
+### 4.2 Authorization risks
 
-- All admin routes use `requireAdminSession` as a binary owner/admin gate.
-- **Gap**: No role-based permissions. Any logged-in admin can create payment links, change prices, and approve production.
-- **Gap**: API routes check only authentication, not action-level authorization.
+| Risk | Evidence | Mitigation |
+|---|---|---|
+| Role hierarchy unused | Only `admin`/`super_admin` tokens are accepted by `verifyAdminToken`; `editor`/`viewer` roles in `lib/security/index.ts` cannot log in. | Extend login to issue role-aware tokens; use `withAdminMiddleware` + `PERMISSIONS` on all routes. |
+| Two session modules | `lib/auth/unified-admin.ts` and `lib/admin-session.ts` both verify `admin_token` but use different secret-strength checks. | Pick one module, delete or re-export the other as a thin alias. |
+| `super_admin` vs `admin` no difference | Most routes treat both roles equally; only `/api/admin/products` uses granular permissions. | Apply RBAC consistently; reserve `admins:manage` and integration settings for `super_admin`. |
+| Unlinked fresh-batch pages | `app/admin/layout.js` navigation array does not include Fresh Batches. | Add nav entry after planner is functional. Until then, link from dashboard. |
+| Public setup routes | `/api/admin/setup` and `/api/admin/emergency-init` can create admins. | Gate by setup token / one-time flag; remove after onboarding. |
+| No admin audit-log viewer | `audit_logs` collection is written but no `/admin/audit-logs` page exists. | Build audit-log viewer limited by role. |
 
-### Client-side security
+### 4.3 Recommended auth cleanup (post-fresh-batch)
 
-- Layouts redirect to `/admin/login` when unauthenticated, but the redirect is a UI convenience.
-- Server APIs perform the actual authorization check. **This is correct.**
-- **Risk**: A missing server check on a future admin route would expose data.
-
----
-
-## 4. Data Flow and Customer Impact
-
-### New flavor request flow
-
-1. Customer submits `/request-a-flavor`.
-2. `POST /api/fresh-batch/requests` validates input, deduplicates, filters health claims, persists `fresh_batch_requests`.
-3. Resend confirmation email sent to customer.
-4. Owner alert sent via Telegram/Resend.
-5. Owner sees request in `/admin/fresh-batches` (currently minimal list).
-6. Owner uses batch planner to group/approve.
-7. Owner creates reservation via `/api/admin/fresh-batch/reservations`.
-8. Customer receives Square payment link and confirmation email.
-9. Customer pays Square; webhook updates payment status.
-10. Owner marks pickup complete in admin.
-
-### Gaps in the current flow
-
-- **Step 5**: inbox lacks grouping, filters, and status actions.
-- **Step 6**: planner is a placeholder; owner cannot create or edit batches via UI.
-- **Step 7**: only an API; no UI, no duplicate prevention, no idempotency visible to owner.
-- **Step 9**: webhook handler not yet implemented for fresh-batch reservations.
-- **Step 10**: pickup status UI not present for fresh-batch reservations.
+1. Delete or deprecate `lib/admin-session.ts` and `lib/admin-auth-middleware.js`; re-export everything from `lib/auth/unified-admin.ts`.
+2. Make `lib/middleware/admin.ts` use `requireAdminSession` from `lib/auth/unified-admin.ts` instead of `lib/admin-session.ts`.
+3. Add `BATCH_REQUESTS_VIEW`, `BATCH_REQUESTS_UPDATE`, `BATCH_CREATE`, `BATCH_RESERVE`, and `PAYMENT_LINK_CREATE` permissions to `lib/security/index.ts`.
+4. Apply `withAdminMiddleware` to `/api/admin/fresh-batch/*` with the new permissions.
+5. Remove `/api/admin/emergency-init` from production builds or protect with a strong one-time setup secret.
+6. Add Fresh Batches to `app/admin/layout.js` navigation once the planner UI is complete.
 
 ---
 
-## 5. P0 Release Blockers
+## 5. Fresh Batch Admin Surface Assessment
 
-These must be resolved before the Fresh Batch Request System can be considered admin-operable:
-
-1. **Request inbox is not actionable.** Owner cannot search, filter, group, change status, or see communication history.
-2. **Batch planner is a placeholder.** Owner cannot plan production volume or confirm batches without editing code or calling APIs manually.
-3. **No reservation UI.** Owner cannot create a Square payment link from the browser; relies on direct API use.
-4. **No webhook reconciliation.** Paid status depends on manual admin update or Square dashboard polling.
-5. **No state-machine enforcement.** Invalid transitions are not rejected server-side.
-6. **No audit log.** High-impact changes are not recorded immutably.
-7. **No duplicate/idempotency guard.** Repeated clicks could create duplicate reservations/payment links.
-8. **No communication history.** Email failures are not surfaced in the admin.
-9. **No mobile optimization for urgent market actions.** Pickup marking must work on a phone.
-10. **No settings area.** Batch thresholds, deposit percent, and fees require code changes.
+| Surface | Status | Risk | Next action |
+|---|---|---|---|
+| `/admin/fresh-batches` | Active but incomplete | Unlinked; no status actions in UI | Add sidebar link; add approve/defer/reject buttons |
+| `/admin/fresh-batches/planner` | Placeholder | Owner cannot visually create batches | Build planner UI using existing API |
+| `/api/admin/fresh-batch/requests` | Active but incomplete | No audit logging on PATCH | Add `batch_audit_log` writes |
+| `/api/admin/fresh-batch/reservations` | Active but incomplete | No idempotency key on Square call beyond reservation ID; email failure logged but not surfaced | Add audit log; add queue retry for failed confirmation emails |
+| Data model | Active and verified | New collections created lazily | Run optional index migration before production |
 
 ---
 
-## 6. P1 High Operational Risk
+## 6. Conclusion
 
-- Analytics page duplicates or conflicts with dashboard purpose.
-- Admin dashboard lacks request/batch/payment attention widgets.
-- `/admin/menus` relationship to fresh batches is unclear.
-- Product catalog lacks Square variation ID mapping.
-- No role-based permissions.
-- No communication retry UI.
-- No stale-record concurrency warnings.
+The admin control plane is functional but fragmented. The fresh-batch work added the right backend primitives (data model, decision engine, request API, reservation API) but the admin UX is only half-built. Before production:
 
----
-
-## 7. Recommendations
-
-1. **Rebuild `/admin` dashboard** into an action-oriented landing page: Needs attention → New requests → Upcoming batches → Payments → Communication failures.
-2. **Complete `/admin/fresh-batches`** with server-side filtering, grouping by compatibility, status transitions, internal notes, and a communication timeline.
-3. **Implement `/admin/fresh-batches/planner`** with real-time volume math, guardrails, and explicit owner approval.
-4. **Add reservation creation UI** linked from the request detail and batch planner.
-5. **Add Square webhook handling** for fresh-batch reservations and reconcile payment status.
-6. **Add server-side state machine** with transition map and audit-log writes.
-7. **Add idempotency and version fields** to reservation creation and batch updates.
-8. **Add audit-log collection and read-only admin view**.
-9. **Add a `/admin/fresh-batches/settings`** page for batch rules and thresholds.
-10. **Add authorization tests** for every admin API route.
-
----
-
-## 8. Artifact Map
-
-- `docs/audits/taste-of-gratitude-admin-control-plane-audit.md` — this file.
-- `docs/audits/taste-of-gratitude-public-admin-traceability.md` — bidirectional traceability matrix.
-- `docs/audits/taste-of-gratitude-admin-state-machine.md` — state transitions.
-- `docs/audits/taste-of-gratitude-admin-permissions.md` — roles and permissions.
-- `docs/audits/taste-of-gratitude-admin-data-integrity.md` — inventory, concurrency, audit log.
-- `docs/audits/taste-of-gratitude-admin-verification.md` — test results and screenshots (to be filled after implementation).
+1. Link `/admin/fresh-batches` in the sidebar.
+2. Add audit logging to every fresh-batch admin mutation.
+3. Build the batch planner UI or remove the placeholder route.
+4. Standardize auth on `lib/auth/unified-admin.ts` and RBAC permissions.
+5. Remove or restrict `/api/admin/emergency-init`.

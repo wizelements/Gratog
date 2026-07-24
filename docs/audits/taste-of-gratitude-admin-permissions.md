@@ -1,146 +1,166 @@
-# Taste of Gratitude — Admin Permissions and Authorization Model
+# Taste of Gratitude — Admin Permissions and RBAC Gap Assessment
 
-**Audit date:** 2026-07-24  
 **Branch:** `feat/fresh-batch-request-system`  
-**Status:** Current system uses a single `requireAdminSession` gate. Role-based authorization is not implemented but is required for safe operation as the team grows.
+**Audit date:** 2026-07-24  
+**Status:** Read-only audit. No application code changed.
 
 ---
 
-## 1. Current authorization model
+## 1. Current Role Model
 
-### Implementation
+The code defines four roles in `lib/security/index.ts`:
 
-- `requireAdminSession` in `lib/auth/unified-admin.ts` reads the `admin_session` cookie, looks up the session in MongoDB, and returns the admin record or `null`.
-- All admin pages and APIs call `requireAdminSession` and return 401 if unauthenticated.
-- No role or permission checks exist beyond "is logged in as any admin."
+- `super_admin`
+- `admin`
+- `editor`
+- `viewer`
 
-### Authentication surface
+However, the JWT verification in `lib/admin-session.ts` and `lib/auth/unified-admin.ts` only accepts `admin` or `super_admin`. `editor` and `viewer` cannot currently authenticate to the admin dashboard because the token role check rejects them.
 
-| Route | Behavior | Risk |
+---
+
+## 2. Proposed Operational Roles for Taste of Gratitude
+
+| Role | Typical user | Scope |
 |---|---|---|
-| `/admin/login` | bcrypt password verification against `ADMIN_PASSWORD_HASH` env | No rate limit; weak password may be brute-forced. |
-| `/admin/setup` | Creates first admin account if none exists | Must be one-time only. |
-| Admin pages | Redirect to login if unauthenticated | UI only; real protection is server API. |
-| Admin APIs | `requireAdminSession` on every route | Correct. |
+| **Owner** | Business owner / founder | Full control, financial decisions, integrations, admin management |
+| **Manager** | Operations manager | Batch planning, order fulfillment, refunds, pricing, publishing |
+| **Production staff** | Kitchen/prep lead | View requests/batches, update production status, mark pickups |
+| **Market staff** | Market booth worker | View reservations, mark pickups, view limited customer info |
+| **Read-only reviewer** | Bookkeeper / consultant | View orders, products, requests; no writes |
 
 ---
 
-## 2. Recommended roles
+## 3. Permission Matrix
 
-| Role | Description |
-|---|---|
-| **Owner** | Full access. Can manage admins, settings, integrations, refunds, pricing overrides. |
-| **Manager** | Can approve batches, create payment links, manage products/markets, handle customer service. Cannot change settings or manage admins. |
-| **Production staff** | Can view assigned batches, record actual yield, update pickup status. Cannot create batches, approve prices, or send payment links. |
-| **Market staff** | Can mark pickup complete, view reservations for a specific market, mark sold out. Cannot access all customer data or pricing. |
-| **Read-only reviewer** | Can view requests, batches, and reservations. Cannot change state or send communications. |
-
----
-
-## 3. Permission matrix
-
-| Action | Owner | Manager | Production staff | Market staff | Read-only reviewer |
+| Capability | Owner | Manager | Production staff | Market staff | Read-only reviewer |
 |---|---|---|---|---|---|
-| View dashboard | ✅ | ✅ | ✅ | ✅ | ✅ |
-| View requests | ✅ | ✅ | ✅ | ✅ (own market) | ✅ |
-| Edit request status | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Assign request to batch | ✅ | ✅ | ❌ | ❌ | ❌ |
-| View batches | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Create draft batch | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Approve batch / price | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Open reservations | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Lock production | ✅ | ✅ | ✅ (record yield only) | ❌ | ❌ |
-| Create Square payment link | ✅ | ✅ | ❌ | ❌ | ❌ |
-| View reservations | ✅ | ✅ | ✅ | ✅ (own market) | ✅ |
-| Update pickup status | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Mark sold out | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Send customer email | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Retry failed email | ✅ | ✅ | ❌ | ❌ | ❌ |
-| View communication history | ✅ | ✅ | ✅ | ✅ | ✅ |
-| View audit log | ✅ | ✅ | ❌ | ❌ | ✅ |
-| Change prices | ✅ | ✅ (with override reason) | ❌ | ❌ | ❌ |
-| Change settings | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Manage integrations | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Manage admin accounts | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Issue refund or credit | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Export subscribers | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Delete records | ✅ | ✅ (soft delete with audit) | ❌ | ❌ | ❌ |
+| **View dashboard / orders / customers** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **View products / inventory / markets** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Edit products (names, descriptions, categories)** | ✅ | ✅ | ✅* | ❌ | ❌ |
+| **Edit inventory counts** | ✅ | ✅ | ✅ | ✅ | ❌ |
+| **Approve / defer / reject fresh batch requests** | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **Create batch campaigns** | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **Create payment links / reservations** | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **Refund payments** | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **Change prices / microbatch fees** | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **Publish menus / batch board** | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **Manage markets / pickup locations** | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **Manage integrations (Square, Resend, Telegram)** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Manage admin users / roles** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **View audit logs** | ✅ | ✅ | ❌ | ❌ | ✅* |
+| **Export customer data** | ✅ | ✅ | ❌ | ❌ | ✅* |
+| **Mark reservations picked up / no-show** | ✅ | ✅ | ✅ | ✅ | ❌ |
+| **Update production status** | ✅ | ✅ | ✅ | ❌ | ❌ |
+| **Send marketing campaigns** | ✅ | ✅ | ❌ | ❌ | ❌ |
+
+*Editor can edit product metadata but not pricing.
+*Read-only reviewer can view audit logs if granted by owner; export may be limited and logged.
 
 ---
 
-## 4. Sensitive action confirmation
+## 4. Required New Permissions
 
-The following actions require explicit confirmation in the UI, plus an audit-log entry:
+Add these to `lib/security/index.ts` for the fresh-batch system:
 
-- Approve production batch
-- Change confirmed price
-- Create Square payment link
-- Cancel paid reservation
-- Cancel batch with assigned customers
-- Mark batch sold out
-- Issue refund or credit
-- Delete record
-- Remove customer from batch
-- Change pickup market
-- Change production date after confirmation
-- Resend customer communication
-- Publish public availability
-- Change batch threshold / deposit / fees settings
-
-Confirmation dialog must show:
-
-- Action name
-- Affected customers and reservations
-- Whether a customer email will be sent
-- Payment impact
-- Inventory impact
-- Whether reversible
+| Permission | Role mapping | Description |
+|---|---|---|
+| `FRESH_BATCH_REQUESTS_VIEW` | Owner, Manager, Production, Market, Read-only | View request inbox |
+| `FRESH_BATCH_REQUESTS_UPDATE` | Owner, Manager | Approve/defer/reject/cancel requests |
+| `FRESH_BATCH_CREATE` | Owner, Manager | Create and confirm batch campaigns |
+| `FRESH_BATCH_UPDATE` | Owner, Manager, Production | Update production/pickup status |
+| `FRESH_BATCH_RESERVE` | Owner, Manager | Create reservations + Square payment links |
+| `FRESH_BATCH_PAYMENT_LINK_CREATE` | Owner, Manager | Create Square payment links |
+| `FRESH_BATCH_REFUND` | Owner, Manager | Refund/credit reservations |
+| `FRESH_BATCH_PICKUP_MANAGE` | Owner, Manager, Production, Market | Mark pickups / no-shows |
+| `PRICES_UPDATE` | Owner, Manager | Change standard/microbatch prices |
+| `INTEGRATIONS_MANAGE` | Owner only | Square, Resend, Telegram config |
+| `ADMINS_MANAGE` | Owner only | Create/edit admin users |
+| `AUDIT_LOGS_VIEW` | Owner, Manager, Read-only (if granted) | View audit log |
 
 ---
 
-## 5. Gaps in current system
+## 5. Current `requireAdminSession` Gap Assessment
 
-1. **No roles**: any admin can do anything.
-2. **No action-level authorization**: API only checks authentication.
-3. **No session revocation**: admins cannot log out other sessions.
-4. **No audit of admin actions**: no immutable log.
-5. **No login rate limiting**: brute-force risk.
-6. **No MFA**: single password is the only factor.
+`requireAdminSession` only verifies authentication. It does **not**:
 
----
+| Missing check | Where it matters |
+|---|---|
+| Role/permission validation | Every admin route that calls `requireAdminSession` without `withAdminMiddleware` |
+| Fresh-batch-specific permissions | `/api/admin/fresh-batch/requests` and `/api/admin/fresh-batch/reservations` accept any `admin`/`super_admin` |
+| Owner-only integration settings | `/admin/settings` does not restrict integration changes |
+| Audit logging on mutations | Most routes do not persist `batch_audit_log` entries |
+| Token rotation enforcement | `shouldRotateToken` exists but is not called for every request |
+| CSRF on `GET` | Not required by design; acceptable |
 
-## 6. Implementation path
+### 5.1 Routes that correctly use RBAC
 
-### Phase 1 — Critical
+- `/api/admin/products` GET/PUT use `withAdminMiddleware` with `PERMISSIONS.PRODUCTS_VIEW` / `PRODUCTS_UPDATE`.
 
-- Keep `requireAdminSession`.
-- Add `role` field to `admin_accounts` collection.
-- Add `requireOwner()` helper for settings and admin management.
-- Enforce owner-only for payment link creation and batch approval until roles are added.
+### 5.2 Routes that use authentication only
 
-### Phase 2 — Roles
-
-- Add role to JWT/session.
-- Add `requireRole(['owner','manager'])` helpers.
-- Wrap sensitive admin APIs with role checks.
-- Update UI to hide or disable actions based on role.
-
-### Phase 3 — Hardening
-
-- Add login rate limiting by IP.
-- Add session list and revoke UI for owner.
-- Add MFA option.
-- Add admin action audit log.
+- `/api/admin/fresh-batch/requests`
+- `/api/admin/fresh-batch/reservations`
+- `/api/admin/markets`
+- `/api/admin/orders`
+- `/api/admin/menus`
+- `/api/admin/campaigns`
+- `/api/admin/coupons`
+- `/api/admin/customers`
+- `/api/admin/inventory/[productId]`
+- `/api/admin/emails`
 
 ---
 
-## 7. Security checklist
+## 6. Recommended RBAC Implementation Plan
 
-- [ ] Admin APIs cannot be called anonymously.
-- [ ] Session expiry is enforced server-side.
-- [ ] Failed authentication does not leak whether a record exists.
-- [ ] Setup route cannot be replayed after first admin created.
-- [ ] Preview deployments use same auth as production.
-- [ ] Client-side redirects are not treated as authorization.
-- [ ] Sensitive actions require server-side permission check, not just hidden UI.
-- [ ] Secrets are never sent to client components.
+### 6.1 Short term (before fresh-batch production)
+
+1. Add fresh-batch permissions to `lib/security/index.ts`.
+2. Wrap `/api/admin/fresh-batch/requests` and `/api/admin/fresh-batch/reservations` with `withAdminMiddleware`:
+   - `GET /api/admin/fresh-batch/requests` → `FRESH_BATCH_REQUESTS_VIEW`
+   - `PATCH /api/admin/fresh-batch/requests` → `FRESH_BATCH_REQUESTS_UPDATE`
+   - `POST /api/admin/fresh-batch/reservations` → `FRESH_BATCH_RESERVE` + `FRESH_BATCH_PAYMENT_LINK_CREATE`
+3. Add `minRole: ROLES.ADMIN` to settings/integration routes.
+4. Keep current `admin`/`super_admin` mapping to Owner + Manager for now.
+
+### 6.2 Medium term
+
+1. Allow `editor` and `viewer` roles to authenticate by updating `verifyAdminToken` in `lib/auth/unified-admin.ts`.
+2. Map roles to proposed operational roles:
+   - `super_admin` → Owner
+   - `admin` → Manager
+   - `editor` → Production staff
+   - `viewer` → Read-only reviewer
+3. Create a new `market_staff` role or extend `editor` with limited market-only permissions.
+4. Add UI controls that hide/disable actions based on `user.role`.
+
+### 6.3 Long term
+
+1. Store permissions per admin in `admin_users.permissions` for fine-grained overrides.
+2. Add time-bound access (e.g., temporary market staff for a single market day).
+3. Add row-level filters so Market Staff A only sees their assigned market.
+
+---
+
+## 7. Security Boundaries
+
+| Boundary | Rule |
+|---|---|
+| Payment link creation | Only Owner + Manager |
+| Refund / store credit | Only Owner + Manager; requires audit log |
+| Price changes | Only Owner + Manager; requires audit log |
+| Integration credentials | Owner only; never returned to client |
+| Customer PII export | Owner + Manager only; logged |
+| Audit logs | Owner + Manager; read-only reviewer if explicitly granted |
+| Terminal state changes | Only Owner + Manager can cancel/refund completed or picked-up reservations |
+
+---
+
+## 8. Conclusion
+
+The current `requireAdminSession` is a good authentication primitive but an incomplete authorization system. The fresh-batch admin surfaces treat every authenticated admin as an owner, which is acceptable for Phase 1 internal use but must be tightened before additional staff log in. The highest-priority fixes are:
+
+1. Apply fresh-batch permissions to the two new admin APIs.
+2. Restrict integration and admin-management settings to `super_admin`.
+3. Decide whether to enable `editor`/`viewer` login or keep the dashboard owner-only until RBAC is complete.

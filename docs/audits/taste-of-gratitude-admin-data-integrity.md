@@ -1,218 +1,236 @@
-# Taste of Gratitude — Admin Data Integrity, Inventory, and Concurrency
+# Taste of Gratitude — Admin Data Integrity and Audit Requirements
 
-**Audit date:** 2026-07-24  
 **Branch:** `feat/fresh-batch-request-system`  
-**Status:** Data model supports integrity; UI, webhooks, audit log, and concurrency guards are not yet implemented.
+**Audit date:** 2026-07-24  
+**Status:** Read-only audit. No application code changed.
 
 ---
 
-## 1. Source of truth for availability
+## 1. Source-of-Truth Definitions
 
-| Concept | Source collection | Field | Notes |
+| Domain | Source of truth | Cache / derived views | Notes |
 |---|---|---|---|
-| Raw customer interest | `fresh_batch_requests` | `quantity`, `quantityUnit` | Not production demand until reviewed/approved. |
-| Confirmed demand | `batch_campaigns` | aggregated assigned requests | After owner approval. |
-| Reserved/paid volume | `batch_reservations` | `quantity`, `quantityUnit`, `paymentStatus` | `paid` only counts as consumed. |
-| Target production | `batch_campaigns` | `targetGallons`, `standardBatchGallons` | Authority before yield is recorded. |
-| Actual yield | `batch_campaigns` | `actualYieldGallons` | Recorded after production; overrides estimates. |
-| Market bottle allocation | `batch_campaigns` | `marketBottleAllocation` | Separate from reserved volume. |
-| Sample allocation | `batch_campaigns` | `sampleAllocationGallons` | Must not reduce reserved inventory. |
-| Process loss | `batch_campaigns` | `processLossPercent` | Applied to target yield. |
-| Sold volume | `orders` or Square | Square order line items | Reconciled via webhook. |
-| Remaining market volume | Derived | `actualYield - reserved - sampleAllocation - sold` | Computed server-side; never client-derived. |
-
-All inventory math must be computed server-side. The client may display it but cannot authoritatively set it.
-
----
-
-## 2. Inventory ledger principles
-
-Use a minimal ledger for `batch_campaigns` and `batch_reservations`:
-
-- Additive entries: `yield_recorded`, `reservation_created`, `reservation_paid`, `sample_allocated`, `market_sale`.
-- Subtractive entries: `reservation_canceled`, `reservation_refunded`, `sample_consumed`, `waste_recorded`.
-- Each entry: `batchId`, `type`, `deltaGallons`, `reason`, `actor`, `timestamp`, `correlationId`.
-
-Derived balances are calculated from the ledger, not stored as a single mutable number.
+| **Curated product catalog** | `data/products.ts` | `unified_products`, `square_catalog_items` | Curated data is authority for flavor names, slugs, categories, and standard bottle prices. |
+| **Square catalog / live prices** | Square API | `square_catalog_items` | Used only after owner approval for payment-link creation. Not used for request-time pricing. |
+| **Public market list** | `data/markets.ts` + `markets` collection | `/api/markets` response | DB markets override/extend file-based markets. |
+| **Weekly menu** | `weekly_menus` collection + `data/weeklyMenu.ts` | `app/weekly-menu` pages | Owner-published menu is what customers see. |
+| **Inventory availability** | `inventory` collection | Product detail / catalog pages | Manual stock counts; separate from fresh-batch reserved volume. |
+| **Fresh batch demand** | `fresh_batch_requests` | `/admin/fresh-batches` grouping | Request records are never orders. |
+| **Fresh batch production plan** | `batch_campaigns` | Batch planner, public batch board (future) | Owner-approved target gallons, price, and schedule. |
+| **Fresh batch reservations** | `batch_reservations` | `/admin/fresh-batches` / planner | Created only after batch is confirmed. |
+| **Owner alerts** | `owner_alert_queue` | Telegram + Resend fallback | Queue is durable; sends are best-effort with retry. |
+| **Email lifecycle** | `email_sends` | `/admin/emails` | Every send, delivery, bounce, complaint recorded here. |
+| **Admin audit trail** | `audit_logs` (unified) and `audit_log` (legacy) | Future `/admin/audit-logs` | Two collection names exist; plan migration to single `audit_logs`. |
+| **Order / payment truth** | Square | `marketorders`, `batch_reservations` | Reconcile Square webhook events into application records. |
 
 ---
 
-## 3. Guardrails required
+## 2. Required Audit-Log Events and Fields
 
-| Rule | Enforcement point |
+Every owner-impacting action must append to `batch_audit_log` **and** the general `audit_logs` collection.
+
+### 2.1 `batch_audit_log` schema
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `entityType` | `request` \| `batch` \| `reservation` | ✅ | What changed |
+| `entityId` | string | ✅ | Public UUID of the entity |
+| `action` | string | ✅ | e.g., `created`, `approved`, `deferred`, `rejected`, `assigned_to_batch`, `batch_confirmed`, `payment_link_created`, `payment_received`, `picked_up`, `no_show`, `canceled`, `refunded` |
+| `actorEmail` | string | ✅ | Admin who performed the action |
+| `actorRole` | string | ✅ | Role at time of action |
+| `reason` | string \| null | | Owner-provided reason |
+| `fromStatus` | string \| null | | Previous status |
+| `toStatus` | string \| null | | New status |
+| `payload` | object | | Snapshotted relevant fields (price, gallons, market, etc.) |
+| `ipAddress` | string | | Client IP |
+| `userAgent` | string | | Client UA |
+| `createdAt` | Date | ✅ | Timestamp |
+
+### 2.2 General `audit_logs` schema (existing)
+
+The existing `logAdminAction` in `lib/security/index.ts` already writes:
+
+| Field | Description |
 |---|---|
-| Sampling cannot use reserved inventory. | Batch planner + server validation. |
-| Allocated volume ≤ expected yield. | Batch planner before approval. |
-| Available market volume never negative. | Reservation/purchase validation. |
-| One request cannot be counted twice. | Unique assignment per request to one active batch. |
-| Production cannot start without owner approval. | State machine transition guard. |
-| Reservations cannot open before price validation. | Reservation creation API. |
-| Batch cannot publish without required fields. | Batch update API. |
-| Payment links cannot be created before approval. | Reservation API checks batch status. |
-| Sold-out batches cannot silently reopen. | State machine + audit entry required. |
+| `timestamp` | Action time |
+| `adminId` / `adminEmail` / `adminRole` | Actor |
+| `action` | e.g., `UPDATE`, `CREATE`, `ACCESS_DENIED` |
+| `resource` | e.g., `products`, `fresh_batch_requests` |
+| `resourceId` | Entity ID |
+| `details` | Sanitized payload |
+| `ipAddress` / `userAgent` | Request metadata |
+| `success` | Boolean |
 
----
+### 2.3 Events that must be logged
 
-## 4. Concurrency and idempotency
-
-### Required mechanisms
-
-1. **Idempotency keys** on Square payment link creation and reservation creation. Already partially in place (`freshbatch_reservation_${reservation.id}`).
-2. **Unique constraints** on `fresh_batch_requests` for `(email, requestedProductSlug, requestedFlavorText, marketId)` with a time window to reduce duplicates.
-3. **Optimistic concurrency** for batch and request updates using a `version` or `updatedAt` check.
-4. **Atomic updates** for reservation status and inventory ledger.
-5. **Safe retries**: failed email sends can be retried from admin without duplicating reservations.
-
-### Concurrency scenarios to handle
-
-| Scenario | Required behavior |
-|---|---|
-| Two admin tabs edit same request | Stale-record warning; last write loses or merge diff. |
-| Two admins assign same request | First assignment wins; second sees conflict. |
-| Double-click payment-link creation | Idempotency returns same link; no duplicate reservation. |
-| Webhook arrives during admin status change | Webhook update uses atomic compare; admin UI refreshes. |
-| Batch canceled while email sending | Email is aborted or failure logged; no false confirmation. |
-| Request arrives during batch approval | New request goes to inbox; does not auto-join locked batch. |
-| Form double submit | Idempotency key or unique constraint prevents duplicate. |
-| Network timeout after successful write | UI shows success if write completed; admin can verify. |
-
----
-
-## 5. Audit log
-
-### Required events
-
-| Event | Entity | Fields |
+| Event | Collection | Notes |
 |---|---|---|
-| request_created | `fresh_batch_requests` | request id, customer email, flavor, market, quantity, source IP |
-| request_status_changed | `fresh_batch_requests` | old status, new status, actor, reason |
-| request_assigned | `fresh_batch_requests` | batch id, actor |
-| request_unassigned | `fresh_batch_requests` | previous batch id, actor |
-| batch_created | `batch_campaigns` | batch id, name, product, market, target gallons |
-| batch_status_changed | `batch_campaigns` | old status, new status, actor, reason |
-| batch_price_changed | `batch_campaigns` | old price, new price, actor, reason |
-| production_locked | `batch_campaigns` | actor, reserved volume, market allocation |
-| yield_recorded | `batch_campaigns` | expected vs actual, actor |
-| reservation_created | `batch_reservations` | reservation id, request id, batch id, price, actor |
-| reservation_status_changed | `batch_reservations` | old status, new status, actor, reason |
-| payment_link_created | `batch_reservations` | Square link id, actor |
-| payment_received | `batch_reservations` | Square payment id, amount, actor='webhook' |
-| refund_recorded | `batch_reservations` | amount, reason, actor |
-| credit_recorded | `batch_reservations` | amount, reason, actor |
-| pickup_completed | `batch_reservations` | actor, timestamp |
-| pickup_missed | `batch_reservations` | actor, reason |
-| email_sent | `communications` | template, recipient, status, correlation id |
-| email_failed | `communications` | template, recipient, error, retry count |
-| setting_changed | `settings` | key, old value, new value, actor |
-
-### Audit-log protections
-
-- Append-only in MongoDB.
-- No update or delete endpoint.
-- Owner can view; no one can edit through ordinary admin.
-- Exclude passwords, tokens, full payment payloads.
+| Fresh batch request created | `batch_audit_log`, `audit_logs` | Log the public request, not PII beyond email |
+| Request status changed | `batch_audit_log`, `audit_logs` | Include from/to status and reason |
+| Batch campaign created | `batch_audit_log`, `audit_logs` | Snapshot price, gallons, market, ownerApproved |
+| Batch campaign confirmed | `batch_audit_log`, `audit_logs` | Critical owner decision |
+| Reservation created | `batch_audit_log`, `audit_logs` | Snapshot final price, deposit, setup fee |
+| Square payment link created | `batch_audit_log`, `audit_logs` | Record `squarePaymentLinkId` |
+| Payment received | `batch_audit_log`, `audit_logs` | Reconcile Square webhook |
+| Pickup marked picked_up / no_show | `batch_audit_log`, `audit_logs` | Staff action at market |
+| Refund / store credit issued | `batch_audit_log`, `audit_logs` | Financial event |
+| Product price changed | `audit_logs` | Include old and new price |
+| Inventory adjusted | `audit_logs` | Include delta and reason |
+| Admin login / logout | `audit_logs` | Security event |
+| Permission denied | `audit_logs` | Include required permission |
 
 ---
 
-## 6. Failure and recovery UX
+## 3. Concurrency and Idempotency Requirements
 
-Every admin action that touches customer data or money must handle failures with clear messaging.
+### 3.1 Atomic counters
 
-### Required message format
+| Counter | Collection | Use | Implementation |
+|---|---|---|---|
+| Batch campaign sequence | `batch_counters` | Human-friendly batch IDs | `findOneAndUpdate({ _id: 'batch_campaigns' }, { $inc: { seq: 1 } }, { upsert: true })` |
+| (Optional) Reservation sequence | `batch_counters` | Reservation display IDs | Same pattern |
 
-> **What happened:** The reservation was saved.  
-> **Customer email:** Not sent.  
-> **Payment link:** Created.  
-> **Square order:** `order_xxx`.  
-> **Safe to retry?** Yes — resend email from the communication panel.  
-> **Next step:** Open request detail and click “Retry confirmation email.”
+### 3.2 Reservation creation idempotency
 
-Never display only:
+`POST /api/admin/fresh-batch/reservations` must prevent double-creation:
 
-> Something went wrong.
+- Idempotency key: `freshbatch_reservation_{requestId}_{batchId}`.
+- Store the key in `batch_reservations.idempotencyKey` or `batch_audit_log`.
+- On retry with the same key, return the existing reservation if it exists and is not canceled.
 
-### Failure categories
+### 3.3 Payment status reconciliation idempotency
 
-| Failure | UX requirement |
-|---|---|
-| Database unavailable | Show cached state if safe; explain action may not have saved. |
-| Square unavailable | Do not mark reservation as offered; allow retry. |
-| Resend unavailable | Save record; show email failure; allow retry. |
-| Invalid transition | Show why the change is not allowed and current state. |
-| Permission denied | Do not leak existence of private records. |
-| Stale record | Show diff and ask owner to reload. |
+Square webhooks include `event_id` for each webhook. The handler must:
 
----
+1. Check `batch_reservations.squareWebhookEventIds` array for the `event_id`.
+2. Skip processing if already seen.
+3. Append the `event_id` before applying the update (within a transaction if supported).
 
-## 7. Communication reliability
+### 3.4 Batch capacity guard
 
-### Communication timeline
-
-Store a `communications` record for every triggered email:
+When creating a reservation:
 
 ```typescript
-interface CommunicationRecord {
-  id: string;
-  requestId?: string;
-  reservationId?: string;
-  batchId?: string;
-  template: string;
-  recipient: string;
-  subject: string;
-  trigger: 'system' | 'owner' | 'webhook';
-  actor?: string;
-  attemptedAt: Date;
-  providerResponse?: string;
-  success: boolean;
-  error?: string;
-  retryCount: number;
+const reserved = await db.collection('batch_reservations').aggregate([
+  { $match: { batchId, paymentStatus: { $nin: ['canceled', 'failed'] } } },
+  { $group: { _id: null, total: { $sum: '$gallonEquivalent' } } }
+]).toArray();
+
+if (reserved[0]?.total + newGallons > batch.targetGallons) {
+  throw new Error('Batch would be over-reserved');
 }
 ```
 
-### Required controls
+Use a write lock or optimistic concurrency (version field) on `batch_campaigns`.
 
-- Preview template before sending.
-- Retry failed email from admin.
-- Do not send duplicate confirmation for same reservation.
-- Do not send pickup instructions before payment/approval.
-- Do not send canceled-batch reminders.
-- Marketing emails only with explicit consent.
+### 3.5 Request status update concurrency
 
----
+`PATCH /api/admin/fresh-batch/requests` bulk-updates by `id`. Each update should:
 
-## 8. Mobile and accessibility for urgent actions
-
-### Market-urgent actions
-
-- Mark pickup complete
-- View customer detail
-- Check paid status
-- Mark sold out
-- Retry failed email
-- View market instructions
-
-### Accessibility requirements
-
-- Semantic headings and landmarks.
-- Keyboard navigation for all status actions.
-- Focus management in dialogs.
-- Error associations for forms.
-- Status announcements for async actions.
-- Color not used alone for state.
-- Minimum 44×44 dp tap targets on mobile.
+- Include `updatedAt`.
+- Guard against transitioning from terminal states (`canceled`, `completed`).
+- Use `findOneAndUpdate` per document rather than `updateMany` when status logic is complex.
 
 ---
 
-## 9. Implementation checklist
+## 4. Failure and Recovery UX Expectations
 
-- [ ] Add `batch_audit_log` collection.
-- [ ] Add `communications` collection.
-- [ ] Add inventory ledger helpers.
-- [ ] Add server-side state-machine guards.
-- [ ] Add `version` field to request/batch/reservation updates.
-- [ ] Add idempotency to reservation and payment-link creation.
-- [ ] Add Square webhook for payment status.
-- [ ] Add admin UI for communication history and retry.
-- [ ] Add admin UI for audit-log read-only view.
-- [ ] Add optimistic-concurrency error handling in admin forms.
-- [ ] Add mobile-responsive pickup and sold-out actions.
+### 4.1 Owner/admin failures
+
+| Failure | Expected UX | Recovery |
+|---|---|---|
+| Square payment link creation fails | Admin sees error with Square message; reservation stays in `pending` without link; customer not notified | Retry from admin; audit log records failure |
+| Email send fails | Reservation is still created; warning shown to admin; `email_sends` has `failed` row | Manual resend button or owner-alert queue retry |
+| Owner alert (Telegram/Resend) fails | Request persisted; alert queued in `owner_alert_queue` | Cron `/api/cron/owner-alerts` retries every 5 minutes |
+| Database unavailable | API returns 503; customer sees polite retry message | Operations retry; MongoDB auto-reconnect |
+| Over-reservation | Admin sees validation error; cannot create reservation | Increase batch size or split into new batch |
+| Invalid status transition | Admin sees forbidden transition message | Correct workflow via allowed transitions |
+
+### 4.2 Customer failures
+
+| Failure | Expected UX | Recovery |
+|---|---|---|
+| Duplicate request within 24h | Customer sees success message but no new record created | Email confirmation still sent if needed |
+| Health claims in notes | Inline error: "Notes cannot include medical or health-outcome claims" | Customer rewords and resubmits |
+| Payment link expired | Customer page shows "Payment link expired — we are sending a new one" | Admin regenerates link |
+| Payment fails | Customer stays on Square checkout with error; reservation remains `pending` | Customer retries; admin can resend link |
+| Missed pickup | Customer receives reschedule/credit notice per cancellation policy | Admin moves request to next batch or issues store credit |
+
+### 4.3 Audit and recovery tooling needed
+
+1. **Retry failed owner alerts** — already implemented via cron.
+2. **Retry failed emails** — add a button in `/admin/emails` or an automated retry cron.
+3. **Reconcile Square payments** — add a manual "Sync Square" button on the batch planner.
+4. **Audit-log viewer** — build `/admin/audit-logs` with filters by entity, action, and admin.
+5. **Batch over-reservation detector** — add a nightly or on-demand check that flags `reservedGallons > targetGallons`.
+
+---
+
+## 5. Data Integrity Rules
+
+| Rule | Rationale | Enforcement |
+|---|---|---|
+| `fresh_batch_requests` never stores payment state | Keeps requests distinct from orders | Validation + repository constraints |
+| `batch_reservations` created only after `batch_campaigns` is `confirmed` or later | Prevents unauthorized paid obligations | State guard + API validation |
+| Prices stored in cents | Avoids floating-point errors | TypeScript + repository |
+| `squarePaymentLinkId` written only after successful Square API response | Prevents dangling payment URLs | Repository transaction |
+| `samplingOunces` bounded by `actualYieldOunces - reservedVolumeOunces` | Samples cannot eat reserved volume | Decision engine + planner validation |
+| `gallonEquivalent` computed server-side | Client cannot manipulate pricing | `toGallonEquivalent` in repository/API |
+| Marketing consent separate from transactional email | Compliance / trust | Separate boolean fields |
+| Phone optional; SMS consent default false | No accidental SMS subscriptions | Form + validation |
+| Health-claim language rejected | Regulatory/content risk | `containsHealthClaims` filter |
+
+---
+
+## 6. Required Indexes
+
+### 6.1 Fresh batch collections
+
+```js
+// fresh_batch_requests
+db.fresh_batch_requests.createIndex({ email: 1, createdAt: -1 });
+db.fresh_batch_requests.createIndex({ status: 1, createdAt: -1 });
+db.fresh_batch_requests.createIndex({ requestedProductSlug: 1, status: 1 });
+db.fresh_batch_requests.createIndex({ flavorProfile: 1, status: 1 });
+db.fresh_batch_requests.createIndex({ preferredMarketId: 1, status: 1 });
+
+// batch_campaigns
+db.batch_campaigns.createIndex({ internalFlavorKey: 1, status: 1 });
+db.batch_campaigns.createIndex({ productionDate: 1, status: 1 });
+db.batch_campaigns.createIndex({ marketId: 1, status: 1 });
+
+// batch_reservations
+db.batch_reservations.createIndex({ requestId: 1 });
+db.batch_reservations.createIndex({ batchId: 1 });
+db.batch_reservations.createIndex({ customerEmail: 1, createdAt: -1 });
+db.batch_reservations.createIndex({ squarePaymentLinkId: 1 }, { sparse: true });
+
+// batch_audit_log
+db.batch_audit_log.createIndex({ entityType: 1, entityId: 1, createdAt: -1 });
+db.batch_audit_log.createIndex({ actorEmail: 1, createdAt: -1 });
+db.batch_audit_log.createIndex({ action: 1, createdAt: -1 });
+```
+
+### 6.2 Audit and alert collections
+
+```js
+// audit_logs
+db.audit_logs.createIndex({ adminEmail: 1, timestamp: -1 });
+db.audit_logs.createIndex({ resource: 1, action: 1, timestamp: -1 });
+
+// owner_alert_queue
+db.owner_alert_queue.createIndex({ status: 1, nextAttemptAt: 1 });
+db.owner_alert_queue.createIndex({ sourceEventId: 1 }, { unique: true });
+```
+
+---
+
+## 7. Conclusion
+
+The data-integrity foundation for the fresh-batch system is sound: collections are separate, prices are in cents, and the decision engine protects against automatic over-production. The remaining work is operational glue:
+
+1. Create `batch_audit_log` and write to it on every owner decision.
+2. Add idempotency keys and webhook deduplication for Square events.
+3. Implement optimistic concurrency on `batch_campaigns` to prevent over-reservation.
+4. Add admin recovery tools: failed-email retry, Square sync, audit-log viewer.
+5. Run the optional index migration before production launch.

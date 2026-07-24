@@ -1,212 +1,209 @@
-:/markdown
 # Taste of Gratitude — Admin State Machine
 
-**Audit date:** 2026-07-24  
 **Branch:** `feat/fresh-batch-request-system`  
-**Status:** Server-side state transition enforcement is not yet implemented. This document defines the required state machines and invalid transitions to be rejected.
+**Audit date:** 2026-07-24  
+**Status:** Read-only audit. No application code changed.
 
 ---
 
-## 1. Flavor request states
+## 1. State Machines
 
-### States
+There are three interrelated state machines:
 
-| State | Meaning |
-|---|---|
-| `new` | Request just received, not yet reviewed. |
-| `under_review` | Owner or system is evaluating feasibility. |
-| `collecting_demand` | Demand is below shared threshold; waiting for more requests. |
-| `alternative_offered` | Owner proposed an alternative flavor/quantity/market. |
-| `assigned_to_batch` | Assigned to a draft or collecting batch. |
-| `reservation_offered` | Square payment link sent, awaiting payment. |
-| `confirmed` | Deposit or full payment received. |
-| `deferred` | Moved to a future batch/season. |
-| `rejected` | Owner declined; no production. |
-| `canceled` | Customer or owner canceled. |
-| `completed` | Fulfilled (picked up or delivered). |
+1. **Fresh Batch Request** (`fresh_batch_requests.status`)
+2. **Batch Campaign** (`batch_campaigns.status`)
+3. **Batch Reservation** (`batch_reservations.paymentStatus` and `batch_reservations.pickupStatus`)
 
-### Allowed transitions
+---
 
-| From | To | Actor | Conditions | Customer notification |
-|---|---|---|---|---|
-| `new` | `under_review` | System / Owner | Auto on receipt or manual | — |
-| `new` | `rejected` | Owner | — | Rejection email |
-| `under_review` | `collecting_demand` | System | Below threshold | Threshold-not-reached update (optional) |
-| `under_review` | `assigned_to_batch` | Owner / System | Compatible batch exists | Assignment notice (optional) |
-| `under_review` | `alternative_offered` | Owner | Alternative proposed | Alternative offer email |
-| `under_review` | `rejected` | Owner | Cannot fulfill | Rejection email |
-| `collecting_demand` | `assigned_to_batch` | System / Owner | Threshold reached | Batch moving forward email |
-| `assigned_to_batch` | `reservation_offered` | Owner | Batch approved, link created | Reservation offer with Square link |
-| `alternative_offered` | `assigned_to_batch` | Customer accepts | — | Confirmation |
-| `alternative_offered` | `canceled` | Customer declines | — | Cancellation email |
-| `reservation_offered` | `confirmed` | System | Square payment received | Payment confirmation |
-| `reservation_offered` | `canceled` | Owner / System | Link expired or batch canceled | Cancellation / refund email |
-| `confirmed` | `completed` | Owner | Pickup/delivery done | Thank you / receipt |
-| `confirmed` | `canceled` | Owner | With refund/credit | Cancellation / credit email |
-| `deferred` | `assigned_to_batch` | System / Owner | Future batch opens | New batch offer |
-| any terminal | any | — | **Forbidden** | — |
+## 2. Request States
 
-### Invalid transitions (must be rejected server-side)
-
-| From | To | Why rejected |
+| State | Meaning | Who sets it |
 |---|---|---|
-| `new` | `confirmed` | No payment, no approval. |
-| `rejected` | `assigned_to_batch` | Terminal state. |
-| `completed` | `canceled` | Cannot reverse fulfillment. |
-| `canceled` | `reservation_offered` | Canceled requests cannot receive payment links. |
-| `collecting_demand` | `reservation_offered` | Batch must be approved first. |
-| `under_review` | `confirmed` | No payment link created. |
-| `assigned_to_batch` | `confirmed` | Payment link not yet sent. |
+| `requested` | New customer request; not yet reviewed. | System on submit |
+| `collecting_demand` | Owner grouped it into demand pool; waiting for more requests. | Owner |
+| `owner_review` | Needs owner decision (custom flavor, one-gallon non-market-safe, ingredient uncertainty). | System (decision engine) or Owner |
+| `awaiting_threshold` | Demand pool exists but has not reached shared-batch threshold. | System (decision engine) or Owner |
+| `approved` | Owner approved the request for a batch. | Owner |
+| `reservation_offered` | Reservation + Square payment link sent to customer. | System on reservation create |
+| `deposit_pending` | Customer has not yet paid deposit. | System |
+| `confirmed` | Customer paid; batch production can proceed. | System on payment webhook |
+| `in_production` | Batch is being produced. | Owner / System |
+| `market_available` | Product available at market for pickup. | Owner / System |
+| `fully_reserved` | All planned volume is reserved; no new reservations. | System |
+| `sold_out` | Batch produced and sold; request could not be fulfilled. | Owner / System |
+| `completed` | Customer picked up and batch is closed. | Owner / System |
+| `deferred` | Moved to a future batch. | Owner |
+| `canceled` | Request canceled by customer or owner. | Owner or customer action |
 
 ---
 
-## 2. Batch campaign states
+## 3. Batch Campaign States
 
-### States
+| State | Meaning | Who sets it |
+|---|---|---|
+| `collecting_interest` | Proposed batch; gathering demand only. | System/Owner |
+| `owner_review` | Needs owner approval (pricing, market, ingredients). | System/Owner |
+| `awaiting_minimum` | Not enough demand yet to justify production. | System/Owner |
+| `confirmed` | Owner approved; reservations can be created. | Owner |
+| `reservations_open` | Customers can pay to reserve. | System/Owner |
+| `fully_reserved` | All gallons reserved. | System |
+| `in_production` | Production date reached; batch being made. | Owner/System |
+| `available_at_market` | Batched product is at pickup market. | Owner/System |
+| `sold_out` | All reservations picked up and/or no remaining market volume. | Owner/System |
+| `completed` | Batch closed out. | Owner/System |
+| `deferred` | Production pushed to future date. | Owner |
+| `canceled` | Batch canceled; reservations must be refunded/credited. | Owner |
 
-| State | Meaning |
-|---|---|
-| `draft` | Idea only, not visible publicly. |
-| `collecting_demand` | Visible as possibility, reservations not open. |
-| `owner_review` | Demand met or custom order, awaiting owner approval. |
-| `approved` | Owner approved; reservations may open. |
-| `reservations_open` | Customers can receive and pay payment links. |
-| `fully_reserved` | Reserved volume meets or exceeds target. |
-| `locked_for_production` | No more reservation changes; production plan fixed. |
-| `in_production` | Currently being made. |
-| `ready_for_pickup` | Produced, awaiting customer pickup. |
-| `available_at_market` | Market bottles available for sale. |
-| `sold_out` | No remaining volume. |
-| `completed` | All obligations fulfilled. |
-| `delayed` | Production or pickup delayed. |
-| `canceled` | No production; customers refunded/credited. |
+---
 
-### Allowed transitions
+## 4. Reservation States
 
-| From | To | Actor | Conditions |
+### 4.1 Payment status
+
+| State | Meaning | Who sets it |
+|---|---|---|
+| `pending` | Payment link sent; unpaid. | System |
+| `deposit_paid` | Deposit received. | Square webhook |
+| `fully_paid` | Full amount received. | Square webhook |
+| `failed` | Payment attempt failed. | Square webhook / System |
+| `refunded` | Refund issued. | Owner/System |
+| `canceled` | Reservation canceled without refund or with store credit. | Owner/System |
+
+### 4.2 Pickup status
+
+| State | Meaning | Who sets it |
+|---|---|---|
+| `pending` | Not yet at market. | System |
+| `ready` | Product ready for pickup. | Owner/System |
+| `picked_up` | Customer received product. | Owner/Staff |
+| `no_show` | Customer did not pick up. | Owner/Staff |
+
+---
+
+## 5. Allowed State Transitions
+
+### 5.1 Request transitions
+
+| From | To | Guard / condition | Actor |
 |---|---|---|---|
-| `draft` | `collecting_demand` | Owner | Public interest allowed |
-| `draft` | `owner_review` | System | Custom/one-gallon request ready for review |
-| `collecting_demand` | `owner_review` | System | Threshold reached |
-| `owner_review` | `approved` | Owner | Price, market, date verified |
-| `owner_review` | `canceled` | Owner | Cannot fulfill |
-| `approved` | `reservations_open` | Owner / System | Payment link path ready |
-| `approved` | `locked_for_production` | Owner | Sold out directly |
-| `reservations_open` | `fully_reserved` | System | Reserved ≥ target |
-| `reservations_open` | `locked_for_production` | Owner | Cutoff reached |
-| `reservations_open` | `canceled` | Owner | With no paid reservations or after refund |
-| `fully_reserved` | `locked_for_production` | Owner | Production locked |
-| `locked_for_production` | `in_production` | Owner | Production started |
-| `in_production` | `ready_for_pickup` | Owner | Batch finished |
-| `in_production` | `delayed` | Owner | Delay |
-| `ready_for_pickup` | `available_at_market` | Owner | Customer pickup window closed, excess to market |
-| `available_at_market` | `sold_out` | Owner | All market bottles sold |
-| `any` | `delayed` | Owner | If not already terminal |
-| `delayed` | `in_production` | Owner | Resumed |
-| `any non-terminal with no paid reservations` | `canceled` | Owner | Refund not required |
-| `any non-terminal with paid reservations` | `canceled` | Owner | Only after refund/credit recorded |
+| `requested` | `collecting_demand` | Owner groups by flavor/market | Owner |
+| `requested` | `owner_review` | Decision engine flags custom/microbatch path | System or Owner |
+| `collecting_demand` | `awaiting_threshold` | Not enough demand yet | System |
+| `collecting_demand` | `owner_review` | Needs owner decision | System or Owner |
+| `awaiting_threshold` | `collecting_demand` | More demand arrived | System |
+| `owner_review` | `approved` | Owner approves | Owner |
+| `owner_review` | `deferred` | Owner defers | Owner |
+| `owner_review` | `canceled` | Owner/customer cancels | Owner/Customer |
+| `approved` | `reservation_offered` | Reservation created | System |
+| `reservation_offered` | `deposit_pending` | Deposit link active | System |
+| `deposit_pending` | `confirmed` | Deposit paid | System (Square webhook) |
+| `confirmed` | `in_production` | Production starts | Owner/System |
+| `in_production` | `market_available` | Product at market | Owner/System |
+| `market_available` | `completed` | Picked up | Owner/Staff |
+| `awaiting_threshold` | `approved` | Threshold reached + owner approves | Owner |
+| `fully_reserved` | `completed` | Reservation fulfilled | System |
+| `sold_out` | `deferred` | Offer next batch | Owner |
+| Any non-terminal | `canceled` | Cancellation policy met | Owner/Customer |
 
-### Invalid transitions
+### 5.2 Batch campaign transitions
 
-| From | To | Why rejected |
-|---|---|---|
-| `draft` | `in_production` | No approval, no demand verification. |
-| `canceled` | `reservations_open` | Canceled batch cannot accept reservations. |
-| `sold_out` | `reservations_open` | Sold inventory cannot be reopened without audit entry. |
-| `completed` | `canceled` | Terminal state. |
-| `in_production` | `draft` | Cannot reverse production. |
-
----
-
-## 3. Reservation states
-
-### States
-
-| State | Meaning |
-|---|---|
-| `draft` | Internal reservation not yet offered. |
-| `offered` | Payment link sent, awaiting payment. |
-| `deposit_pending` | Deposit required, not yet paid. |
-| `deposit_paid` | Deposit received. |
-| `balance_pending` | Balance due. |
-| `paid` | Full payment received. |
-| `pickup_scheduled` | Pickup time set. |
-| `ready` | Available for pickup. |
-| `picked_up` | Fulfilled. |
-| `missed_pickup` | Customer missed window. |
-| `canceled` | Canceled. |
-| `refunded` | Refund issued. |
-| `credited` | Store credit issued. |
-| `expired` | Payment link expired. |
-
-### Allowed transitions
-
-| From | To | Actor | Conditions |
+| From | To | Guard / condition | Actor |
 |---|---|---|---|
-| `draft` | `offered` | Owner / System | Payment link created |
-| `offered` | `deposit_paid` | System | Square webhook: deposit received |
-| `offered` | `paid` | System | Square webhook: full amount received |
-| `offered` | `expired` | System | Link expired per policy |
-| `deposit_paid` | `balance_pending` | System | Deposit < final price |
-| `deposit_paid` | `paid` | System | Deposit was full amount |
-| `balance_pending` | `paid` | System | Square webhook: balance received |
-| `paid` | `pickup_scheduled` | Owner / System | Pickup arranged |
-| `paid` | `ready` | Owner | Available at pickup location |
-| `ready` | `picked_up` | Owner | Customer collected |
-| `ready` | `missed_pickup` | Owner | Pickup window closed |
-| `missed_pickup` | `credited` | Owner | Credit issued |
-| `missed_pickup` | `refunded` | Owner | Refund issued |
-| `any non-terminal` | `canceled` | Owner / Customer | With refund/credit if paid |
-| `canceled` | `refunded` | Owner | After refund processed |
-| `canceled` | `credited` | Owner | After credit recorded |
+| `collecting_interest` | `owner_review` | Demand review | Owner |
+| `collecting_interest` | `awaiting_minimum` | Below threshold | System |
+| `awaiting_minimum` | `owner_review` | Re-evaluated | Owner/System |
+| `owner_review` | `confirmed` | Owner approves | Owner |
+| `owner_review` | `deferred` | Owner defers | Owner |
+| `owner_review` | `canceled` | Owner cancels | Owner |
+| `confirmed` | `reservations_open` | Reservation links created | System |
+| `reservations_open` | `fully_reserved` | All gallons reserved | System |
+| `reservations_open` | `in_production` | Production date reached | System |
+| `fully_reserved` | `in_production` | Production date reached | System |
+| `in_production` | `available_at_market` | At market | Owner/System |
+| `available_at_market` | `sold_out` | All reserved + market extras sold | Owner/System |
+| `available_at_market` | `completed` | Pickup window closed | Owner/System |
+| `sold_out` | `completed` | Operations closed | Owner/System |
+| Any non-terminal | `canceled` | Owner cancels | Owner |
 
-### Invalid transitions
+### 5.3 Reservation transitions
 
-| From | To | Why rejected |
+| From | To | Guard / condition | Actor |
+|---|---|---|---|
+| `pending` | `deposit_paid` | Square reports deposit | Square webhook |
+| `pending` | `fully_paid` | Square reports full payment | Square webhook |
+| `pending` | `failed` | Square error or timeout | System |
+| `pending` | `canceled` | Canceled before payment | Owner/Customer |
+| `deposit_paid` | `fully_paid` | Balance paid | Square webhook |
+| `deposit_paid` | `canceled` | Owner cancels (store credit per policy) | Owner |
+| `fully_paid` | `refunded` | Refund issued | Owner/System |
+| `fully_paid` → pickup `ready` | | Product ready | Owner |
+| pickup `ready` → `picked_up` | | Customer collected | Staff |
+| pickup `ready` → `no_show` | | Missed pickup window | Staff |
+
+---
+
+## 6. Invalid Transition Examples and Guard Logic
+
+| Invalid transition | Why invalid | Guard |
 |---|---|---|
-| `picked_up` | `canceled` | Cannot reverse fulfillment. |
-| `refunded` | `paid` | Refund already issued. |
-| `expired` | `paid` | Expired link must be re-offered with a new link. |
-| `draft` | `paid` | No payment received. |
+| `requested` → `confirmed` | No payment has occurred | Reject unless `reservation_offered` and payment received |
+| `collecting_demand` → `in_production` | No batch approved | Require `batch_campaigns.status` in `confirmed` or later |
+| `confirmed` → `reservation_offered` | Already paid | Reject if payment status is paid |
+| `fully_reserved` → `reservations_open` | Would over-reserve | Reject if `reservedGallons >= targetGallons` |
+| `canceled` → any active state | Terminal state | Reject unless explicitly reopened as a new request |
+| `deposit_paid` → `canceled` without store credit/refund | Customer owes or is owed money | Require `refundCents` or `storeCreditCents` recorded |
+| `pending` reservation → pickup `ready` | Unpaid product should not be prepared | Require `paymentStatus` in `deposit_paid` or `fully_paid` |
+| `batch_campaigns` `collecting_interest` → `in_production` | No owner approval | Require `ownerApproved === true` |
 
 ---
 
-## 4. Required server-side guards
+## 7. Guard Logic to Implement
 
-1. **Transition map validation**: Every PATCH to request/batch/reservation status must pass `isValidTransition(current, next)`.
-2. **Actor logging**: Record who initiated the transition.
-3. **Condition checks**: e.g., cannot approve batch without price; cannot open reservations before approval.
-4. **Side-effect routing**: Approved batch → allow reservations; canceled batch → notify affected customers; paid reservation → reduce available market volume.
-5. **Audit-log write**: Every transition writes an immutable `batch_audit_log` document.
-6. **Idempotency**: Same transition with same reason should not create duplicate audit entries.
-
----
-
-## 5. Audit-log schema
+### 7.1 Request-level guards
 
 ```typescript
-interface BatchAuditLogEvent {
-  id: string;
-  timestamp: Date;
-  actor: string; // admin session id or 'system'
-  actorType: 'owner' | 'system' | 'customer' | 'webhook';
-  entityType: 'request' | 'batch' | 'reservation' | 'product' | 'market' | 'setting';
-  entityId: string;
-  action: string;
-  previousState?: string;
-  newState?: string;
-  metadata?: Record<string, unknown>;
-  reason?: string;
-  correlationId?: string;
+function canTransitionRequest(current: RequestStatus, next: RequestStatus, context: RequestContext): boolean {
+  if (current === 'canceled' && next !== 'canceled') return false;
+  if (next === 'confirmed' && !context.paymentReceived) return false;
+  if (next === 'reservation_offered' && !context.reservationId) return false;
+  if (next === 'in_production' && context.batchStatus !== 'confirmed' && context.batchStatus !== 'reservations_open') return false;
+  if (next === 'market_available' && context.batchStatus !== 'available_at_market') return false;
+  return true;
+}
+```
+
+### 7.2 Batch-level guards
+
+```typescript
+function canTransitionBatch(current: BatchStatus, next: BatchStatus, batch: BatchCampaign): boolean {
+  if (current === 'canceled' && next !== 'canceled') return false;
+  if (next === 'confirmed' && !batch.ownerApproved) return false;
+  if (next === 'reservations_open' && batch.status !== 'confirmed') return false;
+  if (next === 'fully_reserved' && batch.reservedGallons < batch.targetGallons) return false;
+  if (next === 'in_production' && !batch.ownerApproved) return false;
+  return true;
+}
+```
+
+### 7.3 Reservation-level guards
+
+```typescript
+function canTransitionReservation(current: PaymentStatus, next: PaymentStatus, reservation: BatchReservation): boolean {
+  if (current === 'canceled' && next !== 'canceled') return false;
+  if (current === 'refunded' && next !== 'refunded') return false;
+  if (next === 'fully_paid' && current === 'canceled') return false;
+  if (reservation.pickupStatus === 'picked_up' && next === 'canceled') return false;
+  return true;
 }
 ```
 
 ---
 
-## 6. Implementation priority
+## 8. Recommended Next Steps
 
-1. Add `isValidTransition` helpers for request, batch, and reservation.
-2. Add `transitionRequestStatus`, `transitionBatchStatus`, `transitionReservationStatus` repository functions.
-3. Enforce transitions in admin PATCH APIs.
-4. Write audit-log entries on every transition.
-5. Add tests covering every allowed and representative invalid transition.
+1. Add `batch_audit_log` entries for every state transition.
+2. Implement the guard functions in `lib/batches/repository.ts` or a new `lib/batches/state-guards.ts` module.
+3. Expose a small `GET /api/admin/fresh-batch/requests/{id}/allowed-transitions` endpoint for the admin UI.
+4. Prevent direct `PATCH` to any status that bypasses guards (currently `/api/admin/fresh-batch/requests` accepts arbitrary statuses).
+5. Add terminal-state protection: once `canceled`/`completed`/`refunded`, require a new record rather than reactivation.
