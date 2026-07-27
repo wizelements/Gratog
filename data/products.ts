@@ -1,6 +1,7 @@
 export type ProductCategory =
   | 'lemonades'
   | 'refreshers'
+  | 'juices'
   | 'gels'
   | 'shots'
   | 'bundles'

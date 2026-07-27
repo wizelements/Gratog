@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
-  CheckCircle2,
+  CheckCircle,
   Loader2,
   HelpCircle,
 } from 'lucide-react';
@@ -178,7 +178,7 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
     return (
       <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-950">
         <div className="flex items-start gap-3">
-          <CheckCircle2 className="mt-0.5 h-6 w-6 flex-shrink-0 text-emerald-700" aria-hidden="true" />
+          <CheckCircle className="mt-0.5 h-6 w-6 flex-shrink-0 text-emerald-700" aria-hidden="true" />
           <div>
             <p className="text-lg font-semibold">Request received.</p>
             <p className="mt-2 text-emerald-800">

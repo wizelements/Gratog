@@ -51,12 +51,12 @@ export async function findAuditLogByEntity(
   limit: number = 100
 ): Promise<AuditLogEvent[]> {
   const { db } = await connectToDatabase();
-  return db
+  return (await db
     .collection(AUDIT_LOG_COLLECTION)
-    .find<AuditLogEvent>({ entityType, entityId })
+    .find({ entityType, entityId })
     .sort({ timestamp: -1 })
     .limit(limit)
-    .toArray();
+    .toArray()) as AuditLogEvent[];
 }
 
 // ============================================================================
@@ -197,7 +197,7 @@ export async function logPaymentReceived(
   reservationId: string,
   squarePaymentId: string,
   amountCents: number,
-  status: 'deposit_paid' | 'paid'
+  status: 'deposit_paid' | 'paid' | 'fully_paid' | 'failed'
 ): Promise<AuditLogEvent> {
   return appendAuditLogEvent({
     actor: 'square_webhook',

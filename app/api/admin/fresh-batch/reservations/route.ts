@@ -20,7 +20,7 @@ import type { BatchReservation } from '@/lib/batches/types';
  * Body: { requestId, batchId, depositPercent?, setupFeeCents?, standardGallonPriceCents? }
  */
 export async function POST(request: NextRequest) {
-  const admin = await requireAdminSession();
+  const admin = await requireAdminSession(request);
   if (!admin) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }

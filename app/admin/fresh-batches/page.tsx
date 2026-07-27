@@ -53,7 +53,8 @@ export default function FreshBatchesAdminPage() {
     try {
       const res = await adminFetch('/api/admin/fresh-batch/requests?limit=200', { skipCsrf: true });
       if (res.success) {
-        setRequests(res.data.requests || []);
+        const data = res.data as { requests: FreshBatchRequest[] } | undefined;
+        setRequests(data?.requests || []);
       }
     } finally {
       setLoading(false);

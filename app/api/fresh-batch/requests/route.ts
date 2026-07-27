@@ -29,7 +29,7 @@ import type { FreshBatchRequest } from '@/lib/batches/types';
  */
 export async function POST(request: NextRequest) {
   // Apply a lightweight per-IP rate limit.
-  const rate = await rateLimitByIp(request, 10, 60 * 1000);
+  const rate = await rateLimitByIp(request, 10);
   if (!rate.ok) {
     return NextResponse.json(
       { success: false, error: 'Too many requests. Please try again in a minute.' },
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
     gallonEquivalent: toGallonEquivalent(parsed.quantity, parsed.quantityUnit),
     preferredMarketId: parsed.preferredMarketId,
     needByDate: parsed.needByDate || null,
-    notes: sanitizeNotes(parsed.notes),
+    notes: sanitizeNotes(parsed.notes ?? null),
     requestSource: parsed.requestSource,
     status: 'requested',
     linkedBatchId: null,

@@ -16,7 +16,7 @@ const COLLECTION = 'fresh_batch_requests';
  * GET /api/admin/fresh-batch/requests?status=requested&marketId=serenbe
  */
 export async function GET(request: NextRequest) {
-  const admin = await requireAdminSession();
+  const admin = await requireAdminSession(request);
   if (!admin) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
  * Body: { ids: string[], status: string, ownerNotes?: string }
  */
 export async function PATCH(request: NextRequest) {
-  const admin = await requireAdminSession();
+  const admin = await requireAdminSession(request);
   if (!admin) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
@@ -91,7 +91,7 @@ export async function PATCH(request: NextRequest) {
 
     // Fetch current states to validate transitions and audit-log each change.
     const existing = await db
-      .collection<FreshBatchRequest>(COLLECTION)
+      .collection(COLLECTION)
       .find({ id: { $in: body.ids } })
       .toArray();
 

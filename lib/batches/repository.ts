@@ -52,22 +52,22 @@ export async function findRequestById(id: string): Promise<FreshBatchRequest | n
 
 export async function findRequestsByEmail(email: string): Promise<FreshBatchRequest[]> {
   const { db } = await connectToDatabase();
-  return db
+  return (await db
     .collection(REQUESTS_COLLECTION)
-    .find<FreshBatchRequest>({ email: email.toLowerCase() })
+    .find({ email: email.toLowerCase() })
     .sort({ createdAt: -1 })
-    .toArray();
+    .toArray()) as FreshBatchRequest[];
 }
 
 export async function findRequestsByStatus(
   status: FreshBatchRequest['status']
 ): Promise<FreshBatchRequest[]> {
   const { db } = await connectToDatabase();
-  return db
+  return (await db
     .collection(REQUESTS_COLLECTION)
-    .find<FreshBatchRequest>({ status })
+    .find({ status })
     .sort({ createdAt: -1 })
-    .toArray();
+    .toArray()) as FreshBatchRequest[];
 }
 
 export async function updateRequestStatus(

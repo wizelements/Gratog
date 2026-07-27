@@ -64,6 +64,7 @@ vi.mock('@/lib/auth/unified-admin', () => ({
 // ============================================================================
 
 import { PATCH } from '@/app/api/admin/fresh-batch/requests/route';
+import type { NextRequest } from 'next/server';
 
 describe('admin request status transitions', () => {
   beforeEach(() => {
@@ -71,12 +72,12 @@ describe('admin request status transitions', () => {
     Object.keys(mockHandles.docs).forEach((k) => delete mockHandles.docs[k]);
   });
 
-  function buildRequest(body: unknown) {
+  function buildRequest(body: unknown): NextRequest {
     return new Request('https://tasteofgratitude.shop/api/admin/fresh-batch/requests', {
       method: 'PATCH',
       body: JSON.stringify(body),
       headers: { 'Content-Type': 'application/json' },
-    });
+    }) as unknown as NextRequest;
   }
 
   it('allows approved → canceled', async () => {

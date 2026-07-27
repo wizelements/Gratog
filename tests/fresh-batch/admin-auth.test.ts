@@ -31,20 +31,21 @@ vi.mock('@/lib/db-optimized', () => ({
 
 import { GET, PATCH } from '@/app/api/admin/fresh-batch/requests/route';
 import { POST as createReservation } from '@/app/api/admin/fresh-batch/reservations/route';
+import type { NextRequest } from 'next/server';
 import { requireAdminSession } from '@/lib/auth/unified-admin';
 
 vi.mock('@/lib/auth/unified-admin', () => ({
   requireAdminSession: vi.fn(),
 }));
 
-function buildRequest(method: string, body?: unknown, search = ''): Request {
+function buildRequest(method: string, body?: unknown, search = ''): NextRequest {
   const url = `https://tasteofgratitude.shop/api/admin/fresh-batch/requests${search}`;
   const init: RequestInit = { method };
   if (body !== undefined) {
     init.body = JSON.stringify(body);
     init.headers = { 'Content-Type': 'application/json' };
   }
-  return new Request(url, init);
+  return new Request(url, init) as unknown as NextRequest;
 }
 
 describe('fresh-batch admin authorization', () => {
@@ -53,7 +54,7 @@ describe('fresh-batch admin authorization', () => {
   });
 
   it('GET rejects anonymous access', async () => {
-    vi.mocked(requireAdminSession).mockResolvedValue(null);
+    vi.mocked(requireAdminSession).mockResolvedValue(null as unknown as AdminSession);
     const res = await GET(buildRequest('GET'));
     expect(res.status).toBe(401);
     const json = await res.json();
@@ -61,13 +62,13 @@ describe('fresh-batch admin authorization', () => {
   });
 
   it('PATCH rejects anonymous access', async () => {
-    vi.mocked(requireAdminSession).mockResolvedValue(null);
+    vi.mocked(requireAdminSession).mockResolvedValue(null as unknown as AdminSession);
     const res = await PATCH(buildRequest('PATCH', { ids: ['r1'], status: 'canceled' }));
     expect(res.status).toBe(401);
   });
 
   it('POST reservations rejects anonymous access', async () => {
-    vi.mocked(requireAdminSession).mockResolvedValue(null);
+    vi.mocked(requireAdminSession).mockResolvedValue(null as unknown as AdminSession);
     const res = await createReservation(
       buildRequest('POST', { requestId: 'r1', batchId: 'b1' })
     );
@@ -83,7 +84,7 @@ describe('fresh-batch admin authorization', () => {
   });
 
   it('GET does not leak existence when anonymous', async () => {
-    vi.mocked(requireAdminSession).mockResolvedValue(null);
+    vi.mocked(requireAdminSession).mockResolvedValue(null as unknown as AdminSession);
     const res = await GET(buildRequest('GET', undefined, '?id=nonexistent'));
     expect(res.status).toBe(401);
   });

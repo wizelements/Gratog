@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
   try {
     const { db } = await connectToDatabase();
     const reservation = await db
-      .collection<BatchReservation>('batch_reservations')
+      .collection('batch_reservations')
       .findOne({ squareOrderId: payment.order_id });
 
     if (!reservation) {

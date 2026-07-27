@@ -74,6 +74,9 @@ export type AnalyticsEvent =
   | 'checkout_payment_initializing_fail'
   | 'checkout_payment_mounting_fail'
   | 'checkout_payment_processing_fail'
+  | 'submit_flavor_request'
+  | 'flavor_request_complete'
+  | 'flavor_request_error'
   | `checkout_payment_${string}_fail`;
 
 export interface AnalyticsProps {
