@@ -19,7 +19,7 @@ const mockHandles = vi.hoisted(() => {
       return { matchedCount: matched, modifiedCount: matched };
     }),
     updateOne: vi.fn().mockResolvedValue({ matchedCount: 1, modifiedCount: 1 }),
-    find: vi.fn().mockImplementation(async ({ id }: { id: { $in: string[] } }) => {
+    find: vi.fn().mockImplementation(({ id }: { id: { $in: string[] } }) => {
       const found = (id?.$in ?? []).map((key: string) => docs[key]).filter(Boolean);
       return {
         toArray: async () => found,
