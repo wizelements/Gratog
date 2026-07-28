@@ -27,6 +27,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { track } from '@/utils/analytics';
+import { getActiveMarketPickups } from '@/data/markets';
 
 const DAY_LABELS: Record<number, string> = {
   0: 'Sunday',
@@ -345,8 +346,8 @@ function getCategoryAndEmoji(product: any) {
 export default function MarketsPage() {
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [markets, setMarkets] = useState<PublicMarket[]>([]);
-  const [marketsLoading, setMarketsLoading] = useState(true);
+  const [markets, setMarkets] = useState<PublicMarket[]>(getActiveMarketPickups());
+  const [marketsLoading, setMarketsLoading] = useState(false);
   const [marketsError, setMarketsError] = useState('');
 
   useEffect(() => {
@@ -430,12 +431,10 @@ export default function MarketsPage() {
         const data = await response.json();
         if (data.success && Array.isArray(data.markets)) {
           setMarkets(data.markets);
-        } else {
-          setMarketsError('No markets available right now.');
         }
       } catch (error) {
         console.error('Failed to fetch markets:', error);
-        setMarketsError('Could not load markets. Please try again later.');
+        setMarketsError('Could not refresh markets. Showing local market data.');
       } finally {
         setMarketsLoading(false);
       }
