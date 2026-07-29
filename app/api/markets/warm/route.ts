@@ -5,7 +5,8 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import resend from '@/lib/email/resend-client';
 import { getActiveMarketPickups } from '@/data/markets';
-import { getWeeklyMenuProducts, WEEKLY_MENU } from '@/data/weeklyMenu';
+import { getWeeklyMenuProducts, buildWeeklyMenu } from '@/data/weeklyMenu';
+import { getCurrentWeekRange } from '@/lib/menus/week-utils';
 
 interface WarmRequest {
   marketId?: string;
@@ -54,19 +55,23 @@ function buildWeeklyWarmEmail({
   marketName,
   marketSlug,
   featuredProducts,
+  weeklyMenuTitle,
+  weeklyMenuPreorderLanguage,
 }: {
   email: string;
   marketName: string;
   marketSlug: string;
   featuredProducts: string;
+  weeklyMenuTitle: string;
+  weeklyMenuPreorderLanguage: string;
 }) {
   const encodedEmail = encodeURIComponent(email);
   const encodedMarket = encodeURIComponent(marketSlug || 'serenbe');
 
   return `
     <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; color: #1c1917;">
-      <h2 style="color: #047857;">${WEEKLY_MENU.title}</h2>
-      <p>${WEEKLY_MENU.preorderLanguage}</p>
+      <h2 style="color: #047857;">${weeklyMenuTitle}</h2>
+      <p>${weeklyMenuPreorderLanguage}</p>
       <p><strong>This week:</strong> ${featuredProducts}</p>
       <p>Pickup at ${marketName}.</p>
       <p>
@@ -132,6 +137,8 @@ async function handleWarmRequest(request: NextRequest, raw: WarmRequest) {
 
     const weeklyProducts = getWeeklyMenuProducts('all');
     const featuredProducts = weeklyProducts.slice(0, 3).map((p) => p.name).join(', ');
+    const { weekStart, weekEnd } = getCurrentWeekRange();
+    const weeklyMenu = buildWeeklyMenu(weekStart, weekEnd);
 
     const results = {
       sent: 0,
@@ -149,7 +156,7 @@ async function handleWarmRequest(request: NextRequest, raw: WarmRequest) {
       const market = activeMarkets.find((m) => m.id === leadMarketId) || targetMarket || activeMarkets[0];
       const marketSlug = market?.id || 'serenbe';
       const marketName = market?.shortName || market?.name || fallbackMarketName;
-      const emailSubject = raw.subject || `This week at ${marketName}: ${WEEKLY_MENU.title}`;
+      const emailSubject = raw.subject || `This week at ${marketName}: ${weeklyMenu.title}`;
 
       if (!email) {
         results.skipped += 1;
@@ -167,7 +174,7 @@ async function handleWarmRequest(request: NextRequest, raw: WarmRequest) {
         continue;
       }
 
-      const emailHtml = buildWeeklyWarmEmail({ email, marketName, marketSlug, featuredProducts });
+      const emailHtml = buildWeeklyWarmEmail({ email, marketName, marketSlug, featuredProducts, weeklyMenuTitle: weeklyMenu.title, weeklyMenuPreorderLanguage: weeklyMenu.preorderLanguage });
 
       if (dryRun) {
         results.recipients.push({ channel: 'email', to: email, ok: true });

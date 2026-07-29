@@ -8,17 +8,20 @@ export const metadata = {
 
 import WeeklyMenuPage from '@/components/weekly-menu/WeeklyMenuPage';
 import { getActiveMarketPickups } from '@/data/markets';
-import { WEEKLY_MENU, getWeeklyMenuProducts } from '@/data/weeklyMenu';
+import { buildWeeklyMenu, getWeeklyMenuProducts } from '@/data/weeklyMenu';
+import { getCurrentWeekRange } from '@/lib/menus/week-utils';
 
 export default async function WeeklyMenuLandingPage() {
   const markets = getActiveMarketPickups();
   const weeklyProducts = getWeeklyMenuProducts('all');
+  const { weekStart, weekEnd } = getCurrentWeekRange();
+  const weeklyMenu = buildWeeklyMenu(weekStart, weekEnd);
 
   return (
     <WeeklyMenuPage
       markets={markets}
       weeklyProducts={weeklyProducts.slice(0, 9)}
-      weeklyMenu={WEEKLY_MENU}
+      weeklyMenu={weeklyMenu}
     />
   );
 }

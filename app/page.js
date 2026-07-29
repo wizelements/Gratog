@@ -44,6 +44,7 @@ import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 import { logger } from '@/lib/logger';
 import { buildHomepageFaqSchema, buildHomepageOrganizationSchema } from '@/seo/schemas';
 import HomePageClient from '@/components/home/HomePageClient';
+import { getCurrentWeekRange } from '@/lib/menus/week-utils';
 
 async function getHomepageCatalogData() {
   const snapshot = await getStorefrontCatalogSnapshot({});
@@ -77,12 +78,15 @@ export default async function HomePage() {
 
   const organizationSchema = buildHomepageOrganizationSchema();
   const faqSchema = buildHomepageFaqSchema();
+  const { weekStart, weekEnd } = getCurrentWeekRange();
 
   return (
     <HomePageClient
       initialFeaturedProducts={featuredProducts}
       organizationSchema={organizationSchema}
       faqSchema={faqSchema}
+      weekStart={weekStart}
+      weekEnd={weekEnd}
     />
   );
 }

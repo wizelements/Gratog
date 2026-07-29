@@ -52,7 +52,12 @@ function escapeHtml(value: unknown) {
 }
 
 function getCustomerEmail(order: any) {
-  return String(order.customerEmail || order.customer?.email || '').trim().toLowerCase();
+  const email = String(order.customerEmail || order.customer?.email || '').trim().toLowerCase();
+  // Skip example.com and test emails in production
+  if (process.env.NODE_ENV === 'production' && (email.includes('example.com') || email.includes('test.com'))) {
+    return '';
+  }
+  return email;
 }
 
 function getOrderTotal(order: any) {
@@ -109,11 +114,11 @@ function buildRecoveryEmail(order: any) {
         <div style="background:#fffaf0;border:1px solid #eadfca;border-radius:24px;overflow:hidden;">
           <div style="padding:30px 28px;background:linear-gradient(135deg,#315c45,#7a5c2e);color:white;">
             <p style="margin:0 0 8px;text-transform:uppercase;letter-spacing:.12em;font-size:12px;">Taste of Gratitude</p>
-            <h1 style="margin:0;font-size:28px;line-height:1.2;">Your wellness order is still waiting.</h1>
+            <h1 style="margin:0;font-size:28px;line-height:1.2;">Your order is still waiting.</h1>
           </div>
           <div style="padding:28px;">
             <p style="font-size:17px;line-height:1.6;margin:0 0 16px;">Hi ${customerName},</p>
-            <p style="font-size:16px;line-height:1.7;margin:0 0 20px;">You started an order with Taste of Gratitude but did not finish checkout. If it still feels right, you can come back and complete it securely through Square.</p>
+            <p style="font-size:16px;line-height:1.7;margin:0 0 20px;">You started an order with Taste of Gratitude but did not finish checkout. You can come back and complete it securely through Square.</p>
             ${itemsHtml ? `<table style="width:100%;border-collapse:collapse;margin:18px 0;">${itemsHtml}<tr><td style="padding:14px 0;font-weight:700;">Estimated total</td><td style="padding:14px 0;text-align:right;font-weight:700;">$${total}</td></tr></table>` : ''}
             <div style="text-align:center;margin:28px 0;">
               <a href="${url}" style="display:inline-block;background:#315c45;color:#fff;text-decoration:none;border-radius:999px;padding:14px 24px;font-weight:700;">Return to secure checkout</a>
@@ -185,7 +190,7 @@ async function handleCron(request: NextRequest) {
       const unsubscribeToken = generateUnsubscribeToken(email, email);
       const result = await sendEmail({
         to: email,
-        subject: 'Your Taste of Gratitude order is still waiting',
+        subject: 'Your Taste of Gratitude order is still waiting'.replace(/\r\n|\n|\r/g, ' ').trim(),
         html,
         text,
         emailType: 'promotional',

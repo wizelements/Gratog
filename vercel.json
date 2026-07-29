@@ -15,6 +15,9 @@
     "app/api/webhooks/square/route.ts": {
       "maxDuration": 60
     },
+    "app/api/admin/menus/archive/route.ts": {
+      "maxDuration": 30
+    },
     "app/api/cron/cleanup-abandoned-orders/route.ts": {
       "maxDuration": 60
     },
@@ -282,6 +285,10 @@
     }
   ],
   "crons": [
+    {
+      "path": "/api/admin/menus/archive",
+      "schedule": "0 6 * * 1"
+    },
     {
       "path": "/api/cron/cleanup-abandoned-orders",
       "schedule": "15 * * * *"

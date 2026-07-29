@@ -31,9 +31,9 @@ import {
   toStorefrontProduct,
 } from '@/data/products';
 import {
-  WEEKLY_MENU,
   WEEKLY_MENU_CATEGORIES,
   getWeeklyMenuProducts,
+  buildWeeklyMenu,
 } from '@/data/weeklyMenu';
 import { track } from '@/utils/analytics';
 
@@ -161,9 +161,12 @@ export default function HomePageClient({
   initialFeaturedProducts = [],
   organizationSchema,
   faqSchema,
+  weekStart,
+  weekEnd,
 }) {
   const [activeCategory, setActiveCategory] = useState('all');
   const weeklyProducts = useMemo(() => getWeeklyMenuProducts(activeCategory), [activeCategory]);
+  const weeklyMenu = useMemo(() => buildWeeklyMenu(weekStart, weekEnd), [weekStart, weekEnd]);
   const bestSellers = useMemo(() => getBestSellerProducts(), []);
   const commerceProductByKey = useMemo(() => {
     const map = new Map();
@@ -257,9 +260,9 @@ export default function HomePageClient({
         <div className="container">
           <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">{WEEKLY_MENU.title}</p>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">{weeklyMenu.title}</p>
               <h2 className="mt-2 text-4xl font-semibold tracking-tight text-stone-950 sm:text-5xl">Fresh this week, made in small batches.</h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">{WEEKLY_MENU.preorderLanguage}</p>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">{weeklyMenu.preorderLanguage}</p>
             </div>
             <Button asChild className="h-12 rounded-full bg-emerald-700 px-6 text-white hover:bg-emerald-800">
               <Link href="/catalog">Shop the full menu</Link>

@@ -267,7 +267,7 @@ async function main() {
 
   // 7. Weekly menu date range
   const weeklyMenuTs = readFileSync(join(REPO_ROOT, 'data', 'weeklyMenu.ts'), 'utf8');
-  if (!weeklyMenuTs.match(/week_start|week_end|weekStart|weekEnd|dateRange/)) {
+  if (!weeklyMenuTs.match(/weekStart|weekEnd|dateRange/)) {
     findings.push(buildTask('menu', 'P1', 'Static weekly menu has no visible date range', 'WEEKLY_MENU in data/weeklyMenu.ts lacks week_start/week_end; customers cannot confirm freshness', 'Stale-looking menu reduces urgency and trust', 'Add week_start, week_end, and display them on /weekly-menu and /', ['data/weeklyMenu.ts', 'components/weekly-menu/WeeklyMenuPage.tsx', 'app/weekly-menu/page.tsx'], 'small'));
   }
 
