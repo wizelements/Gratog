@@ -1,13 +1,8 @@
 /**
- * Unified Admin Authentication System
- * 
- * This is the SINGLE SOURCE OF TRUTH for admin authentication.
- * All admin authentication must use these helpers.
- * 
- * Features:
- * - JWT with jose (Edge-compatible)
- * - Secret enforcement in production
- * - Token rotation
+ * @deprecated Use lib/admin-session.ts instead.
+ * This file is kept for backward compatibility.
+ * New code should import from lib/admin-session.ts.
+ */
  * - Secure cookie handling
  * - RBAC integration
  * - Comprehensive audit logging

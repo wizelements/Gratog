@@ -2,7 +2,9 @@ const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
 const debug = (...args: unknown[]) => { if (DEBUG) console.log('[REDIS-IDEMPOTENCY]', ...args); };
 
 /**
- * Redis-based idempotency key management for production multi-instance deployments
+ * @deprecated Use lib/cache.ts instead.
+ * This file is kept for backward compatibility.
+ */
  * Falls back to in-memory cache if Redis is not available
  */
 
