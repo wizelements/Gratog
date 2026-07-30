@@ -1,0 +1,114 @@
+{
+  "project": "Taste of Gratitude (Gratog)",
+  "generated": "2026-07-29 19:40 EDT",
+  "authority": "Native Termux workspace",
+  "readiness": "NOT READY FOR ALIGNMENT",
+  "blockers": [
+    "Vercel builds failing for recent HEAD commits",
+    "Dirty working tree with package-lock.json drift",
+    "Uncommitted audit/debug/sanitization artifacts",
+    "Customer auth/account/profile partial or broken"
+  ],
+  "system_count": {
+    "source_files": 746,
+    "source_lines": 126000,
+    "public_routes": 60,
+    "api_routes": 110,
+    "admin_routes": 30,
+    "env_vars_referenced": 190,
+    "vercel_env_entries": 49
+  },
+  "deliverables": [
+    "TOG-API-INVENTORY.md",
+    "TOG-ARCHIVE-CANDIDATE-REPORT.md",
+    "TOG-BUSINESS-PURPOSE-SUMMARY.md",
+    "TOG-CODE-INVENTORY.md",
+    "TOG-CUSTOMER-JOURNEY-MAP.md",
+    "TOG-DUPLICATION-AND-CONSOLIDATION-REPORT.md",
+    "TOG-ENV-VARIABLE-INVENTORY.md",
+    "TOG-FEATURE-FLAG-INVENTORY.md",
+    "TOG-INFRASTRUCTURE-INVENTORY.md",
+    "TOG-PRE-ALIGNMENT-READINESS-REPORT.md",
+    "TOG-PRODUCTION-DRIFT-LEDGER.md",
+    "TOG-PROVIDER-INVENTORY.md",
+    "TOG-PUBLIC-PAGE-INVENTORY.md",
+    "TOG-REPAIR-CANDIDATE-REPORT.md",
+    "TOG-ROUTE-MAP.md",
+    "TOG-SECURITY-AND-PRIVACY-SURFACE-REPORT.md",
+    "TOG-SYSTEM-AUTHORITY-MAP.md",
+    "TOG-SYSTEM-COST-REPORT.md",
+    "TOG-SYSTEM-DEPENDENCY-MAP.md",
+    "TOG-SYSTEM-RATIONALIZATION-ROADMAP.md",
+    "TOG-SYSTEM-USAGE-REPORT.md",
+    "TOG-WEBHOOK-AND-CRON-INVENTORY.md"
+  ],
+  "classifications": {
+    "keep": [
+      "Homepage/catalog/checkout/payment",
+      "Square payments",
+      "Market pickup",
+      "Telegram/Resend owner alerts",
+      "Order creation/lookup",
+      "Admin order/product/inventory management",
+      "Contact form"
+    ],
+    "keep_and_improve": [
+      "Weekly menu (fix date logic)",
+      "Customer auth (repair)",
+      "Admin auth (consolidate)"
+    ],
+    "repair": [
+      "Vercel build/deploy",
+      "Customer auth/account/profile",
+      "Weekly menu date",
+      "package-lock.json",
+      "Admin product update whitelist",
+      "Inventory adjustment atomicity",
+      "Admin password hash mismatch"
+    ],
+    "consolidate": [
+      "Cart systems",
+      "Email systems",
+      "Rewards/gratitude systems",
+      "Admin auth systems",
+      "Search/SEO/market/menu legacy flat files",
+      "Payment forms"
+    ],
+    "disable": [
+      "Public reviews",
+      "Public subscriptions/Gratitude Box",
+      "Demo/sandbox product flags in production"
+    ],
+    "archive": [
+      "SMS/Twilio",
+      "Stripe placeholders",
+      "ShipEngine/EasyPost shipping (pending owner decision)",
+      "Wholesale portal (pending owner decision)",
+      "OpenAI newsletter (pending owner decision)",
+      "Legacy flat modules",
+      "Deprecated 410 routes if no callers"
+    ],
+    "remove_after_archival": [
+      "Twilio env vars",
+      "Stripe env vars",
+      "Unused monitoring webhook env vars"
+    ],
+    "unable_to_determine": [
+      "Real Redis/Upstash usage",
+      "Real Sentry event ingestion",
+      "Real PostHog/GA usage",
+      "Instagram feed live status",
+      "Exact wholesale demand",
+      "Exact shipping operational status"
+    ]
+  },
+  "owner_decisions": [
+    "Should shipping remain public?",
+    "Is there active wholesale demand?",
+    "Should rewards/loyalty program be active?",
+    "Is AI-generated newsletter content valuable?",
+    "Which analytics provider is primary?",
+    "Which cache backend should be canonical?"
+  ],
+  "next_action": "Fix Vercel build failure for HEAD + uncommitted changes; inspect failed deployment logs, reconcile package-lock.json, commit/remove verification artifacts, and produce a clean READY preview deployment."
+}
