@@ -4,8 +4,7 @@ const debug = (...args: unknown[]) => { if (DEBUG) console.log('[REDIS-IDEMPOTEN
 /**
  * @deprecated Use lib/cache.ts instead.
  * This file is kept for backward compatibility.
- */
- * Falls back to in-memory cache if Redis is not available
+ * Falls back to in-memory cache if Redis is not available.
  */
 
 import RedisIdempotency from './redis-idempotency-stub';

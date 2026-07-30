@@ -2,7 +2,8 @@
  * @deprecated Use lib/admin-session.ts instead.
  * This file is kept for backward compatibility.
  * New code should import from lib/admin-session.ts.
- */
+ *
+ * Features:
  * - Secure cookie handling
  * - RBAC integration
  * - Comprehensive audit logging
