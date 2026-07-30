@@ -117,7 +117,7 @@ export function DesktopNav() {
 
               {/* Account */}
               <Link 
-                href="/account"
+                href="/profile"
                 onClick={handleNavClick}
                 className="hidden sm:flex p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
@@ -170,7 +170,7 @@ export function DesktopNav() {
             })}
             <hr className="my-2 border-gray-200 dark:border-gray-700" />
             <Link
-              href="/account"
+              href="/profile"
               onClick={handleNavClick}
               className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
             >
