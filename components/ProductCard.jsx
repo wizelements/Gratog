@@ -129,7 +129,7 @@ export default function ProductCard({ product }) {
           </p>
         )}
         <p className="mt-3 text-xs font-medium text-emerald-800">
-          Market pickup or eligible shipping at checkout
+          Market pickup or local delivery at checkout
         </p>
       </CardContent>
 

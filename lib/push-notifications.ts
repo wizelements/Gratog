@@ -12,7 +12,7 @@
 
 import { connectToDatabase } from './db-optimized';
 import { logger } from './logger';
-import { sendEmail } from './resend-email';
+import { sendEmail } from './email/service';
 
 // ============================================================================
 // PUSH NOTIFICATION CONFIGURATION

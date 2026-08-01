@@ -11,7 +11,7 @@ import {
 
 /**
  * Enhanced Fulfillment Selector with immersive, visual experience
- * Provides engaging UI for pickup, shipping, and delivery options
+ * Provides engaging UI for pickup and local delivery options
  */
 export default function EnhancedFulfillmentSelector({ 
   fulfillmentOptions, 
@@ -28,14 +28,7 @@ export default function EnhancedFulfillmentSelector({
       tagline: 'Fresh from our booth to you',
       emoji: '🌱'
     },
-    shipping: {
-      icon: MapPin,
-      accentClass: 'bg-stone-100 text-stone-700',
-      selectedClass: 'border-stone-700 bg-stone-50',
-      benefits: ['Shipped carefully', 'Tracking included', 'Packed for freshness'],
-      tagline: 'Delivered right to your door',
-      emoji: '📦'
-    },
+    // OPEE LIVE-05: Shipping option removed — business does not offer shipping
     delivery: {
       icon: Truck,
       accentClass: 'bg-amber-100 text-amber-800',

@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export const metadata = {
   title: "Policies | Taste of Gratitude",
-  description: "View our Terms of Service, Shipping Policy, Refund Policy, and other important policies for shopping with Taste of Gratitude.",
+  description: "View our Terms of Service, Refund Policy, Privacy Policy, and other important policies for shopping with Taste of Gratitude.",
 };
 
 export default function PoliciesPage() {
@@ -24,10 +24,7 @@ export default function PoliciesPage() {
             <FileText className="h-6 w-6 text-emerald-600" />
             <span className="text-sm font-medium">Terms</span>
           </a>
-          <a href="#shipping" className="flex flex-col items-center gap-2 p-4 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors">
-            <Truck className="h-6 w-6 text-emerald-600" />
-            <span className="text-sm font-medium">Shipping</span>
-          </a>
+  
           <a href="#refunds" className="flex flex-col items-center gap-2 p-4 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors">
             <RefreshCw className="h-6 w-6 text-emerald-600" />
             <span className="text-sm font-medium">Refunds</span>
@@ -108,55 +105,7 @@ export default function PoliciesPage() {
           </CardContent>
         </Card>
 
-        {/* Shipping Policy */}
-        <Card id="shipping">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Truck className="h-5 w-5 text-emerald-600" />
-              Shipping & Delivery Policy
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6 text-sm">
-            <section className="space-y-3">
-              <h3 className="font-semibold text-base">Pickup Options</h3>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Free pickup available at all our market locations</li>
-                <li>Pickup times are scheduled during market hours</li>
-                <li>Orders not picked up within the designated time may be forfeited</li>
-                <li>Please bring your order confirmation for pickup</li>
-              </ul>
-            </section>
 
-            <section className="space-y-3">
-              <h3 className="font-semibold text-base">Local Delivery</h3>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Available within our delivery service area</li>
-                <li>Delivery fee varies based on distance and order size</li>
-                <li>Minimum order may apply for delivery</li>
-                <li>Delivery times are scheduled based on availability</li>
-              </ul>
-            </section>
-
-            <section className="space-y-3">
-              <h3 className="font-semibold text-base">Shipping</h3>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Select products available for shipping</li>
-                <li>Shipping costs calculated at checkout based on weight and destination</li>
-                <li>Standard shipping typically takes 3-7 business days</li>
-                <li>Expedited shipping options available at additional cost</li>
-                <li>Products are carefully packaged to maintain freshness</li>
-              </ul>
-            </section>
-
-            <section className="space-y-3">
-              <h3 className="font-semibold text-base">Order Processing</h3>
-              <p>
-                Orders are typically processed within 1-2 business days. You will receive 
-                an email confirmation when your order is ready for pickup or has shipped.
-              </p>
-            </section>
-          </CardContent>
-        </Card>
 
         {/* Refund Policy */}
         <Card id="refunds">

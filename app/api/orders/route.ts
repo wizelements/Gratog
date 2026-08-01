@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import MarketOrder from '@/models/MarketOrder';
+import { requireAdmin } from '@/lib/admin-session';
 
 export const runtime = 'nodejs';
 
@@ -38,11 +39,15 @@ export async function POST() {
  */
 export async function GET(request: NextRequest) {
   try {
-    // Auth check
-    const authHeader = request.headers.get('authorization');
-    const apiKey = process.env.ADMIN_API_KEY;
-    
-    if (!authHeader || authHeader.replace('Bearer ', '') !== apiKey) {
+    // Auth check — JWT admin session required (OPEE C2 fix)
+    // Legacy ADMIN_API_KEY auth removed; all admin access requires a valid JWT.
+    let admin;
+    try {
+      admin = await requireAdmin(request);
+    } catch {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!admin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

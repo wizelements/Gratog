@@ -3,11 +3,15 @@
 
 /**
  * FulfillmentTabs - Adaptive fulfillment type selector
- * Lets customers choose pickup, eligible local delivery, or nationwide shipping.
+ * Lets customers choose pickup or eligible local delivery.
+ *
+ * OPEE LIVE-05: Shipping removed. Taste of Gratitude does not offer shipping.
+ * Local delivery is kept only where eligibility, fee, service area, checkout
+ * validation, and admin fulfillment genuinely work.
  */
 
 import { motion } from 'framer-motion';
-import { MapPin, Truck, Package } from 'lucide-react';
+import { MapPin, Truck } from 'lucide-react';
 import { FulfillmentType } from '@/stores/checkout';
 
 interface FulfillmentTabsProps {
@@ -16,10 +20,10 @@ interface FulfillmentTabsProps {
   hasPreorderItems?: boolean;
 }
 
+// OPEE LIVE-05: Shipping tab removed. Only pickup and local delivery.
 const TABS = [
   { value: 'pickup' as FulfillmentType, label: 'Pickup', icon: MapPin, description: 'Market pickup' },
   { value: 'delivery' as FulfillmentType, label: 'Delivery', icon: Truck, description: 'Atlanta-area only', disabledForPreorder: true },
-  { value: 'shipping' as FulfillmentType, label: 'Shipping', icon: Package, description: 'Eligible items only', disabledForPreorder: true },
 ];
 
 export default function FulfillmentTabs({ selected, onChange, hasPreorderItems = false }: FulfillmentTabsProps) {
@@ -33,7 +37,7 @@ export default function FulfillmentTabs({ selected, onChange, hasPreorderItems =
               Preorder items are made for market pickup.
             </p>
             <p className="text-sm text-amber-700 mt-1">
-              Choose a pickup location and date below. Delivery and shipping are unavailable for preorder products.
+              Choose a pickup location and date below. Local delivery is unavailable for preorder products.
             </p>
           </div>
         </div>

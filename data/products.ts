@@ -58,8 +58,8 @@ function archivedProduct(slug: string, name: string, reason: string): MarketProd
     shortDescription: 'Archived product history. Not part of the current Taste of Gratitude weekly market menu.',
     fullDescription: reason,
     flavorNotes: 'Archived.',
-    wellnessSupport: [],
-    recommendedUse: 'Not currently available.',
+    flavorHighlights: [],
+    usageNotes: 'Not currently available.',
     allergens: [],
     pickupAvailability: 'Inactive.',
     shippingAvailability: 'Inactive.',
@@ -177,7 +177,7 @@ export const PRODUCTS: MarketProduct[] = [
     name: 'Black Minerals',
     category: 'lemonades',
     weeklyStatus: 'active',
-    price: 12,
+    price: 11,
     sizes: ['16oz bottle'],
     ingredients: ['Lemon', 'Ginger', 'Sea Moss', 'Trace Mineral Blend', 'Agave', 'Alkaline Water'],
     shortDescription: 'A dark lemon and ginger drink with sea moss and a trace mineral blend.',
@@ -441,37 +441,7 @@ export const PRODUCTS: MarketProduct[] = [
     pairings: ['golden-glow-gel', 'grateful-defense'],
     tags: ['seasonal', 'citrus', 'sea-moss'],
   },
-  {
-    id: 'blue-lotus-gel',
-    slug: 'blue-lotus-gel',
-    name: 'Blue Lotus Gel',
-    category: 'gels',
-    weeklyStatus: 'active',
-    price: 36,
-    sizes: ['2oz sample', '16oz jar'],
-    ingredients: ['Sea Moss', 'Blue Spirulina', 'Blue Lotus', 'Ashwagandha', 'Maca Root', 'Ginger', 'Agave', 'Alkaline Water'],
-    shortDescription: 'A blue sea moss gel with blue spirulina, blue lotus, ginger, agave, and root ingredients.',
-    fullDescription: 'Blue Lotus Gel is a colorful sea moss jar. Blue spirulina brings the color, blue lotus and root ingredients add earthy notes, and ginger and agave balance each spoonful.',
-    flavorNotes: 'Earthy-blue, lightly sweet, ginger-warm, and smooth.',
-    wellnessSupport: ['Earthy flavor', 'Light sweetness', 'Ginger warmth', 'Blue color'],
-    recommendedUse: 'Use 1–2 tablespoons in tea or smoothies, or enjoy it as a chilled spoonful.',
-    allergens: [],
-    pickupAvailability: 'Prepared in small weekly gel batches; preorder recommended.',
-    shippingAvailability: 'Shipping may be available when cold-pack logistics are active; checkout confirms eligibility.',
-    inventoryStatus: 'limited',
-    featured: true,
-    seasonal: false,
-    image: 'https://127690646.cdn6.editmysite.com/uploads/1/2/7/6/127690646/5ICW6ZAQAEH3PGEZBWBDXFRQ.jpeg',
-    seoTitle: 'Blue Lotus Sea Moss Gel | Taste of Gratitude',
-    seoDescription: 'Blue Lotus Gel is a small-batch sea moss gel with blue spirulina, blue lotus, ginger, and agave.',
-    activeWeeklyMenu: true,
-    soldOut: false,
-    preorderOnly: true,
-    marketPickupOnly: false,
-    squareProductUrl: 'https://tasteofgratitude.shop/s/order?add=blue-lotus',
-    pairings: ['calm-waters', 'cucumber-mint-ginger'],
-    tags: ['gel', 'blue-lotus', 'calm', 'botanical'],
-  },
+  archivedProduct('blue-lotus-gel', 'Blue Lotus Gel', 'Blue Lotus Gel is archived as a duplicate product. Blue Lotus is the current active product path.'),
   {
     id: 'grateful-greens-gel',
     slug: 'grateful-greens-gel',
@@ -978,8 +948,13 @@ export function toStorefrontProduct(product: MarketProduct, index = 0) {
       ? product.sizes.map((size, sizeIndex) => ({
           id: localVariationId(product, sizeIndex),
           name: size,
-          price: size.toLowerCase().includes('2oz') && product.category === 'gels' ? 11 : product.price,
-          priceCents: Math.round((size.toLowerCase().includes('2oz') && product.category === 'gels' ? 11 : product.price) * 100),
+          // OPEE LIVE-02: Square is the sole price authority.
+          // Hardcoded curated prices are removed. If Square provides a variation
+          // price, use it. Otherwise, use the product-level price. If neither
+          // exists, the product must fail closed at checkout (priceCart rejects
+          // products with no catalog price).
+          price: product.price,
+          priceCents: Math.round(product.price * 100),
         }))
       : [{ id: variationId, name: 'Market item', price: product.price, priceCents: Math.round(product.price * 100) }],
     variationId,
@@ -1006,9 +981,13 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
     ? liveProduct.images
     : curatedProduct.images;
   const liveImage = liveProduct.image || liveProduct.displayImage || curatedProduct.image;
+  // OPEE LIVE-02: Square is the sole price authority.
+  // Curated data may provide descriptions, ingredients, images, display order,
+  // and category metadata — but NEVER prices.
+  // If Square provides no price, the product must fail closed (not fall back to curated).
   const livePrice = typeof liveProduct.price === 'number' && liveProduct.price > 0
     ? liveProduct.price
-    : curatedProduct.price;
+    : null; // No curated price fallback. Square is the authority.
   const firstLiveVariationId = liveVariations?.[0]?.id;
   const resolvedLiveVariationId =
     liveProduct.variationId ||
@@ -1057,7 +1036,9 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
     images: liveImages,
     imageAlt: `${curated.name} from Taste of Gratitude`,
     price: livePrice,
-    priceCents: liveProduct.priceCents || Math.round(livePrice * 100),
+    // OPEE LIVE-02: If Square provides no price, the product must fail closed.
+    // A null price means the product cannot be sold until Square provides one.
+    priceCents: livePrice !== null ? Math.round(livePrice * 100) : null,
     variations: liveVariations,
     variationId: resolvedLiveVariationId || curatedProduct.variationId,
     catalogObjectId: liveProduct.catalogObjectId || resolvedLiveVariationId || curatedProduct.catalogObjectId,

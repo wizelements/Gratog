@@ -5,7 +5,7 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
-import { sendEmail } from '@/lib/resend-email';
+import { sendEmail } from '@/lib/email/service';
 import { logger } from '@/lib/logger';
 import { SUPPORT_EMAIL } from '@/lib/site-config';
 

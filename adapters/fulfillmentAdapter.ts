@@ -55,40 +55,7 @@ const DELIVERY_WINDOWS: DeliveryWindowOption[] = [
   { value: '15-18', label: '3:00 PM - 6:00 PM', available: true }
 ];
 
-/**
- * Shipping methods
- */
-export interface ShippingMethod {
-  id: string;
-  name: string;
-  price: number;
-  estimatedDays: string;
-  description: string;
-}
-
-const SHIPPING_METHODS: ShippingMethod[] = [
-  {
-    id: 'standard',
-    name: 'Standard Shipping',
-    price: 8.99,
-    estimatedDays: '5-7 business days',
-    description: 'USPS Priority Mail'
-  },
-  {
-    id: 'express',
-    name: 'Express Shipping',
-    price: 15.99,
-    estimatedDays: '2-3 business days',
-    description: 'FedEx Express'
-  },
-  {
-    id: 'overnight',
-    name: 'Overnight Shipping',
-    price: 29.99,
-    estimatedDays: 'Next business day',
-    description: 'FedEx Overnight'
-  }
-];
+// OPEE LIVE-05: Shipping removed — business does not offer shipping
 
 /**
  * Check if ZIP code is serviceable for delivery
@@ -142,12 +109,7 @@ export function marketCalendar(locationId: string): Date[] {
   return dates;
 }
 
-/**
- * Get shipping methods
- */
-export function shippingMethods(): ShippingMethod[] {
-  return SHIPPING_METHODS;
-}
+// OPEE LIVE-05: Shipping removed — business does not offer shipping
 
 /**
  * Validate address
@@ -196,12 +158,10 @@ export const Fulfillment = {
   deliveryWindowsForZip,
   pickupLocations,
   marketCalendar,
-  shippingMethods,
   validateAddress,
   constants: {
     SERVICEABLE_ZIPS,
     PICKUP_LOCATIONS,
-    DELIVERY_WINDOWS,
-    SHIPPING_METHODS
+    DELIVERY_WINDOWS
   }
 };

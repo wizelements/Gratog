@@ -310,14 +310,7 @@ export default function OrderSuccessPage() {
             </ul>
           </div>
         )}
-        {order?.fulfillment?.type === 'shipping' && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 mb-6">
-            <h2 className="font-semibold text-emerald-900">Shipping expectations</h2>
-            <p className="mt-2 text-sm text-emerald-800">
-              We&apos;ll prepare eligible items carefully and email tracking once your package is on the way.
-            </p>
-          </div>
-        )}
+        {/* OPEE LIVE-05: Shipping expectations block removed — business does not offer shipping */}
         {order?.fulfillment?.type === 'delivery' && (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 mb-6">
             <h2 className="font-semibold text-emerald-900">Delivery expectations</h2>
@@ -403,7 +396,7 @@ export default function OrderSuccessPage() {
                     <MapPin className="w-5 h-5 text-emerald-600" />
                   )}
                   {order?.fulfillment?.type?.includes('pickup') ? 'Pickup Details' : 
-                   order?.fulfillment?.type === 'delivery' ? 'Delivery Details' : 'Shipping Details'}
+                   order?.fulfillment?.type === 'delivery' ? 'Delivery Details' : 'Pickup Details'}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -449,15 +442,7 @@ export default function OrderSuccessPage() {
                   </div>
                 )}
 
-                {order?.fulfillment?.type === 'shipping' && order.fulfillment.shipping && (
-                  <div className="space-y-1">
-                    <p className="font-medium">Shipping Address</p>
-                    <p className="text-gray-600">{order.fulfillment.shipping.address?.street}</p>
-                    <p className="text-gray-600">
-                      {order.fulfillment.shipping.address?.city}, {order.fulfillment.shipping.address?.state} {order.fulfillment.shipping.address?.zip}
-                    </p>
-                  </div>
-                )}
+                {/* OPEE LIVE-05: Shipping address display removed — business does not offer shipping */}
               </CardContent>
             </Card>
           </div>

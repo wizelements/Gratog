@@ -5,7 +5,7 @@
  * `sendEmail` from `lib/resend-email.js` and record to `email_sends`.
  */
 
-import { sendEmail } from '@/lib/resend-email';
+import { sendEmail } from '@/lib/email/service';
 import { EMAIL_SENDERS } from '@/lib/email-config';
 import { customerStatusCopy, type RequestStatus } from './types';
 

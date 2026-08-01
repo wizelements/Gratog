@@ -1,5 +1,9 @@
 /**
  * Diagnostic API to check Square configuration
+ *
+ * OPEE H5: This endpoint exposes sensitive Square configuration details.
+ * It is disabled in production and should only be accessible by authenticated
+ * admins in development. Retained for local debugging only.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -8,8 +12,13 @@ import { SquareClient as Client, SquareEnvironment as Environment } from 'square
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Not available in production' }, { status: 404 });
+  // OPEE H5: Default-deny — diagnostics enabled only in explicit test/development mode.
+  // Production, missing classification, and any unknown environment return 404.
+  // No credentials or internal configuration are disclosed.
+  const env = process.env.NODE_ENV;
+  const vercelEnv = process.env.VERCEL_ENV;
+  if (env !== 'test' && env !== 'development') {
+    return NextResponse.json({ error: 'Not available' }, { status: 404 });
   }
 
   const diagnostics: any = {

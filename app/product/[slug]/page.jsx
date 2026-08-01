@@ -133,7 +133,7 @@ function serializeProductForClient(sourceProduct) {
     recommendedUse: safeProductCopy(product.recommendedUse || product.howToUse || product.usageInstructions, ''),
     allergens: Array.isArray(product.allergens) ? product.allergens : [],
     pickupAvailability: safeProductCopy(product.pickupAvailability, ''),
-    shippingAvailability: safeProductCopy(product.shippingAvailability, ''),
+    shippingAvailability: safeProductCopy(product.shippingAvailability, 'Pickup and local delivery available. Details confirmed before payment.'),
     inventoryStatus: product.inventoryStatus,
     pairings: Array.isArray(product.pairings) ? product.pairings : [],
     variations,

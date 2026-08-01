@@ -1,3 +1,13 @@
+/**
+ * @deprecated Use lib/auth/unified-admin.ts for Node runtime or lib/admin-session.ts for Edge runtime.
+ * This module uses plain API-key comparison (timing-unsafe) and is NOT the canonical
+ * admin auth path. It is retained only for backward compatibility with routes that
+ * have not yet been migrated. Do NOT use in new code.
+ *
+ * OPEE C2 remediation: all routes should migrate to requireAdmin() from admin-session
+ * or requireAdminSession() from unified-admin.
+ */
+
 const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
 const debug = (...args: unknown[]) => { if (DEBUG) console.log('[AUTH]', ...args); };
 

@@ -425,11 +425,7 @@ export default function HomePageClient({
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Community proof</p>
             <h2 className="mt-2 text-3xl font-semibold text-stone-950">Built through real farmers market conversations.</h2>
-            <div className="mt-6 rounded-[1.5rem] border border-stone-200 bg-white p-5 shadow-sm">
-              <p className="leading-7 text-stone-700">
-                Real customer reviews will appear here as they are collected. If you have tried Taste of Gratitude, share your review at the market or email us.
-              </p>
-            </div>
+
           </div>
           <div className="grid gap-4">
             <div className="rounded-[2rem] bg-emerald-950 p-6 text-white">

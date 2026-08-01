@@ -6,11 +6,13 @@
 import { create } from 'zustand';
 import { CartItem, CartAPI } from '@/adapters/cartAdapter';
 import { computeTotals, OrderTotals } from '@/adapters/totalsAdapter';
-import { shippingMethods, ShippingMethod } from '@/adapters/fulfillmentAdapter';
+// OPEE LIVE-05: Shipping removed — business does not offer shipping
+// import { shippingMethods, ShippingMethod } from '@/adapters/fulfillmentAdapter';
 
 export type CheckoutStage = 'cart' | 'details' | 'review';
 
-export type FulfillmentType = 'pickup' | 'delivery' | 'shipping';
+// OPEE LIVE-05: FulfillmentType no longer includes 'shipping'
+export type FulfillmentType = 'pickup' | 'delivery';
 
 export interface ContactInfo {
   firstName: string;
@@ -43,13 +45,9 @@ export interface DeliveryData {
 }
 
 export interface ShippingData {
-  address: {
-    street: string;
-    suite?: string;
-    city: string;
-    state: string;
-    zip: string;
-  };
+  // OPEE LIVE-05: Shipping removed — business does not offer shipping.
+  // Kept as empty interface to avoid breaking FulfillmentData type.
+  address: { street: string; suite?: string; city: string; state: string; zip: string };
   methodId: string;
 }
 
@@ -182,9 +180,7 @@ export const useCheckoutStore = create<CheckoutState>((set, get) => {
   const initialCart = typeof window !== 'undefined' ? CartAPI.getCart() : [];
   const persisted = loadPersistedState();
   const persistedFulfillment = persisted.fulfillment || initialFulfillment;
-  const persistedShippingMethod = persistedFulfillment.type === 'shipping'
-    ? shippingMethods().find((method: ShippingMethod) => method.id === persistedFulfillment.shipping?.methodId)
-    : null;
+  // OPEE LIVE-05: Shipping removed — no shipping method lookup needed
   
   const initialTotals = computeTotals({
     cart: initialCart,
@@ -192,7 +188,7 @@ export const useCheckoutStore = create<CheckoutState>((set, get) => {
     tip: persisted.tip || 0,
     couponDiscount: persisted.couponDiscount || 0,
     deliveryFee: persistedFulfillment.delivery?.fee,
-    shippingFee: persistedShippingMethod?.price || 0
+    // OPEE LIVE-05: No shipping fee
   });
   
   return {
@@ -261,20 +257,13 @@ export const useCheckoutStore = create<CheckoutState>((set, get) => {
     recomputeTotals: () => {
       const state = get();
       
-      let shippingFee = 0;
-      if (state.fulfillment.type === 'shipping' && state.fulfillment.shipping?.methodId) {
-        // Get shipping method price from imported function (safe for client bundle)
-        const methods = shippingMethods();
-        const method = methods.find((m: ShippingMethod) => m.id === state.fulfillment.shipping?.methodId);
-        shippingFee = method?.price || 0;
-      }
+      // OPEE LIVE-05: Shipping removed — no shipping fee calculation needed
       
       const totals = computeTotals({
         cart: state.cart,
         fulfillmentType: state.fulfillment.type,
         tip: state.tip,
         couponDiscount: state.couponDiscount,
-        shippingFee,
         deliveryFee: state.fulfillment.delivery?.fee
       });
       

@@ -36,7 +36,7 @@ const POPULAR_SEARCHES = [
   { query: 'Elderberry Blend', category: 'Products', trending: true },
   { query: 'How to use sea moss', category: 'Learn', trending: true, href: '/explore/learn' },
   { query: 'Benefits of sea moss', category: 'Learn', trending: false, href: '/explore' },
-  { query: 'Shipping information', category: 'Help', trending: false, href: '/policies#shipping' },
+  { query: 'Delivery information', category: 'Help', trending: false, href: '/policies' },
 ];
 
 const CATEGORY_SHORTCUTS = [
@@ -253,7 +253,7 @@ export default function SearchBar({ placeholder = 'Search products, benefits, gu
               {[
                 { label: 'FAQ', href: '/#faq' },
                 { label: 'Contact', href: '/contact' },
-                { label: 'Shipping', href: '/policies#shipping' }
+                { label: 'Delivery', href: '/policies' }
               ].map((link) => (
                 <Link
                   key={link.label}

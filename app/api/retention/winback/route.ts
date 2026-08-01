@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import resend from '@/lib/email/resend-client';
+import { requireCronSecret } from '@/lib/cron-auth';
 
 const DEFAULT_INACTIVE_DAYS = 21;
 const DEFAULT_COUPON_CODE = process.env.WINBACK_COUPON_CODE || 'WINBACK10';
@@ -45,19 +46,11 @@ export async function POST(request: NextRequest) {
 
 async function handleWinbackRequest(request: NextRequest, raw: WinbackRequest) {
 
-  const authHeader = request.headers.get('authorization') || '';
-  const bearer = authHeader.replace(/^Bearer\s+/i, '');
-  const cronSecret = process.env.WEEKLY_WARM_CRON_SECRET;
-  const adminToken = process.env.ADMIN_API_TOKEN;
-
-  const isAuthorized =
-    (cronSecret && bearer === cronSecret) ||
-    (adminToken && bearer === adminToken) ||
-    (cronSecret && raw.secret === cronSecret) ||
-    (adminToken && raw.secret === adminToken);
-
-  if (!isAuthorized) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  // OPEE ADMIN-04: Use requireCronSecret for constant-time validation.
+  // No ADMIN_API_TOKEN accepted here — cron routes are machine-to-machine only.
+  const authResult = requireCronSecret(request, raw as Record<string, unknown>);
+  if (authResult !== null) {
+    return authResult; // 401 or 503
   }
 
   const daysInactive = Math.min(Math.max(Number(raw.daysInactive) || DEFAULT_INACTIVE_DAYS, 7), 365);

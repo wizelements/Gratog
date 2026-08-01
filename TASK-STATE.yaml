@@ -1,0 +1,80 @@
+# TASK-STATE.yaml — Gratog OPEE Remediation
+
+version: "1.0"
+created: "2026-07-31T12:10:00-04:00"
+updated: "2026-07-31T13:45:00-04:00"
+
+project:
+  name: "Gratog"
+  repo: "/data/data/com.termux/files/home/.openclaw/workspace/Gratog"
+  branch: "main"
+  head: "53652f9f"
+  dirty: true
+  dirty_files: 61
+  untracked_new: 8
+
+objective: "OPEE remediation for Gratog e-commerce application"
+status: "IN_PROGRESS"
+
+next_action: "Run next build on laptop worker or CI to verify compilation; then run full E2E tests"
+
+phases:
+  - name: "Phase 2-3: Code changes"
+    status: DONE
+    evidence: "61 files changed, 531 insertions, 662 deletions"
+    completed: "2026-07-31T12:10:00-04:00"
+
+  - name: "Phase 4: Build verification"
+    status: NOT_STARTED
+    blockers: ["No build authority on Termux/PRoot; requires laptop worker or CI"]
+
+  - name: "Phase 5: E2E testing"
+    status: NOT_STARTED
+    blockers: ["Requires deployed preview environment"]
+
+  - name: "Phase 6: Independent verification"
+    status: NOT_STARTED
+    blockers: ["Requires Phase 4 completion"]
+
+blockers:
+  - id: "build-auth"
+    description: "next build cannot run on Termux or PRoot (hangs, no tsc)"
+    resolution: "Route to laptop worker or Vercel preview build"
+    required_by: "Phase 4"
+
+  - id: "c0-resend"
+    description: "Resend domain verification requires owner dashboard access"
+    resolution: "Owner action required"
+    required_by: "Final deployment"
+
+  - id: "square-manual"
+    description: "4 invalid/duplicate products need manual archival in Square Dashboard"
+    resolution: "Owner action required"
+    required_by: "LIVE-06 full verification"
+
+approval_gates:
+  - action: "Commit and push to origin/main"
+    reason: "61 files of uncommitted OPEE remediation changes"
+    status: PENDING
+
+  - action: "Deploy to Vercel production"
+    reason: "Production deployment requires owner approval"
+    status: PENDING
+
+  - action: "Restart OpenClaw gateway"
+    reason: "Service restart requires owner approval"
+    status: PENDING
+
+evidence_summary:
+  C0: "BLOCKED_EXTERNAL — Resend domain verification"
+  C2: "NOT_TESTED — JWT-only auth applied; E2E auth tests needed"
+  C3: "NOT_TESTED — Server-authoritative pricing confirmed; negative tests needed"
+  C4: "NOT_TESTED — Pre-send ledger + consolidation complete; E2E needed"
+  H5: "NOT_TESTED — Default-deny diagnostics applied; production build verification needed"
+  LIVE_01: "NOT_TESTED — Event name fixed; browser E2E needed"
+  LIVE_02: "NOT_TESTED — Price authority fix applied; negative tests needed"
+  LIVE_05: "NOT_TESTED — Shipping removed from 30+ files; browser E2E needed"
+  LIVE_06: "NOT_TESTED — Canonical mapping created; live catalog verification needed"
+  ADMIN_04: "NOT_TESTED — requireCronSecret() created; cron route E2E needed"
+  M1: "NOT_TESTED — Competing routes return 410; call search + E2E needed"
+  M2: "NOT_TESTED — All 12 callers migrated; E2E needed"

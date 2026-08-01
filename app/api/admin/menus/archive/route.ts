@@ -1,7 +1,8 @@
 export const dynamic = 'force-dynamic';
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminSession } from '@/lib/auth/unified-admin';
+import { requireCronSecret } from '@/lib/cron-auth';
 import { logger } from '@/lib/logger';
 import { isExpiredInZone, getTodayStart } from '@/lib/menus/week-utils';
 import { connectToDatabase } from '@/lib/db-optimized';
@@ -12,33 +13,31 @@ const COLLECTION_NAME = 'menus';
  * POST /api/admin/menus/archive
  * Cron-safe endpoint to archive expired menus.
  *
- * Authorization: CRON_SECRET or ADMIN_API_TOKEN via Bearer header or body secret.
- * Idempotent; safe to call from Vercel cron.
+ * OPEE ADMIN-04: Authorization uses requireCronSecret() for machine-to-machine
+ * cron calls, or requireAdminSession() for interactive admin access.
+ * ADMIN_API_TOKEN is no longer accepted; use CRON_SECRET for cron jobs.
  */
-export async function POST(request: Request) {
-  let authOk = false;
-  const cronSecret = process.env.CRON_SECRET;
-  const adminToken = process.env.ADMIN_API_TOKEN;
-
-  const authHeader = request.headers.get('authorization') || '';
-  const bearer = authHeader.replace(/^Bearer\s+/i, '');
-
-  if ((cronSecret && bearer === cronSecret) || (adminToken && bearer === adminToken)) {
-    authOk = true;
-  } else {
-    try {
-      const json = await request.clone().json();
-      if ((cronSecret && json.secret === cronSecret) || (adminToken && json.secret === adminToken)) {
-        authOk = true;
-      }
-    } catch {
-      // ignore parse failure
-    }
+export async function POST(request: NextRequest) {
+  // OPEE ADMIN-04: Parse body for cron-secret-in-body auth before consuming the stream.
+  let body: Record<string, unknown> | undefined;
+  try {
+    body = await request.clone().json();
+  } catch {
+    // No JSON body or parse failure — body auth is optional.
   }
 
-  if (!authOk) {
-    const session = await requireAdminSession(request);
-    if (!session) {
+  // Try cron secret first (machine-to-machine), including body.secret path
+  const cronResult = requireCronSecret(request, body);
+  if (cronResult === null) {
+    // Cron auth passed, proceed
+  } else {
+    // Cron auth failed, try admin session (interactive)
+    try {
+      const session = await requireAdminSession(request);
+      if (!session) {
+        return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      }
+    } catch {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
   }

@@ -80,11 +80,7 @@ export const MARKET_CONFIG = {
     location: 'Sandy Springs',
     allowsPreorder: true,
   },
-  shipping: {
-    id: 'shipping',
-    name: 'Shipping',
-    allowsPreorder: false,
-  },
+  // OPEE LIVE-05: Shipping removed — business does not offer shipping
   delivery: {
     id: 'delivery',
     name: 'Local Delivery',
@@ -165,7 +161,8 @@ export function validateCartForFulfillment(
     } else if (fulfillmentType.includes('delivery')) {
       marketKey = 'delivery';
     } else if (fulfillmentType.includes('shipping')) {
-      marketKey = 'shipping';
+      // OPEE LIVE-05: Shipping removed — default to delivery
+      marketKey = 'delivery';
     }
   }
   
@@ -181,8 +178,8 @@ export function validateCartForFulfillment(
   const marketExclusiveItems = cart.filter(item => item.marketExclusive || isMarketExclusive(item));
   
   if (marketExclusiveItems.length > 0) {
-    // If this is shipping/delivery, block it
-    if (['shipping', 'delivery'].includes(marketKey)) {
+    // OPEE LIVE-05: Shipping removed — only delivery can be blocked for market-exclusive items
+    if (['delivery'].includes(marketKey)) {
       const itemNames = marketExclusiveItems.map((i: any) => i.name).join(', ');
       return {
         valid: false,

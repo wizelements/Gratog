@@ -45,7 +45,8 @@ export const GET = withAdminMiddleware(
       
       // Fulfillment type filter
       if (fulfillmentType) {
-        const allowedTypes = ['pickup', 'delivery', 'shipping'];
+        // OPEE LIVE-05: Shipping removed — business does not offer shipping
+        const allowedTypes = ['pickup', 'delivery'];
         if (allowedTypes.includes(fulfillmentType)) {
           query.fulfillmentType = fulfillmentType;
         }

@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     let fulfillmentValidation = { valid: true, error: null };
     if (fulfillmentType && marketExclusiveCount > 0) {
       const marketKey = marketId || extractMarketFromFulfillment(fulfillmentType);
-      if (['shipping', 'delivery'].includes(marketKey)) {
+      if (['delivery'].includes(marketKey)) {
         const exclusiveNames = normalizedItems
           .filter(i => i.marketExclusive)
           .map(i => i.name)
@@ -143,8 +143,6 @@ function extractMarketFromFulfillment(fulfillmentType: string): string {
   if (fulfillmentType.includes('delivery')) {
     return 'delivery';
   }
-  if (fulfillmentType.includes('shipping')) {
-    return 'shipping';
-  }
+  // OPEE LIVE-05: Shipping removed — default to 'serenbe' instead of 'shipping'
   return 'serenbe'; // default
 }

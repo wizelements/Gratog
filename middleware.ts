@@ -58,12 +58,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Cookie is the canonical source of admin identity. The legacy
-  // Authorization: Bearer <API_KEY> path is intentionally removed — admin
-  // identity is now ALWAYS a signed JWT (lib/auth/unified-admin.ts).
-  const token =
-    request.cookies.get(ADMIN_COOKIE_NAME)?.value ||
-    request.headers.get('authorization')?.replace('Bearer ', '');
+  // Cookie is the canonical source of admin identity.
+  // The legacy Authorization: Bearer <API_KEY> path is removed.
+  // Admin identity is ALWAYS a signed JWT issued by lib/auth/unified-admin.ts.
+  // The Authorization header is accepted ONLY for JWT tokens (not API keys),
+  // to support programmatic admin access via Bearer JWT.
+  const cookieToken = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
+  const headerToken = request.headers.get('authorization')?.replace('Bearer ', '');
+
+  // Prefer cookie; fall back to Authorization header only if it looks like a JWT
+  // (three dot-separated segments). Raw API keys must never be accepted here.
+  let token: string | undefined;
+  if (cookieToken) {
+    token = cookieToken;
+  } else if (headerToken && headerToken.split('.').length === 3) {
+    token = headerToken;
+  }
 
   const session = token ? await verifyAdminToken(token) : null;
 

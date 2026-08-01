@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       discounts: rewardsWithAffordability.filter((r: any) => 
         r.rewardType === 'discount_fixed' || r.rewardType === 'discount_percent'
       ),
-      shipping: rewardsWithAffordability.filter((r: any) => 
+      delivery: rewardsWithAffordability.filter((r: any) => 
         r.rewardType === 'free_shipping'
       ),
       products: rewardsWithAffordability.filter((r: any) => 

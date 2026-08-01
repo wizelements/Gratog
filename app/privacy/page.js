@@ -38,7 +38,7 @@ export default function PrivacyPage() {
               <h3 className="font-semibold mb-2">Personal Information</h3>
               <ul className="list-disc list-inside space-y-1 text-sm">
                 <li>Name, email address, and phone number if you provide one when you place an order</li>
-                <li>Delivery or shipping address for orders that require fulfillment to an address</li>
+                <li>Delivery address for orders that require local delivery</li>
                 <li>Payment information processed securely through Square</li>
                 <li>Order history and preferences</li>
               </ul>

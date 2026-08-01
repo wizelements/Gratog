@@ -98,7 +98,7 @@ export default function TermsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Pickup, Delivery, and Shipping</CardTitle>
+            <CardTitle>Pickup & Delivery</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -122,10 +122,12 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">Shipping</h3>
+              <h3 className="font-semibold mb-2">Local Delivery</h3>
               <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>Eligible items may be shipped nationwide when shipping is selected at checkout</li>
-                <li>Shipping costs and estimated timing are displayed before payment</li>
+                <li>Delivery available within designated Atlanta metro zones</li>
+                <li>Delivery fees vary by location and are calculated at checkout</li>
+                <li>Delivery times are estimates and may vary due to traffic or weather</li>
+                <li>Someone must be available to receive the delivery</li>
                 <li>Perishable or preorder-only items may be limited to market pickup</li>
               </ul>
             </div>
