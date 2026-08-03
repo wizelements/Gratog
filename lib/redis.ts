@@ -11,34 +11,52 @@ interface CacheEntry {
 const memoryCache = new Map<string, CacheEntry>();
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
+// Serverless safety: hard cap on in-memory structures to prevent unbounded
+// growth across cold starts. FIFO eviction when over capacity.
+const MAX_MEMORY_CACHE_SIZE = 5000;
+const MAX_RATE_LIMIT_STORE_SIZE = 10000;
+
+function evictExcess(map: Map<string, any>, maxSize: number): number {
+  if (map.size <= maxSize) return 0;
+  const excess = map.size - maxSize;
+  let removed = 0;
+  for (const key of map.keys()) {
+    if (removed >= excess) break;
+    map.delete(key);
+    removed++;
+  }
+  return removed;
+}
+
 // Cache operations
 export class Cache {
   static set(key: string, value: any, ttlSeconds: number = 300): void {
     const expiry = Date.now() + (ttlSeconds * 1000);
     memoryCache.set(key, { value, expiry });
+    evictExcess(memoryCache, MAX_MEMORY_CACHE_SIZE);
   }
-  
+
   static get(key: string): any {
     const entry = memoryCache.get(key);
     if (!entry) return null;
-    
+
     if (Date.now() > entry.expiry) {
       memoryCache.delete(key);
       return null;
     }
-    
+
     return entry.value;
   }
-  
+
   static delete(key: string): void {
     memoryCache.delete(key);
   }
-  
+
   static clear(): void {
     memoryCache.clear();
   }
-  
-  // Clean expired entries
+
+  // Clean expired entries and enforce cap
   static cleanup(): void {
     const now = Date.now();
     for (const [key, entry] of memoryCache.entries()) {
@@ -46,6 +64,7 @@ export class Cache {
         memoryCache.delete(key);
       }
     }
+    evictExcess(memoryCache, MAX_MEMORY_CACHE_SIZE);
   }
 }
 
@@ -54,27 +73,28 @@ export class RateLimit {
   static check(key: string, limit: number, windowSeconds: number): boolean {
     const now = Date.now();
     const windowMs = windowSeconds * 1000;
-    
+
     let bucket = rateLimitStore.get(key);
-    
+
     if (!bucket || now > bucket.resetTime) {
       // Create new bucket or reset expired one
       bucket = { count: 0, resetTime: now + windowMs };
       rateLimitStore.set(key, bucket);
     }
-    
+
     if (bucket.count >= limit) {
       return false; // Rate limit exceeded
     }
-    
+
     bucket.count++;
+    evictExcess(rateLimitStore, MAX_RATE_LIMIT_STORE_SIZE);
     return true;
   }
-  
+
   static reset(key: string): void {
     rateLimitStore.delete(key);
   }
-  
+
   // ISS-003 FIX: getStatus now requires limit param instead of hardcoding 100
   static getStatus(key: string, limit: number = 100): { count: number; remaining: number; resetTime: number } | null {
     const now = Date.now();
@@ -82,7 +102,7 @@ export class RateLimit {
     if (!bucket || now > bucket.resetTime) {
       return { count: 0, remaining: limit, resetTime: Date.now() + 60000 };
     }
-    
+
     return {
       count: bucket.count,
       remaining: Math.max(0, limit - bucket.count),

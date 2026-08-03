@@ -91,23 +91,50 @@ interface MemoryEntry {
 
 const memoryStore = new Map<string, MemoryEntry>();
 
-// Periodic cleanup to prevent memory leaks
-setInterval(() => {
+// Do NOT use setInterval in module scope for serverless environments.
+// Each cold start creates a new interval that never gets cleaned up,
+// causing memory leaks over time. Cleanup is performed lazily on access
+// and bounded by MAX_MEMORY_STORE_SIZE below.
+
+const MAX_MEMORY_STORE_SIZE = 10000;
+
+/**
+ * Clean expired entries and enforce a hard size cap to prevent unbounded
+ * growth in serverless functions. Eviction is FIFO when over capacity.
+ */
+function cleanupMemoryStore(): void {
   const now = Date.now();
   for (const [key, entry] of memoryStore.entries()) {
     if (now > entry.resetAt) {
       memoryStore.delete(key);
     }
   }
-}, 60 * 1000); // Clean every minute
+  if (memoryStore.size > MAX_MEMORY_STORE_SIZE) {
+    const excess = memoryStore.size - MAX_MEMORY_STORE_SIZE;
+    let removed = 0;
+    for (const key of memoryStore.keys()) {
+      if (removed >= excess) break;
+      memoryStore.delete(key);
+      removed++;
+    }
+    logger.warn('REDIS', 'Memory rate-limit store exceeded cap; evicted entries', {
+      evicted: removed,
+      cap: MAX_MEMORY_STORE_SIZE,
+    });
+  }
+}
 
 /**
  * Get rate limit from memory store
  */
 function getMemoryRateLimit(key: string, config: RateLimitConfig): RateLimitResult {
+  // Lazy cleanup: no module-scope interval in serverless, so we prune
+  // expired entries and enforce a hard cap on every access.
+  cleanupMemoryStore();
+
   const now = Date.now();
   const entry = memoryStore.get(key);
-  
+
   if (!entry || now > entry.resetAt) {
     // New window
     const resetAt = now + config.windowMs;

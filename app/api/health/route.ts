@@ -43,10 +43,15 @@ export async function GET() {
     }
     
     // Get memory usage
+    // Use rss as the denominator because it reflects the process's actual
+    // memory footprint in the container. heapTotal/heapUsed naturally run
+    // very close together after GC and produce false-positive "high memory"
+    // alerts in serverless environments.
     const memoryUsage = process.memoryUsage();
-    const totalMemory = memoryUsage.heapTotal;
+    const totalMemory = memoryUsage.rss;
     const usedMemory = memoryUsage.heapUsed;
-    
+    const memoryPercentage = totalMemory > 0 ? Math.round((usedMemory / totalMemory) * 100) : 0;
+
     // Determine overall status
     // Note: We use 'degraded' instead of 'unhealthy' for DB issues
     // to allow smoke tests to pass while still reporting the problem
@@ -54,12 +59,11 @@ export async function GET() {
     if (!databaseHealthy) {
       status = 'degraded';
     }
-    // Vercel serverless functions typically run with ~128MB-1024MB memory
-    // Using heap metrics is misleading here - focus on actual server metrics
-    // Only flag if memory exceeds 95% (more realistic threshold for serverless)
-    if (usedMemory / totalMemory > 0.95) {
+    // Flag only when heapUsed is a large fraction of the process RSS. This
+    // is a more realistic signal of memory pressure than heapUsed/heapTotal.
+    if (memoryPercentage > 85) {
       status = 'degraded';
-      errors.push('High memory usage');
+      errors.push(`High memory usage: ${memoryPercentage}%`);
     }
     
     const health: HealthStatus = {
