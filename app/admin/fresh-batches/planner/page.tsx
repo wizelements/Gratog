@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Wrench } from 'lucide-react';
+import { ArrowLeft, Settings2 } from 'lucide-react';
 
 export default function BatchPlannerPage() {
   return (
@@ -24,7 +24,7 @@ export default function BatchPlannerPage() {
           </CardHeader>
           <CardContent className="space-y-4 text-stone-700">
             <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
-              <Wrench className="mt-0.5 h-5 w-5 flex-shrink-0" aria-hidden="true" />
+              <Settings2 className="mt-0.5 h-5 w-5 flex-shrink-0" aria-hidden="true" />
               <div>
                 <p className="font-semibold">Planner UI is in progress.</p>
                 <p className="mt-1 text-sm">
