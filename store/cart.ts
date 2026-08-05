@@ -99,8 +99,7 @@ export const useCart = create<CartState>()(
       subtotal: () => get().items.reduce((total, item) => total + (item.price * item.quantity), 0),
     }),
     {
-      name: 'tog_cart_v3',
-      version: 3,
+      name: 'tog_cart_engine_v1',
       storage: createJSONStorage(() => createSafeStorage()),
     }
   )

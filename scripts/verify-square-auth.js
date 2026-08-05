@@ -9,7 +9,9 @@ async function main() {
   const env = (process.env.SQUARE_ENVIRONMENT || 'sandbox').trim().toLowerCase();
   
   if (!token) {
-    console.error(`${LOG_PREFIX} ❌ SQUARE_ACCESS_TOKEN not set`);
+    console.error(`${LOG_PREFIX} ❌ SQUARE_ACCESS_TOKEN not set or empty`);
+    console.error(`${LOG_PREFIX}   Shell may see it, but it must be exported for Node to read it.`);
+    console.error(`${LOG_PREFIX}   Run: export SQUARE_ACCESS_TOKEN=your_token`);
     process.exit(1);
   }
   
