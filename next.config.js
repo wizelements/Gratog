@@ -1,7 +1,3 @@
-  enabled: process.env.ANALYZE === 'true',
-});
-
-const isNonProductionDeployment = process.env.VERCEL_ENV !== 'production';
 
 const nextConfig = {
   // Next.js 15 + Turbopack compatible configuration
