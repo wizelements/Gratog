@@ -781,6 +781,9 @@ export const PRODUCTS: MarketProduct[] = [
   archivedProduct('apple-cranberry', 'Apple Cranberry', 'Apple Cranberry is archived as an older seasonal drink so current refreshers stay accurate.'),
   archivedProduct('grateful-guardian', 'Grateful Guardian', 'Grateful Guardian is archived as legacy product history. Elderberry Ginger Shot is the current elderberry-forward shot in the weekly menu.'),
   archivedProduct('rejuvenate', 'Rejuvenate', 'Rejuvenate is archived as a discontinued catalog item and should not appear in the current weekly market menu.'),
+  archivedProduct('berry-zinger', 'Berry Zinger', 'Berry Zinger is archived because the Square catalog entry lacks required storefront content (description, image, ingredients, benefits).'),
+  archivedProduct('horchata', 'Horchata', 'Horchata is archived because the Square catalog entry lacks required storefront content (description, image, ingredients, benefits).'),
+  archivedProduct('cream-topping', 'Cream Topping', 'Cream Topping is archived because it is an incomplete Square modifier/add-on item without required storefront content.'),
 ];
 
 const CATEGORY_LABELS: Record<ProductCategory, string> = {
