@@ -1,5 +1,4 @@
   enabled: process.env.ANALYZE === 'true',
-  openAnalyzer: false, // Don't auto-open browser
 });
 
 const isNonProductionDeployment = process.env.VERCEL_ENV !== 'production';
