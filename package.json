@@ -86,7 +86,9 @@
     "mongoose": "^8.4.0",
     "bcryptjs": "^2.4.3",
     "nanoid": "^5.0.7",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "twilio": "^5.13.1",
+    "posthog-js": "^1.412.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
