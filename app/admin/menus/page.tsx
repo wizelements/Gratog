@@ -42,10 +42,10 @@ import {
 } from 'lucide-react';
 import { createMenuSchema } from '@/lib/menus/schema';
 import type { AdminMenu } from '@/lib/menus/types';
-import type { CreateMenuInput } from '@/lib/menus/schema';
+import type { CreateMenuFormInput } from '@/lib/menus/schema';
 import type { AdminMarket } from '@/lib/markets/types';
 
-const INITIAL_FORM_STATE = {
+const INITIAL_FORM_STATE: CreateMenuFormInput = {
   title: '',
   description: '',
   imageUrl: '',
@@ -59,7 +59,7 @@ const INITIAL_FORM_STATE = {
   isArchived: false,
   linkedProducts: [],
   seasonalTags: [],
-} as unknown as CreateMenuInput;
+};
 
 interface FormErrors {
   [key: string]: string | undefined;
@@ -97,7 +97,7 @@ export default function MenusPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingMenu, setEditingMenu] = useState<AdminMenu | null>(null);
   const [menuToDelete, setMenuToDelete] = useState<AdminMenu | null>(null);
-  const [formData, setFormData] = useState<CreateMenuInput>(INITIAL_FORM_STATE);
+  const [formData, setFormData] = useState<CreateMenuFormInput>(INITIAL_FORM_STATE);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
 

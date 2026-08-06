@@ -115,6 +115,7 @@ export const setActiveMenuSchema = z.object({
 });
 
 export type CreateMenuInput = z.infer<typeof createMenuSchema>;
+export type CreateMenuFormInput = z.input<typeof createMenuSchema>;
 export type UpdateMenuInput = z.infer<typeof updateMenuSchema>;
 export type DeleteMenuInput = z.infer<typeof deleteMenuSchema>;
 export type SetActiveMenuInput = z.infer<typeof setActiveMenuSchema>;
