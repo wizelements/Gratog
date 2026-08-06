@@ -115,7 +115,21 @@ export const setActiveMenuSchema = z.object({
 });
 
 export type CreateMenuInput = z.infer<typeof createMenuSchema>;
-export type CreateMenuFormInput = z.input<typeof createMenuSchema>;
+export type CreateMenuFormInput = {
+  title: string;
+  description: string;
+  imageUrl: string;
+  thumbnailUrl: string;
+  canvaUrl: string;
+  printUrl: string;
+  marketId: string;
+  weekStart: string;
+  weekEnd: string;
+  isActive: boolean;
+  isArchived: boolean;
+  linkedProducts: string[];
+  seasonalTags: string[];
+};
 export type UpdateMenuInput = z.infer<typeof updateMenuSchema>;
 export type DeleteMenuInput = z.infer<typeof deleteMenuSchema>;
 export type SetActiveMenuInput = z.infer<typeof setActiveMenuSchema>;
