@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { ZodError } from 'zod';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import { rateLimitByIp } from '@/lib/rate-limit';
@@ -19,6 +20,39 @@ import {
 import { sendRequestReceivedEmail } from '@/lib/batches/email-templates';
 import { sendOwnerAlert } from '@/lib/owner-alerts';
 import type { FreshBatchRequest } from '@/lib/batches/types';
+
+const FDA_DISCLAIMER = 'These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease.';
+
+function getMarketDisplayName(marketId: string): string {
+  const names: Record<string, string> = {
+    serenbe: 'Serenbe Farmers Market',
+    dunwoody: 'Dunwoody Farmers Market',
+  };
+  return names[marketId] || marketId;
+}
+
+function formatQuantity(quantity: number, unit: string): string {
+  const labels: Record<string, string> = {
+    bottle_16oz: 'one 16 oz bottle',
+    multi_bottle: `${quantity} 16 oz bottles`,
+    half_gallon: 'half gallon',
+    gallon: 'one gallon',
+    two_gallons: 'two gallons',
+    three_plus_gallons: `${quantity} gallons`,
+    sample_interest: 'market samples',
+  };
+  return labels[unit] || `${quantity} ${unit}`;
+}
+
+function customerMessage(status: FreshBatchRequest['status']): string {
+  const messages: Record<string, string> = {
+    requested: 'Request received. We will email you once the batch is approved.',
+    collecting_demand: 'We are collecting more demand for this flavor before scheduling a batch.',
+    owner_review: 'We are reviewing the details and will confirm by email.',
+    awaiting_threshold: 'More demand is needed before we can schedule this batch.',
+  };
+  return messages[status] || 'We received your request.';
+}
 
 /**
  * Create a fresh batch request.
@@ -47,7 +81,26 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const parsed = normalizeRequestInput(raw);
+  let parsed: FreshBatchRequestInput;
+  try {
+    parsed = normalizeRequestInput(raw);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const fieldErrors = error.errors.map((e) => ({ path: e.path.join('.'), message: e.message }));
+      logger.warn('FreshBatchRequest', 'Validation failed', { fieldErrors });
+      return NextResponse.json(
+        { success: false, error: 'Invalid request', fieldErrors },
+        { status: 400 }
+      );
+    }
+    logger.error('FreshBatchRequest', 'Unexpected validation error', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return NextResponse.json(
+      { success: false, error: 'We could not process your request. Please try again shortly.' },
+      { status: 400 }
+    );
+  }
 
   // Reject health-claim language in notes before persisting.
   if (parsed.notes && containsHealthClaims(parsed.notes)) {
@@ -110,6 +163,7 @@ export async function POST(request: NextRequest) {
         quantity: formatQuantity(persisted.quantity, persisted.quantityUnit),
         marketName,
         status: persisted.status,
+        fdaDisclaimer: FDA_DISCLAIMER,
       });
     } catch (emailError) {
       logger.warn('FreshBatchRequest', 'Request persisted but confirmation email failed', {
@@ -158,41 +212,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     logger.error('FreshBatchRequest', 'Failed to persist fresh batch request', {
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
     });
     return NextResponse.json(
       { success: false, error: 'We could not save your request. Please try again shortly.' },
       { status: 503 }
     );
   }
-}
-
-function getMarketDisplayName(marketId: string): string {
-  const names: Record<string, string> = {
-    serenbe: 'Serenbe Farmers Market',
-    dunwoody: 'Dunwoody Farmers Market',
-  };
-  return names[marketId] || marketId;
-}
-
-function formatQuantity(quantity: number, unit: string): string {
-  const labels: Record<string, string> = {
-    bottle_16oz: 'one 16 oz bottle',
-    multi_bottle: `${quantity} 16 oz bottles`,
-    half_gallon: 'half gallon',
-    gallon: 'one gallon',
-    two_gallons: 'two gallons',
-    three_plus_gallons: `${quantity} gallons`,
-    sample_interest: 'market samples',
-  };
-  return labels[unit] || `${quantity} ${unit}`;
-}
-
-function customerMessage(status: FreshBatchRequest['status']): string {
-  const messages: Record<string, string> = {
-    requested: 'Request received. We will email you once the batch is approved.',
-    collecting_demand: 'We are collecting more demand for this flavor before scheduling a batch.',
-    owner_review: 'We are reviewing the details and will confirm by email.',
-    awaiting_threshold: 'More demand is needed before we can schedule this batch.',
-  };
-  return messages[status] || 'We received your request.';
 }
