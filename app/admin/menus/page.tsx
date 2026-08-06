@@ -59,7 +59,7 @@ const INITIAL_FORM_STATE = {
   isArchived: false,
   linkedProducts: [],
   seasonalTags: [],
-} as CreateMenuInput;
+} as unknown as CreateMenuInput;
 
 interface FormErrors {
   [key: string]: string | undefined;
