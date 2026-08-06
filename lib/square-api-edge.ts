@@ -95,20 +95,22 @@ export async function getSquareCatalog(options: {
     const items: CatalogItem[] = (data.objects || [])
       .filter((obj: any) => obj.type === 'ITEM')
       .map((obj: any) => {
-        const item = obj.itemData || {};
-        const variation = item.variations?.[0]?.itemVariationData || {};
+        const item = obj.item_data || obj.itemData || {};
+        const variations = item.variations || [];
+        const variation = variations[0]?.item_variation_data || variations[0]?.itemVariationData || {};
+        const priceMoney = variation.price_money || variation.priceMoney || {};
         
         return {
           id: obj.id,
           name: item.name || 'Unnamed Product',
-          description: item.description,
-          price: variation.priceMoney?.amount ? parseInt(variation.priceMoney.amount) / 100 : 0,
-          currency: variation.priceMoney?.currency || 'USD',
-          imageUrl: item.imageIds?.[0] 
-            ? `${baseUrl}/v2/catalog/object/${item.imageIds[0]}` 
+          description: item.description || item.description_plaintext,
+          price: priceMoney.amount ? parseInt(String(priceMoney.amount)) / 100 : 0,
+          currency: priceMoney.currency || 'USD',
+          imageUrl: item.image_ids?.[0] || item.imageIds?.[0]
+            ? `${baseUrl}/v2/catalog/object/${item.image_ids?.[0] || item.imageIds?.[0]}` 
             : undefined,
-          category: item.categoryId,
-          available: !item.skipModifierScreen,
+          category: item.category_id || item.categoryId,
+          available: item.present_at_all_locations !== undefined ? item.present_at_all_locations : !item.skipModifierScreen,
         };
       })
       .filter((item: CatalogItem) => {
@@ -155,20 +157,22 @@ export async function getSquareProduct(id: string): Promise<CatalogItem | null> 
     
     if (!obj || obj.type !== 'ITEM') return null;
 
-    const item = obj.itemData || {};
-    const variation = item.variations?.[0]?.itemVariationData || {};
+    const item = obj.item_data || obj.itemData || {};
+    const variations = item.variations || [];
+    const variation = variations[0]?.item_variation_data || variations[0]?.itemVariationData || {};
+    const priceMoney = variation.price_money || variation.priceMoney || {};
     
     const product: CatalogItem = {
       id: obj.id,
       name: item.name || 'Unnamed Product',
-      description: item.description,
-      price: variation.priceMoney?.amount ? parseInt(variation.priceMoney.amount) / 100 : 0,
-      currency: variation.priceMoney?.currency || 'USD',
-      imageUrl: item.imageIds?.[0] 
-        ? `${baseUrl}/v2/catalog/object/${item.imageIds[0]}` 
+      description: item.description || item.description_plaintext,
+      price: priceMoney.amount ? parseInt(String(priceMoney.amount)) / 100 : 0,
+      currency: priceMoney.currency || 'USD',
+      imageUrl: item.image_ids?.[0] || item.imageIds?.[0]
+        ? `${baseUrl}/v2/catalog/object/${item.image_ids?.[0] || item.imageIds?.[0]}` 
         : undefined,
-      category: item.categoryId,
-      available: !item.skipModifierScreen,
+      category: item.category_id || item.categoryId,
+      available: item.present_at_all_locations !== undefined ? item.present_at_all_locations : !item.skipModifierScreen,
     };
 
     setCached(cacheKey, product, 60);
