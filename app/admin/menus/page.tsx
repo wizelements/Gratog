@@ -45,7 +45,7 @@ import type { AdminMenu } from '@/lib/menus/types';
 import type { CreateMenuInput } from '@/lib/menus/schema';
 import type { AdminMarket } from '@/lib/markets/types';
 
-const INITIAL_FORM_STATE: CreateMenuInput = {
+const INITIAL_FORM_STATE = {
   title: '',
   description: '',
   imageUrl: '',
@@ -59,7 +59,7 @@ const INITIAL_FORM_STATE: CreateMenuInput = {
   isArchived: false,
   linkedProducts: [],
   seasonalTags: [],
-};
+} as CreateMenuInput;
 
 interface FormErrors {
   [key: string]: string | undefined;
