@@ -1,81 +1,31 @@
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
-import { 
-  getShippingRates, 
-  validateAddress, 
-  calculatePackageDimensions,
-  type ShippingAddress 
-} from '@/lib/shipping-service';
-import { createLogger } from '@/lib/logger';
+import { NextResponse } from 'next/server';
 
-const logger = createLogger('ShippingRatesAPI');
-
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { address, items } = body;
-
-    // Validate address input
-    if (!address || !address.street || !address.city || !address.state || !address.zip) {
-      return NextResponse.json(
-        { error: 'Complete address is required (street, city, state, zip)' },
-        { status: 400 }
-      );
+/**
+ * DEPRECATED — shipping is not offered by this business.
+ * OPEE LIVE-05: Shipping removed. Taste of Gratitude does not offer shipping.
+ * This endpoint now returns 410 Gone.
+ */
+function gone() {
+  return new NextResponse(
+    JSON.stringify({
+      success: false,
+      error: 'This endpoint is no longer available. Shipping is not offered.',
+      code: 'SHIPPING_NOT_OFFERED',
+    }),
+    {
+      status: 410,
+      headers: {
+        'Content-Type': 'application/json',
+        'Deprecation': 'true',
+        'Sunset': 'Sat, 31 May 2026 00:00:00 GMT',
+      },
     }
-
-    // Validate address format
-    const addressValidation = await validateAddress(address as ShippingAddress);
-    
-    if (!addressValidation.valid) {
-      return NextResponse.json(
-        { 
-          error: 'Invalid address',
-          details: addressValidation.errors 
-        },
-        { status: 400 }
-      );
-    }
-
-    // Use normalized address if available
-    const shippingAddress = addressValidation.normalized || address;
-
-    // Calculate package dimensions from cart items
-    const packageDimensions = items && items.length > 0
-      ? calculatePackageDimensions(items)
-      : undefined;
-
-    // Get shipping rates
-    const rates = await getShippingRates(shippingAddress, packageDimensions);
-
-    logger.info('Shipping rates retrieved', { 
-      zip: address.zip, 
-      rateCount: rates.length 
-    });
-
-    return NextResponse.json({
-      success: true,
-      address: shippingAddress,
-      rates: rates.sort((a, b) => a.rate - b.rate), // Sort by price
-      packageWeight: packageDimensions?.weight
-    });
-  } catch (error) {
-    logger.error('Failed to get shipping rates', { 
-      error: (error as Error).message 
-    });
-
-    return NextResponse.json(
-      { error: 'Failed to calculate shipping rates' },
-      { status: 500 }
-    );
-  }
+  );
 }
 
-export async function GET() {
-  return NextResponse.json({
-    endpoint: 'shipping-rates',
-    method: 'POST',
-    requiredFields: ['address.street', 'address.city', 'address.state', 'address.zip'],
-    optionalFields: ['items[]']
-  });
-}
+export async function GET() { return gone(); }
+export async function POST() { return gone(); }
+export async function PUT() { return gone(); }
+export async function DELETE() { return gone(); }

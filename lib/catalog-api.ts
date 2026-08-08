@@ -112,11 +112,23 @@ export function useHealth() {
   };
 }
 
-// Admin API functions
+// ============================================================================
+// OPEE ADMIN-04: Admin API functions using NEXT_PUBLIC_ADMIN_API_KEY are
+// DEPRECATED. Client-side env vars leak admin credentials to the browser.
+// New code must use server-side API routes with proper auth (requireAdminSession
+// or requireCronSecret). These functions are retained for backward compatibility
+// only and will be removed in a future release.
+// ============================================================================
+
+/**
+ * @deprecated OPEE ADMIN-04 — Uses NEXT_PUBLIC_ADMIN_API_KEY which leaks to the
+ * browser. Use a server-side API route with requireAdminSession() instead.
+ */
 export async function reingestProduct(url: string, force: boolean = false): Promise<any> {
+  // OPEE ADMIN-04: NEXT_PUBLIC_ADMIN_API_KEY is deprecated; retained for compat only.
   const apiKey = process.env.NEXT_PUBLIC_ADMIN_API_KEY;
   if (!apiKey) {
-    throw new Error('Admin API key not configured');
+    throw new Error('Admin API key not configured (deprecated: use server-side auth)');
   }
   
   const response = await fetch(`${API_BASE}/admin/reingest`, {
@@ -136,10 +148,15 @@ export async function reingestProduct(url: string, force: boolean = false): Prom
   return response.json();
 }
 
+/**
+ * @deprecated OPEE ADMIN-04 — Uses NEXT_PUBLIC_ADMIN_API_KEY which leaks to the
+ * browser. Use a server-side API route with requireAdminSession() instead.
+ */
 export async function reindexCatalog(full: boolean = false, category?: string): Promise<any> {
+  // OPEE ADMIN-04: NEXT_PUBLIC_ADMIN_API_KEY is deprecated; retained for compat only.
   const apiKey = process.env.NEXT_PUBLIC_ADMIN_API_KEY;
   if (!apiKey) {
-    throw new Error('Admin API key not configured');
+    throw new Error('Admin API key not configured (deprecated: use server-side auth)');
   }
   
   const response = await fetch(`${API_BASE}/admin/reindex`, {

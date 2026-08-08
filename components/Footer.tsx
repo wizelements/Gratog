@@ -16,7 +16,7 @@ export default function Footer() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
             <div className="flex items-center gap-2 text-emerald-800">
               <Mail className="h-5 w-5 text-emerald-600" />
-              <span className="font-medium text-sm">Get weekly menu drops, pickup reminders, and restock notes</span>
+              <span className="font-medium text-sm">Get the weekly menu, pickup details, and restock updates by email</span>
             </div>
             <NewsletterSignup variant="inline" />
           </div>
@@ -89,15 +89,7 @@ export default function Footer() {
                   Shop
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/wholesale"
-                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
-                >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
-                  Wholesale
-                </Link>
-              </li>
+              {/* OPEE LIVE-05: Wholesale link removed — business does not offer wholesale publicly */}
               <li>
                 <Link 
                   href="/about" 
@@ -168,15 +160,7 @@ export default function Footer() {
                   Privacy Policy
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/policies#shipping"
-                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
-                >
-                  <Truck className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
-                  Shipping Policy
-                </Link>
-              </li>
+
               <li>
                 <Link
                   href="/policies#refunds"

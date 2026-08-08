@@ -27,7 +27,7 @@ const inter = Inter({
 export const metadata = {
   metadataBase: new URL('https://tasteofgratitude.shop'),
   title: 'Taste of Gratitude | Small-Batch Sea Moss & Market Fresh Drinks',
-  description: 'Founder-led Atlanta market brand for small-batch sea moss gels, fresh drinks, shots, weekly market menus, pickup, delivery, and eligible shipping.',
+  description: 'Founder-led Atlanta market brand for small-batch sea moss gels, fresh drinks, shots, weekly market menus, pickup, and local delivery.',
   keywords: 'Taste of Gratitude, Atlanta sea moss, small batch sea moss gel, farmers market drinks, market pickup, fresh shots, fresh drinks',
   authors: [{ name: 'Taste of Gratitude' }],
   creator: 'Taste of Gratitude',

@@ -42,7 +42,7 @@ export async function GET(
         total: order.total || 0,
         fulfillment: order.fulfillment || order.fulfillmentType ? {
           type: order.fulfillmentType || order.fulfillment?.type,
-          address: order.shippingAddress || order.fulfillment?.address,
+          address: order.fulfillment?.address || order.shippingAddress,
         } : null,
         customerName: order.customerName,
         createdAt: order.createdAt,

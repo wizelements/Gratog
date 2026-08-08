@@ -5,6 +5,7 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import MarketOrder from '@/models/MarketOrder';
 import DailyInventory from '@/models/DailyInventory';
 import { z } from 'zod';
+import { requireAdmin } from '@/lib/admin-session';
 
 export const runtime = 'nodejs';
 
@@ -20,11 +21,15 @@ const refundSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
-    // Auth check
-    const authHeader = request.headers.get('authorization');
-    const apiKey = process.env.ADMIN_API_KEY;
-    
-    if (!authHeader || authHeader.replace('Bearer ', '') !== apiKey) {
+    // Auth check — JWT admin session required (OPEE C2 fix)
+    // Legacy ADMIN_API_KEY auth removed; all admin access requires a valid JWT.
+    let admin;
+    try {
+      admin = await requireAdmin(request);
+    } catch {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!admin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

@@ -260,7 +260,7 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
               We don't deliver to this area yet
             </p>
             <p className="text-xs text-red-600 mt-1">
-              Try Pickup or Shipping, or check if you entered the correct ZIP code.
+              Try a different ZIP code or choose Pickup instead.
             </p>
           </div>
         </motion.div>

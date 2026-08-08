@@ -42,8 +42,9 @@ export default function CartNotification() {
       setTimeout(() => setNotification(null), 3000);
     };
 
-    window.addEventListener('cartUpdated', handleCartUpdate);
-    return () => window.removeEventListener('cartUpdated', handleCartUpdate);
+    // OPEE LIVE-01: Fix event name to match cart-engine's 'cart-updated' (was 'cartUpdated')
+    window.addEventListener('cart-updated', handleCartUpdate);
+    return () => window.removeEventListener('cart-updated', handleCartUpdate);
   }, [mounted]);
 
   // Don't render anything during SSR

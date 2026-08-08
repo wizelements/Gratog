@@ -4,7 +4,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
-import { sendEmail } from '@/lib/resend-email';
+import { sendEmail } from '@/lib/email/service';
 import { canSendEmail, generateUnsubscribeToken } from '@/lib/email/service';
 
 const RECOVERY_AFTER_MINUTES = 45;

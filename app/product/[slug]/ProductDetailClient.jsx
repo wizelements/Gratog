@@ -239,7 +239,7 @@ export default function ProductDetailClient({ product, slug }) {
   const customerQuote = product.customerQuote || product.testimonial || null;
   const allergens = Array.isArray(product.allergens) ? product.allergens.filter(Boolean) : [];
   const pickupInfo = product.pickupAvailability || pickupGuidance;
-  const shippingInfo = product.shippingAvailability || 'Eligible items and shipping fees are confirmed before payment.';
+  const shippingInfo = product.shippingAvailability || 'Pickup and local delivery details are confirmed before payment.';
   const pairingProducts = (Array.isArray(product.pairings) ? product.pairings : [])
     .map((id) => getProductBySlugOrId(id))
     .filter(Boolean)
@@ -496,9 +496,9 @@ export default function ProductDetailClient({ product, slug }) {
                     <Lock className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
                     <span>Secure Square checkout</span>
                   </div>
-                  <Link href="/policies#shipping" className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900 hover:bg-emerald-100">
+                  <Link href="/policies" className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900 hover:bg-emerald-100">
                     <Truck className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
-                    <span>Pickup, delivery, or shipping details</span>
+                    <span>Pickup or delivery details</span>
                   </Link>
                   <Link href="/policies#refunds" className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900 hover:bg-emerald-100">
                     <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
@@ -546,11 +546,11 @@ export default function ProductDetailClient({ product, slug }) {
               </div>
             </div>
 
-            {/* Pickup, Delivery & Shipping Info */}
+            {/* Pickup & Delivery Info */}
             <div className="flex items-start gap-3 text-sm text-gray-600">
               <MapPin className="w-5 h-5 text-emerald-600 flex-shrink-0" />
               <div>
-                <p className="font-medium text-gray-900">Pickup, Delivery & Shipping</p>
+                <p className="font-medium text-gray-900">Pickup & Delivery</p>
                 <p>{pickupInfo}</p>
                 <p className="mt-1">
                   {shippingInfo}
@@ -681,13 +681,13 @@ export default function ProductDetailClient({ product, slug }) {
                     <p className="text-gray-700 leading-relaxed">{routineUse}</p>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">Pickup, delivery, and shipping</h3>
+                    <h3 className="text-lg font-semibold mb-2">Pickup and delivery</h3>
                     <p className="text-gray-700 leading-relaxed">{pickupInfo}</p>
                     <p className="mt-2 text-gray-700 leading-relaxed">{shippingInfo}</p>
                     <div className="mt-4 grid gap-3 text-sm text-gray-700 sm:grid-cols-3">
-                      <Link href="/policies#shipping" className="rounded-lg border border-gray-200 p-3 hover:border-emerald-300">
+                      <Link href="/policies" className="rounded-lg border border-gray-200 p-3 hover:border-emerald-300">
                         <Truck className="mb-2 h-5 w-5 text-emerald-700" aria-hidden="true" />
-                        Shipping costs and eligible items are confirmed before payment.
+                        Delivery and pickup details are confirmed before payment.
                       </Link>
                       <Link href="/policies#refunds" className="rounded-lg border border-gray-200 p-3 hover:border-emerald-300">
                         <RefreshCw className="mb-2 h-5 w-5 text-emerald-700" aria-hidden="true" />

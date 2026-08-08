@@ -3,13 +3,8 @@
  * Handles delivery zone validation, time windows, and fee calculations
  */
 
-import {
-  getShippingRates,
-  validateAddress,
-  type ShippingAddress,
-  type ShippingRate,
-  type PackageDimensions,
-} from './shipping-service';
+// OPEE LIVE-05: Shipping removed — business does not offer shipping
+// (shipping-service import removed)
 
 // Parse delivery windows from environment variable
 export function getDeliveryWindows(): string[] {
@@ -122,7 +117,7 @@ export function sanitizeTip(tip: number | string): number {
 }
 
 // Check if fulfillment type is enabled
-export function isFulfillmentEnabled(type: 'pickup' | 'shipping' | 'delivery'): boolean {
+export function isFulfillmentEnabled(type: 'pickup' | 'delivery'): boolean {
   const envKey = `NEXT_PUBLIC_FULFILLMENT_${type.toUpperCase()}`;
   const value = process.env[envKey];
   return value === 'enabled';
@@ -145,12 +140,12 @@ export function validateDeliveryData(data: {
   
   // Check if delivery is enabled
   if (!isFulfillmentEnabled('delivery')) {
-    errors.push('Home delivery is temporarily unavailable. Please choose Pickup or Shipping.');
+    errors.push('Home delivery is temporarily unavailable. Please choose Pickup.');
   }
   
   // Validate ZIP
   if (!isValidDeliveryZip(data.zip)) {
-    errors.push("We're not in your area yet. Try Pickup or Shipping, or use a different address.");
+    errors.push("We're not in your area yet. Try Pickup or use a different address.");
   }
   
   // Validate minimum subtotal
@@ -202,107 +197,5 @@ export function validatePickupData(data: {
   };
 }
 
-// Validate shipping data
-export function validateShippingData(data: {
-  street: string;
-  city: string;
-  state: string;
-  zip: string;
-}): FulfillmentValidationResult {
-  const errors: string[] = [];
-  
-  if (!isFulfillmentEnabled('shipping')) {
-    errors.push('Shipping is temporarily unavailable.');
-  }
-  
-  if (!data.street || data.street.length < 5) {
-    errors.push('Please enter a valid street address.');
-  }
-  
-  if (!data.city) {
-    errors.push('Please enter a city.');
-  }
-  
-  if (!data.state) {
-    errors.push('Please select a state.');
-  }
-  
-  if (!data.zip || !/^\d{5}(-\d{4})?$/.test(data.zip)) {
-    errors.push('Please enter a valid ZIP code.');
-  }
-  
-  return {
-    valid: errors.length === 0,
-    errors
-  };
-}
-
-// Validate shipping address using shipping service API (async version)
-export async function validateShippingAddressAsync(data: {
-  street: string;
-  city: string;
-  state: string;
-  zip: string;
-}): Promise<FulfillmentValidationResult> {
-  if (!isFulfillmentEnabled('shipping')) {
-    return { valid: false, errors: ['Shipping is temporarily unavailable.'] };
-  }
-
-  const address: ShippingAddress = {
-    street: data.street,
-    city: data.city,
-    state: data.state,
-    zip: data.zip,
-    country: 'US',
-  };
-
-  const validationResult = await validateAddress(address);
-  
-  if (!validationResult.valid) {
-    return {
-      valid: false,
-      errors: validationResult.errors || ['Address could not be validated.'],
-    };
-  }
-
-  return { valid: true, errors: [] };
-}
-
-// Get shipping options for cart items
-export interface ShippingOption {
-  carrier: string;
-  service: string;
-  rate: number;
-  estimatedDays: number;
-  deliveryDate?: string;
-}
-
-export async function getShippingOptions(
-  address: ShippingAddress,
-  cartItems: Array<{ quantity: number; weight?: number }>
-): Promise<ShippingOption[]> {
-  const _fromAddress: ShippingAddress = {
-    street: process.env.SHIPPING_FROM_STREET || '123 Bakery Lane',
-    city: process.env.SHIPPING_FROM_CITY || 'Los Angeles',
-    state: process.env.SHIPPING_FROM_STATE || 'CA',
-    zip: process.env.SHIPPING_FROM_ZIP || '90001',
-    country: 'US',
-  };
-
-  // Calculate package dimensions from cart items (default: 1lb per item)
-  const packageDimensions: PackageDimensions = {
-    weight: cartItems.length || 1, // 1 oz per item as default
-  };
-  const rates = await getShippingRates(address, packageDimensions);
-
-  return rates.map((rate: ShippingRate) => ({
-    carrier: rate.carrier,
-    service: rate.service,
-    rate: rate.rate,
-    estimatedDays: rate.estimatedDays,
-    deliveryDate: rate.deliveryDate,
-  }));
-}
-
-// Re-export shipping service types for convenience
-export type { ShippingAddress, ShippingRate, PackageDimensions };
+// OPEE LIVE-05: Shipping removed — business does not offer shipping
+// (validateShippingData, validateShippingAddressAsync, getShippingOptions removed)

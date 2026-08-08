@@ -23,7 +23,7 @@
  *   ALERT_EMAIL         - Optional fallback staff email address.
  */
 
-import { sendEmail } from '@/lib/resend-email';
+import { sendEmail } from '@/lib/email/service';
 import {
   enqueueOwnerAlert,
   fetchPendingOwnerAlerts,

@@ -9,7 +9,7 @@ import { Check } from 'lucide-react';
 export default function CheckoutProgress({ currentStep = 1, steps }) {
   const defaultSteps = [
     { id: 1, name: 'Cart Review', description: 'Review your items' },
-    { id: 2, name: 'Details', description: 'Shipping & contact' },
+    { id: 2, name: 'Details', description: 'Contact & delivery details' },
     { id: 3, name: 'Payment', description: 'Secure checkout' },
     { id: 4, name: 'Confirmation', description: 'Order complete' }
   ];

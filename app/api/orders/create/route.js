@@ -12,7 +12,7 @@ import { generateOrderAccessToken } from '@/lib/order-access-token';
 import { priceCart, CartPricingError } from '@/lib/cart-pricing';
 import { checkDeliveryRadius } from '@/lib/delivery-radius';
 import { calculateDistanceBasedDeliveryFee } from '@/lib/delivery-fees';
-import { shippingMethods } from '@/adapters/fulfillmentAdapter';
+// OPEE LIVE-05: Shipping removed — business does not offer shipping
 
 // Order access token TTL — must outlive the longest realistic checkout session.
 // Payment route uses 30m; we use the same so the token survives until pay click.
@@ -59,9 +59,7 @@ export async function POST(request) {
         orderData.appliedCoupon?.code ||
         orderData.couponCode ||
         null;
-      const tipCents = isShippingFulfillment(orderData.fulfillmentType)
-        ? 0
-        : dollarsToCents(orderData.deliveryTip);
+      const tipCents = dollarsToCents(orderData.deliveryTip);
 
       const basePricing = await priceCart({
         items: orderData.cart,
@@ -150,17 +148,15 @@ export async function POST(request) {
       deliveryInstructions: orderData.deliveryInstructions,
       deliveryFee: pricing.deliveryFee,
       deliveryFeeCents: pricing.deliveryFeeCents,
-      deliveryTip: isShippingFulfillment(orderData.fulfillmentType) ? 0 : pricing.tip,
-      deliveryTipCents: isShippingFulfillment(orderData.fulfillmentType) ? 0 : pricing.tipCents,
+      deliveryTip: pricing.tip,
+      deliveryTipCents: pricing.tipCents,
       deliveryDistance: fulfillmentQuote?.distance ?? orderData.deliveryDistance ?? null,
       deliveryNearestLocation: fulfillmentQuote?.nearestLocationName ?? null,
       deliveryQuoteMessage: fulfillmentQuote?.message || orderData.deliveryQuoteMessage || null,
       pickup: storedFulfillment.type === 'pickup' ? storedFulfillment.pickup : null,
       pickupLocation: storedFulfillment.pickup?.locationId || null,
       pickupDate: storedFulfillment.pickup?.date || null,
-      shippingAddress: orderData.shippingAddress,
-      shippingMethod: orderData.shippingMethod,
-      shippingService: fulfillmentQuote?.shippingService || null,
+      // OPEE LIVE-05: Shipping removed — business does not offer shipping
       fulfillment: storedFulfillment,
 
       // Canonical coupon field — payments/route.ts reads this exact path.
@@ -279,26 +275,14 @@ function isDeliveryFulfillment(type) {
   return String(type || '').includes('delivery');
 }
 
-function isShippingFulfillment(type) {
-  return String(type || '').includes('shipping');
-}
-
+// OPEE LIVE-05: Shipping removed — isShippingFulfillment removed
 function isPickupFulfillment(type) {
   const value = String(type || '').toLowerCase();
   return value.includes('pickup') || value === 'preorder';
 }
 
 function buildStoredFulfillment(orderData, quote) {
-  if (isShippingFulfillment(orderData.fulfillmentType)) {
-    return {
-      type: 'shipping',
-      address: orderData.shippingAddress || null,
-      methodId: orderData.shippingMethod || null,
-      service: quote?.shippingService || null,
-      fee: quote?.fee ?? 0,
-      message: quote?.message || null,
-    };
-  }
+  // OPEE LIVE-05: Shipping removed — business does not offer shipping
 
   if (isDeliveryFulfillment(orderData.fulfillmentType)) {
     return {
@@ -348,24 +332,7 @@ function orderError(message, status, code) {
 }
 
 async function quoteServerFulfillment(orderData, subtotalDollars) {
-  if (isShippingFulfillment(orderData.fulfillmentType)) {
-    const address = orderData.shippingAddress;
-    if (!address?.street || !address?.city || !address?.state || !address?.zip) {
-      throw orderError('Shipping address is required', 400, 'SHIPPING_ADDRESS_REQUIRED');
-    }
-
-    const method = shippingMethods().find((option) => option.id === orderData.shippingMethod);
-    if (!method) {
-      throw orderError('Shipping method is required', 400, 'SHIPPING_METHOD_REQUIRED');
-    }
-
-    return {
-      feeCents: dollarsToCents(method.price),
-      fee: method.price,
-      shippingService: method.name,
-      message: `${method.name} selected — estimated ${method.estimatedDays}.`,
-    };
-  }
+  // OPEE LIVE-05: Shipping removed — business does not offer shipping
 
   if (!isDeliveryFulfillment(orderData.fulfillmentType)) {
     return { feeCents: 0 };

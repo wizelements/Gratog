@@ -26,7 +26,7 @@ export interface AvailableReward {
   name: string;
   pointsCost: number;
   description: string;
-  type: 'discount' | 'product' | 'shipping';
+  type: 'discount' | 'product' | 'delivery';
   value: number;
 }
 

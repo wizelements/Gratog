@@ -1,6 +1,6 @@
 /**
  * Delivery & Fulfillment Fee Calculations
- * Handles delivery fees, shipping fees, tips, and order totals
+ * Handles delivery fees, tips, and order totals
  */
 
 import { getDeliveryConfig } from './fulfillment';
@@ -59,7 +59,7 @@ export function qualifiesForFreeDelivery(subtotal: number): boolean {
   return subtotal >= config.freeThreshold;
 }
 
-// Shipping removed — contact us for shipping inquiries
+// OPEE LIVE-05: Shipping removed — business does not offer shipping
 export function calculateShippingFee(_state: string, _subtotal: number): number {
   return 0;
 }

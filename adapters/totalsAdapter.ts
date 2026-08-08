@@ -1,6 +1,8 @@
 /**
  * Totals Adapter - Computes order totals using existing business logic
  * Reuses delivery fee calculation, tax rules, and minimum order validation
+ *
+ * OPEE LIVE-05: Shipping removed. Only pickup and local delivery.
  */
 
 import { CartItem } from './cartAdapter';
@@ -25,12 +27,12 @@ export interface OrderTotals {
   };
 }
 
+// OPEE LIVE-05: FulfillmentType no longer includes 'shipping'
 export interface TotalsInput {
   cart: CartItem[];
-  fulfillmentType: 'pickup' | 'delivery' | 'shipping';
+  fulfillmentType: 'pickup' | 'delivery';
   tip?: number;
   couponDiscount?: number;
-  shippingFee?: number;
   deliveryFee?: number;
 }
 
@@ -38,7 +40,7 @@ export interface TotalsInput {
  * Compute comprehensive order totals
  */
 export function computeTotals(input: TotalsInput): OrderTotals {
-  const { cart, fulfillmentType, tip = 0, couponDiscount = 0, shippingFee = 0, deliveryFee: quotedDeliveryFee } = input;
+  const { cart, fulfillmentType, tip = 0, couponDiscount = 0, deliveryFee: quotedDeliveryFee } = input;
   
   const subtotal = cart.reduce((sum, item) => sum + ((Number(item.price) || 0) * (Number(item.quantity) || 1)), 0);
   const itemCount = cart.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
@@ -48,9 +50,8 @@ export function computeTotals(input: TotalsInput): OrderTotals {
     deliveryFee = typeof quotedDeliveryFee === 'number'
       ? Math.max(0, quotedDeliveryFee)
       : 0;
-  } else if (fulfillmentType === 'shipping') {
-    deliveryFee = shippingFee;
   }
+  // OPEE LIVE-05: No shipping fee calculation — business does not offer shipping
   
   const tax = subtotal * TAX_RATE;
   const total = Math.max(0, subtotal - couponDiscount + deliveryFee + tax + tip);
@@ -71,14 +72,13 @@ export function computeTotals(input: TotalsInput): OrderTotals {
  */
 export function validateMinimumOrder(
   subtotal: number, 
-  fulfillmentType: 'pickup' | 'delivery' | 'shipping'
+  fulfillmentType: 'pickup' | 'delivery'
 ): { valid: boolean; message?: string } {
   if (fulfillmentType === 'delivery') {
     const config = getDeliveryConfig();
     if (subtotal < config.minSubtotal) {
       return {
-        valid: false,
-        message: `Minimum order for delivery is $${config.minSubtotal.toFixed(2)}`
+        valid: false,        message: `Minimum order for delivery is $${config.minSubtotal.toFixed(2)}`
       };
     }
   }

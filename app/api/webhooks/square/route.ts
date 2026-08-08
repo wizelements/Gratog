@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { getSquareWebhookSignatureKey } from '@/lib/square';
-import { sendOrderConfirmationEmail } from '@/lib/resend-email';
+import { sendOrderConfirmationEmail } from '@/lib/email/service';
 import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { syncSingleCatalogItem } from '@/lib/square/syncSingleItem';
 import { revalidatePath } from 'next/cache';

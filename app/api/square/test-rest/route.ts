@@ -1,15 +1,20 @@
 export const dynamic = 'force-dynamic';
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSquareClient } from '@/lib/square';
 import { logger } from '@/lib/logger';
 
 /**
  * Test REST API connectivity
+ *
+ * OPEE H5: Disabled in production. Development-only diagnostic.
  */
-export async function GET() {
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Not available in production' }, { status: 404 });
+export async function GET(request: NextRequest) {
+  // OPEE H5: Default-deny — diagnostics enabled only in explicit test/development mode.
+  // Production, missing classification, and any unknown environment return 404.
+  const env = process.env.NODE_ENV;
+  if (env !== 'test' && env !== 'development') {
+    return NextResponse.json({ error: 'Not available' }, { status: 404 });
   }
 
   try {

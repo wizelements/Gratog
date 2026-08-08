@@ -649,7 +649,7 @@ export default function MarketsPage() {
             <div>
               <h2 className="text-3xl font-semibold tracking-tight">Ready to reserve your weekly batch?</h2>
               <p className="mt-3 max-w-2xl text-emerald-50/90">
-                Start with the current menu, choose pickup or eligible shipping at checkout, and review the details before payment.
+                Start with the current menu, choose pickup or local delivery at checkout, and review the details before payment.
               </p>
             </div>
             <div className="grid gap-3 sm:flex">

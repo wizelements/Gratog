@@ -58,7 +58,7 @@ const faqCategories = [
     questions: [
       {
         question: 'How do I place an order?',
-        answer: 'Browse our catalog, add products to your cart, and proceed to checkout. You can choose pickup at our market locations, local delivery (select ZIP codes), or shipping. Complete your payment securely through Square.'
+        answer: 'Browse our catalog, add products to your cart, and proceed to checkout. You can choose pickup at our market locations or local delivery (select ZIP codes). Complete your payment securely through Square.'
       },
       {
         question: 'What payment methods do you accept?',
@@ -80,7 +80,7 @@ const faqCategories = [
   },
   {
     id: 'fulfillment',
-    title: 'Pickup, Delivery & Shipping',
+    title: 'Pickup & Delivery',
     icon: Truck,
     questions: [
       {
@@ -92,12 +92,12 @@ const faqCategories = [
         answer: 'Where available, we offer same-day and next-day delivery to select ZIP codes in South Fulton, Atlanta Metro, Decatur, and surrounding areas. Enter your ZIP code at checkout to see if delivery is available in your area. Delivery fees vary by zone ($12-$18).'
       },
       {
-        question: 'What are your shipping options?',
-        answer: 'We ship via USPS Priority Mail (2-3 business days) to all US states. Shipping starts at $8.99 and is FREE on orders $50+. Orders are packed with ice packs to maintain freshness during transit.'
+        question: 'What are your delivery options?',
+        answer: 'We offer local delivery to select ZIP codes in South Fulton, Atlanta Metro, Decatur, and surrounding areas. Enter your ZIP code at checkout to see if delivery is available in your area. Delivery fees vary by zone ($12-$18).'
       },
       {
-        question: 'How long does shipping take?',
-        answer: 'Orders ship within 1-2 business days. USPS Priority Mail takes 2-3 business days. You will receive a tracking number via email once your order ships. Note: Sea moss products are perishable and should be refrigerated immediately upon arrival.'
+        question: 'How long does delivery take?',
+        answer: 'Local delivery is available same-day or next-day depending on your zone. You will receive a confirmation email with your delivery window. Note: Sea moss products are perishable and should be refrigerated immediately upon delivery.'
       },
       {
         question: 'Do you ship to PO Boxes?',

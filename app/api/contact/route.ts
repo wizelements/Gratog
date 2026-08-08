@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
-import { sendEmail } from '@/lib/resend-email';
+import { sendEmail } from '@/lib/email/service';
 import { logger } from '@/lib/logger';
 import { CONTACT_EMAIL, SUPPORT_EMAIL } from '@/lib/site-config';
 

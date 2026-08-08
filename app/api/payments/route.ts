@@ -14,7 +14,7 @@ import {
   withRetry 
 } from '@/lib/critical-operations';
 import { rewardsSystem } from '@/lib/enhanced-rewards';
-import { sendOrderConfirmationEmail } from '@/lib/resend-email';
+import { sendOrderConfirmationEmail } from '@/lib/email/service';
 import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { consumeInventoryForPaidOrder } from '@/lib/custom-inventory';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';
@@ -113,8 +113,10 @@ function buildSquareFulfillments(
     phoneNumber: customerPhone || undefined,
   };
 
-  if (fulfillmentType.includes('shipping')) {
-    const address = order.shippingAddress || order.fulfillment?.address;
+  // OPEE LIVE-05: Shipping removed — business does not offer shipping.
+  // Shipping fulfillment branch removed. Only delivery and pickup are supported.
+  if (fulfillmentType.includes('delivery')) {
+    const address = order.deliveryAddress || order.fulfillment?.address;
     if (!address?.street || !address?.city || !address?.state || !address?.zip) {
       return [];
     }
@@ -134,9 +136,7 @@ function buildSquareFulfillments(
               country: 'US',
             },
           },
-          shippingNote: [order.shippingService, order.deliveryQuoteMessage || order.fulfillment?.message]
-            .filter(Boolean)
-            .join(' — ') || undefined,
+          shippingNote: order.deliveryQuoteMessage || order.fulfillment?.message || undefined,
         },
       },
     ];
@@ -720,7 +720,7 @@ export async function POST(request: NextRequest) {
 
       if (Number(order.deliveryFeeCents || 0) > 0) {
         squareLineItems.push({
-          name: order.fulfillmentType === 'shipping' ? 'Shipping' : 'Delivery',
+          name: order.fulfillmentType === 'delivery' ? 'Delivery' : 'Pickup',
           quantity: '1',
           basePriceMoney: { amount: Number(order.deliveryFeeCents), currency },
         });

@@ -7,6 +7,7 @@ import resend from '@/lib/email/resend-client';
 import { getActiveMarketPickups } from '@/data/markets';
 import { getWeeklyMenuProducts, buildWeeklyMenu } from '@/data/weeklyMenu';
 import { getCurrentWeekRange } from '@/lib/menus/week-utils';
+import { requireCronSecret } from '@/lib/cron-auth';
 
 interface WarmRequest {
   marketId?: string;
@@ -37,17 +38,19 @@ function warmRequestFromSearchParams(request: NextRequest): WarmRequest {
 }
 
 function isAuthorized(request: NextRequest, raw: WarmRequest) {
+  // OPEE ADMIN-04: Use requireCronSecret for constant-time validation.
+  // No ADMIN_API_TOKEN accepted here — cron routes are machine-to-machine only.
+  const authResult = requireCronSecret(request, raw as Record<string, unknown>);
+  if (authResult === null) return true;
+
+  // Legacy: also accept WEEKLY_WARM_CRON_SECRET directly for backward compatibility
   const authHeader = request.headers.get('authorization') || '';
   const bearer = authHeader.replace(/^Bearer\s+/i, '');
   const cronSecret = process.env.WEEKLY_WARM_CRON_SECRET;
-  const adminToken = process.env.ADMIN_API_TOKEN;
+  if (cronSecret && raw.secret === cronSecret) return true;
+  if (cronSecret && bearer === cronSecret) return true;
 
-  return Boolean(
-    (cronSecret && bearer === cronSecret) ||
-    (adminToken && bearer === adminToken) ||
-    (cronSecret && raw.secret === cronSecret) ||
-    (adminToken && raw.secret === adminToken)
-  );
+  return false;
 }
 
 function buildWeeklyWarmEmail({

@@ -1,6 +1,6 @@
 export const metadata = {
   title: 'FAQ | Taste of Gratitude',
-  description: 'Answers about Taste of Gratitude weekly menus, sea moss gels, market pickup, small-batch preorder timing, shipping, and community programs.',
+  description: 'Answers about Taste of Gratitude weekly menus, sea moss gels, market pickup, local delivery, small-batch preorder timing, and community programs.',
   alternates: { canonical: '/faq' },
   openGraph: {
     title: 'Taste of Gratitude FAQ',

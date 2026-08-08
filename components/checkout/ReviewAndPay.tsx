@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, AlertCircle, RefreshCw, CheckCircle, Package, MapPin, Clock, Store, Truck, Shield } from 'lucide-react';
+import { Lock, AlertCircle, RefreshCw, CheckCircle, Package, MapPin, Clock, Store, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CartItem } from '@/adapters/cartAdapter';
 import { OrderTotals, formatCurrency } from '@/adapters/totalsAdapter';
@@ -66,10 +66,7 @@ export default function ReviewAndPay({
     if (!fulfillment.pickup?.locationId) return null;
     return Fulfillment.pickupLocations().find((location) => location.id === fulfillment.pickup?.locationId) || null;
   }, [fulfillment.pickup?.locationId]);
-  const shippingMethod = useMemo(() => {
-    if (!fulfillment.shipping?.methodId) return null;
-    return Fulfillment.shippingMethods().find((method) => method.id === fulfillment.shipping?.methodId) || null;
-  }, [fulfillment.shipping?.methodId]);
+
   
   const validationResult = useMemo(() => {
     const marketId = fulfillment.pickup?.locationId || fulfillment.type;
@@ -132,26 +129,7 @@ export default function ReviewAndPay({
       }
     }
 
-    if (fulfillment.type === 'shipping') {
-      const address = fulfillment.shipping?.address;
-      const hasAddress = Boolean(address?.street && address?.city && address?.state && address?.zip);
-
-      if (!hasAddress) {
-        return {
-          valid: false,
-          code: 'SHIPPING_ADDRESS_REQUIRED',
-          error: 'Complete the shipping address before payment.',
-        };
-      }
-
-      if (!fulfillment.shipping?.methodId) {
-        return {
-          valid: false,
-          code: 'SHIPPING_METHOD_REQUIRED',
-          error: 'Choose a shipping method before payment.',
-        };
-      }
-    }
+    // OPEE LIVE-05: shipping validation branch removed — business does not offer shipping
 
     return { valid: true };
   }, [
@@ -163,8 +141,7 @@ export default function ReviewAndPay({
     fulfillment.delivery?.window,
     fulfillment.delivery?.fee,
     fulfillment.delivery?.quotedSubtotal,
-    fulfillment.shipping?.address,
-    fulfillment.shipping?.methodId,
+    // OPEE LIVE-05: fulfillment.shipping dependencies removed
   ]);
 
   const canProceedToPayment = validationResult.valid && fulfillmentReadiness.valid;
@@ -407,7 +384,7 @@ export default function ReviewAndPay({
                   {totals.deliveryFee > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">
-                        {fulfillment.type === 'shipping' ? 'Shipping' : 'Delivery Fee'}
+                        Delivery Fee
                       </span>
                       <span>{formatCurrency(totals.deliveryFee)}</span>
                     </div>
@@ -459,12 +436,10 @@ export default function ReviewAndPay({
               <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
                 {fulfillment.type === 'pickup' ? (
                   <Clock className="w-4 h-4 text-emerald-700" />
-                ) : fulfillment.type === 'shipping' ? (
-                  <Truck className="w-4 h-4 text-emerald-700" />
                 ) : (
                   <MapPin className="w-4 h-4 text-emerald-700" />
                 )}
-                {fulfillment.type === 'pickup' ? 'Pickup' : fulfillment.type === 'shipping' ? 'Shipping' : 'Delivery'} Details
+                {fulfillment.type === 'pickup' ? 'Pickup' : 'Delivery'} Details
               </h4>
               <div className="text-sm text-gray-600 space-y-1">
                 {fulfillment.type === 'delivery' && fulfillment.delivery && (
@@ -493,18 +468,7 @@ export default function ReviewAndPay({
                     )}
                   </>
                 )}
-                {fulfillment.type === 'shipping' && fulfillment.shipping && (
-                  <>
-                    <p>{fulfillment.shipping.address.street}</p>
-                    {fulfillment.shipping.address.suite && <p>{fulfillment.shipping.address.suite}</p>}
-                    <p>{fulfillment.shipping.address.city}, {fulfillment.shipping.address.state} {fulfillment.shipping.address.zip}</p>
-                    {shippingMethod && (
-                      <p className="text-emerald-700">
-                        {shippingMethod.name}: {formatCurrency(shippingMethod.price)} • {shippingMethod.estimatedDays}
-                      </p>
-                    )}
-                  </>
-                )}
+                {/* OPEE LIVE-05: shipping address/method display removed — business does not offer shipping */}
 
               </div>
               <button type="button" onClick={onBack} className="text-sm text-emerald-600 hover:underline mt-3">
@@ -626,8 +590,8 @@ export default function ReviewAndPay({
                   Satisfaction guarantee
                 </div>
                 <div className="flex items-center gap-2">
-                  <Truck className="h-4 w-4 text-emerald-700" aria-hidden="true" />
-                  Fulfillment confirmed before payment
+                  <MapPin className="h-4 w-4 text-emerald-700" aria-hidden="true" />
+                  Pickup or delivery confirmed before payment
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-emerald-700" aria-hidden="true" />
