@@ -91,3 +91,5 @@ node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
 .tmp-catalog.html
 .gitconfig
 .tmp/
+
+.vercel
