@@ -7,6 +7,7 @@ import {
   mergeWithCuratedProduct,
   toStorefrontProduct,
 } from '@/data/products';
+import { isStorefrontDisplayable, isStorefrontPurchasable } from '@/lib/product-eligibility';
 
 function buildSlugFilter(slug) {
   return {
@@ -219,16 +220,30 @@ export default async function ProductPage({ params }) {
     }
     
     const serializedProduct = serializeProductForClient(product);
+    if (!isStorefrontDisplayable(serializedProduct)) {
+      notFound();
+    }
+    const purchasable = isStorefrontPurchasable(serializedProduct);
     
     console.log(`[Product SSR] Successfully loaded product: ${serializedProduct.name}`);
     
-    return <ProductDetailClient product={serializedProduct} slug={slug} />;
+    return <ProductDetailClient product={serializedProduct} slug={slug} purchasable={purchasable} />;
     
   } catch (error) {
     console.error('[Product SSR] Error fetching product:', error);
     const curatedProduct = getProductBySlugOrId(slug);
     if (curatedProduct) {
-      return <ProductDetailClient product={serializeProductForClient(toStorefrontProduct(curatedProduct))} slug={slug} />;
+      const serializedCuratedProduct = serializeProductForClient(toStorefrontProduct(curatedProduct));
+      if (!isStorefrontDisplayable(serializedCuratedProduct)) {
+        notFound();
+      }
+      return (
+        <ProductDetailClient
+          product={serializedCuratedProduct}
+          slug={slug}
+          purchasable={isStorefrontPurchasable(serializedCuratedProduct)}
+        />
+      );
     }
     // Return null to show error state
     return <ProductDetailClient product={null} slug={slug} />;

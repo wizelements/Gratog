@@ -19,6 +19,7 @@ import {
   MapPin,
   CalendarDays,
   Mail,
+  FlaskConical,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -28,6 +29,7 @@ const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Menus', href: '/admin/menus', icon: CalendarDays },
+  { name: 'Fresh Batches', href: '/admin/fresh-batches', icon: FlaskConical },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Markets', href: '/admin/markets', icon: MapPin },
   { name: 'Inventory', href: '/admin/inventory', icon: Warehouse },

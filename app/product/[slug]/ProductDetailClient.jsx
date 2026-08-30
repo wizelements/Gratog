@@ -49,7 +49,7 @@ function normalizeReviewSummary(summary) {
   };
 }
 
-export default function ProductDetailClient({ product, slug }) {
+export default function ProductDetailClient({ product, slug, purchasable = true }) {
   const [isAdding, setIsAdding] = useState(false);
   const [selectedVariation, setSelectedVariation] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -65,7 +65,7 @@ export default function ProductDetailClient({ product, slug }) {
     product?.fulfillmentType === 'market_pickup_only'
   );
   const showMarketLeadCapture = Boolean(product) && (!checkoutReady || isMarketOnly);
-  const canAddToCart = Boolean(product) && checkoutReady && !isMarketOnly;
+  const canAddToCart = Boolean(product) && purchasable && checkoutReady && !isMarketOnly;
   const preorderSource = encodeURIComponent(product?.slug || product?.id || slug || 'product_detail');
   const preorderHref = `/preorder?utm_source=product_${preorderSource}&utm_campaign=weekly_menu_drop`;
   const productCategoryLabel = product?.categoryLabel || product?.displayCategory || product?.category || product?.intelligentCategory || 'Weekly market item';

@@ -200,7 +200,7 @@ export default function HomePageClient({
               Tell us what you want to sip next.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90 sm:text-xl">
-              Request a flavor, reserve a gallon, or meet us at the market to sample what is fresh. We confirm availability before you pay.
+              Request a flavor for a shared batch, or meet us at the market to sample what is fresh. We confirm availability and price before you pay.
             </p>
             <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
               <Button asChild className="h-14 rounded-full bg-white px-8 text-base font-bold text-emerald-950 hover:bg-emerald-50">

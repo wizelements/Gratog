@@ -91,8 +91,8 @@
 | **Root cause** | Storefront snapshot has fallback logic; consumers do not respect fallback flag or filter inactive/zero-price items. |
 | **Recommended fix** | 1. In homepage/catalog consumers, reject `isFallback` products or render them with an explicit "not confirmed" state. 2. Exclude `inactive` category, `price <= 0`, and `inventoryStatus === 'inactive'`. 3. Add a build-time warning/alert when fallback is active. |
 | **Owner decision required** | YES — owner must confirm whether curated file or Square catalog is the operational authority, and which products are actually available this week. |
-| **Implementation status** | open |
-| **Verification status** | unverified |
+| **Implementation status** | fixed — public consumers now enforce shared eligibility rules; the owner authority decision remains operational follow-up |
+| **Verification status** | unit-tested; production-build browser journey verified locally with fallback mode |
 | **Commit reference** | TBD |
 
 ---

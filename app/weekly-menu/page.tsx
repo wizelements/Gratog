@@ -10,6 +10,7 @@ import WeeklyMenuPage from '@/components/weekly-menu/WeeklyMenuPage';
 import { getActiveMarketPickups } from '@/data/markets';
 import { buildWeeklyMenu, getWeeklyMenuProducts } from '@/data/weeklyMenu';
 import { getCurrentWeekRange } from '@/lib/menus/week-utils';
+import { filterDisplayableProducts } from '@/lib/product-eligibility';
 
 export default async function WeeklyMenuLandingPage() {
   const markets = getActiveMarketPickups();
@@ -20,7 +21,7 @@ export default async function WeeklyMenuLandingPage() {
   return (
     <WeeklyMenuPage
       markets={markets}
-      weeklyProducts={weeklyProducts.slice(0, 9)}
+      weeklyProducts={filterDisplayableProducts(weeklyProducts).slice(0, 9)}
       weeklyMenu={weeklyMenu}
     />
   );

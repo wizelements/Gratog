@@ -39,8 +39,8 @@ export async function GET(request: NextRequest) {
     }
 
     const { db } = await connectToDatabase();
-    const requests = await db
-      .collection(COLLECTION)
+    const requestsCollection = db.collection(COLLECTION) as import('mongodb').Collection<FreshBatchRequest>;
+    const requests = await requestsCollection
       .find(query)
       .sort({ createdAt: -1 })
       .limit(limit)
@@ -87,11 +87,11 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const { db } = await connectToDatabase();
+    const requestsCollection = db.collection(COLLECTION) as import('mongodb').Collection<FreshBatchRequest>;
     const targetStatus = body.status as RequestStatus;
 
     // Fetch current states to validate transitions and audit-log each change.
-    const existing = await db
-      .collection(COLLECTION)
+    const existing = await requestsCollection
       .find({ id: { $in: body.ids } })
       .toArray();
 
@@ -110,7 +110,7 @@ export async function PATCH(request: NextRequest) {
     const update: Record<string, unknown> = { status: targetStatus, updatedAt: new Date() };
     if (body.ownerNotes !== undefined) update.ownerNotes = body.ownerNotes;
 
-    const result = await db.collection(COLLECTION).updateMany(
+    const result = await requestsCollection.updateMany(
       { id: { $in: body.ids } },
       { $set: update }
     );

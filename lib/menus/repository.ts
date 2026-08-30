@@ -124,8 +124,8 @@ export type CreateMenuData = {
   canvaUrl?: string;
   printUrl?: string;
   marketId?: string;
-  weekStart: string;
-  weekEnd: string;
+  weekStart: Date;
+  weekEnd: Date;
   isActive?: boolean;
   isArchived?: boolean;
   linkedProducts?: string[];
@@ -145,8 +145,8 @@ export async function createMenu(data: CreateMenuData): Promise<AdminMenu> {
       canvaUrl: data.canvaUrl || '',
       printUrl: data.printUrl || '',
       marketId: data.marketId || '',
-      weekStart: new Date(data.weekStart),
-      weekEnd: new Date(data.weekEnd),
+      weekStart: data.weekStart,
+      weekEnd: data.weekEnd,
       isActive: data.isActive || false,
       isArchived: data.isArchived || false,
       linkedProducts: data.linkedProducts || [],
@@ -194,8 +194,8 @@ export interface UpdateMenuData {
   canvaUrl?: string;
   printUrl?: string;
   marketId?: string;
-  weekStart?: string;
-  weekEnd?: string;
+  weekStart?: Date;
+  weekEnd?: Date;
   isActive?: boolean;
   isArchived?: boolean;
   linkedProducts?: string[];
@@ -239,10 +239,10 @@ export async function updateMenu(
 
     // Handle date fields separately
     if (data.weekStart) {
-      updateFields.weekStart = new Date(data.weekStart);
+      updateFields.weekStart = data.weekStart;
     }
     if (data.weekEnd) {
-      updateFields.weekEnd = new Date(data.weekEnd);
+      updateFields.weekEnd = data.weekEnd;
     }
 
     const result = await db.collection(COLLECTION_NAME).findOneAndUpdate(

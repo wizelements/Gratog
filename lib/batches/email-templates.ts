@@ -60,6 +60,8 @@ export interface RequestReceivedContext {
   quantity: string;
   marketName: string;
   status: RequestStatus;
+  /** Required regulatory copy when a request may contain wellness language. */
+  fdaDisclaimer: string;
   requestUrl?: string;
 }
 
@@ -87,6 +89,7 @@ export async function sendRequestReceivedEmail(ctx: RequestReceivedContext) {
     <p><strong>${statusMessage}</strong> We will confirm availability, price, and pickup details by email before any payment is requested.</p>
     ${ctx.requestUrl ? `<p><a class="cta" href="${escapeHtml(ctx.requestUrl)}">View your request</a></p>` : ''}
     <p>If you have questions, reply to this email anytime.</p>
+    <p class="footer">${escapeHtml(ctx.fdaDisclaimer)}</p>
   `;
 
   return sendEmail({
@@ -95,7 +98,7 @@ export async function sendRequestReceivedEmail(ctx: RequestReceivedContext) {
     replyTo: REPLY_TO,
     subject,
     html: baseHtml(subject, htmlBody),
-    text: `Your request is in.\n\nWe received your request for ${flavor} (${ctx.quantity}) for pickup at ${ctx.marketName}.\n\n${statusMessage} We will confirm availability, price, and pickup details by email before any payment is requested.\n\nRequest ID: ${ctx.requestId}\n\nReply to this email with any questions.`,
+    text: `Your request is in.\n\nWe received your request for ${flavor} (${ctx.quantity}) for pickup at ${ctx.marketName}.\n\n${statusMessage} We will confirm availability, price, and pickup details by email before any payment is requested.\n\nRequest ID: ${ctx.requestId}\n\n${ctx.fdaDisclaimer}\n\nReply to this email with any questions.`,
     emailType: 'fresh_batch_request',
     template: 'fresh_batch_request_received',
     customerEmail: ctx.email,

@@ -210,7 +210,7 @@ describe('Critical Files Exist', () => {
     'app/layout.js',
     'app/page.js',
     'app/global-error.js',
-    'middleware.ts',
+    'proxy.ts',
     'next.config.js',
     'vercel.json',
     'app/robots.ts',

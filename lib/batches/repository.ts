@@ -47,7 +47,7 @@ export async function createRequest(
 
 export async function findRequestById(id: string): Promise<FreshBatchRequest | null> {
   const { db } = await connectToDatabase();
-  return db.collection(REQUESTS_COLLECTION).findOne<FreshBatchRequest>({ id });
+  return db.collection(REQUESTS_COLLECTION).findOne({ id }) as Promise<FreshBatchRequest | null>;
 }
 
 export async function findRequestsByEmail(email: string): Promise<FreshBatchRequest[]> {
@@ -138,7 +138,7 @@ export async function createBatchCampaign(
 
 export async function findBatchCampaignById(id: string): Promise<BatchCampaign | null> {
   const { db } = await connectToDatabase();
-  return db.collection(CAMPAIGNS_COLLECTION).findOne<BatchCampaign>({ id });
+  return db.collection(CAMPAIGNS_COLLECTION).findOne({ id }) as Promise<BatchCampaign | null>;
 }
 
 export async function updateBatchCampaignStatus(
@@ -184,7 +184,7 @@ export async function createReservation(
 
 export async function findReservationById(id: string): Promise<BatchReservation | null> {
   const { db } = await connectToDatabase();
-  return db.collection(RESERVATIONS_COLLECTION).findOne<BatchReservation>({ id });
+  return db.collection(RESERVATIONS_COLLECTION).findOne({ id }) as Promise<BatchReservation | null>;
 }
 
 export async function updateReservationPayment(

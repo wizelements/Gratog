@@ -1,26 +1,21 @@
 
+const isNonProductionDeployment = process.env.VERCEL_ENV
+  ? process.env.VERCEL_ENV !== 'production'
+  : process.env.NODE_ENV !== 'production';
+
 const nextConfig = {
-  // Next.js 15 + Turbopack compatible configuration
-  turbopack: {
-    // Turbopack specific options
-    resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
-  },
-
-  // Production quality gates - temporarily relaxed for deployment
-  // (gated by tsc --noEmit + npm test in CI; full lint cleanup pending)
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-
   // Production performance optimizations
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
   serverExternalPackages: ['mongodb', 'mongoose', 'bcryptjs'],
   outputFileTracingRoot: __dirname,
+
+  // Keep the deployable application as the build's strict TypeScript boundary.
+  // Tests are compiled and executed independently by Vitest; archive/ is not runtime code.
+  typescript: {
+    tsconfigPath: 'tsconfig.production.json',
+  },
 
   // Allow development origins for hot reload
   allowedDevOrigins: ['gratitude-square.preview.emergentagent.com'],
@@ -43,66 +38,8 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
   },
 
-  // Next.js 15 experimental features
-  experimental: {
-    // CSS optimization
-    optimizeCss: true,
-    // React 19 features
-    reactCompiler: false, // Enable when ready for React 19 compiler
-    // Enable use cache directive
-    useCache: true,
-  },
-
-  webpack(config, { dev, isServer }) {
-    // Exclude service worker from bundle
-    config.module = config.module || {};
-    config.module.rules = config.module.rules || [];
-    config.module.rules.push({
-      test: /sw\.js$/,
-      type: 'asset/resource',
-      generator: {
-        filename: 'static/[name][ext]',
-      },
-    });
-
-    // Development optimizations
-    if (dev) {
-      config.watchOptions = {
-        poll: 3000, // Increased interval to reduce CPU
-        aggregateTimeout: 500,
-        ignored: ['**/node_modules', '**/.git', '**/logs'],
-      };
-    }
-
-    // Memory optimizations
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@': require('path').resolve(__dirname, './'),
-    };
-
-    // Fix MongoDB client-side issues
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        net: false,
-        tls: false,
-        fs: false,
-        dns: false,
-        child_process: false,
-        'mongodb-client-encryption': false,
-        'gssapi': false,
-        '@mongodb-js/zstd': false,
-        'kerberos': false,
-        'snappy': false,
-        'timers/promises': false,
-        'timers': false,
-        'util/types': false,
-        'async_hooks': false
-      };
-    }
-
-    return config;
-  },
+  // Keep React Compiler disabled until its diagnostics are resolved deliberately.
+  reactCompiler: false,
 
   // Reduce memory usage
   onDemandEntries: {
@@ -318,3 +255,4 @@ const nextConfig = {
   },
 };
 
+module.exports = nextConfig;

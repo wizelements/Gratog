@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminSession } from '@/lib/auth/unified-admin';
 import { logger } from '@/lib/logger';
 import { isExpiredInZone, getTodayStart } from '@/lib/menus/week-utils';
@@ -15,7 +15,7 @@ const COLLECTION_NAME = 'menus';
  * Authorization: CRON_SECRET or ADMIN_API_TOKEN via Bearer header or body secret.
  * Idempotent; safe to call from Vercel cron.
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   let authOk = false;
   const cronSecret = process.env.CRON_SECRET;
   const adminToken = process.env.ADMIN_API_TOKEN;

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import CatalogPageClient from '@/components/catalog/CatalogPageClient';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
+import { filterDisplayableProducts } from '@/lib/product-eligibility';
 
 export const revalidate = 300;
 
@@ -21,7 +22,7 @@ async function getCatalogBootstrap() {
   const snapshot = await getStorefrontCatalogSnapshot({});
 
   return {
-    products: snapshot.products,
+    products: filterDisplayableProducts(snapshot.products),
     categories: snapshot.categories
   };
 }

@@ -88,6 +88,7 @@ export const freshBatchRequestInputSchema = z
     notes: notesSchema,
     requestSource: requestSourceSchema.default('homepage_hero'),
     marketingEmailConsent: consentSchema,
+    smsConsent: consentSchema,
   })
   .refine(
     (data) => {
@@ -101,7 +102,13 @@ export const freshBatchRequestInputSchema = z
       path: ['flavor'],
     }
   )
-;
+  .refine(
+    (data) => !data.smsConsent || !!data.phone,
+    {
+      message: 'SMS consent requires a phone number.',
+      path: ['phone'],
+    }
+  );
 
 export type FreshBatchRequestInput = z.infer<typeof freshBatchRequestInputSchema>;
 

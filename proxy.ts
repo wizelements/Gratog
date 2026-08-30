@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-// IMPORTANT: this file runs on the Edge Runtime.
-// `lib/admin-session` only depends on `jose` (Edge-safe). Do NOT import
-// `lib/auth/unified-admin` here — it transitively imports the MongoDB layer
-// (lib/db-optimized → mongoose), which the Edge bundler rejects with
-// "Dynamic Code Evaluation not allowed in Edge Runtime". Both modules sign
-// with the same JWT_SECRET / HS256, so verifying tokens with admin-session
-// is fully interoperable with tokens issued by unified-admin.
+// Keep proxy authentication isolated from the MongoDB-backed admin service.
+// Both modules sign with the same JWT_SECRET / HS256, so tokens issued by
+// unified-admin remain interoperable with this lightweight boundary check.
 import { verifyAdminToken } from '@/lib/admin-session';
 
 // Routes that the admin area exposes without authentication.
@@ -46,7 +42,7 @@ function unauthorizedApi(): NextResponse {
   );
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Pass through non-admin paths untouched.

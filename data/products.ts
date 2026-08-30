@@ -530,7 +530,7 @@ export const PRODUCTS: MarketProduct[] = [
     soldOut: false,
     preorderOnly: true,
     marketPickupOnly: false,
-    squareProductUrl: 'https://tasteofgratitude.shop/s/order?add=healing-harmony-gel',
+    squareProductUrl: 'https://tasteofgratitude.shop/s/order?add=healing-harmony',
     pairings: ['supplemint', 'grateful-defense'],
     tags: ['gel', 'soursop', 'warm-spice', 'evening'],
   },
@@ -685,7 +685,7 @@ export const PRODUCTS: MarketProduct[] = [
     soldOut: false,
     preorderOnly: true,
     marketPickupOnly: true,
-    squareProductUrl: 'https://tasteofgratitude.shop/s/order?add=grateful-defense',
+    squareProductUrl: 'https://tasteofgratitude.shop/s/order?add=gratitude-defense',
     pairings: ['elderberry-apple-gel', 'supplemint', 'black-minerals'],
     tags: ['shot', 'elderberry', 'ginger', 'berry'],
   },
@@ -788,6 +788,7 @@ export const PRODUCTS: MarketProduct[] = [
 
 const CATEGORY_LABELS: Record<ProductCategory, string> = {
   lemonades: 'Lemonades & Drinks',
+  juices: 'Juices',
   refreshers: 'Refreshers',
   gels: 'Sea Moss Gels',
   shots: 'Shots',
@@ -797,6 +798,7 @@ const CATEGORY_LABELS: Record<ProductCategory, string> = {
 
 const CATEGORY_ICONS: Record<ProductCategory, string> = {
   lemonades: '🍋',
+  juices: '🧃',
   refreshers: '🍹',
   gels: '🌿',
   shots: '⚡',
@@ -806,6 +808,7 @@ const CATEGORY_ICONS: Record<ProductCategory, string> = {
 
 const TAXONOMY_CATEGORY_LABELS: Record<ProductCategory, string> = {
   lemonades: 'Lemonades & Juices',
+  juices: 'Juices',
   refreshers: 'Refreshers',
   gels: 'Sea Moss Gels',
   shots: 'Shots',

@@ -2,8 +2,8 @@ export const dynamic = 'force-static';
 export const revalidate = 300; // Revalidate every 5 minutes
 
 export const metadata = {
-  title: 'Taste of Gratitude | Request a Flavor, Reserve a Gallon, or Meet Us at the Market',
-  description: 'Request a flavor, reserve a gallon, or meet us at the market to sample fresh sea moss drinks and gels. We confirm availability before you pay.',
+  title: 'Taste of Gratitude | Request a Flavor for a Shared Batch',
+  description: 'Request a flavor for a shared batch, or meet us at the market to sample fresh sea moss drinks and gels. We confirm availability and price before you pay.',
   keywords: [
     'small-batch sea moss Atlanta',
     'Atlanta farmers market juices',
@@ -17,7 +17,7 @@ export const metadata = {
   },
   openGraph: {
     title: 'Taste of Gratitude | Request a Flavor',
-    description: 'Request a flavor, reserve a gallon, or meet us at the market to sample fresh sea moss drinks and gels. We confirm availability before you pay.',
+    description: 'Request a flavor for a shared batch, or meet us at the market to sample fresh sea moss drinks and gels. We confirm availability and price before you pay.',
     url: 'https://tasteofgratitude.shop',
     siteName: 'Taste of Gratitude',
     locale: 'en_US',
@@ -26,7 +26,7 @@ export const metadata = {
   twitter: {
     card: 'summary',
     title: 'Taste of Gratitude | Request a Flavor',
-    description: 'Request a flavor, reserve a gallon, or meet us at the market to sample fresh sea moss drinks and gels.',
+    description: 'Request a flavor for a shared batch, or meet us at the market to sample fresh sea moss drinks and gels.',
   },
 };
 
@@ -41,6 +41,7 @@ export const metadata = {
 
 import { connectToDatabase } from '@/lib/db-optimized';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
+import { filterDisplayableProducts } from '@/lib/product-eligibility';
 import { logger } from '@/lib/logger';
 import { buildHomepageFaqSchema, buildHomepageOrganizationSchema } from '@/seo/schemas';
 import HomePageClient from '@/components/home/HomePageClient';
@@ -56,14 +57,7 @@ async function getHomepageCatalogData() {
   }
 
   // 🎯 FILTER: Show all products that aren't explicitly unavailable
-  const availableProducts = snapshot.products.filter(product => {
-    if (product.available === false) return false;
-    if (product.purchaseStatus === 'sold_out') return false;
-    if (product.availability === 'sold_out') return false;
-    if (product.squareEcomAvailable === false) return false;
-    
-    return true;
-  });
+   const availableProducts = filterDisplayableProducts(snapshot.products);
 
   return {
     featuredProducts: availableProducts
