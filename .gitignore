@@ -92,4 +92,30 @@ node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
 .gitconfig
 .tmp/
 
+# Local release-validation artifacts (preserved locally, never released)
+/.audit-phase1.json
+/.lint-phase1.json
+/*.exit
+/build*.log
+/final-validate.log
+/full-test.log
+/lint-output.log
+/openclaw-*.log
+/.openclaw-*.log
+/resume-build.log
+/smoke-server.log
+/typecheck-output.log
+/verify-*.log
+/status.txt
+/test-results/
+/.release-evidence/
+/_build.cmd
+/_patch.js
+/final-validate.cmd
+/full-test.cmd
+/launch-build.ps1
+/probe.js
+/resume-build.cmd
+/run-build.cmd
+
 .vercel

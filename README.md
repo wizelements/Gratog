@@ -13,7 +13,7 @@ Gratog is a full-featured Next.js e-commerce platform designed for selling grati
 ## 🏗️ Architecture
 
 ### Frontend
-- **Framework:** Next.js 14 with TypeScript
+- **Framework:** Next.js 16 with TypeScript
 - **Styling:** Tailwind CSS
 - **State:** Zustand (if used) or React Context
 - **UI Components:** Radix UI (extensive)
@@ -37,7 +37,7 @@ Gratog is a full-featured Next.js e-commerce platform designed for selling grati
 
 ### Prerequisites
 ```bash
-node 18+
+Node.js 20.9+, 22.11+, or 24+
 npm or pnpm
 ```
 

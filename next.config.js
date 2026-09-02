@@ -41,6 +41,12 @@ const nextConfig = {
   // Keep React Compiler disabled until its diagnostics are resolved deliberately.
   reactCompiler: false,
 
+  // Required on the current Windows release runner: the default webpack build
+  // worker stalled before compilation for 10 minutes during RC validation.
+  experimental: {
+    webpackBuildWorker: false,
+  },
+
   // Reduce memory usage
   onDemandEntries: {
     maxInactiveAge: 5000, // Reduced from 10000
