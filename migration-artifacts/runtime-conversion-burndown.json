@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T14:46:18.166Z",
+  "generatedAt": "2026-09-06T14:47:13.233Z",
   "baseline": {
     "reads": 350,
     "writes": 308,
@@ -7,9 +7,9 @@
     "unknown": 30
   },
   "current": {
-    "reads": 227,
-    "writes": 245,
-    "dynamic": 45,
+    "reads": 220,
+    "writes": 237,
+    "dynamic": 32,
     "unknown": 0
   },
   "topFiles": [
@@ -32,10 +32,6 @@
     {
       "name": "app/api/admin/campaigns/send/route.ts",
       "calls": 16
-    },
-    {
-      "name": "lib/product-sync-engine.js",
-      "calls": 15
     },
     {
       "name": "lib/inventory-lock.ts",
@@ -72,6 +68,10 @@
     {
       "name": "lib/db/users.js",
       "calls": 8
+    },
+    {
+      "name": "lib/email/service.js",
+      "calls": 8
     }
   ],
   "topCollections": [
@@ -81,7 +81,7 @@
     },
     {
       "name": "DYNAMIC",
-      "calls": 41
+      "calls": 28
     },
     {
       "name": "unified_products",
@@ -104,10 +104,6 @@
       "calls": 15
     },
     {
-      "name": "square_catalog_items",
-      "calls": 15
-    },
-    {
       "name": "audit_logs",
       "calls": 14
     },
@@ -117,6 +113,10 @@
     },
     {
       "name": "inventory",
+      "calls": 13
+    },
+    {
+      "name": "square_catalog_items",
       "calls": 13
     },
     {

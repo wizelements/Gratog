@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 476,
-    "reads": 227,
-    "writes": 245,
-    "dynamic": 45,
+    "calls": 461,
+    "reads": 220,
+    "writes": 237,
+    "dynamic": 32,
     "unknownOperations": 0
   },
   "paths": [
@@ -2772,126 +2772,6 @@
       "line": 125,
       "collection": "email_subscribers",
       "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 102,
-      "collection": "DYNAMIC",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 137,
-      "collection": "square_catalog_items",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 229,
-      "collection": "DYNAMIC",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 270,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 289,
-      "collection": "DYNAMIC",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 325,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 357,
-      "collection": "DYNAMIC",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 358,
-      "collection": "square_catalog_items",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 359,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 366,
-      "collection": "DYNAMIC",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 391,
-      "collection": "DYNAMIC",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 392,
-      "collection": "DYNAMIC",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 393,
-      "collection": "DYNAMIC",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 394,
-      "collection": "DYNAMIC",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/product-sync-engine.js",
-      "line": 395,
-      "collection": "DYNAMIC",
-      "operation": "createIndex",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
