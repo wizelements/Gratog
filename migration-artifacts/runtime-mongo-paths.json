@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 544,
-    "reads": 257,
-    "writes": 282,
-    "dynamic": 113,
+    "calls": 530,
+    "reads": 251,
+    "writes": 274,
+    "dynamic": 99,
     "unknownOperations": 0
   },
   "paths": [
@@ -1973,118 +1973,6 @@
       "collection": "DYNAMIC",
       "operation": "find",
       "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/repository.ts",
-      "line": 44,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/repository.ts",
-      "line": 50,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/repository.ts",
-      "line": 56,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/repository.ts",
-      "line": 67,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/repository.ts",
-      "line": 81,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/repository.ts",
-      "line": 94,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/repository.ts",
-      "line": 116,
-      "collection": "DYNAMIC",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/repository.ts",
-      "line": 135,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/repository.ts",
-      "line": 141,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/repository.ts",
-      "line": 149,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/repository.ts",
-      "line": 158,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/repository.ts",
-      "line": 181,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/repository.ts",
-      "line": 187,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/repository.ts",
-      "line": 195,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {

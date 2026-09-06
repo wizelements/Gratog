@@ -1,200 +1,25 @@
-/**
- * Fresh Batch Request System — MongoDB persistence layer
- *
- * Follows the pattern in `lib/preorder/repository.ts`: raw MongoDB via
- * `connectToDatabase()` for CRUD and atomic counters. Collections are created
- * lazily on first write.
- */
-
-import { v4 as uuidv4 } from 'uuid';
-import { connectToDatabase } from '@/lib/db-optimized';
-import type {
-  BatchCampaign,
-  BatchReservation,
-  FreshBatchRequest,
-} from './types';
-
-const REQUESTS_COLLECTION = 'fresh_batch_requests';
-const CAMPAIGNS_COLLECTION = 'batch_campaigns';
-const RESERVATIONS_COLLECTION = 'batch_reservations';
-const COUNTERS_COLLECTION = 'batch_counters';
-
-/**
- * Generate a new public UUID for fresh-batch entities.
- */
-export function newEntityId(): string {
-  return uuidv4();
-}
-
-// ---------------------------------------------------------------------------
-// Fresh batch requests
-// ---------------------------------------------------------------------------
-
-export async function createRequest(
-  request: Omit<FreshBatchRequest, 'id' | 'createdAt' | 'updatedAt'>
-): Promise<FreshBatchRequest> {
-  const { db } = await connectToDatabase();
-  const now = new Date();
-  const doc: FreshBatchRequest = {
-    ...request,
-    id: newEntityId(),
-    createdAt: now,
-    updatedAt: now,
-  };
-  await db.collection(REQUESTS_COLLECTION).insertOne(doc);
-  return doc;
-}
-
-export async function findRequestById(id: string): Promise<FreshBatchRequest | null> {
-  const { db } = await connectToDatabase();
-  return db.collection(REQUESTS_COLLECTION).findOne({ id }) as Promise<FreshBatchRequest | null>;
-}
-
-export async function findRequestsByEmail(email: string): Promise<FreshBatchRequest[]> {
-  const { db } = await connectToDatabase();
-  return (await db
-    .collection(REQUESTS_COLLECTION)
-    .find({ email: email.toLowerCase() })
-    .sort({ createdAt: -1 })
-    .toArray()) as FreshBatchRequest[];
-}
-
-export async function findRequestsByStatus(
-  status: FreshBatchRequest['status']
-): Promise<FreshBatchRequest[]> {
-  const { db } = await connectToDatabase();
-  return (await db
-    .collection(REQUESTS_COLLECTION)
-    .find({ status })
-    .sort({ createdAt: -1 })
-    .toArray()) as FreshBatchRequest[];
-}
-
-export async function updateRequestStatus(
-  id: string,
-  status: FreshBatchRequest['status'],
-  ownerNotes?: string
-): Promise<FreshBatchRequest | null> {
-  const { db } = await connectToDatabase();
-  const update: Record<string, unknown> = { status, updatedAt: new Date() };
-  if (ownerNotes !== undefined) update.ownerNotes = ownerNotes;
-  return db.collection(REQUESTS_COLLECTION).findOneAndUpdate(
-    { id },
-    { $set: update },
-    { returnDocument: 'after' }
-  ) as Promise<FreshBatchRequest | null>;
-}
-
-export async function linkRequestToBatch(
-  requestId: string,
-  batchId: string,
-  status: FreshBatchRequest['status'] = 'approved'
-): Promise<FreshBatchRequest | null> {
-  const { db } = await connectToDatabase();
-  return db.collection(REQUESTS_COLLECTION).findOneAndUpdate(
-    { id: requestId },
-    { $set: { linkedBatchId: batchId, status, updatedAt: new Date() } },
-    { returnDocument: 'after' }
-  ) as Promise<FreshBatchRequest | null>;
-}
-
-export async function hasRecentDuplicateRequest(
-  email: string,
-  productSlug: string | null,
-  flavorProfile: string | null,
-  withinMs: number = 24 * 60 * 60 * 1000
-): Promise<boolean> {
-  const { db } = await connectToDatabase();
-  const since = new Date(Date.now() - withinMs);
-  const query: Record<string, unknown> = {
-    email: email.toLowerCase(),
-    createdAt: { $gte: since },
-  };
-  if (productSlug) query.requestedProductSlug = productSlug;
-  else if (flavorProfile) query.flavorProfile = flavorProfile;
-  else query.requestedFlavorText = { $exists: true };
-  const count = await db.collection(REQUESTS_COLLECTION).countDocuments(query);
-  return count > 0;
-}
-
-// ---------------------------------------------------------------------------
-// Batch campaigns
-// ---------------------------------------------------------------------------
-
-export async function createBatchCampaign(
-  campaign: Omit<BatchCampaign, 'id' | 'createdAt' | 'updatedAt'>
-): Promise<BatchCampaign> {
-  const { db } = await connectToDatabase();
-  const now = new Date();
-  const doc: BatchCampaign = {
-    ...campaign,
-    id: newEntityId(),
-    createdAt: now,
-    updatedAt: now,
-  };
-  await db.collection(CAMPAIGNS_COLLECTION).insertOne(doc);
-  return doc;
-}
-
-export async function findBatchCampaignById(id: string): Promise<BatchCampaign | null> {
-  const { db } = await connectToDatabase();
-  return db.collection(CAMPAIGNS_COLLECTION).findOne({ id }) as Promise<BatchCampaign | null>;
-}
-
-export async function updateBatchCampaignStatus(
-  id: string,
-  status: BatchCampaign['status']
-): Promise<BatchCampaign | null> {
-  const { db } = await connectToDatabase();
-  return db.collection(CAMPAIGNS_COLLECTION).findOneAndUpdate(
-    { id },
-    { $set: { status, updatedAt: new Date() } },
-    { returnDocument: 'after' }
-  ) as Promise<BatchCampaign | null>;
-}
-
-export async function getNextBatchCampaignNumber(): Promise<number> {
-  const { db } = await connectToDatabase();
-  const result = await db.collection(COUNTERS_COLLECTION).findOneAndUpdate(
-    { _id: 'batch_campaigns' },
-    { $inc: { seq: 1 } },
-    { upsert: true, returnDocument: 'after' }
-  );
-  return (result?.seq ?? 0) as number;
-}
-
-// ---------------------------------------------------------------------------
-// Batch reservations
-// ---------------------------------------------------------------------------
-
-export async function createReservation(
-  reservation: Omit<BatchReservation, 'id' | 'createdAt' | 'updatedAt'>
-): Promise<BatchReservation> {
-  const { db } = await connectToDatabase();
-  const now = new Date();
-  const doc: BatchReservation = {
-    ...reservation,
-    id: newEntityId(),
-    createdAt: now,
-    updatedAt: now,
-  };
-  await db.collection(RESERVATIONS_COLLECTION).insertOne(doc);
-  return doc;
-}
-
-export async function findReservationById(id: string): Promise<BatchReservation | null> {
-  const { db } = await connectToDatabase();
-  return db.collection(RESERVATIONS_COLLECTION).findOne({ id }) as Promise<BatchReservation | null>;
-}
-
-export async function updateReservationPayment(
-  id: string,
-  fields: Pick<BatchReservation, 'squarePaymentLinkId' | 'squareOrderId' | 'paymentUrl' | 'paymentStatus'>
-): Promise<BatchReservation | null> {
-  const { db } = await connectToDatabase();
-  return db.collection(RESERVATIONS_COLLECTION).findOneAndUpdate(
-    { id },
-    { $set: { ...fields, updatedAt: new Date() } },
-    { returnDocument: 'after' }
-  ) as Promise<BatchReservation | null>;
-}
+import {v4 as uuidv4} from 'uuid';
+import {getTursoConnection} from '@/lib/db/turso';
+import type {BatchCampaign,BatchReservation,FreshBatchRequest} from './types';
+export const newEntityId=()=>uuidv4();
+const date=(v:any)=>v?new Date(String(v)):null;
+const request=(r:any):FreshBatchRequest=>({id:String(r.id),email:r.email,phone:r.phone,marketingEmailConsent:Boolean(r.marketing_email_consent),requestedProductSlug:r.requested_product_slug,requestedProductName:r.requested_product_name,requestedFlavorText:r.requested_flavor_text,flavorProfile:r.flavor_profile,quantity:Number(r.quantity),quantityUnit:r.quantity_unit,gallonEquivalent:Number(r.gallon_equivalent),preferredMarketId:r.preferred_market_id,needByDate:date(r.need_by_date),notes:r.notes,requestSource:r.request_source,status:r.status,linkedBatchId:r.linked_batch_id,ownerNotes:r.owner_notes,createdAt:new Date(r.created_at),updatedAt:new Date(r.updated_at)});
+const campaign=(r:any):BatchCampaign=>({id:String(r.id),publicName:r.public_name,internalFlavorKey:r.internal_flavor_key,productSlug:r.product_slug,productCategory:r.product_category,batchType:r.batch_type,targetGallons:Number(r.target_gallons),reservedGallons:Number(r.reserved_gallons),expectedMarketGallons:Number(r.expected_market_gallons),samplingOunces:Number(r.sampling_ounces),actualYieldOunces:r.actual_yield_ounces==null?null:Number(r.actual_yield_ounces),processLossPercentage:Number(r.process_loss_percentage),productionDate:new Date(r.production_date),marketId:r.market_id,requestCutoff:new Date(r.request_cutoff),reservationCutoff:new Date(r.reservation_cutoff),shelfLifeEnd:date(r.shelf_life_end),marketSafe:Boolean(r.market_safe),ingredientAvailability:Boolean(r.ingredient_availability),ownerApproved:Boolean(r.owner_approved),standardGallonPriceCents:Number(r.standard_gallon_price_cents),setupFeeCents:Number(r.setup_fee_cents),depositPercent:Number(r.deposit_percent),status:r.status,createdAt:new Date(r.created_at),updatedAt:new Date(r.updated_at)});
+const reservation=(r:any):BatchReservation=>({id:String(r.id),requestId:r.request_id,batchId:r.batch_id,customerEmail:r.customer_email,quantity:Number(r.quantity),quantityUnit:r.quantity_unit,gallonEquivalent:Number(r.gallon_equivalent),standardPriceCents:Number(r.standard_price_cents),setupFeeCents:Number(r.setup_fee_cents),depositCents:Number(r.deposit_cents),balanceDueCents:Number(r.balance_due_cents),finalPriceCents:Number(r.final_price_cents),squarePaymentLinkId:r.square_payment_link_id,squareOrderId:r.square_order_id,paymentUrl:r.payment_url,paymentStatus:r.payment_status,pickupStatus:r.pickup_status,marketId:r.market_id,confirmationSentAt:date(r.confirmation_sent_at),completedAt:date(r.completed_at),createdAt:new Date(r.created_at),updatedAt:new Date(r.updated_at)});
+const requestColumns='id,email,phone,marketing_email_consent,requested_product_slug,requested_product_name,requested_flavor_text,flavor_profile,quantity,quantity_unit,gallon_equivalent,preferred_market_id,need_by_date,notes,request_source,status,linked_batch_id,owner_notes,created_at,updated_at';
+const campaignColumns='id,public_name,internal_flavor_key,product_slug,product_category,batch_type,target_gallons,reserved_gallons,expected_market_gallons,sampling_ounces,actual_yield_ounces,process_loss_percentage,production_date,market_id,request_cutoff,reservation_cutoff,shelf_life_end,market_safe,ingredient_availability,owner_approved,standard_gallon_price_cents,setup_fee_cents,deposit_percent,status,created_at,updated_at';
+const reservationColumns='id,request_id,batch_id,customer_email,quantity,quantity_unit,gallon_equivalent,standard_price_cents,setup_fee_cents,deposit_cents,balance_due_cents,final_price_cents,square_payment_link_id,square_order_id,payment_url,payment_status,pickup_status,market_id,confirmation_sent_at,completed_at,created_at,updated_at';
+export async function createRequest(value:Omit<FreshBatchRequest,'id'|'createdAt'|'updatedAt'>){const db=getTursoConnection(),id=newEntityId(),now=new Date();await db.run(`INSERT INTO fresh_batch_requests(${requestColumns}) VALUES(${Array(20).fill('?').join(',')})`,id,value.email.toLowerCase(),value.phone,value.marketingEmailConsent?1:0,value.requestedProductSlug,value.requestedProductName,value.requestedFlavorText,value.flavorProfile,value.quantity,value.quantityUnit,value.gallonEquivalent,value.preferredMarketId,value.needByDate?.toISOString()??null,value.notes,value.requestSource,value.status,value.linkedBatchId,value.ownerNotes,now.toISOString(),now.toISOString());return{...value,email:value.email.toLowerCase(),id,createdAt:now,updatedAt:now}}
+export async function findRequestById(id:string){const r=await getTursoConnection().get(`SELECT ${requestColumns} FROM fresh_batch_requests WHERE id=? LIMIT 1`,id);return r?request(r):null}
+export async function findRequestsByEmail(email:string){return(await getTursoConnection().all(`SELECT ${requestColumns} FROM fresh_batch_requests WHERE lower(email)=? ORDER BY created_at DESC`,email.toLowerCase())).map(request)}
+export async function findRequestsByStatus(status:FreshBatchRequest['status']){return(await getTursoConnection().all(`SELECT ${requestColumns} FROM fresh_batch_requests WHERE status=? ORDER BY created_at DESC`,status)).map(request)}
+export async function updateRequestStatus(id:string,status:FreshBatchRequest['status'],ownerNotes?:string){const db=getTursoConnection(),now=new Date().toISOString();const result=ownerNotes===undefined?await db.run('UPDATE fresh_batch_requests SET status=?,updated_at=? WHERE id=?',status,now,id):await db.run('UPDATE fresh_batch_requests SET status=?,owner_notes=?,updated_at=? WHERE id=?',status,ownerNotes,now,id);return Number(result.rowsAffected)===1?findRequestById(id):null}
+export async function linkRequestToBatch(id:string,batchId:string,status:FreshBatchRequest['status']='approved'){const result=await getTursoConnection().run('UPDATE fresh_batch_requests SET linked_batch_id=?,status=?,updated_at=? WHERE id=?',batchId,status,new Date().toISOString(),id);return Number(result.rowsAffected)===1?findRequestById(id):null}
+export async function hasRecentDuplicateRequest(email:string,productSlug:string|null,flavorProfile:string|null,withinMs=86400000){const since=new Date(Date.now()-withinMs).toISOString();let sql='SELECT count(*) AS count FROM fresh_batch_requests WHERE lower(email)=? AND created_at>=?',values:any[]=[email.toLowerCase(),since];if(productSlug){sql+=' AND requested_product_slug=?';values.push(productSlug)}else if(flavorProfile){sql+=' AND flavor_profile=?';values.push(flavorProfile)}else sql+=' AND requested_flavor_text IS NOT NULL';return Number((await getTursoConnection().get(sql,...values))?.count??0)>0}
+export async function createBatchCampaign(value:Omit<BatchCampaign,'id'|'createdAt'|'updatedAt'>){const db=getTursoConnection(),id=newEntityId(),now=new Date();await db.run(`INSERT INTO batch_campaigns(${campaignColumns}) VALUES(${Array(26).fill('?').join(',')})`,id,value.publicName,value.internalFlavorKey,value.productSlug,value.productCategory,value.batchType,value.targetGallons,value.reservedGallons,value.expectedMarketGallons,value.samplingOunces,value.actualYieldOunces,value.processLossPercentage,value.productionDate.toISOString(),value.marketId,value.requestCutoff.toISOString(),value.reservationCutoff.toISOString(),value.shelfLifeEnd?.toISOString()??null,value.marketSafe?1:0,value.ingredientAvailability?1:0,value.ownerApproved?1:0,value.standardGallonPriceCents,value.setupFeeCents,value.depositPercent,value.status,now.toISOString(),now.toISOString());return{...value,id,createdAt:now,updatedAt:now}}
+export async function findBatchCampaignById(id:string){const r=await getTursoConnection().get(`SELECT ${campaignColumns} FROM batch_campaigns WHERE id=? LIMIT 1`,id);return r?campaign(r):null}
+export async function updateBatchCampaignStatus(id:string,status:BatchCampaign['status']){const result=await getTursoConnection().run('UPDATE batch_campaigns SET status=?,updated_at=? WHERE id=?',status,new Date().toISOString(),id);return Number(result.rowsAffected)===1?findBatchCampaignById(id):null}
+export async function getNextBatchCampaignNumber(){const db=getTursoConnection();return db.transactionAsync(async tx=>{await tx.run("INSERT INTO runtime_counters(name,value) VALUES('batch_campaigns',1) ON CONFLICT(name) DO UPDATE SET value=value+1");return Number((await tx.get("SELECT value FROM runtime_counters WHERE name='batch_campaigns'")).value)})}
+export async function createReservation(value:Omit<BatchReservation,'id'|'createdAt'|'updatedAt'>){const db=getTursoConnection(),id=newEntityId(),now=new Date();await db.run(`INSERT INTO batch_reservations(${reservationColumns}) VALUES(${Array(22).fill('?').join(',')})`,id,value.requestId,value.batchId,value.customerEmail.toLowerCase(),value.quantity,value.quantityUnit,value.gallonEquivalent,value.standardPriceCents,value.setupFeeCents,value.depositCents,value.balanceDueCents,value.finalPriceCents,value.squarePaymentLinkId,value.squareOrderId,value.paymentUrl,value.paymentStatus,value.pickupStatus,value.marketId,value.confirmationSentAt?.toISOString()??null,value.completedAt?.toISOString()??null,now.toISOString(),now.toISOString());return{...value,customerEmail:value.customerEmail.toLowerCase(),id,createdAt:now,updatedAt:now}}
+export async function findReservationById(id:string){const r=await getTursoConnection().get(`SELECT ${reservationColumns} FROM batch_reservations WHERE id=? LIMIT 1`,id);return r?reservation(r):null}
+export async function updateReservationPayment(id:string,fields:Pick<BatchReservation,'squarePaymentLinkId'|'squareOrderId'|'paymentUrl'|'paymentStatus'>){const result=await getTursoConnection().run('UPDATE batch_reservations SET square_payment_link_id=?,square_order_id=?,payment_url=?,payment_status=?,updated_at=? WHERE id=?',fields.squarePaymentLinkId,fields.squareOrderId,fields.paymentUrl,fields.paymentStatus,new Date().toISOString(),id);return Number(result.rowsAffected)===1?findReservationById(id):null}
