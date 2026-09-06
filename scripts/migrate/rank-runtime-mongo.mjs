@@ -10,7 +10,7 @@ for (const row of rows) {
   value.total += 1;
   if (row.mode === 'READ') value.reads += 1;
   if (row.mode === 'WRITE') value.writes += 1;
-  if (row.collection === 'DYNAMIC') value.dynamic += 1;
+  if (row.collection === 'DYNAMIC' || row.mode === 'DYNAMIC') value.dynamic += 1;
   groups.set(key, value);
 }
 

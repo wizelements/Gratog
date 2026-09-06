@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T15:00:17.224Z",
+  "generatedAt": "2026-09-06T15:06:29.464Z",
   "baseline": {
     "reads": 350,
     "writes": 308,
@@ -7,9 +7,9 @@
     "unknown": 30
   },
   "current": {
-    "reads": 214,
-    "writes": 234,
-    "dynamic": 24,
+    "reads": 201,
+    "writes": 222,
+    "dynamic": 4,
     "unknown": 0
   },
   "topFiles": [
@@ -24,10 +24,6 @@
     {
       "name": "app/api/payments/route.ts",
       "calls": 20
-    },
-    {
-      "name": "lib/gratitude/transactions.js",
-      "calls": 19
     },
     {
       "name": "app/api/admin/campaigns/send/route.ts",
@@ -72,6 +68,10 @@
     {
       "name": "lib/email/service.js",
       "calls": 8
+    },
+    {
+      "name": "lib/enhanced-rewards.js",
+      "calls": 8
     }
   ],
   "topCollections": [
@@ -82,10 +82,6 @@
     {
       "name": "unified_products",
       "calls": 26
-    },
-    {
-      "name": "DYNAMIC",
-      "calls": 20
     },
     {
       "name": "admin_users",
@@ -133,6 +129,10 @@
     },
     {
       "name": "users",
+      "calls": 8
+    },
+    {
+      "name": "newsletter_subscribers",
       "calls": 8
     }
   ],
