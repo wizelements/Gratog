@@ -2,13 +2,11 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminSession } from '@/lib/auth/unified-admin';
-import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import { isValidRequestTransition } from '@/lib/batches/state-machine';
 import { logRequestStatusChange } from '@/lib/batches/audit-log';
-import type { FreshBatchRequest, RequestStatus } from '@/lib/batches/types';
-
-const COLLECTION = 'fresh_batch_requests';
+import type { RequestStatus } from '@/lib/batches/types';
+import { bulkUpdateRequestStatus, findRequestsByIds, listRequestsForAdmin } from '@/lib/batches/repository';
 
 /**
  * Admin endpoint: list fresh batch requests with optional filters.
@@ -28,23 +26,7 @@ export async function GET(request: NextRequest) {
     const flavor = searchParams.get('flavor');
     const limit = Math.min(Number(searchParams.get('limit') || '100'), 200);
 
-    const query: Record<string, unknown> = {};
-    if (status) query.status = status;
-    if (marketId) query.preferredMarketId = marketId;
-    if (flavor) {
-      query.$or = [
-        { requestedProductSlug: flavor },
-        { flavorProfile: flavor },
-      ];
-    }
-
-    const { db } = await connectToDatabase();
-    const requestsCollection = db.collection(COLLECTION) as import('mongodb').Collection<FreshBatchRequest>;
-    const requests = await requestsCollection
-      .find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .toArray();
+    const requests = await listRequestsForAdmin({ status, marketId, flavor, limit });
 
     return NextResponse.json({ success: true, data: { requests } });
   } catch (error) {
@@ -86,14 +68,10 @@ export async function PATCH(request: NextRequest) {
   }
 
   try {
-    const { db } = await connectToDatabase();
-    const requestsCollection = db.collection(COLLECTION) as import('mongodb').Collection<FreshBatchRequest>;
     const targetStatus = body.status as RequestStatus;
 
     // Fetch current states to validate transitions and audit-log each change.
-    const existing = await requestsCollection
-      .find({ id: { $in: body.ids } })
-      .toArray();
+    const existing = await findRequestsByIds(body.ids);
 
     const invalid = existing.filter((r) => !isValidRequestTransition(r.status, targetStatus));
     if (invalid.length > 0) {
@@ -107,13 +85,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const update: Record<string, unknown> = { status: targetStatus, updatedAt: new Date() };
-    if (body.ownerNotes !== undefined) update.ownerNotes = body.ownerNotes;
-
-    const result = await requestsCollection.updateMany(
-      { id: { $in: body.ids } },
-      { $set: update }
-    );
+    const result = await bulkUpdateRequestStatus(body.ids, targetStatus, body.ownerNotes);
 
     // Append audit-log entries asynchronously; failures are logged, not surfaced.
     const actor = admin.email || 'unknown';
@@ -130,7 +102,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: { matched: result.matchedCount, modified: result.modifiedCount },
+      data: result,
     });
   } catch (error) {
     logger.error('AdminFreshBatch', 'Failed to update requests', {

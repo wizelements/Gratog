@@ -29,7 +29,7 @@ async function hydrate(row:OrderRow|undefined, executor:SqlExecutor) {
 
 export async function getNextWaitlistNumber(marketId:string,prefix:string,date:Date,executor:SqlExecutor=getTursoConnection()) {
   const key=`preorder:${marketId}:${date.toISOString().split('T')[0]}`;
-  const result=await executor.transaction(async(tx:any)=>{ await tx.run(`INSERT INTO runtime_counters (counter_key, value, updated_at) VALUES (?, 1, ?) ON CONFLICT(counter_key) DO UPDATE SET value = value + 1, updated_at = excluded.updated_at`,key,new Date().toISOString()); return tx.get('SELECT value FROM runtime_counters WHERE counter_key = ?',key); });
+  const result=await executor.transaction(async(tx:any)=>{ await tx.run(`INSERT INTO runtime_counters (name, value) VALUES (?, 1) ON CONFLICT(name) DO UPDATE SET value = value + 1`,key); return tx.get('SELECT value FROM runtime_counters WHERE name = ?',key); });
   const counter=Number((result as any).value);
   return {waitlistNumber:`${prefix}-${date.getDate().toString().padStart(2,'0')}${counter.toString().padStart(2,'0')}`,counter};
 }

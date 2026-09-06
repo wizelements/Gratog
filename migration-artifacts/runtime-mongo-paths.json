@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 461,
-    "reads": 220,
-    "writes": 237,
-    "dynamic": 32,
+    "calls": 457,
+    "reads": 218,
+    "writes": 235,
+    "dynamic": 28,
     "unknownOperations": 0
   },
   "paths": [
@@ -436,22 +436,6 @@
       "line": 110,
       "collection": "admin_users",
       "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/fresh-batch/requests/route.ts",
-      "line": 42,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/fresh-batch/requests/route.ts",
-      "line": 90,
-      "collection": "DYNAMIC",
-      "operation": "updateMany",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
@@ -1957,22 +1941,6 @@
       "collection": "audit_log",
       "operation": "insertOne",
       "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/audit-log.ts",
-      "line": 41,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/batches/audit-log.ts",
-      "line": 55,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {

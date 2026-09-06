@@ -7,9 +7,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { connectToDatabase } from '@/lib/db-optimized';
-
-const AUDIT_LOG_COLLECTION = 'batch_audit_log';
+import { getTursoConnection } from '@/lib/db/turso';
 
 export interface AuditLogEvent {
   id: string;
@@ -32,13 +30,17 @@ export type AuditLogInput = Omit<AuditLogEvent, 'id' | 'timestamp'>;
  * Append an immutable audit-log event.
  */
 export async function appendAuditLogEvent(input: AuditLogInput): Promise<AuditLogEvent> {
-  const { db } = await connectToDatabase();
   const event: AuditLogEvent = {
     ...input,
     id: `audit_${uuidv4()}`,
     timestamp: new Date(),
   };
-  await db.collection(AUDIT_LOG_COLLECTION).insertOne(event);
+  await getTursoConnection().run(
+    `INSERT INTO batch_audit_log (id,timestamp,actor,actor_type,entity_type,entity_id,action,previous_state,new_state,metadata_json,reason,correlation_id)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+    event.id,event.timestamp.toISOString(),event.actor,event.actorType,event.entityType,event.entityId,event.action,
+    event.previousState??null,event.newState??null,event.metadata?JSON.stringify(event.metadata):null,event.reason??null,event.correlationId??null
+  );
   return event;
 }
 
@@ -50,13 +52,8 @@ export async function findAuditLogByEntity(
   entityId: string,
   limit: number = 100
 ): Promise<AuditLogEvent[]> {
-  const { db } = await connectToDatabase();
-  return (await db
-    .collection(AUDIT_LOG_COLLECTION)
-    .find({ entityType, entityId })
-    .sort({ timestamp: -1 })
-    .limit(limit)
-    .toArray()) as AuditLogEvent[];
+  const rows=await getTursoConnection().all(`SELECT * FROM batch_audit_log WHERE entity_type=? AND entity_id=? ORDER BY timestamp DESC LIMIT ?`,entityType,entityId,Math.min(Math.max(1,limit),500));
+  return rows.map((row:any)=>({id:row.id,timestamp:new Date(row.timestamp),actor:row.actor,actorType:row.actor_type,entityType:row.entity_type,entityId:row.entity_id,action:row.action,previousState:row.previous_state??undefined,newState:row.new_state??undefined,metadata:row.metadata_json?JSON.parse(row.metadata_json):undefined,reason:row.reason??undefined,correlationId:row.correlation_id??undefined})) as AuditLogEvent[];
 }
 
 // ============================================================================

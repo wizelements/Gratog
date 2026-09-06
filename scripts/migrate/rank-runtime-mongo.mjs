@@ -14,4 +14,6 @@ for (const row of rows) {
   groups.set(key, value);
 }
 
-console.log(JSON.stringify([...groups.values()].sort((a, b) => b.total - a.total).slice(0, 30), null, 2));
+const ranked = [...groups.values()].sort((a, b) => b.total - a.total);
+const dynamicOnly = process.argv.includes('--dynamic');
+console.log(JSON.stringify((dynamicOnly ? ranked.filter((row) => row.dynamic > 0) : ranked.slice(0, 30)), null, 2));

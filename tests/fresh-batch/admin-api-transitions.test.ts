@@ -33,8 +33,10 @@ const mockHandles = vi.hoisted(() => {
   return { mockCollection, mockDb, docs };
 });
 
-vi.mock('@/lib/db-optimized', () => ({
-  connectToDatabase: vi.fn().mockResolvedValue({ db: mockHandles.mockDb }),
+vi.mock('@/lib/batches/repository', () => ({
+  findRequestsByIds: vi.fn(async (ids: string[]) => ids.map((id) => mockHandles.docs[id]).filter(Boolean)),
+  bulkUpdateRequestStatus: vi.fn(async (ids: string[]) => ({ matched: ids.length, modified: ids.length })),
+  listRequestsForAdmin: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('@/lib/logger', () => ({
