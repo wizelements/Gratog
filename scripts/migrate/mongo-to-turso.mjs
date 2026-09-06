@@ -24,7 +24,8 @@ if (!dryRun && (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN
 if (!dryRun && process.env.TURSO_TARGET_ENV !== 'staging' && process.env.TURSO_TARGET_ENV !== 'test') throw new Error('REMOTE_WRITE_BLOCKED_TARGET_NOT_STAGING_OR_TEST');
 
 const registry = JSON.parse(await readFile('migration-artifacts/collection-registry.json', 'utf8')).collections;
-const collections = registry.filter((item) => ['MIGRATE', 'TRANSFORM'].includes(item.classification) && (!selected || item.collection === selected));
+const projectionCollections = new Set(['square_catalog_items', 'unified_products']);
+const collections = registry.filter((item) => (['MIGRATE', 'TRANSFORM'].includes(item.classification) || (selected && projectionCollections.has(item.collection))) && (!selected || item.collection === selected));
 if (selected && collections.length !== 1) throw new Error(`Unknown collection: ${selected}`);
 await mkdir('.tmp/migration', { recursive: true });
 const rejectionPath = 'migration-artifacts/rejected-records.json';
@@ -35,6 +36,26 @@ const turso = dryRun ? null : connect({ url: process.env.TURSO_DATABASE_URL, aut
 try {
   await mongo.connect();
   const db = mongo.db('taste_of_gratitude');
+  const customerDocs = await db.collection('customers').find({}, { projection: { _id: 1, email: 1, squareCustomerId: 1 } }).toArray();
+  const context = { customerById: new Map(), customerBySquareId: new Map(), customerByEmail: new Map(), marketByReference: new Map(), orderByReference: new Map(), productSlugCounts: new Map() };
+  const emailCounts = new Map();
+  for (const customer of customerDocs) {
+    const id = String(customer._id); context.customerById.set(id, id);
+    if (customer.squareCustomerId != null) context.customerBySquareId.set(String(customer.squareCustomerId), id);
+    if (typeof customer.email === 'string' && customer.email.trim()) { const email = customer.email.trim().toLowerCase(); emailCounts.set(email, (emailCounts.get(email) ?? 0) + 1); context.customerByEmail.set(email, id); }
+  }
+  for (const [email, count] of emailCounts) if (count !== 1) context.customerByEmail.delete(email);
+  for await (const marketDoc of db.collection('markets').find({}, { projection: { _id: 1, id: 1, slug: 1 } })) {
+    const targetId = String(marketDoc._id);
+    for (const reference of [marketDoc._id, marketDoc.id, marketDoc.slug]) if (reference != null) context.marketByReference.set(String(reference), targetId);
+  }
+  for await (const orderDoc of db.collection('orders').find({}, { projection: { _id: 1, squareOrderId: 1 } })) {
+    const targetId = String(orderDoc._id); context.orderByReference.set(targetId, targetId);
+    if (orderDoc.squareOrderId != null) context.orderByReference.set(String(orderDoc.squareOrderId), targetId);
+  }
+  for await (const product of db.collection('unified_products').find({}, { projection: { slug: 1 } })) {
+    if (typeof product.slug === 'string' && product.slug) context.productSlugCounts.set(product.slug, (context.productSlugCounts.get(product.slug) ?? 0) + 1);
+  }
   for (const item of collections) {
     const statePath = `.tmp/migration/${dryRun ? 'dry-run-' : ''}${item.collection}.checkpoint.json`;
     let lastId = null;
@@ -45,7 +66,7 @@ try {
       for (const doc of batch) {
         stats.sourceRead++;
         try {
-          const transformed = transformDocument(item.collection, doc);
+          const transformed = transformDocument(item.collection, doc, context);
           stats.valid++;
           for (const statement of transformed.statements) writes.push(insertStatement(statement.table, statement.row));
           writes.push(insertStatement('migration_source_records', { source_collection: item.collection, source_id: transformed.sourceId, canonical_fingerprint: transformed.fingerprint, migrated_at: new Date().toISOString() }));

@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-09-05T23:49:29.189Z",
+  "generatedAt": "2026-09-06T02:31:50.984Z",
   "sourceDatabase": "taste_of_gratitude",
   "financial": {
     "orders": {
       "documents": 851,
       "expectedOrderRows": 851,
       "expectedItemRows": 1209,
-      "totalCents": "162384494",
+      "totalCents": "2162148",
       "paymentCents": "0",
       "legacyWithoutAmount": 0
     },

@@ -23,6 +23,7 @@
     "db:schema:validate": "node scripts/migrate/validate-schema.mjs",
     "db:schema:verify": "node --env-file=.env.local scripts/migrate/verify-schema.mjs",
     "db:staging:create-run": "node --env-file=.env.local scripts/migrate/create-staging-run.mjs",
+    "db:inspect:phase4": "node --env-file=.tmp/vercel-production.env scripts/migrate/inspect-phase4-source.mjs",
     "prepare": "echo 'Skipping husky'",
     "postinstall": "node scripts/fix-deployment-issues.js || true",
     "vercel-build": "npm run build"
