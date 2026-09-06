@@ -1,19 +1,17 @@
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/db-optimized';
 import { PERMISSIONS } from '@/lib/security';
 import { withAdminMiddleware, AuthenticatedRequest } from '@/lib/middleware/admin';
 import { CampaignCreateSchema, validateBody, sanitizeHtml } from '@/lib/validation';
 import { logger } from '@/lib/logger';
-import { ObjectId } from 'mongodb';
+import { archiveAndDeleteCampaign, findCampaign, insertCampaign, listCampaignsPage, updateCampaignFields } from '@/lib/campaigns/repository';
 
 // ============================================================================
 // CAMPAIGN TYPES
 // ============================================================================
 
 interface Campaign {
-  _id?: ObjectId;
   id: string;
   name: string;
   subject: string;
@@ -52,28 +50,8 @@ export const GET = withAdminMiddleware(
     const skip = (page - 1) * limit;
     
     try {
-      const { db } = await connectToDatabase();
-      
-      // Build query
-      const query: Record<string, unknown> = {};
-      
-      if (status) {
-        const allowedStatuses = ['draft', 'scheduled', 'sending', 'sent', 'failed'];
-        if (allowedStatuses.includes(status)) {
-          query.status = status;
-        }
-      }
-      
-      // Get campaigns with pagination
-      const [campaigns, total] = await Promise.all([
-        db.collection('campaigns')
-          .find(query)
-          .sort({ createdAt: -1 })
-          .skip(skip)
-          .limit(limit)
-          .toArray() as Promise<Campaign[]>,
-        db.collection('campaigns').countDocuments(query),
-      ]);
+      const allowedStatuses = ['draft', 'scheduled', 'sending', 'sent', 'failed'];
+      const {campaigns,total}=await listCampaignsPage({status:status&&allowedStatuses.includes(status)?status:undefined,limit,offset:skip});
       
       // Sanitize response - remove raw HTML bodies for list view
       const sanitizedCampaigns = campaigns.map(campaign => ({
@@ -173,8 +151,6 @@ export const POST = withAdminMiddleware(
       // Sanitize HTML body to prevent XSS
       const sanitizedBody = sanitizeHtml(emailBody);
       
-      const { db } = await connectToDatabase();
-      
       // Generate campaign ID
       const campaignId = `campaign_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
       
@@ -200,7 +176,7 @@ export const POST = withAdminMiddleware(
         },
       };
       
-      await db.collection('campaigns').insertOne(campaign);
+      await insertCampaign(campaign);
       
       logger.info('CAMPAIGNS', `Campaign created by ${admin.email}`, {
         campaignId,
@@ -257,10 +233,7 @@ export const PUT = withAdminMiddleware(
         );
       }
       
-      const { db } = await connectToDatabase();
-      
-      // Find campaign
-      const campaign = await db.collection('campaigns').findOne({ id: campaignId }) as Campaign | null;
+      const campaign = await findCampaign(campaignId) as Campaign | null;
       
       if (!campaign) {
         return NextResponse.json(
@@ -309,12 +282,7 @@ export const PUT = withAdminMiddleware(
         );
       }
       
-      updateData.updatedAt = new Date();
-      
-      await db.collection('campaigns').updateOne(
-        { id: campaignId },
-        { $set: updateData }
-      );
+      await updateCampaignFields(campaignId,updateData);
       
       logger.info('CAMPAIGNS', `Campaign ${campaignId} updated by ${admin.email}`, {
         fields: Object.keys(updateData),
@@ -360,10 +328,7 @@ export const DELETE = withAdminMiddleware(
         );
       }
       
-      const { db } = await connectToDatabase();
-      
-      // Find campaign
-      const campaign = await db.collection('campaigns').findOne({ id: campaignId }) as Campaign | null;
+      const campaign = await findCampaign(campaignId) as Campaign | null;
       
       if (!campaign) {
         return NextResponse.json(
@@ -380,16 +345,7 @@ export const DELETE = withAdminMiddleware(
         );
       }
       
-      // Archive before delete
-      await db.collection('deleted_campaigns').insertOne({
-        campaignId,
-        campaignData: campaign,
-        deletedBy: admin.email,
-        deletedAt: new Date(),
-      });
-      
-      // Delete campaign
-      await db.collection('campaigns').deleteOne({ id: campaignId });
+      await archiveAndDeleteCampaign(campaignId,admin.email);
       
       logger.info('CAMPAIGNS', `Campaign ${campaignId} deleted by ${admin.email}`);
       

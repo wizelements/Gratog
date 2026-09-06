@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T15:14:04.541Z",
+  "generatedAt": "2026-09-06T15:16:14.809Z",
   "baseline": {
     "reads": 350,
     "writes": 308,
@@ -7,8 +7,8 @@
     "unknown": 30
   },
   "current": {
-    "reads": 183,
-    "writes": 202,
+    "reads": 179,
+    "writes": 198,
     "dynamic": 0,
     "unknown": 0
   },
@@ -46,10 +46,6 @@
       "calls": 10
     },
     {
-      "name": "app/api/admin/campaigns/route.ts",
-      "calls": 8
-    },
-    {
       "name": "app/api/admin/coupons/route.ts",
       "calls": 8
     },
@@ -72,6 +68,10 @@
     {
       "name": "lib/square/catalogSync.js",
       "calls": 8
+    },
+    {
+      "name": "app/api/admin/reviews/route.ts",
+      "calls": 7
     }
   ],
   "topCollections": [
@@ -116,10 +116,6 @@
       "calls": 11
     },
     {
-      "name": "campaigns",
-      "calls": 8
-    },
-    {
       "name": "users",
       "calls": 8
     },
@@ -134,6 +130,10 @@
     {
       "name": "push_subscriptions",
       "calls": 7
+    },
+    {
+      "name": "resend_webhook_events",
+      "calls": 6
     }
   ],
   "status": "IN_PROGRESS"

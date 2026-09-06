@@ -1,8 +1,8 @@
 {
   "summary": {
-    "calls": 385,
-    "reads": 183,
-    "writes": 202,
+    "calls": 377,
+    "reads": 179,
+    "writes": 198,
     "dynamic": 0,
     "unknownOperations": 0
   },
@@ -76,70 +76,6 @@
       "line": 145,
       "collection": "admin_users",
       "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/route.ts",
-      "line": 69,
-      "collection": "campaigns",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/route.ts",
-      "line": 75,
-      "collection": "campaigns",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/route.ts",
-      "line": 203,
-      "collection": "campaigns",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/route.ts",
-      "line": 263,
-      "collection": "campaigns",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/route.ts",
-      "line": 314,
-      "collection": "campaigns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/route.ts",
-      "line": 366,
-      "collection": "campaigns",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/route.ts",
-      "line": 384,
-      "collection": "deleted_campaigns",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/route.ts",
-      "line": 392,
-      "collection": "campaigns",
-      "operation": "deleteOne",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
