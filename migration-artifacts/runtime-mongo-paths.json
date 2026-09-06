@@ -1,8 +1,8 @@
 {
   "summary": {
-    "calls": 377,
-    "reads": 179,
-    "writes": 198,
+    "calls": 363,
+    "reads": 167,
+    "writes": 196,
     "dynamic": 0,
     "unknownOperations": 0
   },
@@ -1576,54 +1576,6 @@
       "status": "ACTIVE_RUNTIME"
     },
     {
-      "file": "lib/adaptive-recommendations.js",
-      "line": 26,
-      "collection": "unified_products",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/adaptive-recommendations.js",
-      "line": 154,
-      "collection": "unified_products",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/adaptive-recommendations.js",
-      "line": 216,
-      "collection": "unified_products",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/adaptive-recommendations.js",
-      "line": 245,
-      "collection": "unified_analytics",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/adaptive-recommendations.js",
-      "line": 266,
-      "collection": "unified_products",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/adaptive-recommendations.js",
-      "line": 317,
-      "collection": "unified_products",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
       "file": "lib/admin-auth-middleware.js",
       "line": 89,
       "collection": "audit_log",
@@ -2397,70 +2349,6 @@
       "collection": "audit_logs",
       "operation": "createIndex",
       "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-fraud-detection.js",
-      "line": 78,
-      "collection": "passports",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-fraud-detection.js",
-      "line": 160,
-      "collection": "markets",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-fraud-detection.js",
-      "line": 199,
-      "collection": "passports",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-fraud-detection.js",
-      "line": 256,
-      "collection": "fraud_fingerprints",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-fraud-detection.js",
-      "line": 279,
-      "collection": "fraud_fingerprints",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-fraud-detection.js",
-      "line": 304,
-      "collection": "fraud_logs",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-fraud-detection.js",
-      "line": 325,
-      "collection": "fraud_logs",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-fraud-detection.js",
-      "line": 336,
-      "collection": "fraud_logs",
-      "operation": "aggregate",
-      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
