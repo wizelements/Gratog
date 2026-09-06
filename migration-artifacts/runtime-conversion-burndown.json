@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T15:17:26.650Z",
+  "generatedAt": "2026-09-06T15:19:56.372Z",
   "baseline": {
     "reads": 350,
     "writes": 308,
@@ -7,8 +7,8 @@
     "unknown": 30
   },
   "current": {
-    "reads": 167,
-    "writes": 196,
+    "reads": 163,
+    "writes": 193,
     "dynamic": 0,
     "unknown": 0
   },
@@ -66,11 +66,11 @@
       "calls": 8
     },
     {
-      "name": "app/api/admin/reviews/route.ts",
+      "name": "app/api/cron/cleanup-abandoned-orders/route.ts",
       "calls": 7
     },
     {
-      "name": "app/api/cron/cleanup-abandoned-orders/route.ts",
+      "name": "lib/enhanced-order-tracking.js",
       "calls": 7
     }
   ],

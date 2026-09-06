@@ -1,8 +1,8 @@
 {
   "summary": {
-    "calls": 363,
-    "reads": 167,
-    "writes": 196,
+    "calls": 356,
+    "reads": 163,
+    "writes": 193,
     "dynamic": 0,
     "unknownOperations": 0
   },
@@ -524,62 +524,6 @@
       "line": 31,
       "collection": "products",
       "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/reviews/route.ts",
-      "line": 114,
-      "collection": "product_reviews",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/reviews/route.ts",
-      "line": 120,
-      "collection": "product_reviews",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/reviews/route.ts",
-      "line": 124,
-      "collection": "product_reviews",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/reviews/route.ts",
-      "line": 258,
-      "collection": "product_reviews",
-      "operation": "updateMany",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/reviews/route.ts",
-      "line": 331,
-      "collection": "product_reviews",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/reviews/route.ts",
-      "line": 336,
-      "collection": "deleted_reviews",
-      "operation": "insertMany",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/reviews/route.ts",
-      "line": 347,
-      "collection": "product_reviews",
-      "operation": "deleteMany",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
