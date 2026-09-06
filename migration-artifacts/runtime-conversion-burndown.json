@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T02:54:33.987Z",
+  "generatedAt": "2026-09-06T03:26:38.803Z",
   "baseline": {
     "reads": 350,
     "writes": 308,
@@ -7,10 +7,10 @@
     "unknown": 30
   },
   "current": {
-    "reads": 350,
-    "writes": 308,
-    "dynamic": 150,
-    "unknown": 30
+    "reads": 352,
+    "writes": 331,
+    "dynamic": 157,
+    "unknown": 0
   },
   "topFiles": [
     {
@@ -77,7 +77,7 @@
   "topCollections": [
     {
       "name": "DYNAMIC",
-      "calls": 150
+      "calls": 153
     },
     {
       "name": "orders",
@@ -93,11 +93,11 @@
     },
     {
       "name": "products",
-      "calls": 22
+      "calls": 21
     },
     {
       "name": "customers",
-      "calls": 20
+      "calls": 19
     },
     {
       "name": "admin_users",
@@ -112,11 +112,11 @@
       "calls": 17
     },
     {
-      "name": "square_catalog_items",
-      "calls": 16
+      "name": "coupons",
+      "calls": 15
     },
     {
-      "name": "coupons",
+      "name": "square_catalog_items",
       "calls": 15
     },
     {

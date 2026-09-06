@@ -1,10 +1,10 @@
 {
   "summary": {
     "calls": 688,
-    "reads": 350,
-    "writes": 308,
-    "dynamic": 150,
-    "unknownOperations": 30
+    "reads": 352,
+    "writes": 331,
+    "dynamic": 157,
+    "unknownOperations": 0
   },
   "paths": [
     {
@@ -59,7 +59,7 @@
       "file": "app/api/admin/analytics/route.ts",
       "line": 281,
       "collection": "orders",
-      "operation": "aggregate",
+      "operation": "distinct",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -371,7 +371,7 @@
       "file": "app/api/admin/coupons/route.ts",
       "line": 86,
       "collection": "coupons",
-      "operation": "aggregate",
+      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -403,8 +403,8 @@
       "file": "app/api/admin/coupons/route.ts",
       "line": 298,
       "collection": "coupons",
-      "operation": "insertMany",
-      "mode": "WRITE",
+      "operation": "find",
+      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -483,7 +483,7 @@
       "file": "app/api/admin/customers/route.ts",
       "line": 111,
       "collection": "customers",
-      "operation": "aggregate",
+      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -547,7 +547,7 @@
       "file": "app/api/admin/emails/route.ts",
       "line": 110,
       "collection": "email_suppressions",
-      "operation": "find",
+      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -587,8 +587,8 @@
       "file": "app/api/admin/fresh-batch/requests/route.ts",
       "line": 90,
       "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
+      "operation": "updateMany",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -651,8 +651,8 @@
       "file": "app/api/admin/menus/archive/route.ts",
       "line": 48,
       "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
+      "operation": "updateMany",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -675,7 +675,7 @@
       "file": "app/api/admin/notifications/route.ts",
       "line": 209,
       "collection": "push_subscriptions",
-      "operation": "aggregate",
+      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -891,7 +891,7 @@
       "file": "app/api/admin/reviews/route.ts",
       "line": 120,
       "collection": "product_reviews",
-      "operation": "aggregate",
+      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -915,8 +915,8 @@
       "file": "app/api/admin/reviews/route.ts",
       "line": 331,
       "collection": "product_reviews",
-      "operation": "insertMany",
-      "mode": "WRITE",
+      "operation": "find",
+      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -1107,16 +1107,16 @@
       "file": "app/api/instagram/posts/route.ts",
       "line": 13,
       "collection": "instagram_posts",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "find",
+      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "app/api/instagram/sync/route.ts",
       "line": 78,
       "collection": "instagram_posts",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "insertOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -1163,8 +1163,8 @@
       "file": "app/api/newsletter/subscribe/route.ts",
       "line": 18,
       "collection": "newsletter_subscribers",
-      "operation": "findOne",
-      "mode": "READ",
+      "operation": "updateOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -1635,7 +1635,7 @@
       "file": "app/api/user/stats/route.ts",
       "line": 32,
       "collection": "marketorders",
-      "operation": "findOne",
+      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -1986,7 +1986,7 @@
     {
       "file": "app/product/[slug]/page.jsx",
       "line": 25,
-      "collection": "products",
+      "collection": "DYNAMIC",
       "operation": "findOne",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
@@ -2075,7 +2075,7 @@
       "file": "lib/admin-analytics.js",
       "line": 22,
       "collection": "challenges",
-      "operation": "aggregate",
+      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2123,7 +2123,7 @@
       "file": "lib/admin-analytics.js",
       "line": 128,
       "collection": "users",
-      "operation": "aggregate",
+      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2147,7 +2147,7 @@
       "file": "lib/admin-analytics.js",
       "line": 195,
       "collection": "rewards",
-      "operation": "aggregate",
+      "operation": "find",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2155,7 +2155,7 @@
       "file": "lib/admin-analytics.js",
       "line": 219,
       "collection": "challenges",
-      "operation": "aggregate",
+      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2163,7 +2163,7 @@
       "file": "lib/admin-analytics.js",
       "line": 220,
       "collection": "challenges",
-      "operation": "aggregate",
+      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2187,7 +2187,7 @@
       "file": "lib/admin-analytics.js",
       "line": 489,
       "collection": "campaigns",
-      "operation": "aggregate",
+      "operation": "find",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2507,16 +2507,16 @@
       "file": "lib/campaign-manager.js",
       "line": 194,
       "collection": "rewards",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "find",
+      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "lib/campaign-manager.js",
       "line": 213,
       "collection": "challenges",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "find",
+      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -2659,8 +2659,8 @@
       "file": "lib/campaign-manager.js",
       "line": 646,
       "collection": "campaigns",
-      "operation": "deleteOne",
-      "mode": "WRITE",
+      "operation": "findOne",
+      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -2715,7 +2715,7 @@
       "file": "lib/custom-inventory.js",
       "line": 101,
       "collection": "DYNAMIC",
-      "operation": "insertOne",
+      "operation": "deleteMany",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2771,7 +2771,7 @@
       "file": "lib/custom-inventory.js",
       "line": 288,
       "collection": "DYNAMIC",
-      "operation": "insertOne",
+      "operation": "bulkWrite",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2819,7 +2819,7 @@
       "file": "lib/database.ts",
       "line": 89,
       "collection": "variants",
-      "operation": "insertOne",
+      "operation": "deleteMany",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2843,7 +2843,7 @@
       "file": "lib/database.ts",
       "line": 115,
       "collection": "images",
-      "operation": "insertOne",
+      "operation": "deleteMany",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2891,7 +2891,7 @@
       "file": "lib/database.ts",
       "line": 190,
       "collection": "images",
-      "operation": "findOne",
+      "operation": "find",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2915,7 +2915,7 @@
       "file": "lib/database.ts",
       "line": 238,
       "collection": "variants",
-      "operation": "findOne",
+      "operation": "find",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2923,7 +2923,7 @@
       "file": "lib/database.ts",
       "line": 239,
       "collection": "images",
-      "operation": "findOne",
+      "operation": "find",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2947,7 +2947,7 @@
       "file": "lib/database.ts",
       "line": 280,
       "collection": "products",
-      "operation": "findOne",
+      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2955,7 +2955,7 @@
       "file": "lib/database.ts",
       "line": 281,
       "collection": "variants",
-      "operation": "findOne",
+      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2963,7 +2963,7 @@
       "file": "lib/database.ts",
       "line": 282,
       "collection": "links",
-      "operation": "findOne",
+      "operation": "find",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -3027,8 +3027,8 @@
       "file": "lib/db/users.js",
       "line": 39,
       "collection": "users",
-      "operation": "findOne",
-      "mode": "READ",
+      "operation": "insertOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3051,24 +3051,24 @@
       "file": "lib/db/users.js",
       "line": 98,
       "collection": "users",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "updateOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "lib/db/users.js",
       "line": 124,
       "collection": "rewards",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "insertOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "lib/db/users.js",
       "line": 145,
       "collection": "challenges",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "insertOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3083,8 +3083,8 @@
       "file": "lib/db-admin.js",
       "line": 34,
       "collection": "inventory",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "COLLECTION_HANDLE",
+      "mode": "DYNAMIC",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3107,40 +3107,40 @@
       "file": "lib/db-admin.js",
       "line": 90,
       "collection": "analytics",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "COLLECTION_HANDLE",
+      "mode": "DYNAMIC",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "lib/db-customers.js",
       "line": 9,
       "collection": "customers",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "COLLECTION_HANDLE",
+      "mode": "DYNAMIC",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "lib/db-customers.js",
       "line": 14,
       "collection": "waitlist",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "COLLECTION_HANDLE",
+      "mode": "DYNAMIC",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "lib/db-customers.js",
       "line": 19,
       "collection": "communications",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "insertOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "lib/db-customers.js",
       "line": 117,
       "collection": "orders",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "insertOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3179,8 +3179,8 @@
       "file": "lib/db-quiz.js",
       "line": 47,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "insertOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3211,16 +3211,16 @@
       "file": "lib/db-quiz.js",
       "line": 195,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "updateOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "lib/db-quiz.js",
       "line": 228,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "aggregate",
+      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3259,8 +3259,8 @@
       "file": "lib/email/service.js",
       "line": 175,
       "collection": "email_queue",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "insertOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3283,8 +3283,8 @@
       "file": "lib/email/service.js",
       "line": 451,
       "collection": "email_queue",
-      "operation": "find",
-      "mode": "READ",
+      "operation": "updateOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3299,8 +3299,8 @@
       "file": "lib/email-queue.js",
       "line": 53,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "insertOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3315,8 +3315,8 @@
       "file": "lib/email-queue.js",
       "line": 140,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "updateOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3467,8 +3467,8 @@
       "file": "lib/gratitude/accounts.js",
       "line": 24,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "insertOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3499,16 +3499,16 @@
       "file": "lib/gratitude/accounts.js",
       "line": 132,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "findOneAndUpdate",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "lib/gratitude/accounts.js",
       "line": 172,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "findOneAndUpdate",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3554,8 +3554,8 @@
     {
       "file": "lib/gratitude/accounts.js",
       "line": 292,
-      "collection": "customers",
-      "operation": "updateOne",
+      "collection": "DYNAMIC",
+      "operation": "deleteOne",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
@@ -3587,8 +3587,8 @@
       "file": "lib/gratitude/accounts.js",
       "line": 346,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "aggregate",
+      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3651,16 +3651,16 @@
       "file": "lib/gratitude/rewards-catalog.js",
       "line": 17,
       "collection": "DYNAMIC",
-      "operation": "countDocuments",
-      "mode": "READ",
+      "operation": "insertMany",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "lib/gratitude/rewards-catalog.js",
       "line": 40,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "find",
+      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3675,24 +3675,24 @@
       "file": "lib/gratitude/rewards-catalog.js",
       "line": 115,
       "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
+      "operation": "insertOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "lib/gratitude/rewards-catalog.js",
       "line": 143,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "findOneAndUpdate",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "lib/gratitude/rewards-catalog.js",
       "line": 172,
       "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
+      "operation": "findOneAndUpdate",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3715,8 +3715,8 @@
       "file": "lib/gratitude/rewards-catalog.js",
       "line": 232,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "aggregate",
+      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3883,8 +3883,8 @@
       "file": "lib/idempotency.ts",
       "line": 56,
       "collection": "idempotency_keys",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "findOne",
+      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -4051,8 +4051,8 @@
       "file": "lib/learning/service.js",
       "line": 525,
       "collection": "DYNAMIC",
-      "operation": "createIndex",
-      "mode": "WRITE",
+      "operation": "COLLECTION_HANDLE",
+      "mode": "DYNAMIC",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -4067,8 +4067,8 @@
       "file": "lib/learning/service.js",
       "line": 546,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "insertOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -4099,8 +4099,8 @@
       "file": "lib/learning/service.js",
       "line": 716,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "insertOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -4123,8 +4123,8 @@
       "file": "lib/learning/service.js",
       "line": 892,
       "collection": "DYNAMIC",
-      "operation": "UNKNOWN",
-      "mode": "UNKNOWN",
+      "operation": "updateOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -4442,8 +4442,8 @@
     {
       "file": "lib/product-sync-engine.js",
       "line": 357,
-      "collection": "square_catalog_items",
-      "operation": "find",
+      "collection": "DYNAMIC",
+      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -4451,7 +4451,7 @@
       "file": "lib/product-sync-engine.js",
       "line": 358,
       "collection": "square_catalog_items",
-      "operation": "find",
+      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -4603,8 +4603,8 @@
       "file": "lib/queue-integration.js",
       "line": 18,
       "collection": "queuepositions",
-      "operation": "findOne",
-      "mode": "READ",
+      "operation": "insertOne",
+      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -5123,7 +5123,7 @@
       "file": "lib/square/catalogSync.js",
       "line": 347,
       "collection": "square_catalog_items",
-      "operation": "deleteMany",
+      "operation": "bulkWrite",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
@@ -5139,7 +5139,7 @@
       "file": "lib/square/catalogSync.js",
       "line": 373,
       "collection": "square_catalog_categories",
-      "operation": "deleteMany",
+      "operation": "bulkWrite",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
@@ -5155,7 +5155,7 @@
       "file": "lib/square/catalogSync.js",
       "line": 378,
       "collection": "square_catalog_items",
-      "operation": "replaceOne",
+      "operation": "createIndex",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
@@ -5163,7 +5163,7 @@
       "file": "lib/square/catalogSync.js",
       "line": 379,
       "collection": "square_catalog_items",
-      "operation": "replaceOne",
+      "operation": "createIndex",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
@@ -5171,7 +5171,7 @@
       "file": "lib/square/catalogSync.js",
       "line": 380,
       "collection": "square_catalog_categories",
-      "operation": "replaceOne",
+      "operation": "createIndex",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
