@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T14:45:24.544Z",
+  "generatedAt": "2026-09-06T14:46:18.166Z",
   "baseline": {
     "reads": 350,
     "writes": 308,
@@ -7,9 +7,9 @@
     "unknown": 30
   },
   "current": {
-    "reads": 230,
-    "writes": 249,
-    "dynamic": 52,
+    "reads": 227,
+    "writes": 245,
+    "dynamic": 45,
     "unknown": 0
   },
   "topFiles": [
@@ -81,7 +81,7 @@
     },
     {
       "name": "DYNAMIC",
-      "calls": 48
+      "calls": 41
     },
     {
       "name": "unified_products",

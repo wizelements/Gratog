@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 483,
-    "reads": 230,
-    "writes": 249,
-    "dynamic": 52,
+    "calls": 476,
+    "reads": 227,
+    "writes": 245,
+    "dynamic": 45,
     "unknownOperations": 0
   },
   "paths": [
@@ -2253,62 +2253,6 @@
       "collection": "email_queue",
       "operation": "updateOne",
       "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/email-queue.js",
-      "line": 18,
-      "collection": "DYNAMIC",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/email-queue.js",
-      "line": 53,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/email-queue.js",
-      "line": 103,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/email-queue.js",
-      "line": 140,
-      "collection": "DYNAMIC",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/email-queue.js",
-      "line": 178,
-      "collection": "DYNAMIC",
-      "operation": "updateMany",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/email-queue.js",
-      "line": 214,
-      "collection": "DYNAMIC",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/email-queue.js",
-      "line": 254,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
