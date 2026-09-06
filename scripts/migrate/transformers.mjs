@@ -63,5 +63,10 @@ function webhook(doc) { if (!doc.eventId) throw new Error('EXTERNAL_ID_MISSING:e
 const operationalNames = ['admin_users','audit_log','audit_logs','challenges','contact_messages','coupons','customer_passports','email_logs','email_sends','gratitude_accounts','idempotency_keys','inventory_events','lead_intents','learning_enrollments','learning_modules','market_counters','market_schedules','newsletter_subscribers','passport_idempotency','passports','product_reviews','products','quiz_results','reward_transactions','rewards','scheduled_emails','square_sync_metadata','users'];
 const handlers = Object.fromEntries(operationalNames.map((name) => [name, (doc) => operational(name, doc)]));
 Object.assign(handlers, { customers, inventory, markets: market, menus: menu, marketorders: (doc, context) => order('marketorders', doc, context), orders: (doc, context) => order('orders', doc, context), payment_records: (doc, context) => payment('payment_records', doc, context), payments: (doc, context) => payment('payments', doc, context), square_catalog_items: product, unified_products: product, webhook_events_processed: webhook });
-export const FINAL_TRANSFORMER_COLLECTIONS = Object.freeze(Object.keys(handlers).sort());
+// Square catalog and unified-product projections have explicit handlers for
+// pilot/rebuild use, but are classified DERIVED and are not part of the 37
+// active MIGRATE/TRANSFORM collection contract.
+export const FINAL_TRANSFORMER_COLLECTIONS = Object.freeze(
+  Object.keys(handlers).filter((name) => !['square_catalog_items', 'unified_products'].includes(name)).sort(),
+);
 export function transformDocument(collection, doc, context = {}) { const handler = handlers[collection]; if (!handler) throw new Error(`FINAL_TRANSFORMER_MISSING:${collection}`); return { sourceCollection: collection, sourceId: sourceId(doc._id), fingerprint: fingerprint(doc), statements: handler(doc, context) }; }

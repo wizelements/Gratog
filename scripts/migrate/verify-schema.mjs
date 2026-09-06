@@ -4,8 +4,9 @@ const tables=await db.all("SELECT name FROM sqlite_master WHERE type='table' AND
 const indexes=await db.all("SELECT name,tbl_name FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%' ORDER BY name");
 const versions=await db.all('SELECT version FROM schema_migrations ORDER BY version');
 let foreignKeys=0; for(const table of tables) foreignKeys+=(await db.all(`PRAGMA foreign_key_list(${String(table.name).replace(/[^a-z0-9_]/gi,'')})`)).length;
-const expected=['admin_users','audit_log'];
 const required=['customers','orders','order_items','payments','inventory','inventory_events','webhook_events','menus','markets','migration_runs','migration_checkpoints','migration_source_records','operational_records'];
 const names=tables.map(x=>String(x.name)); const missing=required.filter(x=>!names.includes(x));
-const report={status:tables.length===25&&versions.length===3&&!missing.length?'PASS':'FAIL',tables:tables.length,indexes:indexes.length,foreignKeys,schemaVersions:versions.map(x=>x.version),missing};
+const expectedVersions=['0001_migration_control.sql','0002_core_commerce.sql','0003_content_rewards_operations.sql','0004_rewards_runtime.sql','0005_campaign_runtime.sql'];
+const missingVersions=expectedVersions.filter(version=>!versions.some(row=>String(row.version)===version));
+const report={status:tables.length===29&&versions.length===5&&!missing.length&&!missingVersions.length?'PASS':'FAIL',tables:tables.length,indexes:indexes.length,foreignKeys,schemaVersions:versions.map(x=>x.version),missing,missingVersions};
 console.log(JSON.stringify(report));await db.close();if(report.status!=='PASS')process.exit(1);

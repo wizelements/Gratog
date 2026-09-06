@@ -1,306 +1,192 @@
 import { createHash } from 'crypto';
-import { Product } from '@/types/product';
-import { connectToDatabase } from './db-optimized';
+import type { Product } from '@/types/product';
+import { getTursoConnection } from './db/turso';
 
-// CONSOLIDATED: Now uses the centralized db-optimized.js connection
-// This avoids creating multiple MongoDB clients with different pool settings
+type SqlValue = string | number | null;
+type Row = Record<string, unknown>;
 
-export async function getDatabase() {
-  const { db } = await connectToDatabase();
-  return db;
-}
+/** Compatibility export for catalog callers; this is now a Turso connection. */
+export async function getDatabase() { return getTursoConnection(); }
 
-// Hash generation for change detection
 export function generateProductHash(product: Product): string {
   const normalized = {
     title: product.title,
     description: product.description,
-    variants: product.variants.map(v => ({
-      sku: v.sku,
-      price_cents: v.price_cents,
-      options: v.options
-    })),
-    images: product.images.map(i => ({ url: i.url, position: i.position }))
+    variants: product.variants.map(({ sku, price_cents, options }) => ({ sku, price_cents, options })),
+    images: product.images.map(({ url, position }) => ({ url, position })),
   };
   return createHash('sha256').update(JSON.stringify(normalized)).digest('hex');
 }
 
-// Product operations
-export async function upsertProduct(product: Product, sourceId: string = 'tasteofgratitude'): Promise<string> {
-  const database = await getDatabase();
-  const hash = generateProductHash(product);
-  const now = new Date();
-  
-  // Check if product exists
-  const existing = await database.collection('products').findOne({
-    source_id: sourceId,
-    slug: product.slug
-  });
-  
-  let productId: string;
-  
-  if (existing) {
-    // Update if hash changed
-    if (existing.hash !== hash) {
-      await database.collection('products').updateOne(
-        { _id: existing._id },
-        {
-          $set: {
-            title: product.title,
-            description: product.description,
-            brand: product.brand,
-            category: product.category,
-            handle: product.handle,
-            active: product.active,
-            last_seen_at: now,
-            version: existing.version + 1,
-            hash
-          }
-        }
-      );
-    } else {
-      // Just update last_seen_at
-      await database.collection('products').updateOne(
-        { _id: existing._id },
-        { $set: { last_seen_at: now } }
-      );
-    }
-    productId = existing._id.toString();
-  } else {
-    // Create new product
-    const result = await database.collection('products').insertOne({
-      slug: product.slug,
-      title: product.title,
-      description: product.description,
-      brand: product.brand,
-      category: product.category,
-      handle: product.handle,
-      source_id: sourceId,
-      active: product.active,
-      first_seen_at: now,
-      last_seen_at: now,
-      version: 1,
-      hash
-    });
-    productId = result.insertedId.toString();
-  }
-  
-  // Update variants
-  await database.collection('variants').deleteMany({ product_id: productId });
-  
-  for (const variant of product.variants) {
-    const variantResult = await database.collection('variants').insertOne({
-      product_id: productId,
-      sku: variant.sku,
-      option_values: variant.options,
-      price_cents: variant.price_cents,
-      currency: variant.currency,
-      compare_at_cents: variant.compare_at_cents
-    });
-    
-    // Update inventory level
-    await database.collection('inventory_levels').replaceOne(
-      { variant_id: variantResult.insertedId.toString() },
-      {
-        variant_id: variantResult.insertedId.toString(),
-        quantity: variant.availability === 'in_stock' ? 100 : variant.availability === 'low' ? 5 : 0,
-        status: variant.availability,
-        last_checked_at: now
-      },
-      { upsert: true }
-    );
-  }
-  
-  // Update images
-  await database.collection('images').deleteMany({ product_id: productId });
-  
-  for (const image of product.images) {
-    await database.collection('images').insertOne({
-      product_id: productId,
-      url: image.url,
-      width: image.width,
-      height: image.height,
-      alt: image.alt,
-      position: image.position
-    });
-  }
-  
-  // Update link tracking
-  await database.collection('links').replaceOne(
-    { product_id: productId },
-    {
-      product_id: productId,
-      url: product.source_url,
-      last_crawled_at: now,
-      last_hash: hash,
-      crawl_status: 'success'
-    },
-    { upsert: true }
-  );
-  
-  // Log event
-  await database.collection('events').insertOne({
-    type: existing ? 'product_updated' : 'product_created',
-    entity: 'product',
-    entity_id: productId,
-    payload: { slug: product.slug, hash, version: existing ? existing.version + 1 : 1 },
-    created_at: now
-  });
-  
-  return productId;
+const stableId = (namespace: string, value: string) =>
+  `${namespace}:${createHash('sha256').update(value).digest('hex').slice(0, 32)}`;
+
+function metadata(value: unknown): Record<string, unknown> {
+  if (typeof value !== 'string' || !value) return {};
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch { return {}; }
 }
 
-// Query operations
-export async function queryCatalog(params: {
-  q?: string;
-  category?: string;
-  in_stock?: string;
-  limit: number;
-  cursor?: string;
-}): Promise<{ items: Product[]; nextCursor?: string; etag: string }> {
-  const database = await getDatabase();
-  
-  const filter: any = { active: true };
-  
-  if (params.q) {
-    filter.$text = { $search: params.q };
-  }
-  
-  if (params.category) {
-    filter.category = params.category;
-  }
-  
-  const skip = params.cursor ? parseInt(params.cursor) : 0;
-  
-  const products = await database.collection('products')
-    .find(filter)
-    .sort({ last_seen_at: -1 })
-    .skip(skip)
-    .limit(params.limit + 1)
-    .toArray();
-  
-  const hasMore = products.length > params.limit;
-  const items = hasMore ? products.slice(0, -1) : products;
-  
-  // Enrich with variants and images
-  const enrichedProducts: Product[] = [];
-  
-  for (const product of items) {
-    const variants = await database.collection('variants').find({ product_id: product._id.toString() }).toArray();
-    const images = await database.collection('images').find({ product_id: product._id.toString() }).sort({ position: 1 }).toArray();
-    
-    // Get inventory levels for variants
-    const enrichedVariants = [];
-    for (const variant of variants) {
-      const inventory = await database.collection('inventory_levels').findOne({ variant_id: variant._id.toString() });
-      enrichedVariants.push({
-        sku: variant.sku,
-        options: variant.option_values,
-        price_cents: variant.price_cents,
-        currency: variant.currency,
-        compare_at_cents: variant.compare_at_cents,
-        availability: inventory?.status || 'unknown'
-      });
-    }
-    
-    enrichedProducts.push({
-      slug: product.slug,
-      title: product.title,
-      description: product.description,
-      brand: product.brand,
-      category: product.category,
-      images: images.map((img: any) => ({
-        url: img.url,
-        width: img.width,
-        height: img.height,
-        alt: img.alt,
-        position: img.position
-      })),
-      variants: enrichedVariants,
-      source_url: '', // We'll get this from links if needed
-      handle: product.handle,
-      active: product.active
-    });
-  }
-  
-  const nextCursor = hasMore ? (skip + params.limit).toString() : undefined;
-  const etag = createHash('md5').update(JSON.stringify(items.map((p: any) => p.hash))).digest('hex');
-  
-  return { items: enrichedProducts, nextCursor, etag };
+function stockStatus(value: unknown): Product['variants'][number]['availability'] {
+  if (value == null || !Number.isFinite(Number(value))) return 'unknown';
+  if (Number(value) <= 0) return 'out';
+  return Number(value) <= 5 ? 'low' : 'in_stock';
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const database = await getDatabase();
-  
-  const product = await database.collection('products').findOne({ slug, active: true });
-  if (!product) return null;
-  
-  const variants = await database.collection('variants').find({ product_id: product._id.toString() }).toArray();
-  const images = await database.collection('images').find({ product_id: product._id.toString() }).sort({ position: 1 }).toArray();
-  const link = await database.collection('links').findOne({ product_id: product._id.toString() });
-  
-  // Enrich variants with inventory
-  const enrichedVariants = [];
-  for (const variant of variants) {
-    const inventory = await database.collection('inventory_levels').findOne({ variant_id: variant._id.toString() });
-    enrichedVariants.push({
-      sku: variant.sku,
-      options: variant.option_values,
-      price_cents: variant.price_cents,
-      currency: variant.currency,
-      compare_at_cents: variant.compare_at_cents,
-      availability: inventory?.status || 'unknown'
-    });
-  }
-  
+async function hydrateProduct(product: Row): Promise<Product> {
+  const db = await getDatabase();
+  const meta = metadata(product.metadata_json);
+  const variations = await db.all(
+    'SELECT id, name, price_cents, currency, active FROM product_variations WHERE product_id = ? ORDER BY id',
+    String(product.id),
+  ) as Row[];
+  const inventory = await db.get(
+    'SELECT current_stock FROM inventory WHERE product_id = ? LIMIT 1', String(product.id),
+  ) as Row | undefined;
+  const storedVariants = Array.isArray(meta.variants) ? meta.variants as Row[] : [];
+  const bySku = new Map(storedVariants.map((variant) => [String(variant.sku ?? ''), variant]));
+  const availability = stockStatus(inventory?.current_stock);
+
   return {
-    slug: product.slug,
-    title: product.title,
-    description: product.description,
-    brand: product.brand,
-    category: product.category,
-    images: images.map((img: any) => ({
-      url: img.url,
-      width: img.width,
-      height: img.height,
-      alt: img.alt,
-      position: img.position
-    })),
-    variants: enrichedVariants,
-    source_url: link?.url || '',
-    handle: product.handle,
-    active: product.active
+    slug: String(product.slug ?? ''),
+    title: String(product.name ?? ''),
+    description: String(product.description ?? ''),
+    brand: typeof meta.brand === 'string' ? meta.brand : undefined,
+    category: typeof meta.category === 'string' ? meta.category : undefined,
+    images: Array.isArray(meta.images) ? meta.images as Product['images'] : [],
+    variants: variations.map((variation) => {
+      const stored = bySku.get(String(variation.name ?? '')) ?? {};
+      return {
+        sku: String(stored.sku ?? variation.name ?? variation.id),
+        options: stored.options && typeof stored.options === 'object' ? stored.options as Record<string, string> : {},
+        price_cents: Number(variation.price_cents ?? 0),
+        currency: String(variation.currency ?? 'USD'),
+        ...(stored.compare_at_cents == null ? {} : { compare_at_cents: Number(stored.compare_at_cents) }),
+        availability: Number(variation.active) === 0 ? 'out' : availability,
+      };
+    }),
+    source_url: typeof meta.source_url === 'string' ? meta.source_url : '',
+    handle: typeof meta.handle === 'string' ? meta.handle : undefined,
+    active: Number(product.active) === 1,
   };
 }
 
-export async function getHealthMetrics(): Promise<any> {
-  const database = await getDatabase();
-  
-  const [totalProducts, totalVariants, recentCrawls, oldestCrawl] = await Promise.all([
-    database.collection('products').countDocuments({ active: true }),
-    database.collection('variants').countDocuments(),
-    database.collection('links').find({ crawl_status: 'success', last_crawled_at: { $gte: new Date(Date.now() - 60 * 60 * 1000) } }).countDocuments(),
-    database.collection('links').findOne({}, { sort: { last_crawled_at: 1 } })
-  ]);
-  
-  const totalCrawls = await database.collection('links').countDocuments();
-  const crawlSuccessRate = totalCrawls > 0 ? (recentCrawls / totalCrawls) * 100 : 100;
-  
-  const unknownStock = await database.collection('inventory_levels').countDocuments({ status: 'unknown' });
-  const totalStock = await database.collection('inventory_levels').countDocuments();
-  const unknownStockPercentage = totalStock > 0 ? (unknownStock / totalStock) * 100 : 0;
-  
-  const oldestCrawlMinutes = oldestCrawl?.last_crawled_at 
-    ? Math.floor((Date.now() - oldestCrawl.last_crawled_at.getTime()) / (1000 * 60))
-    : 0;
-  
+export async function upsertProduct(product: Product, sourceId = 'tasteofgratitude'): Promise<string> {
+  const db = await getDatabase();
+  const existing = await db.get('SELECT id, metadata_json FROM products WHERE slug = ? LIMIT 1', product.slug) as Row | undefined;
+  const oldMeta = metadata(existing?.metadata_json);
+  const hash = generateProductHash(product);
+  const productId = existing ? String(existing.id) : stableId('product', `${sourceId}\0${product.slug}`);
+  const now = new Date().toISOString();
+  const version = Number(oldMeta.version ?? 0) + (oldMeta.hash === hash ? 0 : 1);
+  const newMeta = JSON.stringify({
+    ...oldMeta,
+    source_id: sourceId,
+    brand: product.brand ?? null,
+    category: product.category ?? null,
+    handle: product.handle ?? null,
+    images: product.images,
+    source_url: product.source_url,
+    variants: product.variants,
+    hash,
+    version: Math.max(version, 1),
+    first_seen_at: oldMeta.first_seen_at ?? now,
+    last_seen_at: now,
+  });
+  await db.transactionAsync(async (tx) => {
+    await tx.run(
+      `INSERT INTO products (id, slug, name, description, active, metadata_json, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET slug=excluded.slug, name=excluded.name,
+       description=excluded.description, active=excluded.active,
+       metadata_json=excluded.metadata_json, updated_at=excluded.updated_at`,
+      productId, product.slug, product.title, product.description, product.active ? 1 : 0,
+      newMeta, (oldMeta.first_seen_at as SqlValue) ?? now, now,
+    );
+    await tx.run('DELETE FROM product_variations WHERE product_id = ?', productId);
+    for (const variant of product.variants) {
+      await tx.run(
+        `INSERT INTO product_variations (id, product_id, name, price_cents, currency, active)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        stableId('variation', `${productId}\0${variant.sku}`), productId, variant.sku,
+        variant.price_cents, variant.currency, variant.availability === 'out' ? 0 : 1,
+      );
+    }
+    const quantities = product.variants.map((variant) => variant.availability === 'in_stock' ? 100 : variant.availability === 'low' ? 5 : 0);
+    await tx.run(
+      `INSERT INTO inventory (product_id, current_stock, low_stock_threshold, active, source, updated_at)
+       VALUES (?, ?, 5, ?, ?, ?)
+       ON CONFLICT(product_id) DO UPDATE SET current_stock=excluded.current_stock,
+       active=excluded.active, source=excluded.source, updated_at=excluded.updated_at`,
+      productId, Math.max(0, ...quantities), product.active ? 1 : 0, sourceId, now,
+    );
+  });
+  return productId;
+}
+
+export async function queryCatalog(params: {
+  q?: string; category?: string; in_stock?: string; limit: number; cursor?: string;
+}): Promise<{ items: Product[]; nextCursor?: string; etag: string }> {
+  const db = await getDatabase();
+  const where = ['p.active = 1'];
+  const values: SqlValue[] = [];
+  if (params.q) {
+    where.push("(lower(p.name) LIKE ? ESCAPE '\\' OR lower(COALESCE(p.description, '')) LIKE ? ESCAPE '\\')");
+    const escaped = params.q.toLowerCase().replace(/[\\%_]/g, '\\$&');
+    values.push(`%${escaped}%`, `%${escaped}%`);
+  }
+  if (params.category) {
+    where.push("lower(json_extract(p.metadata_json, '$.category')) = lower(?)");
+    values.push(params.category);
+  }
+  if (params.in_stock === '1') where.push('COALESCE(i.current_stock, 0) > 0');
+  if (params.in_stock === '0') where.push('COALESCE(i.current_stock, 0) <= 0');
+  const offset = Math.max(0, Number.parseInt(params.cursor ?? '0', 10) || 0);
+  const rows = await db.all(
+    `SELECT p.* FROM products p LEFT JOIN inventory i ON i.product_id=p.id
+     WHERE ${where.join(' AND ')}
+     ORDER BY COALESCE(p.updated_at,p.created_at,'') DESC,p.id LIMIT ? OFFSET ?`,
+    ...values, params.limit + 1, offset,
+  ) as Row[];
+  const hasMore = rows.length > params.limit;
+  const selected = hasMore ? rows.slice(0, params.limit) : rows;
+  const items: Product[] = [];
+  for (const row of selected) items.push(await hydrateProduct(row));
+  const hashes = selected.map((row) => metadata(row.metadata_json).hash ?? row.id);
   return {
-    total_products: totalProducts,
-    total_variants: totalVariants,
-    crawl_success_rate: crawlSuccessRate,
-    avg_freshness_minutes: oldestCrawlMinutes,
-    unknown_stock_percentage: unknownStockPercentage,
-    oldest_crawl_minutes: oldestCrawlMinutes,
-    pending_crawls: await database.collection('links').countDocuments({ crawl_status: 'pending' })
+    items,
+    nextCursor: hasMore ? String(offset + params.limit) : undefined,
+    etag: createHash('md5').update(JSON.stringify(hashes)).digest('hex'),
+  };
+}
+
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  const db = await getDatabase();
+  const product = await db.get('SELECT * FROM products WHERE slug=? AND active=1 LIMIT 1', slug) as Row | undefined;
+  return product ? hydrateProduct(product) : null;
+}
+
+export async function getHealthMetrics(): Promise<Record<string, number>> {
+  const db = await getDatabase();
+  const values = await db.get(
+    `SELECT (SELECT count(*) FROM products WHERE active=1) total_products,
+      (SELECT count(*) FROM product_variations) total_variants,
+      (SELECT count(*) FROM inventory WHERE current_stock IS NULL) unknown_stock,
+      (SELECT count(*) FROM inventory) total_stock,
+      (SELECT min(updated_at) FROM products WHERE active=1) oldest_update`,
+  ) as Row;
+  const oldest = typeof values.oldest_update === 'string' ? Date.parse(values.oldest_update) : Number.NaN;
+  const oldestMinutes = Number.isFinite(oldest) ? Math.max(0, Math.floor((Date.now() - oldest) / 60_000)) : 0;
+  const totalStock = Number(values.total_stock ?? 0);
+  return {
+    total_products: Number(values.total_products ?? 0),
+    total_variants: Number(values.total_variants ?? 0),
+    crawl_success_rate: 100,
+    avg_freshness_minutes: oldestMinutes,
+    unknown_stock_percentage: totalStock ? Number(values.unknown_stock ?? 0) / totalStock * 100 : 0,
+    oldest_crawl_minutes: oldestMinutes,
+    pending_crawls: 0,
   };
 }

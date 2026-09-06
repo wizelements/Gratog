@@ -10,6 +10,7 @@ import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { syncSingleCatalogItem } from '@/lib/square/syncSingleItem';
 import { revalidatePath } from 'next/cache';
 import * as Sentry from '@sentry/nextjs';
+import { getSquareEventRepository } from '@/lib/webhooks/square-event-repository';
 
 // Force Node.js runtime for crypto operations and raw body access
 export const runtime = 'nodejs';
@@ -479,27 +480,23 @@ export async function POST(request: NextRequest) {
     const { db } = await connectToDatabase();
     
     // Event deduplication with retry safety
-    const existingEvent = await db.collection('webhook_events_processed').findOne({ eventId });
+    const eventRepository = getSquareEventRepository();
+    const claim = await eventRepository.claim(eventId, eventType);
     
-    if (existingEvent) {
-      if (existingEvent.status === 'success') {
+    if (!claim.claimed) {
+      if (claim.status === 'success' || claim.status === 'processing') {
         // Successfully processed before - skip (idempotent)
         logger.debug('Webhook', 'Event already processed successfully (idempotent return)', { eventId, eventType });
         return NextResponse.json({
           received: true,
           eventType,
           eventId,
-          processedAt: existingEvent.processedAt,
+          processedAt: claim.processedAt,
           cached: true
         });
       }
       // Previously failed - allow retry
-      logger.info('Webhook', 'Retrying previously failed event', { 
-        eventId, 
-        eventType, 
-        previousError: existingEvent.error,
-        attemptCount: (existingEvent.attemptCount || 1) + 1
-      });
+      throw new Error(`Unable to claim Square webhook event in status ${claim.status}`);
     }
     
     // Process the event based on type
@@ -539,21 +536,7 @@ export async function POST(request: NextRequest) {
       }
       
       // Record successful processing (upsert for retry safety)
-      await db.collection('webhook_events_processed').updateOne(
-        { eventId },
-        {
-          $set: {
-            eventType,
-            processedAt: new Date().toISOString(),
-            status: 'success',
-            result: processingResult,
-            lastAttemptAt: new Date().toISOString(),
-          },
-          $inc: { attemptCount: 1 },
-          $setOnInsert: { firstAttemptAt: new Date().toISOString() }
-        },
-        { upsert: true }
-      );
+      await eventRepository.succeed(eventId, processingResult);
       
     } catch (eventError) {
       const errorMessage = eventError instanceof Error ? eventError.message : String(eventError);
@@ -570,21 +553,7 @@ export async function POST(request: NextRequest) {
       });
       
       // Record failed processing (upsert, allows retry)
-      await db.collection('webhook_events_processed').updateOne(
-        { eventId },
-        {
-          $set: {
-            eventType,
-            processedAt: new Date().toISOString(),
-            status: 'error',
-            lastError: errorMessage,
-            lastAttemptAt: new Date().toISOString(),
-          },
-          $inc: { attemptCount: 1 },
-          $setOnInsert: { firstAttemptAt: new Date().toISOString() }
-        },
-        { upsert: true }
-      );
+      await eventRepository.fail(eventId, 'EVENT_PROCESSING_FAILED');
       
       // Return 500 so Square knows there was an issue (may retry)
       return NextResponse.json(

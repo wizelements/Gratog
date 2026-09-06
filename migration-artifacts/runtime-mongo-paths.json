@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 688,
-    "reads": 352,
-    "writes": 331,
-    "dynamic": 157,
+    "calls": 605,
+    "reads": 301,
+    "writes": 299,
+    "dynamic": 142,
     "unknownOperations": 0
   },
   "paths": [
@@ -469,54 +469,6 @@
       "collection": "coupons",
       "operation": "deleteOne",
       "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/customers/route.ts",
-      "line": 86,
-      "collection": "customers",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/customers/route.ts",
-      "line": 111,
-      "collection": "customers",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/customers/route.ts",
-      "line": 115,
-      "collection": "customers",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/customers/route.ts",
-      "line": 206,
-      "collection": "customers",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/customers/[id]/route.ts",
-      "line": 36,
-      "collection": "customers",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/customers/[id]/route.ts",
-      "line": 56,
-      "collection": "orders",
-      "operation": "find",
-      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -1209,18 +1161,10 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 269,
+      "line": 270,
       "collection": "orders",
       "operation": "updateOne",
       "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/payments/route.ts",
-      "line": 303,
-      "collection": "orders",
-      "operation": "findOne",
-      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -1233,7 +1177,15 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 371,
+      "line": 305,
+      "collection": "orders",
+      "operation": "findOne",
+      "mode": "READ",
+      "status": "ACTIVE_RUNTIME"
+    },
+    {
+      "file": "app/api/payments/route.ts",
+      "line": 372,
       "collection": "payment_records",
       "operation": "findOne",
       "mode": "READ",
@@ -1241,7 +1193,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 378,
+      "line": 379,
       "collection": "payments",
       "operation": "findOne",
       "mode": "READ",
@@ -1249,7 +1201,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 486,
+      "line": 487,
       "collection": "orders",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1257,7 +1209,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 505,
+      "line": 506,
       "collection": "orders",
       "operation": "findOne",
       "mode": "READ",
@@ -1265,7 +1217,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 542,
+      "line": 543,
       "collection": "orders",
       "operation": "findOne",
       "mode": "READ",
@@ -1273,7 +1225,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 575,
+      "line": 576,
       "collection": "orders",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1281,7 +1233,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 676,
+      "line": 677,
       "collection": "orders",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1289,7 +1241,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 761,
+      "line": 762,
       "collection": "orders",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1297,7 +1249,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 788,
+      "line": 789,
       "collection": "orders",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1305,7 +1257,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 846,
+      "line": 847,
       "collection": "orders",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1313,7 +1265,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 916,
+      "line": 917,
       "collection": "payment_records",
       "operation": "insertOne",
       "mode": "WRITE",
@@ -1321,7 +1273,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 939,
+      "line": 940,
       "collection": "orders",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1329,7 +1281,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 959,
+      "line": 960,
       "collection": "orders",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1337,7 +1289,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 1048,
+      "line": 1049,
       "collection": "orders",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1345,7 +1297,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 1152,
+      "line": 1153,
       "collection": "orders",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1353,7 +1305,7 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 1191,
+      "line": 1192,
       "collection": "coupons",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1361,34 +1313,10 @@
     },
     {
       "file": "app/api/payments/route.ts",
-      "line": 1243,
+      "line": 1244,
       "collection": "customers",
       "operation": "updateOne",
       "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/payments/route.ts",
-      "line": 1371,
-      "collection": "orders",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/payments/route.ts",
-      "line": 1387,
-      "collection": "payment_records",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/payments/route.ts",
-      "line": 1394,
-      "collection": "payments",
-      "operation": "findOne",
-      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -1761,7 +1689,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 110,
+      "line": 111,
       "collection": "orders",
       "operation": "findOne",
       "mode": "READ",
@@ -1769,7 +1697,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 130,
+      "line": 131,
       "collection": "subscription_intents",
       "operation": "findOne",
       "mode": "READ",
@@ -1777,7 +1705,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 142,
+      "line": 143,
       "collection": "orders",
       "operation": "findOne",
       "mode": "READ",
@@ -1785,7 +1713,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 162,
+      "line": 163,
       "collection": "subscription_intents",
       "operation": "findOne",
       "mode": "READ",
@@ -1793,7 +1721,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 174,
+      "line": 175,
       "collection": "payment_records",
       "operation": "findOne",
       "mode": "READ",
@@ -1801,7 +1729,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 178,
+      "line": 179,
       "collection": "payments",
       "operation": "findOne",
       "mode": "READ",
@@ -1809,7 +1737,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 182,
+      "line": 183,
       "collection": "orders",
       "operation": "findOne",
       "mode": "READ",
@@ -1817,7 +1745,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 230,
+      "line": 231,
       "collection": "orders",
       "operation": "findOne",
       "mode": "READ",
@@ -1825,7 +1753,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 249,
+      "line": 250,
       "collection": "orders",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1833,7 +1761,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 364,
+      "line": 365,
       "collection": "subscription_intents",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1841,71 +1769,47 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 482,
-      "collection": "webhook_events_processed",
+      "line": 681,
+      "collection": "orders",
+      "operation": "updateOne",
+      "mode": "WRITE",
+      "status": "ACTIVE_RUNTIME"
+    },
+    {
+      "file": "app/api/webhooks/square/route.ts",
+      "line": 691,
+      "collection": "orders",
+      "operation": "updateOne",
+      "mode": "WRITE",
+      "status": "ACTIVE_RUNTIME"
+    },
+    {
+      "file": "app/api/webhooks/square/route.ts",
+      "line": 720,
+      "collection": "orders",
+      "operation": "updateOne",
+      "mode": "WRITE",
+      "status": "ACTIVE_RUNTIME"
+    },
+    {
+      "file": "app/api/webhooks/square/route.ts",
+      "line": 745,
+      "collection": "orders",
       "operation": "findOne",
       "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/webhooks/square/route.ts",
-      "line": 542,
-      "collection": "webhook_events_processed",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/webhooks/square/route.ts",
-      "line": 573,
-      "collection": "webhook_events_processed",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/webhooks/square/route.ts",
-      "line": 712,
-      "collection": "orders",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/webhooks/square/route.ts",
-      "line": 722,
-      "collection": "orders",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/webhooks/square/route.ts",
-      "line": 751,
-      "collection": "orders",
-      "operation": "updateOne",
-      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "app/api/webhooks/square/route.ts",
       "line": 776,
       "collection": "orders",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/webhooks/square/route.ts",
-      "line": 807,
-      "collection": "orders",
       "operation": "updateOne",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 849,
+      "line": 818,
       "collection": "orders",
       "operation": "findOne",
       "mode": "READ",
@@ -1913,7 +1817,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 900,
+      "line": 869,
       "collection": "square_catalog_items",
       "operation": "findOne",
       "mode": "READ",
@@ -1921,7 +1825,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 910,
+      "line": 879,
       "collection": "square_inventory",
       "operation": "find",
       "mode": "READ",
@@ -1929,7 +1833,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 932,
+      "line": 901,
       "collection": "inventory",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1937,7 +1841,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 958,
+      "line": 927,
       "collection": "unified_products",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1945,7 +1849,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 969,
+      "line": 938,
       "collection": "square_catalog_items",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -1953,7 +1857,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 989,
+      "line": 958,
       "collection": "square_inventory",
       "operation": "replaceOne",
       "mode": "WRITE",
@@ -1961,7 +1865,7 @@
     },
     {
       "file": "app/api/webhooks/square/route.ts",
-      "line": 1007,
+      "line": 976,
       "collection": "square_catalog_items",
       "operation": "updateOne",
       "mode": "WRITE",
@@ -2472,206 +2376,6 @@
       "status": "ACTIVE_RUNTIME"
     },
     {
-      "file": "lib/campaign-manager.js",
-      "line": 86,
-      "collection": "campaigns",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 122,
-      "collection": "orders",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 146,
-      "collection": "orders",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 183,
-      "collection": "orders",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 194,
-      "collection": "rewards",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 213,
-      "collection": "challenges",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 235,
-      "collection": "users",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 246,
-      "collection": "orders",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 254,
-      "collection": "users",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 265,
-      "collection": "users",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 289,
-      "collection": "users",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 304,
-      "collection": "campaigns",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 328,
-      "collection": "campaigns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 367,
-      "collection": "campaigns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 403,
-      "collection": "email_sends",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 415,
-      "collection": "email_sends",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 430,
-      "collection": "email_sends",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 445,
-      "collection": "email_sends",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 481,
-      "collection": "campaigns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 555,
-      "collection": "campaigns",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 560,
-      "collection": "email_sends",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 598,
-      "collection": "campaigns",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 619,
-      "collection": "campaigns",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 646,
-      "collection": "campaigns",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/campaign-manager.js",
-      "line": 651,
-      "collection": "campaigns",
-      "operation": "deleteOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
       "file": "lib/cart-pricing.ts",
       "line": 235,
       "collection": "unified_products",
@@ -2697,7 +2401,7 @@
     },
     {
       "file": "lib/custom-inventory.js",
-      "line": 34,
+      "line": 35,
       "collection": "DYNAMIC",
       "operation": "find",
       "mode": "READ",
@@ -2705,7 +2409,7 @@
     },
     {
       "file": "lib/custom-inventory.js",
-      "line": 93,
+      "line": 94,
       "collection": "DYNAMIC",
       "operation": "bulkWrite",
       "mode": "WRITE",
@@ -2713,7 +2417,7 @@
     },
     {
       "file": "lib/custom-inventory.js",
-      "line": 101,
+      "line": 102,
       "collection": "DYNAMIC",
       "operation": "deleteMany",
       "mode": "WRITE",
@@ -2721,7 +2425,7 @@
     },
     {
       "file": "lib/custom-inventory.js",
-      "line": 106,
+      "line": 107,
       "collection": "DYNAMIC",
       "operation": "insertOne",
       "mode": "WRITE",
@@ -2729,15 +2433,7 @@
     },
     {
       "file": "lib/custom-inventory.js",
-      "line": 131,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/custom-inventory.js",
-      "line": 186,
+      "line": 182,
       "collection": "DYNAMIC",
       "operation": "findOne",
       "mode": "READ",
@@ -2745,7 +2441,7 @@
     },
     {
       "file": "lib/custom-inventory.js",
-      "line": 196,
+      "line": 192,
       "collection": "DYNAMIC",
       "operation": "findOneAndUpdate",
       "mode": "WRITE",
@@ -2753,7 +2449,7 @@
     },
     {
       "file": "lib/custom-inventory.js",
-      "line": 226,
+      "line": 222,
       "collection": "DYNAMIC",
       "operation": "insertOne",
       "mode": "WRITE",
@@ -2761,7 +2457,7 @@
     },
     {
       "file": "lib/custom-inventory.js",
-      "line": 251,
+      "line": 247,
       "collection": "DYNAMIC",
       "operation": "findOne",
       "mode": "READ",
@@ -2769,7 +2465,7 @@
     },
     {
       "file": "lib/custom-inventory.js",
-      "line": 288,
+      "line": 284,
       "collection": "DYNAMIC",
       "operation": "bulkWrite",
       "mode": "WRITE",
@@ -2777,234 +2473,10 @@
     },
     {
       "file": "lib/custom-inventory.js",
-      "line": 289,
+      "line": 285,
       "collection": "DYNAMIC",
       "operation": "insertOne",
       "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 35,
-      "collection": "products",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 45,
-      "collection": "products",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 63,
-      "collection": "products",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 71,
-      "collection": "products",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 89,
-      "collection": "variants",
-      "operation": "deleteMany",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 92,
-      "collection": "variants",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 102,
-      "collection": "inventory_levels",
-      "operation": "replaceOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 115,
-      "collection": "images",
-      "operation": "deleteMany",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 118,
-      "collection": "images",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 129,
-      "collection": "links",
-      "operation": "replaceOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 142,
-      "collection": "events",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 175,
-      "collection": "products",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 189,
-      "collection": "variants",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 190,
-      "collection": "images",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 195,
-      "collection": "inventory_levels",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 235,
-      "collection": "products",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 238,
-      "collection": "variants",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 239,
-      "collection": "images",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 240,
-      "collection": "links",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 245,
-      "collection": "inventory_levels",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 280,
-      "collection": "products",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 281,
-      "collection": "variants",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 282,
-      "collection": "links",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 283,
-      "collection": "links",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 286,
-      "collection": "links",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 289,
-      "collection": "inventory_levels",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 290,
-      "collection": "inventory_levels",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/database.ts",
-      "line": 304,
-      "collection": "links",
-      "operation": "countDocuments",
-      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
@@ -3460,142 +2932,6 @@
       "line": 440,
       "collection": "customer_passports",
       "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 24,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 64,
-      "collection": "customers",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 97,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 118,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 132,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 172,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 213,
-      "collection": "customers",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 232,
-      "collection": "DYNAMIC",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 246,
-      "collection": "DYNAMIC",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 264,
-      "collection": "DYNAMIC",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 279,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 292,
-      "collection": "DYNAMIC",
-      "operation": "deleteOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 295,
-      "collection": "customers",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 313,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 331,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 346,
-      "collection": "DYNAMIC",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/accounts.js",
-      "line": 384,
-      "collection": "DYNAMIC",
-      "operation": "aggregate",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },

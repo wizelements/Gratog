@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createPayment, getPayment as getSquarePayment, findOrCreateCustomer, createOrder as createSquareOrder, getSquareConfig } from '@/lib/square-api';
 import type { OrderFulfillment } from '@/lib/square-api';
 import { connectToDatabase } from '@/lib/db-optimized';
+import { getPaymentStatusByOrderId } from '@/lib/payments/repository';
 import { randomUUID } from 'crypto';
 import * as Sentry from '@sentry/nextjs';
 import { 
@@ -1367,8 +1368,8 @@ export async function GET(request: NextRequest) {
     }
 
     if (orderId) {
-      const { db } = await connectToDatabase();
-      const order = await db.collection('orders').findOne({ id: orderId });
+      const statusRecord = await getPaymentStatusByOrderId(orderId);
+      const order = statusRecord?.order;
       
       if (!order) {
         return json({ error: 'Order not found' }, 404);
@@ -1384,24 +1385,7 @@ export async function GET(request: NextRequest) {
         return json({ error: 'Unauthorized' }, 401);
       }
 
-      let paymentRecord = await db.collection('payment_records').findOne(
-        { 'metadata.orderId': orderId },
-        { sort: { createdAt: -1 } }
-      );
-
-      // Migration fallback for older records.
-      if (!paymentRecord) {
-        paymentRecord = await db.collection('payments').findOne(
-          { 'metadata.orderId': orderId },
-          { sort: { createdAt: -1 } }
-        );
-        if (paymentRecord) {
-          logger.warn('API', 'Payment found in legacy "payments" collection (GET) — migration incomplete', {
-            traceId: ctx.traceId,
-            orderId,
-          });
-        }
-      }
+      const paymentRecord = statusRecord?.payment;
 
       return json({
         success: true,
@@ -1414,7 +1398,6 @@ export async function GET(request: NextRequest) {
           receiptUrl:
             order.receiptUrl ||
             paymentRecord?.receiptUrl ||
-            order.payment?.receiptUrl ||
             null,
         },
         payment: paymentRecord
