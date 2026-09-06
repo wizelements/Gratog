@@ -1,8 +1,8 @@
 {
   "summary": {
-    "calls": 356,
-    "reads": 163,
-    "writes": 193,
+    "calls": 343,
+    "reads": 159,
+    "writes": 184,
     "dynamic": 0,
     "unknownOperations": 0
   },
@@ -2048,54 +2048,6 @@
       "status": "ACTIVE_RUNTIME"
     },
     {
-      "file": "lib/inventory-sync.js",
-      "line": 130,
-      "collection": "products",
-      "operation": "bulkWrite",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/inventory-sync.js",
-      "line": 162,
-      "collection": "products",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/inventory-sync.js",
-      "line": 196,
-      "collection": "products",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/inventory-sync.js",
-      "line": 231,
-      "collection": "products",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/inventory-sync.js",
-      "line": 279,
-      "collection": "products",
-      "operation": "bulkWrite",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/inventory-sync.js",
-      "line": 321,
-      "collection": "products",
-      "operation": "bulkWrite",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
       "file": "lib/nurture-sequence.js",
       "line": 48,
       "collection": "email_subscribers",
@@ -2236,62 +2188,6 @@
       "line": 65,
       "collection": "email_sends",
       "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-audit-logger.js",
-      "line": 104,
-      "collection": "audit_logs",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-audit-logger.js",
-      "line": 315,
-      "collection": "audit_logs",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-audit-logger.js",
-      "line": 322,
-      "collection": "audit_logs",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-audit-logger.js",
-      "line": 344,
-      "collection": "audit_logs",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-audit-logger.js",
-      "line": 347,
-      "collection": "audit_logs",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-audit-logger.js",
-      "line": 350,
-      "collection": "audit_logs",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/rewards-audit-logger.js",
-      "line": 353,
-      "collection": "audit_logs",
-      "operation": "createIndex",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },

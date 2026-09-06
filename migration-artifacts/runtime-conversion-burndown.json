@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T15:19:56.372Z",
+  "generatedAt": "2026-09-06T15:21:45.770Z",
   "baseline": {
     "reads": 350,
     "writes": 308,
@@ -7,8 +7,8 @@
     "unknown": 30
   },
   "current": {
-    "reads": 163,
-    "writes": 193,
+    "reads": 159,
+    "writes": 184,
     "dynamic": 0,
     "unknown": 0
   },
@@ -96,14 +96,6 @@
       "calls": 15
     },
     {
-      "name": "audit_logs",
-      "calls": 14
-    },
-    {
-      "name": "products",
-      "calls": 13
-    },
-    {
       "name": "square_catalog_items",
       "calls": 13
     },
@@ -124,7 +116,15 @@
       "calls": 8
     },
     {
+      "name": "audit_logs",
+      "calls": 7
+    },
+    {
       "name": "email_sends",
+      "calls": 7
+    },
+    {
+      "name": "products",
       "calls": 7
     },
     {
