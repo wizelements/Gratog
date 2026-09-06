@@ -1,6 +1,5 @@
-import { ObjectId } from 'mongodb';
-import { connectToDatabase } from '@/lib/db-optimized';
 import { verifySubscriptionAccessToken } from '@/lib/subscription-access';
+import { findSubscriptionForEmail } from '@/lib/subscriptions/repository';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +18,7 @@ export default async function SubscriptionDetailPage({ params, searchParams }) {
     );
   }
 
-  if (!ObjectId.isValid(id)) {
+  if (!id || typeof id !== 'string') {
     return (
       <main className="container py-16">
         <h1 className="text-3xl font-bold mb-4">Subscription Not Found</h1>
@@ -27,10 +26,9 @@ export default async function SubscriptionDetailPage({ params, searchParams }) {
     );
   }
 
-  const { db } = await connectToDatabase();
-  const subscription = await db.collection('subscriptions').findOne({ _id: new ObjectId(id) });
+  const subscription = await findSubscriptionForEmail(id, tokenData.email);
 
-  if (!subscription || String(subscription.email || '').toLowerCase() !== tokenData.email) {
+  if (!subscription) {
     return (
       <main className="container py-16">
         <h1 className="text-3xl font-bold mb-4">Unauthorized</h1>

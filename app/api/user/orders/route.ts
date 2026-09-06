@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 import { findUserById } from '@/lib/db/users';
-import { connectToDatabase } from '@/lib/db-optimized';
+import { listMarketOrdersForUser } from '@/lib/repositories/order-reads';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +9,7 @@ async function getAuthUser(request: NextRequest) {
   const token = request.cookies.get('auth_token')?.value;
   if (!token) return null;
   const decoded = await verifyToken(token);
-  if (!decoded?.userId) return null;
+  if (typeof decoded?.userId !== 'string' || !decoded.userId) return null;
   return decoded;
 }
 
@@ -25,20 +25,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
     }
 
-    const { db } = await connectToDatabase();
-    const orders = await db.collection('marketorders').find({
-      $or: [{ userId: decoded.userId }, { customerEmail: user.email }],
-    }).sort({ createdAt: -1 }).limit(50).toArray();
-
-    const mapped = orders.map((order: any) => ({
-      id: order._id?.toString() || order.id,
-      orderNumber: order.orderNumber,
-      status: order.status,
-      items: order.items || [],
-      total: order.total,
-      fulfillment: order.fulfillment || null,
-      createdAt: order.createdAt,
-    }));
+    const mapped = await listMarketOrdersForUser(
+      String(decoded.userId),
+      typeof user.email === 'string' ? user.email : '',
+    );
 
     return NextResponse.json({ success: true, orders: mapped });
   } catch (error) {

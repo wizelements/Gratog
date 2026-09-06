@@ -1,28 +1,12 @@
 {
   "summary": {
-    "calls": 605,
-    "reads": 301,
+    "calls": 599,
+    "reads": 295,
     "writes": 299,
     "dynamic": 142,
     "unknownOperations": 0
   },
   "paths": [
-    {
-      "file": "app/account/subscriptions/page.js",
-      "line": 22,
-      "collection": "subscriptions",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/account/subscriptions/[id]/page.js",
-      "line": 31,
-      "collection": "subscriptions",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
     {
       "file": "app/api/admin/analytics/route.ts",
       "line": 222,
@@ -1544,14 +1528,6 @@
       "status": "ACTIVE_RUNTIME"
     },
     {
-      "file": "app/api/user/orders/route.ts",
-      "line": 29,
-      "collection": "marketorders",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
       "file": "app/api/user/rewards/route.js",
       "line": 31,
       "collection": "rewards",
@@ -1953,16 +1929,8 @@
     },
     {
       "file": "lib/admin-analytics.js",
-      "line": 19,
-      "collection": "users",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/admin-analytics.js",
       "line": 20,
-      "collection": "orders",
+      "collection": "users",
       "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
@@ -1970,7 +1938,7 @@
     {
       "file": "lib/admin-analytics.js",
       "line": 21,
-      "collection": "campaigns",
+      "collection": "orders",
       "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
@@ -1978,6 +1946,14 @@
     {
       "file": "lib/admin-analytics.js",
       "line": 22,
+      "collection": "campaigns",
+      "operation": "countDocuments",
+      "mode": "READ",
+      "status": "ACTIVE_RUNTIME"
+    },
+    {
+      "file": "lib/admin-analytics.js",
+      "line": 23,
       "collection": "challenges",
       "operation": "countDocuments",
       "mode": "READ",
@@ -1985,7 +1961,7 @@
     },
     {
       "file": "lib/admin-analytics.js",
-      "line": 27,
+      "line": 28,
       "collection": "orders",
       "operation": "aggregate",
       "mode": "READ",
@@ -1993,7 +1969,7 @@
     },
     {
       "file": "lib/admin-analytics.js",
-      "line": 67,
+      "line": 68,
       "collection": "orders",
       "operation": "find",
       "mode": "READ",
@@ -2001,17 +1977,9 @@
     },
     {
       "file": "lib/admin-analytics.js",
-      "line": 73,
+      "line": 74,
       "collection": "users",
       "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/admin-analytics.js",
-      "line": 100,
-      "collection": "campaigns",
-      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2025,7 +1993,15 @@
     },
     {
       "file": "lib/admin-analytics.js",
-      "line": 128,
+      "line": 102,
+      "collection": "campaigns",
+      "operation": "countDocuments",
+      "mode": "READ",
+      "status": "ACTIVE_RUNTIME"
+    },
+    {
+      "file": "lib/admin-analytics.js",
+      "line": 129,
       "collection": "users",
       "operation": "countDocuments",
       "mode": "READ",
@@ -2033,7 +2009,7 @@
     },
     {
       "file": "lib/admin-analytics.js",
-      "line": 132,
+      "line": 133,
       "collection": "users",
       "operation": "aggregate",
       "mode": "READ",
@@ -2041,7 +2017,7 @@
     },
     {
       "file": "lib/admin-analytics.js",
-      "line": 153,
+      "line": 154,
       "collection": "orders",
       "operation": "aggregate",
       "mode": "READ",
@@ -2049,17 +2025,9 @@
     },
     {
       "file": "lib/admin-analytics.js",
-      "line": 195,
+      "line": 196,
       "collection": "rewards",
       "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/admin-analytics.js",
-      "line": 219,
-      "collection": "challenges",
-      "operation": "countDocuments",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2073,7 +2041,15 @@
     },
     {
       "file": "lib/admin-analytics.js",
-      "line": 223,
+      "line": 221,
+      "collection": "challenges",
+      "operation": "countDocuments",
+      "mode": "READ",
+      "status": "ACTIVE_RUNTIME"
+    },
+    {
+      "file": "lib/admin-analytics.js",
+      "line": 224,
       "collection": "users",
       "operation": "aggregate",
       "mode": "READ",
@@ -2081,33 +2057,9 @@
     },
     {
       "file": "lib/admin-analytics.js",
-      "line": 296,
+      "line": 297,
       "collection": "orders",
       "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/admin-analytics.js",
-      "line": 489,
-      "collection": "campaigns",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/admin-analytics.js",
-      "line": 506,
-      "collection": "campaigns",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/admin-analytics.js",
-      "line": 525,
-      "collection": "campaigns",
-      "operation": "find",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },

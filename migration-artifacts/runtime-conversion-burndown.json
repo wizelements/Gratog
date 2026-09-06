@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T10:51:30.286Z",
+  "generatedAt": "2026-09-06T13:13:13.950Z",
   "baseline": {
     "reads": 350,
     "writes": 308,
@@ -7,7 +7,7 @@
     "unknown": 30
   },
   "current": {
-    "reads": 301,
+    "reads": 295,
     "writes": 299,
     "dynamic": 142,
     "unknown": 0
@@ -26,12 +26,12 @@
       "calls": 20
     },
     {
-      "name": "lib/admin-analytics.js",
-      "calls": 20
-    },
-    {
       "name": "lib/gratitude/transactions.js",
       "calls": 19
+    },
+    {
+      "name": "lib/admin-analytics.js",
+      "calls": 17
     },
     {
       "name": "app/api/admin/campaigns/send/route.ts",
@@ -89,7 +89,7 @@
     },
     {
       "name": "campaigns",
-      "calls": 23
+      "calls": 20
     },
     {
       "name": "admin_users",

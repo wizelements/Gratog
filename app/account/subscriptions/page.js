@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { connectToDatabase } from '@/lib/db-optimized';
 import { verifySubscriptionAccessToken } from '@/lib/subscription-access';
+import { listSubscriptionsByEmail } from '@/lib/subscriptions/repository';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,12 +18,7 @@ export default async function AccountSubscriptionsPage({ searchParams }) {
     );
   }
 
-  const { db } = await connectToDatabase();
-  const subscriptions = await db.collection('subscriptions')
-    .find({ email: tokenData.email })
-    .sort({ createdAt: -1 })
-    .limit(20)
-    .toArray();
+  const subscriptions = await listSubscriptionsByEmail(tokenData.email, 20);
 
   return (
     <main className="container py-10">
@@ -31,11 +26,11 @@ export default async function AccountSubscriptionsPage({ searchParams }) {
       <p className="text-gray-600 mb-8">Manage your active plan, billing history, and delivery preferences.</p>
       <div className="grid gap-4">
         {subscriptions.map((sub) => (
-          <div key={sub._id.toString()} className="border rounded-lg p-4 bg-white shadow-sm">
+          <div key={sub.id} className="border rounded-lg p-4 bg-white shadow-sm">
             <h2 className="font-semibold text-lg">{sub.planName}</h2>
             <p className="text-sm text-gray-600">Status: {sub.status} · ${sub.monthlyPrice}/month</p>
             <Link
-              href={`/account/subscriptions/${sub._id.toString()}?token=${encodeURIComponent(token)}`}
+              href={`/account/subscriptions/${sub.id}?token=${encodeURIComponent(token)}`}
               className="inline-block mt-3 text-emerald-700 font-medium"
             >
               Manage Subscription
