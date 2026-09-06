@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { syncSquareOrders } from '@/lib/square-orders-sync';
-import { syncSquareCatalog } from '@/lib/square/catalogSync';
 
 function makeJsonResponse(payload: unknown, status = 200): Response {
   return new Response(JSON.stringify(payload), {
@@ -113,39 +112,4 @@ describe('Square Sync Resilience', () => {
     await expect(syncSquareOrders(db as any)).rejects.toThrow('Square API returned a non-JSON response');
   });
 
-  it('catalog sync resolves to active location when SQUARE_LOCATION_ID is missing', async () => {
-    process.env.SQUARE_ACCESS_TOKEN = 'EAAA_valid_token';
-    process.env.SQUARE_ENVIRONMENT = 'production';
-    delete process.env.SQUARE_LOCATION_ID;
-
-    const fetchMock = vi.fn()
-      .mockResolvedValueOnce(makeJsonResponse({ locations: [{ id: 'CAT_LOC', status: 'ACTIVE' }] }))
-      .mockResolvedValueOnce(makeJsonResponse({ location: { id: 'CAT_LOC', name: 'Main' } }))
-      .mockResolvedValueOnce(makeJsonResponse({
-        objects: [
-          {
-            id: 'ITEM_1',
-            type: 'ITEM',
-            item_data: {
-              name: 'Sync Test Product',
-              variations: []
-            }
-          }
-        ]
-      }));
-
-    vi.stubGlobal('fetch', fetchMock);
-
-    const { db, collections } = createDbMock();
-
-    const result = await syncSquareCatalog(db as any);
-
-    expect(result.items).toBe(1);
-
-    const syncMeta = collections.get('square_sync_metadata');
-    expect(syncMeta.replaceOne).toHaveBeenCalled();
-    const metadataDoc = syncMeta.replaceOne.mock.calls[0][1];
-    expect(metadataDoc.locationId).toBe('CAT_LOC');
-    expect(metadataDoc.environment).toBe('production');
-  });
 });

@@ -1,8 +1,8 @@
 {
   "summary": {
-    "calls": 343,
+    "calls": 335,
     "reads": 159,
-    "writes": 184,
+    "writes": 176,
     "dynamic": 0,
     "unknownOperations": 0
   },
@@ -2437,70 +2437,6 @@
       "collection": "audit_logs",
       "operation": "countDocuments",
       "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/square/catalogSync.js",
-      "line": 347,
-      "collection": "square_catalog_items",
-      "operation": "bulkWrite",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/square/catalogSync.js",
-      "line": 349,
-      "collection": "square_catalog_items",
-      "operation": "deleteMany",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/square/catalogSync.js",
-      "line": 373,
-      "collection": "square_catalog_categories",
-      "operation": "bulkWrite",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/square/catalogSync.js",
-      "line": 374,
-      "collection": "square_catalog_categories",
-      "operation": "deleteMany",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/square/catalogSync.js",
-      "line": 378,
-      "collection": "square_catalog_items",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/square/catalogSync.js",
-      "line": 379,
-      "collection": "square_catalog_items",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/square/catalogSync.js",
-      "line": 380,
-      "collection": "square_catalog_categories",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/square/catalogSync.js",
-      "line": 383,
-      "collection": "square_sync_metadata",
-      "operation": "replaceOne",
-      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {
