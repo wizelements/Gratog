@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 554,
-    "reads": 260,
-    "writes": 289,
-    "dynamic": 123,
+    "calls": 544,
+    "reads": 257,
+    "writes": 282,
+    "dynamic": 113,
     "unknownOperations": 0
   },
   "paths": [
@@ -2141,86 +2141,6 @@
       "collection": "links",
       "operation": "find",
       "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/custom-inventory.js",
-      "line": 35,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/custom-inventory.js",
-      "line": 94,
-      "collection": "DYNAMIC",
-      "operation": "bulkWrite",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/custom-inventory.js",
-      "line": 102,
-      "collection": "DYNAMIC",
-      "operation": "deleteMany",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/custom-inventory.js",
-      "line": 107,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/custom-inventory.js",
-      "line": 182,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/custom-inventory.js",
-      "line": 192,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/custom-inventory.js",
-      "line": 222,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/custom-inventory.js",
-      "line": 247,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/custom-inventory.js",
-      "line": 284,
-      "collection": "DYNAMIC",
-      "operation": "bulkWrite",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/custom-inventory.js",
-      "line": 285,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
     {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T13:53:40.310Z",
+  "generatedAt": "2026-09-06T14:01:23.804Z",
   "baseline": {
     "reads": 350,
     "writes": 308,
@@ -7,9 +7,9 @@
     "unknown": 30
   },
   "current": {
-    "reads": 260,
-    "writes": 289,
-    "dynamic": 123,
+    "reads": 257,
+    "writes": 282,
+    "dynamic": 113,
     "unknown": 0
   },
   "topFiles": [
@@ -62,22 +62,22 @@
       "calls": 10
     },
     {
-      "name": "lib/custom-inventory.js",
-      "calls": 10
-    },
-    {
       "name": "lib/gratitude/rewards-catalog.js",
       "calls": 10
     },
     {
       "name": "lib/learning/service.js",
       "calls": 10
+    },
+    {
+      "name": "lib/preorder/repository.ts",
+      "calls": 10
     }
   ],
   "topCollections": [
     {
       "name": "DYNAMIC",
-      "calls": 119
+      "calls": 109
     },
     {
       "name": "orders",
