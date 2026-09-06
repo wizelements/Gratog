@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T13:39:14.672Z",
+  "generatedAt": "2026-09-06T13:46:00.396Z",
   "baseline": {
     "reads": 350,
     "writes": 308,
@@ -7,7 +7,7 @@
     "unknown": 30
   },
   "current": {
-    "reads": 278,
+    "reads": 269,
     "writes": 299,
     "dynamic": 142,
     "unknown": 0
@@ -81,7 +81,7 @@
     },
     {
       "name": "orders",
-      "calls": 81
+      "calls": 74
     },
     {
       "name": "unified_products",
@@ -129,7 +129,7 @@
     },
     {
       "name": "customers",
-      "calls": 11
+      "calls": 9
     },
     {
       "name": "users",

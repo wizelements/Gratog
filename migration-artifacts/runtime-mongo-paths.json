@@ -1,84 +1,12 @@
 {
   "summary": {
-    "calls": 582,
-    "reads": 278,
+    "calls": 573,
+    "reads": 269,
     "writes": 299,
     "dynamic": 142,
     "unknownOperations": 0
   },
   "paths": [
-    {
-      "file": "app/api/admin/analytics/route.ts",
-      "line": 222,
-      "collection": "orders",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/analytics/route.ts",
-      "line": 249,
-      "collection": "orders",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/analytics/route.ts",
-      "line": 252,
-      "collection": "orders",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/analytics/route.ts",
-      "line": 276,
-      "collection": "customers",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/analytics/route.ts",
-      "line": 281,
-      "collection": "orders",
-      "operation": "distinct",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/analytics/route.ts",
-      "line": 286,
-      "collection": "customers",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/analytics/route.ts",
-      "line": 330,
-      "collection": "orders",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/analytics/route.ts",
-      "line": 365,
-      "collection": "orders",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/analytics/route.ts",
-      "line": 368,
-      "collection": "orders",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
     {
       "file": "app/api/admin/auth/login/route.ts",
       "line": 218,
