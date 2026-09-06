@@ -7,6 +7,8 @@ import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import type { AdminMarket, MarketDocument, MarketLocation } from './types';
+import { getDatabaseProvider } from '@/lib/db/turso';
+import { getTursoMarketById, listTursoMarkets } from './turso-repository';
 
 const COLLECTION_NAME = 'markets';
 
@@ -62,6 +64,7 @@ function documentToAdminMarket(doc: MarketDocument): AdminMarket {
 }
 
 export async function getAllMarkets(): Promise<AdminMarket[]> {
+  if (getDatabaseProvider() === 'turso') return listTursoMarkets(false);
   try {
     const { db } = await connectToDatabase();
     const docs = await db
@@ -78,6 +81,7 @@ export async function getAllMarkets(): Promise<AdminMarket[]> {
 }
 
 export async function getActiveMarkets(): Promise<AdminMarket[]> {
+  if (getDatabaseProvider() === 'turso') return listTursoMarkets(true);
   try {
     const { db } = await connectToDatabase();
     const docs = await db
@@ -94,6 +98,7 @@ export async function getActiveMarkets(): Promise<AdminMarket[]> {
 }
 
 export async function getMarketById(id: string): Promise<AdminMarket | null> {
+  if (getDatabaseProvider() === 'turso') return getTursoMarketById(id);
   try {
     if (!ObjectId.isValid(id)) {
       return null;

@@ -1,0 +1,6027 @@
+{
+  "generatedAt": "2026-09-05T20:52:44.691Z",
+  "source": "bounded sample, maximum 100 documents per collection",
+  "collections": {
+    "_verification_test": {
+      "documentCount": 0,
+      "sampled": 0,
+      "fields": {}
+    },
+    "admin_users": {
+      "documentCount": 1,
+      "sampled": 1,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "email": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "email_1"
+          ]
+        },
+        "name": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "role": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "passwordHash": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastLogin": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastLoginIp": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "loginHistory": {
+          "types": {
+            "array": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "audit_log": {
+      "documentCount": 197,
+      "sampled": 100,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "timestamp": {
+          "types": {
+            "date": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "adminId": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "email": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "role": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "action": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "details": {
+          "types": {
+            "object": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "environment": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "ipAddress": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "userAgent": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "audit_logs": {
+      "documentCount": 26,
+      "sampled": 26,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 26
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "id": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 3.85,
+          "missingPercent": 96.15,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "correlationId": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 3.85,
+          "missingPercent": 96.15,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "level": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 3.85,
+          "missingPercent": 96.15,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "category": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 3.85,
+          "missingPercent": 96.15,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "event": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 3.85,
+          "missingPercent": 96.15,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "data": {
+          "types": {
+            "object": 1
+          },
+          "presencePercent": 3.85,
+          "missingPercent": 96.15,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "timestamp": {
+          "types": {
+            "string": 1,
+            "date": 25
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "env": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 3.85,
+          "missingPercent": 96.15,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "adminId": {
+          "types": {
+            "null": 6,
+            "string": 19
+          },
+          "presencePercent": 96.15,
+          "missingPercent": 3.85,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "adminEmail": {
+          "types": {
+            "string": 25
+          },
+          "presencePercent": 96.15,
+          "missingPercent": 3.85,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "action": {
+          "types": {
+            "string": 25
+          },
+          "presencePercent": 96.15,
+          "missingPercent": 3.85,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "resource": {
+          "types": {
+            "string": 25
+          },
+          "presencePercent": 96.15,
+          "missingPercent": 3.85,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "details": {
+          "types": {
+            "object": 25
+          },
+          "presencePercent": 96.15,
+          "missingPercent": 3.85,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "ipAddress": {
+          "types": {
+            "string": 25
+          },
+          "presencePercent": 96.15,
+          "missingPercent": 3.85,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "userAgent": {
+          "types": {
+            "string": 25
+          },
+          "presencePercent": 96.15,
+          "missingPercent": 3.85,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "success": {
+          "types": {
+            "boolean": 25
+          },
+          "presencePercent": 96.15,
+          "missingPercent": 3.85,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "adminRole": {
+          "types": {
+            "string": 16
+          },
+          "presencePercent": 61.54,
+          "missingPercent": 38.46,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "resourceId": {
+          "types": {
+            "null": 16
+          },
+          "presencePercent": 61.54,
+          "missingPercent": 38.46,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "errorMessage": {
+          "types": {
+            "null": 16
+          },
+          "presencePercent": 61.54,
+          "missingPercent": 38.46,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "challenges": {
+      "documentCount": 2,
+      "sampled": 2,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "id": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "userId": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "streakDays": {
+          "types": {
+            "number": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastCheckIn": {
+          "types": {
+            "null": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "totalCheckIns": {
+          "types": {
+            "number": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "contact_messages": {
+      "documentCount": 18,
+      "sampled": 18,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 18
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "name": {
+          "types": {
+            "string": 18
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "email": {
+          "types": {
+            "string": 18
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_contact_email_created"
+          ]
+        },
+        "subject": {
+          "types": {
+            "string": 18
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "message": {
+          "types": {
+            "string": 18
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "ip": {
+          "types": {
+            "string": 18
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "resendId": {
+          "types": {
+            "null": 7,
+            "string": 3
+          },
+          "presencePercent": 55.56,
+          "missingPercent": 44.44,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 18
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_contact_created",
+            "idx_contact_email_created",
+            "idx_contact_status_created"
+          ]
+        },
+        "id": {
+          "types": {
+            "string": 8
+          },
+          "presencePercent": 44.44,
+          "missingPercent": 55.56,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "userAgent": {
+          "types": {
+            "string": 8
+          },
+          "presencePercent": 44.44,
+          "missingPercent": 55.56,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 8
+          },
+          "presencePercent": 44.44,
+          "missingPercent": 55.56,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_contact_status_created"
+          ]
+        },
+        "updatedAt": {
+          "types": {
+            "date": 8
+          },
+          "presencePercent": 44.44,
+          "missingPercent": 55.56,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "coupons": {
+      "documentCount": 0,
+      "sampled": 0,
+      "fields": {}
+    },
+    "customer_passports": {
+      "documentCount": 9,
+      "sampled": 9,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 9
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "email": {
+          "types": {
+            "string": 9
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "activities": {
+          "types": {
+            "array": 9
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "points": {
+          "types": {
+            "number": 9
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "totalPointsEarned": {
+          "types": {
+            "number": 9
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 9
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "id": {
+          "types": {
+            "string": 5
+          },
+          "presencePercent": 55.56,
+          "missingPercent": 44.44,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "name": {
+          "types": {
+            "null": 4,
+            "string": 1
+          },
+          "presencePercent": 55.56,
+          "missingPercent": 44.44,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "level": {
+          "types": {
+            "string": 5
+          },
+          "presencePercent": 55.56,
+          "missingPercent": 44.44,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "redeemedRewards": {
+          "types": {
+            "array": 5
+          },
+          "presencePercent": 55.56,
+          "missingPercent": 44.44,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 5
+          },
+          "presencePercent": 55.56,
+          "missingPercent": 44.44,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "customers": {
+      "documentCount": 7,
+      "sampled": 7,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 7
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "email": {
+          "types": {
+            "string": 7
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "addresses": {
+          "types": {
+            "array": 7
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 7
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "id": {
+          "types": {
+            "string": 7
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastOrderAt": {
+          "types": {
+            "date": 7
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastOrderId": {
+          "types": {
+            "string": 7
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "name": {
+          "types": {
+            "string": 7
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "phone": {
+          "types": {
+            "string": 6,
+            "null": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "preferences": {
+          "types": {
+            "object": 7
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "totalOrders": {
+          "types": {
+            "number": 7
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "totalSpent": {
+          "types": {
+            "number": 7
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 7
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "version": {
+          "types": {
+            "number": 7
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastPaidAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 14.29,
+          "missingPercent": 85.71,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastPaidOrderId": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 14.29,
+          "missingPercent": 85.71,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "dailyinventories": {
+      "documentCount": 0,
+      "sampled": 0,
+      "fields": {}
+    },
+    "email_logs": {
+      "documentCount": 12,
+      "sampled": 12,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 12
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "id": {
+          "types": {
+            "string": 12
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "to": {
+          "types": {
+            "string": 12
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "subject": {
+          "types": {
+            "string": 12
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "userId": {
+          "types": {
+            "null": 6,
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "emailType": {
+          "types": {
+            "string": 12
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 12
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "resendId": {
+          "types": {
+            "null": 10
+          },
+          "presencePercent": 83.33,
+          "missingPercent": 16.67,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "sentAt": {
+          "types": {
+            "date": 12
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 12
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "error": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 16.67,
+          "missingPercent": 83.33,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "email_queue": {
+      "documentCount": 2,
+      "sampled": 2,
+      "fields": {
+        "_id": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "quizId": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "quizId_1"
+          ]
+        },
+        "recipient": {
+          "types": {
+            "object": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "emailType": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "scheduledFor": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "scheduledFor_1"
+          ]
+        },
+        "emailData": {
+          "types": {
+            "object": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "status_1"
+          ]
+        },
+        "attempts": {
+          "types": {
+            "number": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastAttemptAt": {
+          "types": {
+            "null": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "sentAt": {
+          "types": {
+            "null": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "error": {
+          "types": {
+            "null": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "email_sends": {
+      "documentCount": 289,
+      "sampled": 100,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "to": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_email_sends_to_created"
+          ]
+        },
+        "from": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "subject": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "template": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_email_sends_template_created"
+          ]
+        },
+        "emailType": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "provider": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "messageId": {
+          "types": {
+            "null": 94,
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": [
+            "idx_email_sends_message_id"
+          ]
+        },
+        "status": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_email_sends_status_created"
+          ]
+        },
+        "error": {
+          "types": {
+            "string": 94,
+            "null": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "orderId": {
+          "types": {
+            "null": 6,
+            "string": 94
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": [
+            "idx_email_sends_order"
+          ]
+        },
+        "customerEmail": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "metadata": {
+          "types": {
+            "object": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_email_sends_to_created",
+            "idx_email_sends_status_created",
+            "idx_email_sends_template_created"
+          ]
+        },
+        "updatedAt": {
+          "types": {
+            "date": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "gratitude_accounts": {
+      "documentCount": 1,
+      "sampled": 1,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "customerId": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "credits": {
+          "types": {
+            "object": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "tier": {
+          "types": {
+            "object": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "stats": {
+          "types": {
+            "object": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "referrals": {
+          "types": {
+            "object": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "expiresAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "idempotency_keys": {
+      "documentCount": 22,
+      "sampled": 22,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 22
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "key": {
+          "types": {
+            "string": 22
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 22
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "expiresAt": {
+          "types": {
+            "date": 22
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "response": {
+          "types": {
+            "object": 22
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "inventory": {
+      "documentCount": 40,
+      "sampled": 40,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "productId": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_inventory_product"
+          ]
+        },
+        "createdAt": {
+          "types": {
+            "date": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "currentStock": {
+          "types": {
+            "number": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "isActive": {
+          "types": {
+            "boolean": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastCatalogSyncAt": {
+          "types": {
+            "date": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastRestocked": {
+          "types": {
+            "date": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lowStockThreshold": {
+          "types": {
+            "number": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "productName": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "productSlug": {
+          "types": {
+            "null": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "source": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareId": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "stockHistory": {
+          "types": {
+            "array": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "variationIds": {
+          "types": {
+            "array": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedBy": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 2.5,
+          "missingPercent": 97.5,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "inventory_events": {
+      "documentCount": 856,
+      "sampled": 100,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "type": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "syncedProducts": {
+          "types": {
+            "number": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "prunedProducts": {
+          "types": {
+            "number": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "source": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "lead_intents": {
+      "documentCount": 10,
+      "sampled": 10,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 10
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "email": {
+          "types": {
+            "string": 8,
+            "null": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "intent": {
+          "types": {
+            "string": 10
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 10
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "id": {
+          "types": {
+            "string": 10
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "metadata": {
+          "types": {
+            "object": 10
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "name": {
+          "types": {
+            "string": 3,
+            "null": 7
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "phone": {
+          "types": {
+            "string": 5,
+            "null": 4
+          },
+          "presencePercent": 90,
+          "missingPercent": 10,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "source": {
+          "types": {
+            "string": 10
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 10
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 10
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "firstCapturedAt": {
+          "types": {
+            "date": 7
+          },
+          "presencePercent": 70,
+          "missingPercent": 30,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "message": {
+          "types": {
+            "null": 7
+          },
+          "presencePercent": 70,
+          "missingPercent": 30,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "userAgent": {
+          "types": {
+            "string": 7
+          },
+          "presencePercent": 70,
+          "missingPercent": 30,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "learning_enrollments": {
+      "documentCount": 0,
+      "sampled": 0,
+      "fields": {}
+    },
+    "learning_modules": {
+      "documentCount": 6,
+      "sampled": 6,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "slug": {
+          "types": {
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "slug_1"
+          ]
+        },
+        "category": {
+          "types": {
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "description": {
+          "types": {
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "difficulty": {
+          "types": {
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "estimatedMinutes": {
+          "types": {
+            "number": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lessonCount": {
+          "types": {
+            "number": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "publishedAt": {
+          "types": {
+            "date": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "status_1_publishedAt_-1"
+          ]
+        },
+        "sections": {
+          "types": {
+            "array": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "status_1_publishedAt_-1"
+          ]
+        },
+        "summary": {
+          "types": {
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "tags": {
+          "types": {
+            "array": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "themeGradient": {
+          "types": {
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "title": {
+          "types": {
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "market_counters": {
+      "documentCount": 1,
+      "sampled": 1,
+      "fields": {
+        "_id": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "seq": {
+          "types": {
+            "number": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "market_schedules": {
+      "documentCount": 0,
+      "sampled": 0,
+      "fields": {}
+    },
+    "marketorders": {
+      "documentCount": 4,
+      "sampled": 4,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "orderNumber": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "orderNumber_1"
+          ]
+        },
+        "waitlistNumber": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "marketId": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "marketId_1_status_1_createdAt_-1"
+          ]
+        },
+        "marketName": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "customerName": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "customerPhone": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "customerPhone_1"
+          ]
+        },
+        "customerEmail": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "items": {
+          "types": {
+            "array": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "subtotal": {
+          "types": {
+            "number": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "tax": {
+          "types": {
+            "number": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "total": {
+          "types": {
+            "number": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "totalCents": {
+          "types": {
+            "number": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "marketId_1_status_1_createdAt_-1",
+            "status_1_createdAt_-1"
+          ]
+        },
+        "paymentMethod": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "paymentProvider": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "paymentStatus": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "amountPaid": {
+          "types": {
+            "number": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "balanceDue": {
+          "types": {
+            "number": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "notes": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "metadata": {
+          "types": {
+            "object": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "source": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "utmSource": {
+          "types": {
+            "null": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "utmCampaign": {
+          "types": {
+            "null": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "queuePosition": {
+          "types": {
+            "number": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "pickupLocation": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "pickupDate": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "pickupDay": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "pickupHours": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "confirmationStatus": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "marketId_1_status_1_createdAt_-1",
+            "status_1_createdAt_-1"
+          ]
+        },
+        "updatedAt": {
+          "types": {
+            "date": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "paymentError": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "markets": {
+      "documentCount": 2,
+      "sampled": 2,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "name": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "name_1"
+          ]
+        },
+        "address": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "city": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "city_1_state_1"
+          ]
+        },
+        "state": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "city_1_state_1"
+          ]
+        },
+        "zip": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lat": {
+          "types": {
+            "number": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lng": {
+          "types": {
+            "number": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "hours": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "dayOfWeek": {
+          "types": {
+            "number": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "description": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "mapsUrl": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "isActive": {
+          "types": {
+            "boolean": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "isActive_1"
+          ]
+        },
+        "featured": {
+          "types": {
+            "boolean": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "menus": {
+      "documentCount": 1,
+      "sampled": 1,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "imageUrl": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "canvaUrl": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "description": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "isActive": {
+          "types": {
+            "boolean": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "isArchived": {
+          "types": {
+            "boolean": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "linkedProducts": {
+          "types": {
+            "array": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "marketId": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "printUrl": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "seasonalTags": {
+          "types": {
+            "array": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "thumbnailUrl": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "title": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "weekEnd": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "weekStart": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "newsletter_subscribers": {
+      "documentCount": 33,
+      "sampled": 33,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 33
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "email": {
+          "types": {
+            "string": 32,
+            "null": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": [
+            "idx_newsletter_email"
+          ]
+        },
+        "firstName": {
+          "types": {
+            "null": 6,
+            "string": 26
+          },
+          "presencePercent": 96.97,
+          "missingPercent": 3.03,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 27
+          },
+          "presencePercent": 81.82,
+          "missingPercent": 18.18,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "source": {
+          "types": {
+            "string": 31
+          },
+          "presencePercent": 93.94,
+          "missingPercent": 6.06,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "subscribedAt": {
+          "types": {
+            "date": 32
+          },
+          "presencePercent": 96.97,
+          "missingPercent": 3.03,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 33
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 28
+          },
+          "presencePercent": 84.85,
+          "missingPercent": 15.15,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "intent": {
+          "types": {
+            "string": 5
+          },
+          "presencePercent": 15.15,
+          "missingPercent": 84.85,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "marketInterest": {
+          "types": {
+            "null": 5
+          },
+          "presencePercent": 15.15,
+          "missingPercent": 84.85,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "phone": {
+          "types": {
+            "string": 2,
+            "null": 3
+          },
+          "presencePercent": 15.15,
+          "missingPercent": 84.85,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "sourceCampaign": {
+          "types": {
+            "null": 3,
+            "string": 2
+          },
+          "presencePercent": 15.15,
+          "missingPercent": 84.85,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "unsubscribed": {
+          "types": {
+            "boolean": 1
+          },
+          "presencePercent": 3.03,
+          "missingPercent": 96.97,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "unsubscribedAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 3.03,
+          "missingPercent": 96.97,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_newsletter_unsubscribed"
+          ]
+        },
+        "unsubscribedSource": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 3.03,
+          "missingPercent": 96.97,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "orders": {
+      "documentCount": 851,
+      "sampled": 100,
+      "fields": {
+        "_id": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "squareOrderId": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "createdAt_-1"
+          ]
+        },
+        "customerEmail": {
+          "types": {
+            "null": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "customerName": {
+          "types": {
+            "null": 99,
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "customerPhone": {
+          "types": {
+            "null": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "deliveryInfo": {
+          "types": {
+            "null": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "fulfillmentType": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "importedAt": {
+          "types": {
+            "date": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "isPaid": {
+          "types": {
+            "boolean": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "items": {
+          "types": {
+            "array": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "orderNumber": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "paymentStatus": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "pickupInfo": {
+          "types": {
+            "null": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "source": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareData": {
+          "types": {
+            "object": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "total": {
+          "types": {
+            "number": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "owner_alert_queue": {
+      "documentCount": 31,
+      "sampled": 31,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "sourceEventId": {
+          "types": {
+            "string": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "attempts": {
+          "types": {
+            "number": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "body": {
+          "types": {
+            "string": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "category": {
+          "types": {
+            "string": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "channel": {
+          "types": {
+            "string": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "string": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "eventAt": {
+          "types": {
+            "string": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "maxAttempts": {
+          "types": {
+            "number": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "severity": {
+          "types": {
+            "string": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "title": {
+          "types": {
+            "string": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "string": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "deadLetterAt": {
+          "types": {
+            "null": 2
+          },
+          "presencePercent": 6.45,
+          "missingPercent": 93.55,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "result": {
+          "types": {
+            "object": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "sentAt": {
+          "types": {
+            "string": 31
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "passport_idempotency": {
+      "documentCount": 1,
+      "sampled": 1,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "idempotencyKey": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "type": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "result": {
+          "types": {
+            "object": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "expiresAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "passports": {
+      "documentCount": 109,
+      "sampled": 100,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "email": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "name": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "xp": {
+          "types": {
+            "number": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "level": {
+          "types": {
+            "number": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "stamps": {
+          "types": {
+            "array": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "vouchers": {
+          "types": {
+            "array": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "timeline": {
+          "types": {
+            "array": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "password_resets": {
+      "documentCount": 1,
+      "sampled": 1,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "userId": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "email": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "tokenHash": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "expiresAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "consumed": {
+          "types": {
+            "boolean": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "payment_records": {
+      "documentCount": 3,
+      "sampled": 3,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "squarePaymentId": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_payments_square_id"
+          ]
+        },
+        "status": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_payments_status_created",
+            "idx_payments_order_status"
+          ]
+        },
+        "amountCents": {
+          "types": {
+            "number": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "currency": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "receiptUrl": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "receiptNumber": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "cardBrand": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "cardLast4": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "metadata": {
+          "types": {
+            "object": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "idempotencyKey": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "payments": {
+      "documentCount": 3,
+      "sampled": 3,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "id": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squarePaymentId": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "idempotencyKey": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "amountMoney": {
+          "types": {
+            "null": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "totalMoney": {
+          "types": {
+            "null": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "sourceType": {
+          "types": {
+            "null": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "cardDetails": {
+          "types": {
+            "null": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "receiptNumber": {
+          "types": {
+            "null": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "receiptUrl": {
+          "types": {
+            "null": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "customer": {
+          "types": {
+            "null": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "orderId": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lineItems": {
+          "types": {
+            "null": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "metadata": {
+          "types": {
+            "object": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "source": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "pending_customers": {
+      "documentCount": 2,
+      "sampled": 2,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "email": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "firstSeenAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastReviewAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastReviewedProductId": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastReviewedProductName": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "name": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "reviewSubmissionCount": {
+          "types": {
+            "number": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "reviewedProductIds": {
+          "types": {
+            "array": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "source": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "pre_orders": {
+      "documentCount": 2,
+      "sampled": 2,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "id": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareOrderId": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "paymentLinkId": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "paymentLinkUrl": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "customer": {
+          "types": {
+            "object": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lineItems": {
+          "types": {
+            "array": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "fulfillmentType": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "deliveryAddress": {
+          "types": {
+            "null": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "source": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "product_reviews": {
+      "documentCount": 6,
+      "sampled": 6,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "productId": {
+          "types": {
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_reviews_product_status"
+          ]
+        },
+        "productName": {
+          "types": {
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "name": {
+          "types": {
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "email": {
+          "types": {
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "rating": {
+          "types": {
+            "number": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "title": {
+          "types": {
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "comment": {
+          "types": {
+            "string": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "images": {
+          "types": {
+            "array": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "verifiedPurchase": {
+          "types": {
+            "boolean": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_reviews_verified"
+          ]
+        },
+        "approved": {
+          "types": {
+            "boolean": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "hidden": {
+          "types": {
+            "boolean": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "helpful": {
+          "types": {
+            "number": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_reviews_featured"
+          ]
+        },
+        "createdAt": {
+          "types": {
+            "date": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_reviews_featured"
+          ]
+        },
+        "updatedAt": {
+          "types": {
+            "date": 6
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "approvedAt": {
+          "types": {
+            "date": 5
+          },
+          "presencePercent": 83.33,
+          "missingPercent": 16.67,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "approvedBy": {
+          "types": {
+            "string": 5
+          },
+          "presencePercent": 83.33,
+          "missingPercent": 16.67,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "rejected": {
+          "types": {
+            "boolean": 5
+          },
+          "presencePercent": 83.33,
+          "missingPercent": 16.67,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "product_sync_log": {
+      "documentCount": 66,
+      "sampled": 66,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 66
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "productId": {
+          "types": {
+            "string": 66
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "productName": {
+          "types": {
+            "string": 66
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "action": {
+          "types": {
+            "string": 66
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 66
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "timestamp": {
+          "types": {
+            "date": 66
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "products": {
+      "documentCount": 0,
+      "sampled": 0,
+      "fields": {}
+    },
+    "products_unified": {
+      "documentCount": 0,
+      "sampled": 0,
+      "fields": {}
+    },
+    "queuepositions": {
+      "documentCount": 1,
+      "sampled": 1,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "orderId": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "orderId_1"
+          ]
+        },
+        "orderRef": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "orderRef_1"
+          ]
+        },
+        "marketId": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "marketId_1",
+            "marketId_1_status_1_position_1",
+            "marketId_1_createdAt_-1"
+          ]
+        },
+        "marketName": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "position": {
+          "types": {
+            "number": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "position_1",
+            "marketId_1_status_1_position_1"
+          ]
+        },
+        "status": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "status_1",
+            "marketId_1_status_1_position_1"
+          ]
+        },
+        "customerInfo": {
+          "types": {
+            "object": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "items": {
+          "types": {
+            "array": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "queuedAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "marketId_1_createdAt_-1"
+          ]
+        },
+        "updatedAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "__v": {
+          "types": {
+            "number": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "quiz_results": {
+      "documentCount": 13,
+      "sampled": 13,
+      "fields": {
+        "_id": {
+          "types": {
+            "string": 13
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "customer": {
+          "types": {
+            "object": 13
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "answers": {
+          "types": {
+            "object": 13
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "recommendations": {
+          "types": {
+            "array": 3,
+            "object": 10
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "matchScore": {
+          "types": {
+            "number": 3
+          },
+          "presencePercent": 23.08,
+          "missingPercent": 76.92,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "completedAt": {
+          "types": {
+            "date": 3
+          },
+          "presencePercent": 23.08,
+          "missingPercent": 76.92,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "emailsSent": {
+          "types": {
+            "object": 3
+          },
+          "presencePercent": 23.08,
+          "missingPercent": 76.92,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "conversionStatus": {
+          "types": {
+            "object": 3
+          },
+          "presencePercent": 23.08,
+          "missingPercent": 76.92,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 13
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "createdAt_1"
+          ]
+        },
+        "updatedAt": {
+          "types": {
+            "date": 13
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "source": {
+          "types": {
+            "string": 10
+          },
+          "presencePercent": 76.92,
+          "missingPercent": 23.08,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "reward_transactions": {
+      "documentCount": 1,
+      "sampled": 1,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "transactionId": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "email": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_rewards_idempotency"
+          ]
+        },
+        "orderId": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_rewards_order",
+            "idx_rewards_idempotency"
+          ]
+        },
+        "type": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_rewards_type_status",
+            "idx_rewards_idempotency"
+          ]
+        },
+        "points": {
+          "types": {
+            "number": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "data": {
+          "types": {
+            "object": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_rewards_user_created"
+          ]
+        }
+      }
+    },
+    "rewards": {
+      "documentCount": 2,
+      "sampled": 2,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "id": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "userId": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "points": {
+          "types": {
+            "number": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lifetimePoints": {
+          "types": {
+            "number": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "history": {
+          "types": {
+            "array": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "scheduled_emails": {
+      "documentCount": 4,
+      "sampled": 4,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "id": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "id_1"
+          ]
+        },
+        "quizId": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "quizId_1"
+          ]
+        },
+        "recipient": {
+          "types": {
+            "object": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "emailType": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "scheduledFor": {
+          "types": {
+            "date": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "scheduledFor_1_status_1"
+          ]
+        },
+        "emailData": {
+          "types": {
+            "object": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "scheduledFor_1_status_1",
+            "status_1"
+          ]
+        },
+        "attempts": {
+          "types": {
+            "number": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "maxAttempts": {
+          "types": {
+            "number": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastAttemptAt": {
+          "types": {
+            "null": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "sentAt": {
+          "types": {
+            "null": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "error": {
+          "types": {
+            "null": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "createdAt_-1"
+          ]
+        },
+        "updatedAt": {
+          "types": {
+            "date": 4
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "sessions": {
+      "documentCount": 0,
+      "sampled": 0,
+      "fields": {}
+    },
+    "square_catalog_categories": {
+      "documentCount": 11,
+      "sampled": 11,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 11
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "id": {
+          "types": {
+            "string": 11
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "id_1"
+          ]
+        },
+        "type": {
+          "types": {
+            "string": 11
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "name": {
+          "types": {
+            "string": 11
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 11
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 11
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareUpdatedAt": {
+          "types": {
+            "string": 11
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "square_catalog_items": {
+      "documentCount": 51,
+      "sampled": 51,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 51
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "id": {
+          "types": {
+            "string": 51
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "id_1"
+          ]
+        },
+        "type": {
+          "types": {
+            "string": 51
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "name": {
+          "types": {
+            "string": 51
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "description": {
+          "types": {
+            "string": 51
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "categoryId": {
+          "types": {
+            "null": 51
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "category": {
+          "types": {
+            "null": 51
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareIsArchived": {
+          "types": {
+            "boolean": 40
+          },
+          "presencePercent": 78.43,
+          "missingPercent": 21.57,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareEcomVisibility": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 78.43,
+          "missingPercent": 21.57,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareEcomAvailable": {
+          "types": {
+            "boolean": 40
+          },
+          "presencePercent": 78.43,
+          "missingPercent": 21.57,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareChannels": {
+          "types": {
+            "array": 40
+          },
+          "presencePercent": 78.43,
+          "missingPercent": 21.57,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squarePresentAtAllLocations": {
+          "types": {
+            "boolean": 40
+          },
+          "presencePercent": 78.43,
+          "missingPercent": 21.57,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squarePresentAtLocationIds": {
+          "types": {
+            "array": 40
+          },
+          "presencePercent": 78.43,
+          "missingPercent": 21.57,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareAbsentAtLocationIds": {
+          "types": {
+            "array": 40
+          },
+          "presencePercent": 78.43,
+          "missingPercent": 21.57,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "variations": {
+          "types": {
+            "array": 51
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "images": {
+          "types": {
+            "array": 51
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 51
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 51
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareUpdatedAt": {
+          "types": {
+            "string": 51
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "inStock": {
+          "types": {
+            "boolean": 40
+          },
+          "presencePercent": 78.43,
+          "missingPercent": 21.57,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "inventoryCount": {
+          "types": {
+            "number": 40
+          },
+          "presencePercent": 78.43,
+          "missingPercent": 21.57,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastInventoryUpdate": {
+          "types": {
+            "date": 40
+          },
+          "presencePercent": 78.43,
+          "missingPercent": 21.57,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "price": {
+          "types": {
+            "number": 1
+          },
+          "presencePercent": 1.96,
+          "missingPercent": 98.04,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "priceCents": {
+          "types": {
+            "number": 1
+          },
+          "presencePercent": 1.96,
+          "missingPercent": 98.04,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "square_inventory": {
+      "documentCount": 1,
+      "sampled": 1,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "catalogObjectId": {
+          "types": {
+            "null": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "locationId": {
+          "types": {
+            "null": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "quantity": {
+          "types": {
+            "number": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "state": {
+          "types": {
+            "null": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedAt": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastWebhookUpdate": {
+          "types": {
+            "date": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "square_sync_metadata": {
+      "documentCount": 2,
+      "sampled": 2,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "type": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastSyncAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "stats": {
+          "types": {
+            "object": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "itemCount": {
+          "types": {
+            "number": 1
+          },
+          "presencePercent": 50,
+          "missingPercent": 50,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "categoryCount": {
+          "types": {
+            "number": 1
+          },
+          "presencePercent": 50,
+          "missingPercent": 50,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "environment": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "locationId": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 50,
+          "missingPercent": 50,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "locationIds": {
+          "types": {
+            "array": 1
+          },
+          "presencePercent": 50,
+          "missingPercent": 50,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "square_sync_queue": {
+      "documentCount": 39,
+      "sampled": 39,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 39
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "objectId": {
+          "types": {
+            "string": 36
+          },
+          "presencePercent": 92.31,
+          "missingPercent": 7.69,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "objectType": {
+          "types": {
+            "string": 36
+          },
+          "presencePercent": 92.31,
+          "missingPercent": 7.69,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "version": {
+          "types": {
+            "null": 36
+          },
+          "presencePercent": 92.31,
+          "missingPercent": 7.69,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "catalogObject": {
+          "types": {
+            "object": 36
+          },
+          "presencePercent": 92.31,
+          "missingPercent": 7.69,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "action": {
+          "types": {
+            "string": 36
+          },
+          "presencePercent": 92.31,
+          "missingPercent": 7.69,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 39
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 39
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "attempts": {
+          "types": {
+            "number": 36
+          },
+          "presencePercent": 92.31,
+          "missingPercent": 7.69,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "processedAt": {
+          "types": {
+            "date": 39
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "processor": {
+          "types": {
+            "string": 39
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "type": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 7.69,
+          "missingPercent": 92.31,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "reason": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 7.69,
+          "missingPercent": 92.31,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "staff_notifications": {
+      "documentCount": 0,
+      "sampled": 0,
+      "fields": {}
+    },
+    "unified_analytics": {
+      "documentCount": 1461,
+      "sampled": 100,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "type": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "data": {
+          "types": {
+            "object": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "metadata": {
+          "types": {
+            "object": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "timestamp": {
+          "types": {
+            "date": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "processed": {
+          "types": {
+            "boolean": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "unified_metrics": {
+      "documentCount": 34,
+      "sampled": 34,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 34
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "date": {
+          "types": {
+            "string": 34
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lastUpdated": {
+          "types": {
+            "date": 34
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "search": {
+          "types": {
+            "object": 6
+          },
+          "presencePercent": 17.65,
+          "missingPercent": 82.35,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "views": {
+          "types": {
+            "object": 27
+          },
+          "presencePercent": 79.41,
+          "missingPercent": 20.59,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "cart": {
+          "types": {
+            "object": 4
+          },
+          "presencePercent": 11.76,
+          "missingPercent": 88.24,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "checkout": {
+          "types": {
+            "object": 18
+          },
+          "presencePercent": 52.94,
+          "missingPercent": 47.06,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "payments": {
+          "types": {
+            "object": 2
+          },
+          "presencePercent": 5.88,
+          "missingPercent": 94.12,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "unified_products": {
+      "documentCount": 40,
+      "sampled": 40,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "id": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "id_1"
+          ]
+        },
+        "benefitStory": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "category": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "categoryData": {
+          "types": {
+            "object": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "currency": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "description": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "fallbackCategory": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "image": {
+          "types": {
+            "string": 22,
+            "null": 18
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": []
+        },
+        "images": {
+          "types": {
+            "array": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "inStock": {
+          "types": {
+            "boolean": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "ingredientIcons": {
+          "types": {
+            "array": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "ingredients": {
+          "types": {
+            "array": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "intelligentCategory": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "intelligentCategory_1"
+          ]
+        },
+        "manualCategoryOverride": {
+          "types": {
+            "boolean": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "name": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "price": {
+          "types": {
+            "number": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "priceCents": {
+          "types": {
+            "number": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "slug": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "source": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareCategory": {
+          "types": {
+            "null": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareCategoryId": {
+          "types": {
+            "null": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareData": {
+          "types": {
+            "object": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareId": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "syncedAt": {
+          "types": {
+            "date": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "syncedAt_-1"
+          ]
+        },
+        "tags": {
+          "types": {
+            "array": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "tags_1"
+          ]
+        },
+        "updatedAt": {
+          "types": {
+            "date": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "variations": {
+          "types": {
+            "array": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareChannels": {
+          "types": {
+            "array": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareEcomAvailable": {
+          "types": {
+            "boolean": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareEcomVisibility": {
+          "types": {
+            "string": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareIsArchived": {
+          "types": {
+            "boolean": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squareAbsentAtLocationIds": {
+          "types": {
+            "array": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squarePresentAtAllLocations": {
+          "types": {
+            "boolean": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "squarePresentAtLocationIds": {
+          "types": {
+            "array": 40
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "updatedBy": {
+          "types": {
+            "string": 11
+          },
+          "presencePercent": 27.5,
+          "missingPercent": 72.5,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "lowStock": {
+          "types": {
+            "boolean": 1
+          },
+          "presencePercent": 2.5,
+          "missingPercent": 97.5,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "stock": {
+          "types": {
+            "number": 1
+          },
+          "presencePercent": 2.5,
+          "missingPercent": 97.5,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "users": {
+      "documentCount": 3,
+      "sampled": 3,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "email": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_users_email"
+          ]
+        },
+        "passwordHash": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "password": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 33.33,
+          "missingPercent": 66.67,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "name": {
+          "types": {
+            "string": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "role": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 33.33,
+          "missingPercent": 66.67,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_users_role"
+          ]
+        },
+        "createdAt": {
+          "types": {
+            "date": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "idx_users_created"
+          ]
+        },
+        "updatedAt": {
+          "types": {
+            "date": 3
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "isActive": {
+          "types": {
+            "boolean": 1
+          },
+          "presencePercent": 33.33,
+          "missingPercent": 66.67,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "id": {
+          "types": {
+            "string": 2
+          },
+          "presencePercent": 66.67,
+          "missingPercent": 33.33,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "phone": {
+          "types": {
+            "string": 1,
+            "null": 1
+          },
+          "presencePercent": 66.67,
+          "missingPercent": 33.33,
+          "normalizationRule": "BLOCKED_PENDING_EXPLICIT_RULE",
+          "indexInvolvement": [
+            "idx_users_phone"
+          ]
+        },
+        "avatar": {
+          "types": {
+            "null": 2
+          },
+          "presencePercent": 66.67,
+          "missingPercent": 33.33,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "joinedAt": {
+          "types": {
+            "date": 2
+          },
+          "presencePercent": 66.67,
+          "missingPercent": 33.33,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "webhook_events_processed": {
+      "documentCount": 1,
+      "sampled": 1,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "eventId": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "eventType": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "processedAt": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "status": {
+          "types": {
+            "string": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "result": {
+          "types": {
+            "object": 1
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    },
+    "webhook_logs": {
+      "documentCount": 1000,
+      "sampled": 100,
+      "fields": {
+        "_id": {
+          "types": {
+            "objectid": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": [
+            "_id_"
+          ]
+        },
+        "eventId": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "type": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "data": {
+          "types": {
+            "object": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "createdAt": {
+          "types": {
+            "date": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "processedAt": {
+          "types": {
+            "date": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        },
+        "source": {
+          "types": {
+            "string": 100
+          },
+          "presencePercent": 100,
+          "missingPercent": 0,
+          "normalizationRule": "PRESERVE_CANONICAL_TYPE",
+          "indexInvolvement": []
+        }
+      }
+    }
+  }
+}

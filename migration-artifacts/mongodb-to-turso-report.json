@@ -1,0 +1,76 @@
+{
+  "source": {
+    "database": "taste_of_gratitude",
+    "collections": 57,
+    "estimatedDocuments": 5278,
+    "exactDryRunDocuments": 5195,
+    "activeMigrationDocuments": 2536,
+    "backup": {
+      "path": "C:\\\\Users\\\\silve\\\\Backups\\\\gratog-mongodb-20260905-165553\\\\taste_of_gratitude.archive.gz",
+      "sha256": "EDD422C06B813114D506C0A8DFCA4DFECCCB5E773218C6EB2D9E605FC9E0CE08",
+      "dryRunRestore": "PASS"
+    }
+  },
+  "classification": {
+    "EPHEMERAL": 9,
+    "TRANSFORM": 19,
+    "MIGRATE": 18,
+    "ARCHIVE_ONLY": 4,
+    "DERIVED": 7,
+    "DEPRECATED": 0,
+    "UNKNOWN": 0
+  },
+  "schema": {
+    "migrations": [
+      "0001_migration_control.sql",
+      "0002_core_commerce.sql",
+      "0003_content_rewards_operations.sql"
+    ],
+    "status": "IMPLEMENTED_UNDEPLOYED"
+  },
+  "target": {
+    "hostLabel": "tasteofgratitude-swatkins.aws-us-east-1.turso.io",
+    "driver": "@tursodatabase/serverless",
+    "credentials": "PRESENT",
+    "identity": "UNKNOWN",
+    "connectivity": "PASS",
+    "existingTables": 0,
+    "writesAllowed": false
+  },
+  "migration": {
+    "batchSize": 100,
+    "concurrency": 1,
+    "dryRun": "PASS",
+    "rejected": 0,
+    "remoteRun": "BLOCKED_TARGET_IDENTITY",
+    "finalTransformerCollections": 37,
+    "criticalTransformerCollections": 7,
+    "retry": "PASS",
+    "resume": "PASS",
+    "schemaValidation": "PASS"
+  },
+  "parity": {
+    "status": "NOT_RUN"
+  },
+  "application": {
+    "runtimeMongoRemaining": true,
+    "runtimeMongoCalls": { "total": 688, "reads": 350, "writes": 308, "dynamic": 150, "unknownOperation": 30 },
+    "convertedReadDomains": ["menus", "markets"],
+    "runtimeConversionComplete": false
+  },
+  "tests": {
+    "migrationFocused": "16 PASS",
+    "fullSuite": "471 PASS, 8 SKIPPED",
+    "typecheck": "PASS",
+    "lint": "PASS_WITH_510_PREEXISTING_WARNINGS",
+    "build": "PASS"
+  },
+  "security": {
+    "secretsPrinted": false,
+    "parameterizedSql": true,
+    "publicDatabaseSecretScan": "PASS",
+    "credentialScan": "PASS_WITH_ONLY_PLACEHOLDER_LOCALHOST_EXAMPLES"
+  },
+  "cutoverReady": false,
+  "a16HandoffReady": false
+}

@@ -1,0 +1,68 @@
+{
+  "generatedAt": "2026-09-05T23:49:29.189Z",
+  "sourceDatabase": "taste_of_gratitude",
+  "financial": {
+    "orders": {
+      "documents": 851,
+      "expectedOrderRows": 851,
+      "expectedItemRows": 1209,
+      "totalCents": "162384494",
+      "paymentCents": "0",
+      "legacyWithoutAmount": 0
+    },
+    "marketorders": {
+      "documents": 4,
+      "expectedOrderRows": 4,
+      "expectedItemRows": 4,
+      "totalCents": "28800",
+      "paymentCents": "0",
+      "legacyWithoutAmount": 0
+    },
+    "payment_records": {
+      "documents": 3,
+      "expectedOrderRows": 0,
+      "expectedItemRows": 0,
+      "totalCents": "0",
+      "paymentCents": "2948",
+      "legacyWithoutAmount": 0
+    },
+    "payments": {
+      "documents": 3,
+      "expectedOrderRows": 0,
+      "expectedItemRows": 0,
+      "totalCents": "0",
+      "paymentCents": "0",
+      "legacyWithoutAmount": 3
+    }
+  },
+  "relationships": {
+    "ordersToCustomersByEmail": {
+      "matched": 56
+    },
+    "inventory": {
+      "documents": 40,
+      "missingProductId": 0
+    },
+    "webhookEventDuplicates": 0
+  },
+  "statusDistributions": {
+    "orders": {
+      "delivered": 729,
+      "cancelled": 20,
+      "pending": 21,
+      "paid": 5,
+      "abandoned": 70,
+      "payment_failed": 5,
+      "CONFIRMED": 1
+    },
+    "marketorders": {
+      "PENDING_PAYMENT": 4
+    },
+    "payment_records": {
+      "COMPLETED": 3
+    },
+    "payments": {
+      "COMPLETED": 3
+    }
+  }
+}

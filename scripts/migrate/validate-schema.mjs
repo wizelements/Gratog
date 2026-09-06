@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { readFileSync, readdirSync } from 'node:fs';
+import { DatabaseSync } from 'node:sqlite';
+const db = new DatabaseSync(':memory:'); db.exec('PRAGMA foreign_keys = ON');
+const files = readdirSync('db/migrations').filter((x) => x.endsWith('.sql')).sort();
+for (const file of files) db.exec(readFileSync(`db/migrations/${file}`, 'utf8'));
+for (const file of files) db.exec(readFileSync(`db/migrations/${file}`, 'utf8'));
+const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all(); assert.equal(tables.length, 25);
+const webhook = db.prepare("INSERT INTO webhook_events(event_id,provider,event_type,status,attempt_count) VALUES (?,?,?,?,?)"); webhook.run('evt_1','square','payment.updated','success',1); assert.throws(()=>webhook.run('evt_1','square','payment.updated','success',1));
+db.prepare("INSERT INTO products(id,name) VALUES (?,?)").run('p1','Fixture'); db.prepare("INSERT INTO orders(id,source_collection,status,total_cents,created_at,updated_at) VALUES (?,?,?,?,?,?)").run('o1','orders','paid',100,'1970-01-01T00:00:00.000Z','1970-01-01T00:00:00.000Z');
+const event=db.prepare("INSERT INTO inventory_events(id,product_id,order_id,event_type,adjustment,created_at) VALUES (?,?,?,?,?,?)"); event.run('e1','p1','o1','order_debit',-1,'1970-01-01T00:00:00.000Z'); assert.throws(()=>event.run('e2','p1','o1','order_debit',-1,'1970-01-01T00:00:00.000Z'));
+db.exec('BEGIN'); try { db.prepare("INSERT INTO products(id,name) VALUES (?,?)").run('p2','A'); db.prepare("INSERT INTO products(id,name) VALUES (?,?)").run('p2','B'); db.exec('COMMIT'); } catch { db.exec('ROLLBACK'); } assert.equal(db.prepare("SELECT count(*) AS count FROM products WHERE id='p2'").get().count,0);
+db.close(); console.log(JSON.stringify({status:'PASS',migrations:files.length,tables:tables.length,idempotent:true,webhookUnique:true,inventoryDebitUnique:true,rollback:true}));

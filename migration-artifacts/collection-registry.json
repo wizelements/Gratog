@@ -1,0 +1,3215 @@
+{
+  "database": "taste_of_gratitude",
+  "collections": [
+    {
+      "collection": "_verification_test",
+      "documentCount": 0,
+      "classification": "EPHEMERAL",
+      "businessCriticality": "LOW",
+      "authority": "MongoDB",
+      "applicationConsumers": [],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [],
+      "migrationStrategy": "RECREATE_OR_EXPIRE_AT_CUTOVER",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "RUNTIME_STATE_REVIEWED"
+    },
+    {
+      "collection": "admin_users",
+      "documentCount": 1,
+      "classification": "TRANSFORM",
+      "businessCriticality": "HIGH",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/admin/auth/login/route.ts",
+        "app/api/admin/auth/reset-password/route.ts",
+        "app/api/admin/emergency-init/route.ts",
+        "app/api/admin/setup/route.ts",
+        "lib/admin-auth.js",
+        "lib/auth/unified-admin.ts",
+        "lib/db-admin.js",
+        "scripts/ensure-indexes.ts",
+        "scripts/init-admin-user.js",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [
+        "app/api/admin/auth/login/route.ts",
+        "app/api/admin/auth/reset-password/route.ts",
+        "app/api/admin/emergency-init/route.ts",
+        "app/api/admin/setup/route.ts",
+        "lib/admin-auth.js",
+        "lib/auth/unified-admin.ts",
+        "scripts/ensure-indexes.ts",
+        "scripts/init-admin-user.js"
+      ],
+      "readConsumers": [
+        "app/api/admin/auth/login/route.ts",
+        "app/api/admin/emergency-init/route.ts",
+        "app/api/admin/setup/route.ts",
+        "lib/admin-auth.js",
+        "lib/auth/unified-admin.ts",
+        "scripts/init-admin-user.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "email"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "email_1",
+          "key": {
+            "email": 1
+          },
+          "unique": true,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "admin_users"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "audit_log",
+      "documentCount": 197,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "lib/admin-auth-middleware.js",
+        "lib/auth.ts",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [
+        "lib/admin-auth-middleware.js",
+        "lib/auth.ts"
+      ],
+      "readConsumers": [
+        "lib/admin-auth-middleware.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "adminId",
+        "email"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "audit_log"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "audit_logs",
+      "documentCount": 26,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/admin/auth/login/route.ts",
+        "app/api/admin/auth/logout/route.ts",
+        "app/api/admin/setup/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/rewards-audit-logger.js",
+        "lib/security/index.ts",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [
+        "app/api/admin/auth/login/route.ts",
+        "app/api/admin/auth/logout/route.ts",
+        "app/api/admin/setup/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/rewards-audit-logger.js",
+        "lib/security/index.ts"
+      ],
+      "readConsumers": [
+        "lib/rewards-audit-logger.js",
+        "lib/security/index.ts"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "id",
+        "correlationId",
+        "adminId",
+        "adminEmail",
+        "resourceId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "audit_logs"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "challenges",
+      "documentCount": 2,
+      "classification": "TRANSFORM",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/user/challenge/checkin/route.ts",
+        "app/api/user/challenge/route.ts",
+        "app/api/user/email-preferences/route.ts",
+        "app/api/user/stats/route.ts",
+        "app/profile/settings/Client.js",
+        "lib/admin-analytics.js",
+        "lib/campaign-manager.js",
+        "lib/db/users.js",
+        "scripts/create-test-user.js",
+        "scripts/ensure-indexes.ts",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [
+        "app/api/user/challenge/checkin/route.ts",
+        "scripts/ensure-indexes.ts"
+      ],
+      "readConsumers": [
+        "app/api/user/challenge/checkin/route.ts",
+        "app/api/user/challenge/route.ts",
+        "app/api/user/stats/route.ts",
+        "lib/admin-analytics.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "id",
+        "userId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "challenges"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "contact_messages",
+      "documentCount": 18,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/contact/route.ts",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [
+        "app/api/contact/route.ts"
+      ],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "email",
+        "resendId",
+        "id"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_contact_created",
+          "key": {
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_contact_email_created",
+          "key": {
+            "email": 1,
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_contact_status_created",
+          "key": {
+            "status": 1,
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "contact_messages"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "coupons",
+      "documentCount": 0,
+      "classification": "TRANSFORM",
+      "businessCriticality": "HIGH",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/admin/coupons/route.ts",
+        "app/api/admin/coupons/[id]/route.ts",
+        "app/api/coupons/validate/route.ts",
+        "app/api/payments/route.ts",
+        "lib/cart-pricing.ts",
+        "scripts/migrate/transformers.mjs",
+        "scripts/setup-database.js",
+        "tests/unit/cart-pricing.spec.ts"
+      ],
+      "writeConsumers": [
+        "app/api/admin/coupons/route.ts",
+        "app/api/admin/coupons/[id]/route.ts",
+        "app/api/payments/route.ts",
+        "scripts/setup-database.js"
+      ],
+      "readConsumers": [
+        "app/api/admin/coupons/route.ts",
+        "app/api/admin/coupons/[id]/route.ts",
+        "app/api/coupons/validate/route.ts"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_coupons_code",
+          "key": {
+            "code": 1
+          },
+          "unique": true,
+          "sparse": false
+        },
+        {
+          "name": "idx_coupons_active_expires",
+          "key": {
+            "active": 1,
+            "expiresAt": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_coupons_customer_usage",
+          "key": {
+            "usage.customerEmails": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "coupons"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "customer_passports",
+      "documentCount": 9,
+      "classification": "TRANSFORM",
+      "businessCriticality": "HIGH",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/rewards/passport/route.js",
+        "lib/enhanced-rewards.js",
+        "scripts/migrate/transformers.mjs",
+        "tests/unit/rewards-idempotency.spec.ts"
+      ],
+      "writeConsumers": [
+        "lib/enhanced-rewards.js"
+      ],
+      "readConsumers": [
+        "app/api/rewards/passport/route.js",
+        "lib/enhanced-rewards.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "email",
+        "id"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "reward_passports",
+        "reward_stamps"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "customers",
+      "documentCount": 7,
+      "classification": "TRANSFORM",
+      "businessCriticality": "CRITICAL",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/admin/waitlist/page.js",
+        "app/api/admin/analytics/route.ts",
+        "app/api/admin/campaigns/send/route.ts",
+        "app/api/admin/customers/route.ts",
+        "app/api/admin/customers/[id]/route.ts",
+        "app/api/gratitude/webhook/route.ts",
+        "app/api/payments/route.ts",
+        "lib/db-customers.js",
+        "lib/enhanced-order-tracking.js",
+        "lib/gratitude/accounts.js",
+        "lib/returns.ts",
+        "lib/transactions.ts",
+        "scripts/migrate/business-baselines.mjs",
+        "scripts/migrate/transformers.mjs",
+        "scripts/setup-database.js",
+        "tests/reviews-flow.test.ts"
+      ],
+      "writeConsumers": [
+        "app/api/payments/route.ts",
+        "lib/enhanced-order-tracking.js",
+        "lib/gratitude/accounts.js",
+        "lib/returns.ts",
+        "lib/transactions.ts",
+        "scripts/setup-database.js"
+      ],
+      "readConsumers": [
+        "app/api/admin/analytics/route.ts",
+        "app/api/admin/customers/route.ts",
+        "app/api/admin/customers/[id]/route.ts",
+        "app/api/gratitude/webhook/route.ts",
+        "scripts/migrate/business-baselines.mjs"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "email",
+        "id",
+        "lastOrderId",
+        "lastPaidOrderId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "customers",
+        "customer_addresses"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT_RELATIONSHIP_BUSINESS_AGGREGATE",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "dailyinventories",
+      "documentCount": 0,
+      "classification": "ARCHIVE_ONLY",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "marketId_1_date_1",
+          "key": {
+            "marketId": 1,
+            "date": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "date_1_isClosed_1",
+          "key": {
+            "date": 1,
+            "isClosed": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [],
+      "migrationStrategy": "PRESERVE_IN_VERIFIED_MONGO_BACKUP",
+      "verificationStrategy": "BACKUP_SHA_AND_ARCHIVE_DRY_RUN",
+      "status": "UNREFERENCED_ARCHIVED"
+    },
+    {
+      "collection": "email_logs",
+      "documentCount": 12,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/webhooks/resend/route.js",
+        "lib/email/service.js",
+        "scripts/create-email-indexes.js",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [
+        "app/api/webhooks/resend/route.js",
+        "scripts/create-email-indexes.js"
+      ],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "id",
+        "userId",
+        "resendId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "email_logs"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "email_queue",
+      "documentCount": 2,
+      "classification": "EPHEMERAL",
+      "businessCriticality": "LOW",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "lib/email/service.js",
+        "scripts/create-email-indexes.js"
+      ],
+      "writeConsumers": [
+        "scripts/create-email-indexes.js"
+      ],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "quizId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "scheduledFor_1",
+          "key": {
+            "scheduledFor": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "status_1",
+          "key": {
+            "status": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "quizId_1",
+          "key": {
+            "quizId": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "recipient.email_1",
+          "key": {
+            "recipient.email": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [],
+      "migrationStrategy": "RECREATE_OR_EXPIRE_AT_CUTOVER",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "email_sends",
+      "documentCount": 289,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/admin/emails/route.ts",
+        "app/api/webhooks/resend/route.js",
+        "lib/campaign-manager.js",
+        "lib/email/service.js",
+        "lib/resend-email.js",
+        "scripts/create-email-indexes.js",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [
+        "app/api/webhooks/resend/route.js",
+        "lib/campaign-manager.js",
+        "lib/email/service.js",
+        "lib/resend-email.js",
+        "scripts/create-email-indexes.js"
+      ],
+      "readConsumers": [
+        "app/api/admin/emails/route.ts",
+        "app/api/webhooks/resend/route.js",
+        "lib/campaign-manager.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "messageId",
+        "orderId",
+        "customerEmail"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_email_sends_message_id",
+          "key": {
+            "messageId": 1
+          },
+          "unique": true,
+          "sparse": false
+        },
+        {
+          "name": "idx_email_sends_to_created",
+          "key": {
+            "to": 1,
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_email_sends_order",
+          "key": {
+            "orderId": 1
+          },
+          "unique": false,
+          "sparse": true
+        },
+        {
+          "name": "idx_email_sends_status_created",
+          "key": {
+            "status": 1,
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_email_sends_template_created",
+          "key": {
+            "template": 1,
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "email_sends"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "gratitude_accounts",
+      "documentCount": 1,
+      "classification": "TRANSFORM",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "lib/gratitude/accounts.js",
+        "lib/gratitude/referrals.js",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [
+        "lib/gratitude/referrals.js"
+      ],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "customerId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "gratitude_accounts"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "idempotency_keys",
+      "documentCount": 22,
+      "classification": "MIGRATE",
+      "businessCriticality": "HIGH",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "lib/idempotency.ts",
+        "scripts/migrate/transformers.mjs",
+        "scripts/setup-database-indexes.js"
+      ],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "idempotency_keys"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "inventory",
+      "documentCount": 40,
+      "classification": "TRANSFORM",
+      "businessCriticality": "CRITICAL",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/admin/inventory/[productId]/route.ts",
+        "app/api/admin/products/route.ts",
+        "app/api/admin/products/[id]/route.ts",
+        "app/api/webhooks/square/route.ts",
+        "lib/cache.ts",
+        "lib/custom-inventory.js",
+        "lib/db-admin.js",
+        "lib/inventory-lock.ts",
+        "lib/returns.ts",
+        "scripts/migrate/business-baselines.mjs",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [
+        "app/api/admin/inventory/[productId]/route.ts",
+        "app/api/admin/products/[id]/route.ts",
+        "app/api/webhooks/square/route.ts",
+        "lib/inventory-lock.ts",
+        "lib/returns.ts"
+      ],
+      "readConsumers": [
+        "app/api/admin/inventory/[productId]/route.ts",
+        "app/api/admin/products/[id]/route.ts",
+        "lib/inventory-lock.ts",
+        "scripts/migrate/business-baselines.mjs"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "productId",
+        "squareId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_inventory_product",
+          "key": {
+            "productId": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_inventory_market_date",
+          "key": {
+            "marketSchedule.date": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_inventory_reserved",
+          "key": {
+            "reservedUntil": 1
+          },
+          "unique": false,
+          "sparse": true
+        }
+      ],
+      "targetTables": [
+        "inventory",
+        "inventory_variations"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT_RELATIONSHIP_BUSINESS_AGGREGATE",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "inventory_events",
+      "documentCount": 856,
+      "classification": "TRANSFORM",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "lib/custom-inventory.js",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "inventory_events"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "lead_intents",
+      "documentCount": 10,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/lead/route.ts",
+        "app/api/quiz/route.ts",
+        "scripts/migrate/transformers.mjs",
+        "scripts/weekly-menu-broadcast.ts"
+      ],
+      "writeConsumers": [
+        "app/api/lead/route.ts",
+        "app/api/quiz/route.ts"
+      ],
+      "readConsumers": [
+        "scripts/weekly-menu-broadcast.ts"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "email",
+        "id"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "lead_intents"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "learning_enrollments",
+      "documentCount": 0,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "lib/learning/service.js",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "userId_1_moduleSlug_1",
+          "key": {
+            "userId": 1,
+            "moduleSlug": 1
+          },
+          "unique": true,
+          "sparse": false
+        },
+        {
+          "name": "userId_1_updatedAt_-1",
+          "key": {
+            "userId": 1,
+            "updatedAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "learning_enrollments"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "learning_modules",
+      "documentCount": 6,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "lib/learning/service.js",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "slug_1",
+          "key": {
+            "slug": 1
+          },
+          "unique": true,
+          "sparse": false
+        },
+        {
+          "name": "status_1_publishedAt_-1",
+          "key": {
+            "status": 1,
+            "publishedAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "learning_modules"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "market_counters",
+      "documentCount": 1,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "lib/preorder/repository.ts",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "market_counters"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "market_schedules",
+      "documentCount": 0,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_market_date",
+          "key": {
+            "date": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_market_location_date",
+          "key": {
+            "location": 1,
+            "date": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_market_active",
+          "key": {
+            "active": 1,
+            "date": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "market_schedules"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "marketorders",
+      "documentCount": 4,
+      "classification": "TRANSFORM",
+      "businessCriticality": "CRITICAL",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/orders/[id]/status/route.ts",
+        "app/api/user/favorites/route.ts",
+        "app/api/user/orders/route.ts",
+        "app/api/user/stats/route.ts",
+        "lib/preorder/repository.ts",
+        "scripts/ensure-indexes.ts",
+        "scripts/migrate/business-baselines.mjs",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [
+        "app/api/orders/[id]/status/route.ts",
+        "scripts/ensure-indexes.ts"
+      ],
+      "readConsumers": [
+        "app/api/orders/[id]/status/route.ts",
+        "app/api/user/favorites/route.ts",
+        "app/api/user/orders/route.ts",
+        "app/api/user/stats/route.ts"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "marketId",
+        "customerEmail",
+        "amountPaid"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "orderNumber_1",
+          "key": {
+            "orderNumber": 1
+          },
+          "unique": true,
+          "sparse": false
+        },
+        {
+          "name": "marketId_1_status_1_createdAt_-1",
+          "key": {
+            "marketId": 1,
+            "status": 1,
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "status_1_createdAt_-1",
+          "key": {
+            "status": 1,
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "customerPhone_1",
+          "key": {
+            "customerPhone": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "orders",
+        "order_items"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT_RELATIONSHIP_BUSINESS_AGGREGATE",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "markets",
+      "documentCount": 2,
+      "classification": "TRANSFORM",
+      "businessCriticality": "HIGH",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "lib/markets/repository.ts",
+        "lib/rewards-fraud-detection.js",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [],
+      "readConsumers": [
+        "lib/rewards-fraud-detection.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "name_1",
+          "key": {
+            "name": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "city_1_state_1",
+          "key": {
+            "city": 1,
+            "state": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "isActive_1",
+          "key": {
+            "isActive": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "markets"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "menus",
+      "documentCount": 1,
+      "classification": "TRANSFORM",
+      "businessCriticality": "HIGH",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/admin/menus/archive/route.ts",
+        "lib/menus/repository.ts",
+        "scripts/audit-menus-readonly.mjs",
+        "scripts/migrate/transformers.mjs",
+        "scripts/setup-database-indexes.js",
+        "scripts/upsert-menu080626.js"
+      ],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "marketId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "menus",
+        "menu_products",
+        "menu_tags"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "newsletter_subscribers",
+      "documentCount": 33,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/lead/route.ts",
+        "app/api/markets/warm/route.ts",
+        "app/api/newsletter/subscribe/route.ts",
+        "app/api/retention/winback/route.ts",
+        "app/api/subscriptions/gratitude-box/route.ts",
+        "app/api/unsubscribe/route.ts",
+        "lib/email/service.js",
+        "scripts/migrate/transformers.mjs",
+        "scripts/weekly-menu-broadcast.ts",
+        "tests/content-quality.test.ts"
+      ],
+      "writeConsumers": [
+        "app/api/lead/route.ts",
+        "app/api/retention/winback/route.ts",
+        "app/api/subscriptions/gratitude-box/route.ts",
+        "app/api/unsubscribe/route.ts"
+      ],
+      "readConsumers": [
+        "lib/email/service.js",
+        "scripts/weekly-menu-broadcast.ts"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "email"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_newsletter_email",
+          "key": {
+            "email": 1
+          },
+          "unique": true,
+          "sparse": false
+        },
+        {
+          "name": "idx_newsletter_unsubscribed",
+          "key": {
+            "unsubscribedAt": 1
+          },
+          "unique": false,
+          "sparse": true
+        }
+      ],
+      "targetTables": [
+        "newsletter_subscribers"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "orders",
+      "documentCount": 851,
+      "classification": "TRANSFORM",
+      "businessCriticality": "CRITICAL",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/admin/analytics/route.ts",
+        "app/api/admin/campaigns/send/route.ts",
+        "app/api/admin/customers/[id]/route.ts",
+        "app/api/admin/orders/route.ts",
+        "app/api/admin/orders/sync/route.ts",
+        "app/api/admin/orders/[id]/refund/route.ts",
+        "app/api/admin/products/[id]/route.ts",
+        "app/api/cron/cleanup-abandoned-orders/route.ts",
+        "app/api/orders/by-ref/route.js",
+        "app/api/payments/route.ts",
+        "app/api/webhooks/square/route.ts",
+        "app/order/[id]/page.tsx",
+        "lib/admin-analytics.js",
+        "lib/cache.ts",
+        "lib/campaign-manager.js",
+        "lib/db-admin.js",
+        "lib/db-customers.js",
+        "lib/enhanced-order-tracking.js",
+        "lib/middleware/admin.ts",
+        "lib/returns.ts",
+        "lib/square-orders-sync.js",
+        "lib/staff-notifications.js",
+        "lib/subscription-practical.ts",
+        "lib/transactions.ts",
+        "scripts/create-email-indexes.js",
+        "scripts/migrate/business-baselines.mjs",
+        "scripts/migrate/transformers.mjs",
+        "scripts/setup-database-indexes.js",
+        "scripts/setup-database.js",
+        "tests/reviews-flow.test.ts",
+        "tests/square/02-sdk-initialization.spec.ts"
+      ],
+      "writeConsumers": [
+        "app/api/admin/orders/route.ts",
+        "app/api/admin/orders/[id]/refund/route.ts",
+        "app/api/cron/cleanup-abandoned-orders/route.ts",
+        "app/api/payments/route.ts",
+        "app/api/webhooks/square/route.ts",
+        "lib/db-admin.js",
+        "lib/db-customers.js",
+        "lib/enhanced-order-tracking.js",
+        "lib/square-orders-sync.js",
+        "lib/staff-notifications.js",
+        "lib/subscription-practical.ts",
+        "lib/transactions.ts",
+        "scripts/create-email-indexes.js",
+        "scripts/setup-database.js"
+      ],
+      "readConsumers": [
+        "app/api/admin/analytics/route.ts",
+        "app/api/admin/campaigns/send/route.ts",
+        "app/api/admin/orders/route.ts",
+        "app/api/admin/orders/[id]/refund/route.ts",
+        "app/api/admin/products/[id]/route.ts",
+        "app/api/orders/by-ref/route.js",
+        "app/api/payments/route.ts",
+        "app/api/webhooks/square/route.ts",
+        "app/order/[id]/page.tsx",
+        "lib/admin-analytics.js",
+        "lib/db-admin.js",
+        "lib/db-customers.js",
+        "lib/enhanced-order-tracking.js",
+        "lib/returns.ts",
+        "lib/square-orders-sync.js",
+        "lib/staff-notifications.js",
+        "scripts/migrate/business-baselines.mjs"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "squareOrderId",
+        "customerEmail",
+        "isPaid"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "id_1",
+          "key": {
+            "id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "customer.email_1",
+          "key": {
+            "customer.email": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "createdAt_-1",
+          "key": {
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "orders",
+        "order_items"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT_RELATIONSHIP_BUSINESS_AGGREGATE",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "owner_alert_queue",
+      "documentCount": 31,
+      "classification": "EPHEMERAL",
+      "businessCriticality": "LOW",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "lib/event-queue.ts"
+      ],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "sourceEventId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [],
+      "migrationStrategy": "RECREATE_OR_EXPIRE_AT_CUTOVER",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "passport_idempotency",
+      "documentCount": 1,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "lib/rewards-secure.js",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [
+        "lib/rewards-secure.js"
+      ],
+      "readConsumers": [
+        "lib/rewards-secure.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "passport_idempotency"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "passports",
+      "documentCount": 109,
+      "classification": "TRANSFORM",
+      "businessCriticality": "HIGH",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/rewards/passport/route.js",
+        "lib/rewards-fraud-detection.js",
+        "lib/rewards-secure.js",
+        "scripts/migrate/transformers.mjs",
+        "tests/reviews-flow.test.ts"
+      ],
+      "writeConsumers": [
+        "lib/rewards-secure.js"
+      ],
+      "readConsumers": [
+        "app/api/rewards/passport/route.js",
+        "lib/rewards-fraud-detection.js",
+        "lib/rewards-secure.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "email"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "reward_passports",
+        "reward_stamps"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "password_resets",
+      "documentCount": 1,
+      "classification": "EPHEMERAL",
+      "businessCriticality": "LOW",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/auth/forgot-password/route.ts",
+        "app/api/auth/reset-password/route.ts",
+        "scripts/ensure-indexes.ts"
+      ],
+      "writeConsumers": [
+        "app/api/auth/forgot-password/route.ts",
+        "app/api/auth/reset-password/route.ts",
+        "scripts/ensure-indexes.ts"
+      ],
+      "readConsumers": [
+        "app/api/auth/reset-password/route.ts"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "userId",
+        "email"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [],
+      "migrationStrategy": "RECREATE_OR_EXPIRE_AT_CUTOVER",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "payment_records",
+      "documentCount": 3,
+      "classification": "TRANSFORM",
+      "businessCriticality": "CRITICAL",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/payments/route.ts",
+        "app/api/webhooks/square/route.ts",
+        "scripts/migrate/business-baselines.mjs",
+        "scripts/migrate/transformers.mjs",
+        "scripts/setup-database-indexes.js"
+      ],
+      "writeConsumers": [
+        "app/api/payments/route.ts"
+      ],
+      "readConsumers": [
+        "app/api/payments/route.ts",
+        "app/api/webhooks/square/route.ts"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "squarePaymentId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_payments_order_id",
+          "key": {
+            "metadata.orderId": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_payments_square_id",
+          "key": {
+            "squarePaymentId": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_payments_status_created",
+          "key": {
+            "status": 1,
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_payments_order_status",
+          "key": {
+            "metadata.orderId": 1,
+            "status": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "payments"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT_RELATIONSHIP_BUSINESS_AGGREGATE",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "payments",
+      "documentCount": 3,
+      "classification": "TRANSFORM",
+      "businessCriticality": "CRITICAL",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/health/payments/route.ts",
+        "app/api/payments/route.ts",
+        "app/api/webhooks/square/route.ts",
+        "scripts/migrate/business-baselines.mjs",
+        "scripts/migrate/transformers.mjs",
+        "tests/square/02-sdk-initialization.spec.ts"
+      ],
+      "writeConsumers": [],
+      "readConsumers": [
+        "app/api/payments/route.ts",
+        "app/api/webhooks/square/route.ts"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "id",
+        "squarePaymentId",
+        "orderId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "payments"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT_RELATIONSHIP_BUSINESS_AGGREGATE",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "pending_customers",
+      "documentCount": 2,
+      "classification": "EPHEMERAL",
+      "businessCriticality": "LOW",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/auth/register/route.ts",
+        "tests/auth-register-route.test.ts",
+        "tests/reviews-flow.test.ts"
+      ],
+      "writeConsumers": [
+        "app/api/auth/register/route.ts"
+      ],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "email",
+        "lastReviewedProductId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [],
+      "migrationStrategy": "RECREATE_OR_EXPIRE_AT_CUTOVER",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "pre_orders",
+      "documentCount": 2,
+      "classification": "ARCHIVE_ONLY",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "id",
+        "squareOrderId",
+        "paymentLinkId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [],
+      "migrationStrategy": "PRESERVE_IN_VERIFIED_MONGO_BACKUP",
+      "verificationStrategy": "BACKUP_SHA_AND_ARCHIVE_DRY_RUN",
+      "status": "UNREFERENCED_ARCHIVED"
+    },
+    {
+      "collection": "product_reviews",
+      "documentCount": 6,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/admin/reviews/route.ts",
+        "scripts/migrate/transformers.mjs",
+        "tests/reviews-flow.test.ts"
+      ],
+      "writeConsumers": [
+        "app/api/admin/reviews/route.ts"
+      ],
+      "readConsumers": [
+        "app/api/admin/reviews/route.ts"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "productId",
+        "email"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_reviews_product_status",
+          "key": {
+            "productId": 1,
+            "status": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_reviews_featured",
+          "key": {
+            "status": 1,
+            "helpful": -1,
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_reviews_customer_email",
+          "key": {
+            "customer.email": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_reviews_verified",
+          "key": {
+            "verifiedPurchase": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "product_reviews"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "product_sync_log",
+      "documentCount": 66,
+      "classification": "DERIVED",
+      "businessCriticality": "DERIVED",
+      "authority": "Square",
+      "applicationConsumers": [
+        "lib/product-sync-engine.js"
+      ],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "productId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "product_sync_log"
+      ],
+      "migrationStrategy": "REBUILD_FROM_AUTHORITY_THEN_VERIFY",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "products",
+      "documentCount": 0,
+      "classification": "TRANSFORM",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/admin/analytics/route.ts",
+        "app/api/admin/notifications/route.ts",
+        "app/api/admin/products/route.ts",
+        "app/api/admin/products/[id]/route.ts",
+        "app/api/admin/products/[id]/sync/route.ts",
+        "app/faq/page.js",
+        "app/product/[slug]/page.jsx",
+        "lib/cache.ts",
+        "lib/database.ts",
+        "lib/inventory-sync.js",
+        "lib/middleware/admin.ts",
+        "lib/subscription-practical.ts",
+        "scripts/migrate/transformers.mjs",
+        "scripts/setup-database-indexes.js",
+        "scripts/setup-database.js"
+      ],
+      "writeConsumers": [
+        "app/api/admin/products/[id]/sync/route.ts",
+        "lib/database.ts",
+        "lib/inventory-sync.js",
+        "scripts/setup-database.js"
+      ],
+      "readConsumers": [
+        "app/api/admin/notifications/route.ts",
+        "app/api/admin/products/[id]/sync/route.ts",
+        "app/product/[slug]/page.jsx",
+        "lib/database.ts",
+        "lib/inventory-sync.js",
+        "lib/subscription-practical.ts",
+        "scripts/setup-database.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_products_slug",
+          "key": {
+            "slug": 1
+          },
+          "unique": true,
+          "sparse": false
+        },
+        {
+          "name": "idx_products_category_featured",
+          "key": {
+            "category": 1,
+            "metadata.featured": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_products_available",
+          "key": {
+            "available": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_products_purchase_status",
+          "key": {
+            "purchaseStatus": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_products_featured",
+          "key": {
+            "metadata.featured": 1
+          },
+          "unique": false,
+          "sparse": true
+        },
+        {
+          "name": "idx_products_updated",
+          "key": {
+            "updatedAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "products"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "products_unified",
+      "documentCount": 0,
+      "classification": "ARCHIVE_ONLY",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "id_1",
+          "key": {
+            "id": 1
+          },
+          "unique": true,
+          "sparse": false
+        },
+        {
+          "name": "intelligentCategory_1",
+          "key": {
+            "intelligentCategory": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [],
+      "migrationStrategy": "PRESERVE_IN_VERIFIED_MONGO_BACKUP",
+      "verificationStrategy": "BACKUP_SHA_AND_ARCHIVE_DRY_RUN",
+      "status": "UNREFERENCED_ARCHIVED"
+    },
+    {
+      "collection": "queuepositions",
+      "documentCount": 1,
+      "classification": "EPHEMERAL",
+      "businessCriticality": "LOW",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/queue/active/route.js",
+        "app/api/queue/update/route.ts",
+        "lib/queue-integration.js"
+      ],
+      "writeConsumers": [
+        "app/api/queue/update/route.ts"
+      ],
+      "readConsumers": [
+        "lib/queue-integration.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "orderId",
+        "marketId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "orderId_1",
+          "key": {
+            "orderId": 1
+          },
+          "unique": true,
+          "sparse": false
+        },
+        {
+          "name": "orderRef_1",
+          "key": {
+            "orderRef": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "marketId_1",
+          "key": {
+            "marketId": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "position_1",
+          "key": {
+            "position": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "status_1",
+          "key": {
+            "status": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "marketId_1_status_1_position_1",
+          "key": {
+            "marketId": 1,
+            "status": 1,
+            "position": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "marketId_1_createdAt_-1",
+          "key": {
+            "marketId": 1,
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [],
+      "migrationStrategy": "RECREATE_OR_EXPIRE_AT_CUTOVER",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "quiz_results",
+      "documentCount": 13,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/quiz/route.ts",
+        "lib/db-quiz.js",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [
+        "app/api/quiz/route.ts"
+      ],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "customer.email_1",
+          "key": {
+            "customer.email": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "createdAt_1",
+          "key": {
+            "createdAt": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "conversionStatus.purchased_1",
+          "key": {
+            "conversionStatus.purchased": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "quiz_results"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "reward_transactions",
+      "documentCount": 1,
+      "classification": "TRANSFORM",
+      "businessCriticality": "HIGH",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "lib/enhanced-rewards.js",
+        "scripts/migrate/transformers.mjs",
+        "tests/unit/rewards-idempotency.spec.ts"
+      ],
+      "writeConsumers": [
+        "lib/enhanced-rewards.js"
+      ],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "transactionId",
+        "email",
+        "orderId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_rewards_user_created",
+          "key": {
+            "userId": 1,
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_rewards_order",
+          "key": {
+            "orderId": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_rewards_type_status",
+          "key": {
+            "type": 1,
+            "status": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_rewards_idempotency",
+          "key": {
+            "email": 1,
+            "orderId": 1,
+            "type": 1
+          },
+          "unique": true,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "reward_transactions"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "rewards",
+      "documentCount": 2,
+      "classification": "TRANSFORM",
+      "businessCriticality": "HIGH",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/user/challenge/checkin/route.ts",
+        "app/api/user/email-preferences/route.ts",
+        "app/api/user/rewards/route.js",
+        "app/api/user/stats/route.ts",
+        "app/faq/page.js",
+        "app/profile/settings/Client.js",
+        "lib/admin-analytics.js",
+        "lib/campaign-manager.js",
+        "lib/db/users.js",
+        "scripts/create-test-user.js",
+        "scripts/ensure-indexes.ts",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [
+        "app/api/user/challenge/checkin/route.ts",
+        "scripts/ensure-indexes.ts"
+      ],
+      "readConsumers": [
+        "app/api/user/rewards/route.js",
+        "app/api/user/stats/route.ts",
+        "lib/admin-analytics.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "id",
+        "userId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "reward_accounts"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "scheduled_emails",
+      "documentCount": 4,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "lib/email-queue.js",
+        "lib/nurture-sequence.js",
+        "scripts/migrate/transformers.mjs"
+      ],
+      "writeConsumers": [
+        "lib/nurture-sequence.js"
+      ],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "id",
+        "quizId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "id_1",
+          "key": {
+            "id": 1
+          },
+          "unique": true,
+          "sparse": false
+        },
+        {
+          "name": "scheduledFor_1_status_1",
+          "key": {
+            "scheduledFor": 1,
+            "status": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "recipient.email_1",
+          "key": {
+            "recipient.email": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "quizId_1",
+          "key": {
+            "quizId": 1
+          },
+          "unique": false,
+          "sparse": true
+        },
+        {
+          "name": "status_1",
+          "key": {
+            "status": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "createdAt_-1",
+          "key": {
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "scheduled_emails"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "sessions",
+      "documentCount": 0,
+      "classification": "EPHEMERAL",
+      "businessCriticality": "LOW",
+      "authority": "MongoDB",
+      "applicationConsumers": [],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_sessions_id",
+          "key": {
+            "sessionId": 1
+          },
+          "unique": true,
+          "sparse": false
+        },
+        {
+          "name": "idx_sessions_user",
+          "key": {
+            "userId": 1
+          },
+          "unique": false,
+          "sparse": true
+        },
+        {
+          "name": "idx_sessions_last_active",
+          "key": {
+            "lastActive": -1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_sessions_ttl",
+          "key": {
+            "expiresAt": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [],
+      "migrationStrategy": "RECREATE_OR_EXPIRE_AT_CUTOVER",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "RUNTIME_STATE_REVIEWED"
+    },
+    {
+      "collection": "square_catalog_categories",
+      "documentCount": 11,
+      "classification": "DERIVED",
+      "businessCriticality": "DERIVED",
+      "authority": "Square",
+      "applicationConsumers": [
+        "lib/square/catalogSync.js",
+        "lib/square/syncSingleItem.js",
+        "scripts/syncCatalog.js",
+        "scripts/syncCatalog.ts"
+      ],
+      "writeConsumers": [
+        "lib/square/catalogSync.js",
+        "lib/square/syncSingleItem.js",
+        "scripts/syncCatalog.js"
+      ],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "id"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "id_1",
+          "key": {
+            "id": 1
+          },
+          "unique": true,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "product_categories"
+      ],
+      "migrationStrategy": "REBUILD_FROM_AUTHORITY_THEN_VERIFY",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "square_catalog_items",
+      "documentCount": 51,
+      "classification": "DERIVED",
+      "businessCriticality": "HIGH",
+      "authority": "Square",
+      "applicationConsumers": [
+        "app/api/admin/products/route.ts",
+        "app/api/admin/products/[id]/route.ts",
+        "app/api/webhooks/square/route.ts",
+        "lib/product-sync-engine.js",
+        "lib/square/catalogSync.js",
+        "lib/square/syncSingleItem.js",
+        "lib/square/syncToUnified.js",
+        "scripts/syncCatalog.js",
+        "scripts/syncCatalog.ts"
+      ],
+      "writeConsumers": [
+        "app/api/admin/products/route.ts",
+        "app/api/admin/products/[id]/route.ts",
+        "app/api/webhooks/square/route.ts",
+        "lib/square/catalogSync.js",
+        "lib/square/syncSingleItem.js",
+        "scripts/syncCatalog.js"
+      ],
+      "readConsumers": [
+        "app/api/admin/products/[id]/route.ts",
+        "app/api/webhooks/square/route.ts",
+        "lib/product-sync-engine.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "id",
+        "categoryId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "id_1",
+          "key": {
+            "id": 1
+          },
+          "unique": true,
+          "sparse": false
+        },
+        {
+          "name": "variations.id_1",
+          "key": {
+            "variations.id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "products",
+        "product_variations"
+      ],
+      "migrationStrategy": "REBUILD_FROM_AUTHORITY_THEN_VERIFY",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "square_inventory",
+      "documentCount": 1,
+      "classification": "DERIVED",
+      "businessCriticality": "HIGH",
+      "authority": "Square",
+      "applicationConsumers": [
+        "app/api/webhooks/square/route.ts"
+      ],
+      "writeConsumers": [
+        "app/api/webhooks/square/route.ts"
+      ],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "catalogObjectId",
+        "locationId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "inventory"
+      ],
+      "migrationStrategy": "REBUILD_FROM_AUTHORITY_THEN_VERIFY",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "square_sync_metadata",
+      "documentCount": 2,
+      "classification": "MIGRATE",
+      "businessCriticality": "MEDIUM",
+      "authority": "Square",
+      "applicationConsumers": [
+        "lib/square/catalogSync.js",
+        "lib/square-orders-sync.js",
+        "scripts/migrate/transformers.mjs",
+        "scripts/syncCatalog.js",
+        "scripts/syncCatalog.ts",
+        "tests/unit/square-sync-resilience.spec.ts"
+      ],
+      "writeConsumers": [
+        "lib/square/catalogSync.js",
+        "lib/square-orders-sync.js",
+        "scripts/syncCatalog.js"
+      ],
+      "readConsumers": [
+        "lib/square-orders-sync.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "locationId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "square_sync_metadata"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "square_sync_queue",
+      "documentCount": 39,
+      "classification": "EPHEMERAL",
+      "businessCriticality": "LOW",
+      "authority": "Square",
+      "applicationConsumers": [],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "objectId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [],
+      "migrationStrategy": "RECREATE_OR_EXPIRE_AT_CUTOVER",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "RUNTIME_STATE_REVIEWED"
+    },
+    {
+      "collection": "staff_notifications",
+      "documentCount": 0,
+      "classification": "EPHEMERAL",
+      "businessCriticality": "LOW",
+      "authority": "MongoDB",
+      "applicationConsumers": [],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_staff_notif_order",
+          "key": {
+            "orderId": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_staff_notif_unclaimed",
+          "key": {
+            "claimed": 1,
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_staff_notif_staff",
+          "key": {
+            "staff.id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [],
+      "migrationStrategy": "RECREATE_OR_EXPIRE_AT_CUTOVER",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "RUNTIME_STATE_REVIEWED"
+    },
+    {
+      "collection": "unified_analytics",
+      "documentCount": 1461,
+      "classification": "DERIVED",
+      "businessCriticality": "DERIVED",
+      "authority": "derived",
+      "applicationConsumers": [
+        "lib/adaptive-recommendations.js",
+        "lib/unified-analytics.js"
+      ],
+      "writeConsumers": [],
+      "readConsumers": [
+        "lib/adaptive-recommendations.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "unified_analytics"
+      ],
+      "migrationStrategy": "REBUILD_FROM_AUTHORITY_THEN_VERIFY",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "unified_metrics",
+      "documentCount": 34,
+      "classification": "DERIVED",
+      "businessCriticality": "DERIVED",
+      "authority": "derived",
+      "applicationConsumers": [
+        "lib/unified-analytics.js"
+      ],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "unified_metrics"
+      ],
+      "migrationStrategy": "REBUILD_FROM_AUTHORITY_THEN_VERIFY",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "unified_products",
+      "documentCount": 40,
+      "classification": "DERIVED",
+      "businessCriticality": "HIGH",
+      "authority": "Square",
+      "applicationConsumers": [
+        "app/api/admin/inventory/[productId]/route.ts",
+        "app/api/admin/products/route.ts",
+        "app/api/admin/products/[id]/route.ts",
+        "app/api/search/enhanced/route.ts",
+        "app/api/webhooks/square/route.ts",
+        "lib/adaptive-recommendations.js",
+        "lib/cart-pricing.ts",
+        "lib/product-sync-engine.js",
+        "lib/sandbox-detection.js",
+        "lib/search/enhanced-search.js",
+        "lib/square/syncSingleItem.js",
+        "lib/square/syncToUnified.js",
+        "scripts/cleanup-sandbox.mjs",
+        "scripts/insert-sandbox-products.js",
+        "scripts/remove-sandbox-products.js",
+        "scripts/test-mongodb.js",
+        "scripts/verify-products.js",
+        "tests/unit/cart-pricing.spec.ts"
+      ],
+      "writeConsumers": [
+        "app/api/admin/inventory/[productId]/route.ts",
+        "app/api/admin/products/route.ts",
+        "app/api/admin/products/[id]/route.ts",
+        "app/api/webhooks/square/route.ts",
+        "lib/square/syncSingleItem.js",
+        "lib/square/syncToUnified.js",
+        "scripts/cleanup-sandbox.mjs",
+        "scripts/insert-sandbox-products.js"
+      ],
+      "readConsumers": [
+        "app/api/admin/inventory/[productId]/route.ts",
+        "app/api/admin/products/route.ts",
+        "app/api/admin/products/[id]/route.ts",
+        "lib/sandbox-detection.js",
+        "lib/square/syncSingleItem.js",
+        "scripts/cleanup-sandbox.mjs",
+        "scripts/insert-sandbox-products.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "id",
+        "squareCategoryId",
+        "squareId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "id_1",
+          "key": {
+            "id": 1
+          },
+          "unique": true,
+          "sparse": false
+        },
+        {
+          "name": "intelligentCategory_1",
+          "key": {
+            "intelligentCategory": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "tags_1",
+          "key": {
+            "tags": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "ingredients.name_1",
+          "key": {
+            "ingredients.name": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "syncedAt_-1",
+          "key": {
+            "syncedAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "products",
+        "product_variations"
+      ],
+      "migrationStrategy": "REBUILD_FROM_AUTHORITY_THEN_VERIFY",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "users",
+      "documentCount": 3,
+      "classification": "TRANSFORM",
+      "businessCriticality": "HIGH",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/auth/reset-password/route.ts",
+        "lib/admin-analytics.js",
+        "lib/campaign-manager.js",
+        "lib/db/users.js",
+        "lib/email/service.js",
+        "lib/monitoring-dashboard.ts",
+        "scripts/create-admin-user.js",
+        "scripts/create-email-indexes.js",
+        "scripts/create-test-user.js",
+        "scripts/ensure-indexes.ts",
+        "scripts/migrate/transformers.mjs",
+        "scripts/setup-database.js"
+      ],
+      "writeConsumers": [
+        "app/api/auth/reset-password/route.ts",
+        "lib/db/users.js",
+        "scripts/create-admin-user.js",
+        "scripts/create-email-indexes.js",
+        "scripts/ensure-indexes.ts",
+        "scripts/setup-database.js"
+      ],
+      "readConsumers": [
+        "lib/admin-analytics.js",
+        "lib/campaign-manager.js",
+        "lib/email/service.js",
+        "scripts/create-admin-user.js",
+        "scripts/setup-database.js"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "email",
+        "id"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_users_email",
+          "key": {
+            "email": 1
+          },
+          "unique": true,
+          "sparse": false
+        },
+        {
+          "name": "idx_users_phone",
+          "key": {
+            "phone": 1
+          },
+          "unique": false,
+          "sparse": true
+        },
+        {
+          "name": "idx_users_role",
+          "key": {
+            "role": 1
+          },
+          "unique": false,
+          "sparse": false
+        },
+        {
+          "name": "idx_users_created",
+          "key": {
+            "createdAt": -1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "users"
+      ],
+      "migrationStrategy": "BOUNDED_NORMALIZE_AND_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "webhook_events_processed",
+      "documentCount": 1,
+      "classification": "MIGRATE",
+      "businessCriticality": "CRITICAL",
+      "authority": "MongoDB",
+      "applicationConsumers": [
+        "app/api/webhooks/square/route.ts",
+        "scripts/migrate/business-baselines.mjs",
+        "scripts/setup-database-indexes.js"
+      ],
+      "writeConsumers": [
+        "app/api/webhooks/square/route.ts"
+      ],
+      "readConsumers": [
+        "app/api/webhooks/square/route.ts",
+        "scripts/migrate/business-baselines.mjs"
+      ],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "eventId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [
+        "webhook_events"
+      ],
+      "migrationStrategy": "BOUNDED_UPSERT",
+      "verificationStrategy": "COUNT_ID_FINGERPRINT_RELATIONSHIP_BUSINESS_AGGREGATE",
+      "status": "ACTIVE_OR_REFERENCED"
+    },
+    {
+      "collection": "webhook_logs",
+      "documentCount": 1000,
+      "classification": "ARCHIVE_ONLY",
+      "businessCriticality": "MEDIUM",
+      "authority": "MongoDB",
+      "applicationConsumers": [],
+      "writeConsumers": [],
+      "readConsumers": [],
+      "primaryIdentifiers": [
+        "_id"
+      ],
+      "externalIdentifiers": [
+        "eventId"
+      ],
+      "mongoIndexes": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          },
+          "unique": false,
+          "sparse": false
+        }
+      ],
+      "targetTables": [],
+      "migrationStrategy": "PRESERVE_IN_VERIFIED_MONGO_BACKUP",
+      "verificationStrategy": "BACKUP_SHA_AND_ARCHIVE_DRY_RUN",
+      "status": "UNREFERENCED_ARCHIVED"
+    }
+  ]
+}

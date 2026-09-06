@@ -7,6 +7,8 @@ import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import type { AdminMenu, MenuDocument } from './types';
+import { getDatabaseProvider } from '@/lib/db/turso';
+import { getTursoMenuById, listTursoMenus } from './turso-repository';
 
 const COLLECTION_NAME = 'menus';
 
@@ -32,6 +34,7 @@ function documentToAdminMenu(doc: MenuDocument): AdminMenu {
 }
 
 export async function getAllMenus(): Promise<AdminMenu[]> {
+  if (getDatabaseProvider() === 'turso') return listTursoMenus('all');
   try {
     const { db } = await connectToDatabase();
     const docs = await db
@@ -48,6 +51,7 @@ export async function getAllMenus(): Promise<AdminMenu[]> {
 }
 
 export async function getActiveMenus(): Promise<AdminMenu[]> {
+  if (getDatabaseProvider() === 'turso') return listTursoMenus('active');
   try {
     const { db } = await connectToDatabase();
     const docs = await db
@@ -64,6 +68,7 @@ export async function getActiveMenus(): Promise<AdminMenu[]> {
 }
 
 export async function getPublicMenus(): Promise<AdminMenu[]> {
+  if (getDatabaseProvider() === 'turso') return listTursoMenus('public');
   try {
     const { db } = await connectToDatabase();
     const docs = await db
@@ -85,6 +90,7 @@ export async function getPublicMenus(): Promise<AdminMenu[]> {
 }
 
 export async function getActiveMenu(): Promise<AdminMenu | null> {
+  if (getDatabaseProvider() === 'turso') return (await listTursoMenus('active'))[0] ?? null;
   try {
     const { db } = await connectToDatabase();
     const doc = await db
@@ -99,6 +105,7 @@ export async function getActiveMenu(): Promise<AdminMenu | null> {
 }
 
 export async function getMenuById(id: string): Promise<AdminMenu | null> {
+  if (getDatabaseProvider() === 'turso') return getTursoMenuById(id);
   try {
     if (!ObjectId.isValid(id)) {
       return null;
