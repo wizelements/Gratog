@@ -1,8 +1,8 @@
 {
   "summary": {
-    "calls": 415,
-    "reads": 197,
-    "writes": 218,
+    "calls": 401,
+    "reads": 191,
+    "writes": 210,
     "dynamic": 0,
     "unknownOperations": 0
   },
@@ -2532,118 +2532,6 @@
       "line": 65,
       "collection": "email_sends",
       "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/returns.ts",
-      "line": 63,
-      "collection": "orders",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/returns.ts",
-      "line": 121,
-      "collection": "returns",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/returns.ts",
-      "line": 165,
-      "collection": "returns",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/returns.ts",
-      "line": 228,
-      "collection": "returns",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/returns.ts",
-      "line": 264,
-      "collection": "returns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/returns.ts",
-      "line": 286,
-      "collection": "returns",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/returns.ts",
-      "line": 323,
-      "collection": "returns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/returns.ts",
-      "line": 345,
-      "collection": "returns",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/returns.ts",
-      "line": 382,
-      "collection": "returns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/returns.ts",
-      "line": 423,
-      "collection": "returns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/returns.ts",
-      "line": 466,
-      "collection": "returns",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/returns.ts",
-      "line": 488,
-      "collection": "customers",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/returns.ts",
-      "line": 505,
-      "collection": "returns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/returns.ts",
-      "line": 528,
-      "collection": "inventory",
-      "operation": "updateOne",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
