@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 493,
-    "reads": 235,
-    "writes": 253,
-    "dynamic": 62,
+    "calls": 483,
+    "reads": 230,
+    "writes": 249,
+    "dynamic": 52,
     "unknownOperations": 0
   },
   "paths": [
@@ -2796,86 +2796,6 @@
       "line": 321,
       "collection": "products",
       "operation": "bulkWrite",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/learning/service.js",
-      "line": 525,
-      "collection": "DYNAMIC",
-      "operation": "COLLECTION_HANDLE",
-      "mode": "DYNAMIC",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/learning/service.js",
-      "line": 526,
-      "collection": "DYNAMIC",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/learning/service.js",
-      "line": 546,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/learning/service.js",
-      "line": 590,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/learning/service.js",
-      "line": 607,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/learning/service.js",
-      "line": 617,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/learning/service.js",
-      "line": 716,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/learning/service.js",
-      "line": 790,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/learning/service.js",
-      "line": 797,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/learning/service.js",
-      "line": 892,
-      "collection": "DYNAMIC",
-      "operation": "updateOne",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T14:40:38.425Z",
+  "generatedAt": "2026-09-06T14:45:24.544Z",
   "baseline": {
     "reads": 350,
     "writes": 308,
@@ -7,9 +7,9 @@
     "unknown": 30
   },
   "current": {
-    "reads": 235,
-    "writes": 253,
-    "dynamic": 62,
+    "reads": 230,
+    "writes": 249,
+    "dynamic": 52,
     "unknown": 0
   },
   "topFiles": [
@@ -58,10 +58,6 @@
       "calls": 10
     },
     {
-      "name": "lib/learning/service.js",
-      "calls": 10
-    },
-    {
       "name": "lib/staff-notifications.js",
       "calls": 10
     },
@@ -72,6 +68,10 @@
     {
       "name": "app/api/admin/coupons/route.ts",
       "calls": 8
+    },
+    {
+      "name": "lib/db/users.js",
+      "calls": 8
     }
   ],
   "topCollections": [
@@ -81,7 +81,7 @@
     },
     {
       "name": "DYNAMIC",
-      "calls": 58
+      "calls": 48
     },
     {
       "name": "unified_products",
