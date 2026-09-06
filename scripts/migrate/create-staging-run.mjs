@@ -1,0 +1,13 @@
+import { randomUUID } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { connect } from '@tursodatabase/serverless';
+import { BACKUP_SHA256 } from './migration-utils.mjs';
+if(process.env.TURSO_TARGET_ENV!=='staging')throw new Error('STAGING_TARGET_REQUIRED');
+const id=`mongo-turso-${new Date().toISOString().replace(/[:.]/g,'-')}-${randomUUID().slice(0,8)}`;
+const startedAt=new Date().toISOString(); const gitSha=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+const db=connect({url:process.env.TURSO_DATABASE_URL,authToken:process.env.TURSO_AUTH_TOKEN});
+await db.run('INSERT INTO migration_runs(id,source_database,source_backup_sha256,started_at,status) VALUES (?,?,?,?,?)',id,'taste_of_gratitude',BACKUP_SHA256,startedAt,'running');
+const report={migrationRunId:id,environment:'staging',sourceDatabase:'taste_of_gratitude',sourceBackupSha256:BACKUP_SHA256,sourceDocumentBaseline:5195,activeDocuments:2536,schemaVersion:'0003_content_rewards_operations.sql',batchSize:100,gitSha,sourceWatermark:startedAt,startedAt};
+await mkdir('migration-artifacts',{recursive:true});await writeFile('migration-artifacts/staging-run.json',JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify({status:'PASS',migrationRunId:id,environment:'staging',schemaVersion:report.schemaVersion}));await db.close();

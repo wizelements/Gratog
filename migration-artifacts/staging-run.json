@@ -1,0 +1,13 @@
+{
+  "migrationRunId": "mongo-turso-2026-09-06T00-26-50-711Z-613afa46",
+  "environment": "staging",
+  "sourceDatabase": "taste_of_gratitude",
+  "sourceBackupSha256": "EDD422C06B813114D506C0A8DFCA4DFECCCB5E773218C6EB2D9E605FC9E0CE08",
+  "sourceDocumentBaseline": 5195,
+  "activeDocuments": 2536,
+  "schemaVersion": "0003_content_rewards_operations.sql",
+  "batchSize": 100,
+  "gitSha": "3819896608285850173664106f1318525deeee5e",
+  "sourceWatermark": "2026-09-06T00:26:50.718Z",
+  "startedAt": "2026-09-06T00:26:50.718Z"
+}
