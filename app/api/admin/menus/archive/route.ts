@@ -4,9 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminSession } from '@/lib/auth/unified-admin';
 import { logger } from '@/lib/logger';
 import { isExpiredInZone, getTodayStart } from '@/lib/menus/week-utils';
-import { connectToDatabase } from '@/lib/db-optimized';
-
-const COLLECTION_NAME = 'menus';
+import { archiveTursoMenus, listTursoMenus } from '@/lib/menus/turso-repository';
 
 /**
  * POST /api/admin/menus/archive
@@ -44,15 +42,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { db } = await connectToDatabase();
-    const collection = db.collection(COLLECTION_NAME);
     const todayStart = getTodayStart();
-
-    const candidates = await collection
-      .find({
-        $or: [{ isActive: true }, { isArchived: { $ne: true } }],
-      })
-      .toArray();
+    const candidates = (await listTursoMenus('all')).filter((menu) => menu.isActive || !menu.isArchived);
 
     const toArchive = candidates.filter((doc: any) => isExpiredInZone(doc.weekEnd?.toISOString?.()));
 
@@ -67,29 +58,18 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const objectIds = toArchive.map((doc: any) => doc._id);
-    const ids = toArchive.map((doc: any) => doc._id.toString());
-
-    const result = await collection.updateMany(
-      { _id: { $in: objectIds } },
-      {
-        $set: {
-          isActive: false,
-          isArchived: true,
-          updatedAt: new Date(),
-        },
-      }
-    );
+    const ids = toArchive.map((doc) => doc.id);
+    const archived = await archiveTursoMenus(ids);
 
     logger.info('ArchiveExpiredMenus', 'Archived expired menus', {
-      count: result.modifiedCount,
+      count: archived,
       todayStart: todayStart.toISOString(),
       ids,
     });
 
     return NextResponse.json({
       success: true,
-      archived: result.modifiedCount,
+      archived,
       todayStart: todayStart.toISOString(),
       ids,
     });

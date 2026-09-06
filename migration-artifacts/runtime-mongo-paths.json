@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 455,
-    "reads": 216,
-    "writes": 235,
-    "dynamic": 27,
+    "calls": 452,
+    "reads": 214,
+    "writes": 234,
+    "dynamic": 24,
     "unknownOperations": 0
   },
   "paths": [
@@ -492,14 +492,6 @@
       "line": 193,
       "collection": "unified_products",
       "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/menus/archive/route.ts",
-      "line": 48,
-      "collection": "DYNAMIC",
-      "operation": "updateMany",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
@@ -2837,22 +2829,6 @@
       "collection": "email_sends",
       "operation": "insertOne",
       "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/response-optimizer.js",
-      "line": 155,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/response-optimizer.js",
-      "line": 161,
-      "collection": "DYNAMIC",
-      "operation": "countDocuments",
-      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {

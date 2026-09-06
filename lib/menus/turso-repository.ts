@@ -53,3 +53,4 @@ export async function setActiveTursoMenu(id:string){
   await db.transactionAsync(async(tx)=>{const target=await tx.get('SELECT id FROM menus WHERE id = ? LIMIT 1',id);if(!target)return;found=true;await tx.run('UPDATE menus SET active=0,updated_at=? WHERE active=1',now);await tx.run('UPDATE menus SET active=1,updated_at=? WHERE id=?',now,id);});
   return found?getTursoMenuById(id):null;
 }
+export async function archiveTursoMenus(ids:string[]){if(ids.length===0)return 0;const placeholders=ids.map(()=>'?').join(',');const result=await getTursoConnection().run(`UPDATE menus SET active=0,archived=1,updated_at=? WHERE id IN (${placeholders})`,new Date().toISOString(),...ids);return Number(result.rowsAffected)}
