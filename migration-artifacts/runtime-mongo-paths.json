@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 503,
-    "reads": 240,
-    "writes": 258,
-    "dynamic": 72,
+    "calls": 493,
+    "reads": 235,
+    "writes": 253,
+    "dynamic": 62,
     "unknownOperations": 0
   },
   "paths": [
@@ -2909,86 +2909,6 @@
       "collection": "email_subscribers",
       "operation": "updateOne",
       "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/preorder/repository.ts",
-      "line": 20,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/preorder/repository.ts",
-      "line": 35,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/preorder/repository.ts",
-      "line": 46,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/preorder/repository.ts",
-      "line": 51,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/preorder/repository.ts",
-      "line": 56,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/preorder/repository.ts",
-      "line": 67,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/preorder/repository.ts",
-      "line": 79,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/preorder/repository.ts",
-      "line": 91,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/preorder/repository.ts",
-      "line": 125,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/preorder/repository.ts",
-      "line": 136,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
       "status": "ACTIVE_RUNTIME"
     },
     {
