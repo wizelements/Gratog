@@ -1,0 +1,140 @@
+{
+  "generatedAt": "2026-09-06T02:54:33.987Z",
+  "baseline": {
+    "reads": 350,
+    "writes": 308,
+    "dynamic": 150,
+    "unknown": 30
+  },
+  "current": {
+    "reads": 350,
+    "writes": 308,
+    "dynamic": 150,
+    "unknown": 30
+  },
+  "topFiles": [
+    {
+      "name": "lib/database.ts",
+      "calls": 28
+    },
+    {
+      "name": "app/api/webhooks/square/route.ts",
+      "calls": 26
+    },
+    {
+      "name": "lib/campaign-manager.js",
+      "calls": 25
+    },
+    {
+      "name": "app/api/payments/route.ts",
+      "calls": 23
+    },
+    {
+      "name": "lib/rewards-secure.js",
+      "calls": 23
+    },
+    {
+      "name": "lib/admin-analytics.js",
+      "calls": 20
+    },
+    {
+      "name": "lib/gratitude/transactions.js",
+      "calls": 19
+    },
+    {
+      "name": "lib/gratitude/accounts.js",
+      "calls": 17
+    },
+    {
+      "name": "app/api/admin/campaigns/send/route.ts",
+      "calls": 16
+    },
+    {
+      "name": "lib/product-sync-engine.js",
+      "calls": 15
+    },
+    {
+      "name": "lib/batches/repository.ts",
+      "calls": 14
+    },
+    {
+      "name": "lib/inventory-lock.ts",
+      "calls": 14
+    },
+    {
+      "name": "lib/returns.ts",
+      "calls": 14
+    },
+    {
+      "name": "app/api/webhooks/resend/route.js",
+      "calls": 11
+    },
+    {
+      "name": "lib/custom-inventory.js",
+      "calls": 11
+    }
+  ],
+  "topCollections": [
+    {
+      "name": "DYNAMIC",
+      "calls": 150
+    },
+    {
+      "name": "orders",
+      "calls": 92
+    },
+    {
+      "name": "campaigns",
+      "calls": 33
+    },
+    {
+      "name": "unified_products",
+      "calls": 26
+    },
+    {
+      "name": "products",
+      "calls": 22
+    },
+    {
+      "name": "customers",
+      "calls": 20
+    },
+    {
+      "name": "admin_users",
+      "calls": 18
+    },
+    {
+      "name": "passports",
+      "calls": 18
+    },
+    {
+      "name": "users",
+      "calls": 17
+    },
+    {
+      "name": "square_catalog_items",
+      "calls": 16
+    },
+    {
+      "name": "coupons",
+      "calls": 15
+    },
+    {
+      "name": "audit_logs",
+      "calls": 14
+    },
+    {
+      "name": "inventory",
+      "calls": 13
+    },
+    {
+      "name": "inventory_locks",
+      "calls": 13
+    },
+    {
+      "name": "email_sends",
+      "calls": 12
+    }
+  ],
+  "status": "IN_PROGRESS"
+}
