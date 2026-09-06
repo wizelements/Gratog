@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T13:51:31.116Z",
+  "generatedAt": "2026-09-06T13:53:40.310Z",
   "baseline": {
     "reads": 350,
     "writes": 308,
@@ -7,9 +7,9 @@
     "unknown": 30
   },
   "current": {
-    "reads": 264,
-    "writes": 294,
-    "dynamic": 132,
+    "reads": 260,
+    "writes": 289,
+    "dynamic": 123,
     "unknown": 0
   },
   "topFiles": [
@@ -77,7 +77,7 @@
   "topCollections": [
     {
       "name": "DYNAMIC",
-      "calls": 128
+      "calls": 119
     },
     {
       "name": "orders",

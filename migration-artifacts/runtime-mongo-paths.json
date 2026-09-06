@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 563,
-    "reads": 264,
-    "writes": 294,
-    "dynamic": 132,
+    "calls": 554,
+    "reads": 260,
+    "writes": 289,
+    "dynamic": 123,
     "unknownOperations": 0
   },
   "paths": [
@@ -3204,78 +3204,6 @@
       "line": 892,
       "collection": "DYNAMIC",
       "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/markets/repository.ts",
-      "line": 71,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/markets/repository.ts",
-      "line": 88,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/markets/repository.ts",
-      "line": 108,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/markets/repository.ts",
-      "line": 158,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/markets/repository.ts",
-      "line": 219,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/markets/repository.ts",
-      "line": 246,
-      "collection": "DYNAMIC",
-      "operation": "deleteOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/markets/repository.ts",
-      "line": 273,
-      "collection": "DYNAMIC",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/markets/repository.ts",
-      "line": 320,
-      "collection": "DYNAMIC",
-      "operation": "insertMany",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/markets/repository.ts",
-      "line": 336,
-      "collection": "DYNAMIC",
-      "operation": "createIndex",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
