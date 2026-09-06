@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 427,
-    "reads": 201,
-    "writes": 222,
-    "dynamic": 4,
+    "calls": 415,
+    "reads": 197,
+    "writes": 218,
+    "dynamic": 0,
     "unknownOperations": 0
   },
   "paths": [
@@ -2036,102 +2036,6 @@
       "line": 145,
       "collection": "challenges",
       "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/db-admin.js",
-      "line": 19,
-      "collection": "admin_users",
-      "operation": "countDocuments",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/db-admin.js",
-      "line": 34,
-      "collection": "inventory",
-      "operation": "COLLECTION_HANDLE",
-      "mode": "DYNAMIC",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/db-admin.js",
-      "line": 40,
-      "collection": "orders",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/db-admin.js",
-      "line": 65,
-      "collection": "orders",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/db-admin.js",
-      "line": 90,
-      "collection": "analytics",
-      "operation": "COLLECTION_HANDLE",
-      "mode": "DYNAMIC",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/db-customers.js",
-      "line": 9,
-      "collection": "customers",
-      "operation": "COLLECTION_HANDLE",
-      "mode": "DYNAMIC",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/db-customers.js",
-      "line": 14,
-      "collection": "waitlist",
-      "operation": "COLLECTION_HANDLE",
-      "mode": "DYNAMIC",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/db-customers.js",
-      "line": 19,
-      "collection": "communications",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/db-customers.js",
-      "line": 117,
-      "collection": "orders",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/db-customers.js",
-      "line": 219,
-      "collection": "orders",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/db-customers.js",
-      "line": 223,
-      "collection": "orders",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/db-customers.js",
-      "line": 259,
-      "collection": "orders",
-      "operation": "updateOne",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
