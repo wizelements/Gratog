@@ -3,6 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const getCampaignAnalyticsSummary = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/campaigns/repository', () => ({ getCampaignAnalyticsSummary }));
+vi.mock('@/lib/admin/analytics-repository', () => ({
+  getCustomerAnalyticsData: vi.fn(),
+  getDashboardAnalytics: vi.fn(),
+  getSalesAnalyticsData: vi.fn(),
+}));
 
 import { getCampaignAnalytics } from '@/lib/admin-analytics';
 
