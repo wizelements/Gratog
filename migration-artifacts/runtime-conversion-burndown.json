@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T14:22:53.322Z",
+  "generatedAt": "2026-09-06T14:27:42.820Z",
   "baseline": {
     "reads": 350,
     "writes": 308,
@@ -7,9 +7,9 @@
     "unknown": 30
   },
   "current": {
-    "reads": 247,
-    "writes": 268,
-    "dynamic": 89,
+    "reads": 243,
+    "writes": 262,
+    "dynamic": 79,
     "unknown": 0
   },
   "topFiles": [
@@ -58,10 +58,6 @@
       "calls": 10
     },
     {
-      "name": "lib/gratitude/rewards-catalog.js",
-      "calls": 10
-    },
-    {
       "name": "lib/learning/service.js",
       "calls": 10
     },
@@ -72,12 +68,16 @@
     {
       "name": "lib/staff-notifications.js",
       "calls": 10
+    },
+    {
+      "name": "app/api/admin/campaigns/route.ts",
+      "calls": 8
     }
   ],
   "topCollections": [
     {
       "name": "DYNAMIC",
-      "calls": 85
+      "calls": 75
     },
     {
       "name": "orders",

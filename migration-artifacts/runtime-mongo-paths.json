@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 520,
-    "reads": 247,
-    "writes": 268,
-    "dynamic": 89,
+    "calls": 510,
+    "reads": 243,
+    "writes": 262,
+    "dynamic": 79,
     "unknownOperations": 0
   },
   "paths": [
@@ -2531,86 +2531,6 @@
       "file": "lib/gratitude/referrals.js",
       "line": 173,
       "collection": "gratitude_referrals",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/rewards-catalog.js",
-      "line": 17,
-      "collection": "DYNAMIC",
-      "operation": "insertMany",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/rewards-catalog.js",
-      "line": 40,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/rewards-catalog.js",
-      "line": 68,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/rewards-catalog.js",
-      "line": 115,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/rewards-catalog.js",
-      "line": 143,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/rewards-catalog.js",
-      "line": 172,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/rewards-catalog.js",
-      "line": 199,
-      "collection": "DYNAMIC",
-      "operation": "deleteOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/rewards-catalog.js",
-      "line": 216,
-      "collection": "DYNAMIC",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/rewards-catalog.js",
-      "line": 232,
-      "collection": "DYNAMIC",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/gratitude/rewards-catalog.js",
-      "line": 276,
-      "collection": "DYNAMIC",
       "operation": "find",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
