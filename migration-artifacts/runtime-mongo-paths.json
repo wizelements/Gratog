@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 530,
-    "reads": 251,
-    "writes": 274,
-    "dynamic": 99,
+    "calls": 520,
+    "reads": 247,
+    "writes": 268,
+    "dynamic": 89,
     "unknownOperations": 0
   },
   "paths": [
@@ -4164,86 +4164,6 @@
       "line": 50,
       "collection": "customers",
       "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/unified-analytics.js",
-      "line": 70,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/unified-analytics.js",
-      "line": 148,
-      "collection": "DYNAMIC",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/unified-analytics.js",
-      "line": 174,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/unified-analytics.js",
-      "line": 184,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/unified-analytics.js",
-      "line": 243,
-      "collection": "DYNAMIC",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/unified-analytics.js",
-      "line": 278,
-      "collection": "DYNAMIC",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/unified-analytics.js",
-      "line": 325,
-      "collection": "DYNAMIC",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/unified-analytics.js",
-      "line": 326,
-      "collection": "DYNAMIC",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/unified-analytics.js",
-      "line": 327,
-      "collection": "DYNAMIC",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/unified-analytics.js",
-      "line": 329,
-      "collection": "DYNAMIC",
-      "operation": "createIndex",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     }
