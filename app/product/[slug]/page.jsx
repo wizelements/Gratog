@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
-import { connectToDatabase } from '@/lib/db-optimized';
-import { UNIFIED_PRODUCTS_COLLECTION } from '@/lib/product-sync-engine';
+import { getStorefrontProductBySlug } from '@/lib/repositories/storefront-catalog';
 import ProductDetailClient from './ProductDetailClient';
 import {
   getProductBySlugOrId,
@@ -9,25 +8,7 @@ import {
 } from '@/data/products';
 import { isStorefrontDisplayable, isStorefrontPurchasable } from '@/lib/product-eligibility';
 
-function buildSlugFilter(slug) {
-  return {
-    $or: [
-      { slug: slug },
-      { slug: { $regex: slug, $options: 'i' } },
-      { id: slug }
-    ]
-  };
-}
-
-async function findProductBySlug(db, slug) {
-  const filter = buildSlugFilter(slug);
-  // Try unified_products first (where catalog sync writes), then fall back to products
-  let product = await db.collection(UNIFIED_PRODUCTS_COLLECTION).findOne(filter);
-  if (!product) {
-    product = await db.collection('products').findOne(filter);
-  }
-  return product;
-}
+async function findProductBySlug(slug) { return getStorefrontProductBySlug(slug); }
 
 const PRODUCT_COPY_FALLBACK = 'Small-batch sea moss gel made with simple ingredients and market pickup options.';
 const STORAGE_COPY_FALLBACK = 'Keep refrigerated. Use a clean spoon each time and follow the freshness window on the label.';
@@ -150,9 +131,8 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
   
   try {
-    const { db } = await connectToDatabase();
     const curatedProduct = getProductBySlugOrId(slug);
-    const product = await findProductBySlug(db, slug) || (curatedProduct ? toStorefrontProduct(curatedProduct) : null);
+    const product = await findProductBySlug(slug) || (curatedProduct ? toStorefrontProduct(curatedProduct) : null);
     
     if (!product) {
       return {
@@ -207,11 +187,8 @@ export default async function ProductPage({ params }) {
   }
   
   try {
-    const { db } = await connectToDatabase();
-    
-    // Fetch product from database (unified_products first, then products)
     const curatedProduct = getProductBySlugOrId(slug);
-    const product = await findProductBySlug(db, slug) || (curatedProduct ? toStorefrontProduct(curatedProduct) : null);
+    const product = await findProductBySlug(slug) || (curatedProduct ? toStorefrontProduct(curatedProduct) : null);
     
     if (!product) {
       console.log(`[Product SSR] Product not found for slug: ${slug}`);

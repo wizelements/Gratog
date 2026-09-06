@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 457,
-    "reads": 218,
+    "calls": 455,
+    "reads": 216,
     "writes": 235,
-    "dynamic": 28,
+    "dynamic": 27,
     "unknownOperations": 0
   },
   "paths": [
@@ -1771,22 +1771,6 @@
       "file": "app/order/[id]/page.tsx",
       "line": 148,
       "collection": "orders",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/product/[slug]/page.jsx",
-      "line": 25,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/product/[slug]/page.jsx",
-      "line": 27,
-      "collection": "products",
       "operation": "findOne",
       "mode": "READ",
       "status": "ACTIVE_RUNTIME"
