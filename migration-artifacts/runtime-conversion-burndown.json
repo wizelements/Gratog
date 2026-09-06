@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T15:11:50.649Z",
+  "generatedAt": "2026-09-06T15:14:04.541Z",
   "baseline": {
     "reads": 350,
     "writes": 308,
@@ -7,8 +7,8 @@
     "unknown": 30
   },
   "current": {
-    "reads": 191,
-    "writes": 210,
+    "reads": 183,
+    "writes": 202,
     "dynamic": 0,
     "unknown": 0
   },
@@ -24,10 +24,6 @@
     {
       "name": "app/api/payments/route.ts",
       "calls": 20
-    },
-    {
-      "name": "app/api/admin/campaigns/send/route.ts",
-      "calls": 16
     },
     {
       "name": "lib/inventory-lock.ts",
@@ -72,12 +68,16 @@
     {
       "name": "lib/rewards-fraud-detection.js",
       "calls": 8
+    },
+    {
+      "name": "lib/square/catalogSync.js",
+      "calls": 8
     }
   ],
   "topCollections": [
     {
       "name": "orders",
-      "calls": 67
+      "calls": 63
     },
     {
       "name": "unified_products",
@@ -89,10 +89,6 @@
     },
     {
       "name": "admin_users",
-      "calls": 17
-    },
-    {
-      "name": "campaigns",
       "calls": 17
     },
     {
@@ -120,6 +116,10 @@
       "calls": 11
     },
     {
+      "name": "campaigns",
+      "calls": 8
+    },
+    {
       "name": "users",
       "calls": 8
     },
@@ -128,11 +128,11 @@
       "calls": 8
     },
     {
-      "name": "customers",
+      "name": "email_sends",
       "calls": 7
     },
     {
-      "name": "email_sends",
+      "name": "push_subscriptions",
       "calls": 7
     }
   ],

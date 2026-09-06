@@ -1,18 +1,16 @@
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/db-optimized';
 import { PERMISSIONS } from '@/lib/security';
 import { withAdminMiddleware, AuthenticatedRequest } from '@/lib/middleware/admin';
 import { logger } from '@/lib/logger';
-import { ObjectId } from 'mongodb';
+import { claimCampaignForSending, findCampaign, listSegmentCustomers, updateCampaignFields } from '@/lib/campaigns/repository';
 
 // ============================================================================
 // POST - Send campaign to recipients
 // ============================================================================
 
 interface Campaign {
-  _id?: ObjectId;
   id: string;
   name: string;
   subject: string;
@@ -47,12 +45,7 @@ export const POST = withAdminMiddleware(
         );
       }
       
-      const { db } = await connectToDatabase();
-      
-      // Get campaign with transaction safety
-      const campaign = await db.collection('campaigns').findOne(
-        { id: campaignId }
-      ) as Campaign | null;
+      const campaign = await findCampaign(campaignId) as Campaign | null;
       
       if (!campaign) {
         return NextResponse.json(
@@ -84,21 +77,8 @@ export const POST = withAdminMiddleware(
       }
       
       // Update status to sending with atomic operation
-      const updateResult = await db.collection('campaigns').updateOne(
-        { 
-          id: campaignId,
-          status: { $in: ['draft', 'scheduled'] } // Only update if in valid state
-        },
-        { 
-          $set: { 
-            status: 'sending',
-            sendingStartedAt: new Date(),
-            sendingStartedBy: admin.email,
-          }
-        }
-      );
-      
-      if (updateResult.matchedCount === 0) {
+      const claimed = await claimCampaignForSending(campaignId);
+      if (!claimed || claimed.status !== 'sending') {
         return NextResponse.json(
           { success: false, error: 'Campaign state changed unexpectedly. Please retry.' },
           { status: 409 }
@@ -109,13 +89,10 @@ export const POST = withAdminMiddleware(
       let recipients: { email: string; name?: string }[] = [];
       
       try {
-        recipients = await buildRecipientList(db, campaign.segmentCriteria);
+        recipients = await buildRecipientList(campaign.segmentCriteria);
       } catch (error) {
         // Rollback status on error
-        await db.collection('campaigns').updateOne(
-          { id: campaignId },
-          { $set: { status: 'failed', failedAt: new Date(), failReason: 'Failed to build recipient list' } }
-        );
+        await updateCampaignFields(campaignId, { status: 'failed', lastError: 'Failed to build recipient list' });
         
         throw error;
       }
@@ -123,10 +100,7 @@ export const POST = withAdminMiddleware(
       // Validate recipient count
       if (recipients.length === 0) {
         // Rollback status
-        await db.collection('campaigns').updateOne(
-          { id: campaignId },
-          { $set: { status: 'draft', rollbackReason: 'No recipients found' } }
-        );
+        await updateCampaignFields(campaignId, { status: 'draft', lastError: 'No recipients found' });
         
         return NextResponse.json(
           { success: false, error: 'No recipients match the segment criteria' },
@@ -138,10 +112,7 @@ export const POST = withAdminMiddleware(
       const MAX_RECIPIENTS = 10000;
       if (recipients.length > MAX_RECIPIENTS) {
         // Rollback status
-        await db.collection('campaigns').updateOne(
-          { id: campaignId },
-          { $set: { status: 'draft', rollbackReason: 'Recipient limit exceeded' } }
-        );
+        await updateCampaignFields(campaignId, { status: 'draft', lastError: 'Recipient limit exceeded' });
         
         return NextResponse.json(
           { 
@@ -154,19 +125,7 @@ export const POST = withAdminMiddleware(
       }
       
       // Store recipient count
-      await db.collection('campaigns').updateOne(
-        { id: campaignId },
-        { 
-          $set: { 
-            'stats.totalRecipients': recipients.length,
-            'stats.sent': 0,
-            'stats.delivered': 0,
-            'stats.opened': 0,
-            'stats.clicked': 0,
-            'stats.failed': 0,
-          }
-        }
-      );
+      await updateCampaignFields(campaignId, { stats: { totalRecipients: recipients.length, sent: 0, delivered: 0, opened: 0, clicked: 0, failed: 0 } });
       
       // Queue emails for sending (async, don't wait)
       // In production, this should use a queue like Bull, SQS, etc.
@@ -174,10 +133,7 @@ export const POST = withAdminMiddleware(
         logger.error('CAMPAIGN_SEND', 'Failed to send campaign emails', { campaignId, error });
         
         // Update status to failed
-        db.collection('campaigns').updateOne(
-          { id: campaignId },
-          { $set: { status: 'failed', failedAt: new Date(), failReason: error.message } }
-        );
+        updateCampaignFields(campaignId, { status: 'failed', lastError: error.message }).catch(()=>{});
       });
       
       logger.info('CAMPAIGNS', `Campaign ${campaignId} send initiated by ${admin.email}`, {
@@ -212,87 +168,10 @@ export const POST = withAdminMiddleware(
 // ============================================================================
 
 async function buildRecipientList(
-  db: any,
   criteria: Record<string, unknown>
 ): Promise<{ email: string; name?: string }[]> {
-  const _query: Record<string, unknown> = {};
-  
-  // Build query based on criteria
-  if (criteria.purchaseFrequency) {
-    // Would require aggregating orders
-    // For now, simplified approach
-    const { purchaseFrequency } = criteria as { purchaseFrequency: string };
-    
-    if (purchaseFrequency === 'first-time') {
-      const orderCounts = await db.collection('orders').aggregate([
-        { $group: { _id: '$customerEmail', count: { $sum: 1 } } },
-        { $match: { count: 1 } },
-      ]).toArray();
-      
-      return orderCounts.map((r: { _id: string }) => ({ email: r._id }));
-    }
-    
-    if (purchaseFrequency === 'repeat') {
-      const orderCounts = await db.collection('orders').aggregate([
-        { $group: { _id: '$customerEmail', count: { $sum: 1 } } },
-        { $match: { count: { $gte: 2, $lt: 5 } } },
-      ]).toArray();
-      
-      return orderCounts.map((r: { _id: string }) => ({ email: r._id }));
-    }
-    
-    if (purchaseFrequency === 'loyal') {
-      const orderCounts = await db.collection('orders').aggregate([
-        { $group: { _id: '$customerEmail', count: { $sum: 1 } } },
-        { $match: { count: { $gte: 5 } } },
-      ]).toArray();
-      
-      return orderCounts.map((r: { _id: string }) => ({ email: r._id }));
-    }
-  }
-  
-  if (criteria.rewardsTier) {
-    const customers = await db.collection('customers')
-      .find({ 'rewards.tier': criteria.rewardsTier })
-      .project({ email: 1, name: 1 })
-      .toArray();
-    
-    return customers.map((c: { email: string; name?: string }) => ({
-      email: c.email,
-      name: c.name,
-    }));
-  }
-  
-  if (criteria.inactive) {
-    const ninetyDaysAgo = new Date();
-    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-    
-    const activeEmails = await db.collection('orders')
-      .distinct('customerEmail', {
-        createdAt: { $gte: ninetyDaysAgo.toISOString() }
-      });
-    
-    const allCustomers = await db.collection('customers')
-      .find({ email: { $nin: activeEmails } })
-      .project({ email: 1, name: 1 })
-      .toArray();
-    
-    return allCustomers.map((c: { email: string; name?: string }) => ({
-      email: c.email,
-      name: c.name,
-    }));
-  }
-  
-  // Default: all customers who have opted in to marketing
-  const customers = await db.collection('customers')
-    .find({ 
-      marketingConsent: true,
-      unsubscribed: { $ne: true },
-    })
-    .project({ email: 1, name: 1 })
-    .toArray();
-  
-  return customers.map((c: { email: string; name?: string }) => ({
+  const customers = await listSegmentCustomers(criteria);
+  return customers.filter((c: any)=>c.email).map((c: { email: string; name?: string }) => ({
     email: c.email,
     name: c.name,
   }));
@@ -307,8 +186,6 @@ async function sendEmailsAsync(
   recipients: { email: string; name?: string }[],
   senderEmail: string
 ): Promise<void> {
-  const { db } = await connectToDatabase();
-  
   // Import email service
   const emailService = (await import('@/lib/email/service')) as any;
   const { sendEmail, generateUnsubscribeToken } = emailService;
@@ -367,16 +244,7 @@ async function sendEmailsAsync(
     );
     
     // Update progress
-    await db.collection('campaigns').updateOne(
-      { id: campaign.id },
-      { 
-        $set: { 
-          'stats.sent': sentCount,
-          'stats.failed': failedCount,
-          lastBatchSent: new Date(),
-        }
-      }
-    );
+    await updateCampaignFields(campaign.id, { stats: { sent: sentCount, failed: failedCount } });
     
     // Rate limiting between batches
     if (i + BATCH_SIZE < recipients.length) {
@@ -387,18 +255,7 @@ async function sendEmailsAsync(
   // Final status update
   const finalStatus = failedCount === recipients.length ? 'failed' : 'sent';
   
-  await db.collection('campaigns').updateOne(
-    { id: campaign.id },
-    { 
-      $set: { 
-        status: finalStatus,
-        sentAt: new Date(),
-        'stats.sent': sentCount,
-        'stats.failed': failedCount,
-        sentBy: senderEmail,
-      }
-    }
-  );
+  await updateCampaignFields(campaign.id, { status: finalStatus, sentAt: new Date(), stats: { sent: sentCount, failed: failedCount } });
   
   logger.info('CAMPAIGNS', `Campaign ${campaign.id} send completed`, {
     sent: sentCount,

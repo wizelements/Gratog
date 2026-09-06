@@ -1,8 +1,8 @@
 {
   "summary": {
-    "calls": 401,
-    "reads": 191,
-    "writes": 210,
+    "calls": 385,
+    "reads": 183,
+    "writes": 202,
     "dynamic": 0,
     "unknownOperations": 0
   },
@@ -140,134 +140,6 @@
       "line": 392,
       "collection": "campaigns",
       "operation": "deleteOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 53,
-      "collection": "campaigns",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 87,
-      "collection": "campaigns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 115,
-      "collection": "campaigns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 126,
-      "collection": "campaigns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 141,
-      "collection": "campaigns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 157,
-      "collection": "campaigns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 177,
-      "collection": "campaigns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 227,
-      "collection": "orders",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 236,
-      "collection": "orders",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 245,
-      "collection": "orders",
-      "operation": "aggregate",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 255,
-      "collection": "customers",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 270,
-      "collection": "orders",
-      "operation": "distinct",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 275,
-      "collection": "customers",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 287,
-      "collection": "customers",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 370,
-      "collection": "campaigns",
-      "operation": "updateOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "app/api/admin/campaigns/send/route.ts",
-      "line": 390,
-      "collection": "campaigns",
-      "operation": "updateOne",
       "mode": "WRITE",
       "status": "ACTIVE_RUNTIME"
     },
