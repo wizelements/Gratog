@@ -1,9 +1,9 @@
 {
   "summary": {
-    "calls": 573,
-    "reads": 269,
-    "writes": 299,
-    "dynamic": 142,
+    "calls": 563,
+    "reads": 264,
+    "writes": 294,
+    "dynamic": 132,
     "unknownOperations": 0
   },
   "paths": [
@@ -3274,86 +3274,6 @@
     {
       "file": "lib/markets/repository.ts",
       "line": 336,
-      "collection": "DYNAMIC",
-      "operation": "createIndex",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/menus/repository.ts",
-      "line": 41,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/menus/repository.ts",
-      "line": 58,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/menus/repository.ts",
-      "line": 75,
-      "collection": "DYNAMIC",
-      "operation": "find",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/menus/repository.ts",
-      "line": 97,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/menus/repository.ts",
-      "line": 115,
-      "collection": "DYNAMIC",
-      "operation": "findOne",
-      "mode": "READ",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/menus/repository.ts",
-      "line": 165,
-      "collection": "DYNAMIC",
-      "operation": "insertOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/menus/repository.ts",
-      "line": 255,
-      "collection": "DYNAMIC",
-      "operation": "findOneAndUpdate",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/menus/repository.ts",
-      "line": 282,
-      "collection": "DYNAMIC",
-      "operation": "deleteOne",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/menus/repository.ts",
-      "line": 306,
-      "collection": "DYNAMIC",
-      "operation": "updateMany",
-      "mode": "WRITE",
-      "status": "ACTIVE_RUNTIME"
-    },
-    {
-      "file": "lib/menus/repository.ts",
-      "line": 337,
       "collection": "DYNAMIC",
       "operation": "createIndex",
       "mode": "WRITE",
