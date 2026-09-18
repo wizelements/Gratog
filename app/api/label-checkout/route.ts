@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     metadata: {
       source: 'label_qr',
       product_slug: product.slug,
-      market,
+      ...(market ? { market } : {}),
       label_flow: 'v1',
       price_source: product.squareVariationId ? 'square_catalog' : product.source || 'curated',
     },
