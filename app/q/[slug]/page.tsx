@@ -11,7 +11,7 @@ type PageProps = {
 
 export async function generateMetadata({ params }: Pick<PageProps, 'params'>) {
   const { slug } = await params;
-  const resolved = resolveLabelProduct(slug);
+  const resolved = await resolveLabelProduct(slug);
   const product = resolved.product;
 
   return {
@@ -30,7 +30,7 @@ function firstParam(value: string | string[] | undefined) {
 export default async function LabelPayPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const query = await searchParams;
-  const resolved = resolveLabelProduct(slug);
+  const resolved = await resolveLabelProduct(slug);
   if (!resolved.product) notFound();
 
   const product = resolved.product;
