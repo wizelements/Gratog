@@ -15,7 +15,7 @@ function getPartsInZone(date: Date, timeZone: string = DEFAULT_TIMEZONE) {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-    hour12: false,
+    hourCycle: 'h23',
   });
   const parts = formatter.formatToParts(date);
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '0';
@@ -39,15 +39,9 @@ function makeDateInZone(
   ms: number,
   timeZone: string = DEFAULT_TIMEZONE
 ): Date {
-  // Build the intended wall-clock time as a UTC timestamp, then shift it by the
-  // timezone offset so that new Date().toISOString() reports that same wall time
-  // when rendered back in the target zone. Keeps logic deterministic regardless of
-  // the host's local timezone.
-  const pad = (n: number) => String(n).padStart(2, '0');
-  const wallIso = `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:${pad(second)}.${String(ms).padStart(3, '0')}`;
-  const wallDate = new Date(wallIso);
-  if (Number.isNaN(wallDate.getTime())) {
-    throw new Error(`Invalid wall-clock date constructed: ${wallIso}`);
+  const targetWallClockUtc = Date.UTC(year, month - 1, day, hour, minute, second, ms);
+  if (Number.isNaN(targetWallClockUtc)) {
+    throw new Error('Invalid wall-clock date');
   }
 
   const zoneFormatter = new Intl.DateTimeFormat('en-US', {
@@ -58,24 +52,40 @@ function makeDateInZone(
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-    hour12: false,
+    hourCycle: 'h23',
   });
-  const parts = zoneFormatter.formatToParts(wallDate);
-  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
+  const readParts = (date: Date) => {
+    const parts = zoneFormatter.formatToParts(date);
+    const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
+    return {
+      year: get('year'),
+      month: get('month'),
+      day: get('day'),
+      hour: get('hour'),
+      minute: get('minute'),
+      second: get('second'),
+    };
+  };
 
-  const offsetMs =
-    wallDate.getTime() -
-    Date.UTC(
-      get('year'),
-      get('month') - 1,
-      get('day'),
-      get('hour'),
-      get('minute'),
-      get('second'),
+  let guessMs = targetWallClockUtc;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const rendered = readParts(new Date(guessMs));
+    const renderedAsUtc = Date.UTC(
+      rendered.year,
+      rendered.month - 1,
+      rendered.day,
+      rendered.hour,
+      rendered.minute,
+      rendered.second,
       ms
     );
+    const offsetMs = renderedAsUtc - guessMs;
+    const nextGuessMs = targetWallClockUtc - offsetMs;
+    if (nextGuessMs === guessMs) break;
+    guessMs = nextGuessMs;
+  }
 
-  return new Date(wallDate.getTime() + offsetMs);
+  return new Date(guessMs);
 }
 
 /**
@@ -86,8 +96,10 @@ function makeDateInZone(
  * following Sunday at 23:59:59.999 NY. This matches the business convention used
  * in the admin UI ("Week Start (Monday)" / "Week End (Sunday)").
  */
-export function getCurrentWeekRange(timeZone: string = DEFAULT_TIMEZONE) {
-  const now = new Date();
+export function getCurrentWeekRange(
+  timeZone: string = DEFAULT_TIMEZONE,
+  now: Date = new Date()
+) {
   const parts = getPartsInZone(now, timeZone);
 
   // JS Date day-of-week: 0=Sunday, 1=Monday, ..., 6=Saturday
