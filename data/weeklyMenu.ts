@@ -6,16 +6,10 @@ import {
   getProductsByCategory,
   type ProductCategory,
 } from './products';
+import { formatWeekRange as formatWeekRangeInZone } from '@/lib/menus/week-utils';
 
 export function formatWeekRange(startIso: string, endIso: string): string {
-  const start = new Date(startIso);
-  const end = new Date(endIso);
-  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-  const yearOpts: Intl.DateTimeFormatOptions = { ...opts, year: 'numeric' };
-  if (start.getFullYear() !== end.getFullYear()) {
-    return `${start.toLocaleDateString('en-US', yearOpts)} – ${end.toLocaleDateString('en-US', yearOpts)}`;
-  }
-  return `${start.toLocaleDateString('en-US', opts)} – ${end.toLocaleDateString('en-US', yearOpts)}`;
+  return formatWeekRangeInZone(startIso, endIso);
 }
 
 export function buildWeeklyMenu(weekStart: string, weekEnd: string) {
