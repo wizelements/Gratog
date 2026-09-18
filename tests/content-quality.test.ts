@@ -62,7 +62,7 @@ describe('customer-facing content quality', () => {
     expect(copy).not.toMatch(/passive (?:menu|preorder) funnel|bundle-ready|bundle SKUs once|future automation|low-friction weekly rhythm|convert walk-up shoppers/i);
   });
 
-  it('derives the homepage badge from weekly-menu products rather than catalog inventory', () => {
+  it('keeps the homepage centered on a bounded weekly preorder selection rather than full catalog inventory', () => {
     const weeklyCount = getWeeklyMenuProducts('all').length;
     const catalogCount = PRODUCTS.length;
     const homepage = read('components/home/HomePageClient.jsx');
@@ -70,8 +70,10 @@ describe('customer-facing content quality', () => {
 
     expect(weeklyCount).toBeGreaterThan(0);
     expect(weeklyCount).toBeLessThan(catalogCount);
-    expect(homepage).toContain("getWeeklyMenuProducts('all').length");
-    expect(homepage).toContain("this week");
+    expect(homepage).toContain("getWeeklyMenuProducts('all').slice(0, 6)");
+    expect(homepage).toContain("Preorder this week");
+    expect(homepage).toContain('id="delivery"');
+    expect(homepage).toContain('id="events"');
     expect(`${homepage}\n${homepageServer}`).not.toContain('initialCatalogCount');
   });
 

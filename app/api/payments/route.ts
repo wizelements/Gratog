@@ -206,26 +206,8 @@ export async function POST(request: NextRequest) {
       return json({ success: false, error: 'Order ID is required for payment processing' }, 400);
     }
 
-    // FIX P0-4: Server-side preorder validation before payment
-    if (lineItems && lineItems.length > 0) {
-      const preorderItems = lineItems.filter((item: any) => item.isPreorder || item.category?.toLowerCase().includes('preorder'));
-      if (preorderItems.length > 0) {
-        const preorderSubtotal = preorderItems.reduce(
-          (sum: number, item: any) => sum + ((Number(item.price) || 0) * (Number(item.quantity) || 1)), 
-          0
-        );
-        
-        if (preorderSubtotal < 60) {
-          return json({ 
-            success: false, 
-            error: `Preorder items require a $60.00 minimum. Current preorder total: $${preorderSubtotal.toFixed(2)}. Add $${(60 - preorderSubtotal).toFixed(2)} more to continue.`,
-            code: 'PREORDER_MINIMUM_NOT_MET',
-            preorderSubtotal,
-            minimumRequired: 60
-          }, 400);
-        }
-      }
-    }
+    // Normal weekly market reservations are intentionally allowed at item-level quantities.
+    // Bulk preorder minimums are enforced only by the dedicated /preorder workflow.
 
     if (!orderAccessTokenInput && !auth?.authenticated) {
       return json(

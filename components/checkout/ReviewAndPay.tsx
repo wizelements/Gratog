@@ -14,7 +14,7 @@ import { track } from '@/utils/analytics';
 import SquarePaymentForm from './SquarePaymentForm';
 import { useRouter } from 'next/navigation';
 import { addOrderToQueue, shouldUseQueue, getQueueRedirectUrl } from '@/lib/queue-integration';
-import { validateCartForFulfillment, validatePreorderMinimum } from '@/lib/cart-engine';
+import { validateCartForFulfillment } from '@/lib/cart-engine';
 import { Fulfillment } from '@/adapters/fulfillmentAdapter';
 
 interface ReviewAndPayProps {
@@ -75,9 +75,6 @@ export default function ReviewAndPay({
     const marketId = fulfillment.pickup?.locationId || fulfillment.type;
     const fulfillmentCheck = validateCartForFulfillment(cart as any, fulfillment.type, marketId);
     if (!fulfillmentCheck.valid) return fulfillmentCheck;
-    
-    const preorderCheck = validatePreorderMinimum(cart);
-    if (!preorderCheck.valid) return preorderCheck;
     
     return fulfillmentCheck;
   }, [cart, fulfillment]);

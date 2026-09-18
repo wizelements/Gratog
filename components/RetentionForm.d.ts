@@ -17,6 +17,8 @@ declare module '@/components/RetentionForm' {
     defaultMarket?: string;
     messagePlaceholder?: string;
     compact?: boolean;
+    successTitle?: string;
+    successDescription?: string;
     onSuccess?: (data: { success: boolean; persisted?: boolean; id?: string; message?: string }) => void;
   }
 

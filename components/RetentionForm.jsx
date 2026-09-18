@@ -23,6 +23,8 @@ export default function RetentionForm({
   defaultMarket = '',
   messagePlaceholder = 'Tell us what you are interested in.',
   compact = false,
+  successTitle = "You're on the list.",
+  successDescription = "We'll send the next menu drop, reminder, or follow-up for this request.",
   onSuccess,
 }) {
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '', website: '', marketId: defaultMarket || '' });
@@ -99,8 +101,8 @@ export default function RetentionForm({
         <div className="flex items-start gap-3">
           <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-700" aria-hidden="true" />
           <div>
-            <p className="font-semibold">You&apos;re on the list.</p>
-            <p className="mt-1 text-emerald-800">We&apos;ll send the next menu drop, reminder, or follow-up for this request.</p>
+            <p className="font-semibold">{successTitle}</p>
+            <p className="mt-1 text-emerald-800">{successDescription}</p>
           </div>
         </div>
       </div>
