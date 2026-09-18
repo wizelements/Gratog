@@ -11,6 +11,7 @@ import { requireAdminSession } from '@/lib/auth/unified-admin';
 import { logger } from '@/lib/logger';
 import {
   getAllMenus,
+  getMenuById,
   createMenu,
   updateMenu,
   deleteMenu,
@@ -76,6 +77,19 @@ export async function POST(request: any) {
 
     // Handle "set active" action
     if (json.action === 'setActive' && json.menuId) {
+      const candidate = await getMenuById(json.menuId);
+      if (!candidate) {
+        return NextResponse.json(
+          { success: false, error: 'Menu not found' },
+          { status: 404 }
+        );
+      }
+      if (!candidate.linkedProducts?.length) {
+        return NextResponse.json(
+          { success: false, error: 'Select at least one product before activating this menu' },
+          { status: 400 }
+        );
+      }
       const menu = await setActiveMenu(json.menuId);
       if (!menu) {
         return NextResponse.json(
@@ -105,6 +119,13 @@ export async function POST(request: any) {
           error: 'Validation failed',
           details: errors.fieldErrors,
         },
+        { status: 400 }
+      );
+    }
+
+    if (parsed.data.isActive && !parsed.data.linkedProducts?.length) {
+      return NextResponse.json(
+        { success: false, error: 'Select at least one product before activating this menu' },
         { status: 400 }
       );
     }
@@ -168,6 +189,17 @@ export async function PUT(request: any) {
     }
 
     const { menuId, ...updateData } = parsed.data;
+
+    if (updateData.isActive) {
+      const existing = await getMenuById(menuId);
+      const linkedProducts = updateData.linkedProducts ?? existing?.linkedProducts ?? [];
+      if (!linkedProducts.length) {
+        return NextResponse.json(
+          { success: false, error: 'Select at least one product before activating this menu' },
+          { status: 400 }
+        );
+      }
+    }
 
     const menu = await updateMenu(menuId, updateData);
 

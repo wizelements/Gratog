@@ -65,6 +65,15 @@ interface FormErrors {
   [key: string]: string | undefined;
 }
 
+interface MenuProductOption {
+  id: string;
+  slug?: string;
+  name: string;
+  price: number;
+  image?: string;
+  checkoutReady: boolean;
+}
+
 function formatDateRange(start: string, end: string): string {
   try {
     const s = new Date(start);
@@ -91,6 +100,8 @@ function parseTagList(value: string): string[] {
 export default function MenusPage() {
   const [menus, setMenus] = useState<AdminMenu[]>([]);
   const [markets, setMarkets] = useState<AdminMarket[]>([]);
+  const [productOptions, setProductOptions] = useState<MenuProductOption[]>([]);
+  const [productOptionsLoading, setProductOptionsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -128,10 +139,22 @@ export default function MenusPage() {
     }
   }, []);
 
+  const fetchProductOptions = useCallback(async () => {
+    try {
+      const result = await adminFetch<{ success: boolean; products: MenuProductOption[]; error?: string }>('/api/admin/menu-product-options', { skipCsrf: true });
+      if (result.success && result.data) setProductOptions(result.data.products || []);
+    } catch {
+      toast.error('Failed to load menu product options');
+    } finally {
+      setProductOptionsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchMenus();
     fetchMarkets();
-  }, [fetchMenus, fetchMarkets]);
+    fetchProductOptions();
+  }, [fetchMenus, fetchMarkets, fetchProductOptions]);
 
   const validateForm = (): boolean => {
     const result = createMenuSchema.safeParse(formData);
@@ -312,6 +335,18 @@ export default function MenusPage() {
 
   const handleCheckboxChange = (name: string, checked: boolean) => {
     setFormData((prev) => ({ ...prev, [name]: checked }));
+  };
+
+  const toggleLinkedProduct = (productId: string) => {
+    setFormData((prev) => {
+      const selected = prev.linkedProducts.includes(productId);
+      return {
+        ...prev,
+        linkedProducts: selected
+          ? prev.linkedProducts.filter((id) => id !== productId)
+          : [...prev.linkedProducts, productId],
+      };
+    });
   };
 
   const filteredMenus = menus.filter((menu) => {
@@ -658,6 +693,49 @@ export default function MenusPage() {
               {formErrors.description && (
                 <p className="text-xs text-red-500">{formErrors.description}</p>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <Label>Products on this weekly menu</Label>
+                <span className="text-xs text-muted-foreground">
+                  {formData.linkedProducts.length} selected
+                </span>
+              </div>
+              <div className="max-h-64 overflow-y-auto rounded-md border p-3">
+                {productOptionsLoading ? (
+                  <p className="text-sm text-muted-foreground">Loading products...</p>
+                ) : productOptions.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No Turso products are available.</p>
+                ) : (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {productOptions.map((product) => {
+                      const selectable = product.checkoutReady && product.price > 0;
+                      return (
+                        <label key={product.id} className="flex items-start gap-2 rounded-md border p-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.linkedProducts.includes(product.id)}
+                            disabled={!selectable}
+                            onChange={() => toggleLinkedProduct(product.id)}
+                            className="mt-1 h-4 w-4 rounded border-gray-300"
+                          />
+                          <span className="min-w-0 text-sm">
+                            <span className="block font-medium">{product.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {product.price > 0 ? `$${product.price.toFixed(2)}` : 'No price'}
+                              {!product.checkoutReady ? ' • checkout mapping missing' : ''}
+                            </span>
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                This selection becomes the owner-controlled availability list for the published week.
+              </p>
             </div>
 
             <div className="space-y-2">
