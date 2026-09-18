@@ -7,6 +7,7 @@ import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import type { AdminMenu, MenuDocument } from './types';
+import type { CreateMenuInput, UpdateMenuInput } from './schema';
 
 const COLLECTION_NAME = 'menus';
 
@@ -116,21 +117,7 @@ export async function getMenuById(id: string): Promise<AdminMenu | null> {
   }
 }
 
-export type CreateMenuData = {
-  title: string;
-  description?: string;
-  imageUrl: string;
-  thumbnailUrl?: string;
-  canvaUrl?: string;
-  printUrl?: string;
-  marketId?: string;
-  weekStart: string;
-  weekEnd: string;
-  isActive?: boolean;
-  isArchived?: boolean;
-  linkedProducts?: string[];
-  seasonalTags?: string[];
-};
+export type CreateMenuData = CreateMenuInput;
 
 export async function createMenu(data: CreateMenuData): Promise<AdminMenu> {
   try {
@@ -145,8 +132,8 @@ export async function createMenu(data: CreateMenuData): Promise<AdminMenu> {
       canvaUrl: data.canvaUrl || '',
       printUrl: data.printUrl || '',
       marketId: data.marketId || '',
-      weekStart: new Date(data.weekStart),
-      weekEnd: new Date(data.weekEnd),
+      weekStart: data.weekStart,
+      weekEnd: data.weekEnd,
       isActive: data.isActive || false,
       isArchived: data.isArchived || false,
       linkedProducts: data.linkedProducts || [],
@@ -186,21 +173,7 @@ export async function createMenu(data: CreateMenuData): Promise<AdminMenu> {
   }
 }
 
-export interface UpdateMenuData {
-  title?: string;
-  description?: string;
-  imageUrl?: string;
-  thumbnailUrl?: string;
-  canvaUrl?: string;
-  printUrl?: string;
-  marketId?: string;
-  weekStart?: string;
-  weekEnd?: string;
-  isActive?: boolean;
-  isArchived?: boolean;
-  linkedProducts?: string[];
-  seasonalTags?: string[];
-}
+export type UpdateMenuData = Omit<UpdateMenuInput, 'menuId'>;
 
 export async function updateMenu(
   id: string,
@@ -239,10 +212,10 @@ export async function updateMenu(
 
     // Handle date fields separately
     if (data.weekStart) {
-      updateFields.weekStart = new Date(data.weekStart);
+      updateFields.weekStart = data.weekStart;
     }
     if (data.weekEnd) {
-      updateFields.weekEnd = new Date(data.weekEnd);
+      updateFields.weekEnd = data.weekEnd;
     }
 
     const result = await db.collection(COLLECTION_NAME).findOneAndUpdate(

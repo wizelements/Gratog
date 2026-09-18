@@ -26,22 +26,26 @@ vi.mock('@/lib/logger', () => ({
   },
 }));
 
-// Mock db-optimized
-const mockCollection = {
-  findOne: vi.fn(),
-  updateOne: vi.fn().mockResolvedValue({ modifiedCount: 1, matchedCount: 1 }),
-  insertOne: vi.fn().mockResolvedValue({ insertedId: 'test' }),
-  find: vi.fn().mockReturnValue({
-    sort: vi.fn().mockReturnValue({
-      limit: vi.fn().mockReturnValue({
-        toArray: vi.fn().mockResolvedValue([])
-      })
-    })
-  }),
-};
-const mockDb = {
-  collection: vi.fn().mockReturnValue(mockCollection),
-};
+// Mock db-optimized. vi.mock factories are hoisted, so their shared handles
+// must be created with vi.hoisted to avoid temporal-dead-zone failures.
+const { mockCollection, mockDb } = vi.hoisted(() => {
+  const mockCollection = {
+    findOne: vi.fn(),
+    updateOne: vi.fn().mockResolvedValue({ modifiedCount: 1, matchedCount: 1 }),
+    insertOne: vi.fn().mockResolvedValue({ insertedId: 'test' }),
+    find: vi.fn().mockReturnValue({
+      sort: vi.fn().mockReturnValue({
+        limit: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue([]),
+        }),
+      }),
+    }),
+  };
+  return {
+    mockCollection,
+    mockDb: { collection: vi.fn().mockReturnValue(mockCollection) },
+  };
+});
 vi.mock('@/lib/db-optimized', () => ({
   connectToDatabase: vi.fn().mockResolvedValue({ db: mockDb }),
 }));

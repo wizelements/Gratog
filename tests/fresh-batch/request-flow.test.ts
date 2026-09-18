@@ -34,7 +34,6 @@ import {
   gallonsToBottles,
   effectiveYieldOunces,
   marketBottleCount,
-  calculateReservationPrice,
 } from '@/lib/batches/quantity-converter';
 import { calculateReservationPrice, setupFeeCents, standardGallonPriceCents } from '@/lib/batches/pricing';
 import { DEFAULT_BATCH_OWNER_CONFIG } from '@/lib/batches/types';
@@ -52,7 +51,6 @@ describe('fresh-batch request form validation', () => {
     preferredMarketId: 'serenbe',
     requestSource: 'homepage_hero',
     marketingEmailConsent: false,
-    smsConsent: false,
   };
 
   it('accepts a valid known-flavor request', () => {
@@ -114,14 +112,14 @@ describe('fresh-batch request form validation', () => {
     ).toThrow('Please select a flavor, a flavor profile, or describe a flavor.');
   });
 
-  it('rejects SMS consent without phone', () => {
+  it('rejects unsupported SMS-consent fields until SMS is a production-supported channel', () => {
     expect(() =>
       normalizeRequestInput({
         ...validInput,
         phone: null,
         smsConsent: true,
       })
-    ).toThrow('SMS consent requires a phone number.');
+    ).toThrow();
   });
 
   it('requires need-by date to be at least 48 hours in the future', () => {

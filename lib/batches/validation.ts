@@ -89,6 +89,7 @@ export const freshBatchRequestInputSchema = z
     requestSource: requestSourceSchema.default('homepage_hero'),
     marketingEmailConsent: consentSchema,
   })
+  .strict()
   .refine(
     (data) => {
       const hasProduct = !!data.requestedProductSlug;

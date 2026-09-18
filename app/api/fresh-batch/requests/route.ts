@@ -21,8 +21,6 @@ import { sendRequestReceivedEmail } from '@/lib/batches/email-templates';
 import { sendOwnerAlert } from '@/lib/owner-alerts';
 import type { FreshBatchRequest } from '@/lib/batches/types';
 
-const FDA_DISCLAIMER = 'These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease.';
-
 function getMarketDisplayName(marketId: string): string {
   const names: Record<string, string> = {
     serenbe: 'Serenbe Farmers Market',
@@ -163,7 +161,6 @@ export async function POST(request: NextRequest) {
         quantity: formatQuantity(persisted.quantity, persisted.quantityUnit),
         marketName,
         status: persisted.status,
-        fdaDisclaimer: FDA_DISCLAIMER,
       });
     } catch (emailError) {
       logger.warn('FreshBatchRequest', 'Request persisted but confirmation email failed', {

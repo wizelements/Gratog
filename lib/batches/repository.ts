@@ -7,6 +7,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
+import type { Collection } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import type {
   BatchCampaign,
@@ -47,7 +48,8 @@ export async function createRequest(
 
 export async function findRequestById(id: string): Promise<FreshBatchRequest | null> {
   const { db } = await connectToDatabase();
-  return db.collection(REQUESTS_COLLECTION).findOne<FreshBatchRequest>({ id });
+  const collection = db.collection(REQUESTS_COLLECTION) as Collection<FreshBatchRequest>;
+  return collection.findOne({ id });
 }
 
 export async function findRequestsByEmail(email: string): Promise<FreshBatchRequest[]> {
@@ -138,7 +140,8 @@ export async function createBatchCampaign(
 
 export async function findBatchCampaignById(id: string): Promise<BatchCampaign | null> {
   const { db } = await connectToDatabase();
-  return db.collection(CAMPAIGNS_COLLECTION).findOne<BatchCampaign>({ id });
+  const collection = db.collection(CAMPAIGNS_COLLECTION) as Collection<BatchCampaign>;
+  return collection.findOne({ id });
 }
 
 export async function updateBatchCampaignStatus(
@@ -184,7 +187,8 @@ export async function createReservation(
 
 export async function findReservationById(id: string): Promise<BatchReservation | null> {
   const { db } = await connectToDatabase();
-  return db.collection(RESERVATIONS_COLLECTION).findOne<BatchReservation>({ id });
+  const collection = db.collection(RESERVATIONS_COLLECTION) as Collection<BatchReservation>;
+  return collection.findOne({ id });
 }
 
 export async function updateReservationPayment(

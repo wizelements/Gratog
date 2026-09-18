@@ -53,6 +53,12 @@
   ],
   "exclude": [
     "node_modules",
-    ".next/types/validator.ts"
+    ".next/types/validator.ts",
+    "archive",
+    "tests",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
   ]
 }

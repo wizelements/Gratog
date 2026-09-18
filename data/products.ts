@@ -789,6 +789,7 @@ export const PRODUCTS: MarketProduct[] = [
 const CATEGORY_LABELS: Record<ProductCategory, string> = {
   lemonades: 'Lemonades & Drinks',
   refreshers: 'Refreshers',
+  juices: 'Juices',
   gels: 'Sea Moss Gels',
   shots: 'Shots',
   bundles: 'Bundles',
@@ -798,6 +799,7 @@ const CATEGORY_LABELS: Record<ProductCategory, string> = {
 const CATEGORY_ICONS: Record<ProductCategory, string> = {
   lemonades: '🍋',
   refreshers: '🍹',
+  juices: '🥤',
   gels: '🌿',
   shots: '⚡',
   bundles: '🎁',
@@ -807,6 +809,7 @@ const CATEGORY_ICONS: Record<ProductCategory, string> = {
 const TAXONOMY_CATEGORY_LABELS: Record<ProductCategory, string> = {
   lemonades: 'Lemonades & Juices',
   refreshers: 'Refreshers',
+  juices: 'Juices',
   gels: 'Sea Moss Gels',
   shots: 'Shots',
   bundles: 'Bundles & Seasonal',

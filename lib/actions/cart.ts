@@ -8,7 +8,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 
 interface CartItem {
   productId: string;
@@ -82,7 +82,7 @@ export async function addToCart(item: CartItem): Promise<{ success: boolean; mes
     }
     
     await saveCartToCookies(cart);
-    revalidateTag('cart');
+    updateTag('cart');
     
     const totalItems = cart.items.reduce((sum, i) => sum + i.quantity, 0);
     
@@ -111,7 +111,7 @@ export async function removeFromCart(productId: string): Promise<{ success: bool
     cart.items = cart.items.filter(i => i.productId !== productId);
     
     await saveCartToCookies(cart);
-    revalidateTag('cart');
+    updateTag('cart');
     
     const totalItems = cart.items.reduce((sum, i) => sum + i.quantity, 0);
     
@@ -142,7 +142,7 @@ export async function updateCartQuantity(
     }
     
     await saveCartToCookies(cart);
-    revalidateTag('cart');
+    updateTag('cart');
     
     const totalItems = cart.items.reduce((sum, i) => sum + i.quantity, 0);
     
@@ -160,7 +160,7 @@ export async function clearCart(): Promise<{ success: boolean }> {
   try {
     const cookieStore = await cookies();
     cookieStore.delete(CART_COOKIE_NAME);
-    revalidateTag('cart');
+    updateTag('cart');
     
     return { success: true };
   } catch (error) {

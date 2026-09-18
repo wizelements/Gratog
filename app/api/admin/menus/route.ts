@@ -15,7 +15,6 @@ import {
   updateMenu,
   deleteMenu,
   setActiveMenu,
-  type CreateMenuData,
 } from '@/lib/menus/repository';
 import {
   createMenuSchema,
@@ -109,7 +108,7 @@ export async function POST(request: any) {
       );
     }
 
-    const menu = await createMenu(parsed.data as CreateMenuData);
+    const menu = await createMenu(parsed.data);
 
     // Enforce single-active: deactivate others when creating an active menu
     if (parsed.data.isActive) {
