@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -12,8 +12,8 @@ import {
   Package,
   Repeat,
   ShoppingBag,
-  Sparkles,
   Store,
+  Truck,
   Users,
 } from 'lucide-react';
 import QuickAddButton from '@/components/QuickAddButton';
@@ -21,80 +21,46 @@ import RetentionForm from '@/components/RetentionForm';
 import { JsonLd } from '@/components/JsonLd';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { BUNDLES } from '@/data/bundles';
 import { MARKETS } from '@/data/markets';
 import {
-  getBestSellerProducts,
   getCategoryLabel,
-  getProductBySlugOrId,
   normalizeProductKey,
   toStorefrontProduct,
 } from '@/data/products';
 import {
-  WEEKLY_MENU_CATEGORIES,
   getWeeklyMenuProducts,
   buildWeeklyMenu,
 } from '@/data/weeklyMenu';
-import { track } from '@/utils/analytics';
-
-const FLAVOR_PROFILE_LINKS = [
-  { label: 'Tropical', href: '/request-a-flavor?profile=tropical' },
-  { label: 'Berry-forward', href: '/request-a-flavor?profile=berry-forward' },
-  { label: 'Citrus', href: '/request-a-flavor?profile=citrus' },
-  { label: 'Ginger-forward', href: '/request-a-flavor?profile=ginger-forward' },
-  { label: 'Mint-forward', href: '/request-a-flavor?profile=mint-forward' },
-  { label: 'Herbal', href: '/request-a-flavor?profile=herbal' },
-  { label: 'Creamy or coconut', href: '/request-a-flavor?profile=creamy-coconut' },
-  { label: 'Blue spirulina', href: '/request-a-flavor?profile=blue-spirulina' },
-  { label: 'Surprise me', href: '/request-a-flavor?profile=surprise-me' },
-];
-
-const CUSTOMER_PATHS = [
-  { icon: Users, title: 'Join a shared batch', text: 'Add your request to a pooled flavor batch. We confirm the batch once demand reaches the threshold.' },
-  { icon: Package, title: 'Request a microbatch', text: 'Need a smaller custom run? We may offer a dedicated batch option with a setup fee after owner review.' },
-  { icon: Store, title: 'Sample at the market', text: 'Meet us at Serenbe or Dunwoody to taste what is fresh before you reserve a larger size.' },
-];
 
 const ORDERING_STEPS = [
-  {
-    icon: Mail,
-    title: 'Get the menu',
-    text: 'Start with the weekly email so you know what is fresh before market day.',
-  },
-  {
-    icon: ShoppingBag,
-    title: 'Reserve your batch',
-    text: 'Use preorder to hold the gels, drinks, refreshers, and shots you want for pickup.',
-  },
-  {
-    icon: Package,
-    title: 'Pick up fresh',
-    text: 'Grab your reserved order at the booth during market hours.',
-  },
-  {
-    icon: Repeat,
-    title: 'Come back next week',
-    text: 'Sign up for menu reminders so you see the next batch first.',
-  },
+  { icon: ShoppingBag, title: 'Choose this week', text: 'Pick the products you want from the current small-batch menu.' },
+  { icon: Store, title: 'Choose your market', text: 'Reserve for Serenbe or Dunwoody pickup while the batch is available.' },
+  { icon: Package, title: 'We prepare it fresh', text: 'Your order is prepared around the week’s actual demand and pickup plan.' },
+  { icon: Repeat, title: 'Pick up and come back', text: 'Grab your order Saturday, then check the next weekly menu when it drops.' },
 ];
-
-function ingredientPreview(product) {
-  return product.ingredients.slice(0, 3).join(', ');
-}
 
 function availabilityLabel(product) {
   if (product.soldOut || product.inventoryStatus === 'sold_out') return 'Sold out';
   if (product.inventoryStatus === 'limited' || product.weeklyStatus === 'limited') return 'Small batch';
-  if (product.preorderOnly) return 'Reserve for pickup';
+  if (product.preorderOnly || product.isPreorder) return 'Reserve for pickup';
   return 'Available this week';
 }
 
-function ProductMarketCard({ product, priority = false, commerceProduct = null }) {
-  const storefrontProduct = useMemo(() => commerceProduct || toStorefrontProduct(product), [commerceProduct, product]);
-  const productSize = product.sizes?.[0] || '';
+function ProductMarketCard({ product, commerceProduct = null, priority = false }) {
+  const storefrontProduct = useMemo(
+    () => commerceProduct || toStorefrontProduct(product),
+    [commerceProduct, product]
+  );
+  const displayPrice = Number(storefrontProduct?.price ?? product.price ?? 0);
+  const displaySize =
+    storefrontProduct?.size ||
+    storefrontProduct?.variantLabel ||
+    storefrontProduct?.variations?.[0]?.name ||
+    product.sizes?.[0] ||
+    '';
 
   return (
-    <Card className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-emerald-900/10 bg-white shadow-sm shadow-emerald-950/5 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-950/10">
+    <Card className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-emerald-900/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
       <Link href={`/product/${product.slug}`} className="block">
         <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
           <img
@@ -103,57 +69,36 @@ function ProductMarketCard({ product, priority = false, commerceProduct = null }
             className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
             loading={priority ? 'eager' : 'lazy'}
           />
-          <div className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">
+          <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">
             {availabilityLabel(product)}
-          </div>
+          </span>
         </div>
       </Link>
       <CardContent className="flex flex-1 flex-col p-5">
-        <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">{getCategoryLabel(product.category)}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
+              {getCategoryLabel(product.category)}
+            </p>
             <Link href={`/product/${product.slug}`} className="mt-1 block text-xl font-semibold leading-tight text-stone-950 hover:text-emerald-800">
               {product.name}
             </Link>
           </div>
-          <p className="shrink-0 text-lg font-bold text-emerald-800">${product.price.toFixed(2)}{productSize && <span className="ml-1 text-xs font-medium text-stone-500">· {productSize}</span>}</p>
+          <p className="shrink-0 text-lg font-bold text-emerald-800">
+            {displayPrice > 0 ? `$${displayPrice.toFixed(2)}` : 'See details'}
+            {displaySize ? <span className="ml-1 text-xs font-medium text-stone-500">· {displaySize}</span> : null}
+          </p>
         </div>
-        <p className="text-sm leading-6 text-stone-600">{product.shortDescription}</p>
-        <div className="mt-4 flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full bg-stone-100 px-3 py-1 font-medium text-stone-700">{ingredientPreview(product)}</span>
-        </div>
+        <p className="mt-3 text-sm leading-6 text-stone-600">{product.shortDescription}</p>
         <div className="mt-auto pt-5">
           <QuickAddButton
             product={storefrontProduct}
-            selectedVariant={storefrontProduct.variations?.[0]}
+            selectedVariant={storefrontProduct?.variations?.[0]}
             className="h-11 w-full rounded-full bg-emerald-700 text-white hover:bg-emerald-800"
           />
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-function BundleCard({ bundle }) {
-  const included = bundle.productsIncluded.map((id) => getProductBySlugOrId(id)).filter(Boolean);
-
-  return (
-    <article className="rounded-[1.5rem] border border-emerald-900/10 bg-white p-5 shadow-sm">
-      <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Curated set</p>
-      <h3 className="text-xl font-semibold text-stone-950">{bundle.name}</h3>
-      <p className="mt-2 text-sm leading-6 text-stone-600">{bundle.description}</p>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {included.map((product) => (
-          <span key={product.id} className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-700">
-            {product.name}
-          </span>
-        ))}
-      </div>
-      <p className="mt-4 rounded-2xl bg-amber-50 p-3 text-xs leading-5 text-amber-900">{bundle.savingsText}</p>
-      <Button asChild variant="outline" className="mt-5 h-11 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
-        <Link href={`/catalog?search=${encodeURIComponent(included[0]?.name || bundle.name)}`}>{bundle.cta}</Link>
-      </Button>
-    </article>
   );
 }
 
@@ -164,10 +109,8 @@ export default function HomePageClient({
   weekStart,
   weekEnd,
 }) {
-  const [activeCategory, setActiveCategory] = useState('all');
-  const weeklyProducts = useMemo(() => getWeeklyMenuProducts(activeCategory), [activeCategory]);
   const weeklyMenu = useMemo(() => buildWeeklyMenu(weekStart, weekEnd), [weekStart, weekEnd]);
-  const bestSellers = useMemo(() => getBestSellerProducts(), []);
+  const weeklyProducts = useMemo(() => getWeeklyMenuProducts('all').slice(0, 6), []);
   const commerceProductByKey = useMemo(() => {
     const map = new Map();
     (Array.isArray(initialFeaturedProducts) ? initialFeaturedProducts : []).forEach((product) => {
@@ -183,110 +126,81 @@ export default function HomePageClient({
     commerceProductByKey.get(normalizeProductKey(product.slug)) ||
     commerceProductByKey.get(normalizeProductKey(product.name)) ||
     null;
-  const totalWeeklyItems = getWeeklyMenuProducts('all').length;
 
   return (
     <main className="min-h-screen bg-[#fbfaf5] text-stone-950">
       <JsonLd id="home-organization-schema" data={organizationSchema} />
       <JsonLd id="home-faq-schema" data={faqSchema} />
 
-      <section className="overflow-hidden border-b border-emerald-900/10 bg-gradient-to-br from-emerald-950 via-emerald-900 to-stone-950 text-white">
-        <div className="container grid gap-10 py-12 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
+      <section className="border-b border-emerald-900/10 bg-gradient-to-br from-emerald-950 via-emerald-900 to-stone-950 text-white">
+        <div className="container grid gap-10 py-14 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-20">
           <div>
             <p className="mb-5 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-50">
-              Fresh batches guided by customer requests
+              Atlanta farmers markets • fresh weekly batches
             </p>
             <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-              Tell us what you want to sip next.
+              Preorder this week. Pick it up fresh Saturday.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90 sm:text-xl">
-              Request a flavor, reserve a gallon, or meet us at the market to sample what is fresh. We confirm availability before you pay.
+              Taste of Gratitude makes small-batch sea moss gels, lemonades, refreshers, shots, and market favorites around the week’s real demand.
             </p>
-            <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
+            <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild className="h-14 rounded-full bg-white px-8 text-base font-bold text-emerald-950 hover:bg-emerald-50">
-                <Link href="/request-a-flavor" onClick={() => track('click_request_flavor', { source: 'homepage_hero' })}>
-                  Request a flavor
-                </Link>
+                <Link href="/weekly-menu">Shop this week</Link>
               </Button>
               <Button asChild variant="outline" className="h-14 rounded-full border-white/30 bg-transparent px-8 text-base font-bold text-white hover:bg-white/10 hover:text-white">
-                <Link href="/markets" onClick={() => track('click_find_market', { source: 'homepage_hero' })}>
-                  Find a market
-                </Link>
+                <Link href="/markets">Choose a pickup market</Link>
               </Button>
             </div>
-            <p className="mt-4 text-sm text-emerald-50/80">
-              Requests help us plan. Your request becomes an order only after we confirm the flavor, quantity, price, and pickup details.
+            <p className="mt-4 text-sm leading-6 text-emerald-50/80">
+              Weekly market preorders can be reserved at normal item quantities. Choose your pickup market before payment.
             </p>
-            <div className="mt-8 grid gap-3 sm:grid-cols-3">
-              {CUSTOMER_PATHS.map((path) => (
-                <div key={path.title} className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                  <path.icon className="mb-2 h-5 w-5 text-emerald-200" aria-hidden="true" />
-                  <p className="text-xs uppercase tracking-[0.16em] text-emerald-100">{path.title}</p>
-                  <p className="mt-1 text-sm leading-5 text-white/90">{path.text}</p>
+          </div>
+
+          <div className="rounded-[2rem] border border-white/20 bg-white/95 p-6 text-stone-950 shadow-2xl shadow-emerald-950/40">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">This week at a glance</p>
+            <h2 className="mt-3 text-3xl font-semibold">{weeklyMenu.title}</h2>
+            <p className="mt-3 leading-7 text-stone-600">
+              Reserve before market day so we know what to make and what to hold for you.
+            </p>
+            <div className="mt-5 grid gap-3">
+              {MARKETS.slice(0, 2).map((market) => (
+                <div key={market.id} className="rounded-2xl bg-emerald-50 p-4">
+                  <p className="font-semibold text-emerald-950">{market.name}</p>
+                  <p className="mt-1 text-sm text-emerald-800">{market.pickupDays} • {market.hours}</p>
                 </div>
               ))}
             </div>
-          </div>
-          <div className="rounded-[2rem] border border-white/20 bg-white/95 p-5 text-stone-950 shadow-2xl shadow-emerald-950/40">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Popular flavor profiles</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {FLAVOR_PROFILE_LINKS.map((profile) => (
-                <Link
-                  key={profile.label}
-                  href={profile.href}
-                  className="rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-emerald-900 hover:bg-emerald-50"
-                  onClick={() => track('select_flavor_profile', { source: 'homepage_hero', profile: profile.label })}
-                >
-                  {profile.label}
-                </Link>
-              ))}
-            </div>
-            <div className="mt-6 rounded-[1.5rem] bg-emerald-50 p-4">
-              <p className="text-sm font-semibold text-emerald-950">Weekly menu still available</p>
-              <p className="mt-1 text-sm leading-6 text-emerald-800">
-                See what is already confirmed for this week, then request anything that is missing.
-              </p>
-              <Button asChild variant="outline" className="mt-3 h-11 w-full rounded-full border-emerald-300 text-emerald-900 hover:bg-emerald-100">
-                <Link href="/weekly-menu" onClick={() => track('view_weekly_menu', { source: 'homepage_hero' })}>
-                  View this week&apos;s menu
-                </Link>
-              </Button>
-            </div>
+            <Button asChild variant="outline" className="mt-5 h-11 w-full rounded-full border-emerald-300 text-emerald-900 hover:bg-emerald-100">
+              <Link href="/weekly-menu">See available products</Link>
+            </Button>
           </div>
         </div>
       </section>
 
-      <section id="weekly-menu" className="scroll-mt-24 py-14 sm:py-18">
+      <section id="weekly-menu" className="scroll-mt-24 py-14 sm:py-16">
         <div className="container">
           <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">{weeklyMenu.title}</p>
-              <h2 className="mt-2 text-4xl font-semibold tracking-tight text-stone-950 sm:text-5xl">Fresh this week, made in small batches.</h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">{weeklyMenu.preorderLanguage}</p>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">This week’s preorder menu</p>
+              <h2 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Choose what you want us to hold.</h2>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">
+                Start with the week’s available products. Reserve online, choose your market, and pick up fresh Saturday.
+              </p>
             </div>
             <Button asChild className="h-12 rounded-full bg-emerald-700 px-6 text-white hover:bg-emerald-800">
-              <Link href="/catalog">Shop the full menu</Link>
+              <Link href="/weekly-menu">View the full weekly menu</Link>
             </Button>
           </div>
-          <div className="mb-8 flex gap-2 overflow-x-auto pb-2 scrollbar-hide" role="tablist" aria-label="Filter weekly menu">
-            {WEEKLY_MENU_CATEGORIES.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => setActiveCategory(category.id)}
-                className={`min-h-11 shrink-0 rounded-full px-4 text-sm font-semibold transition ${
-                  activeCategory === category.id
-                    ? 'bg-emerald-700 text-white'
-                    : 'border border-emerald-200 bg-white text-emerald-900 hover:bg-emerald-50'
-                }`}
-              >
-                <span aria-hidden="true">{category.icon}</span> {category.label}
-              </button>
-            ))}
-          </div>
+
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {weeklyProducts.slice(0, 9).map((product, index) => (
-              <ProductMarketCard key={product.id} product={product} commerceProduct={getCommerceProduct(product)} priority={index < 3} />
+            {weeklyProducts.map((product, index) => (
+              <ProductMarketCard
+                key={product.id}
+                product={product}
+                commerceProduct={getCommerceProduct(product)}
+                priority={index < 3}
+              />
             ))}
           </div>
         </div>
@@ -295,8 +209,8 @@ export default function HomePageClient({
       <section className="border-y border-emerald-900/10 bg-white py-14">
         <div className="container">
           <div className="mb-8 text-center">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">How ordering works</p>
-            <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">A simple way to order every week.</h2>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">How market preorder works</p>
+            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Four steps. No guessing.</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-4">
             {ORDERING_STEPS.map(({ icon: Icon, title, text }, index) => (
@@ -305,51 +219,10 @@ export default function HomePageClient({
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Step {index + 1}</p>
-                <h3 className="mt-2 text-lg font-semibold text-stone-950">{title}</h3>
+                <h3 className="mt-2 text-lg font-semibold">{title}</h3>
                 <p className="mt-2 text-sm leading-6 text-stone-600">{text}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="featured" className="scroll-mt-24 py-14">
-        <div className="container grid gap-10 lg:grid-cols-[1fr_0.85fr] lg:items-start">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Best sellers</p>
-            <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">Start where the market already does.</h2>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              {bestSellers.map((product) => (
-                <ProductMarketCard key={product.id} product={product} commerceProduct={getCommerceProduct(product)} />
-              ))}
-            </div>
-          </div>
-          <div className="sticky top-24 rounded-[2rem] border border-emerald-900/10 bg-emerald-950 p-6 text-white shadow-xl shadow-emerald-950/15">
-            <Sparkles className="h-8 w-8 text-emerald-200" aria-hidden="true" />
-            <h2 className="mt-4 text-3xl font-semibold">Find your starting point.</h2>
-            <p className="mt-3 leading-7 text-emerald-50/90">Answer four questions and get a primary product, backup product, and bundle suggestion based on your flavor preference, product format, cadence, and avoid list.</p>
-            <Button asChild className="mt-6 h-12 rounded-full bg-white px-6 text-emerald-950 hover:bg-emerald-50">
-              <Link href="/quiz">Take the Product Quiz <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      <section id="what-is-sea-moss" className="scroll-mt-24 bg-stone-100/70 py-14">
-        <div className="container grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div className="overflow-hidden rounded-[2rem] bg-stone-200 shadow-xl">
-            <img src="/images/gratog-bg.PNG" alt="Small batch Taste of Gratitude products" className="h-80 w-full object-cover" />
-          </div>
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Founder story</p>
-            <h2 className="mt-2 text-4xl font-semibold tracking-tight text-stone-950">Started at home, then shared at the farmers market.</h2>
-            <div className="mt-5 space-y-4 text-base leading-8 text-stone-700">
-              <p>Taste of Gratitude began with Jenneisha soaking, blending, and sharing sea moss with family before bringing it to the farmers market.</p>
-              <p>The brand works because customers do not just buy a drink. They learn how sea moss fits into smoothies, teas, and everyday drinks — then they come back.</p>
-            </div>
-            <Button asChild variant="outline" className="mt-6 h-12 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
-              <Link href="/about">Read the story</Link>
-            </Button>
           </div>
         </div>
       </section>
@@ -358,36 +231,37 @@ export default function HomePageClient({
         <div className="container">
           <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Market pickup</p>
-              <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">Reserve online. Pick up at the booth.</h2>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Saturday market pickup</p>
+              <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Choose the market that works for you.</h2>
             </div>
             <Button asChild variant="outline" className="h-12 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
-              <Link href="/markets">See all market details</Link>
+              <Link href="/markets">Full market details</Link>
             </Button>
           </div>
           <div className="grid gap-5 lg:grid-cols-2">
-            {MARKETS.map((market) => (
-              <article key={market.id} className="rounded-[1.5rem] border border-emerald-900/10 bg-white p-5 shadow-sm">
+            {MARKETS.slice(0, 2).map((market) => (
+              <article key={market.id} className="rounded-[1.5rem] border border-emerald-900/10 bg-white p-6 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">{market.pickupDays}</p>
-                    <h3 className="mt-2 text-xl font-semibold text-stone-950">{market.name}</h3>
+                    <h3 className="mt-2 text-2xl font-semibold">{market.name}</h3>
                     <p className="mt-2 text-sm leading-6 text-stone-600">{market.description}</p>
                   </div>
                   <Store className="h-8 w-8 text-emerald-700" aria-hidden="true" />
                 </div>
                 <div className="mt-5 grid gap-3 text-sm text-stone-700 sm:grid-cols-2">
-                  <p className="rounded-2xl bg-stone-50 p-3"><Clock className="mr-2 inline h-4 w-4 text-emerald-700" aria-hidden="true" />{market.hours}</p>
-                  <p className="rounded-2xl bg-stone-50 p-3"><MapPin className="mr-2 inline h-4 w-4 text-emerald-700" aria-hidden="true" />{market.shortName}</p>
+                  <p className="rounded-2xl bg-stone-50 p-3">
+                    <Clock className="mr-2 inline h-4 w-4 text-emerald-700" aria-hidden="true" />
+                    {market.hours}
+                  </p>
+                  <p className="rounded-2xl bg-stone-50 p-3">
+                    <MapPin className="mr-2 inline h-4 w-4 text-emerald-700" aria-hidden="true" />
+                    {market.shortName}
+                  </p>
                 </div>
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
                   <Button asChild className="h-11 rounded-full bg-emerald-700 text-white hover:bg-emerald-800">
-                    <Link
-                      href={`/preorder?market=${encodeURIComponent(market.id)}&utm_source=homepage_market&utm_campaign=weekly_menu_drop`}
-                      onClick={() => track('home_preorder_click', { source: 'homepage_market_card', marketId: market.id })}
-                    >
-                      Reserve pickup
-                    </Link>
+                    <Link href="/weekly-menu">Preorder for pickup</Link>
                   </Button>
                   <Button asChild variant="outline" className="h-11 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
                     <Link href={`/markets#${market.id}`}>Market details</Link>
@@ -399,47 +273,96 @@ export default function HomePageClient({
         </div>
       </section>
 
-      <section id="benefits" className="scroll-mt-24 bg-white py-14">
-        <div className="container">
-          <div className="mb-8 text-center">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Curated picks</p>
-            <h2 className="mt-2 text-3xl font-semibold text-stone-950 sm:text-4xl">Try a ready-made set from this week’s menu.</h2>
+      <section id="delivery" className="border-y border-emerald-900/10 bg-emerald-950 py-14 text-white">
+        <div className="container grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-start">
+          <div>
+            <Truck className="h-8 w-8 text-emerald-200" aria-hidden="true" />
+            <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em] text-emerald-200">Scheduled delivery is next</p>
+            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Help us build the first delivery routes around real demand.</h2>
+            <p className="mt-4 max-w-2xl leading-8 text-emerald-50/90">
+              We are market-first today. The next step is planned Atlanta-area delivery windows on specific route days—not random on-demand delivery.
+            </p>
+            <div className="mt-6 grid gap-3">
+              {[
+                'Tell us your neighborhood or ZIP',
+                'Tell us which weekday or evening works best',
+                'We will open route days where enough customers line up',
+              ].map((item) => (
+                <p key={item} className="flex items-start gap-3 text-sm text-emerald-50">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-200" aria-hidden="true" />
+                  {item}
+                </p>
+              ))}
+            </div>
           </div>
-          <div className="grid gap-5 lg:grid-cols-3">
-            {BUNDLES.slice(0, 3).map((bundle) => (
-              <BundleCard key={bundle.id} bundle={bundle} />
-            ))}
-          </div>
-          <div className="mt-8 text-center">
-            <Button asChild variant="outline" className="h-12 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
-              <Link href="/weekly-menu?utm_source=homepage_bundles&utm_campaign=weekly_menu_drop">
-                View weekly menu and build a box →
-              </Link>
+          <RetentionForm
+            intent="scheduled_delivery_interest"
+            source="homepage_delivery"
+            title="Help shape the delivery route"
+            description="Share your area and the day or time that would make delivery useful for you."
+            cta="Add my delivery interest"
+            collectMessage
+            messagePlaceholder="Neighborhood or ZIP + preferred delivery day/time"
+            successTitle="Delivery interest received."
+            successDescription="We’ll use this to plan practical route days and contact you when your area opens."
+          />
+        </div>
+      </section>
+
+      <section id="events" className="py-14">
+        <div className="container grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+          <div>
+            <Users className="h-8 w-8 text-emerald-700" aria-hidden="true" />
+            <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Book Taste of Gratitude</p>
+            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Bring the market experience to your event.</h2>
+            <p className="mt-4 max-w-2xl leading-8 text-stone-700">
+              Golf tournaments have been a strong fit, but we are available for much more: corporate events, community gatherings, wellness events, private celebrations, pop-ups, tournaments, and other vendor opportunities.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2 text-sm">
+              {['Golf tournaments', 'Corporate events', 'Community events', 'Wellness events', 'Private gatherings', 'Pop-ups + vendor opportunities'].map((item) => (
+                <span key={item} className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-emerald-900">
+                  {item}
+                </span>
+              ))}
+            </div>
+            <Button asChild className="mt-7 h-12 rounded-full bg-emerald-700 px-7 text-white hover:bg-emerald-800">
+              <Link href="/events">Book us for an event <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
+          </div>
+          <div className="rounded-[2rem] border border-emerald-900/10 bg-white p-6 shadow-sm">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-emerald-700">What we can plan around</p>
+            <div className="mt-5 grid gap-4 text-sm text-stone-700">
+              <p className="rounded-2xl bg-stone-50 p-4"><Store className="mr-2 inline h-4 w-4 text-emerald-700" />Vendor setup and product sales</p>
+              <p className="rounded-2xl bg-stone-50 p-4"><Package className="mr-2 inline h-4 w-4 text-emerald-700" />Preplanned product quantities and menu fit</p>
+              <p className="rounded-2xl bg-stone-50 p-4"><Users className="mr-2 inline h-4 w-4 text-emerald-700" />Sampling, education, and guest interaction</p>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="py-14">
-        <div className="container grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-start">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Community proof</p>
-            <h2 className="mt-2 text-3xl font-semibold text-stone-950">Built through real farmers market conversations.</h2>
-            <div className="mt-6 rounded-[1.5rem] border border-stone-200 bg-white p-5 shadow-sm">
-              <p className="leading-7 text-stone-700">
-                Real customer reviews will appear here as they are collected. If you have tried Taste of Gratitude, share your review at the market or email us.
-              </p>
-            </div>
+      <section className="bg-stone-100/70 py-14">
+        <div className="container grid gap-8 lg:grid-cols-2">
+          <div className="rounded-[2rem] bg-white p-6 shadow-sm">
+            <Heart className="h-8 w-8 text-emerald-700" aria-hidden="true" />
+            <p className="mt-4 text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Founder-led and market-built</p>
+            <h2 className="mt-2 text-3xl font-semibold">Started at home. Grew through real market conversations.</h2>
+            <p className="mt-4 leading-8 text-stone-700">
+              Taste of Gratitude began with Jenneisha soaking, blending, sharing, and teaching people how to use sea moss in everyday routines—then grew through repeat farmers-market relationships.
+            </p>
+            <Button asChild variant="outline" className="mt-6 h-11 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
+              <Link href="/about">Read our story</Link>
+            </Button>
           </div>
-          <div className="grid gap-4">
-            <div className="rounded-[2rem] bg-emerald-950 p-6 text-white">
-              <Users className="h-8 w-8 text-emerald-200" aria-hidden="true" />
-              <h3 className="mt-4 text-2xl font-semibold">Wholesale and partner inquiries</h3>
-              <p className="mt-3 leading-7 text-emerald-50/90">Studios, retailers, cafes, and market partners can tell us what they need and receive a personal follow-up on products, quantities, and pickup or delivery.</p>
-              <Button asChild className="mt-6 h-12 rounded-full bg-white px-6 text-emerald-950 hover:bg-emerald-50">
-                <Link href="/wholesale">Wholesale inquiry</Link>
-              </Button>
-            </div>
+          <div className="rounded-[2rem] bg-white p-6 shadow-sm">
+            <Mail className="h-8 w-8 text-emerald-700" aria-hidden="true" />
+            <p className="mt-4 text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Can’t find your favorite?</p>
+            <h2 className="mt-2 text-3xl font-semibold">Ask for the next batch.</h2>
+            <p className="mt-4 leading-8 text-stone-700">
+              Flavor requests help us plan future batches. A request is not a reservation until availability, quantity, price, and pickup are confirmed.
+            </p>
+            <Button asChild variant="outline" className="mt-6 h-11 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
+              <Link href="/request-a-flavor">Request a flavor</Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -447,21 +370,18 @@ export default function HomePageClient({
       <section className="bg-gradient-to-br from-emerald-700 to-emerald-950 py-14 text-white">
         <div className="container grid gap-6 lg:grid-cols-[1fr_0.8fr] lg:items-center">
           <div>
-            <Heart className="h-8 w-8 text-emerald-200" aria-hidden="true" />
-            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">See what we are making next.</h2>
-            <p className="mt-3 max-w-2xl leading-7 text-emerald-50/90">Join the email list for new menus, ingredient notes, market reminders, and product updates.</p>
-            <div className="mt-5 grid gap-2 text-sm text-emerald-50/90 sm:grid-cols-3">
-              {['Weekly menu drops', 'Market pickup reminders', 'Product education'].map((item) => (
-                <p key={item} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-200" aria-hidden="true" />{item}</p>
-              ))}
-            </div>
+            <Mail className="h-8 w-8 text-emerald-200" aria-hidden="true" />
+            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">Get next week’s menu.</h2>
+            <p className="mt-3 max-w-2xl leading-7 text-emerald-50/90">
+              One useful email: weekly menu, pickup reminders, and important product updates.
+            </p>
           </div>
           <RetentionForm
             intent="email_signup"
             source="homepage_retention_footer"
             title="Join the weekly menu email"
-            description="Get the next menu, ingredient notes, pickup reminders, and new-product updates."
-            cta="Join weekly emails"
+            description="Get the next menu and market pickup reminder."
+            cta="Send me the weekly menu"
           />
         </div>
       </section>

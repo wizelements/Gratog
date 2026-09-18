@@ -63,11 +63,20 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/quiz"
+                  href="/events"
                   className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
-                  Product Quiz
+                  Book an Event
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/#delivery"
+                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
+                  Scheduled Delivery
                 </Link>
               </li>
 

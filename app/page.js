@@ -2,22 +2,23 @@ export const dynamic = 'force-static';
 export const revalidate = 300; // Revalidate every 5 minutes
 
 export const metadata = {
-  title: 'Taste of Gratitude | Request a Flavor, Reserve a Gallon, or Meet Us at the Market',
-  description: 'Request a flavor, reserve a gallon, or meet us at the market to sample fresh sea moss drinks and gels. We confirm availability before you pay.',
+  title: 'Taste of Gratitude | Weekly Market Preorders in Atlanta',
+  description: 'Preorder fresh small-batch sea moss gels, lemonades, refreshers, shots, and market favorites for Saturday pickup at Taste of Gratitude farmers markets.',
   keywords: [
     'small-batch sea moss Atlanta',
     'Atlanta farmers market juices',
     'sea moss gel Atlanta',
     'fresh drinks Atlanta',
-    'Taste of Gratitude request a flavor',
-    'gallon order Atlanta farmers market',
+    'Taste of Gratitude preorder',
+    'farmers market pickup Atlanta',
+    'Taste of Gratitude events',
   ],
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Taste of Gratitude | Request a Flavor',
-    description: 'Request a flavor, reserve a gallon, or meet us at the market to sample fresh sea moss drinks and gels. We confirm availability before you pay.',
+    title: 'Taste of Gratitude | Weekly Market Preorders',
+    description: 'Preorder fresh small-batch Taste of Gratitude products for Saturday farmers market pickup in the Atlanta area.',
     url: 'https://tasteofgratitude.shop',
     siteName: 'Taste of Gratitude',
     locale: 'en_US',
@@ -25,8 +26,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary',
-    title: 'Taste of Gratitude | Request a Flavor',
-    description: 'Request a flavor, reserve a gallon, or meet us at the market to sample fresh sea moss drinks and gels.',
+    title: 'Taste of Gratitude | Weekly Market Preorders',
+    description: 'Preorder fresh small-batch products for Saturday farmers market pickup, and learn about upcoming delivery routes and event bookings.',
   },
 };
 
