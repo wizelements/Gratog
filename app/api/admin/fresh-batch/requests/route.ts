@@ -90,10 +90,10 @@ export async function PATCH(request: NextRequest) {
     const targetStatus = body.status as RequestStatus;
 
     // Fetch current states to validate transitions and audit-log each change.
-    const existing = await db
+    const existing = (await db
       .collection(COLLECTION)
       .find({ id: { $in: body.ids } })
-      .toArray();
+      .toArray()) as FreshBatchRequest[];
 
     const invalid = existing.filter((r) => !isValidRequestTransition(r.status, targetStatus));
     if (invalid.length > 0) {
