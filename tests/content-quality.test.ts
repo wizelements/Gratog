@@ -120,14 +120,14 @@ describe('customer-facing content quality', () => {
       slug: 'grateful-defense',
       name: 'Elderberry Ginger Shot',
       price: 5,
-      squareProductUrl: 'https://tasteofgratitude.shop/s/order?add=gratitude-defense',
+      squareProductUrl: 'https://tasteofgratitude.shop/s/order?add=grateful-defense',
     });
     expect(soursop).toMatchObject({
       id: 'healing-harmony-gel',
       slug: 'healing-harmony-gel',
       name: 'Soursop Spice Sea Moss Gel',
       price: 35,
-      squareProductUrl: 'https://tasteofgratitude.shop/s/order?add=healing-harmony',
+      squareProductUrl: 'https://tasteofgratitude.shop/s/order?add=healing-harmony-gel',
     });
     expect(new Set(PRODUCTS.map((product) => product.id)).size).toBe(PRODUCTS.length);
     expect(new Set(PRODUCTS.map((product) => product.slug)).size).toBe(PRODUCTS.length);
