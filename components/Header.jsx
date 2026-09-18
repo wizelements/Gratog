@@ -16,20 +16,20 @@ export default function Header() {
   const isActive = (path) => pathname === path || pathname?.startsWith(`${path}/`);
   const isMobileActive = (path) => pathname === path || pathname?.startsWith(`${path}/`);
   const desktopNavItems = [
-    { href: '/weekly-menu', label: "This Week's Menu" },
-    { href: '/catalog', label: 'Shop' },
-    { href: '/quiz', label: 'Quiz' },
+    { href: '/weekly-menu', label: 'Shop This Week' },
     { href: '/markets', label: 'Markets' },
+    { href: '/#delivery', label: 'Delivery' },
+    { href: '/events', label: 'Events' },
     { href: '/about', label: 'About' },
-    { href: '/wholesale', label: 'Wholesale' },
   ];
   const mobileNavItems = [
-    { href: '/weekly-menu', label: "This Week's Menu" },
-    { href: '/catalog', label: 'Shop' },
-    { href: '/quiz', label: 'Wellness Quiz' },
+    { href: '/weekly-menu', label: 'Shop This Week' },
     { href: '/markets', label: 'Markets' },
+    { href: '/#delivery', label: 'Scheduled Delivery' },
+    { href: '/events', label: 'Book an Event' },
+    { href: '/catalog', label: 'Full Catalog' },
     { href: '/about', label: 'Our Story' },
-    { href: '/wholesale', label: 'Wholesale' },
+    { href: '/wholesale', label: 'Wholesale / Partners' },
     { href: '/contact', label: 'Contact' },
     {
       href: isAuthenticated ? '/profile' : '/login',
@@ -74,7 +74,7 @@ export default function Header() {
             size="sm"
             className="rounded-full bg-emerald-700 text-white hover:bg-emerald-800"
           >
-            <Link href="/quiz">Start Here</Link>
+            <Link href="/weekly-menu">Preorder</Link>
           </Button>
           {isAuthenticated ? (
             <Button

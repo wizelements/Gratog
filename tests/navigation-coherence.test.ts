@@ -98,17 +98,22 @@ describe('Navigation Coherence', () => {
     expect(reviewAndPay).toContain('success');
   });
 
-  it('homepage featured section has anchor id', () => {
+  it('homepage exposes the primary market-first anchor sections', () => {
     const homeClient = tryRead('components/home/HomePageClient.jsx');
 
-    expect(homeClient).toContain('id="featured"');
+    expect(homeClient).toContain('id="weekly-menu"');
+    expect(homeClient).toContain('id="markets"');
+    expect(homeClient).toContain('id="delivery"');
+    expect(homeClient).toContain('id="events"');
   });
 
-  it('menu hash links map to existing homepage anchor sections', () => {
-    const homeClient = tryRead('components/home/HomePageClient.jsx');
+  it('primary navigation points to the market-first customer paths', () => {
+    const header = tryRead('components/Header.jsx');
 
-    expect(homeClient).toContain('id="what-is-sea-moss"');
-    expect(homeClient).toContain('id="benefits"');
+    expect(header).toContain("href: '/weekly-menu'");
+    expect(header).toContain("href: '/markets'");
+    expect(header).toContain("href: '/#delivery'");
+    expect(header).toContain("href: '/events'");
   });
 
   it('review submission UX includes a non-blocking signup prompt for guest reviewers', () => {

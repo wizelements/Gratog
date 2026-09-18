@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { normalizeProduct, validatePreorderMinimum, getCartTotal } from '@/lib/cart-engine';
+import { normalizeProduct, getCartTotal } from '@/lib/cart-engine';
 
 /**
  * 🛒 Cart API - Server-side validation & sync for client-side cart
@@ -55,8 +55,8 @@ export async function POST(request: NextRequest) {
     const marketExclusiveCount = normalizedItems.filter(i => i.marketExclusive).length;
     const hasPreorderItems = normalizedItems.some(i => i.isPreorder);
     
-    // Validate preorder rules
-    const preorderValidation = validatePreorderMinimum(normalizedItems);
+    // Weekly market reservations can be placed at normal item quantities.
+    // The separate bulk preorder workflow retains its own minimum rules.
     
     // Validate market-exclusive items for fulfillment type
     let fulfillmentValidation = { valid: true, error: null };
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
     
     const response = {
-      valid: errors.length === 0 && preorderValidation.valid && fulfillmentValidation.valid,
+      valid: errors.length === 0 && fulfillmentValidation.valid,
       items: normalizedItems,
       totals: {
         subtotal,
@@ -86,14 +86,6 @@ export async function POST(request: NextRequest) {
         hasPreorderItems,
       },
       errors: errors.length > 0 ? errors : undefined,
-      preorderValidation: hasPreorderItems ? {
-        valid: preorderValidation.valid,
-        error: preorderValidation.error || null,
-        ...(preorderValidation.preorderSubtotal !== undefined && {
-          preorderSubtotal: preorderValidation.preorderSubtotal,
-          minimumRequired: preorderValidation.minimumRequired,
-        }),
-      } : undefined,
       fulfillmentValidation: fulfillmentValidation.error ? fulfillmentValidation : undefined,
     };
     
