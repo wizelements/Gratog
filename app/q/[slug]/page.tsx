@@ -54,13 +54,13 @@ export default async function LabelPayPage({ params, searchParams }: PageProps) 
         <div className="space-y-6 p-6">
           {paid ? (
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
-              <p className="text-sm font-semibold uppercase tracking-wide text-emerald-800">Payment complete</p>
+              <p className="text-sm font-semibold uppercase tracking-wide text-emerald-800">Returned from Square</p>
               <h2 className="mt-1 text-2xl font-semibold">Thank you.</h2>
               <p className="mt-2 text-sm leading-6 text-stone-700">
-                Your Square checkout returned successfully. Keep this screen available if the booth team needs to confirm your purchase.
+                You returned from Square checkout. Your booth team can verify the approved payment in Square before handing off the order.
               </p>
               <p className="mt-3 text-xs text-stone-500">
-                Want another one? This same QR can be scanned again to start a brand-new purchase.
+                Want another one? This same QR can be scanned again to start a brand-new Square checkout.
               </p>
             </div>
           ) : null}
