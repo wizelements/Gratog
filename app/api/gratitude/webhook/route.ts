@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     
     // Check if this is first purchase
     const { getTransactionHistory } = await import('@/lib/gratitude/transactions');
-    const history = await getTransactionHistory(customer._id, { type: 'earn', limit: 1 });
+    const history = await (getTransactionHistory as (customerId: string, options: { type?: string | null; limit?: number }) => Promise<any[]>)(String(customer._id), { type: 'earn', limit: 1 });
     const isFirstPurchase = history.length === 0 || 
       !history.some((t: any) => t.source?.type === 'purchase');
     

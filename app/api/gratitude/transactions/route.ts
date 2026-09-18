@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     await connectToDatabase();
     
     const [transactions, redemptions] = await Promise.all([
-      getTransactionHistory(customerId, { limit, type }),
+      (getTransactionHistory as (customerId: string, options: { limit?: number; type?: string | null }) => Promise<any[]>)(customerId, { limit, type }),
       includeRedemptions ? getRedemptionHistory(customerId) : Promise.resolve([])
     ]);
     

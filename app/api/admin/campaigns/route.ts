@@ -51,7 +51,7 @@ export const GET = withAdminMiddleware(
     
     try {
       const allowedStatuses = ['draft', 'scheduled', 'sending', 'sent', 'failed'];
-      const {campaigns,total}=await listCampaignsPage({status:status&&allowedStatuses.includes(status)?status:undefined,limit,offset:skip});
+      const { campaigns, total } = await (listCampaignsPage as (options: { status?: string; limit?: number; offset?: number }) => Promise<{ campaigns: Campaign[]; total: number }>)({ status: status && allowedStatuses.includes(status) ? status : undefined, limit, offset: skip });
       
       // Sanitize response - remove raw HTML bodies for list view
       const sanitizedCampaigns = campaigns.map(campaign => ({

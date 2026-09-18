@@ -25,6 +25,15 @@ vi.mock('@/lib/db-optimized', () => ({
   connectToDatabase: vi.fn().mockResolvedValue({ db: mockHandles.mockDb }),
 }));
 
+vi.mock('@/lib/batches/repository', () => ({
+  listRequestsForAdmin: vi.fn().mockResolvedValue([]),
+  findRequestsByIds: vi.fn().mockResolvedValue([]),
+  bulkUpdateRequestStatus: vi.fn().mockResolvedValue({ matched: 0, modified: 0 }),
+  findRequestById: vi.fn().mockResolvedValue(null),
+  createReservation: vi.fn(),
+  findBatchCampaignById: vi.fn().mockResolvedValue(null),
+}));
+
 // ============================================================================
 // Imports
 // ============================================================================
