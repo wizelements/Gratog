@@ -1,4 +1,3 @@
-import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 import { getProductBySlugOrId, normalizeProductKey, toStorefrontProduct } from '@/data/products';
 
 export const LABEL_QUANTITY_MIN = 1;
@@ -9,6 +8,12 @@ const LABEL_ALIASES: Record<string, string> = {
   'floral-tide-gel': 'floral-tide',
   'healing-harmony-gel': 'healing-harmony',
 };
+
+const LIVE_CATALOG_ORIGIN = (
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.SITE_URL ||
+  'https://tasteofgratitude.shop'
+).replace(/\/+$/, '');
 
 export type LabelProductSnapshot = {
   slug: string;
@@ -126,17 +131,29 @@ export function resolveLabelProductFromCatalog(value: unknown, liveProducts: any
     return { payable: false, product, reason: 'no_price' };
   }
 
-  // Deliberately independent of activeWeeklyMenu / soldOut. A physical item
-  // already in a customer's hand remains payable even when online merchandising
-  // changes. Live Square price/variation data wins whenever available.
+  // Physical-product checkout is intentionally independent from weekly-menu
+  // merchandising and inventory counters. If a customer has the item in hand,
+  // the label must stay payable. Live Square data wins whenever available.
   return { payable: true, product, reason: null };
 }
 
-export async function resolveLabelProduct(value: unknown): Promise<LabelProductResolution> {
+async function fetchLiveProducts(): Promise<any[]> {
   try {
-    const snapshot = await getStorefrontCatalogSnapshot({});
-    return resolveLabelProductFromCatalog(value, snapshot.products || []);
+    const response = await fetch(`${LIVE_CATALOG_ORIGIN}/api/products`, {
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(3500),
+    });
+
+    if (!response.ok) return [];
+    const payload = await response.json();
+    return Array.isArray(payload?.products) ? payload.products : [];
   } catch {
-    return resolveLabelProductFromCatalog(value, []);
+    return [];
   }
+}
+
+export async function resolveLabelProduct(value: unknown): Promise<LabelProductResolution> {
+  const liveProducts = await fetchLiveProducts();
+  return resolveLabelProductFromCatalog(value, liveProducts);
 }
