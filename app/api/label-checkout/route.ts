@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   const quantity = normalizeLabelQuantity(form.get('quantity'));
   const market = safeMarket(form.get('market'));
 
-  const resolved = resolveLabelProduct(slug);
+  const resolved = await resolveLabelProduct(slug);
   if (!resolved.payable || !resolved.product) {
     const fallbackSlug = resolved.product?.slug || slug;
     const destination = fallbackSlug
@@ -36,26 +36,31 @@ export async function POST(request: NextRequest) {
   const origin = siteOrigin(request);
   const referenceId = `LQR-${product.slug.slice(0, 18)}-${randomUUID().slice(0, 8)}`;
 
+  const lineItem = {
+    name: product.name,
+    quantity: String(quantity),
+    note: `${product.size} · QR label purchase`,
+    ...(product.squareVariationId
+      ? { catalogObjectId: product.squareVariationId }
+      : {
+          basePriceMoney: {
+            amount: product.priceCents,
+            currency: 'USD',
+          },
+        }),
+  };
+
   const result = await createPaymentLink({
     referenceId,
     description: `Taste of Gratitude label purchase: ${product.name}`,
     redirectUrl: `${origin}/q/${encodeURIComponent(product.slug)}?paid=1`,
-    lineItems: [
-      {
-        name: product.name,
-        quantity: String(quantity),
-        basePriceMoney: {
-          amount: product.priceCents,
-          currency: 'USD',
-        },
-        note: `${product.size} · QR label purchase`,
-      },
-    ],
+    lineItems: [lineItem],
     metadata: {
       source: 'label_qr',
       product_slug: product.slug,
       market,
       label_flow: 'v1',
+      price_source: product.squareVariationId ? 'square_catalog' : product.source || 'curated',
     },
   });
 
