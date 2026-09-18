@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-session';
 import { requireAdminSession } from '@/lib/auth/unified-admin';
 import { listStorefrontProducts } from '@/lib/repositories/storefront-catalog';
+import { validateStorefrontProducts } from '@/lib/storefront-integrity';
 
 export async function GET(request: NextRequest) {
   const session = await requireAdminSession(request);
@@ -12,7 +13,8 @@ export async function GET(request: NextRequest) {
   try {
     await requireAdmin(request);
     const products = await listStorefrontProducts();
-    const options = products
+    const integrity = validateStorefrontProducts(products);
+    const options = integrity.validProducts
       .filter((product: any) => product?.id && product?.name)
       .map((product: any) => ({
         id: String(product.id),

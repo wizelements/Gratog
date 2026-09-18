@@ -45,7 +45,24 @@ function product(doc, context = {}) {
   if (!doc.name) throw new Error('FIELD_MISSING:name');
   const sourceSlug = doc.slug ?? null;
   const slug = sourceSlug && (context.productSlugCounts?.get(sourceSlug) ?? 0) > 1 ? `${sourceSlug}-${id.toLowerCase().slice(-8)}` : sourceSlug;
-  const statements = [row('products', { id, square_catalog_id: String(doc.squareId ?? doc.id), slug, name: doc.name, description: doc.description ?? null, active: doc.squareIsArchived === true || doc.isArchived === true ? 0 : 1, metadata_json: json({ category: doc.intelligentCategory ?? doc.category ?? null, images: doc.images ?? [], tags: doc.tags ?? [], source: doc.source ?? 'square_catalog', sourceSlug, squareVisibility: doc.squareEcomVisibility ?? null }), created_at: iso(doc.createdAt, 'createdAt'), updated_at: iso(doc.updatedAt ?? doc.syncedAt, 'updatedAt') })];
+  const images = Array.isArray(doc.images) && doc.images.length
+    ? doc.images
+    : doc.image ? [doc.image] : [];
+  const metadata = {
+    category: doc.intelligentCategory ?? doc.category ?? null,
+    images,
+    tags: Array.isArray(doc.tags) ? doc.tags : [],
+    source: doc.source ?? 'square_catalog',
+    sourceSlug,
+    squareVisibility: doc.squareEcomVisibility ?? null,
+    benefitStory: typeof doc.benefitStory === 'string' ? doc.benefitStory : null,
+    ingredients: Array.isArray(doc.ingredients) ? doc.ingredients : [],
+    benefits: Array.isArray(doc.benefits)
+      ? doc.benefits
+      : Array.isArray(doc.healthBenefitLabels) ? doc.healthBenefitLabels : [],
+    ingredientIcons: Array.isArray(doc.ingredientIcons) ? doc.ingredientIcons : [],
+  };
+  const statements = [row('products', { id, square_catalog_id: String(doc.squareId ?? doc.id), slug, name: doc.name, description: doc.description ?? null, active: doc.squareIsArchived === true || doc.isArchived === true ? 0 : 1, metadata_json: json(metadata), created_at: iso(doc.createdAt, 'createdAt'), updated_at: iso(doc.updatedAt ?? doc.syncedAt, 'updatedAt') })];
   for (const variation of Array.isArray(doc.variations) ? doc.variations : []) {
     if (!variation?.id) throw new Error('EXTERNAL_ID_MISSING:variationId');
     const price = variation.priceCents != null ? cents(variation.priceCents, 'variation.priceCents') : variation.price == null ? null : cents(variation.price, 'variation.price', 'dollars');

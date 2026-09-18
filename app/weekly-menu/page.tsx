@@ -13,6 +13,7 @@ import { getActiveMenu } from '@/lib/menus/repository';
 import { getCurrentWeekRange } from '@/lib/menus/week-utils';
 import { filterDisplayableProducts } from '@/lib/product-eligibility';
 import { listStorefrontProducts } from '@/lib/repositories/storefront-catalog';
+import { validateStorefrontProducts } from '@/lib/storefront-integrity';
 
 export default async function WeeklyMenuLandingPage() {
   const markets = getActiveMarketPickups();
@@ -33,7 +34,10 @@ export default async function WeeklyMenuLandingPage() {
 
     if (publishedMenu && current && publishedMenu.linkedProducts?.length) {
       const catalog = await listStorefrontProducts();
-      const byId = new Map(catalog.map((product: any) => [String(product.id), product]));
+      const integrity = validateStorefrontProducts(catalog);
+      const byId = new Map(
+        integrity.validProducts.map((product: any) => [String(product.id), product])
+      );
       const selected = publishedMenu.linkedProducts
         .map((id) => byId.get(String(id)))
         .filter((product: any) =>

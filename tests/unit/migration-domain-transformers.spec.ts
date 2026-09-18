@@ -11,6 +11,23 @@ describe('Phase 4 domain transformers', () => {
     expect(result.statements[1]).toMatchObject({ table: 'product_variations', row: { id: 'square-variation', product_id: 'square-item', price_cents: 1250 } });
   });
 
+  it('preserves storefront enrichment metadata from unified products', async () => {
+    const { transformDocument } = await import('../../scripts/migrate/transformers.mjs');
+    const result = transformDocument('unified_products', {
+      _id: 'mongo-rich', id: 'square-rich', name: 'Rich Gel', slug: 'rich-gel',
+      image: '/rich.jpg', benefitStory: 'A real benefit story for this product.',
+      ingredients: ['Sea Moss', 'Ginger'], benefits: ['Daily wellness'],
+      variations: [{ id: 'variation-rich', name: 'Jar', priceCents: 1500 }],
+    });
+    const metadata = JSON.parse(result.statements[0].row.metadata_json);
+    expect(metadata).toMatchObject({
+      images: ['/rich.jpg'],
+      benefitStory: 'A real benefit story for this product.',
+      ingredients: ['Sea Moss', 'Ginger'],
+      benefits: ['Daily wellness'],
+    });
+  });
+
   it('preserves a duplicate source slug in metadata while generating stable unique target slugs', async () => {
     const { transformDocument } = await import('../../scripts/migrate/transformers.mjs');
     const context = { productSlugCounts: new Map([['same-name', 2]]) };
