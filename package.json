@@ -10,6 +10,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "typecheck:ci": "tsc --noEmit --skipLibCheck",
+    "check:routes": "node scripts/check-route-coverage.js",
+    "check:route-governance": "vitest run tests/route-governance.test.ts tests/pwa-cache-governance.test.ts --reporter=verbose",
     "prepare": "echo 'Skipping husky'",
     "postinstall": "node scripts/fix-deployment-issues.js || true",
     "vercel-build": "npm run build"
