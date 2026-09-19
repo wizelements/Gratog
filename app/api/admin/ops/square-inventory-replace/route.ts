@@ -21,18 +21,22 @@ function baseUrl() {
     : 'https://connect.squareupsandbox.com';
 }
 
-function headers() {
+function squareHeaders(extra?: HeadersInit) {
   const token = process.env.SQUARE_ACCESS_TOKEN;
   if (!token) throw new Error('SQUARE_ACCESS_TOKEN missing');
-  return {
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json',
-    'Square-Version': '2025-10-16',
-  };
+
+  const headers = new Headers(extra);
+  headers.set('Authorization', `Bearer ${token}`);
+  headers.set('Content-Type', 'application/json');
+  headers.set('Square-Version', '2025-10-16');
+  return headers;
 }
 
 async function square(path: string, init?: RequestInit) {
-  const res = await fetch(`${baseUrl()}${path}`, { ...init, headers: { ...headers(), ...(init?.headers || {}) } });
+  const res = await fetch(`${baseUrl()}${path}`, {
+    ...init,
+    headers: squareHeaders(init?.headers),
+  });
   const data = await res.json();
   if (!res.ok) throw new Error(JSON.stringify(data?.errors || data));
   return data;
