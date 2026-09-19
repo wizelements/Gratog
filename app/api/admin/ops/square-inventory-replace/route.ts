@@ -91,8 +91,24 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({ catalog_object_ids: matches.map(x => x.variationId), location_ids: [locationId], states: ['IN_STOCK'] }),
   });
 
-  const counts = new Map((verify.counts || []).map((c: any) => [c.catalog_object_id, Number(c.quantity)]));
-  const result = matches.map(x => ({ product: x.product, expected: x.quantity, actual: counts.get(x.variationId) ?? null, verified: counts.get(x.variationId) === x.quantity }));
-  const ok = result.every(x => x.verified);
-  return NextResponse.json({ success: ok, locationId, total: result.reduce((n, x) => n + (x.actual || 0), 0), result }, { status: ok ? 200 : 409 });
+  const counts = new Map<string, number>(
+    (verify.counts || []).map(
+      (c: any): [string, number] => [String(c.catalog_object_id), Number(c.quantity)]
+    )
+  );
+  const result = matches.map((x) => {
+    const actual = counts.get(x.variationId) ?? null;
+    return {
+      product: x.product,
+      expected: x.quantity,
+      actual,
+      verified: actual === x.quantity,
+    };
+  });
+  const ok = result.every((x) => x.verified);
+  const total = result.reduce((sum, x) => sum + (x.actual ?? 0), 0);
+  return NextResponse.json(
+    { success: ok, locationId, total, result },
+    { status: ok ? 200 : 409 }
+  );
 }
