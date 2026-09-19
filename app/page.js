@@ -3,7 +3,7 @@ export const revalidate = 300; // Revalidate every 5 minutes
 
 export const metadata = {
   title: 'Taste of Gratitude | Weekly Market Preorders in Atlanta',
-  description: 'Preorder fresh small-batch sea moss gels, lemonades, refreshers, shots, and market favorites for Saturday pickup at Taste of Gratitude farmers markets.',
+  description: 'Preorder fresh small-batch sea moss gels, lemonades, refreshers, shots, and market favorites for pickup at Taste of Gratitude markets across the Atlanta area.',
   keywords: [
     'small-batch sea moss Atlanta',
     'Atlanta farmers market juices',
@@ -18,7 +18,7 @@ export const metadata = {
   },
   openGraph: {
     title: 'Taste of Gratitude | Weekly Market Preorders',
-    description: 'Preorder fresh small-batch Taste of Gratitude products for Saturday farmers market pickup in the Atlanta area.',
+    description: 'Preorder fresh small-batch Taste of Gratitude products for scheduled market pickup in the Atlanta area.',
     url: 'https://tasteofgratitude.shop',
     siteName: 'Taste of Gratitude',
     locale: 'en_US',
@@ -27,7 +27,7 @@ export const metadata = {
   twitter: {
     card: 'summary',
     title: 'Taste of Gratitude | Weekly Market Preorders',
-    description: 'Preorder fresh small-batch products for Saturday farmers market pickup, and learn about upcoming delivery routes and event bookings.',
+    description: 'Preorder fresh small-batch products for scheduled Atlanta-area market pickup, and learn about upcoming delivery routes and event bookings.',
   },
 };
 

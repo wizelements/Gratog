@@ -15,6 +15,10 @@ export interface MarketLocation {
   dayOfWeek: number;
   description: string;
   mapsUrl?: string;
+  pickupDays?: string;
+  preorderCutoff?: string;
+  parkingNotes?: string;
+  recurrence?: 'weekly' | 'first_third';
 }
 
 export interface AdminMarket extends MarketLocation {

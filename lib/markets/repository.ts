@@ -54,6 +54,10 @@ function documentToAdminMarket(doc: MarketDocument): AdminMarket {
     dayOfWeek: normalized.dayOfWeek,
     description: normalized.description,
     mapsUrl: normalized.mapsUrl,
+    pickupDays: normalized.pickupDays,
+    preorderCutoff: normalized.preorderCutoff,
+    parkingNotes: normalized.parkingNotes,
+    recurrence: normalized.recurrence,
     isActive: normalized.isActive !== false,
     featured: !!normalized.featured,
     createdAt: normalized.createdAt?.toISOString?.() ?? new Date().toISOString(),
@@ -125,6 +129,10 @@ export type CreateMarketData = {
   mapsUrl?: string;
   isActive?: boolean;
   featured?: boolean;
+  pickupDays?: string;
+  preorderCutoff?: string;
+  parkingNotes?: string;
+  recurrence?: 'weekly' | 'first_third';
 };
 
 export async function createMarket(data: CreateMarketData): Promise<AdminMarket> {
@@ -144,6 +152,10 @@ export async function createMarket(data: CreateMarketData): Promise<AdminMarket>
       dayOfWeek: data.dayOfWeek,
       description: data.description,
       mapsUrl: data.mapsUrl || '',
+      pickupDays: data.pickupDays || '',
+      preorderCutoff: data.preorderCutoff || '',
+      parkingNotes: data.parkingNotes || '',
+      recurrence: data.recurrence || 'weekly',
       isActive: data.isActive !== false,
       featured: data.featured || false,
       createdAt: now,
@@ -201,6 +213,10 @@ export async function updateMarket(
       'dayOfWeek',
       'description',
       'mapsUrl',
+      'pickupDays',
+      'preorderCutoff',
+      'parkingNotes',
+      'recurrence',
       'isActive',
       'featured',
     ];
@@ -274,6 +290,28 @@ export async function seedDefaultMarkets(): Promise<{ seeded: number }> {
 
     const now = new Date();
     const defaultMarkets = [
+      {
+        name: 'Airport District Night Market at The Hangar',
+        address: '3361 Dogwood Dr',
+        city: 'Hapeville',
+        state: 'GA',
+        zip: '30354',
+        lat: 33.6628,
+        lng: -84.4096,
+        hours: '17:00-21:00',
+        dayOfWeek: 5,
+        description:
+          'Evening Airport District market at Chattabrewchee The Hangar with local food, drinks, music, and vendors. Taste of Gratitude offers fresh products and preorder pickup on scheduled 1st and 3rd Fridays.',
+        mapsUrl: 'https://maps.google.com/?q=3361+Dogwood+Dr+Hapeville+GA+30354',
+        pickupDays: '1st & 3rd Friday night market pickup',
+        preorderCutoff: 'Preorder by Thursday evening for Friday pickup when the Hapeville market is scheduled.',
+        parkingNotes: 'Use The Hangar on-site parking and follow event/vendor parking guidance when posted.',
+        recurrence: 'first_third',
+        isActive: true,
+        featured: true,
+        createdAt: now,
+        updatedAt: now,
+      },
       {
         name: 'Serenbe Farmers Market',
         address: '10950 Hutcheson Ferry Rd',

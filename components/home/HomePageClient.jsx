@@ -34,9 +34,9 @@ import {
 
 const ORDERING_STEPS = [
   { icon: ShoppingBag, title: 'Choose this week', text: 'Pick the products you want from the current small-batch menu.' },
-  { icon: Store, title: 'Choose your market', text: 'Reserve for Serenbe or Dunwoody pickup while the batch is available.' },
+  { icon: Store, title: 'Choose your market', text: 'Reserve for Hapeville, Serenbe, or Dunwoody pickup while the batch is available.' },
   { icon: Package, title: 'We prepare it fresh', text: 'Your order is prepared around the week’s actual demand and pickup plan.' },
-  { icon: Repeat, title: 'Pick up and come back', text: 'Grab your order Saturday, then check the next weekly menu when it drops.' },
+  { icon: Repeat, title: 'Pick up and come back', text: 'Grab your order on your selected market day, then check the next weekly menu when it drops.' },
 ];
 
 function availabilityLabel(product) {
@@ -139,7 +139,7 @@ export default function HomePageClient({
               Atlanta farmers markets • fresh weekly batches
             </p>
             <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-              Preorder this week. Pick it up fresh Saturday.
+              Preorder this week. Pick it up fresh at the market.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90 sm:text-xl">
               Taste of Gratitude makes small-batch sea moss gels, lemonades, refreshers, shots, and market favorites around the week’s real demand.
@@ -164,7 +164,7 @@ export default function HomePageClient({
               Reserve before market day so we know what to make and what to hold for you.
             </p>
             <div className="mt-5 grid gap-3">
-              {MARKETS.slice(0, 2).map((market) => (
+              {MARKETS.slice(0, 3).map((market) => (
                 <div key={market.id} className="rounded-2xl bg-emerald-50 p-4">
                   <p className="font-semibold text-emerald-950">{market.name}</p>
                   <p className="mt-1 text-sm text-emerald-800">{market.pickupDays} • {market.hours}</p>
@@ -185,7 +185,7 @@ export default function HomePageClient({
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">This week’s preorder menu</p>
               <h2 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Choose what you want us to hold.</h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">
-                Start with the week’s available products. Reserve online, choose your market, and pick up fresh Saturday.
+                Start with the week’s available products. Reserve online, choose your market, and pick up fresh on that market’s scheduled day.
               </p>
             </div>
             <Button asChild className="h-12 rounded-full bg-emerald-700 px-6 text-white hover:bg-emerald-800">
@@ -231,15 +231,15 @@ export default function HomePageClient({
         <div className="container">
           <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Saturday market pickup</p>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Market pickup</p>
               <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Choose the market that works for you.</h2>
             </div>
             <Button asChild variant="outline" className="h-12 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
               <Link href="/markets">Full market details</Link>
             </Button>
           </div>
-          <div className="grid gap-5 lg:grid-cols-2">
-            {MARKETS.slice(0, 2).map((market) => (
+          <div className="grid gap-5 lg:grid-cols-3">
+            {MARKETS.slice(0, 3).map((market) => (
               <article key={market.id} className="rounded-[1.5rem] border border-emerald-900/10 bg-white p-6 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                   <div>
