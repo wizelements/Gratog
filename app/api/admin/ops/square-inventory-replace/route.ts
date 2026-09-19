@@ -42,6 +42,34 @@ async function square(path: string, init?: RequestInit) {
   return data;
 }
 
+export async function GET() {
+  try {
+    const locationId = process.env.SQUARE_LOCATION_ID;
+    if (!locationId) return NextResponse.json({ error: 'SQUARE_LOCATION_ID missing' }, { status: 500 });
+
+    const catalog = await square('/v2/catalog/list?types=ITEM');
+    const matches: Array<{ product: string; variationId: string }> = [];
+
+    for (const obj of catalog.objects || []) {
+      const name = String(obj?.item_data?.name || '').trim().toLowerCase();
+      if (!TARGETS.has(name)) continue;
+      const variations = obj?.item_data?.variations || [];
+      if (variations.length !== 1) continue;
+      matches.push({ product: obj.item_data.name, variationId: variations[0].id });
+    }
+
+    const verify = await square('/v2/inventory/counts/batch-retrieve', {
+      method: 'POST',
+      body: JSON.stringify({ catalog_object_ids: matches.map(x => x.variationId), location_ids: [locationId], states: ['IN_STOCK'] }),
+    });
+
+    const counts = new Map<string, number>((verify.counts || []).map((c: any): [string, number] => [String(c.catalog_object_id), Number(c.quantity)]));
+    return NextResponse.json({ locationId, result: matches.map(x => ({ product: x.product, actual: counts.get(x.variationId) ?? 0 })) });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   const supplied = req.headers.get('x-admin-api-token') || req.headers.get('x-admin-api-key') || '';
   const expectedToken = process.env.ADMIN_API_TOKEN || '';
