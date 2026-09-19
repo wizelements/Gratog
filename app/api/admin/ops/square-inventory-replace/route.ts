@@ -43,9 +43,11 @@ async function square(path: string, init?: RequestInit) {
 }
 
 export async function POST(req: NextRequest) {
-  const supplied = req.headers.get('x-admin-api-token') || '';
-  const expected = process.env.ADMIN_API_TOKEN || '';
-  if (!supplied || !expected || !safeEqual(supplied, expected)) {
+  const supplied = req.headers.get('x-admin-api-token') || req.headers.get('x-admin-api-key') || '';
+  const expectedToken = process.env.ADMIN_API_TOKEN || '';
+  const expectedKey = process.env.ADMIN_API_KEY || '';
+  const authorized = Boolean(supplied) && ((expectedToken && safeEqual(supplied, expectedToken)) || (expectedKey && safeEqual(supplied, expectedKey)));
+  if (!authorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
