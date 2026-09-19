@@ -1,4 +1,6 @@
 
+const isNonProductionDeployment = process.env.VERCEL_ENV !== 'production';
+
 const nextConfig = {
   // Next.js 15 + Turbopack compatible configuration
   turbopack: {
@@ -317,4 +319,6 @@ const nextConfig = {
     ];
   },
 };
+
+module.exports = nextConfig;
 
