@@ -16,9 +16,30 @@ export interface MarketPickupLocation {
   mapsUrl: string;
   isActive: boolean;
   featured: boolean;
+  recurrence?: 'weekly' | 'first_third';
 }
 
 export const MARKETS: MarketPickupLocation[] = [
+  {
+    id: 'hapeville-hangar',
+    name: 'Airport District Night Market at The Hangar',
+    shortName: 'Hapeville',
+    address: '3361 Dogwood Dr',
+    city: 'Hapeville',
+    state: 'GA',
+    zip: '30354',
+    addressLine: '3361 Dogwood Dr, Hapeville, GA 30354',
+    dayOfWeek: 5,
+    hours: '17:00-21:00',
+    pickupDays: '1st & 3rd Friday night market pickup',
+    preorderCutoff: 'Preorder by Thursday evening for Friday pickup when the Hapeville market is scheduled.',
+    description: 'An evening Airport District market at Chattabrewchee The Hangar with local food, drinks, music, and vendors. Taste of Gratitude offers fresh market products and preorder pickup here on scheduled 1st and 3rd Fridays.',
+    parkingNotes: 'Use The Hangar on-site parking and follow event/vendor parking guidance when posted.',
+    mapsUrl: 'https://maps.google.com/?q=3361%20Dogwood%20Dr%2C%20Hapeville%2C%20GA%2030354',
+    isActive: true,
+    featured: true,
+    recurrence: 'first_third',
+  },
   {
     id: 'serenbe',
     name: 'Serenbe Farmers Market',

@@ -72,6 +72,7 @@ interface PublicMarket {
   addressLine?: string;
   isActive: boolean;
   featured: boolean;
+  recurrence?: 'weekly' | 'first_third';
   parkingNotes?: string;
   preorderCutoff?: string;
   pickupDays?: string;
@@ -133,12 +134,29 @@ function getFullAddress(market: PublicMarket) {
   return market.addressLine || `${market.address}, ${market.city}, ${market.state} ${market.zip}`;
 }
 
-function getNextMarketLabel(dayOfWeek: number) {
+function getNextMarketLabel(market: PublicMarket) {
   const today = new Date();
-  const diff = (dayOfWeek - today.getDay() + 7) % 7;
-  if (diff === 0) return 'Today';
-  if (diff === 1) return 'Tomorrow';
-  return `${diff} days`;
+  today.setHours(0, 0, 0, 0);
+
+  for (let diff = 0; diff <= 42; diff += 1) {
+    const candidate = new Date(today);
+    candidate.setDate(today.getDate() + diff);
+
+    if (candidate.getDay() !== market.dayOfWeek) continue;
+
+    if (market.recurrence === 'first_third') {
+      const day = candidate.getDate();
+      const isFirstOrThirdWeek = (day >= 1 && day <= 7) || (day >= 15 && day <= 21);
+      if (!isFirstOrThirdWeek) continue;
+    }
+
+    if (diff === 0) return 'Today';
+    if (diff === 1) return 'Tomorrow';
+    if (diff < 7) return `${diff} days`;
+    return candidate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  return 'Schedule updating';
 }
 
 function getMarketMeta(market: PublicMarket) {
@@ -167,7 +185,7 @@ function MarketCard({ market }: { market: PublicMarket }) {
               {market.featured ? 'Flagship market' : 'Local pickup'}
             </span>
             <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
-              Next: {getNextMarketLabel(market.dayOfWeek)}
+              Next: {getNextMarketLabel(market)}
             </span>
           </div>
           <h3 className="text-xl font-semibold leading-tight text-stone-950">{market.name}</h3>
