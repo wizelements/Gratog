@@ -1,14 +1,12 @@
 import Link from 'next/link';
 import {
   ArrowRight,
-  CalendarClock,
-  CircleHelp,
-  CupSoda,
-  Leaf,
+  Clock,
+  Heart,
+  Package,
   ShoppingBag,
   Store,
-  UsersRound,
-  Zap,
+  Users,
 } from 'lucide-react';
 import {
   getHomepageBestSellers,
@@ -23,9 +21,9 @@ export const metadata = {
 };
 
 const categoryTiles = [
-  { title: 'Fresh Drinks', detail: 'Lemonades + refreshers', icon: CupSoda },
-  { title: 'Sea Moss Gels', detail: 'Small-batch jars + samples', icon: Leaf },
-  { title: 'Wellness Shots', detail: 'Quick 2 oz favorites', icon: Zap },
+  { title: 'Fresh Drinks', detail: 'Lemonades + refreshers', icon: ShoppingBag },
+  { title: 'Sea Moss Gels', detail: 'Small-batch jars + samples', icon: Package },
+  { title: 'Wellness Shots', detail: 'Quick 2 oz favorites', icon: Heart },
 ];
 function availabilityLabel(product: any) {
   if (product.soldOut || product.inventoryStatus === 'sold_out') return 'Sold out';
@@ -117,7 +115,7 @@ export default function MarketKioskPage() {
               className="group flex min-h-32 items-center justify-between rounded-[1.75rem] border-2 border-emerald-800/15 bg-white p-6 shadow-sm transition hover:border-emerald-700/35 hover:shadow-md"
             >
               <span>
-                <CalendarClock className="mb-3 h-7 w-7 text-emerald-700" aria-hidden="true" />
+                <Clock className="mb-3 h-7 w-7 text-emerald-700" aria-hidden="true" />
                 <span className="block text-2xl font-semibold">Order for later</span>
                 <span className="mt-1 block text-sm text-stone-600">Reserve for a future pickup</span>
               </span>
@@ -129,7 +127,7 @@ export default function MarketKioskPage() {
               className="group flex min-h-32 items-center justify-between rounded-[1.75rem] border-2 border-amber-700/15 bg-amber-50 p-6 shadow-sm transition hover:border-amber-700/35 hover:shadow-md"
             >
               <span>
-                <CircleHelp className="mb-3 h-7 w-7 text-amber-700" aria-hidden="true" />
+                <Heart className="mb-3 h-7 w-7 text-amber-700" aria-hidden="true" />
                 <span className="block text-2xl font-semibold">Help me pick</span>
                 <span className="mt-1 block text-sm text-stone-600">Find a flavor direction fast</span>
               </span>
@@ -199,7 +197,7 @@ export default function MarketKioskPage() {
             </div>
 
             <div className="rounded-[2rem] border border-emerald-950/10 bg-stone-100 p-7 sm:p-9">
-              <UsersRound className="h-8 w-8 text-emerald-700" aria-hidden="true" />
+              <Users className="h-8 w-8 text-emerald-700" aria-hidden="true" />
               <p className="mt-5 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Bring us to your event</p>
               <h2 className="mt-2 text-2xl font-semibold">Book Taste of Gratitude.</h2>
               <p className="mt-3 text-sm leading-6 text-stone-600">
