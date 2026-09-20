@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import RetentionForm from '@/components/RetentionForm';
+import ProductVisual from '@/components/ProductVisual';
 import {
   Accordion,
   AccordionContent,
@@ -302,19 +303,10 @@ function ProductPreviewCard({ product }: { product: ProductItem }) {
       className="group flex min-w-[210px] max-w-[230px] snap-start gap-3 rounded-2xl border border-stone-200 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md lg:min-w-0 lg:max-w-none"
     >
       <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-emerald-50">
-        {product.image ? (
-          <img
-            src={product.image}
-            alt={product.name}
-            className="h-full w-full object-cover"
-            loading="lazy"
-            decoding="async"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-3xl" aria-hidden="true">
-            {product.emoji}
-          </div>
-        )}
+        <ProductVisual
+          product={product}
+          sizes="80px"
+        />
       </div>
       <div className="min-w-0 flex-1">
         <p className="line-clamp-2 text-sm font-semibold leading-5 text-stone-950 group-hover:text-emerald-800">
