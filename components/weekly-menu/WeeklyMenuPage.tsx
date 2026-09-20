@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import RetentionForm from '@/components/RetentionForm';
+import ProductVisual from '@/components/ProductVisual';
 import { Button } from '@/components/ui/button';
 import { track } from '@/utils/analytics';
 
@@ -128,11 +129,11 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
               >
                 <Link href={`/product/${product.slug || product.id}`} className="block">
                   <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
-                    {product.image ? (
-                      <img src={product.image} alt={product.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" loading={index < 3 ? 'eager' : 'lazy'} />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-emerald-50 text-5xl">{product.emoji || '🛍️'}</div>
-                    )}
+                    <ProductVisual
+                      product={product}
+                      priority={index < 3}
+                      sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 31vw"
+                    />
                   </div>
                 </Link>
                 <div className="flex flex-1 flex-col p-5">
