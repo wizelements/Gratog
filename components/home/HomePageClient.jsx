@@ -17,6 +17,7 @@ import {
   Users,
 } from 'lucide-react';
 import QuickAddButton from '@/components/QuickAddButton';
+import ProductVisual from '@/components/ProductVisual';
 import RetentionForm from '@/components/RetentionForm';
 import { JsonLd } from '@/components/JsonLd';
 import { Button } from '@/components/ui/button';
@@ -63,11 +64,10 @@ function ProductMarketCard({ product, commerceProduct = null, priority = false }
     <Card className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-emerald-900/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
       <Link href={`/product/${product.slug}`} className="block">
         <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
-          <img
-            src={product.image}
-            alt={`${product.name} from Taste of Gratitude`}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-            loading={priority ? 'eager' : 'lazy'}
+          <ProductVisual
+            product={storefrontProduct || product}
+            priority={priority}
+            sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 31vw"
           />
           <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">
             {availabilityLabel(product)}
