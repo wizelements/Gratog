@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Link from "next/link";
 import RetentionForm from "@/components/RetentionForm";
+import ProductVisual from "@/components/ProductVisual";
 import BundleSuggestions from "@/components/preorder/BundleSuggestions";
 import { getDeliveryZoneByZip, calculateDynamicDeliveryFee } from "@/lib/delivery-zones";
 import { track } from "@/utils/analytics";
@@ -208,17 +209,12 @@ function CategorySection({
               key={item.id}
               className="flex-shrink-0 w-[280px] snap-start bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow"
             >
-              {/* Product Image */}
-              <div className="relative h-40 bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-                {item.image ? (
-                  <img 
-                    src={item.image} 
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-6xl">{item.emoji}</span>
-                )}
+              {/* Product Visual */}
+              <div className="relative h-40 overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50">
+                <ProductVisual
+                  product={item}
+                  sizes="280px"
+                />
                 {item.isPopular && (
                   <div className="absolute top-2 left-2 flex items-center gap-1 bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-medium">
                     <Star className="w-3 h-3 fill-current" />
