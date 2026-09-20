@@ -48,13 +48,13 @@ export default function EnhancedProductCard({ product }) {
       <Link href={`/product/${product.slug || product.id}`}>
         <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
           <ProductVisual product={product} />
-          <div className="absolute left-3 top-3 z-20 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm backdrop-blur">
-            <span aria-hidden="true">{categoryIcon}</span> {categoryLabel}
-          </div>
         </div>
       </Link>
 
       <CardHeader className="px-4 pb-2 pt-4 sm:px-5">
+        <p className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">
+          <span aria-hidden="true">{categoryIcon}</span> {categoryLabel}
+        </p>
         <CardTitle className="line-clamp-2 text-lg leading-snug tracking-tight text-stone-950">
           {product.name}
         </CardTitle>
