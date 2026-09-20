@@ -129,6 +129,15 @@ function collectImageCandidates(product: ProductLike): string[] {
     .filter((value, index, all) => Boolean(value) && all.indexOf(value) === index);
 }
 
+export function getTrustedProductImages(product: ProductLike): string[] {
+  const explicitStatus = clean(product.imageStatus).toLowerCase();
+  if (explicitStatus === 'missing') return [];
+
+  return collectImageCandidates(product).filter(
+    (source) => isLikelyImageReference(source) && !isPlaceholderLikeImage(source)
+  );
+}
+
 function ingredientNames(product: ProductLike): string[] {
   const ingredients = Array.isArray(product.ingredients) ? product.ingredients : [];
   return ingredients
@@ -187,9 +196,7 @@ export function resolveProductVisual(product: ProductLike): ProductVisualProfile
   const palette = pickPalette(tokens);
 
   const explicitStatus = clean(product.imageStatus).toLowerCase();
-  const candidate = collectImageCandidates(product).find(
-    (source) => isLikelyImageReference(source) && !isPlaceholderLikeImage(source)
-  );
+  const candidate = getTrustedProductImages(product)[0];
 
   const photoAllowed = Boolean(candidate) && explicitStatus !== 'missing';
   if (photoAllowed) {
