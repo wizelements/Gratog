@@ -13,6 +13,7 @@ import {
   getWeeklyMenuProducts,
 } from '@/data/weeklyMenu';
 import { getCategoryLabel } from '@/data/products';
+import ProductVisual from '@/components/ProductVisual';
 
 export const metadata = {
   title: 'Market Kiosk | Taste of Gratitude',
@@ -156,11 +157,10 @@ export default function MarketKioskPage() {
                   className="group overflow-hidden rounded-[1.5rem] border border-stone-200 bg-[#fbfaf5] shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                 >
                   <div className="aspect-[4/3] overflow-hidden bg-stone-100">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                      loading="lazy"
+                    <ProductVisual
+                      product={product}
+                      variant="kiosk"
+                      sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 24vw"
                     />
                   </div>
                   <div className="p-5">
