@@ -13,7 +13,8 @@ import { addToCart } from '@/lib/cart-engine';
 import Breadcrumbs, { getProductBreadcrumbs } from '@/components/Breadcrumbs';
 import ProductReviews from '@/components/ProductReviews';
 import Script from 'next/script';
-import { PRODUCT_IMAGE_FALLBACK_SRC } from '@/lib/storefront-integrity';
+import ProductVisual from '@/components/ProductVisual';
+import { getTrustedProductImages } from '@/lib/product-visual';
 import { track } from '@/utils/analytics';
 import RetentionForm from '@/components/RetentionForm';
 import { getActiveProducts, getProductBySlugOrId } from '@/data/products';
@@ -253,12 +254,9 @@ export default function ProductDetailClient({ product, slug }) {
         .filter((ingredient) => ingredient?.name)
     : [];
   
-  // Prepare images
-  const images = product.images?.length > 0 
-    ? product.images 
-    : product.image 
-      ? [product.image] 
-      : [PRODUCT_IMAGE_FALLBACK_SRC];
+  // Only real, non-placeholder media is eligible for the gallery.
+  // Products without trusted photography render the branded flavor-art system instead.
+  const images = getTrustedProductImages(product);
 
   const breadcrumbItems = getProductBreadcrumbs(product);
 
@@ -306,14 +304,23 @@ export default function ProductDetailClient({ product, slug }) {
           {/* Image Gallery */}
           <div className="space-y-4">
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-white shadow-sm border border-stone-100">
-              <Image
-                src={images[selectedImage]}
-                alt={product.imageAlt || product.name}
-                fill
-                className="object-cover"
-                priority
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
+              {images.length > 0 ? (
+                <Image
+                  src={images[selectedImage]}
+                  alt={product.imageAlt || product.name}
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              ) : (
+                <ProductVisual
+                  product={product}
+                  variant="detail"
+                  priority
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              )}
               {stockStatus === 'preorder' && (
                 <div className="absolute top-4 left-4 rounded bg-white/95 px-3 py-1 text-sm font-medium text-emerald-800 shadow-sm">
                   Preorder
