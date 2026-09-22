@@ -1,6 +1,6 @@
 # Gratog - Taste of Gratitude
 
-Premium e-commerce platform for gratitude-based gifts with Square payments, cron-based campaigns, and multi-currency support.
+Production web and commerce platform for Taste of Gratitude, the beverage and sea moss brand, with Square payments, product and order flows, automated campaigns, and customer-facing sales experiences.
 
 ## 🚀 Live
 
@@ -8,7 +8,7 @@ Premium e-commerce platform for gratitude-based gifts with Square payments, cron
 
 ## 📋 Overview
 
-Gratog is a full-featured Next.js e-commerce platform designed for selling gratitude-themed gifts and experiences. It features sophisticated payment processing, automated marketing campaigns, and comprehensive order management.
+Gratog is the full-featured Next.js commerce platform behind Taste of Gratitude's beverage and sea moss sales. It combines payment processing, automated marketing campaigns, and order management for the live brand.
 
 ## 🏗️ Architecture
 
