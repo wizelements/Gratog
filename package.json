@@ -117,7 +117,7 @@
   },
   "description": "Premium e-commerce platform for gratitude-based gifts with Square payments, cron-based campaigns, and multi-currency support",
   "engines": {
-    "node": "24.x",
+    "node": ">=22.11 <23",
     "npm": ">=10 <12"
   }
 }
