@@ -12,6 +12,9 @@ import { PERMISSIONS } from '@/lib/security';
 import { withAdminMiddlewareWithContext, AuthenticatedRequest } from '@/lib/middleware/admin';
 import { InventoryAdjustmentSchema, validateBody } from '@/lib/validation';
 import { logger } from '@/lib/logger';
+import { withTransaction } from '@/lib/transactions';
+import { buildOpeeBusinessEvent } from '@/lib/opee/contract';
+import { ensureOpeeOutboxIndexes, insertOpeeOutboxEvent } from '@/lib/opee/outbox';
 
 /**
  * GET /api/admin/inventory/[productId]
@@ -84,139 +87,154 @@ export const PATCH = withAdminMiddlewareWithContext(
     const params = await context.params;
     const productId = params.productId;
     const admin = request.admin;
-    
+
     try {
-      // Validate productId
       if (!productId || typeof productId !== 'string' || productId.length < 1) {
         return NextResponse.json(
           { success: false, error: 'Invalid product ID' },
           { status: 400 }
         );
       }
-      
-      // Parse and validate body
+
       const body = await request.json();
       const validation = validateBody(body, InventoryAdjustmentSchema);
-      
       if (!validation.success) {
         return NextResponse.json(
           { success: false, error: (validation as { success: false; error: string }).error },
           { status: 400 }
         );
       }
-      
+
       const { adjustment, reason } = validation.data;
-      
-      // Prevent zero adjustments
       if (adjustment === 0) {
         return NextResponse.json(
           { success: false, error: 'Adjustment must be non-zero' },
           { status: 400 }
         );
       }
-      
-      const { db } = await connectToDatabase();
-      
-      // ATOMIC OPERATION: Use findOneAndUpdate with $inc
-      // This prevents race conditions between concurrent requests
-      const historyEntry = {
-        date: new Date(),
-        adjustment,
-        reason: reason || 'Manual adjustment',
-        adjustedBy: admin.email,
-        previousStock: null as number | null,
-      };
-      
-      // First, get current stock to include in history
-      const current = await db.collection('inventory').findOne(
-        { productId },
-        { projection: { currentStock: 1 } }
-      );
-      
-      if (!current) {
-        return NextResponse.json(
-          { success: false, error: 'Product not found in inventory' },
-          { status: 404 }
+
+      await ensureOpeeOutboxIndexes();
+      const outcome: any = await withTransaction(async (db, session) => {
+        const now = new Date();
+        const current = await db.collection('inventory').findOne(
+          { productId },
+          { projection: { currentStock: 1, lastRestocked: 1 }, session }
         );
-      }
-      
-      historyEntry.previousStock = current.currentStock;
-      
-      // Calculate new stock
-      const newStock = current.currentStock + adjustment;
-      
-      // Validate new stock won't go negative
-      if (newStock < 0) {
-        return NextResponse.json(
-          { 
-            success: false, 
+
+        if (!current) {
+          return { ok: false, status: 404, error: 'Product not found in inventory' };
+        }
+
+        const previousStock = Number(current.currentStock || 0);
+        const newStock = previousStock + adjustment;
+        if (newStock < 0) {
+          return {
+            ok: false,
+            status: 400,
             error: 'Insufficient stock',
             details: {
-              currentStock: current.currentStock,
+              currentStock: previousStock,
               requestedAdjustment: adjustment,
               wouldResult: newStock,
             },
-          },
-          { status: 400 }
-        );
-      }
-      
-      // ATOMIC UPDATE: Use $inc for thread-safe operations
-      const result = await db.collection('inventory').findOneAndUpdate(
-        { productId },
-        {
-          $inc: { currentStock: adjustment },
-          $set: {
-            lastRestocked: adjustment > 0 ? new Date() : current.lastRestocked,
-            updatedAt: new Date(),
-            updatedBy: admin.email,
-          },
-          $push: {
-            stockHistory: historyEntry,
-          },
-        },
-        { returnDocument: 'after' }
-      );
-      
-      if (!result) {
-        return NextResponse.json(
-          { success: false, error: 'Failed to update inventory' },
-          { status: 500 }
-        );
-      }
-      
-      // Update product inStock status based on new stock level
-      const lowStockThreshold = result.lowStockThreshold || 5;
-      const isInStock = result.currentStock > 0;
-      const isLowStock = result.currentStock <= lowStockThreshold;
-      
-      await db.collection('unified_products').updateOne(
-        { id: productId },
-        {
-          $set: {
-            inStock: isInStock,
-            stock: result.currentStock,
-            lowStock: isLowStock,
-            updatedAt: new Date(),
-          },
+          };
         }
-      );
-      
+
+        const historyEntry = {
+          date: now,
+          adjustment,
+          reason: reason || 'Manual adjustment',
+          adjustedBy: admin.email,
+          previousStock,
+        };
+
+        const guard =
+          adjustment < 0
+            ? { productId, currentStock: { $gte: Math.abs(adjustment) } }
+            : { productId };
+
+        const result = await db.collection('inventory').findOneAndUpdate(
+          guard,
+          {
+            $inc: { currentStock: adjustment },
+            $set: {
+              lastRestocked: adjustment > 0 ? now : current.lastRestocked,
+              updatedAt: now,
+              updatedBy: admin.email,
+            },
+            $push: { stockHistory: historyEntry },
+          },
+          { returnDocument: 'after', session }
+        );
+
+        if (!result) {
+          return { ok: false, status: 409, error: 'Inventory changed concurrently; retry adjustment' };
+        }
+
+        const lowStockThreshold = Number(result.lowStockThreshold || 5);
+        const isInStock = Number(result.currentStock || 0) > 0;
+        const isLowStock = Number(result.currentStock || 0) <= lowStockThreshold;
+
+        await db.collection('unified_products').updateOne(
+          { id: productId },
+          {
+            $set: {
+              inStock: isInStock,
+              stock: result.currentStock,
+              lowStock: isLowStock,
+              updatedAt: now,
+            },
+          },
+          { session }
+        );
+
+        const event = buildOpeeBusinessEvent({
+          eventType: 'tog.inventory.adjusted',
+          source: 'gratog.admin.inventory',
+          sourceEventId: `${productId}:${now.toISOString()}`,
+          correlationId: productId,
+          subject: { type: 'inventory', id: productId },
+          payload: {
+            product_id: productId,
+            adjustment,
+            previous_stock: previousStock,
+            current_stock: Number(result.currentStock || 0),
+            low_stock: isLowStock,
+            reason_present: Boolean(reason),
+          },
+        });
+        await insertOpeeOutboxEvent(db, event, { session });
+
+        return {
+          ok: true,
+          newStock: result.currentStock,
+          adjustment,
+          isLowStock,
+          previousStock,
+        };
+      });
+
+      if (!outcome.ok) {
+        return NextResponse.json(
+          { success: false, error: outcome.error, details: outcome.details },
+          { status: outcome.status }
+        );
+      }
+
       logger.info('INVENTORY', `Stock adjusted for ${productId}`, {
         admin: admin.email,
         adjustment,
-        newStock: result.currentStock,
+        newStock: outcome.newStock,
         reason: reason || 'Manual adjustment',
       });
-      
+
       return NextResponse.json({
         success: true,
-        newStock: result.currentStock,
+        newStock: outcome.newStock,
         adjustment,
-        isLowStock,
-        previousStock: historyEntry.previousStock,
+        isLowStock: outcome.isLowStock,
+        previousStock: outcome.previousStock,
       });
-      
     } catch (error) {
       logger.error('INVENTORY', 'Failed to adjust inventory', { productId, error });
       return NextResponse.json(
