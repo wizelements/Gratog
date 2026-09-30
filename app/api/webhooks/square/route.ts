@@ -10,6 +10,8 @@ import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { syncSingleCatalogItem } from '@/lib/square/syncSingleItem';
 import { revalidatePath } from 'next/cache';
 import * as Sentry from '@sentry/nextjs';
+import { enqueueOpeeBusinessEvent } from '@/lib/opee/outbox';
+import type { OpeeBusinessEventInput } from '@/lib/opee/contract';
 
 // Force Node.js runtime for crypto operations and raw body access
 export const runtime = 'nodejs';
@@ -391,6 +393,112 @@ async function updateOrderStatusSafe(
   return false;
 }
 
+function normalizeSquareOpeeEvent(
+  eventType: string,
+  eventId: string,
+  occurredAt: string | undefined,
+  object: any
+): OpeeBusinessEventInput | null {
+  if (!eventId || eventId === 'unknown') return null;
+
+  const base = {
+    source: 'gratog.square',
+    sourceEventId: eventId,
+    occurredAt: occurredAt || new Date().toISOString(),
+  };
+
+  if (eventType === 'payment.created' || eventType === 'payment.updated' || eventType === 'payment.completed') {
+    const payment = object?.payment || object;
+    const status = String(payment?.status || 'UNKNOWN').toUpperCase();
+    const normalizedType =
+      eventType === 'payment.created'
+        ? 'tog.payment.created'
+        : status === 'COMPLETED' || status === 'APPROVED'
+          ? 'tog.payment.completed'
+          : status === 'FAILED' || status === 'CANCELED'
+            ? 'tog.payment.failed'
+            : 'tog.payment.updated';
+
+    return {
+      ...base,
+      eventType: normalizedType,
+      correlationId: payment?.reference_id || payment?.order_id || eventId,
+      subject: { type: 'payment', id: String(payment?.id || eventId) },
+      payload: {
+        payment_id: payment?.id || null,
+        square_order_id: payment?.order_id || null,
+        order_ref: payment?.reference_id || null,
+        status,
+        amount_cents: Number(payment?.total_money?.amount ?? payment?.amount_money?.amount ?? 0),
+        currency: payment?.total_money?.currency || payment?.amount_money?.currency || 'USD',
+      },
+    };
+  }
+
+  if (eventType === 'refund.created' || eventType === 'refund.updated') {
+    const refund = object?.refund || object;
+    const status = String(refund?.status || 'UNKNOWN').toUpperCase();
+    return {
+      ...base,
+      eventType: status === 'COMPLETED' ? 'tog.refund.completed' : 'tog.refund.updated',
+      correlationId: refund?.payment_id || eventId,
+      subject: { type: 'refund', id: String(refund?.id || eventId) },
+      payload: {
+        refund_id: refund?.id || null,
+        payment_id: refund?.payment_id || null,
+        status,
+        amount_cents: Number(refund?.amount_money?.amount || 0),
+        currency: refund?.amount_money?.currency || 'USD',
+      },
+    };
+  }
+
+  if (eventType === 'inventory.count.updated') {
+    const inventory = object;
+    const subjectId = String(inventory?.catalog_object_id || eventId);
+    return {
+      ...base,
+      eventType: 'tog.inventory.synced',
+      correlationId: subjectId,
+      subject: { type: 'inventory', id: subjectId },
+      payload: {
+        catalog_object_id: inventory?.catalog_object_id || null,
+        location_id: inventory?.location_id || null,
+        quantity: Number(inventory?.quantity || 0),
+        state: inventory?.state || null,
+      },
+    };
+  }
+
+  if (eventType === 'catalog.version.updated') {
+    const ids = Array.isArray(object?.updated_object_ids) ? object.updated_object_ids : [];
+    return {
+      ...base,
+      eventType: 'tog.catalog.updated',
+      correlationId: eventId,
+      subject: { type: 'catalog', id: eventId },
+      payload: { updated_object_ids: ids.slice(0, 500) },
+    };
+  }
+
+  if (eventType === 'order.created' || eventType === 'order.updated') {
+    const order = object?.order || object;
+    return {
+      ...base,
+      eventType: 'tog.square_order.updated',
+      correlationId: order?.reference_id || order?.id || eventId,
+      subject: { type: 'order', id: String(order?.id || eventId) },
+      payload: {
+        square_order_id: order?.id || null,
+        reference_id: order?.reference_id || null,
+        state: order?.state || null,
+      },
+    };
+  }
+
+  return null;
+}
+
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
   let eventType = 'unknown';
@@ -538,6 +646,18 @@ export async function POST(request: NextRequest) {
           logger.debug('Webhook', `Unhandled webhook event type: ${eventType}`);
       }
       
+      // Persist a privacy-safe normalized OPEE event before acknowledging Square.
+      // If this durable outbox write fails, Square receives a retryable 500.
+      const opeeEvent = normalizeSquareOpeeEvent(
+        eventType,
+        eventId,
+        webhookEvent.created_at,
+        eventData.object
+      );
+      if (opeeEvent) {
+        await enqueueOpeeBusinessEvent(opeeEvent);
+      }
+
       // Record successful processing (upsert for retry safety)
       await db.collection('webhook_events_processed').updateOne(
         { eventId },

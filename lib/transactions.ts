@@ -5,6 +5,8 @@
 
 import { Db, ClientSession } from 'mongodb';
 import { connectToDatabase } from './db-optimized';
+import { buildOpeeBusinessEvent, stableCustomerRef } from './opee/contract';
+import { ensureOpeeOutboxIndexes, insertOpeeOutboxEvent } from './opee/outbox';
 
 /**
  * Execute a function within a MongoDB transaction
@@ -33,6 +35,7 @@ export async function withTransaction<T>(
  * Atomic order creation with customer update and inventory adjustment
  */
 export async function createOrderAtomic(orderData: any) {
+  await ensureOpeeOutboxIndexes();
   return withTransaction(async (db, session) => {
     // 1. Insert order
     const orderResult = await db.collection('orders').insertOne(orderData, { session });
@@ -90,6 +93,48 @@ export async function createOrderAtomic(orderData: any) {
     //    capped coupons (REVENUE risk R-C4). The coupon `usedCount` and
     //    `isUsed` flag are advanced atomically in /api/payments on
     //    confirmed payment success.
+
+    // 5. Transactional outbox: the order and its OPEE observations commit together.
+    //    No raw customer email/phone/address is copied into OPEE.
+    const customerRef = stableCustomerRef(orderData.customerEmail);
+    const opeeEvent = buildOpeeBusinessEvent({
+      eventType: 'tog.order.created',
+      source: 'gratog.order',
+      sourceEventId: String(orderData.id),
+      correlationId: String(orderData.id),
+      subject: { type: 'order', id: String(orderData.id) },
+      payload: {
+        order_id: orderData.id,
+        total_cents: Number(orderData.totalCents || 0),
+        currency: orderData.currency || 'USD',
+        fulfillment_type: orderData.fulfillmentType || orderData.fulfillment?.type || null,
+        source: orderData.source || 'website',
+        customer_ref: customerRef,
+        items: (orderData.items || []).map((item: any) => ({
+          product_id: item.productId || item.id || null,
+          variation_id: item.variationId || item.catalogObjectId || null,
+          quantity: Number(item.quantity || 0),
+          unit_price_cents: Number(item.priceCents || 0),
+        })),
+      },
+    });
+    await insertOpeeOutboxEvent(db, opeeEvent, { session });
+
+    if (customerRef) {
+      const customerEvent = buildOpeeBusinessEvent({
+        eventType: 'tog.customer.observed',
+        source: 'gratog.customer',
+        sourceEventId: String(orderData.id),
+        correlationId: String(orderData.id),
+        subject: { type: 'customer', id: customerRef },
+        payload: {
+          customer_ref: customerRef,
+          observed_via: 'order',
+          order_id: orderData.id,
+        },
+      });
+      await insertOpeeOutboxEvent(db, customerEvent, { session });
+    }
 
     return orderData;
   });

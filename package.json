@@ -115,5 +115,9 @@
     "vercel": "^52.0.0",
     "vitest": "^2.1.9"
   },
-  "description": "Premium e-commerce platform for gratitude-based gifts with Square payments, cron-based campaigns, and multi-currency support"
+  "description": "Premium e-commerce platform for gratitude-based gifts with Square payments, cron-based campaigns, and multi-currency support",
+  "engines": {
+    "node": ">=22.11 <23",
+    "npm": ">=10 <12"
+  }
 }
