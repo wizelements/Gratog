@@ -93,7 +93,16 @@ export async function enqueueOpeeBusinessEvent(
     sourceEventId: event.sourceEventId,
     tenantId: event.tenantId,
   });
-  return event;
+
+  if (inserted) return event;
+
+  const existing = await collection(db as Db).findOne({
+    'event.idempotencyKey': event.idempotencyKey,
+  });
+  if (!existing) {
+    throw new Error('OPEE outbox duplicate was not readable after deduplication');
+  }
+  return existing.event;
 }
 
 function claimableFilter(now: Date) {
