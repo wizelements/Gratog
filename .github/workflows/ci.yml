@@ -25,6 +25,9 @@ jobs:
       - name: TypeScript check (strict)
         run: npx tsc --noEmit --skipLibCheck
       
+      - name: OPEE commerce spine contract tests
+        run: npx vitest run tests/opee-contract.test.ts --reporter=verbose
+
       - name: Run ESLint (strict)
         run: npm run lint
       
