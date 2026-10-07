@@ -1,182 +1,136 @@
-# Gratog - Taste of Gratitude
+# Gratog — Taste of Gratitude Commerce Platform
 
-Production web and commerce platform for Taste of Gratitude, the beverage and sea moss brand, with Square payments, product and order flows, automated campaigns, and customer-facing sales experiences.
+Production commerce and operations software for **Taste of Gratitude**, an Atlanta market-first beverage and sea moss brand.
 
-## 🚀 Live
+**Live production:** https://tasteofgratitude.shop
 
-**Production:** https://tasteofgratitude.shop
+![Taste of Gratitude PWA preview](public/screenshots/screenshot-1280x720.svg)
 
-## 📋 Overview
+> **Status:** Production system. The public storefront returned HTTP 200 and the repository's production-health workflow had fresh passing runs on **October 7, 2026**. Payment, messaging, database, and administrative integrations still require valid production credentials and should be verified through their real transaction paths before any consequential release.
 
-Gratog is the full-featured Next.js commerce platform behind Taste of Gratitude's beverage and sea moss sales. It combines payment processing, automated marketing campaigns, and order management for the live brand.
+## Outcome
 
-## 🏗️ Architecture
+Gratog turns a market-based food and beverage operation into a repeatable digital sales system:
 
-### Frontend
-- **Framework:** Next.js 14 with TypeScript
-- **Styling:** Tailwind CSS
-- **State:** Zustand (if used) or React Context
-- **UI Components:** Radix UI (extensive)
-- **3D Visualization:** Three.js for product previews
+- weekly product discovery and preorder flows;
+- market pickup selection and order handling;
+- Square payment integration;
+- scheduled customer campaigns and reminders;
+- email and SMS integration surfaces;
+- administrative and operational workflows;
+- PWA/mobile support;
+- deployment, monitoring, security, and test automation.
 
-### Backend
-- **API:** Next.js API routes
-- **Payments:** Square SDK
-- **Email:** Resend
-- **SMS:** Twilio
-- **Scheduling:** Vercel Cron Jobs
-- **Webhooks:** Square webhook handlers
+The repository is presented as **commercial production software**, not as a generic open-source starter.
 
-### Infrastructure
-- **Hosting:** Vercel
-- **Database:** (Configured in env)
-- **Caching:** (Configured in env)
-- **Monitoring:** Sentry
+## Architecture
 
-## 🔧 Getting Started
-
-### Prerequisites
-```bash
-node 18+
-npm or pnpm
+```mermaid
+flowchart LR
+    U[Customer] --> W[Next.js storefront]
+    W --> A[Server/API routes]
+    A --> P[Square]
+    A --> D[(Application data)]
+    A --> E[Resend]
+    A --> T[Twilio]
+    A --> J[Scheduled jobs]
+    W --> V[Vercel]
+    V --> H[Health / post-deploy verification]
 ```
 
-### Installation
-```bash
-pnpm install
-```
+## Verified repository baseline
 
-### Development
-```bash
-pnpm dev
-```
+| Area | Current repository evidence |
+| --- | --- |
+| Framework | Next.js 15 + TypeScript |
+| UI | React 19 RC, Tailwind CSS, Radix UI |
+| Commerce | Square SDK is present; Stripe libraries also exist in the dependency surface |
+| Communications | Resend + Twilio |
+| Data | MongoDB/Mongoose plus Redis/Upstash-related integrations in the current dependency surface |
+| Observability | Sentry + dedicated health/performance workflows |
+| Testing | Vitest, Playwright, route-governance, smoke/integration/payment-oriented workflow coverage |
+| Delivery | Vercel configuration plus deployment/post-deploy workflows |
 
-### Build
-```bash
-pnpm build
-pnpm start
-```
+The code and executable configuration outrank older audit, phase, or completion documents when they conflict.
 
-## 📦 Environment Variables
+## Quality gates
 
-Create `.env.local` with:
-
-```env
-# Payments
-SQUARE_ACCESS_TOKEN=
-SQUARE_APPLICATION_ID=
-SQUARE_LOCATION_ID=
-SQUARE_ENVIRONMENT=sandbox
-
-# Email
-RESEND_API_KEY=
-
-# SMS
-TWILIO_ACCOUNT_SID=
-TWILIO_AUTH_TOKEN=
-TWILIO_PHONE_NUMBER=
-
-# App
-NEXT_PUBLIC_APP_URL=https://tasteofgratitude.shop
-```
-
-## 🔄 Cron Jobs
-
-Automated tasks running on schedule via Vercel Cron:
-
-- **Health Check** (every 5 minutes): `GET /api/cron/health-check`
-- **Scheduled Campaigns** (every 5 minutes): `GET /api/cron/scheduled-campaigns`
-- **Pickup Reminders** (Fridays at 9 AM): `GET /api/cron/pickup-reminders`
-- **Morning Reminders** (Saturdays at 8 AM): `GET /api/cron/morning-reminders`
-- **Email Scheduler** (hourly): `GET /api/quiz/email-scheduler`
-
-## 🧪 Testing
+The current package exposes these primary checks:
 
 ```bash
-# Unit tests
-pnpm test:unit
-
-# E2E tests (Playwright)
-pnpm test:e2e:headless
-
-# Smoke tests
-pnpm test:smoke
-
-# Lighthouse performance
-pnpm lighthouse
+npm ci
+npm run typecheck:ci
+npm test
+npm run check:route-governance
+npm run build
 ```
 
-## 📝 API Endpoints
+Additional Playwright and production-path workflows live under `.github/workflows/`. A green deployment alone is not considered proof of commerce completion: checkout, callbacks/webhooks, order persistence, and customer-visible confirmation should be exercised when those paths change.
 
-### Products
-- `GET /api/products` - List all products
-- `GET /api/products/:id` - Get product details
-- `POST /api/products` - Create product (admin)
+## Local development
 
-### Orders
-- `POST /api/orders` - Create order
-- `GET /api/orders/:id` - Get order status
-- `POST /api/orders/:id/cancel` - Cancel order
+### Requirements
 
-### Payments
-- `POST /api/payments` - Process payment
-- `POST /api/square-webhook` - Handle Square webhooks
+- Node.js 22+ recommended for current Next.js tooling
+- npm
+- service credentials only for the integrations you intend to exercise
 
-### Campaigns
-- `POST /api/campaigns` - Create campaign
-- `GET /api/campaigns/:id` - Get campaign details
-- `POST /api/campaigns/:id/send` - Send campaign
+```bash
+git clone https://github.com/wizelements/Gratog.git
+cd Gratog
+npm ci
+cp .env.example .env.local
+npm run dev
+```
 
-## 🚀 Deployment
+Do not copy production credentials into local files that may be committed.
 
-Deployed on Vercel with:
-- Automatic deploys on `main` push
-- Preview deploys for PRs
-- Environment variables configured in Vercel dashboard
-- Cron jobs configured in `vercel.json`
+## Configuration
 
-### Deploy Status
-- Production: https://tasteofgratitude.shop
-- Vercel: https://gratog.vercel.app (redirects to production)
+Use `.env.example` as the configuration inventory. Production secrets belong in the deployment environment, not source control.
 
-## 🛠️ Stack Compliance
+High-impact integrations include:
 
-✅ Uses official tech stack:
-- ✅ Resend for email
-- ✅ Square for payments
-- ✅ Twilio for SMS
-- ❌ SendGrid (deprecated, removed)
+- Square;
+- Resend;
+- Twilio;
+- application database/data services;
+- monitoring/analytics services;
+- cron/scheduled-job authorization.
 
-## 📊 Key Files
+## Security posture
 
-| File | Purpose |
-|------|---------|
-| `vercel.json` | Deployment config, cron jobs |
-| `package.json` | Dependencies and scripts |
-| `app/` | Next.js App Router |
-| `app/api/` | API routes |
-| `lib/` | Utilities and helpers |
-| `public/` | Static assets |
+See [SECURITY.md](SECURITY.md).
 
-## 🤝 Contributing
+This repository contains dedicated security-scanning and hardening tests, but the existence of those files is **not** a blanket claim that every production route is secure. Security-sensitive changes should verify the real trust boundary involved: admin access, payment/webhook authenticity, customer input, scheduled jobs, secrets, and data access.
 
-1. Clone repository
-2. Create feature branch: `git checkout -b feat/your-feature`
-3. Make changes and test: `pnpm test`
-4. Commit: `git commit -m "feat: description"`
-5. Push: `git push origin feat/your-feature`
-6. Create Pull Request
+## Deployment
 
-## 📄 License
+Primary production target: **Vercel**.
 
-(Check LICENSE file)
+Normal release expectations:
 
-## 📞 Support
+1. install from the committed lockfile;
+2. run the relevant static/test gates;
+3. build successfully;
+4. deploy through the intended environment;
+5. verify the public route and changed user path;
+6. for commerce changes, verify the real payment/order behavior;
+7. retain evidence for failures and rollback.
 
-For issues, questions, or suggestions, please create a GitHub issue.
+## Known limitations / boundaries
+
+- The repository contains historical reports and completion documents; they are not automatically current.
+- Several third-party integrations cannot be fully reproduced without external accounts and secrets.
+- The current React dependency is an RC build and should be evaluated during framework upgrades.
+- Generated PWA preview assets are useful orientation, not proof that every visible production screen exactly matches them.
+- No open-source license is granted by this repository. Public visibility does not grant reuse rights.
+
+## Business value
+
+Gratog demonstrates Cod3Black's ability to connect **customer experience → transaction → operations → follow-up → deployment evidence** in a real small-business environment rather than stopping at a brochure website.
 
 ---
 
-**Last Updated:** February 2, 2026  
-**Maintainer:** Nomolos Sniktaw
-# Sun Apr 19 03:29:23 EDT 2026 - Push to trigger CI
+**Maintained by Cod3Black Agency / wizelements**  
+**Last portfolio verification:** October 7, 2026
