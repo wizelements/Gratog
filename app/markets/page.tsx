@@ -92,34 +92,34 @@ interface ProductItem {
 }
 
 const TRUST_POINTS = [
-  { icon: Package, label: 'Small-batch weekly prep' },
-  { icon: Shield, label: 'Order details confirmed before payment' },
-  { icon: Sparkles, label: 'Samples + founder-led market care' },
+  { icon: Package, label: 'Made fresh in small batches' },
+  { icon: Shield, label: 'Pickup details before you pay' },
+  { icon: Sparkles, label: 'Ask questions and explore flavors' },
 ];
 
 const EXPERIENCE_STEPS = [
   {
-    title: 'Preorder to reserve your batch',
-    text: 'Choose what you want before market day so your order is held aside and ready for pickup.',
+    title: 'Preorder your favorites',
+    text: 'Pick what you love and select your market pickup location.',
   },
   {
-    title: 'Walk up for samples and discovery',
-    text: 'Stop by the booth to taste what is fresh, ask questions, and compare flavors and formats.',
+    title: 'Come say hello at the booth',
+    text: 'Explore the menu, ask about ingredients, and sample what’s available.',
   },
   {
-    title: 'Prepared fresh in small runs',
-    text: 'Products are made in weekly batches so market pickup feels personal, fresh, and intentional.',
+    title: 'Freshly made for market day',
+    text: 'We prepare small batches throughout the week for our local markets.',
   },
 ];
 
 const FAQ_ITEMS = [
   {
     question: 'Should I preorder or shop at the booth?',
-    answer: 'Preorder when you want specific items reserved for your week. Walk up when you want to sample, ask questions, or see what small-batch inventory is available that day.',
+    answer: 'Preorder if you have a favorite in mind. You’re also welcome to stop by and see what’s available at the booth.',
   },
   {
     question: 'When should I place a preorder?',
-    answer: 'Earlier in the week is best. If a market has a stricter cutoff, follow the cutoff listed on that market card before checkout.',
+    answer: 'The earlier you order, the better the selection. Check the pickup location for any ordering deadlines.',
   },
   {
     question: 'Where do I pick up my order?',
@@ -127,7 +127,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'Will there be walk-up inventory?',
-    answer: 'Usually yes, but quantities are intentionally limited. Preordering is the safest option for weekly staples and larger orders.',
+    answer: 'Walk-up selection depends on what we bring that day. Preorder if you want to make sure a particular item is reserved.',
   },
 ];
 
@@ -183,7 +183,7 @@ function MarketCard({ market }: { market: PublicMarket }) {
         <div className="min-w-0">
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
-              {market.featured ? 'Flagship market' : 'Local pickup'}
+              {market.featured ? 'Featured market' : 'Market pickup'}
             </span>
             <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
               Next: {getNextMarketLabel(market)}
@@ -223,10 +223,10 @@ function MarketCard({ market }: { market: PublicMarket }) {
 
       <div className="mt-5 flex flex-wrap gap-2">
         <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">
-          Best for weekly pickups
+          Preorder for pickup
         </span>
         <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs font-medium text-stone-700">
-          Walk-up inventory available
+          Ask about today’s selection
         </span>
         <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">
           Samples when available
@@ -241,8 +241,8 @@ function MarketCard({ market }: { market: PublicMarket }) {
         <RetentionForm
           intent="weekly_menu_email"
           source={`markets_page_${market.id}`}
-          title={`Email me ${market.shortName || market.name} reminders`}
-          description={`Get the weekly menu, cutoff reminder, and preorder link for ${market.shortName || market.name}.`}
+          title={`Get ${market.shortName || market.name} updates`}
+          description={`Receive the weekly menu and pickup reminders for ${market.shortName || market.name}.`}
           cta="Email me market reminders"
           collectEmail
           collectPhone={false}
@@ -258,13 +258,13 @@ function MarketCard({ market }: { market: PublicMarket }) {
             onClick={() => track('market_preorder_click', { source: 'markets_page_card', marketId: market.id })}
           >
             <ShoppingBag className="h-4 w-4" aria-hidden="true" />
-            Preorder pickup
+            Preorder for pickup
           </Link>
         </Button>
         <Button asChild variant="outline" className="h-12 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
           <a href={mapsUrl} target="_blank" rel="noopener noreferrer" aria-label={`Get directions to ${market.name}`}>
             <Navigation className="h-4 w-4" aria-hidden="true" />
-            Map
+            Get directions
           </a>
         </Button>
       </div>
@@ -444,7 +444,7 @@ export default function MarketsPage() {
         }
       } catch (error) {
         console.error('Failed to fetch markets:', error);
-        setMarketsError('Could not refresh markets. Showing local market data.');
+        setMarketsError('We couldn’t load the latest market schedule.');
       } finally {
         setMarketsLoading(false);
       }
@@ -475,26 +475,26 @@ export default function MarketsPage() {
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8 lg:py-16">
           <div>
             <p className="mb-4 inline-flex rounded-full border border-emerald-200 bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-800 shadow-sm">
-              Atlanta market pickup • fresh weekly batches
+              Find us at Atlanta-area markets
             </p>
             <h1 className="max-w-3xl text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-stone-950 sm:text-5xl lg:text-6xl">
-              Meet Taste of Gratitude at the market, then reserve what nourishes your week.
+              Come find us at the market.
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-700 sm:text-xl">
-              Founder-led sea moss blends, lemonades, juices, and market staples made in small batches for local pickup, samples, and real conversation.
+              Stop by for fresh lemonades, sea moss gels, and other small-batch favorites. We’d love to help you find a flavor you’ll enjoy.
             </p>
 
             <div className="mt-7 grid gap-3 sm:flex sm:flex-wrap">
               <Button asChild className="min-h-[52px] rounded-full bg-emerald-700 px-7 text-base font-semibold text-white shadow-lg shadow-emerald-900/15 hover:bg-emerald-800">
                 <a href="#market-list">
                   <MapPin className="h-5 w-5" aria-hidden="true" />
-                  Choose your market
+                  Find a market
                 </a>
               </Button>
               <Button asChild variant="outline" className="min-h-[52px] rounded-full border-emerald-200 bg-white px-7 text-base font-semibold text-emerald-900 hover:bg-emerald-50">
                 <Link href="/preorder?utm_source=markets_hero&utm_campaign=weekly_menu_drop" onClick={() => track('market_preorder_click', { source: 'markets_page_hero' })}>
                   <ShoppingBag className="h-5 w-5" aria-hidden="true" />
-                  Already ready? Preorder
+                  Preorder your favorites
                 </Link>
               </Button>
             </div>
@@ -513,7 +513,7 @@ export default function MarketsPage() {
             <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] border border-white/80 bg-emerald-950 shadow-2xl shadow-emerald-950/15">
               <Image
                 src="/images/gratog-bg.PNG"
-                alt="Taste of Gratitude products prepared for a calm market pickup experience"
+                alt="Taste of Gratitude drinks and sea moss products at the market"
                 fill
                 priority
                 sizes="(min-width: 1024px) 46vw, 100vw"
@@ -542,11 +542,11 @@ export default function MarketsPage() {
                 Pickup markets
               </p>
               <h2 className="mt-2 text-3xl font-semibold tracking-tight text-stone-950 sm:text-4xl">
-                Choose the market that fits your week.
+                See when and where to visit us.
               </h2>
             </div>
             <p className="max-w-xl text-base leading-7 text-stone-600">
-              Every card shows the address, market window, preorder guidance, pickup expectations, and directions before you commit.
+              Find market locations, hours, pickup details, and directions all in one place.
             </p>
           </div>
 
@@ -558,7 +558,7 @@ export default function MarketsPage() {
             <div className="rounded-[1.75rem] border border-amber-200 bg-amber-50 p-6 text-center">
               <HelpCircle className="mx-auto mb-3 h-8 w-8 text-amber-600" aria-hidden="true" />
               <p className="font-semibold text-amber-950">{marketsError}</p>
-              <p className="mt-1 text-sm text-amber-800">You can still browse the current menu or start a preorder while we refresh market details.</p>
+              <p className="mt-1 text-sm text-amber-800">You can still browse our menu. Please confirm market details before making a trip.</p>
               <Button asChild className="mt-5 rounded-full bg-emerald-700 text-white hover:bg-emerald-800">
                 <Link href="/catalog">Browse Catalog</Link>
               </Button>
@@ -597,9 +597,9 @@ export default function MarketsPage() {
                 <SunMedium className="h-4 w-4" aria-hidden="true" />
                 Fresh this week
               </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight">Market favorites without the oversized scroll.</h2>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight">A few fresh favorites to explore.</h2>
               <p className="mt-3 text-emerald-50/90">
-                A compact preview of what customers often reserve for pickup. Browse the full catalog when you are ready.
+                Looking for a familiar favorite or something new? Explore a few picks, then browse the full menu.
               </p>
               <Button asChild className="mt-5 h-12 rounded-full bg-white text-emerald-950 hover:bg-emerald-50">
                 <Link href="/catalog">
@@ -635,9 +635,9 @@ export default function MarketsPage() {
               <CheckCircle className="h-4 w-4" aria-hidden="true" />
               Market FAQ
             </p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-stone-950">Clear before you order.</h2>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-stone-950">Good to know before you go.</h2>
             <p className="mt-3 text-base leading-7 text-stone-600">
-              The market flow should feel simple: know what to buy, where to go, when to arrive, and what happens after checkout.
+              Have questions about preordering, visiting the booth, or picking up your order? Start here.
             </p>
           </div>
           <Accordion type="single" collapsible className="rounded-[1.75rem] border border-stone-200 bg-white px-5 shadow-sm">
@@ -657,9 +657,9 @@ export default function MarketsPage() {
         <section className="mt-12 rounded-[2rem] bg-gradient-to-br from-emerald-700 to-emerald-950 p-6 text-white shadow-xl shadow-emerald-950/15 sm:p-8 lg:p-10">
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <h2 className="text-3xl font-semibold tracking-tight">Ready to reserve your weekly batch?</h2>
+              <h2 className="text-3xl font-semibold tracking-tight">Found something you love?</h2>
               <p className="mt-3 max-w-2xl text-emerald-50/90">
-                Start with the current menu, choose pickup or eligible shipping at checkout, and review the details before payment.
+                Explore the weekly menu, select your pickup market, and review the details before placing your order.
               </p>
             </div>
             <div className="grid gap-3 sm:flex">
