@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
   const location = process.env.COD3BLACK_SQUARE_LOCATION_ID;
   const redirect = process.env.COD3BLACK_STUDIO_REDIRECT_URL;
   if (
-    process.env.SQUARE_ENVIRONMENT !== "production" ||
+    (process.env.SQUARE_ENVIRONMENT || "production").toLowerCase() !== "production" ||
     !token || token.length < 20 ||
     !location || !/^L[A-Z0-9]{10,25}$/.test(location) ||
     !redirect || !redirect.startsWith("https://opee-proofline.vercel.app/")
