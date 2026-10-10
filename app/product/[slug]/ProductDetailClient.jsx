@@ -464,7 +464,7 @@ export default function ProductDetailClient({ product, slug }) {
                   <div>
                     <p className="font-semibold text-amber-950">Check market pickup availability</p>
                     <p className="mt-2 text-sm leading-6 text-amber-900">
-                      {'Online checkout is not currently available for this item. Check the weekly menu or ask us at the market about availability.'}
+                      {'This item isn’t available through the regular cart. Browse the weekly menu or ask at our booth about availability.'}
                     </p>
                   </div>
                   <RetentionForm
