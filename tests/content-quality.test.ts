@@ -71,10 +71,23 @@ describe('customer-facing content quality', () => {
     expect(weeklyCount).toBeGreaterThan(0);
     expect(weeklyCount).toBeLessThan(catalogCount);
     expect(homepage).toContain("getWeeklyMenuProducts('all').slice(0, 6)");
-    expect(homepage).toContain("Preorder this week");
+    expect(homepage).toContain('Fresh flavors. Made with gratitude.');
     expect(homepage).toContain('id="delivery"');
     expect(homepage).toContain('id="events"');
     expect(`${homepage}\n${homepageServer}`).not.toContain('initialCatalogCount');
+  });
+
+  it('uses inviting customer language without exposing internal operations on storefront pages', () => {
+    const files = [
+      'components/home/HomePageClient.jsx',
+      'app/markets/page.tsx',
+      'app/product/[slug]/ProductDetailClient.jsx',
+      'data/markets.ts',
+    ];
+    const copy = files.map(read).join('\n');
+    expect(copy).not.toMatch(/around the week’s actual demand|founder-led product guidance|oversized scroll|market preorder rhythm|made to feel clear, useful, and real|four steps\. no guessing/i);
+    expect(read('app/product/[slug]/ProductDetailClient.jsx')).not.toContain('Add 1–2 tablespoons');
+    expect(read('app/product/[slug]/ProductDetailClient.jsx')).toContain('const isGel =');
   });
 
   it('does not promise inactive customer SMS on acquisition, checkout, account, or success pages', () => {

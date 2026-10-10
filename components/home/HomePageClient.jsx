@@ -34,10 +34,10 @@ import {
 } from '@/data/weeklyMenu';
 
 const ORDERING_STEPS = [
-  { icon: ShoppingBag, title: 'Choose this week', text: 'Pick the products you want from the current small-batch menu.' },
-  { icon: Store, title: 'Choose your market', text: 'Reserve for Hapeville, Serenbe, or Dunwoody pickup while the batch is available.' },
-  { icon: Package, title: 'We prepare it fresh', text: 'Your order is prepared around the week’s actual demand and pickup plan.' },
-  { icon: Repeat, title: 'Pick up and come back', text: 'Grab your order on your selected market day, then check the next weekly menu when it drops.' },
+  { icon: ShoppingBag, title: 'Explore the menu', text: 'Find a flavor you love in this week’s selection.' },
+  { icon: Store, title: 'Choose a pickup market', text: 'Select a participating market when placing your preorder.' },
+  { icon: Package, title: 'We prepare your order', text: 'We’ll have your confirmed order ready for your selected market pickup.' },
+  { icon: Repeat, title: 'Pick up and enjoy', text: 'Visit our booth during your pickup window and take home your favorites.' },
 ];
 
 function availabilityLabel(product) {
@@ -136,32 +136,32 @@ export default function HomePageClient({
         <div className="container grid gap-10 py-14 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-20">
           <div>
             <p className="mb-5 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-50">
-              Atlanta farmers markets • fresh weekly batches
+              Small batches • Atlanta-area markets
             </p>
             <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-              Preorder this week. Pick it up fresh at the market.
+              Fresh flavors. Made with gratitude.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90 sm:text-xl">
-              Taste of Gratitude makes small-batch sea moss gels, lemonades, refreshers, shots, and market favorites around the week’s real demand.
+              From bright lemonades and refreshing drinks to sea moss gels and shots, everything starts with thoughtful ingredients and small-batch preparation. Find us at the market or preorder your favorites.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild className="h-14 rounded-full bg-white px-8 text-base font-bold text-emerald-950 hover:bg-emerald-50">
-                <Link href="/weekly-menu">Shop this week</Link>
+                <Link href="/weekly-menu">Explore the weekly menu</Link>
               </Button>
               <Button asChild variant="outline" className="h-14 rounded-full border-white/30 bg-transparent px-8 text-base font-bold text-white hover:bg-white/10 hover:text-white">
-                <Link href="/markets">Choose a pickup market</Link>
+                <Link href="/markets">Find us at a market</Link>
               </Button>
             </div>
             <p className="mt-4 text-sm leading-6 text-emerald-50/80">
-              Weekly market preorders can be reserved at normal item quantities. Choose your pickup market before payment.
+              See availability, pricing, and pickup details before completing your order.
             </p>
           </div>
 
           <div className="rounded-[2rem] border border-white/20 bg-white/95 p-6 text-stone-950 shadow-2xl shadow-emerald-950/40">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">This week at a glance</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Find us at the market</p>
             <h2 className="mt-3 text-3xl font-semibold">{weeklyMenu.title}</h2>
             <p className="mt-3 leading-7 text-stone-600">
-              Reserve before market day so we know what to make and what to hold for you.
+              See where we’ll be and preorder ahead for a convenient market pickup.
             </p>
             <div className="mt-5 grid gap-3">
               {MARKETS.slice(0, 3).map((market) => (
@@ -182,10 +182,10 @@ export default function HomePageClient({
         <div className="container">
           <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">This week’s preorder menu</p>
-              <h2 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Choose what you want us to hold.</h2>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Fresh from the weekly menu</p>
+              <h2 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Find your favorites.</h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">
-                Start with the week’s available products. Reserve online, choose your market, and pick up fresh on that market’s scheduled day.
+                Browse our small-batch selection, discover a new flavor, and preorder for your preferred pickup market.
               </p>
             </div>
             <Button asChild className="h-12 rounded-full bg-emerald-700 px-6 text-white hover:bg-emerald-800">
@@ -210,7 +210,7 @@ export default function HomePageClient({
         <div className="container">
           <div className="mb-8 text-center">
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">How market preorder works</p>
-            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Four steps. No guessing.</h2>
+            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Your market pickup, made simple.</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-4">
             {ORDERING_STEPS.map(({ icon: Icon, title, text }, index) => (
@@ -232,7 +232,7 @@ export default function HomePageClient({
           <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Market pickup</p>
-              <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Choose the market that works for you.</h2>
+              <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">See where we’ll be.</h2>
             </div>
             <Button asChild variant="outline" className="h-12 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
               <Link href="/markets">Full market details</Link>
@@ -277,16 +277,16 @@ export default function HomePageClient({
         <div className="container grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-start">
           <div>
             <Truck className="h-8 w-8 text-emerald-200" aria-hidden="true" />
-            <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em] text-emerald-200">Scheduled delivery is next</p>
-            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Help us build the first delivery routes around real demand.</h2>
+            <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em] text-emerald-200">Interested in delivery?</p>
+            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Want Taste of Gratitude delivered?</h2>
             <p className="mt-4 max-w-2xl leading-8 text-emerald-50/90">
-              We are market-first today. The next step is planned Atlanta-area delivery windows on specific route days—not random on-demand delivery.
+              We’re exploring scheduled delivery in the Atlanta area. Share your neighborhood and preferred day, and we’ll let you know if delivery becomes available near you.
             </p>
             <div className="mt-6 grid gap-3">
               {[
-                'Tell us your neighborhood or ZIP',
-                'Tell us which weekday or evening works best',
-                'We will open route days where enough customers line up',
+                'Share your neighborhood or ZIP code',
+                'Tell us which day works best for you',
+                'We’ll share updates if service becomes available in your area',
               ].map((item) => (
                 <p key={item} className="flex items-start gap-3 text-sm text-emerald-50">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-200" aria-hidden="true" />
@@ -298,13 +298,13 @@ export default function HomePageClient({
           <RetentionForm
             intent="scheduled_delivery_interest"
             source="homepage_delivery"
-            title="Help shape the delivery route"
-            description="Share your area and the day or time that would make delivery useful for you."
-            cta="Add my delivery interest"
+            title="Tell us where you’d like delivery"
+            description="Tell us your ZIP code and preferred delivery day. We’ll contact you if a route opens nearby."
+            cta="Keep me updated"
             collectMessage
             messagePlaceholder="Neighborhood or ZIP + preferred delivery day/time"
-            successTitle="Delivery interest received."
-            successDescription="We’ll use this to plan practical route days and contact you when your area opens."
+            successTitle="Thanks for letting us know!"
+            successDescription="We’ll keep your area in mind and reach out if delivery becomes available."
           />
         </div>
       </section>
@@ -316,7 +316,7 @@ export default function HomePageClient({
             <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Book Taste of Gratitude</p>
             <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Bring the market experience to your event.</h2>
             <p className="mt-4 max-w-2xl leading-8 text-stone-700">
-              Golf tournaments have been a strong fit, but we are available for much more: corporate events, community gatherings, wellness events, private celebrations, pop-ups, tournaments, and other vendor opportunities.
+              From golf tournaments to corporate gatherings and neighborhood celebrations, we’d love to bring our drinks and sea moss favorites to your event. Tell us what you’re planning, and we’ll help you find the right menu and setup.
             </p>
             <div className="mt-6 flex flex-wrap gap-2 text-sm">
               {['Golf tournaments', 'Corporate events', 'Community events', 'Wellness events', 'Private gatherings', 'Pop-ups + vendor opportunities'].map((item) => (
@@ -330,11 +330,11 @@ export default function HomePageClient({
             </Button>
           </div>
           <div className="rounded-[2rem] border border-emerald-900/10 bg-white p-6 shadow-sm">
-            <p className="text-sm font-bold uppercase tracking-[0.16em] text-emerald-700">What we can plan around</p>
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-emerald-700">Let’s make it a good fit</p>
             <div className="mt-5 grid gap-4 text-sm text-stone-700">
               <p className="rounded-2xl bg-stone-50 p-4"><Store className="mr-2 inline h-4 w-4 text-emerald-700" />Vendor setup and product sales</p>
-              <p className="rounded-2xl bg-stone-50 p-4"><Package className="mr-2 inline h-4 w-4 text-emerald-700" />Preplanned product quantities and menu fit</p>
-              <p className="rounded-2xl bg-stone-50 p-4"><Users className="mr-2 inline h-4 w-4 text-emerald-700" />Sampling, education, and guest interaction</p>
+              <p className="rounded-2xl bg-stone-50 p-4"><Package className="mr-2 inline h-4 w-4 text-emerald-700" />A menu and quantities that suit your event</p>
+              <p className="rounded-2xl bg-stone-50 p-4"><Users className="mr-2 inline h-4 w-4 text-emerald-700" />Samples and friendly product conversations</p>
             </div>
           </div>
         </div>
@@ -344,10 +344,10 @@ export default function HomePageClient({
         <div className="container grid gap-8 lg:grid-cols-2">
           <div className="rounded-[2rem] bg-white p-6 shadow-sm">
             <Heart className="h-8 w-8 text-emerald-700" aria-hidden="true" />
-            <p className="mt-4 text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Founder-led and market-built</p>
-            <h2 className="mt-2 text-3xl font-semibold">Started at home. Grew through real market conversations.</h2>
+            <p className="mt-4 text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Made with care. Shared with gratitude.</p>
+            <h2 className="mt-2 text-3xl font-semibold">It started with a simple act of sharing.</h2>
             <p className="mt-4 leading-8 text-stone-700">
-              Taste of Gratitude began with Jenneisha soaking, blending, sharing, and teaching people how to use sea moss in everyday routines—then grew through repeat farmers-market relationships.
+              Jenneisha first began making and sharing sea moss at home. What started with family grew into new flavors, familiar faces, and meaningful connections at local farmers markets.
             </p>
             <Button asChild variant="outline" className="mt-6 h-11 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
               <Link href="/about">Read our story</Link>
@@ -356,9 +356,9 @@ export default function HomePageClient({
           <div className="rounded-[2rem] bg-white p-6 shadow-sm">
             <Mail className="h-8 w-8 text-emerald-700" aria-hidden="true" />
             <p className="mt-4 text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Can’t find your favorite?</p>
-            <h2 className="mt-2 text-3xl font-semibold">Ask for the next batch.</h2>
+            <h2 className="mt-2 text-3xl font-semibold">Tell us what you’d love to see next.</h2>
             <p className="mt-4 leading-8 text-stone-700">
-              Flavor requests help us plan future batches. A request is not a reservation until availability, quantity, price, and pickup are confirmed.
+              Missing a favorite flavor? Send us a request. We’ll confirm what’s available, the price, and pickup details before you place an order.
             </p>
             <Button asChild variant="outline" className="mt-6 h-11 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
               <Link href="/request-a-flavor">Request a flavor</Link>
@@ -371,15 +371,15 @@ export default function HomePageClient({
         <div className="container grid gap-6 lg:grid-cols-[1fr_0.8fr] lg:items-center">
           <div>
             <Mail className="h-8 w-8 text-emerald-200" aria-hidden="true" />
-            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">Get next week’s menu.</h2>
+            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">See what’s fresh next week.</h2>
             <p className="mt-3 max-w-2xl leading-7 text-emerald-50/90">
-              One useful email: weekly menu, pickup reminders, and important product updates.
+              Get the next menu, market pickup reminders, and first word on returning favorites.
             </p>
           </div>
           <RetentionForm
             intent="email_signup"
             source="homepage_retention_footer"
-            title="Join the weekly menu email"
+            title="The weekly menu, in your inbox"
             description="Get the next menu and market pickup reminder."
             cta="Send me the weekly menu"
           />
