@@ -137,7 +137,7 @@ export default function ProductDetailClient({ product, slug }) {
   const handleAddToCart = async () => {
     if (!canAddToCart) {
       toast.message('This item is handled through market pickup.', {
-        description: product?.checkoutUnavailableReason || 'Join the weekly menu email or reserve through the market preorder flow.',
+        description: 'Check the weekly menu or ask us at the market for current availability.',
       });
       return;
     }
