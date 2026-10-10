@@ -28,7 +28,11 @@ const inputSchema = z.object({
 }).strict();
 
 function authorized(request: NextRequest, raw: string): boolean {
-  const keyDerB64 = process.env.COD3BLACK_OPEE_PAYMENT_PUBLIC_KEY;
+  // This is a PUBLIC verification key, not a merchant or OPEE secret.
+  // Deployment settings can rotate it; the known OPEE ingress public key is
+  // pinned until commercial rollout provisions a managed trust registry.
+  const keyDerB64 = process.env.COD3BLACK_OPEE_PAYMENT_PUBLIC_KEY ||
+    "MCowBQYDK2VwAyEA7zDVGlmlKLnOLBEfAqBEPxwZp3m4YJ/NcdPCZEiQrMg=";
   if (!keyDerB64) return false;
 
   const ts = request.headers.get("x-opee-timestamp") || "";
