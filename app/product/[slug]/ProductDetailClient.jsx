@@ -212,7 +212,7 @@ export default function ProductDetailClient({ product, slug }) {
     product.flavorProfile ||
     product.shortDescription ||
     product.description ||
-    'Small-batch sea moss gel with a smooth chilled texture and naturally simple ingredients.';
+    'See the ingredient list below for more about this product.';
   const fullDescription =
     product.fullDescription ||
     product.productStory ||
@@ -221,22 +221,23 @@ export default function ProductDetailClient({ product, slug }) {
   const storageGuidance =
     product.storageInstructions ||
     product.careInstructions ||
-    'Keep refrigerated. Use a clean spoon each time and follow the freshness window on the label.';
+    'Keep refrigerated and follow the storage instructions on the label.';
   const pickupGuidance = product.isPreorder
     ? 'Preorder items are made for your selected pickup date. Choose your market and pickup day during checkout.'
     : 'Choose market pickup or eligible local delivery during checkout. Pickup details are confirmed before payment.';
+  const isGel = /\bgel\b/i.test(product.name || '') || ['gel', 'gels'].includes(String(product.category || '').toLowerCase());
   const routineUse =
     product.recommendedUse ||
     product.howToUse ||
     product.usageInstructions ||
-    'Add 1–2 tablespoons to smoothies, tea, juices, bowls, or recipes. Start with a small serving and use it in foods or drinks you already enjoy.';
+    (isGel ? 'Use a clean spoon and follow serving guidance on the product label.' : 'Enjoy chilled and follow the serving and storage guidance on the label.');
   const productStory =
     product.productStory ||
     product.story ||
     `This product is part of Taste of Gratitude's weekly small-batch menu: simple ingredients, careful preparation, and market-made freshness.`;
   const intendedUse =
     product.intendedUse ||
-    'Best for customers who want an approachable, ingredient-forward product that feels easy to use throughout the week.';
+    'Explore the ingredients, flavor, and serving suggestions to see if this is right for you.';
   const customerQuote = product.customerQuote || product.testimonial || null;
   const allergens = Array.isArray(product.allergens) ? product.allergens.filter(Boolean) : [];
   const pickupInfo = product.pickupAvailability || pickupGuidance;
@@ -461,16 +462,16 @@ export default function ProductDetailClient({ product, slug }) {
               ) : (
                 <div className="space-y-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
                   <div>
-                    <p className="font-semibold text-amber-950">Made for weekly market pickup.</p>
+                    <p className="font-semibold text-amber-950">Check market pickup availability</p>
                     <p className="mt-2 text-sm leading-6 text-amber-900">
-                      {product.checkoutUnavailableReason || 'This item works best through the weekly menu and market preorder rhythm. Get the menu email first, then reserve when your pickup window opens.'}
+                      {'Online checkout is not currently available for this item. Check the weekly menu or ask us at the market about availability.'}
                     </p>
                   </div>
                   <RetentionForm
                     intent="weekly_menu_email"
                     source={`product_${product.slug || product.id}`}
-                    title="Email me when this week’s menu drops"
-                    description="Get the market menu, pickup reminder, and reservation link before the next batch closes."
+                    title="Get the next weekly menu"
+                    description="We'll email you the weekly menu and market pickup updates."
                     cta="Email me the menu"
                     collectEmail
                     collectPhone={false}
@@ -516,11 +517,11 @@ export default function ProductDetailClient({ product, slug }) {
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   <Link href="/markets" className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900 hover:bg-emerald-100">
                     <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
-                    <span>Ask at the next market pickup</span>
+                    <span>Ask us at the market</span>
                   </Link>
                   <Link href="/quiz" className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-emerald-900 hover:bg-emerald-100">
                     <RefreshCw className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" aria-hidden="true" />
-                    <span>Find an available backup</span>
+                    <span>Explore other flavors</span>
                   </Link>
                 </div>
               )}
@@ -529,8 +530,8 @@ export default function ProductDetailClient({ product, slug }) {
                 <RetentionForm
                   intent="weekly_menu_email"
                   source={`product_${product.slug || product.id}`}
-                  title="Want the next menu drop?"
-                  description="Join the email list for limited-batch reminders and pickup updates."
+                  title="Want the next weekly menu?"
+                  description="Get menu updates, new flavors, and market pickup details."
                   cta="Email me the menu"
                   collectEmail
                   collectPhone={false}
@@ -547,7 +548,7 @@ export default function ProductDetailClient({ product, slug }) {
             </div>
 
             <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="font-semibold text-gray-900 mb-3">What to expect</h3>
+              <h3 className="font-semibold text-gray-900 mb-3">Flavor &amp; texture</h3>
               <div className="space-y-3 text-base text-gray-700 leading-relaxed">
                 <p>{flavorNotes}</p>
               </div>
@@ -568,23 +569,17 @@ export default function ProductDetailClient({ product, slug }) {
         </div>
 
         {/* Info Cards */}
-        <div className="grid gap-3 sm:grid-cols-3 mt-6">
+        <div className="grid gap-3 sm:grid-cols-2 mt-6">
           <div className="rounded-xl border border-stone-200 bg-white p-4">
-            <h3 className="font-semibold text-gray-900">How to use</h3>
+            <h3 className="font-semibold text-gray-900">How to enjoy</h3>
             <p className="mt-2 text-sm leading-6 text-gray-600">
               {routineUse}
             </p>
           </div>
           <div className="rounded-xl border border-stone-200 bg-white p-4">
-            <h3 className="font-semibold text-gray-900">What it supports</h3>
+            <h3 className="font-semibold text-gray-900">Storage</h3>
             <p className="mt-2 text-sm leading-6 text-gray-600">
-              {intendedUse}
-            </p>
-          </div>
-          <div className="rounded-xl border border-stone-200 bg-white p-4">
-            <h3 className="font-semibold text-gray-900">Keep fresh</h3>
-            <p className="mt-2 text-sm leading-6 text-gray-600">
-              {product.storageInstructions || product.careInstructions || 'Keep refrigerated. Use a clean spoon each time.'}
+              {storageGuidance}
             </p>
           </div>
         </div>
@@ -592,23 +587,9 @@ export default function ProductDetailClient({ product, slug }) {
         <section className={customerQuote ? 'mt-10 grid gap-4 lg:grid-cols-[1.4fr_0.8fr]' : 'mt-10'}>
           <Card className="rounded-2xl border-stone-200 bg-white shadow-sm">
             <CardContent className="p-6 sm:p-8">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Product story</p>
-              <h2 className="text-2xl font-semibold tracking-tight text-stone-950">Made to feel clear, useful, and real.</h2>
+              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Behind the flavor</p>
+              <h2 className="text-2xl font-semibold tracking-tight text-stone-950">A little more about {product.name}</h2>
               <p className="mt-4 text-base leading-8 text-stone-700">{productStory}</p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-xl bg-stone-50 p-4">
-                  <p className="font-semibold text-stone-950">Why it exists</p>
-                  <p className="mt-2 text-sm leading-6 text-stone-600">To offer a flavorful, clearly described product rooted in a real farmers market experience.</p>
-                </div>
-                <div className="rounded-xl bg-stone-50 p-4">
-                  <p className="font-semibold text-stone-950">How it fits</p>
-                  <p className="mt-2 text-sm leading-6 text-stone-600">Use it chilled, mix it into a drink, or keep it refrigerated for a quick spoonful.</p>
-                </div>
-                <div className="rounded-xl bg-stone-50 p-4">
-                  <p className="font-semibold text-stone-950">Freshness promise</p>
-                  <p className="mt-2 text-sm leading-6 text-stone-600">Prepared in small batches with storage guidance and fulfillment expectations shown before payment.</p>
-                </div>
-              </div>
             </CardContent>
           </Card>
           {customerQuote && (
