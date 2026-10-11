@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react';
 import { useCheckoutStore } from '@/stores/checkout';
 import { CartAPI } from '@/adapters/cartAdapter';
 import { Fulfillment } from '@/adapters/fulfillmentAdapter';
+import { validateGeorgiaDestination } from '@/lib/georgia-orders';
 import { Button } from '@/components/ui/button';
 import { track } from '@/utils/analytics';
 import CheckoutProgress from './CheckoutProgress';
@@ -125,6 +126,10 @@ function CheckoutContent() {
       } else if (!Fulfillment.isZipServiceable(zip)) {
         errors['address.zip'] = "We don't deliver to this area yet";
       }
+      if (street && city && /^\\d{5}$/.test(zip)) {
+        const eligible = validateGeorgiaDestination(fulfillment.delivery?.address);
+        if (!eligible.valid) errors['address.state'] = eligible.message;
+      }
       if (!fulfillment.delivery?.window) {
         errors.window = 'Please select a delivery window';
       }
@@ -147,6 +152,10 @@ function CheckoutContent() {
         errors['address.zip'] = 'ZIP code is required';
       } else if (!/^\d{5}$/.test(zip)) {
         errors['address.zip'] = 'ZIP code must be 5 digits';
+      }
+      if (street && city && /^\\d{5}$/.test(zip)) {
+        const eligible = validateGeorgiaDestination(fulfillment.shipping?.address);
+        if (!eligible.valid) errors['address.state'] = eligible.message;
       }
       if (!fulfillment.shipping?.methodId) {
         errors.methodId = 'Choose a shipping method';
@@ -228,7 +237,7 @@ function CheckoutContent() {
                     exit={{ opacity: 0, x: 20 }}
                   >
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Review your cart</h2>
-                    <p className="mb-6 text-base text-gray-600">Confirm your items before choosing pickup, local delivery, or shipping.</p>
+                    <p className="mb-6 text-base text-gray-600">Review your favorites, then choose market pickup or an eligible Georgia delivery or shipping option.</p>
                     <CartSummary
                       cart={cart}
                       totals={totals}
@@ -263,7 +272,7 @@ function CheckoutContent() {
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">Pickup, delivery, or shipping</h3>
                       <p className="mb-4 text-base text-gray-600">
                         Choose how you want to receive your order. Preorders are made for market pickup;
-                        eligible ready-to-ship items can ship nationwide with fees shown before payment.
+                        eligible ready-to-ship items may be shipped to Georgia addresses only, with fees shown before payment.
                       </p>
                       <FulfillmentTabs
                         selected={fulfillment.type}
