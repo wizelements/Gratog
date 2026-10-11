@@ -48,18 +48,18 @@ export default function IngredientsPage() {
   }
 
   return (
-    <div className="min-h-screen py-20 px-4">
+    <div className="min-h-screen min-w-0 py-12 sm:py-20 px-4">
       <div className="container mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="text-6xl mb-4 animate-bounce-gentle">🌿</div>
-          <h1 className="text-5xl font-bold text-white mb-4">
+          <h1 className="text-3xl sm:text-5xl font-bold text-emerald-950 mb-4 break-words">
             Ingredient Explorer
           </h1>
-          <p className="text-xl text-emerald-300 mb-8 max-w-2xl mx-auto">
+          <p className="text-base sm:text-xl text-emerald-900 mb-8 max-w-2xl mx-auto">
             Discover {ingredients.length} powerful ingredients and their flavor stories
           </p>
-          <div className="flex items-center justify-center gap-2 text-white/60">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-emerald-800">
             <Sparkles className="h-5 w-5 text-emerald-400" />
             <span>Click any ingredient to learn more</span>
           </div>
