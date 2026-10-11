@@ -104,7 +104,7 @@ export default function TermsPage() {
             <div>
               <h3 className="font-semibold mb-2">Pickup Orders</h3>
               <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>Pickup available at Serenbe Farmers Market on Saturdays 9 AM - 1 PM</li>
+                <li>Pickup is available at participating Georgia markets on scheduled dates; see the current market schedule</li>
                 <li>Orders must be picked up within the designated time frame</li>
                 <li>Valid ID may be required for order pickup</li>
                 <li>Unclaimed orders may be subject to cancellation and refund processing</li>
@@ -114,7 +114,7 @@ export default function TermsPage() {
             <div>
               <h3 className="font-semibold mb-2">Delivery Service</h3>
               <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>Delivery available within designated Atlanta metro zones</li>
+                <li>Delivery is limited to eligible Georgia addresses within our active local service area</li>
                 <li>Delivery fees vary by location and are calculated at checkout</li>
                 <li>Delivery times are estimates and may vary due to traffic or weather</li>
                 <li>Someone must be available to receive the delivery</li>
@@ -124,7 +124,7 @@ export default function TermsPage() {
             <div>
               <h3 className="font-semibold mb-2">Shipping</h3>
               <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>Eligible items may be shipped nationwide when shipping is selected at checkout</li>
+                <li>We currently fulfill orders in Georgia only. Eligible items may be shipped only to Georgia destinations</li>
                 <li>Shipping costs and estimated timing are displayed before payment</li>
                 <li>Perishable or preorder-only items may be limited to market pickup</li>
               </ul>
