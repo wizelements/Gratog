@@ -162,7 +162,8 @@ export async function generateMetadata({ params }) {
     if (!product) {
       return {
         title: 'Product Not Found | Taste of Gratitude',
-        description: 'The product you\'re looking for could not be found.'
+        description: 'The product you\'re looking for could not be found.',
+        robots: { index: false, follow: false }
       };
     }
     
@@ -199,7 +200,8 @@ export async function generateMetadata({ params }) {
     }
     return {
       title: 'Product | Taste of Gratitude',
-      description: PRODUCT_COPY_FALLBACK
+      description: PRODUCT_COPY_FALLBACK,
+      robots: { index: false, follow: false }
     };
   }
 }
