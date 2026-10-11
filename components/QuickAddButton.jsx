@@ -16,8 +16,10 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
   const [isAdding, setIsAdding] = useState(false);
   const [added, setAdded] = useState(false);
 
-  const checkoutReady = product?.checkoutReady !== false;
-  const isPreorder = Boolean(product?.isPreorder || product?.preorderOnly || (product?.stock != null && product.stock <= 0));
+  // A zero/negative stock reading is not merchant permission to take preorder money.
+  const isPreorder = Boolean(product?.isPreorder || product?.preorderOnly);
+  const outOfStock = product?.stock != null && Number(product.stock) <= 0 && !isPreorder;
+  const checkoutReady = product?.checkoutReady !== false && !outOfStock;
   const purchaseStatus = isPreorder ? 'preorder' : 'in_stock';
 
   const handleAddToCart = useCallback(async (e) => {
@@ -112,7 +114,7 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
 
     return (
       <Button asChild variant={variant} className={`relative ${className}`}>
-        <Link href={productHref}>View details</Link>
+        <Link href={productHref}>{outOfStock ? 'Currently unavailable' : 'View details'}</Link>
       </Button>
     );
   }
