@@ -14,6 +14,7 @@ import type { ProductCategory } from '@/data/products';
 // ---------------------------------------------------------------------------
 
 export const QUANTITY_UNITS = [
+  'jar_16oz',
   'bottle_16oz',
   'multi_bottle',
   'half_gallon',
