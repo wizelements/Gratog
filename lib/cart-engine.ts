@@ -292,7 +292,7 @@ export function normalizeProduct(product: any): CartItem {
     variantLabel: variantLabel,
     size: variantLabel,
     addedAt: new Date().toISOString(),
-    isPreorder: Boolean(product.isPreorder || product.preorderOnly || (product.stock != null && product.stock <= 0)),
+    isPreorder: Boolean(product.isPreorder || product.preorderOnly),
     marketExclusive: marketExclusive,
     // @ts-ignore — type mismatch
     fulfillmentType: null, // Will be set at checkout

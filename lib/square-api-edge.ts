@@ -93,7 +93,15 @@ export async function getSquareCatalog(options: {
     
     // Transform Square catalog to our format
     const items: CatalogItem[] = (data.objects || [])
-      .filter((obj: any) => obj.type === 'ITEM')
+      // Square keeps archived items in ListCatalog. Never publish archived
+      // stock as actively shoppable or indexable products.
+      .filter((obj: any) =>
+        obj.type === 'ITEM' &&
+        obj.is_deleted !== true &&
+        obj.isDeleted !== true &&
+        obj.item_data?.is_archived !== true &&
+        obj.itemData?.isArchived !== true
+      )
       .map((obj: any) => {
         const item = obj.item_data || obj.itemData || {};
         const variations = item.variations || [];
@@ -110,7 +118,7 @@ export async function getSquareCatalog(options: {
             ? `${baseUrl}/v2/catalog/object/${item.image_ids?.[0] || item.imageIds?.[0]}` 
             : undefined,
           category: item.category_id || item.categoryId,
-          available: item.present_at_all_locations !== undefined ? item.present_at_all_locations : !item.skipModifierScreen,
+          available: item.is_archived !== true && item.isArchived !== true && obj.is_deleted !== true && obj.isDeleted !== true,
         };
       })
       .filter((item: CatalogItem) => {
@@ -155,7 +163,7 @@ export async function getSquareProduct(id: string): Promise<CatalogItem | null> 
     const data = await response.json();
     const obj = data.object;
     
-    if (!obj || obj.type !== 'ITEM') return null;
+    if (!obj || obj.type !== 'ITEM' || obj.is_deleted === true || obj.isDeleted === true || obj.item_data?.is_archived === true || obj.itemData?.isArchived === true) return null;
 
     const item = obj.item_data || obj.itemData || {};
     const variations = item.variations || [];
@@ -172,7 +180,7 @@ export async function getSquareProduct(id: string): Promise<CatalogItem | null> 
         ? `${baseUrl}/v2/catalog/object/${item.image_ids?.[0] || item.imageIds?.[0]}` 
         : undefined,
       category: item.category_id || item.categoryId,
-      available: item.present_at_all_locations !== undefined ? item.present_at_all_locations : !item.skipModifierScreen,
+      available: item.is_archived !== true && item.isArchived !== true && obj.is_deleted !== true && obj.isDeleted !== true,
     };
 
     setCached(cacheKey, product, 60);

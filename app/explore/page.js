@@ -30,16 +30,16 @@ export default function ExploreHomepage() {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen min-w-0">
       {/* Hero Section */}
       <section className="relative py-20 px-4">
         <div className="container mx-auto text-center">
           <div className="mb-8 animate-fade-in-up">
             <div className="text-7xl mb-4">🌊</div>
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-4">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-emerald-950 mb-4 break-words">
               Explore Wellness
             </h1>
-            <p className="text-xl md:text-2xl text-emerald-300 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg md:text-2xl text-emerald-900 mb-8 max-w-2xl mx-auto">
               Dive into an interactive journey through ingredients, science, and fun
             </p>
           </div>
@@ -133,11 +133,11 @@ export default function ExploreHomepage() {
       {/* CTA Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
-          <div className="max-w-3xl mx-auto bg-gradient-to-br from-emerald-500/20 to-green-600/20 border border-emerald-500/30 rounded-2xl p-12">
-            <h2 className="text-4xl font-bold text-white mb-4">
+          <div className="min-w-0 max-w-3xl mx-auto bg-gradient-to-br from-emerald-500/20 to-green-600/20 border border-emerald-500/30 rounded-2xl p-5 sm:p-12">
+            <h2 className="text-2xl sm:text-4xl font-bold text-emerald-950 mb-4 break-words">
               Ready to Start Your Weekly Menu?
             </h2>
-            <p className="text-xl text-white/80 mb-8">
+            <p className="text-base sm:text-xl text-emerald-950 mb-8">
               Discover the power of natural ingredients through interactive exploration
             </p>
             <Link href="/explore/ingredients">

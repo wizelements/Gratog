@@ -20,7 +20,10 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
-    const limit = parseInt(searchParams.get('limit') || '100', 10);
+    const requestedLimit = Number(searchParams.get('limit') || '100');
+    const limit = Number.isFinite(requestedLimit)
+      ? Math.max(1, Math.min(100, Math.floor(requestedLimit)))
+      : 100;
 
     // Fetch from Square (with internal caching)
     const catalog = await getSquareCatalog({ category, limit });
@@ -46,7 +49,7 @@ export async function GET(request: NextRequest) {
       { 
         success: false, 
         error: 'Failed to fetch catalog',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: 'Please try the catalog again shortly.'
       },
       { status: 500 }
     );

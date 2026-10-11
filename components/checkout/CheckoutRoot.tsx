@@ -197,7 +197,7 @@ function CheckoutContent() {
           className="text-center"
         >
           <ShoppingBag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h1>
           <p className="text-gray-600 mb-6">Add some items to get started!</p>
           <Link href="/catalog">
             <Button className="bg-emerald-700 hover:bg-emerald-800">
@@ -236,7 +236,7 @@ function CheckoutContent() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
                   >
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Review your cart</h2>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Review your cart</h1>
                     <p className="mb-6 text-base text-gray-600">Shopping without visiting a market? No problem. Eligible products can be ordered for Georgia delivery or shipping; choose market pickup only if you prefer it or your items require it.</p>
                     <CartSummary
                       cart={cart}
@@ -262,6 +262,7 @@ function CheckoutContent() {
                     exit={{ opacity: 0, x: 20 }}
                     className="space-y-8"
                   >
+                    <h1 className="text-2xl font-bold text-gray-900">Contact and fulfillment</h1>
                     <ContactForm
                       contact={contact}
                       onChange={setContact}
@@ -325,7 +326,7 @@ function CheckoutContent() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
                   >
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Review & Pay</h2>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-6">Review & Pay</h1>
                     <ReviewAndPay
                       cart={cart}
                       totals={totals}

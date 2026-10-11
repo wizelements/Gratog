@@ -9,13 +9,17 @@ import {
 } from '@/data/products';
 
 function buildSlugFilter(slug) {
-  return {
-    $or: [
-      { slug: slug },
-      { slug: { $regex: slug, $options: 'i' } },
-      { id: slug }
-    ]
-  };
+  // Exact indexed lookups avoid interpreting user-provided slugs as regexes.
+  return { $or: [{ slug: String(slug) }, { id: String(slug) }] };
+}
+
+function isArchivedProduct(product) {
+  return Boolean(
+    product?.squareIsArchived === true ||
+    product?.isArchived === true ||
+    product?.is_archived === true ||
+    String(product?.seoTitle || '').trim().toLowerCase() === 'archived product'
+  );
 }
 
 async function findProductBySlug(db, slug) {
@@ -120,8 +124,10 @@ function serializeProductForClient(sourceProduct) {
     variationId: product.variationId,
     squareVariationId: product.squareVariationId,
     squareData: product.squareData?.variationId ? { variationId: product.squareData.variationId } : undefined,
-    checkoutReady: product.checkoutReady,
-    checkoutUnavailableReason: product.checkoutUnavailableReason,
+    checkoutReady: isArchivedProduct(product) ? false : product.checkoutReady,
+    checkoutUnavailableReason: isArchivedProduct(product)
+      ? 'This archived item is not available to order.'
+      : product.checkoutUnavailableReason,
     marketExclusive: product.marketExclusive,
     fulfillmentType: product.fulfillmentType,
     activeWeeklyMenu: product.activeWeeklyMenu,
@@ -156,7 +162,8 @@ export async function generateMetadata({ params }) {
     if (!product) {
       return {
         title: 'Product Not Found | Taste of Gratitude',
-        description: 'The product you\'re looking for could not be found.'
+        description: 'The product you\'re looking for could not be found.',
+        robots: { index: false, follow: false }
       };
     }
     
@@ -166,6 +173,7 @@ export async function generateMetadata({ params }) {
     return {
       title: enrichedProduct.seoTitle || `${enrichedProduct.name} | Taste of Gratitude`,
       description,
+      robots: isArchivedProduct(product) || isArchivedProduct(enrichedProduct) ? { index: false, follow: false } : undefined,
       alternates: {
         canonical: `/product/${enrichedProduct.slug || slug}`,
       },
@@ -192,7 +200,8 @@ export async function generateMetadata({ params }) {
     }
     return {
       title: 'Product | Taste of Gratitude',
-      description: PRODUCT_COPY_FALLBACK
+      description: PRODUCT_COPY_FALLBACK,
+      robots: { index: false, follow: false }
     };
   }
 }
@@ -214,8 +223,8 @@ export default async function ProductPage({ params }) {
     
     if (!product) {
       console.log(`[Product SSR] Product not found for slug: ${slug}`);
-      // Return null to client, which will show "Product Not Found"
-      return <ProductDetailClient product={null} slug={slug} />;
+      // Missing products must be 404s, not indexable soft-404 storefront pages.
+      notFound();
     }
     
     const serializedProduct = serializeProductForClient(product);
@@ -225,13 +234,15 @@ export default async function ProductPage({ params }) {
     return <ProductDetailClient product={serializedProduct} slug={slug} />;
     
   } catch (error) {
+    // Next.js notFound() raises a special control-flow error; never swallow it.
+    if (error?.digest?.startsWith?.('NEXT_HTTP_ERROR_FALLBACK')) throw error;
     console.error('[Product SSR] Error fetching product:', error);
     const curatedProduct = getProductBySlugOrId(slug);
     if (curatedProduct) {
       return <ProductDetailClient product={serializeProductForClient(toStorefrontProduct(curatedProduct))} slug={slug} />;
     }
-    // Return null to show error state
-    return <ProductDetailClient product={null} slug={slug} />;
+    // No valid product: return an actual 404 rather than a misleading 200.
+    notFound();
   }
 }
 

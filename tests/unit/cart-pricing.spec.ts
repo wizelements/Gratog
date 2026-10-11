@@ -16,6 +16,12 @@ type ProductDoc = {
   rewardPoints?: number;
   variations?: Array<{ id: string; name?: string; price?: number; priceCents?: number }>;
   inStock?: boolean;
+  isPreorder?: boolean;
+  preorderOnly?: boolean;
+  marketExclusive?: boolean;
+  marketPickupOnly?: boolean;
+  category?: string;
+  fulfillmentType?: string;
   squareIsArchived?: boolean;
   squareEcomAvailable?: boolean;
 };
@@ -199,5 +205,40 @@ describe('priceCart — tamper resistance', () => {
     expect(res.subtotalCents).toBe(6000);
     expect(res.discountCents).toBe(600);
     expect(res.totalCents).toBe(5400);
+  });
+});
+
+
+describe('catalog-owned preorder and fulfillment security', () => {
+  it('cannot force a sold-out product into the cart by setting client isPreorder=true', async () => {
+    products.push({ id: 'SOLD_OUT', name: 'Sold Out', priceCents: 1599, inStock: false });
+    await expect(priceCart({ items: [
+      { productId: 'SOLD_OUT', quantity: 1, isPreorder: true },
+    ] })).rejects.toMatchObject({ code: 'PRODUCT_UNAVAILABLE' });
+  });
+
+  it('allows sold-out preorder products only when the server catalog explicitly enables preorder', async () => {
+    products.push({ id: 'MADE_TO_ORDER', name: 'Reserved Gel', priceCents: 3600, inStock: false, preorderOnly: true });
+    const priced = await priceCart({ items: [
+      { productId: 'MADE_TO_ORDER', quantity: 1, isPreorder: false },
+    ] });
+    expect(priced.items[0].isPreorder).toBe(true);
+    expect(priced.items[0].unitPriceCents).toBe(3600);
+  });
+
+  it('enforces catalog pickup-only flags when the client lies that it is a normal product', async () => {
+    products.push({ id: 'PICKUP_ONLY', name: 'Fresh Shot', priceCents: 1299, marketPickupOnly: true });
+    const priced = await priceCart({ items: [
+      { productId: 'PICKUP_ONLY', quantity: 1, marketExclusive: false },
+    ] });
+    expect(priced.items[0].marketExclusive).toBe(true);
+  });
+
+  it('classifies fresh-pressed catalog items as market only without trusting client category', async () => {
+    products.push({ id: 'PRESSED', name: 'Fresh Pressed Juice', priceCents: 1499, category: 'fresh-pressed' });
+    const priced = await priceCart({ items: [
+      { productId: 'PRESSED', quantity: 1, category: 'unrestricted', marketExclusive: false },
+    ] });
+    expect(priced.items[0].marketExclusive).toBe(true);
   });
 });

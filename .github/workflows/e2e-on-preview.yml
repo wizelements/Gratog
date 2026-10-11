@@ -12,19 +12,15 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      - run: npm install
-      - run: npx playwright install --with-deps
+      - run: npm ci --include=dev
+      - run: npx playwright install --with-deps chromium
       - name: E2E against Preview
         env:
           BASE_URL: ${{ github.event.deployment_status.target_url }}
-          SQUARE_ENV: sandbox
-          SQUARE_APP_ID: ${{ secrets.SQUARE_APP_ID }}
-          SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
-          SQUARE_SECRET: ${{ secrets.SQUARE_SECRET }}
-          WEBHOOK_SIGNATURE_KEY: ${{ secrets.WEBHOOK_SIGNATURE_KEY }}
         run: npm run test:e2e:headless
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report-preview
           path: playwright-report
+          retention-days: 7
