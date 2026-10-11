@@ -393,8 +393,16 @@ export default function ProductDetailClient({ product, slug }) {
               {fullDescription && fullDescription !== product.description && <p>{fullDescription}</p>}
             </div>
 
-            {/* Variations */}
-            {product.variations?.length > 0 && (
+            {/* Owner-approved Blue Lotus has one fixed 16oz jar, no size chooser. */}
+            {product.slug === 'blue-lotus' && product.variations?.length === 1 && (
+              <p className="text-sm font-medium text-emerald-900">
+                Size: 16 oz jar · {formatPrice(product.variations[0].price || product.price)}
+              </p>
+            )}
+
+            {/* Variations (only when multiple options exist or not Blue Lotus) */}
+            {(product.slug !== 'blue-lotus' || product.variations?.length !== 1) &&
+              product.variations?.length > 0 && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Size / Option
