@@ -9,7 +9,9 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { generatePreorderNumber, getEstimatedWaitTime } from '@/lib/preorder/waitlist';
 import { getNextWaitlistNumber, createPreorder, findPreorderByOrderNumber, updatePreorderPaymentFields } from '@/lib/preorder/repository';
-import { MARKET_CONFIGS, isPastCutoff, isValidMarketId, getNextMarketDate, PREORDER_RULES } from '@/lib/preorder/rules';
+import { PREORDER_RULES } from '@/lib/preorder/rules';
+import { resolveActivePreorderMarket } from '@/lib/preorder/market-resolver';
+import { nextPreorderPickup, marketDisplayHours, marketWaitlistPrefix } from '@/lib/preorder/market-schedule';
 import { notifySquareTeam } from '@/lib/preorder/square-notifications';
 import { createLogger } from '@/lib/logger';
 import { sanitizeObject } from '@/lib/validation/sanitize';
@@ -29,7 +31,10 @@ function isUnavailableForPreorder(product: any) {
     product?.soldOut === true ||
     product?.inventoryStatus === 'sold_out' ||
     product?.inventoryStatus === 'inactive' ||
-    product?.weeklyStatus === 'inactive';
+    product?.weeklyStatus === 'inactive' ||
+    product?.checkoutReady === false ||
+    (product?.inStock === false && product?.isPreorder !== true && product?.purchaseStatus !== 'preorder') ||
+    (product?.purchaseStatus === 'out_of_stock' && product?.isPreorder !== true);
 }
 
 function addLookupEntry(lookup: Map<string, any>, key: any, entry: any) {
@@ -148,17 +153,33 @@ export async function POST(request: any) {
       itemCount: data.items?.length,
     });
 
-    // Validate market
-    if (!data.marketId || !isValidMarketId(data.marketId)) {
+    // Validate against the same live market feed used by the customer screen.
+    // Older route rules used slugs while the live API emits MongoDB ObjectIds.
+    const selectedMarket = await resolveActivePreorderMarket(data.marketId);
+    if (!selectedMarket) {
       return NextResponse.json(
-        { success: false, error: 'Invalid or missing market selection' },
+        { success: false, code: 'MARKET_UNAVAILABLE', error: 'This pickup market is not accepting preorders. Please choose an active market.' },
         { status: 400 }
       );
     }
-
-    if (isPastCutoff(data.marketId)) {
+    const pickupDate = nextPreorderPickup(selectedMarket);
+    if (!pickupDate) {
       return NextResponse.json(
-        { success: false, error: 'This market preorder window has closed. Please choose the next weekly menu drop or visit the booth for walk-up availability.' },
+        { success: false, code: 'PICKUP_UNAVAILABLE', error: 'No upcoming preorder pickup date is available for this market.' },
+        { status: 409 }
+      );
+    }
+    const marketConfig = {
+      id: selectedMarket.id,
+      name: selectedMarket.name,
+      prefix: marketWaitlistPrefix(selectedMarket.name),
+      day: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][selectedMarket.dayOfWeek],
+      hours: marketDisplayHours(selectedMarket.hours),
+    };
+
+    if (data.fulfillment?.type && data.fulfillment.type !== 'pickup') {
+      return NextResponse.json(
+        { success: false, code: 'DELIVERY_NOT_SUPPORTED', error: 'Market preorders are pickup-only. For delivery, please use the regular shop checkout.' },
         { status: 400 }
       );
     }
@@ -179,7 +200,15 @@ export async function POST(request: any) {
       );
     }
 
-    const preorderCartItems = await resolvePreorderCartItems(data.items);
+    let preorderCartItems;
+    try {
+      preorderCartItems = await resolvePreorderCartItems(data.items);
+    } catch (error: any) {
+      return NextResponse.json(
+        { success: false, code: 'ITEM_UNAVAILABLE', error: String(error?.message || 'An item is unavailable. Please refresh the menu and try again.') },
+        { status: 409 }
+      );
+    }
 
     // Calculate totals
     const subtotal = preorderCartItems.reduce((sum: number, item: any) => {
@@ -201,7 +230,9 @@ export async function POST(request: any) {
       );
     }
 
-    const payAtPickupFallback = data.paymentMode === 'pay_at_pickup';
+    // Public checkout always requires Square. Never trust a client-supplied
+    // paymentMode override to create a payable-at-pickup order without payment.
+    const payAtPickupFallback = false;
     if (!payAtPickupFallback && !isSquarePaymentConfigured()) {
       return NextResponse.json(
         {
@@ -213,18 +244,18 @@ export async function POST(request: any) {
       );
     }
 
-    // Get market info from centralized config
-    const marketConfig = MARKET_CONFIGS[data.marketId as keyof typeof MARKET_CONFIGS];
-    const pickupDate = getNextMarketDate(marketConfig.day);
+    // Derived from the live market schedule, including alternating Fridays.
     const pickupDateStr = pickupDate.toLocaleDateString('en-US', {
+      timeZone: 'America/New_York',
       weekday: 'long',
       month: 'long',
       day: 'numeric',
+      year: 'numeric',
     });
 
     // Atomic waitlist number from MongoDB
     const { waitlistNumber, counter } = await getNextWaitlistNumber(
-      data.marketId,
+      selectedMarket.id,
       marketConfig.prefix,
       pickupDate
     );
@@ -248,7 +279,7 @@ export async function POST(request: any) {
     const dbOrder = await createPreorder({
       orderNumber,
       waitlistNumber,
-      marketId: data.marketId,
+      marketId: selectedMarket.id,
       marketName: marketConfig.name,
       customerName: data.customer.name,
       customerPhone: data.customer.phone,
@@ -258,9 +289,9 @@ export async function POST(request: any) {
       tax: PREORDER_RULES.TAX_RATE,
       total,
       totalCents,
-      status: payAtPickupFallback ? 'PENDING_CONFIRMATION' : 'PENDING_PAYMENT',
-      paymentMethod: payAtPickupFallback ? 'PAY_AT_PICKUP' : 'SQUARE_ONLINE',
-      paymentProvider: payAtPickupFallback ? 'manual' : 'square',
+      status: 'PENDING_PAYMENT',
+      paymentMethod: 'SQUARE_ONLINE',
+      paymentProvider: 'square',
       paymentStatus: 'PENDING',
       amountPaid: 0,
       balanceDue: total,
@@ -356,7 +387,7 @@ export async function POST(request: any) {
     logger.info('Preorder persisted to MongoDB', {
       orderNumber,
       waitlistNumber,
-      marketId: data.marketId,
+      marketId: selectedMarket.id,
       _id: dbOrder._id,
     });
 
@@ -400,8 +431,8 @@ export async function POST(request: any) {
         pickupDate: pickupDateStr,
         pickupHours: marketConfig.hours,
         estimatedTime: getEstimatedWaitTime(counter),
-        marketId: data.marketId,
-        paymentStatus: payAtPickupFallback ? 'PENDING' : 'PENDING_PAYMENT',
+        marketId: selectedMarket.id,
+        paymentStatus: 'PENDING_PAYMENT',
       },
       payment,
     });
@@ -412,7 +443,7 @@ export async function POST(request: any) {
       {
         success: false,
         error: 'Failed to create preorder. Please try again.',
-        details: error.message,
+        code: 'PREORDER_CREATE_FAILED',
       },
       { status: 500 }
     );

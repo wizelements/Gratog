@@ -29,7 +29,7 @@ import Link from "next/link";
 import RetentionForm from "@/components/RetentionForm";
 import ProductVisual from "@/components/ProductVisual";
 import BundleSuggestions from "@/components/preorder/BundleSuggestions";
-import { getDeliveryZoneByZip, calculateDynamicDeliveryFee } from "@/lib/delivery-zones";
+import { nextPreorderPickup } from "@/lib/preorder/market-schedule";
 import { track } from "@/utils/analytics";
 
 // Day-of-week labels
@@ -122,9 +122,11 @@ function getPreorderCategory(product: any): string {
   if (haystack.includes('shot')) return 'shots';
   if (haystack.includes('refresher')) return 'refreshers';
   if (haystack.includes('gel') || haystack.includes('moss') || raw === 'gels') return 'gels';
+  if (haystack.includes('milk tea') || haystack.includes('boba')) return 'milk-teas';
+  if (haystack.includes('tea')) return 'refreshers';
   if (haystack.includes('lemonade') || haystack.includes('juice') || haystack.includes('drink') || raw === 'lemonades') return 'lemonades';
 
-  return raw || 'specials';
+  return 'specials';
 }
 
 function getPreorderCategoryEmoji(category: string, fallback = '🛍️') {
@@ -295,7 +297,8 @@ function PreorderPageContent() {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [cart, setCart] = useState<Record<string, number>>({});
   const [customer, setCustomer] = useState({ name: "", phone: "", email: "" });
-  const [fulfillment, setFulfillment] = useState<{ type: 'pickup' | 'delivery'; address?: { zip?: string; line1?: string; city?: string; state?: string }; deliveryFee?: number; deliveryZone?: any }>({ type: 'pickup' });
+  const [cartReady, setCartReady] = useState(false);
+  const submittingRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [waitlistNumber, setWaitlistNumber] = useState("");
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
@@ -303,6 +306,24 @@ function PreorderPageContent() {
   const [orderNumber, setOrderNumber] = useState("");
   const [paymentUrl, setPaymentUrl] = useState("");
   const preorderStartedTrackedRef = useRef(false);
+  useEffect(() => {
+    try {
+      const data = JSON.parse(sessionStorage.getItem('tog-preorder-cart-v1') || '{}');
+      if (data && typeof data === 'object' && !Array.isArray(data)) {
+        const safe: Record<string, number> = {};
+        Object.entries(data).forEach(([key, value]) => {
+          if (key.length < 130 && Number.isInteger(value) && Number(value) > 0 && Number(value) <= 99) safe[key] = Number(value);
+        });
+        setCart(safe);
+      }
+    } catch { /* Cart still works without session storage. */ }
+    setCartReady(true);
+  }, []);
+  useEffect(() => {
+    if (!cartReady) return;
+    try { sessionStorage.setItem('tog-preorder-cart-v1', JSON.stringify(cart)); }
+    catch { /* Continue with memory-only cart. */ }
+  }, [cart, cartReady]);
 
   useEffect(() => {
     if (preorderStartedTrackedRef.current) return;
@@ -364,7 +385,7 @@ function PreorderPageContent() {
         
         // Transform Square products to preorder format
         const transformedProducts = (data.products || [])
-          .filter((p: any) => p.available !== false && (p.inStock !== false || p.isPreorder === true || p.purchaseStatus === 'preorder'))
+          .filter((p: any) => p.available !== false && p.checkoutReady !== false && (p.inStock !== false || p.isPreorder === true || p.purchaseStatus === 'preorder'))
           .map((p: any) => {
             const defaultVariation = Array.isArray(p.variations) ? p.variations[0] : null;
             const name = (p.name || '').toLowerCase();
@@ -382,7 +403,7 @@ function PreorderPageContent() {
               priceCents: defaultVariation?.priceCents || p.priceCents || Math.round((p.price || 0) * 100),
               category,
               emoji,
-              available: p.stockQuantity || 99,
+              available: p.stockQuantity ?? 99,
               image: p.image,
               description: p.description,
               isPopular: p.isPopular || name.includes('original'),
@@ -440,54 +461,32 @@ function PreorderPageContent() {
   const preorderRemaining = Math.max(0, PREORDER_MINIMUM - preorderSubtotal);
   const preorderProgress = Math.min(100, Math.round((preorderSubtotal / PREORDER_MINIMUM) * 100));
 
-  const deliveryMinCents = Number(process.env.PREORDER_DELIVERY_MIN_CENTS || 5000);
-  const deliveryMinDollars = deliveryMinCents / 100;
-  const deliveryAvailable = Math.round(cartTotal * 100) >= deliveryMinCents;
-
-  const orderTotal = cartTotal + (fulfillment.type === 'delivery' ? (fulfillment.deliveryFee || 0) / 100 : 0);
-
   const updateCart = (id: string, delta: number) => {
     const item = products.find(p => p.id === id);
+    if (!item || !Number.isFinite(item.price) || item.price <= 0) {
+      toast.error('This product cannot be reserved. Refresh the menu and try again.');
+      return;
+    }
     setCart(prev => {
-      const current = prev[id] || 0;
-      const newQty = Math.max(0, current + delta);
-      if (newQty === 0) {
-        if (current > 0) {
-          track('preorder_item_removed', {
-            productId: id,
-            productName: item?.name,
-            category: item?.category,
-            marketId: selectedMarket?.id || marketId,
-          });
-        }
-        const { [id]: _, ...rest } = prev; // eslint-disable-line @typescript-eslint/no-unused-vars
+      const next = Math.max(0, Math.min(99, (prev[id] || 0) + delta));
+      if (next === 0) {
+        const { [id]: removed, ...rest } = prev;
         return rest;
       }
-      if (newQty > current) {
-        track('preorder_item_added', {
-          productId: id,
-          productName: item?.name,
-          category: item?.category,
-          price: item?.price,
-          marketId: selectedMarket?.id || marketId,
-          quantity: newQty,
-        });
-      } else if (newQty < current) {
-        track('preorder_item_removed', {
-          productId: id,
-          productName: item?.name,
-          category: item?.category,
-          marketId: selectedMarket?.id || marketId,
-          quantity: newQty,
-        });
-      }
-      return { ...prev, [id]: newQty };
+      return { ...prev, [id]: next };
     });
+    // Telemetry must not run inside a React state updater.
+    try {
+      track(delta > 0 ? 'preorder_item_added' : 'preorder_item_removed', {
+        productId: id, productName: item.name, category: item.category,
+        marketId: selectedMarket?.id || marketId, price: item.price
+      });
+    } catch { /* Analytics cannot interrupt shopping. */ }
   };
 
   const handleSubmitPreorder = async () => {
-    if (!selectedMarket) return;
-
+    if (!selectedMarket || submittingRef.current) return;
+    if (cartItemCount === 0) { toast.error('Choose at least one product.'); return; }
     if (!preorderRulesMet) {
       track('preorder_minimum_error', {
         marketId: selectedMarket.id,
@@ -501,8 +500,9 @@ function PreorderPageContent() {
       return;
     }
     
+    submittingRef.current = true;
     setIsSubmitting(true);
-    
+
     try {
       const orderItems = Object.entries(cart).map(([id, qty]) => {
         const product = products.find(p => p.id === id);
@@ -530,12 +530,7 @@ function PreorderPageContent() {
           customer,
           items: orderItems,
           total: cartTotal,
-          fulfillment: fulfillment.type === 'delivery' ? {
-            type: 'delivery',
-            address: fulfillment.address,
-            fee: fulfillment.deliveryFee || 0,
-            zone: fulfillment.deliveryZone?.name || null,
-          } : { type: 'pickup' },
+          fulfillment: { type: 'pickup' },
           metadata: {
             source: 'preorder_page',
             utmSource,
@@ -547,9 +542,9 @@ function PreorderPageContent() {
         })
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({ success: false, error: 'Could not read checkout response.' }));
 
-      if (data.success) {
+      if (response.ok && data.success && data.payment?.url) {
         const preorder = data.preorder || {};
         const nextWaitlistNumber = preorder.waitlistNumber || data.waitlistNumber || "";
         const nextPaymentUrl = data.payment?.url || "";
@@ -582,11 +577,12 @@ function PreorderPageContent() {
           itemCount: cartItemCount,
           error: data.error || 'unknown',
         });
-        toast.error(data.error || 'Failed to place preorder');
+        toast.error(data.error || 'Could not start secure checkout. No payment was taken.');
       }
     } catch {
-      toast.error('Network error. Please try again.');
+      toast.error('Could not reach checkout. Check your connection and try again.');
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };
@@ -603,6 +599,7 @@ function PreorderPageContent() {
     { key: 'lemonades', label: 'Lemonades', emoji: '🍋' },
     { key: 'refreshers', label: 'Refreshers', emoji: '🍹' },
     { key: 'shots', label: 'Shots', emoji: '🥃' },
+    { key: 'milk-teas', label: 'Milk Teas & Boba', emoji: '🧋' },
     { key: 'specials', label: 'Specials', emoji: '✨' },
   ];
 
@@ -614,9 +611,9 @@ function PreorderPageContent() {
             <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Check className="w-10 h-10 text-emerald-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">{paymentUrl ? 'Preorder Reserved' : 'Preorder Confirmed!'}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{paymentUrl ? 'Preorder Reserved' : 'Complete Your Preorder Payment'}</h1>
             <p className="text-gray-600 mt-2">
-              {paymentUrl ? 'Complete secure payment to confirm your market pickup.' : 'Your order has been placed successfully.'}
+              {paymentUrl ? 'Complete secure payment to confirm your market pickup.' : 'Complete secure Square payment to confirm your preorder.'}
             </p>
           </div>
 
@@ -650,7 +647,7 @@ function PreorderPageContent() {
                   <strong>What's next?</strong><br />
                   {paymentUrl
                     ? 'Use the secure Square checkout link below. Your preorder is not confirmed until payment is completed.'
-                    : "Arrive at the market and look for the Taste of Gratitude booth. Give us your name or waitlist number. You'll pay at pickup with cash or card."}
+                    : "Arrive at the market and look for the Taste of Gratitude booth. Give us your name or waitlist number. Complete online payment to reserve your items."}
                 </p>
               </div>
 
@@ -811,7 +808,10 @@ function PreorderPageContent() {
               </p>
               <h2 className="mt-1 font-semibold text-gray-900">Reserve your batch for {selectedMarket.name}</h2>
               <p className="mt-1 text-sm leading-6 text-gray-600">
-                ${PREORDER_MINIMUM} reservation minimum • pay at pickup • {selectedMarket.day}s, {selectedMarket.displayHours}
+                ${PREORDER_MINIMUM} reservation minimum • secure Square payment • {selectedMarket.day}s, {selectedMarket.displayHours}
+              </p>
+              <p className="mt-1 text-sm font-medium text-emerald-700">
+                Next available pickup: {nextPreorderPickup(selectedMarket)?.toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long', month: 'short', day: 'numeric' }) || 'Please check the market schedule'}
               </p>
               {cartItemCount > 0 && (
                 <div className="mt-3">
@@ -919,7 +919,7 @@ function PreorderPageContent() {
           >
             <ChevronLeft className="w-5 h-5 text-gray-600" />
           </button>
-          <h1 className="font-semibold text-gray-900">Checkout</h1>
+          <h1 className="font-semibold text-gray-900">Review preorder &amp; pay</h1>
         </div>
       </div>
 
@@ -988,89 +988,20 @@ function PreorderPageContent() {
           </CardContent>
         </Card>
 
-        {/* Fulfillment selection */}
         <Card className="mb-6 border-0 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-emerald-600" />
-              Fulfillment
+              <ShoppingBag className="w-5 h-5 text-emerald-600" /> Pickup &amp; payment
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setFulfillment({ type: 'pickup' });
-                  track('delivery_toggle', { type: 'pickup', marketId: selectedMarket?.id });
-                }}
-                className={`rounded-xl border p-3 text-left text-sm font-medium transition ${fulfillment.type === 'pickup' ? 'border-emerald-600 bg-emerald-50 text-emerald-900' : 'border-gray-200 bg-white text-gray-700'}`}
-              >
-                Market pickup
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setFulfillment((prev) => ({ ...prev, type: 'delivery' }));
-                  track('delivery_toggle', { type: 'delivery', marketId: selectedMarket?.id });
-                }}
-                className={`rounded-xl border p-3 text-left text-sm font-medium transition ${fulfillment.type === 'delivery' ? 'border-emerald-600 bg-emerald-50 text-emerald-900' : 'border-gray-200 bg-white text-gray-700'} ${!deliveryAvailable ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={!deliveryAvailable}
-              >
-                Local delivery
-                {!deliveryAvailable && (
-                  <span className="block text-xs font-normal text-gray-500 mt-1">
-                    Available on ${deliveryMinDollars.toFixed(2)}+ orders
-                  </span>
-                )}
-              </button>
-            </div>
-
-            {fulfillment.type === 'delivery' && deliveryAvailable && (
-              <div className="space-y-3">
-                <div>
-                  <Label htmlFor="delivery-zip" className="text-gray-700">Delivery ZIP code</Label>
-                  <Input
-                    id="delivery-zip"
-                    value={fulfillment.address?.zip || ''}
-                    onChange={(e) => {
-                      const zip = e.target.value.replace(/\D/g, '').slice(0, 5);
-                      const zone = getDeliveryZoneByZip(zip);
-                      const quote = zip.length === 5
-                        ? calculateDynamicDeliveryFee(zip, Math.round(cartTotal * 100))
-                        : null;
-                      setFulfillment({
-                        type: 'delivery',
-                        address: { ...fulfillment.address, zip },
-                        deliveryZone: zone,
-                        deliveryFee: quote ? quote.fee : undefined,
-                      });
-                      if (quote && zip.length === 5) {
-                        track('delivery_quote', {
-                          zip,
-                          zone: zone?.name,
-                          fee: quote.fee,
-                          freeDelivery: quote.freeDelivery,
-                        });
-                      }
-                    }}
-                    placeholder="30310"
-                    className="mt-2 h-12 rounded-xl"
-                    maxLength={5}
-                  />
-                </div>
-                {fulfillment.deliveryFee !== undefined && fulfillment.address?.zip?.length === 5 && (
-                  <div className={`rounded-xl border p-3 text-sm ${fulfillment.deliveryFee === 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>
-                    {fulfillment.deliveryFee === 0 ? (
-                      <p>✅ Free delivery in {fulfillment.deliveryZone?.name}</p>
-                    ) : (
-                      <p>Delivery to {fulfillment.deliveryZone?.name}: ${(fulfillment.deliveryFee / 100).toFixed(2)}</p>
-                    )}
-                  </div>
-                )}
-                <p className="text-xs text-gray-500">Local delivery available in metro Atlanta. Enter ZIP for a quote.</p>
-              </div>
-            )}
+          <CardContent className="space-y-3">
+            <p className="font-semibold text-emerald-900">Market pickup · {selectedMarket?.name}</p>
+            <p className="text-sm leading-6 text-gray-600">
+              Pay securely through Square to reserve your order. Your reservation is not confirmed until payment is completed.
+            </p>
+            <p className="text-sm text-gray-600">
+              Need delivery? <Link href="/catalog" className="font-semibold text-emerald-800 underline underline-offset-2">Use the regular shop checkout</Link>.
+            </p>
           </CardContent>
         </Card>
 
@@ -1156,7 +1087,7 @@ function PreorderPageContent() {
           </Button>
           <Button
             onClick={handleSubmitPreorder}
-            disabled={isSubmitting || cartItemCount === 0 || !customer.name || !customer.phone || !preorderRulesMet || (fulfillment.type === 'delivery' && (!deliveryAvailable || !fulfillment.address?.zip))}
+            disabled={isSubmitting || cartItemCount === 0 || !customer.name.trim() || !customer.phone.trim() || !preorderRulesMet}
             className="flex-1 h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700"
           >
             {isSubmitting ? (
@@ -1165,7 +1096,7 @@ function PreorderPageContent() {
                 Placing Order...
               </>
             ) : (
-              `Place Preorder · $${orderTotal.toFixed(2)}`
+              `Continue to Square · $${cartTotal.toFixed(2)}`
             )}
           </Button>
         </div>
