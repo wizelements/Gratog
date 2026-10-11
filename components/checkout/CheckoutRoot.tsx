@@ -49,7 +49,7 @@ function CheckoutContent() {
   } = useCheckoutStore();
 
   const hasTrackedStartRef = useRef(false);
-  const hasPreorderItems = cart.some(item => item.isPreorder);
+  const hasPreorderItems = cart.some(item => item.isPreorder || item.marketExclusive);
   const showSideSummary = stage !== 'cart';
 
   // Scroll to top when stage changes
