@@ -16,7 +16,7 @@ import {
 import { rewardsSystem } from '@/lib/enhanced-rewards';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
-import { consumeInventoryForPaidOrder } from '@/lib/custom-inventory';
+import { consumeInventoryForPaidOrder, checkInventoryForPayment } from '@/lib/custom-inventory';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';
 import { validateGeorgiaDestination } from '@/lib/georgia-orders';
 import {
@@ -468,6 +468,18 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // An inventory count below zero (or missing stock ledger) cannot support
+    // a charge. This must run BEFORE the payment-processing lock and Square
+    // createPayment, not after charging the customer.
+    const stockAdmission = await checkInventoryForPayment(db, order.items);
+    if (!stockAdmission.valid) {
+      return json({
+        success: false,
+        code: stockAdmission.code,
+        error: 'This batch is not confirmed as in stock yet. Please request the next batch before paying.',
+      }, 409);
+    }
+
     // ========================================================================
     // SERVER-AUTHORITATIVE IDEMPOTENCY KEY
     // Use stored key if exists, otherwise generate stable key from orderId
