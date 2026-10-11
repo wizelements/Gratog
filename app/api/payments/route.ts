@@ -473,7 +473,7 @@ export async function POST(request: NextRequest) {
     // Use stored key if exists, otherwise generate stable key from orderId
     // This ensures ALL attempts for this order use the SAME key
     // ========================================================================
-    const serverStableKey = `pay_${orderId.slice(0, 36)}`;
+    const serverStableKey = `pay_${orderId.slice(0, 24)}_${Math.max(0, Number(order.paymentAttemptNumber) || 0)}`;
     const paymentIdempotencyKey = order.paymentIdempotencyKey || serverStableKey;
     const orderIdempotencyKey = `sqord_${orderId.slice(0, 36)}`;
     
@@ -863,8 +863,13 @@ export async function POST(request: NextRequest) {
             paymentStatus: 'PENDING',    // Standardized payment status
             paymentError: errorDetail,
             paymentErrorCode: errorCode,
-            updatedAt: new Date().toISOString() 
-          } 
+            updatedAt: new Date().toISOString()
+          },
+          // Square explicitly declined/rejected this attempt: advance the
+          // key generation only for a KNOWN failure. Ambiguous network
+          // outcomes retain the same key for safe reconciliation.
+          $inc: { paymentAttemptNumber: 1 },
+          $unset: { paymentIdempotencyKey: '' }
         }
       );
 
@@ -1442,6 +1447,7 @@ export async function GET(request: NextRequest) {
         },
         payment: paymentRecord
           ? {
+              id: paymentRecord.squarePaymentId,
               status: paymentRecord.status,
               amountCents: paymentRecord.amountCents,
               currency: paymentRecord.currency || 'USD',
