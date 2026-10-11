@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { UNIFIED_PRODUCTS_COLLECTION } from '@/lib/product-sync-engine';
 import ProductDetailClient from './ProductDetailClient';
