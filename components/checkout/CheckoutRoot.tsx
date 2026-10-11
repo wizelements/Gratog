@@ -126,7 +126,7 @@ function CheckoutContent() {
       } else if (!Fulfillment.isZipServiceable(zip)) {
         errors['address.zip'] = "We don't deliver to this area yet";
       }
-      if (street && city && /^\\d{5}$/.test(zip)) {
+      if (street && city && /^\d{5}$/.test(zip)) {
         const eligible = validateGeorgiaDestination(fulfillment.delivery?.address);
         if (!eligible.valid) errors['address.state'] = eligible.message;
       }
@@ -153,7 +153,7 @@ function CheckoutContent() {
       } else if (!/^\d{5}$/.test(zip)) {
         errors['address.zip'] = 'ZIP code must be 5 digits';
       }
-      if (street && city && /^\\d{5}$/.test(zip)) {
+      if (street && city && /^\d{5}$/.test(zip)) {
         const eligible = validateGeorgiaDestination(fulfillment.shipping?.address);
         if (!eligible.valid) errors['address.state'] = eligible.message;
       }
