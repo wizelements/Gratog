@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { MapPin, Clock, Navigation, X, ChevronRight, Store } from 'lucide-react';
+import { MapPin, Clock, Navigation, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -62,7 +62,8 @@ export function LiveLocationBanner({ className }: LiveLocationBannerProps) {
 
   if (!isVisible || isLoading) return null;
 
-  // No markets today
+  // Regular online customers should not see a prominent negative market
+  // announcement when there is no market scheduled. Keep the site usable.
   if (!data?.hasMarketsToday) {
     return (
       <div className={cn(
