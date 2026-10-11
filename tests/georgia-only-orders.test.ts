@@ -41,6 +41,13 @@ describe('Georgia-only fulfillment', () => {
     }
   });
 
+  it('retires the unchecked legacy Square payment link route', () => {
+    const code = read('app/api/payments/square/route.ts');
+    expect(code).toContain('LEGACY_SQUARE_CHECKOUT_RETIRED');
+    expect(code).toContain('status: 410');
+    expect(code).not.toContain('createPaymentLink(');
+  });
+
   it('states Georgia-only fulfillment clearly to customers', () => {
     expect(GEORGIA_ONLY_NOTICE).toContain('Georgia only');
     for (const path of [
