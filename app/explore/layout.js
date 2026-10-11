@@ -9,16 +9,16 @@ export default function ExploreLayout({ children }) {
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white">
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/explore" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Link href="/explore" className="flex min-w-0 items-center gap-3 hover:opacity-80 transition-opacity">
               <span className="text-2xl">🌿</span>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">Ingredients & Learning</h1>
+                <h1 className="text-lg font-semibold text-gray-900 sm:text-xl">Ingredients & Learning</h1>
                 <p className="text-sm text-gray-500">Explore what goes into our products</p>
               </div>
             </Link>
 
-            <Link href="/">
+            <Link href="/" className="shrink-0">
               <Button variant="outline" size="sm">
                 <Home className="h-4 w-4 mr-2" />
                 Back to Site
