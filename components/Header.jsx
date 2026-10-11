@@ -39,6 +39,10 @@ export default function Header() {
 
   return (
     <header id="navigation" className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm" role="banner">
+      <div className="bg-emerald-950 px-4 py-2 text-center text-xs font-medium leading-5 text-emerald-50 sm:text-sm">
+        Proudly serving Georgia. Orders fulfilled in Georgia only.{' '}
+        <Link href="/policies#shipping" className="underline underline-offset-2 hover:text-white">Ordering details</Link>
+      </div>
       {/* Primary navigation */}
       <div className="container flex h-16 items-center justify-between gap-4">
         {/* Logo */}
