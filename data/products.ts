@@ -1029,16 +1029,19 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
     ? liveProduct.price
     : curatedProduct.price;
   const firstLiveVariationId = liveVariations?.[0]?.id;
-  const resolvedLiveVariationId =
-    liveProduct.variationId ||
-    liveProduct.catalogObjectId ||
-    liveProduct.squareVariationId ||
-    liveProduct.squareData?.variationId ||
-    firstLiveVariationId ||
-    null;
-  const checkoutReady = liveProduct.checkoutReady === true || Boolean(
-    resolvedLiveVariationId && !String(resolvedLiveVariationId).startsWith('tog-')
-  );
+  const resolvedLiveVariationId = isBlueLotusSquareGel
+    ? firstLiveVariationId || null
+    : liveProduct.variationId ||
+      liveProduct.catalogObjectId ||
+      liveProduct.squareVariationId ||
+      liveProduct.squareData?.variationId ||
+      firstLiveVariationId ||
+      null;
+  const checkoutReady = isBlueLotusSquareGel
+    ? Boolean(firstLiveVariationId && !String(firstLiveVariationId).startsWith('tog-'))
+    : liveProduct.checkoutReady === true || Boolean(
+        resolvedLiveVariationId && !String(resolvedLiveVariationId).startsWith('tog-')
+      );
 
   return {
     ...liveProduct,
@@ -1079,7 +1082,7 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
     priceCents: isBlueLotusSquareGel ? Math.round(livePrice * 100) : liveProduct.priceCents || Math.round(livePrice * 100),
     variations: liveVariations,
     variationId: resolvedLiveVariationId || curatedProduct.variationId,
-    catalogObjectId: liveProduct.catalogObjectId || resolvedLiveVariationId || curatedProduct.catalogObjectId,
+    catalogObjectId: isBlueLotusSquareGel ? resolvedLiveVariationId : liveProduct.catalogObjectId || resolvedLiveVariationId || curatedProduct.catalogObjectId,
     checkoutReady,
     checkoutUnavailableReason: checkoutReady ? undefined : curatedProduct.checkoutUnavailableReason,
     activeWeeklyMenu: curated.activeWeeklyMenu,
