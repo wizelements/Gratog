@@ -118,7 +118,12 @@ function getSafeLocalStorage() {
  */
 function isMarketExclusive(product: any) {
   // Check explicit flag
-  if (product.marketExclusive === true) return true;
+  if (
+    product.marketExclusive === true ||
+    product.marketPickupOnly === true ||
+    product.fulfillmentType === 'market_pickup' ||
+    product.fulfillmentType === 'market_pickup_only'
+  ) return true;
   
   // Check category
   const category = (product.category || product.intelligentCategory || '').toLowerCase();
@@ -287,7 +292,7 @@ export function normalizeProduct(product: any): CartItem {
     variantLabel: variantLabel,
     size: variantLabel,
     addedAt: new Date().toISOString(),
-    isPreorder: product.isPreorder || (product.stock != null && product.stock <= 0) || false,
+    isPreorder: Boolean(product.isPreorder || product.preorderOnly || (product.stock != null && product.stock <= 0)),
     marketExclusive: marketExclusive,
     // @ts-ignore — type mismatch
     fulfillmentType: null, // Will be set at checkout

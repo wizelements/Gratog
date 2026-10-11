@@ -434,17 +434,17 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
         <div className="container">
           <div className="mx-auto mb-10 max-w-4xl text-center sm:mb-12">
             <p className="mb-4 inline-flex rounded-full border border-emerald-200 bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-800 shadow-sm">
-              Fresh market menu • small-batch wellness
+              Georgia online shop • small-batch favorites
             </p>
             <h1 className="text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-stone-950 md:text-5xl">
-              Shop what feels good for your week.
+              Your favorites, wherever you are in Georgia.
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-stone-700">
-              Wildcrafted sea moss gels, fresh drinks, shots, and seasonal market staples prepared with intention.
+              Explore sea moss gels, lemonades, fresh drinks and seasonal favorites. Shop eligible items for Georgia shipping or local delivery without visiting a market; market-only products are reserved for pickup.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-2 text-sm font-medium text-emerald-900">
-              <span className="rounded-full bg-white px-4 py-2 shadow-sm">Market pickup</span>
-              <span className="rounded-full bg-white px-4 py-2 shadow-sm">Ingredient-forward</span>
+              <span className="rounded-full bg-white px-4 py-2 shadow-sm">Georgia orders only</span>
+              <span className="rounded-full bg-white px-4 py-2 shadow-sm">No market visit required for eligible orders</span>
               <span className="rounded-full bg-white px-4 py-2 shadow-sm">Secure checkout</span>
             </div>
             {!infoMode ? (
@@ -508,16 +508,16 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
           <div className="container grid gap-4 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Weekly menu email</p>
-              <h2 className="mt-2 text-2xl font-semibold text-stone-950">New here? Get the weekly menu email before you reserve.</h2>
+              <h2 className="mt-2 text-2xl font-semibold text-stone-950">Prefer to pick up at a market?</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-                Browse today, then get the next menu, pickup reminder, and market-specific preorder link by email when batches are open.
+                Regular online orders can go through the cart above. For market-only items, reserve ahead for pickup at a participating Georgia market. Subscribe for weekly menus and market news.
               </p>
               <Button asChild variant="outline" className="mt-4 h-11 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
                 <Link
                   href="/preorder?utm_source=catalog_banner&utm_campaign=weekly_menu_drop"
                   onClick={() => track('catalog_preorder_click', { source: 'catalog_lead_banner' })}
                 >
-                  Already know your pickup? Reserve now
+                  Explore market preorders
                 </Link>
               </Button>
             </div>

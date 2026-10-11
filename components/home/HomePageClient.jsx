@@ -146,14 +146,14 @@ export default function HomePageClient({
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild className="h-14 rounded-full bg-white px-8 text-base font-bold text-emerald-950 hover:bg-emerald-50">
-                <Link href="/weekly-menu">Explore the weekly menu</Link>
+                <Link href="/catalog">Shop online in Georgia</Link>
               </Button>
               <Button asChild variant="outline" className="h-14 rounded-full border-white/30 bg-transparent px-8 text-base font-bold text-white hover:bg-white/10 hover:text-white">
-                <Link href="/markets">Find us at a market</Link>
+                <Link href="/weekly-menu">Preorder for market pickup</Link>
               </Button>
             </div>
             <p className="mt-4 text-sm leading-6 text-emerald-50/80">
-              We currently fulfill orders in Georgia only. Choose a Georgia market for pickup, or explore eligible delivery and shipping at checkout.
+              Ordering from home? No market visit is required for eligible Georgia delivery or shipping. Market pickup is available for preorders and participating products.
             </p>
           </div>
 
@@ -185,11 +185,11 @@ export default function HomePageClient({
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Fresh from the weekly menu</p>
               <h2 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Find your favorites.</h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">
-                Browse our small-batch selection, discover a new flavor, and preorder for your preferred pickup market.
+                Discover your next favorite. Shop eligible products online for Georgia fulfillment, or reserve market-only items for pickup.
               </p>
             </div>
             <Button asChild className="h-12 rounded-full bg-emerald-700 px-6 text-white hover:bg-emerald-800">
-              <Link href="/weekly-menu">View the full weekly menu</Link>
+              <Link href="/catalog">Browse the full shop</Link>
             </Button>
           </div>
 

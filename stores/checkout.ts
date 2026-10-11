@@ -120,11 +120,14 @@ const initialContact: ContactInfo = {
 };
 
 const initialFulfillment: FulfillmentData = {
-  type: 'pickup',
-  pickup: {
-    locationId: '',
-    date: null
-  }
+  // New regular online shoppers start with the non-market option. The checkout
+  // automatically switches to pickup when preorder items are present.
+  type: 'shipping',
+  shipping: {
+    address: { street: '', city: '', state: 'GA', zip: '' },
+    methodId: '',
+  },
+  pickup: { locationId: '', date: null },
 };
 
 // Load persisted data from localStorage

@@ -17,9 +17,9 @@ interface FulfillmentTabsProps {
 }
 
 const TABS = [
-  { value: 'pickup' as FulfillmentType, label: 'Pickup', icon: MapPin, description: 'Market pickup' },
+  { value: 'pickup' as FulfillmentType, label: 'Pickup', icon: MapPin, description: 'Georgia market pickup' },
   { value: 'delivery' as FulfillmentType, label: 'Delivery', icon: Truck, description: 'Atlanta-area only', disabledForPreorder: true },
-  { value: 'shipping' as FulfillmentType, label: 'Shipping', icon: Package, description: 'Georgia only • eligible items', disabledForPreorder: true },
+  { value: 'shipping' as FulfillmentType, label: 'Shipping', icon: Package, description: 'Eligible Georgia addresses', disabledForPreorder: true },
 ];
 
 export default function FulfillmentTabs({ selected, onChange, hasPreorderItems = false }: FulfillmentTabsProps) {
@@ -30,10 +30,10 @@ export default function FulfillmentTabs({ selected, onChange, hasPreorderItems =
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 animate-in fade-in">
           <div>
             <p className="text-sm font-medium text-amber-900">
-              Preorder items are made for market pickup.
+              Your cart includes items available for market pickup only.
             </p>
             <p className="text-sm text-amber-700 mt-1">
-              Choose a pickup location and date below. Delivery and shipping are unavailable for preorder products.
+              Choose a Georgia pickup market and date below. Delivery and shipping are not available for these products.
             </p>
           </div>
         </div>
@@ -93,7 +93,7 @@ export default function FulfillmentTabs({ selected, onChange, hasPreorderItems =
     {hasPreorderItems && selected !== 'pickup' && (
       <div className="bg-red-50 border border-red-200 rounded-lg p-3">
         <p className="text-xs text-red-700 font-medium">
-          Your cart has preorder items — these must be collected at a market. Please select &quot;Pickup&quot; to continue.
+          Your cart includes market-only items. Please select &quot;Pickup&quot; to continue.
         </p>
       </div>
     )}

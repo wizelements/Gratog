@@ -49,7 +49,7 @@ function CheckoutContent() {
   } = useCheckoutStore();
 
   const hasTrackedStartRef = useRef(false);
-  const hasPreorderItems = cart.some(item => item.isPreorder);
+  const hasPreorderItems = cart.some(item => item.isPreorder || item.marketExclusive);
   const showSideSummary = stage !== 'cart';
 
   // Scroll to top when stage changes
@@ -237,7 +237,7 @@ function CheckoutContent() {
                     exit={{ opacity: 0, x: 20 }}
                   >
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Review your cart</h2>
-                    <p className="mb-6 text-base text-gray-600">Review your favorites, then choose market pickup or an eligible Georgia delivery or shipping option.</p>
+                    <p className="mb-6 text-base text-gray-600">Shopping without visiting a market? No problem. Eligible products can be ordered for Georgia delivery or shipping; choose market pickup only if you prefer it or your items require it.</p>
                     <CartSummary
                       cart={cart}
                       totals={totals}
@@ -269,10 +269,9 @@ function CheckoutContent() {
                     />
 
                     <div className="border-t pt-8">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Pickup, delivery, or shipping</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">How would you like your order?</h3>
                       <p className="mb-4 text-base text-gray-600">
-                        Choose how you want to receive your order. Preorders are made for market pickup;
-                        eligible ready-to-ship items may be shipped to Georgia addresses only, with fees shown before payment.
+                        Choose shipping for eligible Georgia addresses or delivery in supported local areas. You don't need to choose a market unless your products are pickup-only. Final options and fees are shown before payment.
                       </p>
                       <FulfillmentTabs
                         selected={fulfillment.type}

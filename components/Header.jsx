@@ -16,18 +16,19 @@ export default function Header() {
   const isActive = (path) => pathname === path || pathname?.startsWith(`${path}/`);
   const isMobileActive = (path) => pathname === path || pathname?.startsWith(`${path}/`);
   const desktopNavItems = [
-    { href: '/weekly-menu', label: 'Shop This Week' },
+    { href: '/catalog', label: 'Shop Online' },
+    { href: '/weekly-menu', label: 'Market Preorders' },
     { href: '/markets', label: 'Markets' },
     { href: '/#delivery', label: 'Delivery' },
     { href: '/events', label: 'Events' },
     { href: '/about', label: 'About' },
   ];
   const mobileNavItems = [
-    { href: '/weekly-menu', label: 'Shop This Week' },
+    { href: '/catalog', label: 'Shop Online' },
+    { href: '/weekly-menu', label: 'Market Preorders' },
     { href: '/markets', label: 'Markets' },
     { href: '/#delivery', label: 'Scheduled Delivery' },
     { href: '/events', label: 'Book an Event' },
-    { href: '/catalog', label: 'Full Catalog' },
     { href: '/about', label: 'Our Story' },
     { href: '/wholesale', label: 'Wholesale / Partners' },
     { href: '/contact', label: 'Contact' },
@@ -78,7 +79,7 @@ export default function Header() {
             size="sm"
             className="rounded-full bg-emerald-700 text-white hover:bg-emerald-800"
           >
-            <Link href="/weekly-menu">Preorder</Link>
+            <Link href="/catalog">Shop Online</Link>
           </Button>
           {isAuthenticated ? (
             <Button
