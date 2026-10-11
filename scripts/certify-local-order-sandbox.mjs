@@ -93,6 +93,24 @@ try {
   check('Market pickup-only product cannot be shipped using forged client flags',
     restricted.status === 422 && restricted.data.code === 'MARKET_PICKUP_REQUIRED', { status: restricted.status });
 
+  const lotusPreview = await post('/api/cart/price', {
+    lines: [{ variationId: 'qa-sbx-lotus-16oz', qty: 1, price: 0.01 }],
+  });
+  check('Preview prices only Blue Lotus 16oz at $36',
+    lotusPreview.status === 200 && lotusPreview.data.pricing?.subtotalCents === 3600,
+    { status: lotusPreview.status, subtotalCents: lotusPreview.data.pricing?.subtotalCents });
+
+  const sampleRequest = await post('/api/orders/create', {
+    customer: { name: 'QA Sandbox', email: 'sample@qa-sandbox.invalid' },
+    cart: [{ productId: 'qa-sbx-blue-lotus', variationId: 'retired-2oz-sample', quantity: 1 }],
+    fulfillmentType: 'shipping',
+    shippingAddress: { street: '123 Example Street', city: 'Atlanta', state: 'GA', zip: '30303' },
+    shippingMethod: 'standard',
+  });
+  check('Retired Blue Lotus sample size is rejected before order creation',
+    sampleRequest.status === 422 && sampleRequest.data.code === 'VARIATION_NOT_FOUND',
+    { status: sampleRequest.status, code: sampleRequest.data.code });
+
   const cart = [{ productId:'qa-sbx-strawberry-bliss', variationId:'qa-sbx-bliss-16oz', quantity:1, price:0.01 }];
   const body = {
     customer:{name:'QA Sandbox',email:'order@qa-sandbox.invalid'},
@@ -130,6 +148,17 @@ try {
     { status: stored?.status });
   check('Rejected out-of-state and market-only orders not persisted',
     (await db.collection('orders').countDocuments({ source:'qa-isolated-sandbox' })) === 1);
+  const lotusBody = {
+    ...body,
+    customer: { name: 'QA Sandbox', email: 'blue-lotus@qa-sandbox.invalid' },
+    cart: [{ productId: 'qa-sbx-blue-lotus', variationId: 'qa-sbx-lotus-16oz', quantity: 1, price: 0.01 }],
+  };
+  const lotus = await post('/api/orders/create', lotusBody, { 'Idempotency-Key': `tog-sbx-${randomUUID()}` });
+  check('Blue Lotus 16oz order created at $36 plus Georgia shipping',
+    lotus.status === 200 && lotus.data.order?.pricing?.subtotal === 36 &&
+    lotus.data.order?.pricing?.total === 44.99,
+    { status: lotus.status, total: lotus.data.order?.pricing?.total });
+
   evidence.pass = true;
 } catch (err) {
   evidence.error = String(err?.message || err).slice(0,250);
