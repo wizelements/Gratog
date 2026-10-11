@@ -72,7 +72,7 @@ const PAID_STATUSES = ['CONFIRMED', 'PREORDER_CONFIRMED', 'SHIPPING_CONFIRMED', 
 const FINAL_STATUSES = [...PAID_STATUSES, 'REFUNDED', 'PARTIALLY_REFUNDED', 'refunded', 'CANCELLED', 'cancelled'];
 
 // Pre-payment states that are valid for starting a new payment - FIXED: Use standardized values
-const PRE_PAYMENT_STATES = ['pending', 'PENDING_PAYMENT', 'PREORDER_PENDING_PAYMENT', 'SHIPPING_PENDING_PAYMENT', 'payment_failed'];
+const PRE_PAYMENT_STATES = ['pending', 'PENDING', 'PENDING_PAYMENT', 'PREORDER_PENDING_PAYMENT', 'SHIPPING_PENDING_PAYMENT', 'payment_failed'];
 
 const ORDER_ACCESS_TOKEN_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
