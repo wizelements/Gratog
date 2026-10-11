@@ -42,6 +42,27 @@ test.describe('Real Georgia customer journeys — no charges, accounts or submit
     await expect(page.getByText('Shopping without visiting a market?', { exact: false })).toBeVisible();
   });
 
+  test('stored cart remains visible on reload without hydration errors', async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+
+    await page.goto('/catalog');
+    const add = page.getByRole('button', { name: /add to cart/i }).first();
+    await expect(add).toBeEnabled();
+    await add.click();
+    await expect.poll(async () => page.evaluate(() => {
+      try { return JSON.parse(localStorage.getItem('tog_cart_engine_v1') || '[]').length; }
+      catch { return 0; }
+    }), { timeout: 10_000 }).toBeGreaterThan(0);
+
+    await page.goto('/checkout');
+    await expect(page.getByText('Review your cart', { exact: false })).toBeVisible();
+    await page.reload();
+    await expect(page.getByText('Review your cart', { exact: false })).toBeVisible();
+    await expect(page.getByText('Your cart is empty', { exact: false })).toHaveCount(0);
+    expect(pageErrors, 'Browser hydration or runtime errors').toEqual([]);
+  });
+
   test('empty cart cannot masquerade as a completed checkout', async ({ page }) => {
     await page.goto('/checkout');
     await expect(page.getByText('Review your cart', { exact: false })).toBeVisible();
