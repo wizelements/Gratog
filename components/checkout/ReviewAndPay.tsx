@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import { addOrderToQueue, shouldUseQueue, getQueueRedirectUrl } from '@/lib/queue-integration';
 import { validateCartForFulfillment } from '@/lib/cart-engine';
 import { Fulfillment } from '@/adapters/fulfillmentAdapter';
+import { validateGeorgiaDestination } from '@/lib/georgia-orders';
 
 interface ReviewAndPayProps {
   cart: CartItem[];
@@ -120,6 +121,9 @@ export default function ReviewAndPay({
         };
       }
 
+      const eligible = validateGeorgiaDestination(address);
+      if (!eligible.valid) return { valid: false, code: eligible.code, error: eligible.message };
+
       if (!hasQuote) {
         return {
           valid: false,
@@ -140,6 +144,9 @@ export default function ReviewAndPay({
           error: 'Complete the shipping address before payment.',
         };
       }
+
+      const eligible = validateGeorgiaDestination(address);
+      if (!eligible.valid) return { valid: false, code: eligible.code, error: eligible.message };
 
       if (!fulfillment.shipping?.methodId) {
         return {

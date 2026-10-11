@@ -199,7 +199,7 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
         
         <div className="col-span-1">
           <Label htmlFor="state" className="text-sm font-medium text-gray-700">
-            State *
+            State (Georgia only) *
           </Label>
           <Input
             id="state"

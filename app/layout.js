@@ -26,8 +26,8 @@ const inter = Inter({
 
 export const metadata = {
   metadataBase: new URL('https://tasteofgratitude.shop'),
-  title: 'Taste of Gratitude | Small-Batch Sea Moss & Market Fresh Drinks',
-  description: 'Founder-led Atlanta market brand for small-batch sea moss gels, fresh drinks, shots, weekly market menus, pickup, delivery, and eligible shipping.',
+  title: 'Taste of Gratitude | Georgia Sea Moss & Fresh Market Drinks',
+  description: 'Atlanta-made sea moss gels, lemonades and fresh drinks. Ordering is currently limited to Georgia: market pickup, with eligible local delivery or in-state shipping.',
   keywords: 'Taste of Gratitude, Atlanta sea moss, small batch sea moss gel, farmers market drinks, market pickup, fresh shots, fresh drinks',
   authors: [{ name: 'Taste of Gratitude' }],
   creator: 'Taste of Gratitude',
@@ -39,8 +39,8 @@ export const metadata = {
     telephone: false,
   },
   openGraph: {
-    title: 'Taste of Gratitude | Small-Batch Sea Moss & Market Fresh Drinks',
-    description: 'A founder-led Atlanta market brand with weekly menus, small-batch products, and clear online ordering.',
+    title: 'Taste of Gratitude | Georgia Sea Moss & Fresh Market Drinks',
+    description: 'Handcrafted small-batch drinks and sea moss in Georgia. Georgia orders only, with market pickup and eligible in-state fulfillment.',
     url: 'https://tasteofgratitude.shop',
     siteName: 'Taste of Gratitude',
     locale: 'en_US',
@@ -57,7 +57,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Taste of Gratitude | Small-Batch Sea Moss Gel',
-    description: 'Hand-crafted small-batch sea moss gel and fresh market drinks made with simple ingredients.',
+    description: 'Small-batch sea moss gel and refreshing drinks for Georgia markets and Georgia-only orders.',
     images: ['/og-image.jpg'],
   },
   robots: {

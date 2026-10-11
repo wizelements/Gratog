@@ -5,6 +5,7 @@
  */
 
 import { createLogger } from '@/lib/logger';
+import { validateGeorgiaDestination } from '@/lib/georgia-orders';
 
 const logger = createLogger('ShippingService');
 
@@ -113,6 +114,8 @@ export async function getShippingRates(
   toAddress: ShippingAddress,
   packageDimensions: PackageDimensions = DEFAULT_PACKAGE
 ): Promise<ShippingRate[]> {
+  const eligibility = validateGeorgiaDestination(toAddress);
+  if (!eligibility.valid) throw new Error(eligibility.message);
   logger.info('Getting shipping rates', { to: toAddress.zip });
 
   // Use API if configured
@@ -276,6 +279,8 @@ async function getEasyPostRates(
  */
 export async function validateAddress(address: ShippingAddress): Promise<AddressValidation> {
   logger.info('Validating address', { zip: address.zip });
+  const eligibility = validateGeorgiaDestination(address);
+  if (!eligibility.valid) return { valid: false, errors: [eligibility.message] };
 
   // Basic validation
   const errors: string[] = [];
@@ -353,6 +358,8 @@ export async function createShipment(
   rateId: string,
   toAddress: ShippingAddress
 ): Promise<ShipmentResult> {
+  const eligibility = validateGeorgiaDestination(toAddress);
+  if (!eligibility.valid) throw new Error(eligibility.message);
   logger.info('Creating shipment', { orderId, rateId });
 
   // For flat rates, generate mock tracking

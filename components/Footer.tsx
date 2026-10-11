@@ -31,10 +31,10 @@ export default function Footer() {
               Taste of Gratitude
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              Small-batch sea moss gels, drinks, refreshers, and shots for Atlanta market pickup and eligible local delivery.
+              Fresh sea moss gels, lemonades, and more, prepared in small batches. Currently accepting Georgia orders only: market pickup, with delivery or shipping where available.
             </p>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[emerald-600]/10 rounded-full text-xs font-semibold text-[emerald-600]">
-              🌿 Local pickup • Small batch
+              Georgia orders only • Small batch
             </div>
             <div className="mt-4 space-y-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">

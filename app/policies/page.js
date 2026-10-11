@@ -113,7 +113,7 @@ export default function PoliciesPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Truck className="h-5 w-5 text-emerald-600" />
-              Shipping & Delivery Policy
+              Georgia Pickup, Delivery & Shipping Policy
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 text-sm">
@@ -130,7 +130,7 @@ export default function PoliciesPage() {
             <section className="space-y-3">
               <h3 className="font-semibold text-base">Local Delivery</h3>
               <ul className="list-disc list-inside space-y-1">
-                <li>Available within our delivery service area</li>
+                <li>Only eligible Georgia addresses within our active local delivery area qualify</li>
                 <li>Delivery fee varies based on distance and order size</li>
                 <li>Minimum order may apply for delivery</li>
                 <li>Delivery times are scheduled based on availability</li>
@@ -140,10 +140,10 @@ export default function PoliciesPage() {
             <section className="space-y-3">
               <h3 className="font-semibold text-base">Shipping</h3>
               <ul className="list-disc list-inside space-y-1">
-                <li>Select products available for shipping</li>
-                <li>Shipping costs calculated at checkout based on weight and destination</li>
-                <li>Standard shipping typically takes 3-7 business days</li>
-                <li>Expedited shipping options available at additional cost</li>
+                <li>Shipping is available only for eligible products going to verified Georgia addresses</li>
+                <li>Shipping methods and fees are shown before payment when available</li>
+                <li>Estimated shipping times depend on the product and service selected</li>
+                <li>Shipping outside Georgia is not currently offered</li>
                 <li>Products are carefully packaged to maintain freshness</li>
               </ul>
             </section>

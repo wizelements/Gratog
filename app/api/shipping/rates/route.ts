@@ -8,6 +8,7 @@ import {
   type ShippingAddress 
 } from '@/lib/shipping-service';
 import { createLogger } from '@/lib/logger';
+import { validateGeorgiaDestination } from '@/lib/georgia-orders';
 
 const logger = createLogger('ShippingRatesAPI');
 
@@ -22,6 +23,11 @@ export async function POST(request: NextRequest) {
         { error: 'Complete address is required (street, city, state, zip)' },
         { status: 400 }
       );
+    }
+
+    const destination = validateGeorgiaDestination(address);
+    if (!destination.valid) {
+      return NextResponse.json({ success: false, code: destination.code, error: destination.message }, { status: 422 });
     }
 
     // Validate address format

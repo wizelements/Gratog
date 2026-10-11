@@ -28,7 +28,7 @@ export default function ShippingForm({ data, onChange, errors = {} }: ShippingFo
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Shipping Address</h3>
         <p className="text-sm text-gray-600">
-          We ship eligible products nationwide. Rates are shown here and included in your total before payment.
+          Shipping is available only to eligible Georgia addresses and products. Review your options and costs before payment.
         </p>
       </div>
       
@@ -77,7 +77,7 @@ export default function ShippingForm({ data, onChange, errors = {} }: ShippingFo
             )}
           </div>
           <div className="col-span-1">
-            <Label htmlFor="ship-state">State *</Label>
+            <Label htmlFor="ship-state">State (Georgia only) *</Label>
             <Input
               id="ship-state"
               value={data.address.state}
@@ -92,7 +92,7 @@ export default function ShippingForm({ data, onChange, errors = {} }: ShippingFo
             )}
           </div>
           <div className="col-span-2">
-            <Label htmlFor="ship-zip">ZIP *</Label>
+            <Label htmlFor="ship-zip">Georgia ZIP *</Label>
             <Input
               id="ship-zip"
               value={data.address.zip}

@@ -91,6 +91,15 @@ function SquareCheckoutContent() {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         
+        <Alert className="mb-6 border-emerald-700 bg-emerald-50">
+          <AlertCircle className="h-5 w-5 text-emerald-800" />
+          <AlertDescription className="text-emerald-950">
+            <strong>Georgia orders only.</strong> Taste of Gratitude currently accepts pickup in Georgia
+            and eligible delivery or shipping to Georgia addresses only. Please check your fulfillment
+            details before completing checkout on Square.
+          </AlertDescription>
+        </Alert>
+
         {/* Important Notice */}
         <Alert className="mb-6 border-blue-500 bg-blue-50">
           <AlertCircle className="h-5 w-5 text-blue-600" />

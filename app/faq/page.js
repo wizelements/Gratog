@@ -58,7 +58,7 @@ const faqCategories = [
     questions: [
       {
         question: 'How do I place an order?',
-        answer: 'Browse our catalog, add products to your cart, and proceed to checkout. You can choose pickup at our market locations, local delivery (select ZIP codes), or shipping. Complete your payment securely through Square.'
+        answer: 'Browse our catalog, add products to your cart, and proceed to checkout. Orders are currently for Georgia only. Choose a Georgia market pickup, or an eligible delivery or shipping address within Georgia. Complete your payment securely through Square.'
       },
       {
         question: 'What payment methods do you accept?',
@@ -85,27 +85,27 @@ const faqCategories = [
     questions: [
       {
         question: 'Where can I pick up my order?',
-        answer: 'Current market pickup is structured around Serenbe Farmers Market and Dunwoody Farmers Market. Select your preferred market at checkout and check /markets for current pickup windows and preorder guidance.'
+        answer: 'Visit our Georgia markets for pickup, including scheduled Serenbe, Dunwoody and Hapeville events when available. See /markets for current details and preorder deadlines.'
       },
       {
         question: 'Do you offer local delivery?',
-        answer: 'Where available, we offer same-day and next-day delivery to select ZIP codes in South Fulton, Atlanta Metro, Decatur, and surrounding areas. Enter your ZIP code at checkout to see if delivery is available in your area. Delivery fees vary by zone ($12-$18).'
+        answer: 'Local delivery is available only to eligible Georgia addresses within our active service area. Enter your Georgia address at checkout for availability and any delivery fee.'
       },
       {
-        question: 'What are your shipping options?',
-        answer: 'We ship via USPS Priority Mail (2-3 business days) to all US states. Shipping starts at $8.99 and is FREE on orders $50+. Orders are packed with ice packs to maintain freshness during transit.'
+        question: 'Do you ship outside Georgia?',
+        answer: 'We currently accept shipping orders to Georgia addresses only, for eligible products. Available methods, delivery estimates, and charges are shown before payment. We do not ship outside Georgia.'
       },
       {
         question: 'How long does shipping take?',
-        answer: 'Orders ship within 1-2 business days. USPS Priority Mail takes 2-3 business days. You will receive a tracking number via email once your order ships. Note: Sea moss products are perishable and should be refrigerated immediately upon arrival.'
+        answer: 'Shipping times depend on the eligible item and selected Georgia shipping method. Review the estimate before paying and follow any storage instructions on the product label.'
       },
       {
         question: 'Do you ship to PO Boxes?',
-        answer: 'Yes, we ship to PO Boxes via USPS. However, due to the perishable nature of sea moss products, we recommend using a physical address where someone can receive and refrigerate the products immediately.'
+        answer: 'PO Box eligibility depends on the shipping method and product. We only fulfill to Georgia addresses, and recommend a physical address for perishable items.'
       },
       {
         question: 'What if my package arrives warm or damaged?',
-        answer: 'We pack orders with ice packs, but warm arrival can occur in hot weather or delivery delays. If your product arrives warm but sealed and within the expected delivery window, refrigerate immediately - it should be fine. If damaged or spoiled, contact us within 24 hours with photos for a replacement or refund.'
+        answer: 'If an order arrives damaged or at an unsafe temperature, do not consume it. Contact us promptly with photos and the order details so we can review a replacement or refund.'
       }
     ]
   },
