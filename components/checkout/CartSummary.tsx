@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 interface CartSummaryProps {
   cart: CartItem[];
   totals: OrderTotals;
+  fulfillmentType?: string;
   onUpdateQuantity: (itemId: string, quantity: number) => void;
   onRemoveItem: (itemId: string) => void;
   collapsible?: boolean;
@@ -25,6 +26,7 @@ interface CartSummaryProps {
 export default function CartSummary({
   cart,
   totals,
+  fulfillmentType,
   onUpdateQuantity,
   onRemoveItem,
   collapsible = true
@@ -172,7 +174,7 @@ export default function CartSummary({
               
               {totals.deliveryFee > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Delivery Fee</span>
+                  <span className="text-gray-600">{fulfillmentType === 'shipping' ? 'Shipping' : 'Delivery Fee'}</span>
                   <span className="font-medium">{formatCurrency(totals.deliveryFee)}</span>
                 </div>
               )}
