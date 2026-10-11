@@ -879,9 +879,9 @@ function PreorderPageContent() {
                 />
               ))}
 
-              {/* Floating Cart Button */}
+              {/* Inline order review: never overlay horizontal product controls on mobile. */}
               {cartItemCount > 0 && (
-                <div className="fixed bottom-6 left-4 right-4 max-w-md mx-auto">
+                <div className="mx-4 mt-6 mb-10 max-w-md lg:mx-auto">
                   <Button 
                     onClick={() => {
                   track('preorder_checkout_viewed', {

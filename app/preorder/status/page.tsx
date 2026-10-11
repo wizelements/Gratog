@@ -381,7 +381,7 @@ export default function OrderStatusPage() {
 
 function OrderStatusContent() {
   const searchParams = useSearchParams();
-  const initialOrderId = searchParams.get("order");
+  const initialOrderId = searchParams.get("order") || searchParams.get("orderNumber");
   
   const [orderId, setOrderId] = useState(initialOrderId || "");
   const [order, setOrder] = useState<PreorderStatus | null>(null);
