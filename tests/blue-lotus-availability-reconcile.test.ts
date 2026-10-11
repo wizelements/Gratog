@@ -59,7 +59,7 @@ describe('Blue Lotus genuine availability / Square catalog reconciliation', () =
     expect(() => normalizeRequestInput({...fields,requestedProductSlug:'calm-waters'})).toThrow();
     const page = read('app/product/[slug]/ProductDetailClient.jsx');
     expect(page).toContain('/request-a-flavor?product=blue-lotus-gel');
-    expect(page).toContain('no charge') || expect(page).toContain('before collecting payment');
+    expect(page).toContain('before collecting payment');
   });
 
   it('shows only canonical Calm Waters on the public Square catalog feed', async () => {
