@@ -44,6 +44,7 @@ const QUANTITY_OPTIONS = [
 ];
 
 const MARKET_OPTIONS = [
+  { value: 'georgia_online_inquiry', label: 'Georgia online order — confirm delivery or shipping eligibility' },
   { value: 'serenbe', label: 'Serenbe Farmers Market — Saturdays 9am–1pm' },
   { value: 'dunwoody', label: 'Dunwoody Farmers Market — Saturdays 9am–12pm' },
 ];
@@ -75,7 +76,7 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
     requestedFlavorText: '',
     quantity: '1',
     quantityUnit: 'bottle_16oz',
-    preferredMarketId: 'serenbe',
+    preferredMarketId: 'georgia_online_inquiry',
     needByDate: '',
     notes: '',
     marketingEmailConsent: false,
@@ -118,7 +119,7 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
     const qty = Number(form.quantity);
     if (!Number.isFinite(qty) || qty < 1) errors.quantity = 'Quantity must be at least 1.';
 
-    if (!form.preferredMarketId) errors.preferredMarketId = 'Please select a pickup market.';
+    if (!form.preferredMarketId) errors.preferredMarketId = 'Please select how you prefer to receive your order.';
 
     if (form.needByDate) {
       const min = new Date(Date.now() + 48 * 60 * 60 * 1000);
@@ -182,7 +183,7 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
           <div>
             <p className="text-lg font-semibold">Request received.</p>
             <p className="mt-2 text-emerald-800">
-              We will confirm availability, price, and pickup details by email before any payment is requested.
+              We will confirm availability, price, and eligible Georgia fulfillment options before any payment is requested.
             </p>
             <p className="mt-4">
               <Link href="/markets" className="inline-flex items-center gap-1 font-medium text-emerald-900 underline underline-offset-4">
@@ -196,7 +197,7 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-5" noValidate>
+    <form onSubmit={handleSubmit} className="grid min-w-0 w-full grid-cols-[minmax(0,1fr)] gap-5" noValidate>
       <div>
         <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-stone-800">
           Email <span aria-hidden="true" className="text-red-600">*</span>
@@ -227,7 +228,7 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
           value={form.requestedProductSlug}
           onValueChange={(value) => updateField('requestedProductSlug', value)}
         >
-          <SelectTrigger id="product" aria-label="Choose a known flavor">
+          <SelectTrigger id="product" className="w-full min-w-0 max-w-full" aria-label="Choose a known flavor">
             <SelectValue placeholder="Choose a flavor from our lineup" />
           </SelectTrigger>
           <SelectContent>
@@ -249,7 +250,7 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
           value={form.flavorProfile}
           onValueChange={(value) => updateField('flavorProfile', value)}
         >
-          <SelectTrigger id="flavorProfile" aria-label="Choose a flavor profile">
+          <SelectTrigger id="flavorProfile" className="w-full min-w-0 max-w-full" aria-label="Choose a flavor profile">
             <SelectValue placeholder="Choose a profile" />
           </SelectTrigger>
           <SelectContent>
@@ -281,7 +282,7 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
         )}
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid min-w-0 gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="quantity" className="mb-1.5 block text-sm font-medium text-stone-800">
             Quantity <span aria-hidden="true" className="text-red-600">*</span>
@@ -312,7 +313,7 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
             value={form.quantityUnit}
             onValueChange={(value) => updateField('quantityUnit', value)}
           >
-            <SelectTrigger id="quantityUnit" aria-label="Quantity unit">
+            <SelectTrigger id="quantityUnit" className="w-full min-w-0 max-w-full" aria-label="Quantity unit">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -328,13 +329,13 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
 
       <div>
         <label htmlFor="market" className="mb-1.5 block text-sm font-medium text-stone-800">
-          Preferred pickup market <span aria-hidden="true" className="text-red-600">*</span>
+          Preferred fulfillment <span aria-hidden="true" className="text-red-600">*</span>
         </label>
         <Select
           value={form.preferredMarketId}
           onValueChange={(value) => updateField('preferredMarketId', value)}
         >
-          <SelectTrigger id="market" aria-label="Preferred pickup market">
+          <SelectTrigger id="market" className="w-full min-w-0 max-w-full" aria-label="Preferred fulfillment">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
