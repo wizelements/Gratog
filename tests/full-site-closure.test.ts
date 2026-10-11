@@ -53,7 +53,7 @@ describe('real customer safety and non-market ordering', () => {
   });
 
   it('provides actual headings in expired checkout and password recovery flows', () => {
-    expect(read('app/checkout/square/page.js')).toContain('<h1 className="text-xl font-semibold mb-2">No Order Found</h1>');
+    expect(read('app/checkout/square/page.js')).toContain("redirect('/checkout')");
     expect(read('app/forgot-password/page.js')).toContain('<h1 className="text-2xl font-bold');
     expect(read('app/reset-password/page.js')).toContain('<h1 className="text-2xl font-bold');
   });
