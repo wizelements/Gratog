@@ -13,7 +13,7 @@
 - **Puppeteer:** 16 separate browser checks (8 desktop/8 mobile) of homepage, catalog, checkout, market preorder, login, markets, FAQ and contact.
 - **Focused Playwright shopper:** 390px mobile viewport, 34 catalog cards, added *Healing Harmony* ($36) and verified persisted cart and checkout summary ($36, one item), without creating an order or charging a card.
 - **Skeptical customer restrictions:** Live New York delivery rejection returned HTTP 422 code `GEORGIA_ONLY` on baseline; earlier GA-vs-NY-ZIP and legacy Square 410 denial tests also verified.
-- All product pages returning HTTP 200 is **not** a good outcome for archived and non-existent items; robots and availability must be honest.
+- All product pages returning HTTP 200 is **not** a good outcome for archived and non-existent items; robots and availability must be honest. A missing product in the preview was still served with HTTP 200 because of Next.js streaming, but included an explicit `noindex` robots tag. This is a remaining soft-404 infrastructure limitation; status-code correctness is not certified.
 - Some rapid navigations in the automation returned transient missing H1 or browser context navigation-abort; these require hydrated recheck and are **not automatically categorized as product defects**.
 
 ## Confirmed findings and remediation
@@ -22,7 +22,7 @@
 |---|---|---|
 | **P0 checkout integrity** | User-submitted `isPreorder:true` could bypass stock unavailable checks in server pricing | Server catalog preorder permission controls stock validation, with adversarial unit tests |
 | **P0 fulfillment integrity** | Merchant stock zero automatically became preorder even without explicit preorder policy | Explicit merchant preorder opt-in required across inventory snapshot, cart normalization and quick-add |
-| **P1 search and UX** | Square archived items appeared in API and search-indexable sitemap/product pages | Filter archived catalog items; return real 404 for missing products, noindex archived pages and block archived checkout |
+| **P1 search and UX** | Square archived items appeared in API and search-indexable sitemap/product pages | Filter archived catalog items; render Next.js not-found for missing products with noindex metadata (streamed Next routes may retain HTTP 200), noindex archived pages and block archived checkout |
 | **P1 security/performance** | Product URL slug used directly as a Mongo regular expression | Replace with exact-ID / slug lookup |
 | **P1 pricing consistency** | Legacy cart preview calculated its own 8% tax and accepted unbounded/noninteger quantity | Delegate to canonical server-authoritative pricing and validate quantities |
 | **P1 automated quality** | Preview E2E called a nonexistent npm script; old tests passed after mere navigation | Installable Playwright desktop/mobile customer-journey test suite; repair CI script/config; gate on unit tests |
