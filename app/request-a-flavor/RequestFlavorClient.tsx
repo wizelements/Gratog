@@ -225,14 +225,14 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
           Known flavor
         </label>
         <Select
-          value={form.requestedProductSlug}
-          onValueChange={(value) => updateField('requestedProductSlug', value)}
+          value={form.requestedProductSlug || 'none'}
+          onValueChange={(value) => updateField('requestedProductSlug', value === 'none' ? '' : value)}
         >
           <SelectTrigger id="product" className="w-full min-w-0 max-w-full" aria-label="Choose a known flavor">
             <SelectValue placeholder="Choose a flavor from our lineup" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">No specific flavor</SelectItem>
+            <SelectItem value="none">No specific flavor</SelectItem>
             {curatedOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -247,14 +247,14 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
           Or choose a flavor profile
         </label>
         <Select
-          value={form.flavorProfile}
-          onValueChange={(value) => updateField('flavorProfile', value)}
+          value={form.flavorProfile || 'none'}
+          onValueChange={(value) => updateField('flavorProfile', value === 'none' ? '' : value)}
         >
           <SelectTrigger id="flavorProfile" className="w-full min-w-0 max-w-full" aria-label="Choose a flavor profile">
             <SelectValue placeholder="Choose a profile" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">No profile</SelectItem>
+            <SelectItem value="none">No profile</SelectItem>
             {FLAVOR_PROFILES.map((p) => (
               <SelectItem key={p.value} value={p.value}>
                 {p.label} — {p.hint}
