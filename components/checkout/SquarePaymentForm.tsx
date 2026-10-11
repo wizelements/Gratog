@@ -65,6 +65,8 @@ export default function SquarePaymentForm({
   const googlePayRef = useRef<SquareGooglePay | null>(null);
   const cashAppPayRef = useRef<SquareCashAppPay | null>(null);
   const initRef = useRef(false);
+  const submittingRef = useRef(false);
+  const [checkingStatus, setCheckingStatus] = useState(false);
   
   const idempotencyKey = orderId.slice(0, 36);
 
@@ -197,7 +199,9 @@ export default function SquarePaymentForm({
   }, [amountCents, config]);
 
   const processPaymentToken = useCallback(async (sourceId: string) => {
-    if (paymentStep === 'processing' || paymentStep === 'success') return;
+    if (submittingRef.current || paymentStep === 'processing' || paymentStep === 'success') return;
+    submittingRef.current = true;
+    let definitiveDecline = false;
     setPaymentStep('processing');
     try {
       const res = await fetch('/api/payments', {
@@ -234,6 +238,9 @@ export default function SquarePaymentForm({
       }
       
       if (!res.ok || data.error) {
+        // This response came from Square as a definitive card/wallet decline.
+        // An uncertain 5xx or network failure must NOT enable another charge.
+        definitiveDecline = res.status === 400 && Boolean(data.code);
         throw new Error(data.error || 'Payment processing failed');
       }
 
@@ -258,12 +265,42 @@ export default function SquarePaymentForm({
       // Also covers asynchronous Cash App callbacks, not just card tokenization.
       const message = error instanceof Error ? error.message : 'Payment status could not be confirmed';
       setCardError(message);
-      setPaymentStep('error');
+      setPaymentStep(definitiveDecline ? 'idle' : 'error');
+      if (definitiveDecline) submittingRef.current = false;
       onError(message);
       // Do not silently return to idle after an ambiguous processor failure:
       // retrying a payment before reconciliation can result in double charges.
     }
   }, [amountCents, orderId, squareOrderId, orderAccessToken, customer, idempotencyKey, onSuccess, onError, paymentStep]);
+
+  const checkPaymentStatus = async () => {
+    if (!orderAccessToken || checkingStatus) return;
+    setCheckingStatus(true);
+    try {
+      const query = new URLSearchParams({ orderId, token: orderAccessToken });
+      const response = await fetch(`/api/payments?${query.toString()}`, { cache: 'no-store' });
+      const data = await response.json();
+      if (!response.ok) throw new Error('Unable to verify payment status right now.');
+      if (data.payment?.status === 'COMPLETED' && data.payment?.id) {
+        setPaymentStep('success');
+        onSuccess({
+          paymentId: data.payment.id,
+          status: 'COMPLETED',
+          amountCents: data.payment.amountCents,
+          receiptUrl: data.payment.receiptUrl,
+          cardBrand: data.payment.cardBrand,
+          cardLast4: data.payment.cardLast4,
+          orderAccessToken,
+        });
+        return;
+      }
+      setCardError('Payment has not been confirmed. Do not pay again until the order is reconciled with support.');
+    } catch {
+      setCardError('Could not verify payment. Please contact us with your order reference before trying again.');
+    } finally {
+      setCheckingStatus(false);
+    }
+  };
 
   const handleTokenizationError = useCallback((err: unknown, fallback: string) => {
     const errorMsg = err instanceof Error ? err.message : fallback;
@@ -419,6 +456,20 @@ export default function SquarePaymentForm({
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             {cardError}
+          </div>
+        )}
+
+        {paymentStep === 'error' && (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+            <p className="mb-3">Your payment result is uncertain. Do not attempt another charge until its status is checked.</p>
+            <button
+              type="button"
+              disabled={!orderAccessToken || checkingStatus}
+              onClick={checkPaymentStatus}
+              className="min-h-11 rounded-lg border border-amber-700 px-4 font-semibold hover:bg-amber-100 disabled:opacity-50"
+            >
+              {checkingStatus ? 'Checking…' : 'Check payment status'}
+            </button>
           </div>
         )}
 
