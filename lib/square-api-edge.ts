@@ -58,7 +58,7 @@ function catalogVariationForItem(itemId: string, variations: any[]): {
   if (!approvedBlueLotus) return { variation: variations[0], approvedBlueLotus };
   return {
     variation: variations.find((v: any) =>
-      /^16\\s*oz(?:\\b|$)/i.test(String(v?.item_variation_data?.name || v?.itemVariationData?.name || '').trim())
+      /^16\s*oz(?:\b|$)/i.test(String(v?.item_variation_data?.name || v?.itemVariationData?.name || '').trim())
     ),
     approvedBlueLotus,
   };
