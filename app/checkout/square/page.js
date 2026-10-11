@@ -74,7 +74,7 @@ function SquareCheckoutContent() {
         <Card>
           <CardContent className="p-6 text-center">
             <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">No Order Found</h2>
+            <h1 className="text-xl font-semibold mb-2">No Order Found</h1>
             <p className="text-muted-foreground mb-4">
               Your order session may have expired
             </p>
