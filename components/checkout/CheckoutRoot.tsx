@@ -241,6 +241,7 @@ function CheckoutContent() {
                     <CartSummary
                       cart={cart}
                       totals={totals}
+                      fulfillmentType={fulfillment.type}
                       onUpdateQuantity={(id, qty) => {
                         CartAPI.updateQuantity(id, qty);
                         updateCart(CartAPI.getCart());
@@ -371,6 +372,7 @@ function CheckoutContent() {
               <CartSummary
                 cart={cart}
                 totals={totals}
+                fulfillmentType={fulfillment.type}
                 onUpdateQuantity={(id, qty) => {
                   CartAPI.updateQuantity(id, qty);
                   updateCart(CartAPI.getCart());
