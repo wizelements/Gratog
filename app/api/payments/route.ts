@@ -371,6 +371,16 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      if (existingPayment?.status === 'APPROVED') {
+        // An authorization is not a captured payment. Hold further attempts
+        // until capture/reconciliation confirms final status.
+        return json({
+          success: false,
+          code: 'PAYMENT_CAPTURE_PENDING',
+          error: 'Payment authorization is pending confirmation. Please check order status before retrying.',
+        }, 409);
+      }
+
       if (existingPayment) {
         logger.info('API', 'Returning existing successful payment (idempotency protection)', {
           traceId: ctx.traceId,
@@ -545,7 +555,7 @@ export async function POST(request: NextRequest) {
     
     // FIX P1-1: Always use server-authoritative amount, ignore client
     // Any discrepancy indicates tampering or stale client state
-    let validatedAmountCents = amountCents;
+    let validatedAmountCents = expectedAmountCents;
     
     if (expectedAmountCents && expectedAmountCents > 0) {
       const amountDifference = Math.abs(amountCents - expectedAmountCents);
@@ -599,11 +609,18 @@ export async function POST(request: NextRequest) {
       
       validatedAmountCents = expectedAmountCents; // Server is authoritative
     } else {
-      logger.warn('API', 'Order has no valid total, using client amount', {
-        traceId: ctx.traceId,
-        orderId,
-        clientAmount: amountCents
+      logger.error('API', 'Order has no valid server total; rejecting charge', {
+        traceId: ctx.traceId, orderId
       });
+      await db.collection('orders').updateOne(
+        { id: orderId },
+        { $set: { status: 'pending', paymentStatus: 'pending', updatedAt: new Date().toISOString() } }
+      );
+      return json({
+        success: false,
+        code: 'INVALID_SERVER_ORDER_TOTAL',
+        error: 'We could not verify your order total. Please restart checkout.',
+      }, 409);
     }
     
     // ========================================================================
@@ -864,7 +881,7 @@ export async function POST(request: NextRequest) {
     }
 
     const payment = paymentResult.data.payment;
-    const isCompleted = payment.status === 'COMPLETED' || payment.status === 'APPROVED';
+    const isCompleted = payment.status === 'COMPLETED';
     
     logger.info('API', 'Square payment completed', {
       traceId: ctx.traceId,
@@ -1271,6 +1288,17 @@ export async function POST(request: NextRequest) {
       ttlMs: ORDER_ACCESS_TOKEN_TTL_MS,
     });
 
+    // Square APPROVED is only an authorization. Never announce a paid order
+    // or grant a success redirect before funds are captured (COMPLETED).
+    if (!isCompleted) {
+      return json({
+        success: false,
+        code: 'PAYMENT_CAPTURE_PENDING',
+        error: 'Payment is authorized but not captured yet. Check your order status before retrying.',
+        orderId,
+      }, 409);
+    }
+
     return json({
       success: true,
       payment: {
@@ -1310,7 +1338,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Payment processing failed. Please try again.',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        code: 'PAYMENT_PROCESSING_UNAVAILABLE'
       },
       500
     );
