@@ -140,6 +140,23 @@ describe('priceCart — tamper resistance', () => {
     ).rejects.toMatchObject({ code: 'PRODUCT_PRICE_INVALID' });
   });
 
+  it('blocks retired Blue Lotus sample variation IDs even with valid product ID', async () => {
+    products.push({
+      id: 'BLUE_LOTUS',
+      name: 'Blue Lotus',
+      priceCents: 3600,
+      variations: [{ id: 'BLUE_LOTUS_16OZ', name: '16oz', priceCents: 3600 }],
+    });
+    await expect(priceCart({
+      items: [{ productId: 'BLUE_LOTUS', variationId: 'OLD_2OZ_SAMPLE', quantity: 1 }],
+    })).rejects.toMatchObject({ code: 'VARIATION_NOT_FOUND', status: 422 });
+    const approved = await priceCart({
+      items: [{ productId: 'BLUE_LOTUS', variationId: 'BLUE_LOTUS_16OZ', quantity: 1 }],
+    });
+    expect(approved.totalCents).toBe(3600);
+    expect(approved.items[0].variationId).toBe('BLUE_LOTUS_16OZ');
+  });
+
   it('resolves variation pricing via variation id', async () => {
     products.push({
       id: 'PROD_A',

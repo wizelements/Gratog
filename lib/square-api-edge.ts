@@ -44,6 +44,26 @@ function setCached<T>(key: string, data: T, ttlSeconds: number): void {
   cache.set(key, { data, expiry: Date.now() + ttlSeconds * 1000 });
 }
 
+/**
+ * The Blue Lotus 16 oz gel has one merchant-approved selling option ($36).
+ * Square can retain legacy variants, including an old $35 default. Select
+ * only the actual 16 oz variation, and never suggest that a sample is sold.
+ * The payment service must still verify its own authoritative catalog price.
+ */
+function catalogVariationForItem(itemId: string, variations: any[]): {
+  variation: any;
+  approvedBlueLotus: boolean;
+} {
+  const approvedBlueLotus = itemId === 'DSROEB4HMZK63V7IGBH6SSJH';
+  if (!approvedBlueLotus) return { variation: variations[0], approvedBlueLotus };
+  return {
+    variation: variations.find((v: any) =>
+      /^16\s*oz(?:\b|$)/i.test(String(v?.item_variation_data?.name || v?.itemVariationData?.name || '').trim())
+    ),
+    approvedBlueLotus,
+  };
+}
+
 interface CatalogItem {
   id: string;
   name: string;
@@ -105,20 +125,26 @@ export async function getSquareCatalog(options: {
       .map((obj: any) => {
         const item = obj.item_data || obj.itemData || {};
         const variations = item.variations || [];
-        const variation = variations[0]?.item_variation_data || variations[0]?.itemVariationData || {};
+        const { variation: approvedVariation, approvedBlueLotus } =
+          catalogVariationForItem(obj.id, variations);
+        const variation = approvedVariation?.item_variation_data || approvedVariation?.itemVariationData || {};
         const priceMoney = variation.price_money || variation.priceMoney || {};
         
         return {
           id: obj.id,
           name: item.name || 'Unnamed Product',
           description: item.description || item.description_plaintext,
-          price: priceMoney.amount ? parseInt(String(priceMoney.amount)) / 100 : 0,
+          price: approvedBlueLotus
+            ? approvedVariation ? 36 : 0
+            : priceMoney.amount ? parseInt(String(priceMoney.amount)) / 100 : 0,
           currency: priceMoney.currency || 'USD',
           imageUrl: item.image_ids?.[0] || item.imageIds?.[0]
             ? `${baseUrl}/v2/catalog/object/${item.image_ids?.[0] || item.imageIds?.[0]}` 
             : undefined,
           category: item.category_id || item.categoryId,
-          available: item.is_archived !== true && item.isArchived !== true && obj.is_deleted !== true && obj.isDeleted !== true,
+          available: (!approvedBlueLotus || Boolean(approvedVariation)) &&
+            item.is_archived !== true && item.isArchived !== true &&
+            obj.is_deleted !== true && obj.isDeleted !== true,
         };
       })
       .filter((item: CatalogItem) => {
@@ -167,20 +193,26 @@ export async function getSquareProduct(id: string): Promise<CatalogItem | null> 
 
     const item = obj.item_data || obj.itemData || {};
     const variations = item.variations || [];
-    const variation = variations[0]?.item_variation_data || variations[0]?.itemVariationData || {};
+    const { variation: approvedVariation, approvedBlueLotus } =
+      catalogVariationForItem(obj.id, variations);
+    const variation = approvedVariation?.item_variation_data || approvedVariation?.itemVariationData || {};
     const priceMoney = variation.price_money || variation.priceMoney || {};
     
     const product: CatalogItem = {
       id: obj.id,
       name: item.name || 'Unnamed Product',
       description: item.description || item.description_plaintext,
-      price: priceMoney.amount ? parseInt(String(priceMoney.amount)) / 100 : 0,
+      price: approvedBlueLotus
+        ? approvedVariation ? 36 : 0
+        : priceMoney.amount ? parseInt(String(priceMoney.amount)) / 100 : 0,
       currency: priceMoney.currency || 'USD',
       imageUrl: item.image_ids?.[0] || item.imageIds?.[0]
         ? `${baseUrl}/v2/catalog/object/${item.image_ids?.[0] || item.imageIds?.[0]}` 
         : undefined,
       category: item.category_id || item.categoryId,
-      available: item.is_archived !== true && item.isArchived !== true && obj.is_deleted !== true && obj.isDeleted !== true,
+      available: (!approvedBlueLotus || Boolean(approvedVariation)) &&
+        item.is_archived !== true && item.isArchived !== true &&
+        obj.is_deleted !== true && obj.isDeleted !== true,
     };
 
     setCached(cacheKey, product, 60);

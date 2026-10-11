@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { UNIFIED_PRODUCTS_COLLECTION } from '@/lib/product-sync-engine';
 import ProductDetailClient from './ProductDetailClient';
@@ -209,7 +209,11 @@ export async function generateMetadata({ params }) {
 // Main SSR Page Component
 export default async function ProductPage({ params }) {
   const { slug } = await params;
-  
+
+  // The former curated name was a duplicate of Square's live Blue Lotus.
+  // Preserve old bookmarks without displaying a second uncheckoutable gel.
+  if (slug === 'blue-lotus-gel') permanentRedirect('/product/blue-lotus');
+
   if (!slug) {
     notFound();
   }

@@ -392,6 +392,18 @@ export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
 
     const qty = validateQuantity(item.quantity);
     const variation = resolveVariation(product, item.variationId);
+    // A retired 2 oz/sample variation or a hand-crafted variation ID must
+    // never silently fall back to the product's 16 oz price and then create
+    // an unpayable Square order.
+    if (item.variationId && Array.isArray(product.variations) &&
+        product.variations.length > 0 && !variation) {
+      throw new CartPricingError(
+        'VARIATION_NOT_FOUND',
+        'The selected size is no longer available. Remove the item and select its current size.',
+        422,
+        { productId: product.id }
+      );
+    }
     const unitPriceCents = unitPriceCentsFromProduct(product, item.variationId);
 
     if (unitPriceCents <= 0) {

@@ -146,7 +146,7 @@ export const PRODUCTS: MarketProduct[] = [
     name: 'Strawberry Bliss',
     category: 'lemonades',
     weeklyStatus: 'active',
-    price: 10,
+    price: 11.99,
     sizes: ['16oz bottle'],
     ingredients: ['Strawberry', 'Lemon', 'Ginger', 'Sea Moss', 'Agave', 'Alkaline Water'],
     shortDescription: 'A strawberry ginger lemonade with sea moss and a bright market-fresh finish.',
@@ -207,13 +207,13 @@ export const PRODUCTS: MarketProduct[] = [
     name: 'Calm Waters',
     category: 'lemonades',
     weeklyStatus: 'limited',
-    price: 11,
+    price: 11.99,
     sizes: ['16oz bottle'],
-    ingredients: ['Cucumber', 'Mint', 'Lemon', 'Blue Spirulina', 'Sea Moss', 'Agave', 'Alkaline Water'],
-    shortDescription: 'Cucumber, mint, lemon, blue spirulina, and sea moss for a cooling bottle.',
-    fullDescription: 'Calm Waters is a cool, easy-drinking bottle built for hot market days and slower evenings: cucumber, mint, lemon, blue spirulina, agave, and sea moss in an ocean-blue lemonade.',
-    flavorNotes: 'Crisp cucumber, cool mint, soft citrus, and a light ocean-blue finish.',
-    wellnessSupport: ['Cucumber flavor', 'Cooling mint', 'Soft citrus', 'Chilled drink'],
+    ingredients: ['Blue Spirulina', 'Lemon', 'Ashwagandha', 'Celtic Salt', 'Agave'],
+    shortDescription: 'Blue spirulina, lemon, ashwagandha, Celtic salt, and agave in a bright botanical lemonade.',
+    fullDescription: 'Calm Waters brings together blue spirulina, lemon, ashwagandha, Celtic salt, and agave. Served chilled as a gently sweet, citrus-forward botanical drink.',
+    flavorNotes: 'Bright lemon, gentle sweetness, and a light mineral finish.',
+    wellnessSupport: ['Bright citrus', 'Botanical flavor', 'Light mineral notes', 'Chilled drink'],
     recommendedUse: 'Sip chilled during the afternoon or pair it with a gel for a cool, lightly sweet combination.',
     allergens: [],
     pickupAvailability: 'Limited weekly market batch; preorder is recommended.',
@@ -222,14 +222,14 @@ export const PRODUCTS: MarketProduct[] = [
     featured: false,
     seasonal: false,
     image: '/images/sea-moss-default.jpg', // TODO: replace with real product photo
-    seoTitle: 'Calm Waters Cucumber Mint Sea Moss Drink | Taste of Gratitude',
-    seoDescription: 'Calm Waters is a cucumber, mint, lemon, blue spirulina, and sea moss drink made for weekly Atlanta pickup.',
+    seoTitle: 'Calm Waters Blue Spirulina Lemonade | Taste of Gratitude',
+    seoDescription: 'Calm Waters is made with blue spirulina, lemon, ashwagandha, Celtic salt, and agave. Georgia market pickup.',
     activeWeeklyMenu: true,
     soldOut: false,
     preorderOnly: true,
     marketPickupOnly: true,
     pairings: ['blue-lotus-gel', 'strawberry-rose-ginger'],
-    tags: ['cucumber', 'mint', 'blue-spirulina', 'lemonade'],
+    tags: ['blue-spirulina', 'ashwagandha', 'lemon', 'lemonade'],
   },
   {
     id: 'peach-lemonade',
@@ -448,7 +448,7 @@ export const PRODUCTS: MarketProduct[] = [
     category: 'gels',
     weeklyStatus: 'active',
     price: 36,
-    sizes: ['2oz sample', '16oz jar'],
+    sizes: ['16oz jar'],
     ingredients: ['Sea Moss', 'Blue Spirulina', 'Blue Lotus', 'Ashwagandha', 'Maca Root', 'Ginger', 'Agave', 'Alkaline Water'],
     shortDescription: 'A blue sea moss gel with blue spirulina, blue lotus, ginger, agave, and root ingredients.',
     fullDescription: 'Blue Lotus Gel is a colorful sea moss jar. Blue spirulina brings the color, blue lotus and root ingredients add earthy notes, and ginger and agave balance each spoonful.',
@@ -998,40 +998,56 @@ export function toStorefrontProduct(product: MarketProduct, index = 0) {
 }
 
 export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProduct: T, index = 0) {
+  // Square's live "Blue Lotus" is the very same 16 oz sea moss gel as the
+  // older curated "Blue Lotus Gel". Merge by merchant-approved alias to avoid
+  // showing the obsolete 2 oz sample or a second uncheckoutable product.
+  const isBlueLotusSquareGel =
+    normalizeProductKey(liveProduct.name) === 'blue-lotus' &&
+    liveProduct.source === 'square_sync';
   const curated =
     getProductBySlugOrId(liveProduct.slug || liveProduct.id) ||
-    getProductByName(liveProduct.name);
+    getProductByName(liveProduct.name) ||
+    (isBlueLotusSquareGel ? getProductBySlugOrId('blue-lotus-gel') : null);
 
   if (!curated) return liveProduct;
 
   const curatedProduct = toStorefrontProduct(curated, index);
-  const liveVariations = Array.isArray(liveProduct.variations) && liveProduct.variations.length > 0
+  const availableVariations = Array.isArray(liveProduct.variations) && liveProduct.variations.length > 0
     ? liveProduct.variations
     : curatedProduct.variations;
+  const liveVariations = isBlueLotusSquareGel
+    ? availableVariations.filter((variant: Record<string, any>) => /^16\s*oz(?:\b|$)/i.test(String(variant.name || '').trim()))
+    : availableVariations;
   const liveImages = Array.isArray(liveProduct.images) && liveProduct.images.length > 0
     ? liveProduct.images
     : curatedProduct.images;
   const liveImage = liveProduct.image || liveProduct.displayImage || curatedProduct.image;
-  const livePrice = typeof liveProduct.price === 'number' && liveProduct.price > 0
+  // Merchant-approved 16 oz Blue Lotus is $36. Never inherit the obsolete
+  // Square 35-dollar default or surface a second sample variation.
+  const livePrice = isBlueLotusSquareGel ? curatedProduct.price
+    : typeof liveProduct.price === 'number' && liveProduct.price > 0
     ? liveProduct.price
     : curatedProduct.price;
   const firstLiveVariationId = liveVariations?.[0]?.id;
-  const resolvedLiveVariationId =
-    liveProduct.variationId ||
-    liveProduct.catalogObjectId ||
-    liveProduct.squareVariationId ||
-    liveProduct.squareData?.variationId ||
-    firstLiveVariationId ||
-    null;
-  const checkoutReady = liveProduct.checkoutReady === true || Boolean(
-    resolvedLiveVariationId && !String(resolvedLiveVariationId).startsWith('tog-')
-  );
+  const resolvedLiveVariationId = isBlueLotusSquareGel
+    ? firstLiveVariationId || null
+    : liveProduct.variationId ||
+      liveProduct.catalogObjectId ||
+      liveProduct.squareVariationId ||
+      liveProduct.squareData?.variationId ||
+      firstLiveVariationId ||
+      null;
+  const checkoutReady = isBlueLotusSquareGel
+    ? Boolean(firstLiveVariationId && !String(firstLiveVariationId).startsWith('tog-'))
+    : liveProduct.checkoutReady === true || Boolean(
+        resolvedLiveVariationId && !String(resolvedLiveVariationId).startsWith('tog-')
+      );
 
   return {
     ...liveProduct,
     curatedProductId: curated.id,
-    slug: curated.slug || liveProduct.slug,
-    name: curated.name || liveProduct.name,
+    slug: isBlueLotusSquareGel ? liveProduct.slug : curated.slug || liveProduct.slug,
+    name: isBlueLotusSquareGel ? liveProduct.name : curated.name || liveProduct.name,
     category: curatedProduct.category,
     categoryLabel: curatedProduct.categoryLabel,
     displayCategory: curatedProduct.displayCategory,
@@ -1063,10 +1079,10 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
     images: liveImages,
     imageAlt: `${curated.name} from Taste of Gratitude`,
     price: livePrice,
-    priceCents: liveProduct.priceCents || Math.round(livePrice * 100),
+    priceCents: isBlueLotusSquareGel ? Math.round(livePrice * 100) : liveProduct.priceCents || Math.round(livePrice * 100),
     variations: liveVariations,
     variationId: resolvedLiveVariationId || curatedProduct.variationId,
-    catalogObjectId: liveProduct.catalogObjectId || resolvedLiveVariationId || curatedProduct.catalogObjectId,
+    catalogObjectId: isBlueLotusSquareGel ? resolvedLiveVariationId : liveProduct.catalogObjectId || resolvedLiveVariationId || curatedProduct.catalogObjectId,
     checkoutReady,
     checkoutUnavailableReason: checkoutReady ? undefined : curatedProduct.checkoutUnavailableReason,
     activeWeeklyMenu: curated.activeWeeklyMenu,
