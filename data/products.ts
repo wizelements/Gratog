@@ -998,21 +998,34 @@ export function toStorefrontProduct(product: MarketProduct, index = 0) {
 }
 
 export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProduct: T, index = 0) {
+  // Square's live "Blue Lotus" is the very same 16 oz sea moss gel as the
+  // older curated "Blue Lotus Gel". Merge by merchant-approved alias to avoid
+  // showing the obsolete 2 oz sample or a second uncheckoutable product.
+  const isBlueLotusSquareGel =
+    normalizeProductKey(liveProduct.name) === 'blue-lotus' &&
+    liveProduct.source === 'square_sync';
   const curated =
     getProductBySlugOrId(liveProduct.slug || liveProduct.id) ||
-    getProductByName(liveProduct.name);
+    getProductByName(liveProduct.name) ||
+    (isBlueLotusSquareGel ? getProductBySlugOrId('blue-lotus-gel') : null);
 
   if (!curated) return liveProduct;
 
   const curatedProduct = toStorefrontProduct(curated, index);
-  const liveVariations = Array.isArray(liveProduct.variations) && liveProduct.variations.length > 0
+  const availableVariations = Array.isArray(liveProduct.variations) && liveProduct.variations.length > 0
     ? liveProduct.variations
     : curatedProduct.variations;
+  const liveVariations = isBlueLotusSquareGel
+    ? availableVariations.filter((variant: Record<string, any>) => /^16\s*oz(?:\b|$)/i.test(String(variant.name || '').trim()))
+    : availableVariations;
   const liveImages = Array.isArray(liveProduct.images) && liveProduct.images.length > 0
     ? liveProduct.images
     : curatedProduct.images;
   const liveImage = liveProduct.image || liveProduct.displayImage || curatedProduct.image;
-  const livePrice = typeof liveProduct.price === 'number' && liveProduct.price > 0
+  // Merchant-approved 16 oz Blue Lotus is $36. Never inherit the obsolete
+  // Square 35-dollar default or surface a second sample variation.
+  const livePrice = isBlueLotusSquareGel ? curatedProduct.price
+    : typeof liveProduct.price === 'number' && liveProduct.price > 0
     ? liveProduct.price
     : curatedProduct.price;
   const firstLiveVariationId = liveVariations?.[0]?.id;
@@ -1030,8 +1043,8 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
   return {
     ...liveProduct,
     curatedProductId: curated.id,
-    slug: curated.slug || liveProduct.slug,
-    name: curated.name || liveProduct.name,
+    slug: isBlueLotusSquareGel ? liveProduct.slug : curated.slug || liveProduct.slug,
+    name: isBlueLotusSquareGel ? liveProduct.name : curated.name || liveProduct.name,
     category: curatedProduct.category,
     categoryLabel: curatedProduct.categoryLabel,
     displayCategory: curatedProduct.displayCategory,
@@ -1063,7 +1076,7 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
     images: liveImages,
     imageAlt: `${curated.name} from Taste of Gratitude`,
     price: livePrice,
-    priceCents: liveProduct.priceCents || Math.round(livePrice * 100),
+    priceCents: isBlueLotusSquareGel ? Math.round(livePrice * 100) : liveProduct.priceCents || Math.round(livePrice * 100),
     variations: liveVariations,
     variationId: resolvedLiveVariationId || curatedProduct.variationId,
     catalogObjectId: liveProduct.catalogObjectId || resolvedLiveVariationId || curatedProduct.catalogObjectId,
