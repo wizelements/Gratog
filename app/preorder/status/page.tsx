@@ -71,6 +71,8 @@ interface PreorderStatus {
   estimatedTime?: string | null;
   customerEmail?: string | null;
   customerPhone?: string | null;
+  paymentStatus?: string | null;
+  paymentUrl?: string | null;
 }
 
 function normalizeStatus(status: string): keyof typeof STATUS_CONFIG {
@@ -97,6 +99,8 @@ function toOrderStatus(preorder: any): PreorderStatus {
     estimatedTime: preorder.estimatedReadyTime || null,
     customerEmail: preorder.customer?.email || preorder.customerEmail || null,
     customerPhone: preorder.customer?.phone || preorder.customerPhone || null,
+    paymentStatus: preorder.paymentStatus || null,
+    paymentUrl: preorder.paymentUrl || null,
   };
 }
 
@@ -239,7 +243,11 @@ function RetentionCTA({ order }: { order: PreorderStatus }) {
 }
 
 function OrderStatusCard({ order }: { order: PreorderStatus }) {
-  const status = STATUS_CONFIG[order.status];
+  const paymentPending = order.paymentStatus === 'PENDING' || order.paymentStatus === 'FAILED';
+  const status = paymentPending ? {
+    ...STATUS_CONFIG.pending, label: 'Payment needed',
+    message: 'Your preorder is not confirmed until Square payment is completed.',
+  } : STATUS_CONFIG[order.status];
   const StatusIcon = status.icon;
   const progress = getStatusProgress(order.status, order.currentPosition);
 
@@ -261,10 +269,22 @@ function OrderStatusCard({ order }: { order: PreorderStatus }) {
       </CardHeader>
 
       <CardContent className="space-y-6">
+        {paymentPending && (
+          <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+            <strong>Payment is still needed.</strong> Your pickup is not confirmed.
+            {order.paymentUrl ? (
+              <a href={order.paymentUrl} className="mt-3 block rounded-lg bg-emerald-700 px-4 py-3 text-center font-semibold text-white">
+                Complete secure Square payment
+              </a>
+            ) : (
+              <p className="mt-2">The payment link is unavailable. Please contact Taste of Gratitude rather than placing duplicate orders.</p>
+            )}
+          </div>
+        )}
         {/* Progress bar */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span>Position in line</span>
+            <span>{paymentPending ? 'Provisional queue position' : 'Position in line'}</span>
             <span className="font-medium">#{order.currentPosition}</span>
           </div>
           <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
@@ -329,7 +349,7 @@ function OrderStatusCard({ order }: { order: PreorderStatus }) {
               <p className="font-medium mb-1">Pickup Instructions:</p>
               <ul className="space-y-1 list-disc list-inside">
                 <li>Show your waitlist number at the booth</li>
-                <li>Pay with cash or card when you arrive</li>
+                <li>{paymentPending ? 'Complete secure payment before pickup is confirmed' : 'Keep your order confirmation available at pickup'}</li>
                 <li>Orders are held for 30 minutes after ready</li>
               </ul>
             </div>
