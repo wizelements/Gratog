@@ -51,7 +51,7 @@ const freeTextFlavorSchema = z
   .optional()
   .nullable();
 
-const marketIdSchema = z.string().min(1, 'Preferred pickup market is required').max(40);
+const marketIdSchema = z.string().min(1, 'Preferred fulfillment selection is required').max(40);
 
 const dateSchema = z.coerce
   .date()

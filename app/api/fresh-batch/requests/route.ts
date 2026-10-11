@@ -23,6 +23,7 @@ import type { FreshBatchRequest } from '@/lib/batches/types';
 
 function getMarketDisplayName(marketId: string): string {
   const names: Record<string, string> = {
+    georgia_online_inquiry: 'Georgia online order (fulfillment to be confirmed)',
     serenbe: 'Serenbe Farmers Market',
     dunwoody: 'Dunwoody Farmers Market',
   };

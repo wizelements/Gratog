@@ -13,7 +13,7 @@ export default function ExploreLayout({ children }) {
             <Link href="/explore" className="flex min-w-0 items-center gap-3 hover:opacity-80 transition-opacity">
               <span className="text-2xl">🌿</span>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900 sm:text-xl">Ingredients & Learning</h1>
+                <span className="block text-lg font-semibold text-gray-900 sm:text-xl">Ingredients & Learning</span>
                 <p className="text-sm text-gray-500">Explore what goes into our products</p>
               </div>
             </Link>

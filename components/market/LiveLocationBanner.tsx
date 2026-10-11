@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { MapPin, Clock, Navigation, X, ChevronRight, Store } from 'lucide-react';
+import { MapPin, Clock, Navigation, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -62,28 +62,9 @@ export function LiveLocationBanner({ className }: LiveLocationBannerProps) {
 
   if (!isVisible || isLoading) return null;
 
-  // No markets today
-  if (!data?.hasMarketsToday) {
-    return (
-      <div className={cn(
-        "bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-3",
-        className
-      )}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Store className="w-5 h-5" />
-            <span className="font-medium">No markets today. Check back Saturday or Sunday!</span>
-          </div>
-          <button
-            onClick={() => setIsVisible(false)}
-            className="p-1 hover:bg-white/20 rounded-full transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // No public market today: keep the banner hidden so regular Georgia
+  // online shoppers are not shown a misleading or discouraging warning.
+  if (!data?.hasMarketsToday) return null;
 
   // Multiple markets today - show primary
   const market = data.primaryMarket;

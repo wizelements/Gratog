@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
+import { safeAccountRedirect } from '@/lib/auth/safe-redirect';
 import { Leaf, Loader2, Check, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { 
   validateEmail, 
@@ -58,7 +59,7 @@ export default function RegisterPage() {
   }, [searchParams]);
 
   // Respect ?redirect= param, default to /profile. Only allow local paths.
-  const redirectTo = (searchParams.get('redirect') || '/profile').replace(/^(?!\/)|[:\s]/g, '/profile');
+  const redirectTo = safeAccountRedirect(searchParams.get('redirect'));
 
   // Redirect if already logged in
   useEffect(() => {
@@ -235,8 +236,8 @@ export default function RegisterPage() {
             <Leaf className="h-8 w-8 text-emerald-600" />
             <span className="text-2xl font-bold text-emerald-900">Taste of Gratitude</span>
           </Link>
-          <h1 className="text-3xl font-bold text-emerald-900 mb-2">Start Your Weekly Menu</h1>
-          <p className="text-emerald-700">Create an account to unlock exclusive rewards and personalized recommendations</p>
+          <h1 className="text-3xl font-bold text-emerald-900 mb-2">Create Your Account</h1>
+          <p className="text-emerald-700">Create an optional account to access your orders. You can also shop online as a guest.</p>
         </div>
 
         {/* Register Form */}

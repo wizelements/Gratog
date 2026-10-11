@@ -1,28 +1,24 @@
 'use client';
 
 import { useEffect } from 'react';
-import { initializePWA, isAppInstalled, isPersistentStorageGranted, requestPersistentStorage } from '@/lib/pwa';
+import { initializePWA, isAppInstalled, isPersistentStorageGranted } from '@/lib/pwa';
 
 export function PWAInitializer() {
   useEffect(() => {
+    let started = false;
     const init = async () => {
+      if (started) return;
+      started = true;
       try {
         // Initialize PWA
         await initializePWA({
           enableAutoUpdate: true,
           updateCheckInterval: 60000, // 1 minute — catch deploys fast
-          enableNotifications: true
+          enableNotifications: false
         });
 
-        // Check if persistent storage is available
-        const isPersistent = await isPersistentStorageGranted();
-        if (!isPersistent) {
-          try {
-            await requestPersistentStorage();
-          } catch (err) {
-            console.log('Persistent storage request denied');
-          }
-        }
+        // Persistent storage and push permissions belong behind user intent,
+        // never an automatic prompt on every first visit.
 
         // Log app status
         const status = {
@@ -44,10 +40,10 @@ export function PWAInitializer() {
 
     // Defer initialization to next frame
     if (typeof window !== 'undefined') {
-      window.addEventListener('load', init, { once: true });
-      // Also try immediately in case load already fired
       if (document.readyState === 'complete') {
-        init();
+        void init();
+      } else {
+        window.addEventListener('load', init, { once: true });
       }
     }
 

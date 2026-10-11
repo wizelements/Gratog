@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
+import { safeAccountRedirect } from '@/lib/auth/safe-redirect';
 import { Leaf, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -36,13 +37,13 @@ function LoginContent() {
   const [error, setError] = useState('');
 
   // Respect ?redirect= param, default to /profile. Only allow local paths.
-  const redirectTo = (searchParams.get('redirect') || '/profile').replace(/^(?!\/)|[:\s]/g, '/profile');
+  const redirectTo = safeAccountRedirect(searchParams.get('redirect'));
 
-  // Redirect if already logged in
-  if (isAuthenticated) {
-    router.push(redirectTo);
-    return null;
-  }
+  // Redirect effects must not run while React is rendering.
+  useEffect(() => {
+    if (isAuthenticated) router.replace(redirectTo);
+  }, [isAuthenticated, redirectTo, router]);
+  if (isAuthenticated) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,7 +78,7 @@ function LoginContent() {
             <span className="text-2xl font-bold text-emerald-900">Taste of Gratitude</span>
           </Link>
           <h1 className="text-3xl font-bold text-emerald-900 mb-2">Welcome Back</h1>
-          <p className="text-emerald-700">Sign in to your weekly routine</p>
+          <p className="text-emerald-700">Sign in to view your orders and account</p>
         </div>
 
         {/* Login Form */}

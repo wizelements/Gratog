@@ -148,9 +148,9 @@ export default function ResetPasswordPage() {
                 <KeyRound className="h-10 w-10 text-emerald-600" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-emerald-900">
+            <h1 className="text-2xl font-bold text-emerald-900">
               Reset Password
-            </CardTitle>
+            </h1>
             <p className="text-sm text-muted-foreground">
               Enter your new password
             </p>

@@ -56,9 +56,9 @@ export default function ForgotPasswordPage() {
                 <Mail className="h-10 w-10 text-emerald-600" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-emerald-900">
+            <h1 className="text-2xl font-bold text-emerald-900">
               Forgot Password
-            </CardTitle>
+            </h1>
             <p className="text-sm text-muted-foreground">
               We'll send you a link to reset your password
             </p>
