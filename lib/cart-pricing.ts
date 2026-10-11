@@ -379,7 +379,9 @@ export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
         { key }
       );
     }
-    if (!isProductPurchasable(product, !!item.isPreorder)) {
+    // Only the authoritative catalog can mark a sold-out item as preorderable.
+    // Client-supplied isPreorder must never bypass inventory restrictions.
+    if (!isProductPurchasable(product, Boolean(product.isPreorder || product.preorderOnly))) {
       throw new CartPricingError(
         'PRODUCT_UNAVAILABLE',
         `Product is not currently available: ${product.name}`,
@@ -429,6 +431,7 @@ export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
       marketExclusive: Boolean(
         product.marketExclusive ||
         product.marketPickupOnly ||
+        /(?:^|[,\s])(?:market-exclusive|fresh-pressed)(?:$|[,\s])/.test(String(product.category || '').toLowerCase()) ||
         product.fulfillmentType === 'market_pickup' ||
         product.fulfillmentType === 'market_pickup_only' ||
         item.marketExclusive
