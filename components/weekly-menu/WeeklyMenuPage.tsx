@@ -53,7 +53,7 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
               Fresh weekly drop • {weeklyMenu.dateRange || 'small-batch'}
             </p>
             <h1 className="max-w-4xl text-balance text-4xl font-semibold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
-              Get the weekly menu before market day.
+              Georgia favorites, fresh every market week.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90 sm:text-xl">
               {weeklyMenu.preorderLanguage}
@@ -72,7 +72,7 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
               {[
                 { label: 'Menu drops', value: 'Every week' },
-                { label: 'Pickup', value: 'Atlanta markets' },
+                { label: 'Order area', value: 'Georgia only' },
                 { label: 'Batch style', value: 'Small-batch' },
               ].map((stat) => (
                 <div key={stat.label} className="rounded-2xl border border-white/15 bg-white/10 p-4">
