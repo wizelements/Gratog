@@ -21,7 +21,10 @@ jobs:
           node-version: '22'
       - name: Assert and certify only Square Sandbox
         env:
-          SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
+          # Existing integration secret is accepted ONLY if it authenticates at
+          # https://connect.squareupsandbox.com/v2/locations; the runner never
+          # follows redirects or contacts Square production endpoints.
+          SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN || secrets.SQUARE_ACCESS_TOKEN }}
         run: node scripts/certify-square-sandbox.mjs
       - name: Attach immutable sandbox proof and blocker evidence
         if: always()
