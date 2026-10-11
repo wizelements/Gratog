@@ -48,7 +48,7 @@ export function GET() {
       path += 'M' + (start + 4) + ' ' + (y + 4) + 'h' + length + 'v1h-' + length + 'z';
     }
   });
-  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41 41" width="492" height="492" role="img" aria-label="QR code for the Taste of Gratitude share page"><rect width="41" height="41" fill="#ffffff"/><path fill="#142e23" d="' + path + '"/></svg>';
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41 41" width="369" height="369" shape-rendering="crispEdges" role="img" aria-label="QR code for the Taste of Gratitude share page"><rect width="41" height="41" fill="#ffffff"/><path fill="#142e23" d="' + path + '"/></svg>';
   return new Response(svg, {
     headers: {
       'Content-Type': 'image/svg+xml; charset=utf-8',
