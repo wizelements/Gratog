@@ -33,6 +33,8 @@ function CheckoutContent() {
   const {
     stage,
     setStage,
+    hydrated,
+    hydrateFromStorage,
     cart,
     updateCart,
     contact,
@@ -50,6 +52,13 @@ function CheckoutContent() {
 
   const hasTrackedStartRef = useRef(false);
   const hasPreorderItems = cart.some(item => item.isPreorder || item.marketExclusive);
+
+  useEffect(() => {
+    // Subscribe before hydration so subsequent card/catalog edits remain live.
+    const unsubscribe = CartAPI.subscribe((items) => updateCart(items));
+    hydrateFromStorage();
+    return unsubscribe;
+  }, [hydrateFromStorage, updateCart]);
   const showSideSummary = stage !== 'cart';
 
   // Scroll to top when stage changes
@@ -68,10 +77,10 @@ function CheckoutContent() {
   }, [hasPreorderItems, fulfillment.type, fulfillment.pickup, clearValidation, setFulfillment]);
 
   useEffect(() => {
-    if (hasTrackedStartRef.current) return;
+    if (!hydrated || hasTrackedStartRef.current) return;
     hasTrackedStartRef.current = true;
     track('checkout_started', { itemCount: cart.length, total: totals.total });
-  }, [cart.length, totals.total]);
+  }, [hydrated, cart.length, totals.total]);
 
   const scrollToFirstError = () => {
     setTimeout(() => {
@@ -187,6 +196,14 @@ function CheckoutContent() {
     if (stage === 'details') setStage('cart');
     else if (stage === 'review') setStage('details');
   };
+
+  if (!hydrated) {
+    return (
+      <div className="min-h-[40vh] flex items-center justify-center bg-[#fbfaf7]" role="status" aria-live="polite">
+        <p className="text-sm font-medium text-gray-600">Loading your cart…</p>
+      </div>
+    );
+  }
 
   if (cart.length === 0 && stage !== 'cart') {
     return (
