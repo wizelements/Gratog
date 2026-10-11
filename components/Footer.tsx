@@ -53,6 +53,11 @@ export default function Footer() {
             <h4 className="font-semibold mb-4 text-lg">Shop & Discover</h4>
             <ul className="space-y-3 text-sm">
               <li>
+                <Link href="/catalog" className="text-muted-foreground hover:text-emerald-600 transition-colors">
+                  Shop Online in Georgia
+                </Link>
+              </li>
+              <li>
                 <Link
                   href="/weekly-menu"
                   className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
