@@ -7,8 +7,11 @@ import { CartItem } from '@/adapters/cartAdapter';
 import { OrderTotals, formatCurrency } from '@/adapters/totalsAdapter';
 import { ContactInfo, FulfillmentData } from '@/stores/checkout';
 import Image from 'next/image';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { createOrder, OrderCreationError } from '@/services/order';
+import { clearCheckoutOrderAttempt } from '@/lib/checkout/order-attempt';
+import { CartAPI } from '@/adapters/cartAdapter';
+import { useCheckoutStore } from '@/stores/checkout';
 import { toast } from 'sonner';
 import { track } from '@/utils/analytics';
 import SquarePaymentForm from './SquarePaymentForm';
@@ -58,11 +61,13 @@ export default function ReviewAndPay({
   const [orderId, setOrderId] = useState<string | null>(null);
   const [squareOrderId, setSquareOrderId] = useState<string | null>(null);
   const [serverTotal, setServerTotal] = useState<number | null>(null);
+  const [serverPriceChanged, setServerPriceChanged] = useState(false);
+  const orderRequestInFlight = useRef(false);
   const [orderAccessToken, setOrderAccessToken] = useState<string | null>(null);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
   const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(null);
-  const hasPreorderItems = useMemo(() => cart.some((item) => item.isPreorder), [cart]);
+  const hasPreorderItems = useMemo(() => cart.some((item) => item.isPreorder || item.marketExclusive), [cart]);
   const pickupLocation = useMemo(() => {
     if (!fulfillment.pickup?.locationId) return null;
     return Fulfillment.pickupLocations().find((location) => location.id === fulfillment.pickup?.locationId) || null;
@@ -174,6 +179,9 @@ export default function ReviewAndPay({
   const canProceedToPayment = validationResult.valid && fulfillmentReadiness.valid;
   
   const handleProceedToPayment = async () => {
+    // Also lock synchronously; React's disabled button cannot protect against
+    // two clicks or keyboard submissions in the same render frame.
+    if (orderRequestInFlight.current) return;
     // Pre-validate before API call
     if (!validationResult.valid) {
       setOrderError(validationResult.error || 'Cart validation failed');
@@ -195,6 +203,7 @@ export default function ReviewAndPay({
       return;
     }
     
+    orderRequestInFlight.current = true;
     setIsCreatingOrder(true);
     setOrderError(null);
     track('checkout_proceed_to_payment', { fulfillmentType: fulfillment.type });
@@ -216,9 +225,16 @@ export default function ReviewAndPay({
       setSquareOrderId(orderResponse.order.squareOrderId);
       setOrderAccessToken(orderResponse.order.orderAccessToken ?? null);
       // Use server-authoritative pricing for payment (prevents amount mismatch)
-      if (orderResponse.order.pricing?.total) {
-        setServerTotal(orderResponse.order.pricing.total);
+      const authorizedTotal = orderResponse.order.pricing?.total;
+      if (typeof authorizedTotal !== 'number' || !Number.isFinite(authorizedTotal) || authorizedTotal <= 0) {
+        throw new OrderCreationError(
+          'The server could not confirm a payable total. Please review your order.',
+          'INVALID_SERVER_TOTAL',
+          422
+        );
       }
+      setServerPriceChanged(Math.abs(authorizedTotal - totals.total) >= 0.01);
+      setServerTotal(authorizedTotal);
       setStep('payment');
       track('order_created', { orderId: orderResponse.order.id });
     } catch (error) {
@@ -238,11 +254,20 @@ export default function ReviewAndPay({
       toast.error(errorMessage);
       track('order_creation_failed', { error: errorMessage, code: errorCode });
     } finally {
+      orderRequestInFlight.current = false;
       setIsCreatingOrder(false);
     }
   };
   
   const handlePaymentSuccess = useCallback(async (result: PaymentResult) => {
+    // Never clear the cart when an unpaid order is merely created. Clear only
+    // after the payment API has confirmed success.
+    const finishPaidOrder = (url: string) => {
+      clearCheckoutOrderAttempt();
+      router.replace(url);
+      CartAPI.clear();
+      useCheckoutStore.getState().reset();
+    };
     setPaymentResult(result);
     setStep('success');
     toast.success('Payment successful!');
@@ -254,7 +279,7 @@ export default function ReviewAndPay({
     
     setTimeout(async () => {
       if (!orderId) {
-        router.push('/order/success?paid=true');
+        finishPaidOrder('/order/success?paid=true');
         return;
       }
 
@@ -289,7 +314,7 @@ export default function ReviewAndPay({
           if (queueResult) {
             track('queue_joined', { orderId, marketId: fulfillment.pickup?.locationId });
             // Redirect to queue page - immediate feedback loop
-            router.push(getQueueRedirectUrl(orderId));
+            finishPaidOrder(getQueueRedirectUrl(orderId));
             return;
           }
         } catch (queueError) {
@@ -311,7 +336,7 @@ export default function ReviewAndPay({
         params.set('token', result.orderAccessToken);
       }
 
-      router.push(`/order/success?${params.toString()}`);
+      finishPaidOrder(`/order/success?${params.toString()}`);
     }, 2000);
   }, [orderId, router, totals.total, fulfillment, contact, cart, serverTotal]);
   
@@ -679,6 +704,13 @@ export default function ReviewAndPay({
                 <p className="text-xl font-bold text-emerald-600">{formatCurrency(serverTotal ?? totals.total)}</p>
               </div>
             </div>
+
+            {serverPriceChanged && (
+              <div role="status" className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+                Your total was updated using current product prices or fulfillment charges.
+                Please confirm the <strong>{formatCurrency(serverTotal ?? 0)}</strong> amount shown above before paying.
+              </div>
+            )}
 
             {/* Square Payment Form */}
             <SquarePaymentForm
