@@ -19,6 +19,7 @@ export function BottomNav() {
   const shouldHide =
     pathname?.startsWith('/admin') ||
     pathname?.startsWith('/checkout') ||
+    pathname?.startsWith('/preorder') ||
     pathname?.startsWith('/cart') ||
     pathname?.startsWith('/order');
 
