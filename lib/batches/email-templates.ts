@@ -33,7 +33,7 @@ function baseHtml(subject: string, body: string): string {
     <div class="container">
       ${body}
       <div class="footer">
-        <p>Taste of Gratitude · Atlanta-area fresh drinks · Pickup at the market</p>
+        <p>Taste of Gratitude · Small-batch drinks and sea moss · Georgia orders only</p>
         <p>This is a transactional message about your request. Update your preferences at any time by replying to this email.</p>
       </div>
     </div>
@@ -127,7 +127,7 @@ export async function sendBatchConfirmedEmail(ctx: BatchConfirmedContext) {
   const htmlBody = `
     <h1>Your batch is confirmed.</h1>
     <p>Good news — we confirmed ${ctx.batchName} with ${flavor} for ${escapeHtml(ctx.quantity)}.</p>
-    <p><strong>Production date:</strong> ${escapeHtml(ctx.productionDate)}<br/><strong>Pickup market:</strong> ${escapeHtml(ctx.marketName)}</p>
+    <p><strong>Production date:</strong> ${escapeHtml(ctx.productionDate)}<br/><strong>Fulfillment plan:</strong> ${escapeHtml(ctx.marketName)}</p>
     <p><strong>Total:</strong> $${total}${ctx.setupFeeCents > 0 ? ` (includes a $${(ctx.setupFeeCents / 100).toFixed(2)} setup fee)` : ''}<br/><strong>Deposit due now:</strong> $${deposit}</p>
     ${ctx.reservationUrl ? `<p><a class="cta" href="${escapeHtml(ctx.reservationUrl)}">Reserve and pay deposit</a></p>` : ''}
     <p>Your reservation is not complete until the deposit is paid. If you change your mind before paying, no charge is made.</p>
@@ -139,7 +139,7 @@ export async function sendBatchConfirmedEmail(ctx: BatchConfirmedContext) {
     replyTo: REPLY_TO,
     subject,
     html: baseHtml(subject, htmlBody),
-    text: `Your batch is confirmed: ${ctx.batchName}.\n\nWe confirmed ${flavor} for ${ctx.quantity}.\nProduction date: ${ctx.productionDate}\nPickup market: ${ctx.marketName}\nTotal: $${total}\nDeposit due now: $${deposit}\n\n${ctx.reservationUrl ? `Reserve here: ${ctx.reservationUrl}` : ''}\n\nYour reservation is not complete until the deposit is paid.`,
+    text: `Your batch is confirmed: ${ctx.batchName}.\n\nWe confirmed ${flavor} for ${ctx.quantity}.\nProduction date: ${ctx.productionDate}\nFulfillment plan: ${ctx.marketName}\nTotal: $${total}\nDeposit due now: $${deposit}\n\n${ctx.reservationUrl ? `Reserve here: ${ctx.reservationUrl}` : ''}\n\nYour reservation is not complete until the deposit is paid.`,
     emailType: 'fresh_batch_request',
     template: 'fresh_batch_confirmed',
     customerEmail: ctx.email,
