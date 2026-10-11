@@ -18,6 +18,7 @@ import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { consumeInventoryForPaidOrder } from '@/lib/custom-inventory';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';
+import { validateGeorgiaDestination } from '@/lib/georgia-orders';
 import {
   generateOrderAccessToken,
   verifyOrderAccessToken,
@@ -414,6 +415,18 @@ export async function POST(request: NextRequest) {
       });
     }
     
+    // Enforce current service geography even for unpaid orders created before this policy.
+    const paymentFulfillmentType = String(order.fulfillment?.type || order.fulfillmentType || '').toLowerCase();
+    if (paymentFulfillmentType.includes('shipping') || paymentFulfillmentType.includes('delivery')) {
+      const destination = paymentFulfillmentType.includes('shipping')
+        ? (order.shippingAddress || order.fulfillment?.address)
+        : (order.deliveryAddress || order.fulfillment?.address);
+      const eligibility = validateGeorgiaDestination(destination);
+      if (!eligibility.valid) {
+        return json({ success: false, error: eligibility.message, code: eligibility.code }, 422);
+      }
+    }
+
     // ========================================================================
     // DOUBLE-CHARGE PREVENTION: Check if order is in a final state
     // Includes paid, refunded, cancelled
