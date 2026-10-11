@@ -34,6 +34,7 @@ const FLAVOR_PROFILES = [
 ];
 
 const QUANTITY_OPTIONS = [
+  { value: 'jar_16oz', label: 'One 16 oz sea moss jar', short: '16 oz jar' },
   { value: 'bottle_16oz', label: 'One 16 oz bottle', short: '1 bottle' },
   { value: 'multi_bottle', label: 'Multiple 16 oz bottles', short: 'Multiple bottles' },
   { value: 'half_gallon', label: 'Half gallon', short: '½ gallon' },
@@ -51,6 +52,7 @@ const MARKET_OPTIONS = [
 
 interface RequestFlavorClientProps {
   source?: string;
+  initialProductSlug?: string;
 }
 
 interface FormState {
@@ -67,15 +69,16 @@ interface FormState {
   marketingEmailConsent: boolean;
 }
 
-export default function RequestFlavorClient({ source = 'homepage_hero' }: RequestFlavorClientProps) {
+export default function RequestFlavorClient({ source = 'homepage_hero', initialProductSlug = '' }: RequestFlavorClientProps) {
+  const isBlueLotusRequest = (slug: string) => slug === 'blue-lotus-gel';
   const [form, setForm] = useState<FormState>({
     email: '',
     phone: '',
-    requestedProductSlug: '',
+    requestedProductSlug: initialProductSlug,
     flavorProfile: '',
     requestedFlavorText: '',
     quantity: '1',
-    quantityUnit: 'bottle_16oz',
+    quantityUnit: isBlueLotusRequest(initialProductSlug) ? 'jar_16oz' : 'bottle_16oz',
     preferredMarketId: 'georgia_online_inquiry',
     needByDate: '',
     notes: '',
@@ -90,13 +93,15 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
   const curatedOptions = useMemo(() => {
     return PRODUCTS.filter(
       (p) =>
-        ['lemonades', 'refreshers', 'juices'].includes(p.category) &&
+        (['lemonades', 'refreshers', 'juices'].includes(p.category) || p.slug === 'blue-lotus-gel') &&
         p.inventoryStatus !== 'inactive'
     ).map((p) => ({ value: p.slug, label: p.name }));
   }, []);
 
   const updateField = (name: keyof FormState, value: string | boolean) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => name === 'requestedProductSlug'
+      ? { ...prev, requestedProductSlug: String(value), quantityUnit: isBlueLotusRequest(String(value)) ? 'jar_16oz' : 'bottle_16oz' }
+      : { ...prev, [name]: value });
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
         const next = { ...prev };
@@ -198,6 +203,11 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
 
   return (
     <form onSubmit={handleSubmit} className="grid min-w-0 w-full grid-cols-[minmax(0,1fr)] gap-5" noValidate>
+      {form.requestedProductSlug === 'blue-lotus-gel' && (
+        <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-950">
+          Blue Lotus sea moss: 16 oz jar, $36 each. This requests the next batch; availability and Georgia fulfillment are confirmed before payment.
+        </p>
+      )}
       <div>
         <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-stone-800">
           Email <span aria-hidden="true" className="text-red-600">*</span>
@@ -317,7 +327,7 @@ export default function RequestFlavorClient({ source = 'homepage_hero' }: Reques
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {QUANTITY_OPTIONS.map((o) => (
+              {QUANTITY_OPTIONS.filter(o => form.requestedProductSlug === 'blue-lotus-gel' ? o.value === 'jar_16oz' : o.value !== 'jar_16oz').map((o) => (
                 <SelectItem key={o.value} value={o.value}>
                   {o.label}
                 </SelectItem>
