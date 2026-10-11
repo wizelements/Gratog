@@ -102,6 +102,13 @@ export const freshBatchRequestInputSchema = z
       path: ['flavor'],
     }
   )
+  .refine(
+    (data) => data.quantityUnit !== 'jar_16oz' || data.requestedProductSlug === 'blue-lotus-gel',
+    {
+      message: 'The 16 oz sea moss jar request is available for Blue Lotus only.',
+      path: ['quantityUnit'],
+    }
+  )
 ;
 
 export type FreshBatchRequestInput = z.infer<typeof freshBatchRequestInputSchema>;

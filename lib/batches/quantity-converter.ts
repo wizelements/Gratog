@@ -11,6 +11,7 @@ export const OUNCES_PER_GALLON = 128;
 export const BOTTLES_PER_GALLON = OUNCES_PER_GALLON / OUNCES_PER_BOTTLE; // 8
 
 export type QuantityUnit =
+  | 'jar_16oz'
   | 'bottle_16oz'
   | 'multi_bottle'
   | 'half_gallon'
@@ -20,6 +21,7 @@ export type QuantityUnit =
   | 'sample_interest';
 
 const UNIT_GALLON_EQUIVALENTS: Record<QuantityUnit, number> = {
+  jar_16oz: 1 / BOTTLES_PER_GALLON, // quantity of 16 oz gel jars (not liquid bottles)
   bottle_16oz: 1 / BOTTLES_PER_GALLON, // 0.125
   multi_bottle: 1 / BOTTLES_PER_GALLON, // caller must multiply by quantity
   half_gallon: 0.5,

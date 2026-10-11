@@ -5,6 +5,11 @@
 
 const SQUARE_VERSION = '2025-10-16';
 
+// Canonical Calm Waters Square item: CIEYXH3G7FHAST6DLWMCFYS5.
+// Preserve the older merchant object for historical transactions, but never
+// advertise the duplicate item to shoppers through our public catalog.
+const LEGACY_DUPLICATE_CALM_WATERS_ID = 'NOD76PUJZP7QRJ2YTHY7S3K5';
+
 interface SquareConfig {
   accessToken: string;
   environment: 'sandbox' | 'production';
@@ -117,6 +122,7 @@ export async function getSquareCatalog(options: {
       // stock as actively shoppable or indexable products.
       .filter((obj: any) =>
         obj.type === 'ITEM' &&
+        obj.id !== LEGACY_DUPLICATE_CALM_WATERS_ID &&
         obj.is_deleted !== true &&
         obj.isDeleted !== true &&
         obj.item_data?.is_archived !== true &&
@@ -189,7 +195,7 @@ export async function getSquareProduct(id: string): Promise<CatalogItem | null> 
     const data = await response.json();
     const obj = data.object;
     
-    if (!obj || obj.type !== 'ITEM' || obj.is_deleted === true || obj.isDeleted === true || obj.item_data?.is_archived === true || obj.itemData?.isArchived === true) return null;
+    if (!obj || obj.id === LEGACY_DUPLICATE_CALM_WATERS_ID || obj.type !== 'ITEM' || obj.is_deleted === true || obj.isDeleted === true || obj.item_data?.is_archived === true || obj.itemData?.isArchived === true) return null;
 
     const item = obj.item_data || obj.itemData || {};
     const variations = item.variations || [];

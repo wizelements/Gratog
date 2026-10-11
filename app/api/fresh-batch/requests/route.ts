@@ -32,6 +32,7 @@ function getMarketDisplayName(marketId: string): string {
 
 function formatQuantity(quantity: number, unit: string): string {
   const labels: Record<string, string> = {
+    jar_16oz: `${quantity} × 16 oz sea moss jar${quantity === 1 ? '' : 's'}`,
     bottle_16oz: 'one 16 oz bottle',
     multi_bottle: `${quantity} 16 oz bottles`,
     half_gallon: 'half gallon',

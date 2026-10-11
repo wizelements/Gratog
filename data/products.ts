@@ -1037,8 +1037,10 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
       liveProduct.squareData?.variationId ||
       firstLiveVariationId ||
       null;
+  const blueLotusNoStock = isBlueLotusSquareGel &&
+    (Number(liveProduct.stock) <= 0 || liveProduct.inStock === false);
   const checkoutReady = isBlueLotusSquareGel
-    ? Boolean(firstLiveVariationId && !String(firstLiveVariationId).startsWith('tog-'))
+    ? !blueLotusNoStock && Boolean(firstLiveVariationId && !String(firstLiveVariationId).startsWith('tog-'))
     : liveProduct.checkoutReady === true || Boolean(
         resolvedLiveVariationId && !String(resolvedLiveVariationId).startsWith('tog-')
       );
@@ -1084,7 +1086,9 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
     variationId: resolvedLiveVariationId || curatedProduct.variationId,
     catalogObjectId: isBlueLotusSquareGel ? resolvedLiveVariationId : liveProduct.catalogObjectId || resolvedLiveVariationId || curatedProduct.catalogObjectId,
     checkoutReady,
-    checkoutUnavailableReason: checkoutReady ? undefined : curatedProduct.checkoutUnavailableReason,
+    checkoutUnavailableReason: checkoutReady ? undefined : blueLotusNoStock
+      ? 'Blue Lotus 16 oz is awaiting its next confirmed batch. Request availability—no charge until the batch and pickup or Georgia delivery eligibility are confirmed.'
+      : curatedProduct.checkoutUnavailableReason,
     activeWeeklyMenu: curated.activeWeeklyMenu,
     soldOut: curated.soldOut,
     preorderOnly: curated.preorderOnly,
@@ -1092,7 +1096,7 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
     seasonal: curated.seasonal,
     stock: curated.soldOut ? 0 : liveProduct.stock ?? curatedProduct.stock,
     inStock: curated.soldOut ? false : liveProduct.inStock ?? curatedProduct.inStock,
-    isPreorder: liveProduct.isPreorder ?? curatedProduct.isPreorder,
+    isPreorder: blueLotusNoStock ? false : (liveProduct.isPreorder ?? curatedProduct.isPreorder),
     marketExclusive: liveProduct.marketExclusive ?? curated.marketPickupOnly,
     seoTitle: curated.seoTitle,
     seoDescription: curated.seoDescription,

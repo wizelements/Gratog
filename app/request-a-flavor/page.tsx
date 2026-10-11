@@ -26,7 +26,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RequestFlavorPage() {
+export default async function RequestFlavorPage({ searchParams }: { searchParams: Promise<{ product?: string }> }) {
+  const params = await searchParams;
+  // Only known product-specific inbound requests can prepopulate this form.
+  const isBlueLotus = params?.product === 'blue-lotus-gel';
   return (
     <div className="min-h-screen bg-stone-50">
       <section className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:py-24">
@@ -35,11 +38,12 @@ export default function RequestFlavorPage() {
             Fresh batches guided by customer requests
           </p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight text-stone-900 sm:text-5xl">
-            Tell us what you want to sip next.
+            {isBlueLotus ? 'Request Blue Lotus — 16 oz jar' : 'Tell us what you want to sip next.'}
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-stone-600">
-            Request a flavor or larger batch for a regular Georgia order or a market preorder.
-            We confirm the price, availability and eligible fulfillment before any payment.
+            {isBlueLotus
+              ? 'Blue Lotus is $36 for a 16 oz jar. Current inventory cannot support an immediate checkout. Request the next batch for a Georgia order or market pickup; no payment is collected until availability is confirmed.'
+              : 'Request a flavor or larger batch for a regular Georgia order or a market preorder. We confirm the price, availability and eligible fulfillment before any payment.'}
           </p>
 
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -53,7 +57,7 @@ export default function RequestFlavorPage() {
         </div>
 
         <div className="min-w-0 w-full rounded-[1.5rem] border border-stone-200 bg-white p-4 shadow-sm sm:p-8">
-          <RequestFlavorClient source="direct" />
+          <RequestFlavorClient source={isBlueLotus ? 'product_page' : 'direct'} initialProductSlug={isBlueLotus ? 'blue-lotus-gel' : ''} />
         </div>
 
         <div className="mt-12 rounded-2xl border border-stone-200 bg-white p-6">

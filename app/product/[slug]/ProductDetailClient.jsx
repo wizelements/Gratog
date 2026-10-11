@@ -68,7 +68,10 @@ export default function ProductDetailClient({ product, slug }) {
   const showMarketLeadCapture = Boolean(product) && (!checkoutReady || isMarketOnly);
   const canAddToCart = Boolean(product) && checkoutReady && !isMarketOnly;
   const preorderSource = encodeURIComponent(product?.slug || product?.id || slug || 'product_detail');
-  const preorderHref = `/preorder?utm_source=product_${preorderSource}&utm_campaign=weekly_menu_drop`;
+  const isBlueLotus = product?.slug === 'blue-lotus' || product?.slug === 'blue-lotus-gel';
+  const preorderHref = isBlueLotus
+    ? '/request-a-flavor?product=blue-lotus-gel'
+    : `/preorder?utm_source=product_${preorderSource}&utm_campaign=weekly_menu_drop`;
   const productCategoryLabel = product?.categoryLabel || product?.displayCategory || product?.category || product?.intelligentCategory || 'Weekly market item';
 
   // Set default variation on mount
@@ -470,9 +473,11 @@ export default function ProductDetailClient({ product, slug }) {
               ) : (
                 <div className="space-y-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
                   <div>
-                    <p className="font-semibold text-amber-950">Check market pickup availability</p>
+                    <p className="font-semibold text-amber-950">{isBlueLotus ? 'Blue Lotus 16 oz — next batch requests' : 'Check market pickup availability'}</p>
                     <p className="mt-2 text-sm leading-6 text-amber-900">
-                      {'This item isn’t available through the regular cart. Browse the weekly menu or ask at our booth about availability.'}
+                      {isBlueLotus
+                         ? 'The current inventory record does not confirm available jars. Request a 16 oz jar at $36; we will confirm production and Georgia fulfillment before collecting payment.'
+                         : 'This item isn’t available through the regular cart. Browse the weekly menu or ask at our booth about availability.'}
                     </p>
                   </div>
                   <RetentionForm
@@ -497,7 +502,7 @@ export default function ProductDetailClient({ product, slug }) {
                         href={preorderHref}
                         onClick={() => track('product_preorder_click', { productId: product.id || product.slug, productName: product.name, source: 'product_market_fallback' })}
                       >
-                        Reserve for pickup
+                        {isBlueLotus ? 'Request Blue Lotus 16 oz · $36' : 'Reserve for pickup'}
                       </Link>
                     </Button>
                     <Button asChild variant="outline" className="h-11 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
@@ -754,7 +759,7 @@ export default function ProductDetailClient({ product, slug }) {
               onClick={() => track('product_preorder_click', { productId: product.id || product.slug, productName: product.name, source: 'product_mobile_sticky' })}
               className="h-12 rounded-full bg-emerald-700 px-6 py-3 text-center font-semibold text-white hover:bg-emerald-800"
             >
-              Reserve
+              {isBlueLotus ? 'Request 16 oz' : 'Reserve'}
             </Link>
           )}
         </div>

@@ -38,6 +38,7 @@ try {
   await db.collection('unified_products').deleteMany({ source: 'qa-isolated-sandbox' });
   await db.collection('customers').deleteMany({ email: /@qa-sandbox\.invalid$/ });
   await db.collection('idempotency_keys').deleteMany({ key: /^tog-sbx-/ });
+  await db.collection('inventory').deleteMany({ source: 'qa-isolated-sandbox' });
 
   await db.collection('unified_products').insertMany([
     {
@@ -65,6 +66,29 @@ try {
       variations: [{ id: 'qa-sbx-lotus-16oz', name: '16oz jar', priceCents: 3600 }],
     },
   ]);
+
+  // Negative merchant inventory is real inventory debt, never six jars to sell.
+  await db.collection('inventory').insertOne({productId:'qa-sbx-blue-lotus',currentStock:-6,source:'qa-isolated-sandbox'});
+
+  const blueLotusRequest = await post('/api/fresh-batch/requests', {
+    email: 'blue-lotus-request@qa-sandbox.invalid', phone: null,
+    requestedProductSlug: 'blue-lotus-gel', flavorProfile: null,
+    requestedFlavorText: null, quantity: 1, quantityUnit: 'jar_16oz',
+    preferredMarketId: 'georgia_online_inquiry', needByDate: null,
+    notes: null, requestSource: 'product_page', marketingEmailConsent: false,
+  });
+  check('Real request API accepts Blue Lotus 16oz jar without starting payment',
+    blueLotusRequest.status === 201 && blueLotusRequest.data.success === true &&
+    Boolean(blueLotusRequest.data.requestId),
+    { status: blueLotusRequest.status });
+  const requestRecord = await db.collection('fresh_batch_requests')
+    .findOne({ email: 'blue-lotus-request@qa-sandbox.invalid' });
+  check('Blue Lotus jar request persisted with no sample or customer charge',
+    requestRecord?.requestedProductSlug === 'blue-lotus-gel' &&
+    requestRecord?.quantityUnit === 'jar_16oz' &&
+    requestRecord?.status === 'requested' &&
+    (await db.collection('payment_records').countDocuments({ orderId: requestRecord?.id })) === 0,
+    { status: requestRecord?.status, unit: requestRecord?.quantityUnit });
 
   const preview = await post('/api/cart/price', {
     lines: [{ variationId: 'qa-sbx-bliss-16oz', qty: 1, price: 0.01 }],
@@ -159,6 +183,19 @@ try {
     lotus.data.order?.pricing?.total === 44.99,
     { status: lotus.status, total: lotus.data.order?.pricing?.total });
 
+  const rejectedPayment = await post('/api/payments', {
+    sourceId: 'cnon:card-nonce-ok', amountCents: 4499,
+    orderId: lotus.data.order.id,
+    orderAccessToken: lotus.data.order.orderAccessToken,
+  });
+  check('Negative Blue Lotus inventory blocks charge BEFORE Square is called',
+    rejectedPayment.status === 409 && rejectedPayment.data.code === 'INVENTORY_UNAVAILABLE',
+    {status:rejectedPayment.status,code:rejectedPayment.data.code});
+  const noCapturedPayment = await db.collection('orders').findOne({id:lotus.data.order.id});
+  check('Blocked payment leaves order unpaid and without Square payment session',
+    noCapturedPayment?.paymentStatus === 'pending' && !noCapturedPayment?.squarePaymentId,
+    {status:noCapturedPayment?.paymentStatus});
+
   evidence.pass = true;
 } catch (err) {
   evidence.error = String(err?.message || err).slice(0,250);
@@ -169,8 +206,10 @@ try {
   try {
     // Test artifacts exist outside Mongo; dispose all QA data after readback.
     await client.db().collection('orders').deleteMany({ source:'qa-isolated-sandbox' });
+    await client.db().collection('fresh_batch_requests').deleteMany({ email: /@qa-sandbox\.invalid$/ });
     await client.db().collection('customers').deleteMany({ email: /@qa-sandbox\.invalid$/ });
     await client.db().collection('unified_products').deleteMany({ source:'qa-isolated-sandbox' });
+    await client.db().collection('inventory').deleteMany({ source:'qa-isolated-sandbox' });
     await client.db().collection('idempotency_keys').deleteMany({ key: /^tog-sbx-/ });
     await client.close();
   } catch { evidence.cleanup = 'failed; disposable DB is destroyed with CI container'; }
