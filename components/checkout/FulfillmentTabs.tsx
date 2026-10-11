@@ -3,7 +3,7 @@
 
 /**
  * FulfillmentTabs - Adaptive fulfillment type selector
- * Lets customers choose pickup, eligible local delivery, or nationwide shipping.
+ * Lets customers choose Georgia market pickup, eligible Georgia delivery or Georgia-only shipping.
  */
 
 import { motion } from 'framer-motion';
@@ -19,7 +19,7 @@ interface FulfillmentTabsProps {
 const TABS = [
   { value: 'pickup' as FulfillmentType, label: 'Pickup', icon: MapPin, description: 'Market pickup' },
   { value: 'delivery' as FulfillmentType, label: 'Delivery', icon: Truck, description: 'Atlanta-area only', disabledForPreorder: true },
-  { value: 'shipping' as FulfillmentType, label: 'Shipping', icon: Package, description: 'Eligible items only', disabledForPreorder: true },
+  { value: 'shipping' as FulfillmentType, label: 'Shipping', icon: Package, description: 'Georgia only • eligible items', disabledForPreorder: true },
 ];
 
 export default function FulfillmentTabs({ selected, onChange, hasPreorderItems = false }: FulfillmentTabsProps) {
