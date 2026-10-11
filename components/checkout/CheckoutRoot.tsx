@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, ArrowLeft, ShoppingBag } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useCheckoutStore } from '@/stores/checkout';
 import { CartAPI } from '@/adapters/cartAdapter';
 import { Fulfillment } from '@/adapters/fulfillmentAdapter';
@@ -22,6 +22,20 @@ import Link from 'next/link';
 
 // FIX P1-2: Wrap checkout in error boundary
 export default function CheckoutRoot() {
+  // The checkout store reads browser-persisted cart and stage values. SSR
+  // cannot read them, so defer the cart-dependent tree until after hydration.
+  // The server and the first client render must contain identical markup.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return (
+      <div role="status" aria-live="polite" className="min-h-screen bg-[#fbfaf7] p-6 text-gray-700">
+        Loading checkout…
+      </div>
+    );
+  }
+
   return (
     <CheckoutErrorBoundary>
       <CheckoutContent />
