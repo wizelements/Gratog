@@ -148,6 +148,11 @@ interface UnifiedProductDoc {
   category?: string;
   image?: string;
   inStock?: boolean;
+  isPreorder?: boolean;
+  preorderOnly?: boolean;
+  marketExclusive?: boolean;
+  marketPickupOnly?: boolean;
+  fulfillmentType?: string;
   squareIsArchived?: boolean;
   squareEcomAvailable?: boolean;
   variations?: Array<{
@@ -417,8 +422,17 @@ export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
       lineTotalCents,
       lineTotal: toDollars(lineTotalCents),
       rewardPoints: productRewardPoints,
-      isPreorder: !!item.isPreorder,
-      marketExclusive: !!item.marketExclusive,
+      // Server-owned catalog flags take precedence over client-provided flags.
+      // A customer must not be able to remove a pickup-only restriction by
+      // editing a cart payload before creating an order.
+      isPreorder: Boolean(product.isPreorder || product.preorderOnly || item.isPreorder),
+      marketExclusive: Boolean(
+        product.marketExclusive ||
+        product.marketPickupOnly ||
+        product.fulfillmentType === 'market_pickup' ||
+        product.fulfillmentType === 'market_pickup_only' ||
+        item.marketExclusive
+      ),
       category: item.category || product.category,
       size: item.size,
       image: item.image || product.image,
