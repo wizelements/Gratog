@@ -102,7 +102,7 @@ export default function EnhancedProductCard({ product }) {
           </div>
         )}
         <p className="mt-3 text-xs font-medium text-emerald-800">
-          Market pickup or eligible shipping at checkout
+          Order eligible products online in Georgia; market-only items are pickup only.
         </p>
       </CardContent>
 
