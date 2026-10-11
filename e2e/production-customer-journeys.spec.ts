@@ -5,6 +5,8 @@ const CHECKED_PAGES = ['/', '/catalog', '/weekly-menu', '/markets', '/faq', '/po
 test.describe('Real Georgia customer journeys — no charges, accounts or submitted leads', () => {
   test('primary navigation separates the ordinary store from market-only preorders', async ({ page }) => {
     await page.goto('/');
+    const mobileMenu = page.getByRole('button', { name: 'Open menu' });
+    if (await mobileMenu.isVisible()) await mobileMenu.click();
     await expect(page.getByRole('link', { name: 'Shop Online' }).first()).toHaveAttribute('href', '/catalog');
     await expect(page.getByRole('link', { name: 'Market Preorders' }).first()).toHaveAttribute('href', '/weekly-menu');
     await expect(page.getByText('Orders fulfilled in Georgia only.', { exact: false }).first()).toBeVisible();
