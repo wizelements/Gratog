@@ -475,13 +475,13 @@ export default function MarketsPage() {
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8 lg:py-16">
           <div>
             <p className="mb-4 inline-flex rounded-full border border-emerald-200 bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-800 shadow-sm">
-              Find us at Atlanta-area markets
+              Georgia market pickup • small-batch favorites
             </p>
             <h1 className="max-w-3xl text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-stone-950 sm:text-5xl lg:text-6xl">
-              Come find us at the market.
+              Come see us at a Georgia market.
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-700 sm:text-xl">
-              Stop by for fresh lemonades, sea moss gels, and other small-batch favorites. We’d love to help you find a flavor you’ll enjoy.
+              Taste our lemonades, explore sea moss favorites and pick up confirmed preorders at participating Georgia markets. We currently accept Georgia orders only.
             </p>
 
             <div className="mt-7 grid gap-3 sm:flex sm:flex-wrap">
