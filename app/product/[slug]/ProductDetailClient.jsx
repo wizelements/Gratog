@@ -241,7 +241,7 @@ export default function ProductDetailClient({ product, slug }) {
   const customerQuote = product.customerQuote || product.testimonial || null;
   const allergens = Array.isArray(product.allergens) ? product.allergens.filter(Boolean) : [];
   const pickupInfo = product.pickupAvailability || pickupGuidance;
-  const shippingInfo = product.shippingAvailability || 'Eligible items and shipping fees are confirmed before payment.';
+  const shippingInfo = product.shippingAvailability || 'Shipping is limited to eligible products and Georgia addresses. Fees are confirmed before payment.';
   const pairingProducts = (Array.isArray(product.pairings) ? product.pairings : [])
     .map((id) => getProductBySlugOrId(id))
     .filter(Boolean)
