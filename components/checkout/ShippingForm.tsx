@@ -61,8 +61,8 @@ export default function ShippingForm({ data, onChange, errors = {} }: ShippingFo
           />
         </div>
         
-        <div className="grid grid-cols-6 gap-3">
-          <div className="col-span-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-12">
+          <div className="min-w-0 sm:col-span-6">
             <Label htmlFor="ship-city">City *</Label>
             <Input
               id="ship-city"
@@ -76,7 +76,7 @@ export default function ShippingForm({ data, onChange, errors = {} }: ShippingFo
               <p id="ship-city-error" className="mt-1 text-xs text-red-500">{errors['address.city']}</p>
             )}
           </div>
-          <div className="col-span-1">
+          <div className="min-w-0 sm:col-span-3">
             <Label htmlFor="ship-state">State (Georgia only) *</Label>
             <Input
               id="ship-state"
@@ -91,7 +91,7 @@ export default function ShippingForm({ data, onChange, errors = {} }: ShippingFo
               <p id="ship-state-error" className="mt-1 text-xs text-red-500">{errors['address.state']}</p>
             )}
           </div>
-          <div className="col-span-2">
+          <div className="min-w-0 sm:col-span-3">
             <Label htmlFor="ship-zip">Georgia ZIP *</Label>
             <Input
               id="ship-zip"
@@ -132,7 +132,7 @@ export default function ShippingForm({ data, onChange, errors = {} }: ShippingFo
             >
               <RadioGroupItem value={method.id} id={method.id} className="mt-0.5" />
               <div className="flex-1">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-medium text-gray-900">{method.name}</span>
                   <span className="font-semibold text-emerald-600">${method.price.toFixed(2)}</span>
                 </div>
