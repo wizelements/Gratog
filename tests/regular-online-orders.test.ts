@@ -40,6 +40,9 @@ describe('regular Georgia customers can order without selecting a market', () =>
     expect(orderRoute).toContain('MARKET_PICKUP_REQUIRED');
     expect(orderRoute).toContain('basePricing.items.some((line) => line.isPreorder || line.marketExclusive)');
     expect(orderRoute).toContain('validateGeorgiaDestination');
+    const cartEngine = read('lib/cart-engine.ts');
+    expect(cartEngine).toContain('product.marketPickupOnly === true');
+    expect(cartEngine).toContain('product.preorderOnly');
   });
 
   it('does not imply statewide shipping of every product', () => {
