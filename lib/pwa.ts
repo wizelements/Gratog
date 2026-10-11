@@ -22,7 +22,7 @@ export async function initializePWA(config: PWAConfig = {}): Promise<ServiceWork
   const {
     enableAutoUpdate = true,
     updateCheckInterval = 60000, // 1 minute — catch deploys fast
-    enableNotifications = true
+    enableNotifications = false
   } = config;
 
   // Check if service workers are supported
@@ -49,8 +49,11 @@ export async function initializePWA(config: PWAConfig = {}): Promise<ServiceWork
       updateViaCache: 'none'
     });
 
+    // A restricted browser, private mode or E2E runner can suppress SW
+    // registration even though the API exists. Never dereference an
+    // unavailable registration and do not log a misleading crash.
+    if (!registration) return null;
     serviceWorkerRegistration = registration;
-    console.log('✅ Service Worker registered successfully');
 
     // Check for updates periodically
     if (enableAutoUpdate) {
@@ -89,10 +92,10 @@ export async function initializePWA(config: PWAConfig = {}): Promise<ServiceWork
       });
     }
 
-    // Request notification permission if enabled
-    if (enableNotifications && 'Notification' in window && Notification.permission === 'default') {
-      requestNotificationPermission();
-    }
+    // Browser notification permission may only be requested in response to
+    // a clear user action, never during automatic website startup.
+    // enableNotifications is retained for future explicit opt-in UI.
+    void enableNotifications;
 
     // Set up message listener for SW
     if (!hasServiceWorkerMessageListener) {
