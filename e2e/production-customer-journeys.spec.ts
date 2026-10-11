@@ -42,6 +42,36 @@ test.describe('Real Georgia customer journeys — no charges, accounts or submit
     await expect(page.getByText('Shopping without visiting a market?', { exact: false })).toBeVisible();
   });
 
+  test('customer contact and Georgia shipping survive refresh through final review without charging', async ({ page }) => {
+    await page.goto('/catalog');
+    await expect(page.locator('[data-product]').first()).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button', { name: /add to cart/i }).first().click();
+    await page.goto('/checkout');
+    await expect(page.getByRole('button', { name: 'Continue to Details' })).toBeVisible();
+    await page.getByRole('button', { name: 'Continue to Details' }).click();
+    await expect(page.locator('#firstName')).toBeVisible();
+
+    await page.locator('#firstName').fill('Checkout');
+    await page.locator('#lastName').fill('QA');
+    await page.locator('#email').fill('qa@example.invalid');
+    await page.locator('#ship-street').fill('123 Example Street');
+    await page.locator('#ship-city').fill('Atlanta');
+    await page.locator('#ship-zip').fill('30303');
+    await page.locator('#standard').click();
+
+    await page.reload();
+    await page.getByRole('button', { name: 'Continue to Details' }).click();
+    await expect(page.locator('#firstName')).toBeVisible();
+    await expect(page.locator('#firstName')).toHaveValue('Checkout');
+    await expect(page.locator('#email')).toHaveValue('qa@example.invalid');
+    await expect(page.locator('#ship-city')).toHaveValue('Atlanta');
+    await expect(page.locator('#standard')).toHaveAttribute('data-state', 'checked');
+    await page.getByRole('button', { name: 'Continue to Review' }).click();
+    await expect(page.getByRole('heading', { name: 'Review & Pay' }).first()).toBeVisible();
+    await expect(page.getByText('Shipping Details')).toBeVisible();
+    // Intentionally never click Proceed to Secure Payment: no order or charge.
+  });
+
   test('empty cart cannot masquerade as a completed checkout', async ({ page }) => {
     await page.goto('/checkout');
     await expect(page.getByText('Review your cart', { exact: false })).toBeVisible();
