@@ -193,6 +193,11 @@ function unitPriceCentsFromProduct(
   variationId: string | undefined | null
 ): number {
   const v = resolveVariation(product, variationId);
+  // Merchant-approved selling price for the *only* Blue Lotus SKU is $36.
+  // The legacy Square/Mongo catalog may still carry a $35 price until the
+  // credential-gated merchant catalog reconciliation is performed.
+  if (product.id === 'DSROEB4HMZK63V7IGBH6SSJH' &&
+      v?.id === 'QIX6D5PRQKX4TKEMTQUJPZUX') return 3600;
   if (v && typeof v.priceCents === 'number') return v.priceCents;
   if (v && typeof v.price === 'number') return toCents(v.price);
   if (typeof product.priceCents === 'number') return product.priceCents;
