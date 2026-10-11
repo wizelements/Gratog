@@ -136,7 +136,7 @@ export default function HomePageClient({
         <div className="container grid gap-10 py-14 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-20">
           <div>
             <p className="mb-5 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-50">
-              Small batches • Atlanta-area markets
+              Handcrafted in Atlanta • Georgia orders only
             </p>
             <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
               Fresh flavors. Made with gratitude.
@@ -153,7 +153,7 @@ export default function HomePageClient({
               </Button>
             </div>
             <p className="mt-4 text-sm leading-6 text-emerald-50/80">
-              See availability, pricing, and pickup details before completing your order.
+              We currently fulfill orders in Georgia only. Choose a Georgia market for pickup, or explore eligible delivery and shipping at checkout.
             </p>
           </div>
 
@@ -280,7 +280,7 @@ export default function HomePageClient({
             <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em] text-emerald-200">Interested in delivery?</p>
             <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Want Taste of Gratitude delivered?</h2>
             <p className="mt-4 max-w-2xl leading-8 text-emerald-50/90">
-              We’re exploring scheduled delivery in the Atlanta area. Share your neighborhood and preferred day, and we’ll let you know if delivery becomes available near you.
+              We’re exploring more Georgia delivery options, starting in the Atlanta area. Share your neighborhood and preferred day, and we’ll let you know if delivery becomes available near you.
             </p>
             <div className="mt-6 grid gap-3">
               {[
