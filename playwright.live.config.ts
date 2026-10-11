@@ -12,6 +12,9 @@ export default defineConfig({
   reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   use: {
     baseURL: process.env.BASE_URL || 'https://tasteofgratitude.shop',
+    // Isolate network/browser E2E from cached PWA responses. SW behavior has
+    // its own dedicated governance suite, including offline 503 responses.
+    serviceWorkers: 'block',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
