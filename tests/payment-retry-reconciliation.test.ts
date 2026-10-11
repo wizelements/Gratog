@@ -6,6 +6,7 @@ const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8'
 describe('Square payment retry and reconciliation safety', () => {
   it('rotates the payment attempt key only when Square definitively declined', () => {
     const source = read('app/api/payments/route.ts');
+    expect(source).toContain("const PRE_PAYMENT_STATES = ['pending', 'PENDING',");
     expect(source).toContain('order.paymentAttemptNumber');
     expect(source).toContain('$inc: { paymentAttemptNumber: 1 }');
     expect(source).toContain("$unset: { paymentIdempotencyKey: '' }");
