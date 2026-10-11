@@ -197,8 +197,9 @@ export default function SquarePaymentForm({
   }, [amountCents, config]);
 
   const processPaymentToken = useCallback(async (sourceId: string) => {
+    if (paymentStep === 'processing' || paymentStep === 'success') return;
     setPaymentStep('processing');
-
+    try {
       const res = await fetch('/api/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -236,8 +237,11 @@ export default function SquarePaymentForm({
         throw new Error(data.error || 'Payment processing failed');
       }
 
+      if (!data.payment?.id || data.payment.status !== 'COMPLETED') {
+        throw new Error('Your payment has not been confirmed. Please check your order status before trying again.');
+      }
       setPaymentStep('success');
-      
+
       setTimeout(() => {
         onSuccess({
           paymentId: data.payment.id,
@@ -250,7 +254,16 @@ export default function SquarePaymentForm({
           orderAccessTokenExpiresAt: data.orderAccessTokenExpiresAt || null,
         });
       }, 500);
-  }, [amountCents, orderId, squareOrderId, orderAccessToken, customer, idempotencyKey, onSuccess]);
+    } catch (error) {
+      // Also covers asynchronous Cash App callbacks, not just card tokenization.
+      const message = error instanceof Error ? error.message : 'Payment status could not be confirmed';
+      setCardError(message);
+      setPaymentStep('error');
+      onError(message);
+      // Do not silently return to idle after an ambiguous processor failure:
+      // retrying a payment before reconciliation can result in double charges.
+    }
+  }, [amountCents, orderId, squareOrderId, orderAccessToken, customer, idempotencyKey, onSuccess, onError, paymentStep]);
 
   const handleTokenizationError = useCallback((err: unknown, fallback: string) => {
     const errorMsg = err instanceof Error ? err.message : fallback;
@@ -420,7 +433,7 @@ export default function SquarePaymentForm({
         {/* Pay Button */}
         <button
           onClick={handlePayment}
-          disabled={!isCardReady || isProcessing || paymentStep === 'success'}
+          disabled={!isCardReady || isProcessing || paymentStep === 'success' || paymentStep === 'error'}
           className="w-full py-4 bg-gray-900 text-white rounded-lg font-semibold text-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isProcessing ? (

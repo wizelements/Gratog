@@ -7,6 +7,7 @@
 
 import { CartItem } from '@/adapters/cartAdapter';
 import { ContactInfo, FulfillmentData } from '@/stores/checkout';
+import { checkoutOrderIdempotencyKey } from '@/lib/checkout/order-attempt';
 
 export interface OrderResponse {
   success: boolean;
@@ -267,6 +268,10 @@ export async function createOrder(
     payload.shippingMethod = fulfillment.shipping.methodId;
   }
   
+  // The same unchanged payload must use the same order-creation attempt key
+  // after a network timeout. A changed cart/address generates a new key.
+  const idempotencyKey = await checkoutOrderIdempotencyKey(payload);
+
   // Make API call with timeout
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
@@ -274,7 +279,7 @@ export async function createOrder(
   try {
     const res = await fetch('/api/orders/create', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
       body: JSON.stringify(payload),
       signal: controller.signal
     });

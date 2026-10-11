@@ -67,8 +67,10 @@ export interface CheckoutValidation {
 }
 
 export interface CheckoutState {
-  // Stage
+  // Stage; defer all browser storage to after hydration to keep SSR stable.
   stage: CheckoutStage;
+  hydrated: boolean;
+  hydrateFromStorage: () => void;
   setStage: (stage: CheckoutStage) => void;
   
   // Cart
@@ -181,37 +183,51 @@ function persistState(state: CheckoutState) {
 }
 
 export const useCheckoutStore = create<CheckoutState>((set, get) => {
-  // Load initial cart safely (returns empty array during SSR)
-  const initialCart = typeof window !== 'undefined' ? CartAPI.getCart() : [];
-  const persisted = loadPersistedState();
-  const persistedFulfillment = persisted.fulfillment || initialFulfillment;
-  const persistedShippingMethod = persistedFulfillment.type === 'shipping'
-    ? shippingMethods().find((method: ShippingMethod) => method.id === persistedFulfillment.shipping?.methodId)
-    : null;
-  
+  // Server and first client render must agree. Browser storage is loaded
+  // once, from CheckoutRoot after mount, never during store initialization.
   const initialTotals = computeTotals({
-    cart: initialCart,
-    fulfillmentType: persistedFulfillment.type,
-    tip: persisted.tip || 0,
-    couponDiscount: persisted.couponDiscount || 0,
-    deliveryFee: persistedFulfillment.delivery?.fee,
-    shippingFee: persistedShippingMethod?.price || 0
+    cart: [],
+    fulfillmentType: initialFulfillment.type,
+    tip: 0,
+    couponDiscount: 0,
+    shippingFee: 0,
   });
-  
+
   return {
-    // Initial state
-    stage: persisted.stage || 'cart',
-    cart: initialCart,
-    contact: persisted.contact || initialContact,
-    fulfillment: persisted.fulfillment || initialFulfillment,
-    tip: persisted.tip || 0,
-    couponCode: persisted.couponCode || '',
-    couponDiscount: persisted.couponDiscount || 0,
+    stage: 'cart',
+    hydrated: false,
+    cart: [],
+    contact: initialContact,
+    fulfillment: initialFulfillment,
+    tip: 0,
+    couponCode: '',
+    couponDiscount: 0,
     totals: initialTotals,
     validation: {},
     isSubmitting: false,
-    
+
     // Actions
+    hydrateFromStorage: () => {
+      if (get().hydrated) return;
+      const saved = loadPersistedState();
+      const cart = CartAPI.getCart();
+      const fulfillment = saved.fulfillment || initialFulfillment;
+      // Never resume an old review/payment step after a reload. Payment
+      // sessions are server-owned; the customer must re-review current terms.
+      set({
+        hydrated: true,
+        stage: 'cart',
+        cart,
+        contact: saved.contact || initialContact,
+        fulfillment,
+        tip: saved.tip || 0,
+        couponCode: saved.couponCode || '',
+        // Never restore stale client-computed discounts as payable amounts.
+        couponDiscount: 0,
+        validation: {},
+      });
+      get().recomputeTotals();
+    },
     setStage: (stage) => {
       set({ stage });
       const state = get();
@@ -311,9 +327,4 @@ export const useCheckoutStore = create<CheckoutState>((set, get) => {
   };
 });
 
-// Subscribe to cart changes from external sources
-if (typeof window !== 'undefined') {
-  CartAPI.subscribe((cart) => {
-    useCheckoutStore.getState().updateCart(cart);
-  });
-}
+// Cart subscriptions are owned and cleaned up by CheckoutRoot.

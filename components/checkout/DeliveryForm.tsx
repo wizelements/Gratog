@@ -7,7 +7,7 @@
 
 import { motion } from 'framer-motion';
 import { Clock, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -37,6 +37,8 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
   });
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
+  const quoteRevision = useRef(0);
+  useEffect(() => { quoteRevision.current += 1; }, [subtotal]);
   
   const clearQuoteFields = {
     fee: undefined,
@@ -46,6 +48,8 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
   };
   
   const updateAddress = (addressUpdate: Partial<DeliveryData['address']>) => {
+    // Ignore a quote still in flight for a previous address.
+    quoteRevision.current += 1;
     setQuoteError(null);
     onChange({
       address: { ...data.address, ...addressUpdate },
@@ -82,6 +86,7 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
   };
 
   const quoteDelivery = async () => {
+    const requestedRevision = ++quoteRevision.current;
     setQuoteLoading(true);
     setQuoteError(null);
     setZipTouched(true);
@@ -105,6 +110,7 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
       });
 
       const json = await res.json();
+      if (requestedRevision !== quoteRevision.current) return;
 
       if (!res.ok || !json.success) {
         setQuoteError(json.error || 'Unable to quote delivery for this address.');
@@ -119,10 +125,11 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
         quotedSubtotal: subtotal,
       });
     } catch {
+      if (requestedRevision !== quoteRevision.current) return;
       setQuoteError('Unable to quote delivery right now. Please try again.');
       onChange(clearQuoteFields);
     } finally {
-      setQuoteLoading(false);
+      if (requestedRevision === quoteRevision.current) setQuoteLoading(false);
     }
   };
   

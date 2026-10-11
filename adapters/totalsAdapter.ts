@@ -52,14 +52,19 @@ export function computeTotals(input: TotalsInput): OrderTotals {
     deliveryFee = shippingFee;
   }
   
+  // A tip is only meaningful for scheduled local delivery. When customers
+  // change to shipping or market pickup, never carry an old delivery tip.
+  const applicableTip = fulfillmentType === 'delivery' && Number.isFinite(tip)
+    ? Math.max(0, tip)
+    : 0;
   const tax = subtotal * TAX_RATE;
-  const total = Math.max(0, subtotal - couponDiscount + deliveryFee + tax + tip);
-  
+  const total = Math.max(0, subtotal - couponDiscount + deliveryFee + tax + applicableTip);
+
   return {
     subtotal,
     deliveryFee,
     tax,
-    tip,
+    tip: applicableTip,
     couponDiscount,
     total,
     itemCount,
