@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { checkDeliveryRadius } from '@/lib/delivery-radius';
 import { calculateDistanceBasedDeliveryFee } from '@/lib/delivery-fees';
+import { validateGeorgiaDestination } from '@/lib/georgia-orders';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +32,11 @@ export async function POST(request: Request) {
         },
         { status: 400 }
       );
+    }
+
+    const eligibility = validateGeorgiaDestination(address);
+    if (!eligibility.valid) {
+      return NextResponse.json({ success: false, eligible: false, code: eligibility.code, error: eligibility.message }, { status: 422 });
     }
 
     const radius = await checkDeliveryRadius(fullAddress(address));
