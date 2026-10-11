@@ -174,6 +174,22 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(networkFirstStrategy(request));
 });
 
+// When the network is unavailable, preserve an honest HTTP failure status.
+// A successful 200 for the offline page masquerades as successful checkout.
+async function offlineFallbackResponse() {
+  const fallback = await caches.match('/offline.html');
+  if (!fallback) return null;
+  return new Response(await fallback.text(), {
+    status: 503,
+    statusText: 'Service Unavailable',
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'X-Offline-Fallback': '1',
+    },
+  });
+}
+
 async function navigationStrategy(event, request) {
   try {
     const preloadResponse = await event.preloadResponse;
@@ -186,14 +202,14 @@ async function navigationStrategy(event, request) {
       return preloadResponse;
     }
 
-    return await networkFirstStrategy(request, { timeoutMs: 6000 });
+    return await networkFirstStrategy(request, { timeoutMs: 12000 });
   } catch {
     const cached = await caches.match(request);
     if (cached) {
       return cached;
     }
 
-    const offlinePage = await caches.match('/offline.html');
+    const offlinePage = await offlineFallbackResponse();
     if (offlinePage) {
       return offlinePage;
     }
@@ -228,7 +244,7 @@ async function networkFirstStrategy(request, options = {}) {
       return cached;
     }
     if (request.mode === 'navigate') {
-      const offlinePage = await caches.match('/offline.html');
+      const offlinePage = await offlineFallbackResponse();
       if (offlinePage) {
         return offlinePage;
       }
