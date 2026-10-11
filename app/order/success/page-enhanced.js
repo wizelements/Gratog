@@ -126,7 +126,7 @@ export default function OrderSuccessPage() {
             </div>
             
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Link Expired for Security</h2>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Link Expired for Security</h1>
               <p className="text-gray-600">
                 Your order was placed successfully! For your protection, order links expire after 7 days.
               </p>
@@ -227,7 +227,7 @@ export default function OrderSuccessPage() {
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">❌</span>
             </div>
-            <h2 className="text-2xl font-bold mb-2">Order Not Found</h2>
+            <h1 className="text-2xl font-bold mb-2">Order Not Found</h1>
             <p className="text-gray-600 mb-2">{error}</p>
             {orderRef && (
               <p className="text-xs text-gray-400 mb-6 font-mono">
