@@ -209,7 +209,11 @@ export async function generateMetadata({ params }) {
 // Main SSR Page Component
 export default async function ProductPage({ params }) {
   const { slug } = await params;
-  
+
+  // The former curated name was a duplicate of Square's live Blue Lotus.
+  // Preserve old bookmarks without displaying a second uncheckoutable gel.
+  if (slug === 'blue-lotus-gel') permanentRedirect('/product/blue-lotus');
+
   if (!slug) {
     notFound();
   }
