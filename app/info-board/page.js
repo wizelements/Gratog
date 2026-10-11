@@ -128,7 +128,7 @@ export default function InfoBoardPage() {
       {/* Header - Kiosk Friendly */}
       <header className="bg-white border-b border-emerald-100 sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center">
                 <Leaf className="h-6 w-6 text-white" />
@@ -140,11 +140,11 @@ export default function InfoBoardPage() {
             </div>
             
             {/* QR Code Section */}
-            <div className="flex items-center gap-3 bg-emerald-50 rounded-lg px-4 py-2 border border-emerald-200">
+            <div className="max-w-full flex items-center gap-3 bg-emerald-50 rounded-lg px-3 sm:px-4 py-2 border border-emerald-200">
               <QrCode className="h-8 w-8 text-emerald-600" />
               <div className="text-right">
                 <p className="text-xs font-medium text-emerald-800">Scan to Shop</p>
-                <p className="text-xs text-emerald-600">tasteofgratitude.shop</p>
+                <p className="text-xs text-emerald-600 break-all">tasteofgratitude.shop</p>
               </div>
             </div>
           </div>
