@@ -13,6 +13,7 @@ import { priceCart, CartPricingError } from '@/lib/cart-pricing';
 import { checkDeliveryRadius } from '@/lib/delivery-radius';
 import { calculateDistanceBasedDeliveryFee } from '@/lib/delivery-fees';
 import { shippingMethods } from '@/adapters/fulfillmentAdapter';
+import { validateGeorgiaDestination } from '@/lib/georgia-orders';
 
 // Order access token TTL — must outlive the longest realistic checkout session.
 // Payment route uses 30m; we use the same so the token survives until pay click.
@@ -44,6 +45,16 @@ export async function POST(request) {
         },
         { status: 400 }
       );
+    }
+
+    // Fulfillment restrictions must be checked before creating a payable order.
+    if (isShippingFulfillment(orderData.fulfillmentType) || isDeliveryFulfillment(orderData.fulfillmentType)) {
+      const destination = isShippingFulfillment(orderData.fulfillmentType)
+        ? orderData.shippingAddress : orderData.deliveryAddress;
+      const eligibility = validateGeorgiaDestination(destination);
+      if (!eligibility.valid) {
+        return NextResponse.json({ success: false, code: eligibility.code, error: eligibility.message }, { status: 422 });
+      }
     }
 
     // -----------------------------------------------------------------------
