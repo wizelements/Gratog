@@ -6,12 +6,12 @@ import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 export const revalidate = 300;
 
 export const metadata = {
-  title: 'Shop Weekly Market Products | Taste of Gratitude',
-  description: 'Shop the current Taste of Gratitude weekly market catalog: sea moss gels, fresh lemonades, refreshers, shots, and pickup-ready staples.',
+  title: 'Shop Online in Georgia | Taste of Gratitude',
+  description: 'Shop sea moss gels, lemonades, refreshers, and small-batch favorites online in Georgia. Eligible delivery and in-state shipping; separate market preorders available.',
   alternates: { canonical: '/catalog' },
   openGraph: {
-    title: 'Shop Taste of Gratitude Weekly Market Products',
-    description: 'Fresh small-batch sea moss gels, drinks, refreshers, and shots for Atlanta market pickup.',
+    title: 'Shop Taste of Gratitude Online in Georgia',
+    description: 'Explore fresh drinks and sea moss for Georgia customers. Select eligible Georgia fulfillment or market preorder pickup.',
     url: 'https://tasteofgratitude.shop/catalog',
     images: [{ url: '/images/gratog-bg.PNG', width: 1200, height: 630 }],
   },
