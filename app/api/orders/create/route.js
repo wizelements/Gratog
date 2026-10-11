@@ -284,7 +284,8 @@ export async function POST(request) {
       {
         success: false,
         error: 'Failed to create order',
-        details: error.message,
+        // Never disclose internal database, provider or order-control details.
+        code: 'ORDER_CREATE_UNAVAILABLE',
       },
       { status: 500 }
     );
