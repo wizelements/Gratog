@@ -83,8 +83,8 @@ export async function sendRequestReceivedEmail(ctx: RequestReceivedContext) {
   const htmlBody = `
     <h1>Your request is in.</h1>
     <p>Hi there,</p>
-    <p>We received your request for ${flavor} (${escapeHtml(ctx.quantity)}) for pickup at ${escapeHtml(ctx.marketName)}.</p>
-    <p><strong>${statusMessage}</strong> We will confirm availability, price, and pickup details by email before any payment is requested.</p>
+    <p>We received your request for ${flavor} (${escapeHtml(ctx.quantity)}) with fulfillment preference: ${escapeHtml(ctx.marketName)}.</p>
+    <p><strong>${statusMessage}</strong> We will confirm availability, price, and fulfillment details by email before any payment is requested.</p>
     ${ctx.requestUrl ? `<p><a class="cta" href="${escapeHtml(ctx.requestUrl)}">View your request</a></p>` : ''}
     <p>If you have questions, reply to this email anytime.</p>
   `;
@@ -95,7 +95,7 @@ export async function sendRequestReceivedEmail(ctx: RequestReceivedContext) {
     replyTo: REPLY_TO,
     subject,
     html: baseHtml(subject, htmlBody),
-    text: `Your request is in.\n\nWe received your request for ${flavor} (${ctx.quantity}) for pickup at ${ctx.marketName}.\n\n${statusMessage} We will confirm availability, price, and pickup details by email before any payment is requested.\n\nRequest ID: ${ctx.requestId}\n\nReply to this email with any questions.`,
+    text: `Your request is in.\n\nWe received your request for ${flavor} (${ctx.quantity}) with fulfillment preference: ${ctx.marketName}.\n\n${statusMessage} We will confirm availability, price, and fulfillment details by email before any payment is requested.\n\nRequest ID: ${ctx.requestId}\n\nReply to this email with any questions.`,
     emailType: 'fresh_batch_request',
     template: 'fresh_batch_request_received',
     customerEmail: ctx.email,
