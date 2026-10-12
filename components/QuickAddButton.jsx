@@ -21,6 +21,13 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
   const outOfStock = product?.stock != null && Number(product.stock) <= 0 && !isPreorder;
   const checkoutReady = product?.checkoutReady !== false && !outOfStock;
   const purchaseStatus = isPreorder ? 'preorder' : 'in_stock';
+  const requiresMarketPickup = Boolean(
+    isPreorder ||
+    product?.marketPickupOnly ||
+    product?.marketExclusive ||
+    product?.fulfillmentType === 'market_pickup' ||
+    product?.fulfillmentType === 'market_pickup_only'
+  );
 
   const handleAddToCart = useCallback(async (e) => {
     e.preventDefault();
@@ -44,49 +51,22 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
     setIsAdding(true);
 
     try {
-      // Create add promise for toast
-      const addPromise = new Promise((resolve, reject) => {
-        try {
-          // Pass selectedVariant as third parameter to addToCart
-          const result = addToCart(product, 1, selectedVariant);
-          if (!result?.success) {
-            throw new Error(result?.error || 'Could not add item to cart');
-          }
-          resolve({ 
-            name: product.name, 
-            status: purchaseStatus,
-            variant: selectedVariant?.name 
-          });
-        } catch (error) {
-          reject(error);
-        }
-      });
-
-      // 🎯 GLOBAL LOADING STATE: Show toast with loading, success, error states
-      const variantText = selectedVariant ? ` (Size: ${selectedVariant.name})` : '';
-      
-      await toast.promise(
-        addPromise,
-        {
-          loading: `Adding ${product.name}...`,
-          success: (data) => ({
-            message: getAddedToCartMessage(data.name, data.status, variantText),
-            description: 'View cart to checkout or continue shopping',
-            action: {
-              label: 'View Cart',
-              onClick: () => window.dispatchEvent(new Event('openCart')),
-            },
-          }),
-          error: (err) => ({
-            message: 'Failed to add item',
-            description: err.message || 'Please try again',
-          }),
+      const result = addToCart(product, 1, selectedVariant);
+      if (!result?.success) {
+        throw new Error(result?.error || 'Could not add item to cart');
+      }
+      const variantText = selectedVariant?.name ? ` (Size: ${selectedVariant.name})` : '';
+      // Sonner expects a string/React node for the message, not an object.
+      // Returning { message, description, action } from toast.promise causes
+      // "Objects are not valid as a React child" (React #31) on the homepage.
+      toast.success(getAddedToCartMessage(product.name, purchaseStatus, variantText), {
+        description: 'View cart to checkout or continue shopping',
+        action: {
+          label: 'View Cart',
+          onClick: () => window.dispatchEvent(new Event('openCart')),
         },
-        {
-          duration: 3000,
-          position: 'bottom-center',
-        }
-      );
+        duration: 3000,
+      });
 
       // Update local button state
       setAdded(true);
@@ -103,7 +83,9 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
       
     } catch (error) {
       console.error('Add to cart error:', error);
-      // Toast already handled by promise
+      toast.error('Could not add item', {
+        description: error instanceof Error ? error.message : 'Please try again.',
+      });
     } finally {
       setIsAdding(false);
     }
@@ -115,6 +97,18 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
     return (
       <Button asChild variant={variant} className={`relative ${className}`}>
         <Link href={productHref}>{outOfStock ? 'Currently unavailable' : 'View details'}</Link>
+      </Button>
+    );
+  }
+
+  if (requiresMarketPickup) {
+    // Market-only products must enter the market preorder journey; writing them
+    // straight into the general cart bypasses pickup selection and minimums.
+    const productKey = product?.slug || product?.curatedProductId || product?.id || '';
+    const href = `/preorder?product=${encodeURIComponent(productKey)}&utm_source=homepage_product`;
+    return (
+      <Button asChild variant={variant} className={`relative ${className}`}>
+        <Link href={href}>Preorder for market pickup</Link>
       </Button>
     );
   }
