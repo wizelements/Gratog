@@ -400,8 +400,14 @@ function PreorderPageContent() {
               catalogObjectId: p.catalogObjectId || p.variationId || defaultVariation?.id,
               name: p.name,
               size: defaultVariation?.name || p.size || 'Regular',
-              price: defaultVariation?.price || p.price || (p.priceCents || 0) / 100,
-              priceCents: defaultVariation?.priceCents || p.priceCents || Math.round((p.price || 0) * 100),
+              // The storefront's listed/default price is the displayed price.
+              // First variation prices may retain stale Square catalog values.
+              price: Number(p.price) > 0
+                ? Number(p.price)
+                : Number(defaultVariation?.price || (p.priceCents || 0) / 100),
+              priceCents: Number(p.price) > 0
+                ? Math.round(Number(p.price) * 100)
+                : Math.round(Number(defaultVariation?.price || (p.priceCents || 0) / 100) * 100),
               category,
               emoji,
               available: p.stockQuantity ?? 99,
