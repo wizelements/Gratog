@@ -149,7 +149,7 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Delivery Details</h3>
         <p className="text-sm text-gray-600">
-          Local delivery within 35 miles of Atlanta ZIP 30331. Enter your full Georgia address for a distance-based quote.
+          Local delivery within a 35-mile straight-line radius of ZIP 30331. Enter your full Georgia address for an exact eligibility check and quote.
         </p>
       </div>
       
@@ -276,7 +276,7 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
       {/* ZIP Help - Show while typing if incomplete */}
       {data.address.zip.length > 0 && data.address.zip.length < 5 && (
         <p className="text-xs text-gray-500">
-          Enter complete 5-digit ZIP code
+          Enter a complete 5-digit ZIP. Final eligibility is based on your full address.
         </p>
       )}
 
