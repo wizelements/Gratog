@@ -352,6 +352,20 @@ export async function getOrder(orderId: string): Promise<SquareResponse<{ order:
   return squareRequest(`/v2/orders/${orderId}`);
 }
 
+/**
+ * Square's hosted checkout expects an E.164 buyer phone number.
+ * The UI accepts local US numbers; malformed optional prefills are omitted
+ * so a contact-format issue cannot block an otherwise valid payment.
+ */
+export function normalizeBuyerPhoneForSquare(value?: string): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const digits = value.replace(/\D/g, '');
+  const national = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
+  if (!/^\d{10}$/.test(national) || national[0] === '0' || national[0] === '1' ||
+      national[3] === '0' || national[3] === '1') return undefined;
+  return '+1' + national;
+}
+
 export interface CreatePaymentLinkRequest extends CreateOrderRequest {
   description?: string;
   redirectUrl?: string;
@@ -441,9 +455,11 @@ export async function createPaymentLink(
       redirect_url: req.redirectUrl,
       ask_for_shipping_address: false,
     } : undefined,
-    pre_populated_data: (req.buyerEmail || req.buyerPhone) ? {
-      buyer_email: req.buyerEmail,
-      buyer_phone_number: req.buyerPhone,
+    pre_populated_data: (req.buyerEmail?.trim() || normalizeBuyerPhoneForSquare(req.buyerPhone)) ? {
+      ...(req.buyerEmail?.trim() ? { buyer_email: req.buyerEmail.trim() } : {}),
+      ...(normalizeBuyerPhoneForSquare(req.buyerPhone)
+        ? { buyer_phone_number: normalizeBuyerPhoneForSquare(req.buyerPhone) }
+        : {}),
     } : undefined,
   });
 
