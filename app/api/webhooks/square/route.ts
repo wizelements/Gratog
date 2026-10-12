@@ -685,14 +685,14 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
   // Map Square payment status to our order status - FIXED: Use standardized status values
   const statusMap: Record<string, string> = {
     'COMPLETED': 'CONFIRMED',  // Was 'paid' - now uses order status value
-    'APPROVED': 'CONFIRMED',   // Was 'paid' - now uses order status value  
+    'APPROVED': 'payment_processing', // Authorization is not settled payment
     'PENDING': 'payment_processing',
     'CANCELED': 'payment_failed',
     'FAILED': 'payment_failed'
   };
   
   const newOrderStatus = statusMap[payment.status] || 'payment_processing';
-  const isCompleted = payment.status === 'COMPLETED' || payment.status === 'APPROVED';
+  const isCompleted = payment.status === 'COMPLETED';
   
   // Build update fields
   const updateFields: Record<string, any> = {
@@ -864,7 +864,7 @@ async function handleOrderEvent(db: any, squareOrder: any, eventType: string): P
     order.status === 'paid'
     || order.paymentStatus === 'paid'
     || order.paymentStatus === 'COMPLETED'
-    || order.paymentStatus === 'APPROVED';
+    || order.paymentStatus === 'PAID';
 
   if (isPaid && !order.staffNotifiedAt) {
     try {
