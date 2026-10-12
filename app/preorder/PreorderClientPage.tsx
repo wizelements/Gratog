@@ -1035,7 +1035,7 @@ function PreorderPageContent() {
               Pay securely through Square to reserve your order. Your reservation is not confirmed until payment is completed.
             </p>
             <p className="text-sm text-gray-600">
-              Need delivery? <Link href="/catalog" className="font-semibold text-emerald-800 underline underline-offset-2">Use the regular shop checkout</Link>.
+              This market preorder is pickup-only. For eligible shop items, local delivery is available within 35 miles of Atlanta ZIP 30331. <Link href="/catalog" className="font-semibold text-emerald-800 underline underline-offset-2">Shop for local delivery</Link>.
             </p>
           </CardContent>
         </Card>
