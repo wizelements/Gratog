@@ -153,7 +153,7 @@ export default function HomePageClient({
               </Button>
             </div>
             <p className="mt-4 text-sm leading-6 text-emerald-50/80">
-              Ordering from home? No market visit is required for eligible Georgia delivery or shipping. Market pickup is available for preorders and participating products.
+              Ordering from home? Eligible shop products can be delivered within a 35-mile radius of Atlanta ZIP 30331 after a full-address check at checkout. Market-only preorders are currently pickup orders.
             </p>
           </div>
 

@@ -98,7 +98,7 @@ export default function SharePage() {
           </div>
           <div>
             <strong>Georgia, with gratitude</strong>
-            <p>Currently accepting orders in Georgia only. Eligible delivery or shipping and participating market pickup depend on availability.</p>
+            <p>Georgia customers: local delivery is available for eligible shop products within 35 miles of Atlanta ZIP 30331, verified by address at checkout. Market preorders are currently pickup-only.</p>
           </div>
         </div>
       </div>
