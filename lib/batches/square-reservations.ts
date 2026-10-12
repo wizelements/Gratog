@@ -70,7 +70,9 @@ export async function createReservationPaymentLink(
   const lineItemName = product?.name
     ? `${product.name} — ${batchName}`
     : batchName;
-  const itemDescription = `${reservation.quantity} ${unitLabel(reservation.quantityUnit)}`;
+  const label = unitLabel(reservation.quantityUnit);
+  const plural = reservation.quantity > 1 && ['jar_16oz', 'bottle_16oz', 'half_gallon', 'gallon'].includes(reservation.quantityUnit) ? 's' : '';
+  const itemDescription = `${reservation.quantity} ${label}${plural}`;
 
   const lineItems: OrderLineItem[] = [
     {
