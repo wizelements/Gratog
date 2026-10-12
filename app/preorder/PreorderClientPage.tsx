@@ -301,6 +301,7 @@ function PreorderPageContent() {
   const [cartReady, setCartReady] = useState(false);
   const submittingRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
   const [waitlistNumber, setWaitlistNumber] = useState("");
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
   const [orderComplete, setOrderComplete] = useState(false);
@@ -530,6 +531,7 @@ function PreorderPageContent() {
     }
     
     submittingRef.current = true;
+    setCheckoutError('');
     setIsSubmitting(true);
 
     try {
@@ -606,10 +608,14 @@ function PreorderPageContent() {
           itemCount: cartItemCount,
           error: data.error || 'unknown',
         });
-        toast.error(data.error || 'Could not start secure checkout. No payment was taken.');
+        const paymentError = data.error || 'Could not start secure checkout. No payment was taken.';
+        setCheckoutError(paymentError);
+        toast.error(paymentError);
       }
     } catch {
-      toast.error('Could not reach checkout. Check your connection and try again.');
+      const message = 'Could not reach checkout. Check your connection and try again.';
+      setCheckoutError(message);
+      toast.error(message);
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);
@@ -1034,6 +1040,14 @@ function PreorderPageContent() {
           </CardContent>
         </Card>
 
+        {checkoutError && (
+          <div role="alert" aria-live="assertive" className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+            <p className="font-semibold">Secure checkout is temporarily unavailable</p>
+            <p className="mt-1">{checkoutError}</p>
+            <p className="mt-1">Your items are still saved here. No payment was processed.</p>
+          </div>
+        )}
+
         {/* Customer Info */}
         <Card className="border-0 shadow-sm">
           <CardHeader className="pb-3">
@@ -1104,28 +1118,29 @@ function PreorderPageContent() {
         </Card>
       </div>
 
-      {/* Sticky Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg">
-        <div className="max-w-md mx-auto flex gap-3">
+      {/* A narrow fixed layout must never clip the mobile payment button. */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-white px-3 py-3 shadow-lg">
+        <div className="mx-auto grid max-w-md grid-cols-[88px_minmax(0,1fr)] gap-3">
           <Button
             variant="outline"
             onClick={() => setStep("items")}
-            className="flex-1 h-14 rounded-xl"
+            className="h-14 w-full rounded-xl"
           >
             Back
           </Button>
           <Button
             onClick={handleSubmitPreorder}
             disabled={isSubmitting || cartItemCount === 0 || !customer.name.trim() || !customer.phone.trim() || !preorderRulesMet}
-            className="flex-1 h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700"
+            aria-label={`Continue to secure Square checkout for $${cartTotal.toFixed(2)}`}
+            className="h-14 w-full min-w-0 rounded-xl bg-emerald-700 px-2 text-sm font-semibold hover:bg-emerald-800"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Placing Order...
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Connecting to Square...
               </>
             ) : (
-              `Continue to Square · $${cartTotal.toFixed(2)}`
+              `Pay $${cartTotal.toFixed(2)} with Square`
             )}
           </Button>
         </div>
