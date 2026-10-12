@@ -108,8 +108,19 @@ async function resolvePreorderCartItems(submittedItems: any[]) {
     }
 
     const { product, variation } = lookup.get(lookupKey);
-    const price = Number(variation?.price ?? product.price ?? ((product.priceCents || 0) / 100));
-    const priceCents = Number(variation?.priceCents ?? product.priceCents ?? Math.round(price * 100));
+    // Price authority must match what the storefront displays. For the default
+    // variation, the public product price is canonical; additional variants
+    // retain their own explicit (server-trusted) prices.
+    const defaultVariation = Array.isArray(product.variations) ? product.variations[0] : null;
+    const isDefaultVariation = !variation || !defaultVariation || variation.id === defaultVariation.id;
+    const listedPrice = Number(product.price);
+    const variantPrice = Number(variation?.price);
+    const price = isDefaultVariation && Number.isFinite(listedPrice) && listedPrice > 0
+      ? listedPrice
+      : Number.isFinite(variantPrice) && variantPrice > 0
+        ? variantPrice
+        : listedPrice;
+    const priceCents = Math.round(price * 100);
     const quantity = Math.max(1, Math.min(99, Number(item.quantity) || 1));
 
     if (!Number.isFinite(price) || price <= 0) {
