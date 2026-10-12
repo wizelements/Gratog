@@ -30,6 +30,7 @@ import RetentionForm from "@/components/RetentionForm";
 import ProductVisual from "@/components/ProductVisual";
 import BundleSuggestions from "@/components/preorder/BundleSuggestions";
 import { nextPreorderPickup } from "@/lib/preorder/market-schedule";
+import { isMarketPreorderPermitted } from "@/lib/preorder/eligibility";
 import { track } from "@/utils/analytics";
 
 // Day-of-week labels
@@ -385,7 +386,7 @@ function PreorderPageContent() {
         
         // Transform Square products to preorder format
         const transformedProducts = (data.products || [])
-          .filter((p: any) => p.available !== false && p.checkoutReady !== false && (p.inStock !== false || p.isPreorder === true || p.purchaseStatus === 'preorder'))
+          .filter((p: any) => isMarketPreorderPermitted(p))
           .map((p: any) => {
             const defaultVariation = Array.isArray(p.variations) ? p.variations[0] : null;
             const name = (p.name || '').toLowerCase();
@@ -424,6 +425,28 @@ function PreorderPageContent() {
     
     fetchProducts();
   }, []);
+
+  // Deep links from homepage, product cards, and quiz select the requested item
+  // once. Never double-add on a React rerender or replace an existing cart.
+  const preselectedProductRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!sourceProduct || !cartReady || loadingProducts ||
+        preselectedProductRef.current === sourceProduct) return;
+    preselectedProductRef.current = sourceProduct;
+    const requested = sourceProduct.toLowerCase();
+    const found = products.find(item =>
+      item.slug?.toLowerCase() === requested ||
+      item.id.toLowerCase() === requested ||
+      item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === requested
+    );
+    if (!found) {
+      toast.message('This flavor is not available for preorder right now.', {
+        description: 'Browse the other available items or ask us about the next batch.',
+      });
+      return;
+    }
+    setCart(current => current[found.id] ? current : { ...current, [found.id]: 1 });
+  }, [sourceProduct, cartReady, loadingProducts, products]);
 
   // Initialize market from URL once markets are loaded
   useEffect(() => {
