@@ -197,7 +197,7 @@ export async function logPaymentReceived(
   reservationId: string,
   squarePaymentId: string,
   amountCents: number,
-  status: 'deposit_paid' | 'paid' | 'fully_paid' | 'failed'
+  status: 'pending' | 'deposit_paid' | 'paid' | 'fully_paid' | 'failed'
 ): Promise<AuditLogEvent> {
   return appendAuditLogEvent({
     actor: 'square_webhook',
