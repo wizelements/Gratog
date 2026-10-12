@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { getSquareWebhookSignatureKey } from '@/lib/square';
+import { reconcileSquareBatchReservation } from '@/lib/batches/reconcile-square-reservation';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { syncSingleCatalogItem } from '@/lib/square/syncSingleItem';
@@ -635,6 +636,9 @@ export async function POST(request: NextRequest) {
 
 async function handlePaymentCreated(db: any, payment: any): Promise<{ success: boolean; message: string }> {
   logger.debug('Webhook', 'Payment created', { paymentId: payment.id, status: payment.status });
+  const batch = await reconcileSquareBatchReservation(db, payment);
+  if (batch.matched) return { success: true, message: 'Fresh-batch payment event reconciled' };
+
   
   const order = await findLocalOrder(db, payment);
   
@@ -658,6 +662,9 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
     referenceId: payment.reference_id
   });
   
+  const batch = await reconcileSquareBatchReservation(db, payment);
+  if (batch.matched) return { success: true, message: 'Fresh-batch payment event reconciled' };
+
   const order = await findLocalOrder(db, payment);
   
   if (!order) {
