@@ -18,6 +18,7 @@ import { sanitizeObject } from '@/lib/validation/sanitize';
 import { validateCustomerData } from '@/lib/validation/customer';
 import { validatePreorderMinimum } from '@/lib/cart-engine';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
+import { isMarketPreorderPermitted } from '@/lib/preorder/eligibility';
 import { createPaymentLink } from '@/lib/square-api';
 
 const logger = createLogger('PreorderAPI');
@@ -27,14 +28,7 @@ function normalizeLookupKey(value: any) {
 }
 
 function isUnavailableForPreorder(product: any) {
-  return product?.available === false ||
-    product?.soldOut === true ||
-    product?.inventoryStatus === 'sold_out' ||
-    product?.inventoryStatus === 'inactive' ||
-    product?.weeklyStatus === 'inactive' ||
-    product?.checkoutReady === false ||
-    (product?.inStock === false && product?.isPreorder !== true && product?.purchaseStatus !== 'preorder') ||
-    (product?.purchaseStatus === 'out_of_stock' && product?.isPreorder !== true);
+  return !isMarketPreorderPermitted(product);
 }
 
 function addLookupEntry(lookup: Map<string, any>, key: any, entry: any) {
