@@ -5,6 +5,7 @@ on:
     branches:
       - fix/product-truth-and-square-sandbox-20261011
       - fix/blue-lotus-availability-square-catalog-20261011
+      - fix/prepaid-commerce-safety-oct12
   workflow_dispatch:
 
 permissions:
