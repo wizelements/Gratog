@@ -14,7 +14,7 @@ import { getProductBySlug } from './pricing';
 import type { BatchReservation } from './types';
 
 export interface ReservationLinkInput {
-  reservation: Pick<BatchReservation, 'id' | 'customerEmail' | 'quantity' | 'quantityUnit' | 'gallonEquivalent' | 'finalPriceCents' | 'setupFeeCents' | 'marketId'>;
+  reservation: Pick<BatchReservation, 'id' | 'customerEmail' | 'quantity' | 'quantityUnit' | 'gallonEquivalent' | 'finalPriceCents' | 'depositCents' | 'balanceDueCents' | 'setupFeeCents' | 'marketId'>;
   batchName: string;
   productSlug: string | null;
   productionDate: Date;
@@ -23,6 +23,7 @@ export interface ReservationLinkInput {
 
 function unitLabel(quantityUnit: string): string {
   const labels: Record<string, string> = {
+    jar_16oz: '16 oz jar',
     bottle_16oz: '16 oz bottle',
     multi_bottle: '16 oz bottles',
     half_gallon: 'half gallon',
@@ -46,27 +47,41 @@ export async function createReservationPaymentLink(
 ): Promise<{ success: true; squarePaymentLinkId: string; paymentUrl: string; squareOrderId?: string } | { success: false; errors: string[] }> {
   const { reservation, batchName, productSlug, productionDate, redirectUrl } = input;
 
-  if (reservation.finalPriceCents <= 0) {
+  // Never create a payable Square link without a valid owner-approved money amount.
+  if (!Number.isSafeInteger(reservation.finalPriceCents) || reservation.finalPriceCents <= 0) {
     return { success: false, errors: ['Reservation price must be greater than zero'] };
   }
+  if (!Number.isSafeInteger(reservation.depositCents) || reservation.depositCents < 0 ||
+      reservation.depositCents > reservation.finalPriceCents) {
+    return { success: false, errors: ['Invalid reservation deposit amount'] };
+  }
+  if (!Number.isSafeInteger(reservation.balanceDueCents) ||
+      reservation.balanceDueCents !== reservation.finalPriceCents - reservation.depositCents) {
+    return { success: false, errors: ['Reservation balance does not match approved price'] };
+  }
+  if (!Number.isInteger(reservation.quantity) || reservation.quantity <= 0) {
+    return { success: false, errors: ['Reservation quantity must be a positive whole number'] };
+  }
+  // The first checkout collects the approved deposit (or full amount when no
+  // deposit is specified). Never multiply an already-computed total by units.
+  const chargeNowCents = reservation.depositCents > 0 ? reservation.depositCents : reservation.finalPriceCents;
 
   const product = productSlug ? getProductBySlug(productSlug) : null;
-  const quantityString = String(reservation.quantity);
   const lineItemName = product?.name
     ? `${product.name} — ${batchName}`
-    : `${batchName} (${unitLabel(reservation.quantityUnit)})`;
+    : batchName;
+  const itemDescription = `${reservation.quantity} ${unitLabel(reservation.quantityUnit)}`;
 
   const lineItems: OrderLineItem[] = [
     {
-      name: lineItemName,
-      quantity: quantityString,
+      name: `${lineItemName} (${itemDescription})`,
+      quantity: '1', // one reservation; amount is already the total for all units
       basePriceMoney: {
-        amount: reservation.finalPriceCents,
+        amount: chargeNowCents,
         currency: 'USD',
       },
-      // Include catalog ID only if it looks like a real Square variation ID.
-      catalogObjectId: product?.squareProductUrl ? undefined : undefined,
-      note: `Fresh batch reservation. Production date: ${productionDate.toISOString().split('T')[0]}`,
+      // Ad-hoc item: no unverified catalog variation ID.
+      note: `Fresh batch reservation. Full total: ${(reservation.finalPriceCents / 100).toFixed(2)}. Due now: ${(chargeNowCents / 100).toFixed(2)}. Balance after payment: ${((reservation.finalPriceCents - chargeNowCents) / 100).toFixed(2)}. Production date: ${productionDate.toISOString().split('T')[0]}`,
     },
   ];
 
@@ -81,6 +96,7 @@ export async function createReservationPaymentLink(
       batchName,
       marketId: reservation.marketId,
       source: 'fresh_batch_reservation',
+      paymentPhase: chargeNowCents < reservation.finalPriceCents ? 'deposit' : 'full',
     },
   };
 
