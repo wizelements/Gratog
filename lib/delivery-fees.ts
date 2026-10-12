@@ -11,6 +11,9 @@ const DISTANCE_TIERS = [
   { maxMiles: 15, fee: 7.99 },
   { maxMiles: 20, fee: 11.99 },
   { maxMiles: 25, fee: 15.99 },
+  // Until a distinct outer-zone rate is approved, retain the existing maximum
+  // advertised rate; never silently invent a new delivery surcharge.
+  { maxMiles: 35, fee: 15.99 },
 ];
 
 const DELIVERY_DISCOUNT_TIERS = [

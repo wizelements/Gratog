@@ -94,7 +94,7 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
     const currentZipValid = validateZip(data.address.zip);
     if (currentZipValid !== true) {
       setQuoteLoading(false);
-      setQuoteError('Enter a serviceable 5-digit ZIP before checking delivery.');
+      setQuoteError('Enter a valid 5-digit ZIP and your full Georgia address to check delivery.');
       onChange(clearQuoteFields);
       return;
     }
@@ -149,7 +149,7 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Delivery Details</h3>
         <p className="text-sm text-gray-600">
-          We deliver to Atlanta and South Fulton areas
+          Local delivery within a 35-mile straight-line radius of ZIP 30331. Enter your full Georgia address for an exact eligibility check and quote.
         </p>
       </div>
       
@@ -276,7 +276,7 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
       {/* ZIP Help - Show while typing if incomplete */}
       {data.address.zip.length > 0 && data.address.zip.length < 5 && (
         <p className="text-xs text-gray-500">
-          Enter complete 5-digit ZIP code
+          Enter a complete 5-digit ZIP. Final eligibility is based on your full address.
         </p>
       )}
 

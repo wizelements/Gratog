@@ -94,8 +94,9 @@ const SHIPPING_METHODS: ShippingMethod[] = [
  * Check if ZIP code is serviceable for delivery
  */
 export function isZipServiceable(zip: string): boolean {
-  const cleanZip = zip.replace(/\D/g, '');
-  return SERVICEABLE_ZIPS.includes(cleanZip);
+  // ZIP alone cannot establish a 35-mile radius. Accept syntactically valid
+  // candidates here, then geocode the complete GA address on the server.
+  return /^\d{5}$/.test(zip.trim());
 }
 
 /**
