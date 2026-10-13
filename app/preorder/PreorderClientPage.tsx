@@ -583,7 +583,20 @@ function PreorderPageContent() {
         const nextWaitlistNumber = preorder.waitlistNumber || data.waitlistNumber || "";
         const nextPaymentUrl = data.payment?.url || "";
 
-        setOrderNumber(preorder.orderNumber || data.orderNumber || "");
+        const createdOrderNumber = preorder.orderNumber || data.orderNumber || "";
+        // Never put signed order access credentials in Square redirect URLs.
+        // Session storage survives Square's redirect in the same browser.
+        if (createdOrderNumber && data.preorderAccessToken) {
+          try {
+            window.sessionStorage.setItem(
+              `tog_preorder_access_${createdOrderNumber}`,
+              data.preorderAccessToken
+            );
+          } catch {
+            // The public tracking page remains available with redacted details.
+          }
+        }
+        setOrderNumber(createdOrderNumber);
         setWaitlistNumber(nextWaitlistNumber);
         setWaitlistPosition(preorder.waitlistPosition || data.waitlistPosition || null);
         setPaymentUrl(nextPaymentUrl);
