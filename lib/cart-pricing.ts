@@ -215,9 +215,11 @@ function unitPriceCentsFromProduct(
 
 function isProductPurchasable(product: UnifiedProductDoc, isPreorder = false): boolean {
   // These checks apply to every entry point, including forged cart payloads.
-  if (product.squareIsArchived === true || product.squareEcomAvailable === false ||
+  // Square Online ecom_available is not a restriction on this custom checkout.
+  // Market-only weekly availability does not disable ordinary Georgia shipping.
+  if (product.squareIsArchived === true ||
       product.available === false || product.soldOut === true ||
-      product.activeWeeklyMenu === false) return false;
+      (isPreorder && product.activeWeeklyMenu === false)) return false;
   const weekly = String(product.weeklyStatus || '').toLowerCase();
   const inventory = String(product.inventoryStatus || '').toLowerCase();
   const squareVisibility = String(product.squareEcomVisibility || '').toUpperCase();
