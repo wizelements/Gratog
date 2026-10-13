@@ -842,30 +842,57 @@ async function handleRefundEvent(db: any, refund: any): Promise<{ success: boole
       });
       logger.info('Webhook', 'MarketOrder marked as refunded', { orderId: order._id.toString(), refundId: refund.id });
     } else {
-      // It's a regular order in orders collection
-      await db.collection('orders').updateOne(
-        { id: order.id },
-        {
-          $set: {
-            status: 'refunded',
-            paymentStatus: 'refunded',
-            refundId: refund.id,
-            refundedAt: new Date().toISOString(),
-            refundAmount: refund.amount_money?.amount,
-            updatedAt: new Date().toISOString()
-          },
-          $push: {
-            timeline: {
-              status: 'refunded',
-              timestamp: new Date().toISOString(),
-              message: 'Order refunded via Square',
-              actor: 'square_webhook',
-              refundId: refund.id
-            }
-          }
+      // A $1 partial refund is not a full-order refund. De-duplicate by
+      // provider refund ID, then derive the cumulative amount from records.
+      const refundCents = Number(refund.amount_money?.amount);
+      const refundCurrency = String(refund.amount_money?.currency || '').toUpperCase();
+      const paidCents = Number(order.totalCents ?? Math.round(Number(order.total) * 100));
+      if (!refund.id || !Number.isSafeInteger(refundCents) || refundCents <= 0
+          || !Number.isSafeInteger(paidCents) || paidCents <= 0
+          || refundCurrency !== 'USD') {
+        throw new Error('Refund reconciliation missing verified refund amount, currency or original order total');
+      }
+      const entries = db.collection('square_refund_entries');
+      await entries.createIndex({ refundId: 1 }, { unique: true, name: 'square_refund_id_unique' });
+      await entries.updateOne({ refundId: refund.id }, {
+        $setOnInsert: {
+          refundId: refund.id, orderId: order.id, paymentId: refund.payment_id,
+          amountCents: refundCents, currency: refundCurrency,
+          confirmedAt: new Date(),
         }
-      );
-      logger.info('Webhook', 'Order marked as refunded', { orderId: order.id, refundId: refund.id });
+      }, { upsert: true });
+      const storedRefund = await entries.findOne({ refundId: refund.id });
+      if (storedRefund.orderId !== order.id || storedRefund.amountCents !== refundCents
+          || storedRefund.paymentId !== refund.payment_id) {
+        throw new Error('Square refund ID replayed with mismatched payment or amount');
+      }
+      const totals = await entries.aggregate([
+        { $match: { orderId: order.id } },
+        { $group: { _id: null, amount: { $sum: '$amountCents' } } },
+      ]).toArray();
+      const refundedCents = Number(totals[0]?.amount || 0);
+      if (!Number.isSafeInteger(refundedCents) || refundedCents > paidCents) {
+        throw new Error('Cumulative Square refund exceeds original charge; manual reconciliation required');
+      }
+      const fullyRefunded = refundedCents === paidCents;
+      const updateFilter = fullyRefunded
+        ? { id: order.id }
+        : { id: order.id, paymentStatus: { $nin: ['refunded', 'REFUNDED'] } };
+      const updateFields = {
+        paymentStatus: fullyRefunded ? 'refunded' : 'partially_refunded',
+        refundId: refund.id,
+        refundedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      if (fullyRefunded) (updateFields as any).status = 'refunded';
+      await db.collection('orders').updateOne(updateFilter, {
+        $set: updateFields,
+        $max: { refundAmountCents: refundedCents },
+      });
+      logger.info('Webhook', 'Order refund reconciled', {
+        orderId: order.id, refundId: refund.id, refundedCents,
+        paidCents, fullyRefunded,
+      });
     }
   }
   
