@@ -8,6 +8,8 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { createHash } from 'crypto';
+import { generateOrderAccessToken } from '@/lib/order-access-token';
+import { preorderViewerHasPrivateAccess, publicPreorderStatus } from '@/lib/preorder/status-access';
 import { getIdempotencyKeyFromHeaders, isValidIdempotencyKey } from '@/lib/idempotency';
 import { reserveMarketPreorderAttempt, completeMarketPreorderAttempt } from '@/lib/preorder/single-attempt';
 import { generatePreorderNumber, getEstimatedWaitTime } from '@/lib/preorder/waitlist';
@@ -441,8 +443,14 @@ export async function POST(request: any) {
       });
     }
 
+    const preorderAccessToken = generateOrderAccessToken({
+      orderId: orderNumber,
+      customerEmail: data.customer.email || null,
+      ttlMs: 7 * 24 * 60 * 60 * 1000,
+    });
     const completedResponse = {
       success: true,
+      preorderAccessToken,
 
       // Backward-compatible top-level fields for current UI
       orderNumber,
@@ -508,9 +516,18 @@ export async function GET(request: any) {
       );
     }
 
+    const privateAccess = preorderViewerHasPrivateAccess(preorder, request.headers.get('x-order-access-token'));
+    if (!privateAccess) {
+      return NextResponse.json({
+        success: true,
+        preorder: publicPreorderStatus(preorder, getStatusMessage(preorder.status)),
+      }, { headers: { 'Cache-Control': 'no-store' } });
+    }
     return NextResponse.json({
       success: true,
       preorder: {
+        ...publicPreorderStatus(preorder, getStatusMessage(preorder.status)),
+        privateDetailsAvailable: true,
         orderNumber: preorder.orderNumber,
         waitlistNumber: preorder.waitlistNumber,
         status: preorder.status,
@@ -535,7 +552,7 @@ export async function GET(request: any) {
         },
         createdAt: preorder.createdAt,
       },
-    });
+    }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error: any) {
     logger.error('Preorder status error', { error: error.message });
 
