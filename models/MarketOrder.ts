@@ -24,6 +24,15 @@ export interface IMarketOrder extends Document {
   orderNumber: string;
   marketId: string;
   marketName: string;
+  waitlistNumber?: string;
+  queuePosition?: number;
+  pickupLocation?: string;
+  pickupDate?: string;
+  pickupDay?: string;
+  pickupHours?: string;
+  totalCents?: number;
+  emailSentAt?: Date;
+  staffNotifiedAt?: Date;
   customerName: string;
   customerPhone: string;
   customerEmail?: string;
@@ -62,6 +71,15 @@ const MarketOrderSchema = new Schema<IMarketOrder>({
   orderNumber: { type: String, required: true, unique: true },
   marketId: { type: String, required: true },
   marketName: { type: String, required: true },
+  waitlistNumber: { type: String },
+  queuePosition: { type: Number },
+  pickupLocation: { type: String },
+  pickupDate: { type: String },
+  pickupDay: { type: String },
+  pickupHours: { type: String },
+  totalCents: { type: Number },
+  emailSentAt: { type: Date },
+  staffNotifiedAt: { type: Date },
   customerName: { type: String, required: true },
   customerPhone: { type: String, required: true },
   customerEmail: { type: String },
