@@ -419,10 +419,15 @@ export async function POST(request: NextRequest) {
         });
       }
     } catch (paymentLookupError) {
-      // Non-blocking - continue with payment attempt
-      logger.warn('API', 'Payment lookup failed, continuing', {
+      // Fail closed: the database may already contain a captured payment.
+      // Charging when this lookup failed risks a duplicate Square transaction.
+      logger.error('API', 'Payment lookup failed - refusing to charge', {
+        traceId: ctx.traceId,
+        orderId: resolvedOrderId,
         error: paymentLookupError instanceof Error ? paymentLookupError.message : String(paymentLookupError)
       });
+      return json({ success: false, code: 'PAYMENT_RECONCILIATION_UNAVAILABLE',
+        error: 'We could not verify whether your order was already charged. Please check order status before retrying.' }, 503);
     }
     
     // Enforce current service geography even for unpaid orders created before this policy.
@@ -553,6 +558,9 @@ export async function POST(request: NextRequest) {
           409
         );
       }
+      // Never proceed to Square without owning the compare-and-set payment lock.
+      return json({ success: false, code: 'ORDER_NOT_PAYABLE',
+        error: 'Order payment status changed. Check your order before retrying.' }, 409);
     }
     
     // Refresh order data after atomic update
