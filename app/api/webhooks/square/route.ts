@@ -7,6 +7,7 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import { consumeInventoryForPaidOrder } from '@/lib/custom-inventory';
 import { releaseCheckoutInventory } from '@/lib/checkout/stock-reservation';
 import { reconcileCapturedSquareRefund } from '@/lib/checkout/square-refund-ledger';
+import { assertExactCapturedPayment } from '@/lib/checkout/provider-payment-amount';
 import { getSquareWebhookSignatureKey } from '@/lib/square';
 import { reconcileSquareBatchReservation } from '@/lib/batches/reconcile-square-reservation';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
@@ -718,18 +719,10 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
     updateFields.balanceDue = 0;
   }
   
-  // Independently verify the settled amount before a signed webhook can
-  // change checkout stock or order status. The Square HMAC proves origin,
-  // not that this payment belongs to the expected price.
-  if (order.checkoutAttemptKey && isCompleted) {
-    const settledCents = Number(payment.amount_money?.amount ?? payment.total_money?.amount);
-    const expectedCents = Number(order.totalCents);
-    const settledCurrency = String(payment.amount_money?.currency || payment.total_money?.currency || '').toUpperCase();
-    if (!Number.isSafeInteger(settledCents) || !Number.isSafeInteger(expectedCents)
-        || settledCents <= 0 || settledCents !== expectedCents || settledCurrency !== 'USD') {
-      throw new Error('Captured Square payment amount/currency mismatch; hold for manual reconciliation');
-    }
-  }
+  // Both regular web checkout and Square-hosted market preorders must match
+  // their own server-priced order total. A signed webhook alone is not proof
+  // of full payment. Wrong/partial amounts stay pending for reconciliation.
+  if (isCompleted) assertExactCapturedPayment(order, payment);
 
   // Square may notify us before /api/payments finishes. Commit the SAME
   // bounded prepayment stock claim from either channel, at most once.
