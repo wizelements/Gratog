@@ -31,11 +31,12 @@ export async function checkoutOrderIdempotencyKey(
   const key = KEY_PREFIX + signature;
 
   const getOrCreate = () => {
-    const store = storage === undefined
-      ? (typeof window === 'undefined' ? null : window.localStorage)
-      : storage;
     let selected = validAttempt(memoryAttempt, signature, now) ? memoryAttempt : null;
     try {
+      // Reading the localStorage getter itself can throw in locked-down browsers.
+      const store = storage === undefined
+        ? (typeof window === 'undefined' ? null : window.localStorage)
+        : storage;
       const raw = store?.getItem(key);
       const saved = raw ? JSON.parse(raw) as Attempt : null;
       if (validAttempt(saved, signature, now)) selected = saved;
