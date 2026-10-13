@@ -35,6 +35,20 @@ describe('checkout order integrity and recovery', () => {
     expect([...storage.values.values()].join('')).not.toContain('customer@example.test');
   });
 
+  it('shares one hashed attempt across independent tab memory using common origin storage', async () => {
+    const sharedLocalStorage = memoryStorage();
+    const request = { cart: [{ id: 'gel', quantity: 1 }], email: 'buyer@example.test' };
+    const firstTab = await checkoutOrderIdempotencyKey(request, sharedLocalStorage, 1000);
+    // Separate tab/module memory is absent; shared storage still owns the key.
+    clearCheckoutOrderAttempt(null);
+    const secondTab = await checkoutOrderIdempotencyKey(request, sharedLocalStorage, 2000);
+    expect(secondTab).toBe(firstTab);
+    const serialized = [...sharedLocalStorage.values.values()].join('');
+    expect(serialized).not.toContain('buyer@example.test');
+    expect(read('lib/checkout/order-attempt.ts')).toContain('window.localStorage');
+    expect(read('lib/checkout/order-attempt.ts')).toContain('navigator.locks?.request');
+  });
+
   it('expires old attempts rather than replaying an unrelated purchase', async () => {
     const storage = memoryStorage();
     const old = await checkoutOrderIdempotencyKey({ cart: ['gel'] }, storage, 1000);
