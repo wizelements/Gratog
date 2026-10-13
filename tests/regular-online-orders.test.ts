@@ -49,7 +49,7 @@ describe('regular Georgia customers can order without selecting a market', () =>
     const catalog = read('components/catalog/CatalogPageClient.jsx');
     const home = read('components/home/HomePageClient.jsx');
     expect(catalog).toContain('market-only products are reserved for pickup');
-    expect(home).toContain('eligible Georgia delivery or shipping');
+    expect(home).toContain('Eligible shop products can be delivered within a 35-mile radius of Atlanta ZIP 30331');
     expect(catalog).not.toMatch(/nationwide shipping|all (?:products|items) ship/i);
   });
 });
