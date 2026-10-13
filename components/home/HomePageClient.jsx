@@ -17,6 +17,7 @@ import {
   Users,
 } from 'lucide-react';
 import QuickAddButton from '@/components/QuickAddButton';
+import { resolveProductAvailability } from '@/lib/product-availability';
 import ProductVisual from '@/components/ProductVisual';
 import RetentionForm from '@/components/RetentionForm';
 import { JsonLd } from '@/components/JsonLd';
@@ -41,10 +42,7 @@ const ORDERING_STEPS = [
 ];
 
 function availabilityLabel(product) {
-  if (product.soldOut || product.inventoryStatus === 'sold_out') return 'Sold out';
-  if (product.inventoryStatus === 'limited' || product.weeklyStatus === 'limited') return 'Small batch';
-  if (product.preorderOnly || product.isPreorder) return 'Reserve for pickup';
-  return 'Available this week';
+  return resolveProductAvailability(product).label;
 }
 
 function ProductMarketCard({ product, commerceProduct = null, priority = false }) {
@@ -70,7 +68,7 @@ function ProductMarketCard({ product, commerceProduct = null, priority = false }
             sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 31vw"
           />
           <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">
-            {availabilityLabel(product)}
+            {availabilityLabel(storefrontProduct)}
           </span>
         </div>
       </Link>
