@@ -63,6 +63,8 @@ export default function ReviewAndPay({
   const [serverTotal, setServerTotal] = useState<number | null>(null);
   const [serverPriceChanged, setServerPriceChanged] = useState(false);
   const orderRequestInFlight = useRef(false);
+  const activeOrderSnapshot = useRef<string | null>(null);
+  const currentCheckoutSnapshot = JSON.stringify({ cart, contact, fulfillment, tip, couponCode });
   const [orderAccessToken, setOrderAccessToken] = useState<string | null>(null);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
@@ -184,9 +186,18 @@ export default function ReviewAndPay({
     if (orderRequestInFlight.current) return;
     // Canceling the Square payment form must NOT create a second pending order.
     // The existing order remains payable through its original access token.
-    if (orderId && orderAccessToken && serverTotal !== null && serverTotal > 0) {
+    if (orderId && orderAccessToken && serverTotal !== null && serverTotal > 0 &&
+        activeOrderSnapshot.current === currentCheckoutSnapshot) {
       setStep('payment');
       return;
+    }
+    // Cart, contact or fulfillment changed: never pay the stale earlier order.
+    if (orderId && activeOrderSnapshot.current !== currentCheckoutSnapshot) {
+      setOrderId(null);
+      setOrderAccessToken(null);
+      setServerTotal(null);
+      setSquareOrderId(null);
+      activeOrderSnapshot.current = null;
     }
     // Pre-validate before API call
     if (!validationResult.valid) {
@@ -226,6 +237,7 @@ export default function ReviewAndPay({
         totals.deliveryFee
       );
       
+      activeOrderSnapshot.current = currentCheckoutSnapshot;
       setOrderId(orderResponse.order.id);
       // @ts-expect-error — type mismatch
       setSquareOrderId(orderResponse.order.squareOrderId);
