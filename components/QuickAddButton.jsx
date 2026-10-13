@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cart-engine';
 import { getAddToCartLabel, getAddedToCartMessage } from '@/lib/purchase-status';
+import { resolveProductAvailability } from '@/lib/product-availability';
 
 /**
  * ⚡ Quick Add Button - Enhanced with global loading states
@@ -16,11 +17,12 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
   const [isAdding, setIsAdding] = useState(false);
   const [added, setAdded] = useState(false);
 
-  // A zero/negative stock reading is not merchant permission to take preorder money.
-  const isPreorder = Boolean(product?.isPreorder || product?.preorderOnly);
-  const outOfStock = product?.stock != null && Number(product.stock) <= 0 && !isPreorder;
-  const checkoutReady = product?.checkoutReady !== false && !outOfStock;
-  const purchaseStatus = isPreorder ? 'preorder' : 'in_stock';
+  const availability = resolveProductAvailability(product);
+  // An unsupported preorder can never drop into the normal cart.
+  const checkoutReady = availability.canOrder &&
+    (availability.status !== 'preorder' || availability.canMarketPreorder);
+  const outOfStock = availability.reason === 'out_of_stock';
+  const purchaseStatus = availability.status === 'preorder' ? 'preorder' : 'in_stock';
   const requiresMarketPickup = Boolean(
     isPreorder ||
     product?.marketPickupOnly ||
@@ -96,12 +98,12 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
 
     return (
       <Button asChild variant={variant} className={`relative ${className}`}>
-        <Link href={productHref}>{outOfStock ? 'Currently unavailable' : 'View details'}</Link>
+        <Link href={productHref}>{outOfStock ? 'Sold out' : availability.label === 'Request availability' ? 'Request availability' : 'View details'}</Link>
       </Button>
     );
   }
 
-  if (requiresMarketPickup) {
+  if (requiresMarketPickup || availability.canMarketPreorder) {
     // Market-only products must enter the market preorder journey; writing them
     // straight into the general cart bypasses pickup selection and minimums.
     const productKey = product?.slug || product?.curatedProductId || product?.id || '';
