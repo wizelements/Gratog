@@ -4,6 +4,8 @@ import { logger } from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
+import { consumeInventoryForPaidOrder } from '@/lib/custom-inventory';
+import { releaseCheckoutInventory } from '@/lib/checkout/stock-reservation';
 import { getSquareWebhookSignatureKey } from '@/lib/square';
 import { reconcileSquareBatchReservation } from '@/lib/batches/reconcile-square-reservation';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
@@ -646,6 +648,10 @@ async function handlePaymentCreated(db: any, payment: any): Promise<{ success: b
     return { success: false, message: 'Order not found for payment' };
   }
   
+  if (payment.status === 'COMPLETED') {
+    return handlePaymentUpdated(db, payment);
+  }
+
   // Only update if not already at a higher status
   await updateOrderStatusSafe(db, order.id, 'payment_processing', {
     squarePaymentId: payment.id,
@@ -714,6 +720,19 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
   // Update with precedence check
   const updated = await updateOrderStatusSafe(db, order.id, newOrderStatus, updateFields);
   
+  // Square may notify us before /api/payments finishes. Commit the SAME
+  // bounded prepayment stock claim from either channel, at most once.
+  if (order.checkoutAttemptKey && isCompleted) {
+    await consumeInventoryForPaidOrder(db, {
+      orderId: order.id, orderNumber: order.orderNumber || order.id,
+      items: order.items || [], actor: 'square_verified_webhook',
+      requireReservation: true,
+    });
+  } else if (order.checkoutAttemptKey && ['CANCELED', 'FAILED'].includes(payment.status)) {
+    const { client } = await connectToDatabase();
+    await releaseCheckoutInventory(db, client, order.id, 'square_verified_webhook_failure');
+  }
+
   // Preserve first payment evidence
   if (isCompleted) {
     await db.collection('orders').updateOne(
@@ -926,7 +945,12 @@ async function reconcileStorefrontStock(db: any, variationId: string) {
     0
   );
 
-  const inStock = currentStock > 0;
+  // Square's stock snapshot may arrive while a buyer's atomic prepayment
+  // reservation is outstanding. Never overwrite the first-party local stock
+  // balance and silently resell reserved units. Store upstream observations
+  // separately; explicit reconciliation can approve a restock adjustment.
+  const ledger = await db.collection('inventory').findOne({ productId: product.id });
+  const inStock = Number(ledger ? ledger.currentStock : currentStock) > 0;
   const now = new Date();
 
   const slug = product.name
@@ -944,13 +968,14 @@ async function reconcileStorefrontStock(db: any, variationId: string) {
         productSlug: slug || null,
         squareId: product.id,
         variationIds,
-        currentStock,
+        squareReportedStock: currentStock,
         isActive: true,
         updatedAt: now,
         lastCatalogSyncAt: now,
       },
       $setOnInsert: {
         productId: product.id,
+        currentStock,
         createdAt: now,
         source: 'square_webhook',
         lowStockThreshold: 5,
