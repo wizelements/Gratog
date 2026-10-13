@@ -3,6 +3,7 @@ import { MongoClient } from 'mongodb';
 import { randomUUID } from 'node:crypto';
 import { createOrReuseCheckoutOrder, CheckoutAttemptConflictError } from '@/lib/checkout/single-order';
 import { reserveMarketPreorderAttempt, completeMarketPreorderAttempt } from '@/lib/preorder/single-attempt';
+import { reserveCheckoutInventory, releaseCheckoutInventory, commitCheckoutInventory } from '@/lib/checkout/stock-reservation';
 
 const mongoUri = process.env.MONGODB_URI;
 const run = mongoUri?.includes('tog_checkout_race_ci') ? describe : describe.skip;
@@ -67,4 +68,56 @@ run('real Mongo replica-set checkout uniqueness', () => {
     expect((await reserveMarketPreorderAttempt(key, 'changed-cart')).state).toBe('conflict');
     expect(await db.collection('market_preorder_attempts').countDocuments({ key })).toBe(1);
   }, 30_000);
+  it('admits exactly one of 24 DISTINCT checkout orders for the final stock unit', async () => {
+    const productId = 'final-unit-' + randomUUID();
+    await db.collection('inventory').insertOne({ productId, currentStock: 1 });
+    const results = await Promise.all(Array.from({ length: 24 }, (_, n) =>
+      reserveCheckoutInventory(db, client, {
+        orderId: 'other-customer-' + n + '-' + randomUUID(),
+        items: [{ productId, quantity: 1 }],
+      }),
+    ));
+    expect(results.filter(result => result.valid)).toHaveLength(1);
+    expect(results.filter(result => !result.valid)).toHaveLength(23);
+    expect((await db.collection('inventory').findOne({ productId })).currentStock).toBe(0);
+    const claims = await db.collection('checkout_stock_claims').find({ 'items.productId': productId }).toArray();
+    expect(claims.filter((claim: any) => claim.status === 'reserved')).toHaveLength(1);
+  }, 35_000);
+
+  it('reserves an entire multi-item cart atomically and restores stock after proven decline', async () => {
+    const first = 'stock-A-' + randomUUID();
+    const second = 'stock-B-' + randomUUID();
+    const orderId = randomUUID();
+    const items = [{ productId: first, quantity: 2 }, { productId: second, quantity: 1 }];
+    await db.collection('inventory').insertMany([
+      { productId: first, currentStock: 3 },
+      { productId: second, currentStock: 0 },
+    ]);
+    const rejected = await reserveCheckoutInventory(db, client, { orderId, items });
+    expect(rejected.valid).toBe(false);
+    expect((await db.collection('inventory').findOne({ productId: first })).currentStock).toBe(3);
+    expect(await db.collection('checkout_stock_claims').countDocuments({ orderId })).toBe(0);
+
+    await db.collection('inventory').updateOne({ productId: second }, { $set: { currentStock: 1 } });
+    expect((await reserveCheckoutInventory(db, client, { orderId, items })).valid).toBe(true);
+    expect((await reserveCheckoutInventory(db, client, { orderId, items })).valid).toBe(true);
+    expect((await db.collection('inventory').findOne({ productId: first })).currentStock).toBe(1);
+    expect((await db.collection('inventory').findOne({ productId: second })).currentStock).toBe(0);
+
+    expect(await releaseCheckoutInventory(db, client, orderId, 'verified_decline')).toBe(true);
+    expect(await releaseCheckoutInventory(db, client, orderId, 'duplicate_decline')).toBe(false);
+    expect((await db.collection('inventory').findOne({ productId: first })).currentStock).toBe(3);
+    expect((await db.collection('inventory').findOne({ productId: second })).currentStock).toBe(1);
+    expect((await reserveCheckoutInventory(db, client, { orderId, items })).valid).toBe(true);
+    const confirmed = await Promise.all(Array.from({ length: 12 },
+      () => commitCheckoutInventory(db, client, orderId)));
+    expect(confirmed.filter(result => !result.skipped)).toHaveLength(1);
+    expect(confirmed.filter(result => result.skipped)).toHaveLength(11);
+    expect(await db.collection('inventory_events').countDocuments({ type: 'order_debit', orderId })).toBe(1);
+    // Capture commits the already withheld quantity: NEVER subtract a second time.
+    expect((await db.collection('inventory').findOne({ productId: first })).currentStock).toBe(1);
+    expect((await db.collection('inventory').findOne({ productId: second })).currentStock).toBe(0);
+    expect(await releaseCheckoutInventory(db, client, orderId, 'late_decline')).toBe(false);
+  }, 35_000);
+
 });
