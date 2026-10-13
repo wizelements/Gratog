@@ -22,6 +22,7 @@ import { createLogger } from '@/lib/logger';
 import { sanitizeObject } from '@/lib/validation/sanitize';
 import { validateCustomerData } from '@/lib/validation/customer';
 import { validatePreorderMinimum } from '@/lib/cart-engine';
+import { validateMarketOrderLines, validateSelectedMarketVariation, PreorderLineValidationError } from '@/lib/preorder/line-validation';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 import { isMarketPreorderPermitted } from '@/lib/preorder/eligibility';
 import { createPaymentLink } from '@/lib/square-api';
@@ -113,6 +114,7 @@ async function resolvePreorderCartItems(submittedItems: any[]) {
     }
 
     const { product, variation } = lookup.get(lookupKey);
+    validateSelectedMarketVariation(item, product, variation, lookup);
     // Price authority must match what the storefront displays. For the default
     // variation, the public product price is canonical; additional variants
     // retain their own explicit (server-trusted) prices.
@@ -126,7 +128,7 @@ async function resolvePreorderCartItems(submittedItems: any[]) {
         ? variantPrice
         : listedPrice;
     const priceCents = Math.round(price * 100);
-    const quantity = Math.max(1, Math.min(99, Number(item.quantity) || 1));
+    const quantity = item.quantity; // Validated integer.
 
     if (!Number.isFinite(price) || price <= 0) {
       throw new Error(`${product.name} is missing a valid preorder price.`);
@@ -212,18 +214,21 @@ export async function POST(request: any) {
 
     let preorderCartItems;
     try {
-      preorderCartItems = await resolvePreorderCartItems(data.items);
+      const validLines = validateMarketOrderLines(data.items);
+      preorderCartItems = await resolvePreorderCartItems(validLines);
     } catch (error: any) {
-      return NextResponse.json(
-        { success: false, code: 'ITEM_UNAVAILABLE', error: String(error?.message || 'An item is unavailable. Please refresh the menu and try again.') },
-        { status: 409 }
-      );
+      return NextResponse.json({
+        success: false,
+        code: error instanceof PreorderLineValidationError ? error.code : 'ITEM_UNAVAILABLE',
+        error: String(error?.message || 'An item is unavailable. Please refresh the menu and try again.'),
+      }, { status: error instanceof PreorderLineValidationError ? 422 : 409 });
     }
 
     // Calculate totals
-    const subtotal = preorderCartItems.reduce((sum: number, item: any) => {
-      return sum + ((item.price || 0) * (item.quantity || 1));
+    const subtotalCents = preorderCartItems.reduce((sum: number, item: any) => {
+      return sum + item.priceCents * item.quantity;
     }, 0);
+    const subtotal = subtotalCents / 100;
 
     // Preorder rules: $60 minimum
     const preorderValidation = validatePreorderMinimum(preorderCartItems as any);
@@ -292,14 +297,14 @@ export async function POST(request: any) {
     const orderNumber = generatePreorderNumber();
     const total = subtotal; // TAX_RATE is 0 for market sales
     const preorderMetadata = getPreorderMetadata(data);
-    const totalCents = Math.round(total * 100);
+    const totalCents = subtotalCents;
 
     const items = preorderCartItems.map((item: any) => ({
       productId: item.productId || item.id,
       name: item.name,
       quantity: item.quantity || 1,
-      price: item.price || 0,
-      subtotal: (item.price || 0) * (item.quantity || 1),
+      price: item.priceCents / 100,
+      subtotal: (item.priceCents * item.quantity) / 100,
       size: item.size || null,
       imageUrl: item.imageUrl || null,
     }));
@@ -350,8 +355,8 @@ export async function POST(request: any) {
       const paymentLineItems = preorderCartItems.map((item: any) => ({
         catalogObjectId: item.catalogObjectId,
         name: String(item.name || 'Preorder item').slice(0, 255),
-        quantity: String(item.quantity || 1),
-        basePriceMoney: { amount: Number(item.priceCents) || Math.round((Number(item.price) || 0) * 100), currency: 'USD' },
+        quantity: String(item.quantity),
+        basePriceMoney: { amount: item.priceCents, currency: 'USD' },
       }));
 
       const paymentResult = await createPaymentLink({
