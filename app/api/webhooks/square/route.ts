@@ -717,6 +717,19 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
     updateFields.balanceDue = 0;
   }
   
+  // Independently verify the settled amount before a signed webhook can
+  // change checkout stock or order status. The Square HMAC proves origin,
+  // not that this payment belongs to the expected price.
+  if (order.checkoutAttemptKey && isCompleted) {
+    const settledCents = Number(payment.amount_money?.amount ?? payment.total_money?.amount);
+    const expectedCents = Number(order.totalCents);
+    const settledCurrency = String(payment.amount_money?.currency || payment.total_money?.currency || '').toUpperCase();
+    if (!Number.isSafeInteger(settledCents) || !Number.isSafeInteger(expectedCents)
+        || settledCents <= 0 || settledCents !== expectedCents || settledCurrency !== 'USD') {
+      throw new Error('Captured Square payment amount/currency mismatch; hold for manual reconciliation');
+    }
+  }
+
   // Square may notify us before /api/payments finishes. Commit the SAME
   // bounded prepayment stock claim from either channel, at most once.
   if (order.checkoutAttemptKey && isCompleted) {
