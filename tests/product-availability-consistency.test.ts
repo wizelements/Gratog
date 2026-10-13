@@ -28,18 +28,26 @@ describe('one merchant-controlled availability decision across shopping surfaces
     { checkoutReady: false },
     { checkoutReady: undefined },
     { squareIsArchived: true },
-    { squareEcomAvailable: false },
     { soldOut: true },
     { available: false },
     { weeklyStatus: 'inactive' },
     { inventoryStatus: 'sold_out' },
-    { activeWeeklyMenu: false },
     { price: 0 },
     { squareEcomVisibility: 'HIDDEN' },
   ])('blocks unverified and disabled products: %o', patch => {
     const result = resolveProductAvailability({ ...base, ...patch });
     expect(result.canOrder).toBe(false);
     expect(result.canAddToCart).toBe(false);
+  });
+
+  it('does not suppress an otherwise sellable custom-store item due to a Square Online-only flag', () => {
+    const result = resolveProductAvailability({ ...base, squareEcomAvailable: false });
+    expect(result.canOrder).toBe(true);
+  });
+
+  it('preserves non-market Georgia products even when excluded from the weekly market menu', () => {
+    const result = resolveProductAvailability({ ...base, activeWeeklyMenu: false });
+    expect(result.canOrder).toBe(true);
   });
 
   it('does not infer stock from an absent count or advertise a confirmed quantity', () => {
