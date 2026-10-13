@@ -24,6 +24,13 @@ describe('customer confirmation page cannot be forged', () => {
   it('cannot show paid for a missing order', () => {
     expect(isServerVerifiedPaidOrder(null)).toBe(false);
   });
+  it('returns the same authorized order ID the receipt and pickup queue use', () => {
+    const route = readFileSync(resolve(process.cwd(), 'app/api/orders/by-ref/route.js'), 'utf8');
+    expect(route).toContain('id: order.id,');
+    expect(route).toContain('order.customer?.email || order.customerEmail');
+    expect(route).toContain('name: order.customer?.name || order.customerName');
+  });
+
   it('never uses URL paid=true or amount as confirmation or fallback', () => {
     const page = readFileSync(resolve(process.cwd(), 'app/order/success/page-enhanced.js'), 'utf8');
     expect(page).not.toContain("searchParams.get('paid')");
