@@ -17,6 +17,7 @@ import { rewardsSystem } from '@/lib/enhanced-rewards';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { consumeInventoryForPaidOrder, checkInventoryForPayment } from '@/lib/custom-inventory';
+import { reserveCheckoutInventory, releaseCheckoutInventory } from '@/lib/checkout/stock-reservation';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';
 import { validateGeorgiaDestination } from '@/lib/georgia-orders';
 import {
@@ -231,9 +232,11 @@ export async function POST(request: NextRequest) {
     // FIX P0-3: Clear any stuck payment_processing status on DB failure
     // ========================================================================
     let db;
+    let client;
     try {
       const dbConnection = await connectToDatabase();
       db = dbConnection.db;
+      client = dbConnection.client;
     } catch (dbConnError) {
       logger.error('API', 'Database connection failed - cannot process payment safely', {
         traceId: ctx.traceId,
@@ -838,6 +841,31 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // The one-order lock cannot prevent TWO different customers from paying
+    // for the final unit. Deduct stock and claim this order in one transaction
+    // BEFORE sending any charge to Square.
+    let stockClaim;
+    try {
+      stockClaim = await reserveCheckoutInventory(db, client, {
+        orderId, items: order.items || [],
+      });
+    } catch (stockError) {
+      logger.error('API', 'Could not safely commit stock claim', {
+        orderId, error: stockError instanceof Error ? stockError.message : String(stockError),
+      });
+      return json({ success: false, code: 'INVENTORY_RESERVATION_UNAVAILABLE',
+        error: 'Stock could not be reserved safely. Check the order before trying again.' }, 503);
+    }
+    if (!stockClaim.valid) {
+      await db.collection('orders').updateOne(
+        { id: orderId, status: 'payment_processing', paymentStatus: 'processing' },
+        { $set: { status: 'pending', paymentStatus: 'pending',
+          paymentError: stockClaim.code, updatedAt: new Date().toISOString() } },
+      );
+      return json({ success: false, code: stockClaim.code,
+        error: 'The requested quantity is no longer available. Please update your cart.' }, 409);
+    }
+
     // ========================================================================
     // PROCESS SQUARE PAYMENT
     // ========================================================================
@@ -875,6 +903,31 @@ export async function POST(request: NextRequest) {
         errors: paymentResult.errors
       });
       
+      // Only a DEFINITE provider decline permits inventory release and a
+      // new Square idempotency key. Network timeouts or provider errors may
+      // have captured funds; keep the claim and reconcile, never retry blind.
+      const definiteDecline = new Set([
+        'CARD_DECLINED', 'GENERIC_DECLINE', 'INSUFFICIENT_FUNDS',
+        'CVV_FAILURE', 'ADDRESS_VERIFICATION_FAILURE', 'EXPIRED_CARD',
+        'INVALID_CARD', 'INVALID_EXPIRATION', 'INVALID_POSTAL_CODE',
+        'UNSUPPORTED_CARD_BRAND', 'INVALID_CARD_DATA',
+      ]).has(errorCode);
+      if (!definiteDecline) {
+        logger.error('API', 'Ambiguous Square result: stock claim retained pending reconciliation', {
+          orderId, errorCode,
+        });
+        return json({ success: false, code: 'PAYMENT_RECONCILIATION_REQUIRED',
+          error: 'We could not confirm your payment. Your order is held for verification; please do not pay again.' }, 503);
+      }
+      try {
+        await releaseCheckoutInventory(db, client, orderId, 'square_explicit_decline');
+      } catch (releaseError) {
+        logger.error('API', 'Stock release failed after confirmed decline', {
+          orderId, error: releaseError instanceof Error ? releaseError.message : String(releaseError),
+        });
+        return json({ success: false, code: 'INVENTORY_RELEASE_RECONCILIATION_REQUIRED',
+          error: 'Payment was declined but inventory could not be safely reopened. Contact support before retrying.' }, 503);
+      }
       await db.collection('orders').updateOne(
         { id: orderId },
         { 
@@ -1027,6 +1080,7 @@ export async function POST(request: NextRequest) {
           orderNumber: order.orderNumber,
           items: order.items || [],
           actor: 'payment_capture',
+          requireReservation: Boolean(order.checkoutAttemptKey),
         });
 
         logger.info('API', 'Inventory updated after payment', {
@@ -1058,6 +1112,7 @@ export async function POST(request: NextRequest) {
             orderNumber: order.orderNumber,
             items: order.items || [],
             actor: 'payment_capture_retry',
+            requireReservation: Boolean(order.checkoutAttemptKey),
           });
           logger.info('API', 'Inventory retry succeeded', { 
             orderId, 
