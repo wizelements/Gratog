@@ -97,7 +97,11 @@ export default function MobileMenuPage() {
 
   const addToCart = (product: Product, quantity = 1) => {
     const inv = getProductInventory(product.id);
-    if (inv?.isSoldOut) {
+    if (!inv) {
+      toast.error(`Availability for ${product.name} is not confirmed. Please ask at the market.`);
+      return;
+    }
+    if (inv.isSoldOut || inv.remaining <= 0 || product.isSoldOut) {
       toast.error(`${product.name} is sold out`);
       return;
     }
@@ -208,8 +212,9 @@ export default function MobileMenuPage() {
         {filteredProducts.map(product => {
           const inv = getProductInventory(product.id);
           const inCart = cart.find(item => item.productId === product.id);
-          const isSoldOut = inv?.isSoldOut || product.isSoldOut;
-          const remaining = inv?.remaining ?? 999;
+          const availabilityUnverified = !inv;
+          const remaining = inv?.remaining ?? 0;
+          const isSoldOut = Boolean(product.isSoldOut || inv?.isSoldOut || (inv && remaining <= 0));
 
           return (
             <div 
@@ -264,7 +269,7 @@ export default function MobileMenuPage() {
                       <Button
                         size="sm"
                         onClick={() => addToCart(product)}
-                        disabled={isSoldOut}
+                        disabled={isSoldOut || availabilityUnverified}
                         className="h-9 w-9 p-0"
                       >
                         <Plus className="w-4 h-4" />
@@ -284,7 +289,7 @@ export default function MobileMenuPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => addToCart(product)}
-                          disabled={isSoldOut || inCart.quantity >= remaining}
+                          disabled={isSoldOut || availabilityUnverified || inCart.quantity >= remaining}
                           className="h-7 w-7 p-0"
                         >
                           <Plus className="w-4 h-4" />
