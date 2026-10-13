@@ -1415,7 +1415,7 @@ export async function POST(request: NextRequest) {
     return json(
       {
         success: false,
-        error: 'Payment processing failed. Please try again.',
+        error: 'The payment result could not be verified. Do not submit another payment; check your order status or contact support.',
         code: 'PAYMENT_PROCESSING_UNAVAILABLE'
       },
       500
