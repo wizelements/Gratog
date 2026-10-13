@@ -363,6 +363,13 @@ export async function POST(request: NextRequest) {
         }, 409);
       }
 
+      if (existingPayment && [order.status, order.paymentStatus].some(
+        (status) => ['REFUNDED', 'PARTIALLY_REFUNDED', 'CANCELLED', 'CANCELED']
+          .includes(String(status || '').toUpperCase())
+      )) {
+        return json({ success: false, code: 'ORDER_PAYMENT_ALREADY_RECONCILED',
+          error: 'This payment has already been refunded or the order is closed. Review your order status; no new charge was made.' }, 409);
+      }
       if (existingPayment) {
         logger.info('API', 'Returning existing successful payment (idempotency protection)', {
           traceId: ctx.traceId,
