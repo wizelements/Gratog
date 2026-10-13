@@ -86,6 +86,16 @@ describe('checkout order integrity and recovery', () => {
     expect(read('components/checkout/ReviewAndPay.tsx')).toContain('clearCheckoutOrderAttempt();');
   });
 
+  it('routes a replayed paid or processing order to verified status, not a second card form', () => {
+    const client = read('components/checkout/ReviewAndPay.tsx');
+    expect(client).toContain('const paidAlready =');
+    expect(client).toContain('const paymentUncertain =');
+    expect(client).toContain('const notPayable =');
+    expect(client).toContain('if (paidAlready || paymentUncertain || notPayable)');
+    expect(client).toContain('router.replace(`/order/success?${params.toString()}`)');
+    expect(client).not.toContain("params.set('paid', 'true')");
+  });
+
   it('requires completed rather than merely approved payment and server-authoritative totals', () => {
     const api = read('app/api/payments/route.ts');
     expect(api).toContain("const isCompleted = payment.status === 'COMPLETED';");
