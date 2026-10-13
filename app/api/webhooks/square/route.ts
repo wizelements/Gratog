@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { consumeInventoryForPaidOrder } from '@/lib/custom-inventory';
 import { releaseCheckoutInventory } from '@/lib/checkout/stock-reservation';
+import { classifyCapturedRefund } from '@/lib/checkout/refund-progress';
 import { getSquareWebhookSignatureKey } from '@/lib/square';
 import { reconcileSquareBatchReservation } from '@/lib/batches/reconcile-square-reservation';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
@@ -871,15 +872,13 @@ async function handleRefundEvent(db: any, refund: any): Promise<{ success: boole
         { $group: { _id: null, amount: { $sum: '$amountCents' } } },
       ]).toArray();
       const refundedCents = Number(totals[0]?.amount || 0);
-      if (!Number.isSafeInteger(refundedCents) || refundedCents > paidCents) {
-        throw new Error('Cumulative Square refund exceeds original charge; manual reconciliation required');
-      }
-      const fullyRefunded = refundedCents === paidCents;
+      const { fullyRefunded, paymentStatus } = classifyCapturedRefund(paidCents, refundedCents);
       const updateFilter = fullyRefunded
         ? { id: order.id }
         : { id: order.id, paymentStatus: { $nin: ['refunded', 'REFUNDED'] } };
       const updateFields = {
-        paymentStatus: fullyRefunded ? 'refunded' : 'partially_refunded',
+        paymentStatus,
+        refundAmount: refundedCents,
         refundId: refund.id,
         refundedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
