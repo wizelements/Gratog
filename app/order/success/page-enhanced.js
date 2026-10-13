@@ -71,6 +71,10 @@ export default function OrderSuccessPage() {
         const nextAttempt = attempt + 1;
         setPollAttempts(nextAttempt);
         setOrder(data);
+        // Show a clearly UNPAID receipt immediately while the capture settles.
+        // Do not spin on "Finalizing" for the full retry window.
+        setError(null);
+        setLoading(false);
         setTimeout(() => fetchOrderDetails(nextAttempt), getRetryDelayMs(nextAttempt));
         return;
       }
