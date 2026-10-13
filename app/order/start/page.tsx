@@ -141,54 +141,27 @@ export default function QRLandingPage() {
           </Card>
         )}
 
-        {/* Action Buttons */}
-        {selectedMarket ? (
-          <div className="space-y-3">
-            {isMarketOpen(selectedMarket) ? (
-              <>
-                <Link href={`/catalog?source=market-qr&market=${selectedMarket.id}${tableId ? `&table=${tableId}` : ''}`}>
-                  <Button size="lg" className="w-full h-14 text-lg">
-                    <ShoppingBag className="w-5 h-5 mr-2" />
-                    Start Order
-                    <ChevronRight className="w-5 h-5 ml-auto" />
-                  </Button>
-                </Link>
-                
-                <Link href={`/preorder?market=${selectedMarket.id}`}>
-                  <Button size="lg" variant="secondary" className="w-full h-14 text-lg bg-amber-500 hover:bg-amber-600 text-white">
-                    <Clock className="w-5 h-5 mr-2" />
-                    Preorder for Pickup
-                    <Badge className="ml-2 bg-white/20 text-white border-0 text-xs">Skip the Line</Badge>
-                  </Button>
-                </Link>
-                
-                <Link href={`/menu?market=${selectedMarket.id}`}>
-                  <Button variant="outline" size="lg" className="w-full">
-                    View Menu
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <div className="text-center py-6">
-                <Clock className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                <p className="font-medium">This market is currently closed</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Online ordering available {selectedMarket.hours.open} - {selectedMarket.hours.close}
-                </p>
-              </div>
-            )}
-          </div>
-        ) : !marketId && todaysMarkets.length === 0 ? (
-          <div className="text-center py-8">
-            <Clock className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">
-              No markets scheduled today.
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              We vend Saturday (Serenbe, Sandy Springs) and Sunday (DHA).
-            </p>
-          </div>
-        ) : null}
+        {/* All shopping enters the single canonical catalog and cart. Market
+            hours describe in-person vending, not whether online orders are open. */}
+        <div className="space-y-3">
+          <Link href={`/catalog?source=market-qr${selectedMarket ? `&market=${encodeURIComponent(selectedMarket.id)}` : ''}${tableId ? `&table=${encodeURIComponent(tableId)}` : ''}`}>
+            <Button size="lg" className="w-full h-14 text-lg">
+              <ShoppingBag className="w-5 h-5 mr-2" />
+              Shop Georgia Menu
+              <ChevronRight className="w-5 h-5 ml-auto" />
+            </Button>
+          </Link>
+          <Link href={selectedMarket ? `/preorder?market=${encodeURIComponent(selectedMarket.id)}` : '/preorder'}>
+            <Button size="lg" variant="secondary" className="w-full h-14 text-lg bg-amber-500 hover:bg-amber-600 text-white">
+              <Clock className="w-5 h-5 mr-2" />
+              Request Market Pickup Preorder
+            </Button>
+          </Link>
+          <p className="text-sm text-muted-foreground">
+            Online shopping is not limited to market opening hours.
+            Available pickup dates, eligible Georgia delivery and shipping are confirmed before payment.
+          </p>
+        </div>
 
         {/* Quick Links */}
         <div className="border-t pt-6 space-y-2">
