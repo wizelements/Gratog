@@ -7,6 +7,9 @@ export const dynamic = 'force-dynamic';
  */
 
 import { NextResponse } from 'next/server';
+import { createHash } from 'crypto';
+import { getIdempotencyKeyFromHeaders, isValidIdempotencyKey } from '@/lib/idempotency';
+import { reserveMarketPreorderAttempt, completeMarketPreorderAttempt } from '@/lib/preorder/single-attempt';
 import { generatePreorderNumber, getEstimatedWaitTime } from '@/lib/preorder/waitlist';
 import { getNextWaitlistNumber, createPreorder, findPreorderByOrderNumber, updatePreorderPaymentFields } from '@/lib/preorder/repository';
 import { PREORDER_RULES } from '@/lib/preorder/rules';
@@ -258,6 +261,25 @@ export async function POST(request: any) {
       year: 'numeric',
     });
 
+    // Server admission MUST precede queue allocation, Mongo inserts and Square links.
+    // No header = no order, because a retry without identity is not safe.
+    const preorderAttemptKey = getIdempotencyKeyFromHeaders(request.headers);
+    if (!preorderAttemptKey || !isValidIdempotencyKey(preorderAttemptKey)) {
+      return NextResponse.json({ success: false, code: 'PREORDER_ATTEMPT_KEY_REQUIRED', error: 'Please restart checkout before submitting this preorder.' }, { status: 428 });
+    }
+    const fingerprint = createHash('sha256').update(JSON.stringify({
+      data, marketId: selectedMarket.id, pickupDate: pickupDate.toISOString(),
+    })).digest('hex');
+    const admission = await reserveMarketPreorderAttempt(preorderAttemptKey, fingerprint);
+    if (admission.state === 'conflict') {
+      return NextResponse.json({ success: false, code: 'PREORDER_ATTEMPT_CONFLICT', error: 'Your order details changed. Review the cart and restart this checkout.' }, { status: 409 });
+    }
+    if (admission.state === 'pending') {
+      return NextResponse.json({ success: false, code: 'PREORDER_CREATION_PENDING', error: 'Your preorder is still being processed. Do not submit another order. Check the status of this attempt shortly.' }, { status: 409, headers: { 'Retry-After': '3' } });
+    }
+    if (admission.state === 'replay') return NextResponse.json(admission.result);
+    if (admission.state === 'failed') return NextResponse.json(admission.result, { status: 502 });
+
     // Atomic waitlist number from MongoDB
     const { waitlistNumber, counter } = await getNextWaitlistNumber(
       selectedMarket.id,
@@ -358,15 +380,14 @@ export async function POST(request: any) {
         });
 
         logger.error('Preorder payment link creation failed', { orderNumber, detail });
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Could not create secure payment link. Please try again or contact Taste of Gratitude.',
-            code: 'PAYMENT_LINK_FAILED',
-            orderNumber,
-          },
-          { status: 502 }
-        );
+        const failureResult = {
+          success: false,
+          error: 'Secure payment setup failed. Please contact Taste of Gratitude with this reference before creating another preorder.',
+          code: 'PAYMENT_LINK_FAILED',
+          orderNumber,
+        };
+        await completeMarketPreorderAttempt(preorderAttemptKey, failureResult, 'failed');
+        return NextResponse.json(failureResult, { status: 502 });
       }
 
       await updatePreorderPaymentFields(orderNumber, {
@@ -420,7 +441,7 @@ export async function POST(request: any) {
       });
     }
 
-    return NextResponse.json({
+    const completedResponse = {
       success: true,
 
       // Backward-compatible top-level fields for current UI
@@ -440,7 +461,11 @@ export async function POST(request: any) {
         paymentStatus: 'PENDING_PAYMENT',
       },
       payment,
-    });
+    };
+    // Store the successful result before replying; a lost HTTP response will
+    // return the SAME Square link and SAME waitlist position on retry.
+    await completeMarketPreorderAttempt(preorderAttemptKey, completedResponse, 'complete');
+    return NextResponse.json(completedResponse);
   } catch (error: any) {
     logger.error('Preorder creation error', { error: error.message });
 
