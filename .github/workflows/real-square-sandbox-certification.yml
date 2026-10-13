@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   square-sandbox-transaction:
-    if: github.event_name != 'pull_request' || github.head_ref == 'fix/prepaid-commerce-safety-oct12'
+    if: github.event_name != 'pull_request' || github.head_ref == 'fix/prepaid-commerce-safety-oct12' || github.head_ref == 'fix/checkout-single-order-integrity-oct12'
     name: Actual sandbox order, payment, declined card, replay and refund
     runs-on: ubuntu-latest
     timeout-minutes: 12
