@@ -7,7 +7,7 @@ export function isServerVerifiedPaidOrder(order: {
   payment?: { status?: unknown } | null;
 } | null | undefined): boolean {
   if (!order) return false;
-  const captured = new Set(['COMPLETED', 'PAID', 'PAID_IN_FULL', 'DEPOSIT_PAID', 'FULLY_PAID', 'PAID_PARTIAL']);
+  const captured = new Set(['COMPLETED', 'PAID', 'PAID_IN_FULL', 'FULLY_PAID']);
   const statuses = [order.paymentStatus, order.payment?.status];
   return statuses.some(status => typeof status === 'string' && captured.has(status.trim().toUpperCase()));
 }
