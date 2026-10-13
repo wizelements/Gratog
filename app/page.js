@@ -61,7 +61,7 @@ async function getHomepageCatalogData() {
     if (product.available === false) return false;
     if (product.purchaseStatus === 'sold_out') return false;
     if (product.availability === 'sold_out') return false;
-    if (product.squareEcomAvailable === false) return false;
+    // Square Online's ecom_available does not govern this independent shop.
     
     return true;
   });
