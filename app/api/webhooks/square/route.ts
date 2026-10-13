@@ -758,43 +758,86 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
     );
   }
   
-  // Send confirmation email if newly paid and not already sent
-  if (isCompleted && updated && !order.emailSentAt && order.customer?.email) {
+  // Both regular shop and Mongo/Mongoose market preorders need one
+  // customer receipt. Claim before sending, using the correct collection;
+  // otherwise concurrent payment callbacks send duplicate emails.
+  const isMarketPreorder = Boolean(order.marketId && order.customerEmail && order._id);
+  const buyerEmail = order.customer?.email || order.customerEmail;
+  if (isCompleted && updated && buyerEmail) {
+    const confirmationCollection = db.collection(isMarketPreorder ? 'marketorders' : 'orders');
+    const confirmationFilter = isMarketPreorder ? { _id: order._id } : { id: order.id };
+    let emailClaimed = false;
     try {
-      const emailResult = await sendOrderConfirmationEmail({
-        id: order.id,
-        orderNumber: order.orderNumber || order.id,
-        customer: {
-          email: order.customer.email,
-          name: order.customer.name || 'Customer',
-          phone: order.customer.phone
-        },
-        items: order.items || [],
-        pricing: order.pricing || { subtotal: 0, total: 0, deliveryFee: 0, tax: 0 },
-        fulfillment: order.fulfillment || { type: 'pickup' },
-        payment: {
-          receiptUrl: payment.receipt_url,
-          cardBrand: payment.card_details?.card?.card_brand,
-          cardLast4: payment.card_details?.card?.last_4
+      const claim = await confirmationCollection.updateOne({
+        ...confirmationFilter,
+        emailSentAt: { $exists: false },
+        confirmationEmailClaimedAt: { $exists: false },
+      }, { $set: {
+        confirmationEmailClaimedAt: new Date(),
+        confirmationEmailDeliveryStatus: 'sending',
+      } });
+      emailClaimed = claim.modifiedCount === 1;
+      if (emailClaimed) {
+        const emailResult = await sendOrderConfirmationEmail({
+          id: order.id || String(order._id),
+          orderNumber: order.orderNumber || order.id,
+          customer: {
+            email: buyerEmail,
+            name: order.customer?.name || order.customerName || 'Customer',
+            phone: order.customer?.phone || order.customerPhone,
+          },
+          items: order.items || [],
+          pricing: order.pricing || {
+            subtotal: order.subtotal || 0,
+            total: order.total || 0,
+            deliveryFee: 0,
+            tax: order.tax || 0,
+          },
+          fulfillment: order.fulfillment || {
+            type: 'pickup',
+            pickup: {
+              locationId: order.marketId || null,
+              date: order.pickupDate || null,
+            },
+          },
+          payment: {
+            receiptUrl: payment.receipt_url,
+            cardBrand: payment.card_details?.card?.card_brand,
+            cardLast4: payment.card_details?.card?.last_4,
+          },
+        });
+        if (emailResult?.success) {
+          await confirmationCollection.updateOne(confirmationFilter, {
+            $set: {
+              emailSentAt: new Date().toISOString(),
+              confirmationEmailDeliveryStatus: 'sent',
+            },
+          });
+          logger.info('Webhook', 'Customer confirmation delivered', {
+            orderNumber: order.orderNumber, isMarketPreorder,
+          });
+        } else {
+          await confirmationCollection.updateOne(confirmationFilter, {
+            $set: { confirmationEmailDeliveryStatus: 'failed' },
+          });
+          logger.warn('Webhook', 'Customer confirmation failed; staff resend required', {
+            orderNumber: order.orderNumber, isMarketPreorder,
+          });
         }
-      });
-      
-      // @ts-ignore — type fix needed
-      if (emailResult.success) {
-        await db.collection('orders').updateOne(
-          { id: order.id },
-          { $set: { emailSentAt: new Date().toISOString() } }
-        );
-        logger.info('Webhook', 'Confirmation email sent via webhook', { orderId: order.id });
       }
     } catch (emailError) {
-      logger.warn('Webhook', 'Failed to send confirmation email', { 
-        orderId: order.id,
-        error: emailError instanceof Error ? emailError.message : String(emailError)
+      if (emailClaimed) {
+        await confirmationCollection.updateOne(confirmationFilter, {
+          $set: { confirmationEmailDeliveryStatus: 'failed' },
+        }).catch(() => null);
+      }
+      logger.warn('Webhook', 'Customer confirmation could not be delivered', {
+        orderNumber: order.orderNumber,
+        error: emailError instanceof Error ? emailError.message : String(emailError),
       });
     }
   }
-  
+
   return { success: true, message: `Payment ${payment.status} processed` };
 }
 
