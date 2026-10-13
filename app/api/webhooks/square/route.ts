@@ -807,7 +807,7 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
             cardLast4: payment.card_details?.card?.last_4,
           },
         });
-        if (emailResult?.success) {
+        if (emailResult && 'success' in emailResult && emailResult.success === true) {
           await confirmationCollection.updateOne(confirmationFilter, {
             $set: {
               emailSentAt: new Date().toISOString(),
