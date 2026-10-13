@@ -32,6 +32,7 @@ import BundleSuggestions from "@/components/preorder/BundleSuggestions";
 import { nextPreorderPickup } from "@/lib/preorder/market-schedule";
 import { isMarketPreorderPermitted } from "@/lib/preorder/eligibility";
 import { track } from "@/utils/analytics";
+import { marketPreorderAttemptKey } from "@/lib/preorder/client-attempt";
 
 // Day-of-week labels
 const DAY_LABELS: Record<number, string> = {
@@ -553,10 +554,7 @@ function PreorderPageContent() {
         };
       });
 
-      const response = await fetch('/api/preorder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const preorderPayload = {
           marketId: selectedMarket.id,
           customer,
           items: orderItems,
@@ -570,7 +568,12 @@ function PreorderPageContent() {
             category: sourceCategory,
             product: sourceProduct,
           }
-        })
+        };
+      const idempotencyKey = await marketPreorderAttemptKey(preorderPayload);
+      const response = await fetch('/api/preorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
+        body: JSON.stringify(preorderPayload),
       });
 
       const data = await response.json().catch(() => ({ success: false, error: 'Could not read checkout response.' }));
