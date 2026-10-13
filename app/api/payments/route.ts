@@ -247,31 +247,10 @@ export async function POST(request: NextRequest) {
         tags: { api: 'payments', stage: 'db_connect' }
       });
       
-      // FIX: Attempt to clear stuck payment_processing status even on connection failure
-      // This prevents orders from being locked indefinitely
-      try {
-        const fallbackDb = await connectToDatabase().catch(() => null);
-        if (fallbackDb?.db && orderId) {
-          await fallbackDb.db.collection('orders').updateOne(
-            { 
-              id: orderId,
-              status: 'payment_processing',
-              paymentStatus: 'processing'
-            },
-            { 
-              $set: { 
-                status: 'pending', 
-                paymentStatus: 'pending',
-                paymentError: 'DB_CONNECTION_FAILED',
-                updatedAt: new Date().toISOString() 
-              } 
-            }
-          );
-        }
-      } catch (clearError) {
-        logger.error('API', 'Failed to clear payment_processing status', { orderId, error: clearError });
-      }
-      
+      // A database connection failure does not prove the processor did not
+      // charge an order. Never clear somebody else's processing lock during
+      // an outage; this could admit a second payment attempt.
+
       return json(
         { 
           success: false, 
