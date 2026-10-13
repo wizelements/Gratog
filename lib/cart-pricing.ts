@@ -155,6 +155,14 @@ interface UnifiedProductDoc {
   fulfillmentType?: string;
   squareIsArchived?: boolean;
   squareEcomAvailable?: boolean;
+  squareEcomVisibility?: string;
+  soldOut?: boolean;
+  available?: boolean;
+  weeklyStatus?: string;
+  inventoryStatus?: string;
+  activeWeeklyMenu?: boolean;
+  currentStock?: number;
+  stock?: number;
   variations?: Array<{
     id: string;
     name?: string;
@@ -206,10 +214,20 @@ function unitPriceCentsFromProduct(
 }
 
 function isProductPurchasable(product: UnifiedProductDoc, isPreorder = false): boolean {
-  if (product.squareIsArchived === true) return false;
-  if (product.squareEcomAvailable === false) return false;
-  // Preorder items are made-to-order — inStock doesn't apply
-  if (!isPreorder && product.inStock === false) return false;
+  // These checks apply to every entry point, including forged cart payloads.
+  if (product.squareIsArchived === true || product.squareEcomAvailable === false ||
+      product.available === false || product.soldOut === true ||
+      product.activeWeeklyMenu === false) return false;
+  const weekly = String(product.weeklyStatus || '').toLowerCase();
+  const inventory = String(product.inventoryStatus || '').toLowerCase();
+  const squareVisibility = String(product.squareEcomVisibility || '').toUpperCase();
+  if (['inactive', 'sold_out'].includes(weekly) ||
+      ['inactive', 'sold_out'].includes(inventory) ||
+      ['HIDDEN', 'UNINDEXED'].includes(squareVisibility)) return false;
+  // Only catalog-authorized preorders can bypass immediate stock checks.
+  if (!isPreorder && (product.inStock === false ||
+      (Number.isFinite(product.currentStock) && Number(product.currentStock) <= 0) ||
+      (Number.isFinite(product.stock) && Number(product.stock) <= 0))) return false;
   return true;
 }
 
