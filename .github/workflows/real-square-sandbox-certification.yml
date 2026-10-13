@@ -5,6 +5,9 @@ on:
     branches:
       - fix/product-truth-and-square-sandbox-20261011
       - fix/blue-lotus-availability-square-catalog-20261011
+      - fix/prepaid-commerce-safety-oct12
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -12,6 +15,7 @@ permissions:
 
 jobs:
   square-sandbox-transaction:
+    if: github.event_name != 'pull_request' || github.head_ref == 'fix/prepaid-commerce-safety-oct12'
     name: Actual sandbox order, payment, declined card, replay and refund
     runs-on: ubuntu-latest
     timeout-minutes: 12
