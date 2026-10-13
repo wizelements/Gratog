@@ -11,6 +11,7 @@ import { assertExactCapturedPayment } from '@/lib/checkout/provider-payment-amou
 import { getSquareWebhookSignatureKey } from '@/lib/square';
 import { reconcileSquareBatchReservation } from '@/lib/batches/reconcile-square-reservation';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
+import { notifySquareTeam } from '@/lib/preorder/square-notifications';
 import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { syncSingleCatalogItem } from '@/lib/square/syncSingleItem';
 import { revalidatePath } from 'next/cache';
@@ -834,6 +835,47 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
       logger.warn('Webhook', 'Customer confirmation could not be delivered', {
         orderNumber: order.orderNumber,
         error: emailError instanceof Error ? emailError.message : String(emailError),
+      });
+    }
+  }
+
+  // Market preorders used to bypass the post-payment staff alert because
+  // their hosted Square-link creation bypasses /api/payments. Only captured,
+  // verified orders may notify production staff of work to fulfill.
+  if (isCompleted && updated && isMarketPreorder) {
+    try {
+      const claims = db.collection('marketorders');
+      const claim = await claims.updateOne({
+        _id: order._id,
+        staffNotifiedAt: { $exists: false },
+        staffNotificationClaimedAt: { $exists: false },
+      }, { $set: { staffNotificationClaimedAt: new Date(),
+        staffNotificationStatus: 'sending' } });
+      if (claim.modifiedCount === 1) {
+        const notify = await notifySquareTeam({
+          orderNumber: order.orderNumber,
+          waitlistNumber: order.waitlistNumber || order.orderNumber,
+          customer: {
+            name: order.customerName || 'Customer',
+            phone: order.customerPhone || '',
+            email: order.customerEmail || '',
+          },
+          items: order.items || [],
+          pickupLocation: order.pickupLocation || order.marketName || 'Market pickup',
+          pickupDate: order.pickupDate || 'Scheduled market day',
+          pickupHours: order.pickupHours || '',
+          notes: order.notes,
+        });
+        await claims.updateOne({ _id: order._id }, {
+          $set: notify.success
+            ? { staffNotifiedAt: new Date(), staffNotificationStatus: 'sent' }
+            : { staffNotificationStatus: 'failed' },
+        });
+      }
+    } catch (staffError) {
+      logger.error('Webhook', 'Paid market preorder staff notification failed', {
+        orderNumber: order.orderNumber,
+        error: staffError instanceof Error ? staffError.message : String(staffError),
       });
     }
   }
