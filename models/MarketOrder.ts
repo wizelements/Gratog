@@ -54,7 +54,6 @@ export interface IMarketOrder extends Document {
   estimatedReadyAt?: Date;
   pickedUpAt?: Date;
   notes?: string;
-  queuePosition?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -113,7 +112,6 @@ const MarketOrderSchema = new Schema<IMarketOrder>({
   estimatedReadyAt: { type: Date },
   pickedUpAt: { type: Date },
   notes: { type: String },
-  queuePosition: { type: Number },
 }, {
   timestamps: true,
 });
