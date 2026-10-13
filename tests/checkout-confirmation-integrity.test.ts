@@ -15,6 +15,12 @@ describe('customer confirmation page cannot be forged', () => {
       expect(isServerVerifiedPaidOrder({ paymentStatus: state })).toBe(true);
     }
   });
+  it('does not call refunded, partially refunded or cancelled orders successfully paid', () => {
+    for (const status of ['REFUNDED', 'PARTIALLY_REFUNDED', 'CANCELLED', 'CANCELED']) {
+      expect(isServerVerifiedPaidOrder({ status, paymentStatus: 'PAID' })).toBe(false);
+    }
+  });
+
   it('cannot show paid for a missing order', () => {
     expect(isServerVerifiedPaidOrder(null)).toBe(false);
   });
