@@ -33,6 +33,8 @@ describe('verified payment before marking orders paid', () => {
     const statusUpdate = callback.indexOf('updateOrderStatusSafe(db, order.id, newOrderStatus');
     expect(assertion).toBeGreaterThanOrEqual(0);
     expect(statusUpdate).toBeGreaterThan(assertion);
-    expect(callback.slice(assertion, statusUpdate)).not.toContain('order.checkoutAttemptKey && isCompleted');
+    // Inventory claim reconciliation is correctly scoped to newer orders;
+    // payment amount validation itself must NOT be scoped to them.
+    expect(callback).toContain('if (isCompleted) assertExactCapturedPayment(order, payment);');
   });
 });
