@@ -959,6 +959,25 @@ export async function POST(request: NextRequest) {
     }
 
     const payment = paymentResult.data.payment;
+    // A completed provider payment with an unexpected amount must never be
+    // recorded as a successful purchase or release the reserved stock.
+    // Keep the order in reconciliation state for staff/provider verification.
+    const capturedAmount = Number(payment.amountMoney?.amount);
+    const capturedCurrency = String(payment.amountMoney?.currency || '').toUpperCase();
+    if (payment.status === 'COMPLETED'
+        && (!Number.isSafeInteger(capturedAmount)
+          || capturedAmount !== validatedAmountCents
+          || capturedCurrency !== 'USD')) {
+      logger.error('API', 'CRITICAL: Captured Square payment does not match the order total', {
+        orderId, squarePaymentId: payment.id, expectedAmountCents: validatedAmountCents,
+        capturedAmountCents: capturedAmount,
+      });
+      Sentry.captureMessage('Square checkout payment amount mismatch after capture', {
+        level: 'error', extra: { orderId, squarePaymentId: payment.id },
+      });
+      return json({ success: false, code: 'CAPTURED_AMOUNT_RECONCILIATION_REQUIRED',
+        error: 'The payment requires manual verification. Please do not submit another payment.' }, 503);
+    }
     const isCompleted = payment.status === 'COMPLETED';
     
     logger.info('API', 'Square payment completed', {
