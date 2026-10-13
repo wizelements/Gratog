@@ -814,6 +814,7 @@ async function handleRefundEvent(db: any, refund: any): Promise<{ success: boole
   
   // Find order via payment ID in orders collection
   let order = await db.collection('orders').findOne({ squarePaymentId: refund.payment_id });
+  let isMarketOrder = false;
   
   // If not found, try MarketOrder
   if (!order) {
@@ -822,6 +823,7 @@ async function handleRefundEvent(db: any, refund: any): Promise<{ success: boole
       const marketOrder = await MarketOrder.findOne({ squarePaymentId: refund.payment_id });
       if (marketOrder) {
         order = marketOrder;
+        isMarketOrder = true;
       }
     } catch (e) {
       // MarketOrder not found, continue
@@ -833,8 +835,9 @@ async function handleRefundEvent(db: any, refund: any): Promise<{ success: boole
   }
   
   if (refund.status === 'COMPLETED') {
-    // Check if this is a MarketOrder (has _id but no id field)
-    if (order._id && !order.id) {
+    // A Mongoose MarketOrder also has a virtual .id. Trust the lookup path,
+    // not an unreliable .id absence check, when choosing the order database.
+    if (isMarketOrder) {
       // Market and regular orders share the exact same refund ledger and
       // cumulative partial/full classification. Order ID is namespaced.
       const MarketOrder = (await import('@/models/MarketOrder')).default;
