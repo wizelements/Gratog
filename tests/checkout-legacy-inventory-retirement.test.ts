@@ -28,7 +28,9 @@ describe('retired unauthenticated inventory mutation API', () => {
   it('Square webhooks cannot overwrite held stock or trust a captured amount without checking it', () => {
     const source = readFileSync(resolve(process.cwd(), 'app/api/webhooks/square/route.ts'), 'utf8');
     expect(source).toContain('squareReportedStock: currentStock');
-    expect(source).toContain('settledCents !== expectedCents');
+    expect(source).toContain('assertExactCapturedPayment(order, payment)');
+    const sharedAmountCheck = readFileSync(resolve(process.cwd(), 'lib/checkout/provider-payment-amount.ts'), 'utf8');
+    expect(sharedAmountCheck).toContain('amount !== expected');
     expect(source).toContain('requireReservation: true');
   });
 });
