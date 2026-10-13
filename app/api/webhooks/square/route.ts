@@ -831,7 +831,9 @@ async function handleRefundEvent(db: any, refund: any): Promise<{ success: boole
   }
   
   if (!order) {
-    return { success: false, message: 'Order not found for refund' };
+    // Do not acknowledge a refund as processed if its local order is missing.
+    // Throw so webhook dedup records an error and Square can retry delivery.
+    throw new Error('Square refund received without a matching local payment order');
   }
   
   if (refund.status === 'COMPLETED') {
