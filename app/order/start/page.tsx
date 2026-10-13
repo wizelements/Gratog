@@ -146,7 +146,7 @@ export default function QRLandingPage() {
           <div className="space-y-3">
             {isMarketOpen(selectedMarket) ? (
               <>
-                <Link href={`/order/menu?market=${selectedMarket.id}${tableId ? `&table=${tableId}` : ''}`}>
+                <Link href={`/catalog?source=market-qr&market=${selectedMarket.id}${tableId ? `&table=${tableId}` : ''}`}>
                   <Button size="lg" className="w-full h-14 text-lg">
                     <ShoppingBag className="w-5 h-5 mr-2" />
                     Start Order
