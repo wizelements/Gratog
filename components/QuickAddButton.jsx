@@ -24,7 +24,7 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
   const outOfStock = availability.reason === 'out_of_stock';
   const purchaseStatus = availability.status === 'preorder' ? 'preorder' : 'in_stock';
   const requiresMarketPickup = Boolean(
-    isPreorder ||
+    availability.status === 'preorder' ||
     product?.marketPickupOnly ||
     product?.marketExclusive ||
     product?.fulfillmentType === 'market_pickup' ||
