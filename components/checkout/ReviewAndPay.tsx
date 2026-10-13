@@ -182,6 +182,12 @@ export default function ReviewAndPay({
     // Also lock synchronously; React's disabled button cannot protect against
     // two clicks or keyboard submissions in the same render frame.
     if (orderRequestInFlight.current) return;
+    // Canceling the Square payment form must NOT create a second pending order.
+    // The existing order remains payable through its original access token.
+    if (orderId && orderAccessToken && serverTotal !== null && serverTotal > 0) {
+      setStep('payment');
+      return;
+    }
     // Pre-validate before API call
     if (!validationResult.valid) {
       setOrderError(validationResult.error || 'Cart validation failed');
