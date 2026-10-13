@@ -95,3 +95,39 @@ jobs:
 
           Browser E2E and Lighthouse remain in their dedicated workflows because they are slower and require browser/system dependencies.
           EOF
+
+  checkout-database-proof:
+    name: Isolated Mongo Replica-set Checkout Race
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Only disposable CI data. Never access any live order or payment database.
+      MONGODB_URI: mongodb://127.0.0.1:27017/tog_checkout_race_ci?replicaSet=rs0&directConnection=true
+      JWT_SECRET: ci-checkout-only-token-at-least-32-characters
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --include=dev
+      - name: Start isolated Mongo replica set
+        run: |
+          docker run --detach --rm --name tog-checkout-mongo \
+            -p 127.0.0.1:27017:27017 mongo:7 --replSet rs0 --bind_ip_all
+          for i in $(seq 1 40); do
+            if docker exec tog-checkout-mongo mongosh --quiet --eval 'db.adminCommand({ping:1}).ok' 2>/dev/null | grep -q 1; then break; fi
+            sleep 2
+          done
+          docker exec tog-checkout-mongo mongosh --quiet --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"localhost:27017"}]})'
+          for i in $(seq 1 40); do
+            if docker exec tog-checkout-mongo mongosh --quiet --eval 'db.hello().isWritablePrimary' 2>/dev/null | grep -q true; then break; fi
+            sleep 2
+          done
+          docker exec tog-checkout-mongo mongosh --quiet --eval 'if(!db.hello().isWritablePrimary) quit(1)'
+      - name: Prove real database concurrency and durable retry replay
+        run: npx vitest run tests/integration/checkout-mongo-race.test.ts --reporter=verbose
+      - name: Stop disposable database
+        if: always()
+        run: docker stop tog-checkout-mongo || true
