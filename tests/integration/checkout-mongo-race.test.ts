@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { createOrReuseCheckoutOrder, CheckoutAttemptConflictError } from '@/lib/checkout/single-order';
 import { reserveMarketPreorderAttempt, completeMarketPreorderAttempt } from '@/lib/preorder/single-attempt';
 import { reserveCheckoutInventory, releaseCheckoutInventory, commitCheckoutInventory } from '@/lib/checkout/stock-reservation';
+import { reconcileCapturedSquareRefund } from '@/lib/checkout/square-refund-ledger';
 
 const mongoUri = process.env.MONGODB_URI;
 const run = mongoUri?.includes('tog_checkout_race_ci') ? describe : describe.skip;
@@ -119,5 +120,31 @@ run('real Mongo replica-set checkout uniqueness', () => {
     expect((await db.collection('inventory').findOne({ productId: second })).currentStock).toBe(0);
     expect(await releaseCheckoutInventory(db, client, orderId, 'late_decline')).toBe(false);
   }, 35_000);
+
+  it('deduplicates concurrent Square refund events across online and market orders', async () => {
+    for (const orderId of ['site:', 'market:']) {
+      const id = orderId + randomUUID();
+      const paymentId = 'pay-' + randomUUID();
+      const firstRefundId = 'refund-' + randomUUID();
+      const first = {
+        orderId: id, paymentId, refundId: firstRefundId,
+        amountCents: 100, paidCents: 1199, currency: 'USD',
+      };
+      const replay = await Promise.all(Array.from({ length: 12 },
+        () => reconcileCapturedSquareRefund(db, first)));
+      expect(replay.every(result => result.paymentStatus === 'partially_refunded')).toBe(true);
+      expect(replay.every(result => result.refundedCents === 100)).toBe(true);
+      expect(await db.collection('square_refund_entries').countDocuments({ refundId: firstRefundId })).toBe(1);
+      await expect(reconcileCapturedSquareRefund(db, { ...first, amountCents: 101 }))
+        .rejects.toThrow(/mismatched/i);
+      const final = await reconcileCapturedSquareRefund(db, {
+        ...first, refundId: 'refund-' + randomUUID(), amountCents: 1099,
+      });
+      expect(final).toMatchObject({
+        refundedCents: 1199, fullyRefunded: true, paymentStatus: 'refunded',
+      });
+      expect(await db.collection('square_refund_entries').countDocuments({ orderId: id })).toBe(2);
+    }
+  }, 30_000);
 
 });
