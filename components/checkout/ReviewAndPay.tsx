@@ -237,6 +237,26 @@ export default function ReviewAndPay({
         totals.deliveryFee
       );
       
+      const paymentState = String(orderResponse.order.paymentStatus || '').toUpperCase();
+      const orderState = String(orderResponse.order.status || '').toUpperCase();
+      const paidAlready = ['PAID', 'COMPLETED'].includes(paymentState) ||
+        ['CONFIRMED', 'PREORDER_CONFIRMED', 'SHIPPING_CONFIRMED', 'COMPLETED'].includes(orderState);
+      const paymentUncertain = ['PROCESSING', 'PAYMENT_PROCESSING', 'APPROVED'].includes(paymentState) ||
+        ['PROCESSING', 'PAYMENT_PROCESSING'].includes(orderState);
+      const notPayable = ['REFUNDED', 'CANCELLED', 'CANCELED'].includes(paymentState) ||
+        ['REFUNDED', 'CANCELLED', 'CANCELED'].includes(orderState);
+      if (paidAlready || paymentUncertain || notPayable) {
+        // An HTTP response can be lost after Square captures the charge.
+        // Resume verified order status instead of opening another card form.
+        const params = new URLSearchParams({ orderRef: orderResponse.order.id });
+        if (orderResponse.order.orderAccessToken) {
+          params.set('token', orderResponse.order.orderAccessToken);
+        }
+        if (paidAlready) clearCheckoutOrderAttempt();
+        router.replace(`/order/success?${params.toString()}`);
+        return;
+      }
+
       activeOrderSnapshot.current = currentCheckoutSnapshot;
       setOrderId(orderResponse.order.id);
       // @ts-expect-error — type mismatch
