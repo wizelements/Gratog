@@ -131,3 +131,44 @@ jobs:
       - name: Stop disposable database
         if: always()
         run: docker stop tog-checkout-mongo || true
+
+  checkout-browser-proof:
+    name: Headless Buyer Checkout Trust
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      VERCEL_ENV: preview
+      SQUARE_ENVIRONMENT: sandbox
+      SQUARE_ACCESS_TOKEN: ci-placeholder-never-used-for-real-payment
+      SQUARE_APPLICATION_ID: ci-placeholder
+      SQUARE_LOCATION_ID: ci-placeholder
+      SQUARE_WEBHOOK_SIGNATURE_KEY: ci-placeholder
+      JWT_SECRET: ci-browser-test-only-secret-at-least-32-characters
+      ADMIN_SETUP_SECRET: ci-browser-test-admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies and Chromium
+        run: |
+          npm ci --include=dev
+          npx playwright install --with-deps chromium
+      - name: Build isolated mock-payment browser app
+        run: npm run build
+      - name: Verify skeptical buyer journeys without real charges
+        run: npx playwright test e2e/checkout-trust.spec.ts --project=chromium --retries=1
+      - name: Upload browser traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkout-trust-browser-traces
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
