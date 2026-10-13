@@ -717,9 +717,6 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
     updateFields.balanceDue = 0;
   }
   
-  // Update with precedence check
-  const updated = await updateOrderStatusSafe(db, order.id, newOrderStatus, updateFields);
-  
   // Square may notify us before /api/payments finishes. Commit the SAME
   // bounded prepayment stock claim from either channel, at most once.
   if (order.checkoutAttemptKey && isCompleted) {
@@ -733,6 +730,9 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
     await releaseCheckoutInventory(db, client, order.id, 'square_verified_webhook_failure');
   }
 
+  // Update with precedence check
+  const updated = await updateOrderStatusSafe(db, order.id, newOrderStatus, updateFields);
+  
   // Preserve first payment evidence
   if (isCompleted) {
     await db.collection('orders').updateOne(
