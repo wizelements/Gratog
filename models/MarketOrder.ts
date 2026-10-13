@@ -33,7 +33,7 @@ export interface IMarketOrder extends Document {
   total: number;
   status: OrderStatus;
   paymentMethod: PaymentMethod;
-  paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+  paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'PARTIALLY_REFUNDED' | 'REFUNDED';
   paymentProvider?: 'square' | 'manual';
   squareOrderId?: string;
   squarePaymentId?: string;
@@ -41,6 +41,7 @@ export interface IMarketOrder extends Document {
   paymentUrl?: string;
   amountPaid?: number;
   balanceDue?: number;
+  refundedAmountCents?: number;
   estimatedReadyAt?: Date;
   pickedUpAt?: Date;
   notes?: string;
@@ -80,7 +81,7 @@ const MarketOrderSchema = new Schema<IMarketOrder>({
   },
   paymentStatus: { 
     type: String, 
-    enum: ['PENDING', 'PAID', 'FAILED', 'REFUNDED'],
+    enum: ['PENDING', 'PAID', 'FAILED', 'PARTIALLY_REFUNDED', 'REFUNDED'],
     default: 'PENDING'
   },
   paymentProvider: { type: String, enum: ['square', 'manual'] },
@@ -90,6 +91,7 @@ const MarketOrderSchema = new Schema<IMarketOrder>({
   paymentUrl: { type: String },
   amountPaid: { type: Number, default: 0 },
   balanceDue: { type: Number },
+  refundedAmountCents: { type: Number, default: 0 },
   estimatedReadyAt: { type: Date },
   pickedUpAt: { type: Date },
   notes: { type: String },
