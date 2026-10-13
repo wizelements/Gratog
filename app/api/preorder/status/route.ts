@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Preorder status API
- * GET  /api/preorder/status — Look up by orderNumber, waitlistNumber, or phone
+ * GET  /api/preorder/status — Public redacted status by orderNumber or waitlistNumber
  * POST /api/preorder/status — Staff status update (requires PREORDER_STAFF_KEY)
  *
  * Returns real MongoDB data. 404 if not found — NO mocks.
@@ -12,7 +12,6 @@ import { NextResponse } from 'next/server';
 import {
   findPreorderByOrderNumber,
   findPreorderByWaitlistNumber,
-  findPreorderByPhone,
   updatePreorderStatus,
 } from '@/lib/preorder/repository';
 import { createLogger } from '@/lib/logger';
