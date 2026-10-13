@@ -316,8 +316,9 @@ export function addToCart(productOrItem: any, arg2?: any, arg3?: any): { success
 
     const storage = getSafeLocalStorage();
     if (!storage) {
-      logger.warn('No localStorage, using in-memory cart');
-      return { success: true };
+      // No persistent cart was written. Never tell the customer the item was added.
+      logger.warn('Cart storage is unavailable; refusing to report a successful add');
+      return { success: false, error: 'Your browser is blocking cart storage. Enable site storage or try another browser before ordering.' };
     }
 
     // Resolve the flexible call signatures into a normalized CartItem
