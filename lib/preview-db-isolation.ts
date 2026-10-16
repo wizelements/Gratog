@@ -42,12 +42,14 @@ export function assertPreviewDatabaseIsolation(
   }
 
   const configuredName = (env.DATABASE_NAME || '').trim();
+  // A URI without a database is safe ONLY when the MongoDB client receives
+  // dbName: configuredName explicitly. A URI naming another DB is forbidden.
   if (
-    !CERT_DB_PATTERN.test(databaseName) ||
-    configuredName !== databaseName
+    !CERT_DB_PATTERN.test(configuredName) ||
+    (databaseName !== '' && databaseName !== configuredName)
   ) {
     throw new PreviewDatabaseIsolationError();
   }
 
-  return databaseName;
+  return configuredName;
 }
