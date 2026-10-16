@@ -12,8 +12,10 @@ export async function GET() {
     return NextResponse.json({ ready: false }, { status: 404 });
   }
 
+  let phase = 'database_isolation';
   try {
     const isolatedDatabase = assertPreviewDatabaseIsolation();
+    phase = 'square_configuration';
     const squareSandbox =
       process.env.SQUARE_ENVIRONMENT === 'sandbox' &&
       String(process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || '').startsWith('sandbox-') &&
@@ -22,14 +24,17 @@ export async function GET() {
       process.env.SQUARE_MOCK_MODE !== 'true';
 
     if (!isolatedDatabase || !squareSandbox) {
-      return NextResponse.json({ ready: false }, { status: 503 });
+      return NextResponse.json({ ready: false, blockedAt: phase }, { status: 503 });
     }
 
+    phase = 'database_connection';
     const { db } = await connectToDatabase();
+    phase = 'database_name';
     if (db.databaseName !== isolatedDatabase) {
       return NextResponse.json({ ready: false }, { status: 503 });
     }
 
+    phase = 'database_ping';
     await db.command({ ping: 1 }); // read-only; does not create any customer data
     return NextResponse.json({
       ready: true,
@@ -38,7 +43,7 @@ export async function GET() {
       databaseConnected: true,
     }, { headers: { 'Cache-Control': 'no-store' } });
   } catch {
-    return NextResponse.json({ ready: false }, {
+    return NextResponse.json({ ready: false, blockedAt: phase }, {
       status: 503,
       headers: { 'Cache-Control': 'no-store' },
     });
