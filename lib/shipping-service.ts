@@ -280,7 +280,10 @@ async function getEasyPostRates(
 export async function validateAddress(address: ShippingAddress): Promise<AddressValidation> {
   logger.info('Validating address', { zip: address.zip });
   const eligibility = validateGeorgiaDestination(address);
-  if (!eligibility.valid) return { valid: false, errors: [eligibility.message] };
+  if (!eligibility.valid) {
+    const invalidZip = !address.zip || !/^\d{5}(-\d{4})?$/.test(address.zip);
+    return { valid: false, errors: [eligibility.message, ...(invalidZip ? ['Valid ZIP code is required'] : [])] };
+  }
 
   // Basic validation
   const errors: string[] = [];
