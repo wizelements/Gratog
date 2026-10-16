@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { unstartedPaymentMatch } from '@/lib/checkout/unstarted-payment';
+import { unstartedPaymentMatch, guardedAbandonmentWriteFilter } from '@/lib/checkout/unstarted-payment';
 
 describe('automatic abandonment only for never-attempted payments', () => {
   it('admits only explicit unpaid statuses', () => {
@@ -15,5 +15,13 @@ describe('automatic abandonment only for never-attempted payments', () => {
       paymentAttemptedAt: { $exists: false },
       paymentIdempotencyKey: { $exists: false },
     });
+  });
+  it('carries the current eligibility predicate into the atomic write', () => {
+    const eligible = { $and: [unstartedPaymentMatch(), { status: { $nin: ['processing', 'paid'] } }] };
+    const write = guardedAbandonmentWriteFilter(['order-1'], eligible);
+    expect(write).toEqual({
+      $and: [{ id: { $in: ['order-1'] } }, eligible],
+    });
+    expect(write.$and[1]).toBe(eligible);
   });
 });
