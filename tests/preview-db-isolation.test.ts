@@ -27,10 +27,18 @@ describe('Preview MongoDB checkout safety', () => {
     })).toThrow(PreviewDatabaseIsolationError);
   });
 
-  it('rejects a missing database in MongoDB URI', () => {
+  it('permits no database in the credential URI when isolated dbName is explicit', () => {
+    expect(assertPreviewDatabaseIsolation({
+      ...certification,
+      MONGODB_URI: 'mongodb+srv://user:pass@cluster.example.com/',
+    })).toBe('tog_checkout_cert_20261016');
+  });
+
+  it('rejects an absent explicit Preview database name', () => {
     expect(() => assertPreviewDatabaseIsolation({
       ...certification,
       MONGODB_URI: 'mongodb+srv://user:pass@cluster.example.com/',
+      DATABASE_NAME: '',
     })).toThrow(PreviewDatabaseIsolationError);
   });
 
