@@ -12,3 +12,8 @@ export function unstartedPaymentMatch() {
     paymentIdempotencyKey: { $exists: false },
   };
 }
+
+/** Preserve the payment-state predicates at the write boundary, not only on the earlier read. */
+export function guardedAbandonmentWriteFilter(orderIds: string[], candidateFilter: Record<string, unknown>) {
+  return { $and: [{ id: { $in: orderIds } }, candidateFilter] };
+}
