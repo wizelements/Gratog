@@ -42,8 +42,13 @@ export async function GET() {
       squareSandbox: true,
       databaseConnected: true,
     }, { headers: { 'Cache-Control': 'no-store' } });
-  } catch {
-    return NextResponse.json({ ready: false, blockedAt: phase }, {
+  } catch (error) {
+    // A non-sensitive error *class* identifies network/auth/config failures.
+    // Never include Mongo URLs, token values, or driver error messages.
+    const failureType = error instanceof Error ? error.name : 'UnknownError';
+    const code = error && typeof error === 'object' && 'code' in error &&
+      typeof error.code === 'number' ? error.code : null;
+    return NextResponse.json({ ready: false, blockedAt: phase, failureType, failureCode: code }, {
       status: 503,
       headers: { 'Cache-Control': 'no-store' },
     });
