@@ -153,7 +153,7 @@ export default function HomePageClient({
               </Button>
             </div>
             <p className="mt-4 text-sm leading-6 text-emerald-50/80">
-              Ordering from home? Eligible shop products can be delivered within a 35-mile radius of Atlanta ZIP 30331 after a full-address check at checkout. Market-only preorders are currently pickup orders.
+              Ordering from home? Options for eligible Georgia delivery or shipping depend on the product and address. Local delivery is limited to a 35-mile radius of Atlanta ZIP 30331 after a full-address check; shipping is offered only when explicitly available for your items at checkout. Market-only preorders remain pickup orders.
             </p>
           </div>
 
