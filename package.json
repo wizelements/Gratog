@@ -17,7 +17,7 @@
     "check:route-governance": "vitest run tests/route-governance.test.ts tests/pwa-cache-governance.test.ts --reporter=verbose",
     "prepare": "echo 'Skipping husky'",
     "postinstall": "node scripts/fix-deployment-issues.js || true",
-    "vercel-build": "npm run build"
+    "vercel-build": "node -e \"if(process.env.VERCEL_ENV!=='preview'){console.error('SANDBOX_CERT_PREVIEW_ONLY');process.exit(1)}\" && node scripts/certify-square-sandbox.mjs && npm run build"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",
