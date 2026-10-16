@@ -39,7 +39,18 @@ function verifyCronAuth(request: NextRequest) {
 }
 
 function baseUrl() {
-  return (process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop').replace(/\/$/, '');
+  const fallback = 'https://tasteofgratitude.shop';
+  const configured = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || fallback;
+  const candidate = configured.trim();
+  // Environment values must never reach HTML or unsubscribe headers with controls.
+  if (/[\u0000-\u001f\u007f]/.test(candidate)) return fallback;
+  try {
+    const url = new URL(candidate);
+    if (url.protocol !== 'https:' || url.username || url.password) return fallback;
+    return url.origin;
+  } catch {
+    return fallback;
+  }
 }
 
 function escapeHtml(value: unknown) {
