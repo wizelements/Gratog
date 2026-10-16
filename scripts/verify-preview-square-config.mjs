@@ -13,6 +13,11 @@ if(checks.slice(0,5).every(x=>x.pass)){
   try {
     const r=await fetch('https://connect.squareupsandbox.com/v2/locations',{headers:{Authorization:'Bearer '+e.SQUARE_ACCESS_TOKEN,'Square-Version':'2026-09-16'},redirect:'error',signal:AbortSignal.timeout(18000)});
     const body=await r.json();
+    if(r.ok && Array.isArray(body.locations)){
+      const allowed=body.locations.filter(l=>l.status==='ACTIVE').slice(0,8).map(l=>({id:l.id,name:l.name,status:l.status}));
+      console.log('PREVIEW_SQUARE_AVAILABLE_LOCATIONS '+JSON.stringify(allowed));
+      console.log('PREVIEW_SQUARE_CONFIGURED_ID_MATCH '+JSON.stringify({found:body.locations.some(l=>l.id===e.SQUARE_LOCATION_ID), active:body.locations.some(l=>l.id===e.SQUARE_LOCATION_ID&&l.status==='ACTIVE')}));
+    }
     note('Sandbox token authenticates at Square',r.ok && Array.isArray(body.locations));
     note('Configured location belongs to sandbox account',r.ok&&Array.isArray(body.locations)&&body.locations.some(l=>l.id===e.SQUARE_LOCATION_ID && l.status==='ACTIVE'));
   }catch(error){note('Read-only Square locations API reachable',false);}
