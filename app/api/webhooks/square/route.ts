@@ -9,6 +9,8 @@ import { releaseCheckoutInventory } from '@/lib/checkout/stock-reservation';
 import { reconcileCapturedSquareRefund } from '@/lib/checkout/square-refund-ledger';
 import { assertExactCapturedPayment } from '@/lib/checkout/provider-payment-amount';
 import { getSquareWebhookSignatureKey } from '@/lib/square';
+import { verifySquareWebhookSignature } from '@/lib/batches/square-webhook-auth';
+import { getIsolatedPreviewWebhookKey } from '@/lib/preview-square-webhook-key';
 import { reconcileSquareBatchReservation } from '@/lib/batches/reconcile-square-reservation';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { notifySquareTeam } from '@/lib/preorder/square-notifications';
@@ -427,11 +429,17 @@ export async function POST(request: NextRequest) {
     }
 
     if (!skipVerification && signatureHeader) {
-      const isSignatureValid = verifyWebhookSignature(
-        signatureHeader,
-        requestUrl,
-        requestBody
-      );
+      // Preview uses a distinct, active Sandbox subscription and its own
+      // Square signing key. Production keeps the existing configured key.
+      const isPreviewSandbox =
+        process.env.VERCEL_ENV === 'preview' &&
+        process.env.SQUARE_ENVIRONMENT === 'sandbox';
+      const previewKey = isPreviewSandbox
+        ? await getIsolatedPreviewWebhookKey(requestUrl) : null;
+      const isSignatureValid = isPreviewSandbox
+        ? Boolean(previewKey) &&
+          verifySquareWebhookSignature(signatureHeader, requestBody, requestUrl, previewKey!)
+        : verifyWebhookSignature(signatureHeader, requestUrl, requestBody);
       
       if (!isSignatureValid) {
         logger.error('Webhook', 'Invalid webhook signature - rejecting');
