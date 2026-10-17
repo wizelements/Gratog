@@ -162,18 +162,72 @@ export async function POST(request: NextRequest) {
       }, { headers: { 'Cache-Control': 'no-store' } });
     }
 
-    if (action === 'square_webhook_subscriptions') {
+    if (action === 'square_webhook_subscriptions' || action === 'square_webhook_test') {
       phase = 'square_webhook_subscriptions';
       const current = await squareApi('/v2/webhooks/subscriptions?include_disabled=true', 'GET');
       const records = Array.isArray(current?.subscriptions) ? current.subscriptions : [];
       const currentHost = String(process.env.VERCEL_URL || '').toLowerCase();
+      const safeRecords = records.map((s: any) => {
+        let host = '';
+        let path = '';
+        let bypassParameterPresent = false;
+        try {
+          const url = new URL(String(s.notification_url || ''));
+          host = url.hostname.toLowerCase();
+          path = url.pathname;
+          bypassParameterPresent = url.searchParams.has('x-vercel-protection-bypass');
+        } catch { /* never return a raw notification URL */ }
+        const configuredKey = process.env.SQUARE_PAYMENT_WEBHOOK_SIGNATURE_KEY ||
+          process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
+        return {
+          enabled: s.enabled === true,
+          host, path, bypassParameterPresent,
+          eventTypes: Array.isArray(s.event_types) ? s.event_types.filter((v: any) =>
+            v === 'payment.created' || v === 'payment.updated') : [],
+          signingKeyMatches: typeof s.signature_key === 'string' && configuredKey
+            ? s.signature_key === configuredKey : null,
+          currentDeploymentHost: host === currentHost,
+        };
+      });
+      if (action === 'square_webhook_subscriptions') {
+        return NextResponse.json({
+          pass: true, sandboxOnly: true,
+          subscriptionCount: records.length,
+          currentPreviewRegistered: safeRecords.some((s) => s.currentDeploymentHost),
+          activeSubscriptions: safeRecords.filter((s) => s.enabled).length,
+          disabledSubscriptions: safeRecords.filter((s) => !s.enabled).length,
+          subscriptions: safeRecords,
+        }, { headers: { 'Cache-Control': 'no-store' } });
+      }
+
+      phase = 'square_webhook_provider_delivery';
+      const chosen = records.find((s: any) => {
+        try {
+          const u = new URL(String(s.notification_url || ''));
+          return s.enabled === true && u.protocol === 'https:' &&
+            u.hostname.endsWith('.vercel.app') &&
+            u.pathname === '/api/webhooks/square/payment' &&
+            Array.isArray(s.event_types) && s.event_types.includes('payment.created');
+        } catch { return false; }
+      });
+      if (!chosen || typeof chosen.id !== 'string') {
+        return NextResponse.json({
+          pass: false, sandboxOnly: true, phase,
+          reason: 'No enabled expected Preview payment webhook subscription',
+        }, { status: 503 });
+      }
+      const test = await squareApi(
+        '/v2/webhooks/subscriptions/' + encodeURIComponent(chosen.id) + '/test',
+        'POST', { event_type: 'payment.created' },
+      );
+      const statusCode = test?.subscription_test_result?.status_code;
+      const pass = Number.isInteger(statusCode) && statusCode >= 200 && statusCode < 300;
       return NextResponse.json({
-        pass: true, sandboxOnly: true,
-        subscriptionCount: records.length,
-        currentPreviewRegistered: records.some((s: any) => typeof s.notification_url === 'string' && s.notification_url.toLowerCase().includes(currentHost)),
-        activeSubscriptions: records.filter((s: any) => s.enabled === true).length,
-        disabledSubscriptions: records.filter((s: any) => s.enabled === false).length,
-      }, { headers: { 'Cache-Control': 'no-store' } });
+        pass, sandboxOnly: true, providerTestDispatched: true,
+        providerDeliveryStatus: statusCode ?? null,
+        notificationHost: safeRecords.find((s) => s.host &&
+          String(chosen.notification_url).includes(s.host))?.host || null,
+      }, { status: pass ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
     }
 
     if (action === 'webhook_signature') {
