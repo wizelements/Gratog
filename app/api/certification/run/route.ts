@@ -14,7 +14,7 @@ const CERT_DB = 'tog_checkout_cert_20261016';
 const PRODUCTION_DB = 'taste_of_gratitude';
 const SQUARE_SANDBOX = 'https://connect.squareupsandbox.com';
 
-async function squareApi(path: string, method: 'GET' | 'POST', data?: unknown) {
+async function squareApi(path: string, method: 'GET' | 'POST' | 'PUT', data?: unknown) {
   const response = await fetch(SQUARE_SANDBOX + path, {
     method,
     headers: {
@@ -238,6 +238,66 @@ export async function POST(request: NextRequest) {
         notificationHost: safeRecords.find((s) => s.host &&
           String(chosen.notification_url).includes(s.host))?.host || null,
       }, { status: pass ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
+    }
+
+    if (action === 'square_webhook_repair') {
+      phase = 'sandbox_preview_webhook_access';
+      const branchHost = 'gratog-git-fix-vorax-recovery-i-697931-theangelsilvers-projects.vercel.app';
+      const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET || '';
+      if (bypassSecret.length < 24 || !/^[a-zA-Z0-9]+$/.test(bypassSecret)) {
+        return NextResponse.json({ pass: false, reason: 'Automation bypass not configured' }, { status: 503 });
+      }
+      const target = new URL('https://' + branchHost + '/api/webhooks/square/payment');
+      target.searchParams.set('x-vercel-protection-bypass', bypassSecret);
+      // Verify the secret really reaches this branch's application before changing Square.
+      const probe = await fetch(target, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-square-hmacsha256-signature': 'invalid' },
+        body: '{}', cache: 'no-store', signal: AbortSignal.timeout(9000),
+      });
+      const probeBody = await probe.json().catch(() => ({}));
+      const applicationReached = probe.status === 401 && probeBody?.error === 'Invalid signature';
+      if (!applicationReached) {
+        return NextResponse.json({
+          pass: false, applicationReached: false, probeStatus: probe.status,
+        }, { status: 503 });
+      }
+      phase = 'sandbox_subscription_update';
+      const current = await squareApi('/v2/webhooks/subscriptions?include_disabled=true', 'GET');
+      const subscriptions = Array.isArray(current?.subscriptions) ? current.subscriptions : [];
+      const approvedHosts = new Set([
+        'gratog-cyky35473-theangelsilvers-projects.vercel.app', branchHost,
+      ]);
+      const candidates = subscriptions.filter((item: any) => {
+        try {
+          const u = new URL(String(item.notification_url || ''));
+          return item.enabled === true && u.protocol === 'https:' &&
+            approvedHosts.has(u.hostname.toLowerCase()) &&
+            u.pathname === '/api/webhooks/square/payment' &&
+            Array.isArray(item.event_types) &&
+            item.event_types.includes('payment.created') &&
+            item.event_types.includes('payment.updated') &&
+            typeof item.id === 'string';
+        } catch { return false; }
+      });
+      if (candidates.length !== 1) {
+        return NextResponse.json({ pass: false, reason: 'Expected exactly one approved active Sandbox payment subscription', matchingCount: candidates.length }, { status: 503 });
+      }
+      const record = candidates[0];
+      if (record.notification_url !== target.toString()) {
+        const changed = await squareApi('/v2/webhooks/subscriptions/' + encodeURIComponent(record.id), 'PUT', {
+          subscription: { notification_url: target.toString() },
+        });
+        if (changed?.subscription?.notification_url !== target.toString()) {
+          return NextResponse.json({ pass: false, reason: 'Square did not confirm callback update' }, { status: 503 });
+        }
+      }
+      return NextResponse.json({
+        pass: true, sandboxOnly: true, applicationReached, stableBranchHost: branchHost,
+        callbackProtectedByAutomationBypass: true,
+        subscriptionConfigured: true,
+        signingKeyVerificationRequired: true,
+      }, { headers: { 'Cache-Control': 'no-store' } });
     }
 
     if (action === 'webhook_signature') {
