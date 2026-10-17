@@ -45,7 +45,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Explicit certification intent required' }, { status: 403 });
   }
   let action: string;
-  try { ({ action } = await request.json()); }
+  let payload: any;
+  try { payload = await request.json(); action = payload.action; }
   catch { return NextResponse.json({ error: 'Invalid action' }, { status: 400 }); }
 
   let phase = 'isolation_guard';
@@ -143,6 +144,115 @@ export async function POST(request: NextRequest) {
         pass, sandboxOnly: true, paymentStatus: first.payment.status,
         paymentId, idempotencyPass, refundId, refundStatus, refundIdempotencyPass,
         locationActive: true, amountCents: 100,
+      }, { status: pass ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
+    }
+
+
+    if (action === 'refund_status') {
+      phase = 'square_refund_status';
+      const payload = (request as any)._certBody;
+      const refundId = payload?.refundId;
+      if (typeof refundId !== 'string' || !/^[A-Za-z0-9_-]{10,140}$/.test(refundId)) {
+        return NextResponse.json({ error: 'Valid refundId required' }, { status: 400 });
+      }
+      const current = await squareApi('/v2/refunds/' + encodeURIComponent(refundId), 'GET');
+      return NextResponse.json({
+        pass: current?.refund?.status === 'COMPLETED',
+        sandboxOnly: true, refundStatus: current?.refund?.status,
+        refundId,
+      }, { headers: { 'Cache-Control': 'no-store' } });
+    }
+
+    if (action === 'square_webhook_subscriptions') {
+      phase = 'square_webhook_subscriptions';
+      const current = await squareApi('/v2/webhooks/subscriptions', 'GET');
+      const records = Array.isArray(current?.subscriptions) ? current.subscriptions : [];
+      const currentHost = String(process.env.VERCEL_URL || '').toLowerCase();
+      return NextResponse.json({
+        pass: true, sandboxOnly: true,
+        subscriptionCount: records.length,
+        currentPreviewRegistered: records.some((s: any) => typeof s.notification_url === 'string' && s.notification_url.toLowerCase().includes(currentHost)),
+        activeSubscriptions: records.filter((s: any) => s.enabled === true).length,
+      }, { headers: { 'Cache-Control': 'no-store' } });
+    }
+
+    if (action === 'webhook_signature') {
+      phase = 'square_webhook_signature';
+      const signatureKey = process.env.SQUARE_PAYMENT_WEBHOOK_SIGNATURE_KEY || process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
+      if (!signatureKey) throw new Error('Sandbox webhook key not configured');
+      const url = process.env.SQUARE_PAYMENT_WEBHOOK_URL ||
+        'https://' + process.env.VERCEL_URL + '/api/webhooks/square/payment';
+      const body = JSON.stringify({
+        merchant_id: 'certification-sandbox', event_id: 'cert-' + randomUUID(),
+        type: 'payment.updated', data: { object: { payment: { id: 'cert-' + randomUUID() } } },
+      });
+      const signature = (await import('node:crypto')).createHmac('sha256', signatureKey).update(url + body).digest('base64');
+      const webhook = await import('@/app/api/webhooks/square/payment/route');
+      const badResponse = await webhook.POST(new NextRequest(url, {
+        method: 'POST', headers: { 'x-square-hmacsha256-signature': 'invalid' }, body,
+      }));
+      const validResponse = await webhook.POST(new NextRequest(url, {
+        method: 'POST', headers: { 'x-square-hmacsha256-signature': signature }, body,
+      }));
+      const pass = badResponse.status === 401 && validResponse.status === 200;
+      return NextResponse.json({
+        pass, invalidSignatureStatus: badResponse.status, validSignatureStatus: validResponse.status,
+        syntheticEventIgnored: (await validResponse.json()).ignored === true,
+        providerDeliveryProven: false,
+      }, { status: pass ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
+    }
+
+    if (action === 'resend_provider') {
+      phase = 'resend_provider';
+      if (!process.env.RESEND_API_KEY) throw new Error('Resend Preview credential not configured');
+      const from = process.env.RESEND_FROM_EMAIL || 'Taste of Gratitude <hello@tasteofgratitude.shop>';
+      const roles = ['customer', 'staff'];
+      const results: Array<{ role: string; accepted: boolean; httpStatus: number }> = [];
+      for (const role of roles) {
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST', headers: {
+            Authorization: 'Bearer ' + process.env.RESEND_API_KEY,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from, to: ['delivered@resend.dev'],
+            subject: 'Taste of Gratitude sandbox certification - ' + role,
+            html: '<p>Automated Preview notification transport test. No real customer order exists.</p>',
+          }),
+          cache: 'no-store', signal: AbortSignal.timeout(12000),
+        });
+        results.push({ role, accepted: response.ok, httpStatus: response.status });
+      }
+      const pass = results.every(r => r.accepted);
+      return NextResponse.json({
+        pass, testRecipientOnly: true, actualCustomerOrStaffDeliveryProven: false, results,
+      }, { status: pass ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
+    }
+
+    if (action === 'mongo_race') {
+      phase = 'mongo_concurrency';
+      const { reserveCheckoutInventory, releaseCheckoutInventory } =
+        await import('@/lib/checkout/stock-reservation');
+      const productId = 'cert-stock-' + randomUUID();
+      const orders = Array.from({ length: 12 }, (_, i) => 'cert-order-' + i + '-' + randomUUID());
+      const inventory = db.collection('inventory');
+      await inventory.insertOne({ productId, currentStock: 1 });
+      const results = await Promise.allSettled(orders.map(orderId =>
+        reserveCheckoutInventory(db, client, { orderId, items: [{ productId, quantity: 1 }] }),
+      ));
+      const winners = results.map((r, i) => r.status === 'fulfilled' && r.value?.valid ? orders[i] : null).filter(Boolean) as string[];
+      const rejected = results.filter(r => r.status === 'fulfilled' && !r.value?.valid).length;
+      const errors = results.filter(r => r.status === 'rejected').length;
+      const remaining = (await inventory.findOne({ productId }))?.currentStock;
+      for (const winner of winners) await releaseCheckoutInventory(db, client, winner, 'certification_cleanup');
+      const restored = (await inventory.findOne({ productId }))?.currentStock;
+      await inventory.deleteOne({ productId });
+      await db.collection('checkout_stock_claims').deleteMany({ orderId: { $in: orders } });
+      await db.collection('inventory_events').deleteMany({ orderId: { $in: orders } });
+      const pass = winners.length === 1 && rejected === 11 && errors === 0 && remaining === 0 && restored === 1;
+      return NextResponse.json({
+        pass, contenders: orders.length, admitted: winners.length, rejected, errors,
+        stockAfterClaims: remaining, stockAfterCleanup: restored, isolatedDatabase: true,
       }, { status: pass ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
     }
 
