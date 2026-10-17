@@ -36,6 +36,8 @@ jobs:
         run: npm ci --include=dev
       - name: Full unit and domain suite
         run: npm test -- --reporter=dot
+      - name: Fail-closed Gratitude Square signature regression
+        run: npx vitest run tests/gratitude-square-webhook-signature.test.ts --reporter=verbose
       - name: Strict application typecheck
         run: npm run typecheck:ci
       - name: Next.js build using nonlive test credentials
