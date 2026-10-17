@@ -65,3 +65,10 @@ G8. Only then authorize controlled production freeze, final delta, production co
 - Local SQLite transaction unit tests: 5/5 PASS for exact replay, mismatched amount/hash rejection, atomic rollback on missing product, invalid line totals, and ledger corruption/missing conditions.
 - Real isolated staging proof: **24 separate Turso clients submitted the same checkout attempt**; 1 created, 23 reused, 0 errors; one stored order and one order item. Changed fingerprint rejected, fixtures cleaned.
 - The module does NOT bypass original `priceCart`, does not call Square, and remains separate from the Mongo-backed live route. The complete order read model and all side effects (payment/webhook/customer email/staff alerts) must be ported and certified before cutover.
+
+## Turso webhook / notification deduplication (October 17)
+- Added `lib/checkout/turso-events.mjs` with strictly transactional Square event claims, once-only event completion, customer/staff notification outbox claims and provider-message confirmation.
+- No automatic retry or claim stealing after an uncertain webhook/email result: `processing`, `claimed`, or `needs_reconciliation` states require reconciliation so a provider timeout does not double-send or double-finalize.
+- Local SQLite tests: 5/5 PASS (event ID replay, incorrect type reuse, duplicate customer notices, uncertain staff claim, nonexistent order/invalid evidence).
+- **Actual isolated Turso remote concurrency test:** 24 simultaneous Square event-claim attempts authorize exactly 1 processor (0 errors); 24 simultaneous staff outbox attempts authorize exactly 1 send (0 errors); duplicate event recognized as processed, provider-message acknowledgment is durable, and send replay is denied. Fixture cleanup PASS.
+- **Critical limitation:** these are storage-level transactions. No actual Square-signed HTTP webhook or actual Resend delivery was performed here; those external-integration gates remain blocked until complete Turso-backed Preview checkout routing is implemented and certified.
