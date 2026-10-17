@@ -138,9 +138,15 @@ export async function GET(request: NextRequest) {
           priceCents,
           currency: priceMoney.currency,
           category,
-          available: true,
-          inStock: true,
-          stockQuantity: 99,
+          // Square Catalog does not report physical stock. No quantity is
+          // confirmed here: use the separate inventory/preorder authority.
+          available: false,
+          inStock: false,
+          stockQuantity: null,
+          stockStatus: 'unknown',
+          inventoryEvidence: 'not_provided_by_square_catalog',
+          // A one-cent Square placeholder must not become a purchasable price.
+          needsPriceReview: priceCents < 100,
           image: imageUrl,
           images: imageIds.map((id: string) => `/api/square/image/${id}`),
           squareData: {

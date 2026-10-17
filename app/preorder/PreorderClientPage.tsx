@@ -412,7 +412,8 @@ function PreorderPageContent() {
                 : Math.round(Number(defaultVariation?.price || (p.priceCents || 0) / 100) * 100),
               category,
               emoji,
-              available: p.stockQuantity ?? 99,
+              // Missing stock is unknown, never an invented 99 available units.
+              available: Number.isSafeInteger(p.stockQuantity) && p.stockQuantity >= 0 ? p.stockQuantity : 0,
               image: p.image,
               description: p.description,
               isPopular: p.isPopular || name.includes('original'),

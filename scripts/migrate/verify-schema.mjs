@@ -1,0 +1,12 @@
+import { connect } from '@tursodatabase/serverless';
+const db=connect({url:process.env.TURSO_DATABASE_URL,authToken:process.env.TURSO_AUTH_TOKEN});
+const tables=await db.all("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name");
+const indexes=await db.all("SELECT name,tbl_name FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%' ORDER BY name");
+const versions=await db.all('SELECT version FROM schema_migrations ORDER BY version');
+let foreignKeys=0; for(const table of tables) foreignKeys+=(await db.all(`PRAGMA foreign_key_list(${String(table.name).replace(/[^a-z0-9_]/gi,'')})`)).length;
+const required=['customers','orders','order_items','payments','inventory','inventory_events','webhook_events','menus','markets','migration_runs','migration_checkpoints','migration_source_records','operational_records','batch_audit_log','checkout_stock_claims','checkout_stock_claim_items','square_refund_entries','checkout_notification_outbox'];
+const names=tables.map(x=>String(x.name)); const missing=required.filter(x=>!names.includes(x));
+const expectedVersions=['0001_migration_control.sql','0002_core_commerce.sql','0003_content_rewards_operations.sql','0004_rewards_runtime.sql','0005_campaign_runtime.sql','0006_inventory_runtime_invariants.sql','0007_fresh_batch_runtime.sql','0008_analytics_events.sql','0009_reward_catalog.sql','0010_fresh_batch_audit.sql','0011_campaign_archive.sql','0012_checkout_payment_invariants.sql'];
+const missingVersions=expectedVersions.filter(version=>!versions.some(row=>String(row.version)===version));
+const report={status:tables.length===41&&versions.length===12&&!missing.length&&!missingVersions.length?'PASS':'FAIL',tables:tables.length,indexes:indexes.length,foreignKeys,schemaVersions:versions.map(x=>x.version),missing,missingVersions};
+console.log(JSON.stringify(report));await db.close();if(report.status!=='PASS')process.exit(1);
