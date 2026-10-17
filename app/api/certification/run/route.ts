@@ -543,7 +543,7 @@ export async function POST(request: NextRequest) {
       const { reserveCheckoutInventory, releaseCheckoutInventory } =
         await import('@/lib/checkout/stock-reservation');
       const productId = 'cert-stock-' + randomUUID();
-      const orders = Array.from({ length: 12 }, (_, i) => 'cert-order-' + i + '-' + randomUUID());
+      const orders = Array.from({ length: 24 }, (_, i) => 'cert-order-' + i + '-' + randomUUID());
       const inventory = db.collection('inventory');
       await inventory.insertOne({ productId, currentStock: 1 });
       const results = await Promise.allSettled(orders.map(orderId =>
@@ -558,7 +558,7 @@ export async function POST(request: NextRequest) {
       await inventory.deleteOne({ productId });
       await db.collection('checkout_stock_claims').deleteMany({ orderId: { $in: orders } });
       await db.collection('inventory_events').deleteMany({ orderId: { $in: orders } });
-      const pass = winners.length === 1 && rejected === 11 && errors === 0 && remaining === 0 && restored === 1;
+      const pass = winners.length === 1 && rejected === 23 && errors === 0 && remaining === 0 && restored === 1;
       return NextResponse.json({
         pass, contenders: orders.length, admitted: winners.length, rejected, errors,
         stockAfterClaims: remaining, stockAfterCleanup: restored, isolatedDatabase: true,
