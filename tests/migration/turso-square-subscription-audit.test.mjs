@@ -37,3 +37,16 @@ test('non-HTTPS and malformed endpoints are unsafe', () => {
     assert.equal(classifySubscription({notification_url:url}).unsafeDestination,true,url);
   }
 });
+
+test('only the exact certified preview URL matches a subscription', () => {
+  const expected = 'https://gratog-git-feat-turso-checkout-2101c9-theangelsilvers-projects.vercel.app/api/webhooks/square';
+  const wrong = classifySubscription({
+    enabled:true, event_types:['refund.created'],
+    notification_url:'https://gratog-git-fix-vorax-recovery-i-697931-theangelsilvers-projects.vercel.app/api/webhooks/square',
+  }, expected);
+  assert.equal(wrong.matchesCertificationPreview, false);
+  const correct = classifySubscription({
+    enabled:true,event_types:['refund.created'],notification_url:expected,
+  }, expected);
+  assert.equal(correct.matchesCertificationPreview,true);
+});

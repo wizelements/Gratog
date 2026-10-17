@@ -19,6 +19,7 @@ jobs:
       TURSO_STAGING_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
       SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
       SQUARE_ENVIRONMENT: sandbox
+      SQUARE_EXPECTED_PREVIEW_WEBHOOK_URL: https://gratog-git-feat-turso-checkout-2101c9-theangelsilvers-projects.vercel.app/api/webhooks/square
     steps:
       - name: Refuse any unexpected ref before financial operations
         run: |
@@ -54,6 +55,7 @@ jobs:
     env:
       SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
       SQUARE_ENVIRONMENT: sandbox
+      SQUARE_EXPECTED_PREVIEW_WEBHOOK_URL: https://gratog-git-feat-turso-checkout-2101c9-theangelsilvers-projects.vercel.app/api/webhooks/square
     steps:
       - name: Refuse unexpected refs before provider inspection
         run: |
