@@ -39,3 +39,15 @@ G8. Only then authorize controlled production freeze, final delta, production co
 - Structural regression: local invariant tests cover last-unit stock, idempotent replay, refund deduplication and unique notifications.
 - There is **no evidence** that Turso runtime adapters, real remote writes, latest data parity, Preview database secret isolation, end-to-end Square/Turso/Resend proof or rollback drill have passed.
 - Keep all production database credentials, Square keys and Vercel tokens in protected managers; never print or commit them. Staging tests must not write to production.
+
+
+## October 17 — live isolated staging proof
+- Authenticated A16 Turso CLI v1.0.34; isolated database `gratog-migration-cert-20261017`, separate from existing `tasteofgratitude`.
+- Actual remote Turso: 41 tables, 12 recorded migrations, `PRAGMA integrity_check = ok`.
+- Independently executed **24-client remote concurrency** with `@tursodatabase/serverless` transactionAsync/immediate; 1 reserved, 23 out of stock, stock 0, exactly 1 claim, idempotent replay. Refund ID, webhook ID, outbox constraints passed. Driver `run()` result field is **`changes`**, not `rowsAffected`; first staging-only harness incorrectly assumed `rowsAffected` and demonstrated an unmatched deduction; corrected and retested on a new isolated fixture. Real runtime adapter must check `changes` **inside the same transaction**.
+- Latest Mongo read-only source: 59 collections, including 854 regular + 10 market orders, 40 inventory documents. Historical registry had 57; added `market_audit_log` and `menu_audit_log` as migrated operational records.
+- Fresh migration dry-run: 39 classified collections, 2,641 valid documents, 0 rejected. Separate derived product projection dry-runs: 40 unified products and 51 Square catalog documents, 0 transform errors.
+- Successfully staged all **2,641 classified source records** to isolated Turso: 6,575 target row operations, 0 rejects, 0 retries.
+- Independent live Mongo-vs-Turso parity: 39/39 collections, 2,641 source and 2,641 matching provenance records, **0 missing/extra/fingerprint differences**, financial delta of 0 cents for regular and market orders, inventory difference 0 units. A second read-only source fingerprint matched the pre-copy digest. Both snapshots were **non-atomic reads, not a production backup**.
+- **Outstanding catalog discrepancy:** Square catalog cache projection (51 items / 55 variations) was not migrated as canonical authority. Independent projection verifier found 51 missing provenance entries, 22 missing target entities, 7 mismatched entities. The 40 unified product projections did pass. Resolve ownership/pricing and catalog reconciliation before application cutover; never overwrite the unified catalog blindly.
+- The current deployed checkout runtime still uses MongoDB. No production Turso cutover, payment-to-Turso E2E proof, live-source backup/PITR restore, last-delta catch-up under write freeze, nor rollback drill has occurred.

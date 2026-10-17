@@ -26,6 +26,6 @@ jobs:
       - name: Apply and verify all recovered migrations
         run: node scripts/migrate/validate-schema.mjs
       - name: Prove isolated checkout SQL constraints (no secrets)
-        run: node --test tests/migration/turso-checkout-contract.test.mjs
+        run: node --test tests/migration/turso-checkout-contract.test.mjs tests/migration/turso-migration-hygiene.test.mjs
       - name: Race 24 independent SQLite connections for the last unit
         run: node --test tests/migration/turso-sqlite-contention.test.mjs
