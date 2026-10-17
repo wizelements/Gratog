@@ -136,27 +136,30 @@ function getFullAddress(market: PublicMarket) {
 }
 
 function getNextMarketLabel(market: PublicMarket) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Market schedules are in Georgia (Eastern time), never in the browser's
+  // timezone or the Vercel server's UTC timezone.
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const getPart = (type: string) => Number(parts.find(part => part.type === type)?.value);
+  const today = Date.UTC(getPart('year'), getPart('month') - 1, getPart('day'));
 
   for (let diff = 0; diff <= 42; diff += 1) {
-    const candidate = new Date(today);
-    candidate.setDate(today.getDate() + diff);
-
-    if (candidate.getDay() !== market.dayOfWeek) continue;
+    const candidate = new Date(today + diff * 24 * 60 * 60 * 1000);
+    if (candidate.getUTCDay() !== market.dayOfWeek) continue;
 
     if (market.recurrence === 'first_third') {
-      const day = candidate.getDate();
-      const isFirstOrThirdWeek = (day >= 1 && day <= 7) || (day >= 15 && day <= 21);
-      if (!isFirstOrThirdWeek) continue;
+      const day = candidate.getUTCDate();
+      if (!((day >= 1 && day <= 7) || (day >= 15 && day <= 21))) continue;
     }
 
     if (diff === 0) return 'Today';
     if (diff === 1) return 'Tomorrow';
     if (diff < 7) return `${diff} days`;
-    return candidate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return candidate.toLocaleDateString('en-US', {
+      timeZone: 'UTC', month: 'short', day: 'numeric',
+    });
   }
-
   return 'Schedule updating';
 }
 
@@ -173,6 +176,15 @@ function getMarketMeta(market: PublicMarket) {
 }
 
 function MarketCard({ market }: { market: PublicMarket }) {
+  // Never render clock-derived labels during SSR or the first hydration pass.
+  // The clock and timezone can differ between the Vercel server and customer.
+  const [nextMarketLabel, setNextMarketLabel] = useState('Checking schedule');
+  useEffect(() => {
+    const refresh = () => setNextMarketLabel(getNextMarketLabel(market));
+    refresh();
+    const interval = setInterval(refresh, 60_000);
+    return () => clearInterval(interval);
+  }, [market]);
   const meta = getMarketMeta(market);
   const fullAddress = getFullAddress(market);
   const mapsUrl = market.mapsUrl || `https://maps.google.com/?q=${encodeURIComponent(fullAddress)}`;
@@ -186,7 +198,7 @@ function MarketCard({ market }: { market: PublicMarket }) {
               {market.featured ? 'Featured market' : 'Market pickup'}
             </span>
             <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
-              Next: {getNextMarketLabel(market)}
+              Next: {nextMarketLabel}
             </span>
           </div>
           <h3 className="text-xl font-semibold leading-tight text-stone-950">{market.name}</h3>

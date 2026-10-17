@@ -5,13 +5,13 @@ import { Clock, Package } from 'lucide-react';
 
 /**
  * SoldOutBadge — overlay for sold-out products.
- * Shows "Preorder Available" instead of "Sold Out" when stock <= 0,
- * because all out-of-stock products are preorder-eligible.
+ * Never implies a preorder is open without explicit merchant approval.
  * 
  * @param {number|null} stock - Actual inventory count
  * @param {'overlay'|'inline'} variant - Display mode
  */
-export default function SoldOutBadge({ stock, variant = 'overlay' }) {
+export default function SoldOutBadge({ stock, variant = 'overlay', preorderApproved = false }) {
+  const label = preorderApproved ? 'Preorder Available' : 'Sold Out';
   if (stock === null || stock === undefined || stock > 0) return null;
 
   if (variant === 'overlay') {
@@ -21,7 +21,7 @@ export default function SoldOutBadge({ stock, variant = 'overlay' }) {
         <div className="relative bg-white/95 backdrop-blur-sm shadow-lg px-6 py-2.5 rounded-full border border-emerald-200">
           <span className="font-bold text-emerald-800 text-sm tracking-wide uppercase flex items-center gap-2">
             <Clock className="h-4 w-4 text-emerald-600" />
-            Preorder Available
+            {label}
           </span>
         </div>
       </div>
@@ -32,7 +32,7 @@ export default function SoldOutBadge({ stock, variant = 'overlay' }) {
   return (
     <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
       <Clock className="h-3 w-3 mr-1" />
-      Preorder Available
+      {label}
     </Badge>
   );
 }
@@ -41,8 +41,8 @@ export default function SoldOutBadge({ stock, variant = 'overlay' }) {
  * PreorderNotice — shown below price when item is sold out.
  * Explains how preorder works in plain language.
  */
-export function PreorderNotice({ stock }) {
-  if (stock === null || stock === undefined || stock > 0) return null;
+export function PreorderNotice({ stock, preorderApproved = false }) {
+  if (!preorderApproved || stock === null || stock === undefined || stock > 0) return null;
 
   return (
     <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-3 mb-3">

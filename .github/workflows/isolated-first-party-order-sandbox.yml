@@ -5,6 +5,9 @@ on:
     branches:
       - fix/product-truth-and-square-sandbox-20261011
       - fix/blue-lotus-availability-square-catalog-20261011
+  # The release-governance PR workflow already runs all five real Mongo
+  # transaction tests on its own dedicated, proven replica-set job.
+  # Keep this separate HTTP-order workflow manual/branch-specific.
   workflow_dispatch:
 
 permissions:
@@ -34,6 +37,16 @@ jobs:
             if docker exec tog-isolated-mongo mongosh --quiet --eval 'rs.status().ok' 2>/dev/null | grep -q 1; then break; fi
             sleep 1
           done
+      - name: Test real MongoDB transactional uniqueness, final-unit stock and refund deduplication
+        env:
+          MONGODB_URI: mongodb://127.0.0.1:27017/tog_checkout_race_ci?replicaSet=rs0
+          MONGO_URL: mongodb://127.0.0.1:27017/tog_checkout_race_ci?replicaSet=rs0
+          DATABASE_NAME: tog_checkout_race_ci
+          SQUARE_ENVIRONMENT: sandbox
+          JWT_SECRET: locally-isolated-qa-secret-not-for-production
+          ORDER_ACCESS_TOKEN_SECRET: locally-isolated-order-token-secret-not-for-production
+        run: |
+          npx vitest run tests/integration/checkout-mongo-race.test.ts --reporter=verbose
       - name: Test actual first-party HTTP order persistence
         env:
           MONGODB_URI: mongodb://127.0.0.1:27017/tog_order_sandbox?replicaSet=rs0

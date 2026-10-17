@@ -48,7 +48,7 @@ async function square(path, { method = 'GET', body } = {}) {
   const data = await response.json().catch(() => ({}));
   return { status: response.status, ok: response.ok, data };
 }
-const key = (prefix) => `tog-sbx-${prefix}-${randomUUID()}`;
+const key = (prefix) => `${prefix.slice(0, 6)}-${randomUUID()}`; // Square Payments API max 45 chars
 let createdPaymentId = null;
 let authPaymentId = null;
 let refundSubmitted = false;
@@ -75,9 +75,12 @@ async function run() {
       note: 'Taste of Gratitude automated sandbox certification only',
     },
   });
-  note('Card decline rejected without payment', !decline.ok && decline.status >= 400 && decline.status < 500, {
+  const declineCode = decline.data.errors?.[0]?.code || '';
+  note('Actual sandbox card decline rejected without payment',
+    !decline.ok && decline.status >= 400 && decline.status < 500 &&
+    /DECLINE/.test(declineCode), {
     status: decline.status,
-    code: decline.data.errors?.[0]?.code,
+    code: declineCode,
   });
 
   // Actual Square order, then charged/captured against that order.
@@ -115,7 +118,7 @@ async function run() {
   createdPaymentId = captured.data.payment?.id || null;
   note('Real Square sandbox capture COMPLETED at $11.99',
     captured.ok && captured.data.payment?.status === 'COMPLETED' &&
-    Number(captured.data.payment?.amount_money?.amount) === 1199, { status: captured.status });
+    Number(captured.data.payment?.amount_money?.amount) === 1199, { status: captured.status, code: captured.data.errors?.[0]?.code });
   
   const replay = await square('/v2/payments', { method: 'POST', body: paymentBody });
   note('Identical idempotency key prevents double charge',

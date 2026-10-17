@@ -37,6 +37,18 @@ describe('merchant-controlled preorders', () => {
     expect(item.purchaseStatus).toBe('in_stock');
   });
 
+  it('does not pretend a catalog-only in-stock flag is verified inventory', async () => {
+    const emptyDb = { collection: () => ({ find: () => ({ project: () => ({ toArray: async () => [] }) }) }) };
+    const [item] = await applyInventorySnapshot(emptyDb, [{
+      id: 'UNVERIFIED', name: 'Unverified', inStock: true, checkoutReady: true, price: 12,
+    }]);
+    expect(item.checkoutReady).toBe(false);
+    expect(item.inStock).toBe(false);
+    expect(item.stock).toBe(null);
+    expect(item.purchaseStatus).toBe('unknown');
+    expect(item.checkoutUnavailableReason).toMatch(/confirmed|verified/i);
+  });
+
   it('does not convert a missing-inventory sold-out item into an automatic preorder', async () => {
     const emptyDb = { collection: () => ({ find: () => ({ project: () => ({ toArray: async () => [] }) }) }) };
     const [item] = await applyInventorySnapshot(emptyDb, [{ id: 'MISSING', name: 'Unavailable', inStock: false }]);

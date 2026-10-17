@@ -112,7 +112,7 @@ export async function GET(request) {
       );
     }
 
-    const trustedOrderEmail = String(order.customer?.email || '').trim().toLowerCase();
+    const trustedOrderEmail = String(order.customer?.email || order.customerEmail || '').trim().toLowerCase();
     const expectedEmail = trustedOrderEmail && trustedOrderEmail !== 'unknown@example.com'
       ? trustedOrderEmail
       : null;
@@ -156,6 +156,7 @@ export async function GET(request) {
     // Return only the fields needed for customer-facing order success rendering.
     return NextResponse.json(
       {
+        id: order.id,
         orderRef: order.id,
         orderNumber: order.orderNumber,
         isFallback,
@@ -163,8 +164,8 @@ export async function GET(request) {
         paymentStatus: order.paymentStatus,
         total: order.pricing?.total || order.total,
         customer: {
-          name: order.customer?.name,
-          email: order.customer?.email,
+          name: order.customer?.name || order.customerName || null,
+          email: order.customer?.email || order.customerEmail || null,
         },
         items: order.items,
         pricing: order.pricing,

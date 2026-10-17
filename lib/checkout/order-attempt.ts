@@ -1,13 +1,24 @@
 /**
  * One order attempt per unchanged checkout payload.
- * A response lost after the server commits can be retried without creating
- * another order. Do not persist the payload or personal data in this key.
+ * Persist only SHA-256 signature, UUID and timestamp — never cart or PII.
+ *
+ * localStorage shares this intent across same-origin tabs. Chromium/Web Locks
+ * serialize simultaneous tab creation. Server-side unique Mongo admission is
+ * still the final authority; never trust a browser-only mutex for payments.
  */
-const KEY = 'tog_checkout_pending_order_v1';
+const KEY_PREFIX = 'tog_checkout_pending_order_v2:';
 const RETRY_WINDOW_MS = 20 * 60 * 1000;
 
 type Attempt = { signature: string; id: string; at: number };
 let memoryAttempt: Attempt | null = null;
+
+function validAttempt(value: Attempt | null, signature: string, now: number): value is Attempt {
+  return Boolean(
+    value && value.signature === signature && Number.isFinite(value.at) &&
+    now >= value.at && now - value.at < RETRY_WINDOW_MS &&
+    /^[a-f0-9-]{36}$/.test(value.id)
+  );
+}
 
 export async function checkoutOrderIdempotencyKey(
   payload: unknown,
@@ -17,42 +28,55 @@ export async function checkoutOrderIdempotencyKey(
   const bytes = new TextEncoder().encode(JSON.stringify(payload));
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   const signature = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
+  const key = KEY_PREFIX + signature;
 
-  let selected = memoryAttempt;
-  try {
-    const store = storage === undefined
-      ? (typeof window === 'undefined' ? null : window.sessionStorage)
-      : storage;
-    const raw = store?.getItem(KEY);
-    if (raw) selected = JSON.parse(raw) as Attempt;
-
-    if (selected?.signature === signature && now - selected.at < RETRY_WINDOW_MS &&
-        now >= selected.at && /^[a-f0-9-]{36}$/.test(selected.id)) {
-      memoryAttempt = selected;
-      return selected.id;
+  const getOrCreate = () => {
+    let selected = validAttempt(memoryAttempt, signature, now) ? memoryAttempt : null;
+    try {
+      // Reading the localStorage getter itself can throw in locked-down browsers.
+      const store = storage === undefined
+        ? (typeof window === 'undefined' ? null : window.localStorage)
+        : storage;
+      const raw = store?.getItem(key);
+      const saved = raw ? JSON.parse(raw) as Attempt : null;
+      if (validAttempt(saved, signature, now)) selected = saved;
+      if (validAttempt(selected, signature, now)) {
+        memoryAttempt = selected;
+        return selected.id;
+      }
+      const attempt = { signature, id: crypto.randomUUID(), at: now };
+      store?.setItem(key, JSON.stringify(attempt));
+      memoryAttempt = attempt;
+      return attempt.id;
+    } catch {
+      if (validAttempt(selected, signature, now)) return selected.id;
+      const attempt = { signature, id: crypto.randomUUID(), at: now };
+      memoryAttempt = attempt;
+      return attempt.id;
     }
+  };
 
-    const attempt = { signature, id: crypto.randomUUID(), at: now };
-    memoryAttempt = attempt;
-    store?.setItem(KEY, JSON.stringify(attempt));
-    return attempt.id;
-  } catch {
-    if (memoryAttempt?.signature === signature && now - memoryAttempt.at < RETRY_WINDOW_MS) {
-      return memoryAttempt.id;
-    }
-    memoryAttempt = { signature, id: crypto.randomUUID(), at: now };
-    return memoryAttempt.id;
+  // Browser Web Locks provide cross-tab serialization where supported.
+  if (storage === undefined && typeof navigator !== 'undefined' &&
+      navigator.locks?.request) {
+    return navigator.locks.request('tog_checkout_attempt:' + signature, getOrCreate);
   }
+  return getOrCreate();
 }
 
 export function clearCheckoutOrderAttempt(storage?: Pick<Storage, 'removeItem'> | null): void {
+  const existing = memoryAttempt;
   memoryAttempt = null;
   try {
     const store = storage === undefined
-      ? (typeof window === 'undefined' ? null : window.sessionStorage)
+      ? (typeof window === 'undefined' ? null : window.localStorage)
       : storage;
-    store?.removeItem(KEY);
+    if (existing) store?.removeItem(KEY_PREFIX + existing.signature);
+    // Legacy same-tab checkout key is retired; remove it when possible.
+    if (storage === undefined && typeof window !== 'undefined') {
+      window.sessionStorage.removeItem('tog_checkout_pending_order_v1');
+    }
   } catch {
-    // Session storage may be disabled. In-memory state has still been cleared.
+    // Storage may be disabled; the in-memory attempt is still cleared.
   }
 }
