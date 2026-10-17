@@ -6,6 +6,8 @@ import { logger } from '@/lib/logger';
 import { isValidReservationPaymentTransition } from '@/lib/batches/state-machine';
 import { logPaymentReceived, logReservationStatusChange } from '@/lib/batches/audit-log';
 import type { BatchReservation } from '@/lib/batches/types';
+import { getSquareWebhookSignatureKey } from '@/lib/square';
+import { verifySquareWebhookSignature } from '@/lib/batches/square-webhook-auth';
 
 /**
  * Square payment webhook for fresh-batch reservations.
@@ -15,15 +17,31 @@ import type { BatchReservation } from '@/lib/batches/types';
  * order ID stored on `batch_reservations`.
  */
 export async function POST(request: NextRequest) {
-  const signature = request.headers.get('x-square-signature');
-  const secret = process.env.SQUARE_WEBHOOK_SECRET;
-  if (secret && !signature) {
+  // Square HMAC SHA256 requires the ORIGINAL bytes and the exact public
+  // subscription callback URL; merely checking for a signature is unsafe.
+  // Fail closed even when the signing key is not provisioned.
+  const signature = request.headers.get('x-square-hmacsha256-signature');
+  if (!signature) {
     return NextResponse.json({ success: false, error: 'Missing signature' }, { status: 401 });
+  }
+
+  let signatureKey: string;
+  try {
+    signatureKey = getSquareWebhookSignatureKey();
+  } catch {
+    logger.error('SquareWebhook', 'Signing key is not configured; rejecting payment callback');
+    return NextResponse.json({ success: false, error: 'Webhook not configured' }, { status: 503 });
+  }
+
+  const rawBody = await request.text();
+  if (!verifySquareWebhookSignature(signature, rawBody, request.url, signatureKey)) {
+    logger.warn('SquareWebhook', 'Rejected invalid HMAC signature');
+    return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 401 });
   }
 
   let raw: unknown;
   try {
-    raw = await request.json();
+    raw = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ success: false, error: 'Invalid JSON' }, { status: 400 });
   }
