@@ -57,7 +57,7 @@ export async function GET() {
     try {
       const parsed = new URL(uri);
       uriValid = ['mongodb:', 'mongodb+srv:'].includes(parsed.protocol);
-      const dbPath = decodeURIComponent(parsed.pathname.replace(/^\\/+/, ''));
+      const dbPath = decodeURIComponent(parsed.pathname.startsWith('/') ? parsed.pathname.slice(1) : parsed.pathname);
       uriHasDatabase = dbPath.length > 0;
       uriDatabaseMatches = !uriHasDatabase || dbPath === name;
     } catch { /* no sensitive detail is returned */ }
