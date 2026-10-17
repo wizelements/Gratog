@@ -148,9 +148,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: 'Unsupported certification action' }, { status: 400 });
   } catch (error) {
+    const reason = error instanceof Error ? error.message : '';
+    const providerFailure = reason.startsWith('Square Sandbox ')
+      ? reason : reason === 'Sandbox payment not completed' ? reason : undefined;
     return NextResponse.json({
       pass: false, phase,
       errorType: error instanceof Error ? error.name : 'UnknownError',
+      providerFailure,
     }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
   }
 }
