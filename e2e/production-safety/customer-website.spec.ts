@@ -16,7 +16,10 @@ for(const route of ['/', '/catalog', '/cart', '/contact']){
     expect(response?.status()).toBe(200);
     await expect(page.locator('body')).toBeVisible();
     expect((await page.locator('body').innerText()).trim().length).toBeGreaterThan(25);
-    expect(await page.title()).toMatch(/gratitude|taste/i);
+    // Next App Router may stream metadata after DOMContentLoaded, especially
+    // on mobile and on redirecting /cart. Poll for the actual title instead
+    // of making a one-shot read that reports false missing metadata.
+    await expect(page).toHaveTitle(/gratitude|taste/i,{timeout:15_000});
     await expect(page.locator('body')).not.toContainText(/Application error: a client-side exception/i);
   });
 }
