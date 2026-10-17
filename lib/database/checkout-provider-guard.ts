@@ -6,7 +6,7 @@
  * mean the application is using Turso, while it still charges via Mongo.
  */
 export function assertMongoCheckoutProvider(
-  environment: { DATABASE_PROVIDER?: string } = process.env,
+  environment: { DATABASE_PROVIDER?: string } = { DATABASE_PROVIDER: process.env.DATABASE_PROVIDER },
 ): void {
   const raw = (environment.DATABASE_PROVIDER || 'mongodb').trim().toLowerCase();
   if (raw === 'mongodb') return;
