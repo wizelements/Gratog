@@ -1,33 +1,51 @@
 name: Real Square Sandbox Certification
 
+# Automated PR checks NEVER receive financial credentials.
+# A reviewed operator runs the sandbox transaction workflow manually using a
+# protected GitHub Environment (with required reviewers and branch rules).
 on:
-  push:
-    branches:
-      - fix/product-truth-and-square-sandbox-20261011
-      - fix/blue-lotus-availability-square-catalog-20261011
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  sandbox-evidence-required:
+    if: github.event_name == 'pull_request'
+    name: Square sandbox provider proof not yet certified
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Block promotion until protected sandbox certification evidence exists
+        run: |
+          echo "::error title=SANDBOX_PROOF_REQUIRED::Real Square sandbox capture/refund and application reconciliation are release blockers. Run an approved workflow_dispatch with a protected square-sandbox-certification environment; never expose Square secrets to pull_request code."
+          exit 1
+
   square-sandbox-transaction:
+    if: github.event_name == 'workflow_dispatch'
     name: Actual sandbox order, payment, declined card, replay and refund
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    # Configure this environment with REQUIRED REVIEWERS and allowed branches
+    # before placing any Square sandbox-only credential in it.
+    environment: square-sandbox-certification
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify Square payment key and rejection contract
+        run: node --test tests/square-sandbox-idempotency.test.mjs
       - name: Assert and certify only Square Sandbox
         env:
-          # Existing integration secret is accepted ONLY if it authenticates at
-          # https://connect.squareupsandbox.com/v2/locations; the runner never
-          # follows redirects or contacts Square production endpoints.
-          SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN || secrets.SQUARE_ACCESS_TOKEN }}
+          # Never fall back to production/live SQUARE_ACCESS_TOKEN.
+          SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
         run: node scripts/certify-square-sandbox.mjs
-      - name: Attach immutable sandbox proof and blocker evidence
+      - name: Attach sandbox proof and blocker evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:

@@ -2,6 +2,7 @@ const DEBUG = process.env.DEBUG === "true" || process.env.VERBOSE === "true";
 const debug = (...args: unknown[]) => { if (DEBUG) console.log(...args); };
 
 import { SquareClient, SquareEnvironment } from 'square';
+import { assertSquareEnvironmentIsolation } from './checkout/square-environment-guard';
 
 const LOG_PREFIX = '[SQUARE]';
 
@@ -19,7 +20,6 @@ export function getSquareClient(): SquareClient {
   const environment = envRaw.trim().toLowerCase();
 
   debug(`${LOG_PREFIX} 🔍 Square client configuration:`, {
-    tokenPrefix: accessToken.substring(0, 10),
     tokenLength: accessToken.length,
     envRaw,
     envNormalized: environment,
@@ -39,6 +39,8 @@ export function getSquareClient(): SquareClient {
   }
 
   // Detect token/environment mismatch
+  assertSquareEnvironmentIsolation(accessToken, environment, process.env.VERCEL_ENV);
+
   const tokenLooksSandbox = accessToken.startsWith('sandbox-');
   const tokenLooksProduction = accessToken.startsWith('EAAA') || accessToken.startsWith('sq0atp-');
 
@@ -49,10 +51,6 @@ export function getSquareClient(): SquareClient {
     );
   }
 
-  if (environment === 'sandbox' && tokenLooksProduction) {
-    console.warn(`${LOG_PREFIX} ⚠️  Production token with sandbox environment - this will cause 401 errors!`);
-    console.warn(`${LOG_PREFIX} Fix: Set SQUARE_ENVIRONMENT=production in Vercel`);
-  }
 
   const squareEnvironment = environment === 'production' 
     ? SquareEnvironment.Production 
@@ -177,7 +175,6 @@ export function validateSquareConfig() {
   
   debug('✅ Square configuration validated:', {
     environment,
-    tokenPrefix: accessToken.substring(0, 10) + '...',
     tokenLength: accessToken.length,
     applicationIdPrefix: appId.substring(0, 10) + '...',
     locationId: locationId

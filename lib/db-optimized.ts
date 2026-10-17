@@ -1,4 +1,5 @@
 import mongoose, { Connection } from 'mongoose';
+import { assertPreviewDatabaseIdentity, requiredPreviewDatabaseName } from './database/preview-database-guard';
 
 // Cache the connection to prevent multiple connections during hot reloads
 let _cachedConnection: Connection | null = null;
@@ -20,6 +21,7 @@ if (!global.mongoose) {
 
 export async function connectToDatabase(): Promise<{ db: any; client: any }> {
   if (cached.conn) {
+    assertPreviewDatabaseIdentity(cached.conn.db?.databaseName);
     // Return the native MongoClient (not the mongoose Connection wrapper) so
     // callers can use `client.startSession()` / transactions correctly. The
     // mongoose Connection's startSession returns a Promise in mongoose 8+,
@@ -33,12 +35,23 @@ export async function connectToDatabase(): Promise<{ db: any; client: any }> {
       throw new Error('MONGODB_URI is not defined');
     }
 
+    // Fail before opening any network connection if Preview has no approved
+    // database target. The name is independently verified after connecting.
+    requiredPreviewDatabaseName();
+
     const opts = {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
-      return mongoose.connection;
+    cached.promise = mongoose.connect(uri, opts).then(async (instance) => {
+      try {
+        assertPreviewDatabaseIdentity(instance.connection.db?.databaseName);
+      } catch (error) {
+        // Never expose even a read-capable connection to the wrong namespace.
+        await instance.disconnect();
+        throw error;
+      }
+      return instance.connection;
     });
   }
 

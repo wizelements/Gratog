@@ -4,17 +4,21 @@
  * Payments, declines, delayed authorizations, idempotency and Refunds APIs.
  * No mocks. Never connects to the production Square hostname.
  *
- * Requires SQUARE_SANDBOX_ACCESS_TOKEN; a generic SQUARE_ACCESS_TOKEN may be
- * used only if Square sandbox /v2/locations actually authenticates it.
+ * Requires the explicit SQUARE_SANDBOX_ACCESS_TOKEN from a protected environment.
+ * Never uses the generic/live SQUARE_ACCESS_TOKEN as a fallback.
  *
  * This script proves provider behavior. App/DB integration is a distinct gate.
  */
-import { randomUUID } from 'node:crypto';
+import {
+  sandboxIdempotencyKey,
+  isExpectedSandboxCardDecline,
+  isExpectedSandboxIdempotencyConflict,
+} from './square-sandbox-idempotency.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';
 
 const ORIGIN = 'https://connect.squareupsandbox.com';
 const API_VERSION = '2026-09-16';
-const accessToken = process.env.SQUARE_SANDBOX_ACCESS_TOKEN || process.env.SQUARE_ACCESS_TOKEN || '';
+const accessToken = process.env.SQUARE_SANDBOX_ACCESS_TOKEN || '';
 const certification = {
   protocol: 'square-real-sandbox',
   startedAt: new Date().toISOString(),
@@ -34,6 +38,10 @@ async function square(path, { method = 'GET', body } = {}) {
   if (url.hostname !== 'connect.squareupsandbox.com' || url.protocol !== 'https:') {
     throw new Error('Production host blocked');
   }
+  if (path === '/v2/payments' && method === 'POST' &&
+      (typeof body?.idempotency_key !== 'string' || body.idempotency_key.length > 45)) {
+    throw new Error('Square payment idempotency key must be at most 45 characters');
+  }
   const response = await fetch(url, {
     method,
     redirect: 'error',
@@ -48,7 +56,12 @@ async function square(path, { method = 'GET', body } = {}) {
   const data = await response.json().catch(() => ({}));
   return { status: response.status, ok: response.ok, data };
 }
-const key = (prefix) => `tog-sbx-${prefix}-${randomUUID()}`;
+const key = sandboxIdempotencyKey;
+const failure = (response) => ({
+  status: response.status,
+  code: response.data.errors?.[0]?.code || null,
+  category: response.data.errors?.[0]?.category || null,
+});
 let createdPaymentId = null;
 let authPaymentId = null;
 let refundSubmitted = false;
@@ -75,10 +88,9 @@ async function run() {
       note: 'Taste of Gratitude automated sandbox certification only',
     },
   });
-  note('Card decline rejected without payment', !decline.ok && decline.status >= 400 && decline.status < 500, {
-    status: decline.status,
-    code: decline.data.errors?.[0]?.code,
-  });
+  note('Card decline rejected without payment',
+    isExpectedSandboxCardDecline(decline),
+    failure(decline));
 
   // Actual Square order, then charged/captured against that order.
   const idempotency = key('create-order');
@@ -115,7 +127,7 @@ async function run() {
   createdPaymentId = captured.data.payment?.id || null;
   note('Real Square sandbox capture COMPLETED at $11.99',
     captured.ok && captured.data.payment?.status === 'COMPLETED' &&
-    Number(captured.data.payment?.amount_money?.amount) === 1199, { status: captured.status });
+    Number(captured.data.payment?.amount_money?.amount) === 1199, failure(captured));
   
   const replay = await square('/v2/payments', { method: 'POST', body: paymentBody });
   note('Identical idempotency key prevents double charge',
@@ -126,9 +138,8 @@ async function run() {
     body: { ...paymentBody, amount_money: { amount: 100, currency: 'USD' } },
   });
   note('Reused idempotency key cannot charge a different amount',
-    !tamper.ok && tamper.status >= 400 && tamper.status < 500, {
-      status: tamper.status, code: tamper.data.errors?.[0]?.code,
-    });
+    isExpectedSandboxIdempotencyConflict(tamper),
+    failure(tamper));
 
   const authorized = await square('/v2/payments', {
     method: 'POST',
@@ -144,7 +155,7 @@ async function run() {
   authPaymentId = authorized.data.payment?.id || null;
   note('Delayed Square payment remains APPROVED and not captured',
     authorized.ok && authorized.data.payment?.status === 'APPROVED' && Boolean(authPaymentId),
-    { status: authorized.status, paymentStatus: authorized.data.payment?.status });
+    { ...failure(authorized), paymentStatus: authorized.data.payment?.status });
 
   const cancelled = await square(`/v2/payments/${encodeURIComponent(authPaymentId)}/cancel`, { method: 'POST' });
   note('Uncaptured authorization canceled', cancelled.ok && cancelled.data.payment?.status === 'CANCELED',

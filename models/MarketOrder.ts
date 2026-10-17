@@ -24,6 +24,15 @@ export interface IMarketOrder extends Document {
   orderNumber: string;
   marketId: string;
   marketName: string;
+  waitlistNumber?: string;
+  queuePosition?: number;
+  pickupLocation?: string;
+  pickupDate?: string;
+  pickupDay?: string;
+  pickupHours?: string;
+  totalCents?: number;
+  emailSentAt?: Date;
+  staffNotifiedAt?: Date;
   customerName: string;
   customerPhone: string;
   customerEmail?: string;
@@ -33,7 +42,7 @@ export interface IMarketOrder extends Document {
   total: number;
   status: OrderStatus;
   paymentMethod: PaymentMethod;
-  paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+  paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'PARTIALLY_REFUNDED' | 'REFUNDED';
   paymentProvider?: 'square' | 'manual';
   squareOrderId?: string;
   squarePaymentId?: string;
@@ -41,10 +50,10 @@ export interface IMarketOrder extends Document {
   paymentUrl?: string;
   amountPaid?: number;
   balanceDue?: number;
+  refundedAmountCents?: number;
   estimatedReadyAt?: Date;
   pickedUpAt?: Date;
   notes?: string;
-  queuePosition?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -61,6 +70,15 @@ const MarketOrderSchema = new Schema<IMarketOrder>({
   orderNumber: { type: String, required: true, unique: true },
   marketId: { type: String, required: true },
   marketName: { type: String, required: true },
+  waitlistNumber: { type: String },
+  queuePosition: { type: Number },
+  pickupLocation: { type: String },
+  pickupDate: { type: String },
+  pickupDay: { type: String },
+  pickupHours: { type: String },
+  totalCents: { type: Number },
+  emailSentAt: { type: Date },
+  staffNotifiedAt: { type: Date },
   customerName: { type: String, required: true },
   customerPhone: { type: String, required: true },
   customerEmail: { type: String },
@@ -80,7 +98,7 @@ const MarketOrderSchema = new Schema<IMarketOrder>({
   },
   paymentStatus: { 
     type: String, 
-    enum: ['PENDING', 'PAID', 'FAILED', 'REFUNDED'],
+    enum: ['PENDING', 'PAID', 'FAILED', 'PARTIALLY_REFUNDED', 'REFUNDED'],
     default: 'PENDING'
   },
   paymentProvider: { type: String, enum: ['square', 'manual'] },
@@ -90,10 +108,10 @@ const MarketOrderSchema = new Schema<IMarketOrder>({
   paymentUrl: { type: String },
   amountPaid: { type: Number, default: 0 },
   balanceDue: { type: Number },
+  refundedAmountCents: { type: Number, default: 0 },
   estimatedReadyAt: { type: Date },
   pickedUpAt: { type: Date },
   notes: { type: String },
-  queuePosition: { type: Number },
 }, {
   timestamps: true,
 });

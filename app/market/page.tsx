@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { resolveProductAvailability } from '@/lib/product-availability';
 import {
   ArrowRight,
   Clock,
@@ -27,10 +28,7 @@ const categoryTiles = [
   { title: 'Wellness Shots', detail: 'Quick 2 oz favorites', icon: Heart },
 ];
 function availabilityLabel(product: any) {
-  if (product.soldOut || product.inventoryStatus === 'sold_out') return 'Sold out';
-  if (product.inventoryStatus === 'limited' || product.weeklyStatus === 'limited') return 'Small batch';
-  if (product.preorderOnly || product.inventoryStatus === 'preorder') return 'Reserve for pickup';
-  return 'Available this week';
+  return resolveProductAvailability(product).label;
 }
 
 function priceLabel(product: any) {

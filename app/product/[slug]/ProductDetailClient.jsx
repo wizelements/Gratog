@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, ShoppingCart, Loader2, Star, MapPin, ShieldCheck, Truck, RefreshCw, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cart-engine';
+import { resolveProductAvailability } from '@/lib/product-availability';
 
 import Breadcrumbs, { getProductBreadcrumbs } from '@/components/Breadcrumbs';
 import ProductReviews from '@/components/ProductReviews';
@@ -57,7 +58,8 @@ export default function ProductDetailClient({ product, slug }) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState('flavor');
   const [reviewSummary, setReviewSummary] = useState(DEFAULT_REVIEW_SUMMARY);
-  const checkoutReady = product?.checkoutReady !== false;
+  const availability = resolveProductAvailability(product);
+  const checkoutReady = availability.canOrder;
   const isMarketOnly = Boolean(
     product?.marketPickupOnly ||
     product?.preorderOnly ||
@@ -66,12 +68,14 @@ export default function ProductDetailClient({ product, slug }) {
     product?.fulfillmentType === 'market_pickup_only'
   );
   const showMarketLeadCapture = Boolean(product) && (!checkoutReady || isMarketOnly);
-  const canAddToCart = Boolean(product) && checkoutReady && !isMarketOnly;
+  const canAddToCart = Boolean(product) && availability.canAddToCart && !isMarketOnly;
   const preorderSource = encodeURIComponent(product?.slug || product?.id || slug || 'product_detail');
   const isBlueLotus = product?.slug === 'blue-lotus' || product?.slug === 'blue-lotus-gel';
   const preorderHref = isBlueLotus
     ? '/request-a-flavor?product=blue-lotus-gel'
-    : `/preorder?utm_source=product_${preorderSource}&utm_campaign=weekly_menu_drop`;
+    : !checkoutReady
+      ? `/request-a-flavor?product=${preorderSource}`
+      : `/preorder?utm_source=product_${preorderSource}&utm_campaign=weekly_menu_drop`;
   const productCategoryLabel = product?.categoryLabel || product?.displayCategory || product?.category || product?.intelligentCategory || 'Weekly market item';
 
   // Set default variation on mount
@@ -203,12 +207,9 @@ export default function ProductDetailClient({ product, slug }) {
   };
 
   const displayPrice = selectedVariation?.price || product.price;
-  const stockStatus = product.stock > 0 ? 'in_stock' : product.isPreorder ? 'preorder' : 'out_of_stock';
-  const schemaAvailability = stockStatus === 'preorder'
-    ? 'https://schema.org/PreOrder'
-    : stockStatus === 'in_stock'
-      ? 'https://schema.org/InStock'
-      : 'https://schema.org/OutOfStock';
+  const stockStatus = availability.status === 'preorder' ? 'preorder' :
+    availability.canOrder ? 'in_stock' : 'out_of_stock';
+  const schemaAvailability = availability.schemaAvailability;
   const flavorNotes =
     product.flavorNotes ||
     product.tastingNotes ||
@@ -502,7 +503,7 @@ export default function ProductDetailClient({ product, slug }) {
                         href={preorderHref}
                         onClick={() => track('product_preorder_click', { productId: product.id || product.slug, productName: product.name, source: 'product_market_fallback' })}
                       >
-                        {isBlueLotus ? 'Request Blue Lotus 16 oz · $36' : 'Reserve for pickup'}
+                        {isBlueLotus ? 'Request Blue Lotus 16 oz · $36' : !checkoutReady ? 'Request availability' : 'Reserve for pickup'}
                       </Link>
                     </Button>
                     <Button asChild variant="outline" className="h-11 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
@@ -759,7 +760,7 @@ export default function ProductDetailClient({ product, slug }) {
               onClick={() => track('product_preorder_click', { productId: product.id || product.slug, productName: product.name, source: 'product_mobile_sticky' })}
               className="h-12 rounded-full bg-emerald-700 px-6 py-3 text-center font-semibold text-white hover:bg-emerald-800"
             >
-              {isBlueLotus ? 'Request 16 oz' : 'Reserve'}
+              {isBlueLotus ? 'Request 16 oz' : !checkoutReady ? 'Request availability' : 'Reserve'}
             </Link>
           )}
         </div>
