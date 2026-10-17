@@ -38,6 +38,8 @@ jobs:
         run: npm test -- --reporter=dot
       - name: Fail-closed Gratitude Square signature regression
         run: npx vitest run tests/gratitude-square-webhook-signature.test.ts --reporter=verbose
+      - name: Release gate regression (no deployment mutation)
+        run: node --test tests/release/turso-cutover-gates.test.mjs
       - name: Strict application typecheck
         run: npm run typecheck:ci
       - name: Next.js build using nonlive test credentials

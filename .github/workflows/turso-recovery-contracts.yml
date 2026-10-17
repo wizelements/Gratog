@@ -31,5 +31,12 @@ jobs:
         run: node --test tests/migration/turso-commerce-adapter.test.mjs tests/migration/turso-order-admission.test.mjs tests/migration/turso-events.test.mjs tests/migration/turso-payment-finalization.test.mjs
       - name: Prevent Square catalog identity or cents being silently overwritten
         run: node --test tests/migration/turso-catalog-authority.test.mjs
+      - name: Prove production cutover still fails closed without signed evidence
+        run: |
+          node --test tests/release/turso-cutover-gates.test.mjs
+          if node scripts/release/check-turso-cutover.mjs; then
+            echo 'Unexpected production cutover authorization without evidence'
+            exit 1
+          fi
       - name: Race 24 independent SQLite connections for the last unit
         run: node --test tests/migration/turso-sqlite-contention.test.mjs
