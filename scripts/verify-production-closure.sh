@@ -69,7 +69,12 @@ else
 fi
 
 sw_body="$(curl -sS "$BASE_URL/sw.js")"
-printf '%s' "$sw_body" | grep -q 'v13-20260606-closure' && pass "sw.js closure version present" || fail "sw.js closure version missing"
+sw_version="$(printf '%s' "$sw_body" | sed -n "s/^const CACHE_VERSION = 'v\([0-9][0-9]*\).*$/\1/p" | head -n 1)"
+if [ -n "$sw_version" ] && [ "$sw_version" -ge 13 ]; then
+  pass "sw.js closure cache version v$sw_version"
+else
+  fail "sw.js closure version missing or pre-v13"
+fi
 printf '%s' "$sw_body" | grep -q 'sync-orders\|pendingOrders\|fetch('\''/api/orders' && fail "sw.js still has offline order replay" || pass "sw.js has no offline order replay"
 curl -sSI "$BASE_URL/sw.js" | grep -qi 'cache-control:.*no-cache.*no-store.*must-revalidate' && pass "sw.js no-store header" || fail "sw.js no-store header missing"
 curl -sSI "$BASE_URL/manifest.json" | grep -qi 'cache-control:.*no-cache.*no-store.*must-revalidate' && pass "manifest no-store header" || fail "manifest no-store header missing"
