@@ -27,6 +27,13 @@ describe('Preview MongoDB checkout safety', () => {
     })).toThrow(PreviewDatabaseIsolationError);
   });
 
+  it('accepts the original credential URI database only with the separate certified dbName target', () => {
+    expect(assertPreviewDatabaseIsolation({
+      ...certification,
+      MONGODB_URI: 'mongodb+srv://user:pass@cluster.example.com/taste_of_gratitude?authSource=admin',
+    })).toBe('tog_checkout_cert_20261016');
+  });
+
   it('permits no database in the credential URI when isolated dbName is explicit', () => {
     expect(assertPreviewDatabaseIsolation({
       ...certification,
