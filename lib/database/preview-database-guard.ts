@@ -12,7 +12,10 @@ type DatabaseEnvironment = {
 };
 
 export function requiredPreviewDatabaseName(
-  env: DatabaseEnvironment = process.env,
+  env: DatabaseEnvironment = {
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    PREVIEW_MONGODB_DATABASE_NAME: process.env.PREVIEW_MONGODB_DATABASE_NAME,
+  },
 ): string | null {
   if (env.VERCEL_ENV !== 'preview') return null;
   const name = env.PREVIEW_MONGODB_DATABASE_NAME?.trim();
@@ -26,7 +29,10 @@ export function requiredPreviewDatabaseName(
 
 export function assertPreviewDatabaseIdentity(
   actualDatabaseName: string | undefined,
-  env: DatabaseEnvironment = process.env,
+  env: DatabaseEnvironment = {
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    PREVIEW_MONGODB_DATABASE_NAME: process.env.PREVIEW_MONGODB_DATABASE_NAME,
+  },
 ): void {
   const expectedName = requiredPreviewDatabaseName(env);
   if (expectedName !== null && actualDatabaseName !== expectedName) {
