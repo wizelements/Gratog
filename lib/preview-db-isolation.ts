@@ -3,8 +3,8 @@
  *
  * Preview inherits Production MongoDB credentials unless explicitly overridden;
  * Square Sandbox credentials alone do not isolate test orders from customers.
- * Every Preview database must have an explicit, certification-only database
- * path, and every DB helper must agree on the same database name.
+ * Every Preview must explicitly select a certification-only database with
+ * dbName; every API, account and webhook DB helper must use the guarded client.
  *
  * Only the database name is ever returned; URI credentials are never logged.
  */
@@ -34,22 +34,13 @@ export function assertPreviewDatabaseIsolation(
     throw new PreviewDatabaseIsolationError();
   }
 
-  let databaseName: string;
-  try {
-    databaseName = decodeURIComponent(parsed.pathname.replace(/^\/+/, ''));
-  } catch {
-    throw new PreviewDatabaseIsolationError();
-  }
-
   const configuredName = (env.DATABASE_NAME || '').trim();
-  // A URI without a database is safe ONLY when the MongoDB client receives
-  // dbName: configuredName explicitly. A URI naming another DB is forbidden.
-  if (
-    !CERT_DB_PATTERN.test(configuredName) ||
-    (databaseName !== '' && databaseName !== configuredName)
-  ) {
+  // The credential URI may name its authentication database. It is NEVER the
+  // selected Preview data database: db-optimized.ts always passes explicit
+  // dbName: configuredName, and all database consumers share that guarded client.
+  // Reject absent/unsafe target names before creating or returning a connection.
+  if (!parsed.hostname || !CERT_DB_PATTERN.test(configuredName)) {
     throw new PreviewDatabaseIsolationError();
   }
-
   return configuredName;
 }
