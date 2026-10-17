@@ -35,6 +35,11 @@ const makeRequest = (content: string, signature?: string, callbackUrl = url) => 
 
 describe('Fresh-batch signed Square webhook route', () => {
   beforeEach(() => {
+    // Explicit production baseline: CI sets VERCEL_ENV=preview for unrelated
+    // browser/deployment checks. A webhook signature test must own its scope.
+    vi.stubEnv('VERCEL_ENV', '');
+    vi.stubEnv('SQUARE_ENVIRONMENT', 'production');
+    vi.stubEnv('SQUARE_PAYMENT_WEBHOOK_SIGNATURE_KEY', '');
     vi.stubEnv('SQUARE_WEBHOOK_SIGNATURE_KEY', key);
     connection.mockReset();
     isolatedKey.mockReset();
