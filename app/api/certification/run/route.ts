@@ -273,7 +273,7 @@ export async function POST(request: NextRequest) {
           const u = new URL(String(item.notification_url || ''));
           return item.enabled === true && u.protocol === 'https:' &&
             approvedHosts.has(u.hostname.toLowerCase()) &&
-            u.pathname === '/api/webhooks/square' &&
+            ['/api/webhooks/square/payment', '/api/webhooks/square'].includes(u.pathname) &&
             Array.isArray(item.event_types) &&
             item.event_types.includes('payment.created') &&
             item.event_types.includes('payment.updated') &&
