@@ -48,7 +48,25 @@ export async function GET() {
     const failureType = error instanceof Error ? error.name : 'UnknownError';
     const code = error && typeof error === 'object' && 'code' in error &&
       typeof error.code === 'number' ? error.code : null;
-    return NextResponse.json({ ready: false, blockedAt: phase, failureType, failureCode: code }, {
+    // Diagnostic is deliberately boolean-only: no database identifiers or credentials.
+    const uri = process.env.MONGODB_URI || '';
+    const name = process.env.DATABASE_NAME || '';
+    let uriValid = false;
+    let uriHasDatabase = false;
+    let uriDatabaseMatches = false;
+    try {
+      const parsed = new URL(uri);
+      uriValid = ['mongodb:', 'mongodb+srv:'].includes(parsed.protocol);
+      const dbPath = decodeURIComponent(parsed.pathname.replace(/^\\/+/, ''));
+      uriHasDatabase = dbPath.length > 0;
+      uriDatabaseMatches = !uriHasDatabase || dbPath === name;
+    } catch { /* no sensitive detail is returned */ }
+    const diagnostics = phase === 'database_isolation' ? {
+      previewEnvironment: process.env.VERCEL_ENV === 'preview',
+      certDatabaseName: /^tog_checkout_cert_[a-z0-9_]+$/i.test(name),
+      uriValid, uriHasDatabase, uriDatabaseMatches,
+    } : undefined;
+    return NextResponse.json({ ready: false, blockedAt: phase, failureType, failureCode: code, diagnostics }, {
       status: 503,
       headers: { 'Cache-Control': 'no-store' },
     });
