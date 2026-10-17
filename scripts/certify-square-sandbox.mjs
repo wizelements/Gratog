@@ -9,7 +9,11 @@
  *
  * This script proves provider behavior. App/DB integration is a distinct gate.
  */
-import { sandboxIdempotencyKey } from './square-sandbox-idempotency.mjs';
+import {
+  sandboxIdempotencyKey,
+  isExpectedSandboxCardDecline,
+  isExpectedSandboxIdempotencyConflict,
+} from './square-sandbox-idempotency.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';
 
 const ORIGIN = 'https://connect.squareupsandbox.com';
@@ -85,8 +89,7 @@ async function run() {
     },
   });
   note('Card decline rejected without payment',
-    !decline.ok &&
-    decline.data.errors?.some(error => error.category === 'PAYMENT_METHOD_ERROR' && /DECLIN/i.test(error.code || '')),
+    isExpectedSandboxCardDecline(decline),
     failure(decline));
 
   // Actual Square order, then charged/captured against that order.
@@ -135,7 +138,7 @@ async function run() {
     body: { ...paymentBody, amount_money: { amount: 100, currency: 'USD' } },
   });
   note('Reused idempotency key cannot charge a different amount',
-    !tamper.ok && tamper.data.errors?.some(error => /IDEMPOTENCY.*REUS/i.test(error.code || '')),
+    isExpectedSandboxIdempotencyConflict(tamper),
     failure(tamper));
 
   const authorized = await square('/v2/payments', {
