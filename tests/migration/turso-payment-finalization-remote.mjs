@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {connect} from '@tursodatabase/serverless';
 import {reserveTursoCheckoutInventory} from '../../lib/checkout/turso-commerce.mjs';
-import {finalizeVerifiedTursoSquarePayment} from '../../lib/checkout/turso-payment-finalization.mjs';
+import {finalizeVerifiedTursoSquarePayment,finalizeVerifiedTursoSquareRefund} from '../../lib/checkout/turso-payment-finalization.mjs';
 
 const url=process.env.TURSO_DATABASE_URL||'';
 const token=process.env.TURSO_AUTH_TOKEN||'';
@@ -46,6 +46,22 @@ async function execute(){
  assert.equal(Number(payment.n),1);assert.equal(Number(notices.n),2);assert.equal(Number(event.n),1);
  assert.equal(Number(stock.current_stock),0);assert.equal(order.payment_status,'paid');
  assert.equal(order.amount_paid_cents,1199);assert.equal(claim.status,'committed');
+ const first=await finalizeVerifiedTursoSquareRefund(root,{orderId,providerVerified:true,
+   squareRefund:{id:prefix+'_refund1',paymentId:provider,status:'COMPLETED',currency:'USD',amountCents:500}});
+ assert.equal(first.refundedCents,500);assert.equal(first.paymentStatus,'partially_refunded');
+ const repeat=await finalizeVerifiedTursoSquareRefund(root,{orderId,providerVerified:true,
+   squareRefund:{id:prefix+'_refund1',paymentId:provider,status:'COMPLETED',currency:'USD',amountCents:500}});
+ assert.equal(repeat.alreadyRecorded,true);
+ await assert.rejects(finalizeVerifiedTursoSquareRefund(root,{orderId,providerVerified:true,
+   squareRefund:{id:prefix+'_refund2',paymentId:provider,status:'COMPLETED',currency:'USD',amountCents:700}}),
+   /EXCEEDS_CAPTURE/);
+ const finalRefund=await finalizeVerifiedTursoSquareRefund(root,{orderId,providerVerified:true,
+   squareRefund:{id:prefix+'_refund2',paymentId:provider,status:'COMPLETED',currency:'USD',amountCents:699}});
+ assert.equal(finalRefund.refundedCents,1199);assert.equal(finalRefund.paymentStatus,'refunded');
+ const paidOrder=await root.get('SELECT payment_status FROM orders WHERE id=?',orderId);
+ assert.equal(paidOrder.payment_status,'refunded');
+ console.log(JSON.stringify({test:'REAL_TURSO_PARTIAL_AND_FULL_REFUND_ATOMIC_STATE',
+  firstRefund:500,finalTotalRefunded:1199,exactReplay:true,overRefundRejected:true,orderStatus:paidOrder.payment_status}));
  await assert.rejects(finalizeVerifiedTursoSquarePayment(root,{...input,squarePayment:{...input.squarePayment,id:provider+'changed'}}),
  /SECOND_CAPTURE_REQUIRES_RECONCILIATION/);
 }
@@ -55,6 +71,7 @@ finally{
  try{
  await root.batch([
   statement('DELETE FROM checkout_notification_outbox WHERE order_id=?',[orderId]),
+  statement('DELETE FROM square_refund_entries WHERE order_id=?',[orderId]),
   statement('DELETE FROM payments WHERE order_id=?',[orderId]),
   statement('DELETE FROM inventory_events WHERE order_id=?',[orderId]),
   statement('DELETE FROM checkout_stock_claim_items WHERE order_id=?',[orderId]),
