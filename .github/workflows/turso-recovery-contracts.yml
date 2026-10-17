@@ -28,6 +28,6 @@ jobs:
       - name: Prove isolated checkout SQL constraints (no secrets)
         run: node --test tests/migration/turso-checkout-contract.test.mjs tests/migration/turso-migration-hygiene.test.mjs
       - name: Verify Turso-native financial adapter with local SQL transactions
-        run: node --test tests/migration/turso-commerce-adapter.test.mjs tests/migration/turso-order-admission.test.mjs tests/migration/turso-events.test.mjs
+        run: node --test tests/migration/turso-commerce-adapter.test.mjs tests/migration/turso-order-admission.test.mjs tests/migration/turso-events.test.mjs tests/migration/turso-payment-finalization.test.mjs
       - name: Race 24 independent SQLite connections for the last unit
         run: node --test tests/migration/turso-sqlite-contention.test.mjs
