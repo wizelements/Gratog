@@ -515,50 +515,6 @@ export async function POST(request: NextRequest) {
       }, { status: pass ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
     }
 
-    if (action === 'browser_fixture') {
-      const id = 'cert-ui-strawberry-bliss';
-      const variationId = 'cert-ui-bliss-16oz';
-      const source = 'qa_browser_certification_only';
-      const productCollection = db.collection('unified_products');
-      const inventoryCollection = db.collection('inventory');
-      if (payload?.mode === 'setup') {
-        // This is NOT merchant inventory. Only the authenticated, explicit
-        // certification catalog view may ever show these records.
-        await productCollection.updateOne(
-          { id, source },
-          { $set: {
-            id, source, name: 'TEST ONLY — Strawberry Bliss 16oz',
-            slug: 'certification-strawberry-bliss-only',
-            description: 'Isolated test product. Not for customer orders.',
-            category: 'Lemonades', price: 11.99, priceCents: 1199,
-            squareEcomAvailable: true, inStock: true,
-            variations: [{ id: variationId, name: '16oz', price: 11.99, priceCents: 1199 }],
-          } },
-          { upsert: true },
-        );
-        await inventoryCollection.updateOne(
-          { productId: id, source },
-          { $set: { productId: id, source, currentStock: 12 } },
-          { upsert: true },
-        );
-        return NextResponse.json({ pass: true, isolatedDatabase: true, testOnly: true,
-          browserFixtureCreated: true, stock: 12 });
-      }
-      if (payload?.mode === 'cleanup') {
-        const hasOrders = await db.collection('orders').countDocuments({
-          'items.productId': id, paymentStatus: { $nin: ['refunded', 'REFUNDED', 'cancelled', 'CANCELLED'] },
-        });
-        if (hasOrders) return NextResponse.json({
-          pass: false, reason: 'QA fixture has an unresolved order', unresolvedCount: hasOrders,
-        }, { status: 409 });
-        const productsRemoved = (await productCollection.deleteMany({ id, source })).deletedCount;
-        const inventoryRemoved = (await inventoryCollection.deleteMany({ productId: id, source })).deletedCount;
-        return NextResponse.json({ pass: true, isolatedDatabase: true, testOnly: true,
-          productsRemoved, inventoryRemoved });
-      }
-      return NextResponse.json({ error: 'Valid browser fixture mode required' }, { status: 400 });
-    }
-
     if (action === 'first_party_refund_audit') {
       phase = 'first_party_refund_audit';
       const paymentId = payload?.paymentId;
