@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
         '/v2/webhooks/subscriptions/' + encodeURIComponent(chosen.id) + '/test',
         'POST', { event_type: 'payment.created' },
       );
-      const statusCode = test?.subscription_test_result?.status_code;
+      const statusCode = test?.subscription_test_result?.status_code ?? test?.status_code;
       const pass = Number.isInteger(statusCode) && statusCode >= 200 && statusCode < 300;
       return NextResponse.json({
         pass, sandboxOnly: true, providerTestDispatched: true,
