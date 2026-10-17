@@ -353,6 +353,168 @@ export async function POST(request: NextRequest) {
       }, { status: pass ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
     }
 
+    if (action === 'first_party_checkout') {
+      // Disposable customer-journey certification against the already-proven
+      // isolated Preview database. No Production database, card, or customer.
+      // This action creates a real first-party Mongo order and makes an actual
+      // Square Sandbox charge which is immediately submitted for refund.
+      phase = 'first_party_checkout_fixture';
+      const productId = 'cert-checkout-' + randomUUID();
+      const variationId = 'cert-variation-' + randomUUID();
+      const attemptKey = 'cert-attempt-' + randomUUID();
+      const sandboxEmail = 'delivered@resend.dev';
+      const certificationSource = 'qa_isolated_preview_only';
+      const productCollection = db.collection('unified_products');
+      const inventoryCollection = db.collection('inventory');
+      let orderId: string | null = null;
+      let paymentId: string | null = null;
+      let refundId: string | null = null;
+      let refundStatus: string | null = null;
+      let paymentAttempted = false;
+      const evidence: Record<string, unknown> = {
+        isolatedDatabase: true, sandboxOnly: true, testRecipientOnly: true,
+        productionMutation: false,
+      };
+      let failurePhase: string | null = null;
+      let errorType: string | null = null;
+      try {
+        await productCollection.insertOne({
+          id: productId, source: certificationSource,
+          name: 'TEST ONLY — Taste of Gratitude Strawberry Bliss 16oz',
+          category: 'Lemonades', price: 11.99, priceCents: 1199,
+          squareEcomAvailable: true, inStock: true, currentStock: 1,
+          variations: [{ id: variationId, name: '16oz', price: 11.99, priceCents: 1199 }],
+        });
+        await inventoryCollection.insertOne({
+          productId, currentStock: 1, source: certificationSource,
+        });
+
+        phase = 'first_party_order_create';
+        const { POST: createFirstPartyOrder } =
+          await import('@/app/api/orders/create/route');
+        const payload = {
+          customer: { name: 'QA Sandbox Certification', email: sandboxEmail },
+          cart: [{ productId, variationId, quantity: 1, price: 0.01 }],
+          fulfillmentType: 'pickup',
+          pickup: { locationId: 'certification-only-pickup' },
+          source: certificationSource, subtotal: 0.01, total: 0.01,
+        };
+        const makeOrderRequest = () => new NextRequest(
+          'https://preview-certification.invalid/api/orders/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Idempotency-Key': attemptKey },
+            body: JSON.stringify(payload),
+          });
+        const createResponse = await createFirstPartyOrder(makeOrderRequest());
+        const created = await createResponse.json();
+        if (createResponse.status !== 200 || created?.success !== true ||
+            typeof created?.order?.id !== 'string') {
+          throw new Error('FirstPartyOrderCreateFailed');
+        }
+        orderId = created.order.id;
+        evidence.orderCreated = true;
+        evidence.serverOwnedPrice = created.order.pricing?.total === 11.99;
+        evidence.sandboxCustomerOnly = payload.customer.email === sandboxEmail;
+        if (!evidence.serverOwnedPrice || !created.order.orderAccessToken) {
+          throw new Error('ServerPricingOrOrderTokenFailed');
+        }
+
+        phase = 'first_party_order_idempotency';
+        const replayResponse = await createFirstPartyOrder(makeOrderRequest());
+        const replay = await replayResponse.json();
+        const count = await db.collection('orders').countDocuments({ id: orderId });
+        evidence.sameOrderOnReplay = replayResponse.status === 200 &&
+          replay?.order?.id === orderId && count === 1;
+        if (!evidence.sameOrderOnReplay) throw new Error('OrderReplayFailed');
+
+        phase = 'first_party_sandbox_payment';
+        const { POST: processFirstPartyPayment } =
+          await import('@/app/api/payments/route');
+        paymentAttempted = true;
+        const paymentResponse = await processFirstPartyPayment(new NextRequest(
+          'https://preview-certification.invalid/api/payments', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sourceId: 'cnon:card-nonce-ok', amountCents: 1199, currency: 'USD',
+              orderId, orderAccessToken: created.order.orderAccessToken,
+              customer: payload.customer, idempotencyKey: 'cert-pay-' + randomUUID(),
+            }),
+          }));
+        const paymentResult = await paymentResponse.json();
+        evidence.firstPartyPaymentHttpStatus = paymentResponse.status;
+        evidence.firstPartyPaymentCode = typeof paymentResult?.code === 'string'
+          ? paymentResult.code : null;
+        paymentId = typeof paymentResult?.payment?.id === 'string'
+          ? paymentResult.payment.id : null;
+        // Lookup persisted Square ID even if the HTTP request failed after capture.
+        const storedAfterPayment = await db.collection('orders').findOne({ id: orderId });
+        if (!paymentId && typeof storedAfterPayment?.squarePaymentId === 'string') {
+          paymentId = storedAfterPayment.squarePaymentId;
+        }
+        evidence.paymentCaptured = paymentResponse.status === 200 &&
+          paymentResult?.success === true &&
+          paymentResult?.payment?.status === 'COMPLETED' && Boolean(paymentId);
+        evidence.paidOrderPersisted = Boolean(storedAfterPayment?.paidAt) ||
+          ['paid', 'CONFIRMED', 'payment_completed', 'SHIPPING_CONFIRMED'].includes(
+            String(storedAfterPayment?.status || ''));
+        evidence.customerEmailClaimRecorded = Boolean(storedAfterPayment?.emailSentAt);
+        evidence.staffNotificationClaimRecorded = Boolean(storedAfterPayment?.staffNotifiedAt);
+        evidence.customerDeliveryProven = false;
+        evidence.staffDeliveryProven = false;
+        const remaining = (await inventoryCollection.findOne({ productId }))?.currentStock;
+        evidence.inventoryAfterCapture = remaining;
+        evidence.singleUnitConsumed = remaining === 0;
+        if (!evidence.paymentCaptured || !evidence.paidOrderPersisted ||
+            !evidence.singleUnitConsumed) {
+          throw new Error('FirstPartyPaymentOrInventoryFailure');
+        }
+      } catch (err) {
+        failurePhase = phase;
+        errorType = err instanceof Error ? err.name : 'UnknownError';
+        evidence.failure = err instanceof Error && /^FirstParty|^ServerPricing|^OrderReplay/.test(err.message)
+          ? err.message : 'Provider or first-party transition failed';
+      } finally {
+        // Never leave a Sandbox capture without refund attempt, even when
+        // later notification and inventory assertions fail.
+        if (paymentId) {
+          phase = 'first_party_sandbox_refund';
+          try {
+            const refund = await squareApi('/v2/refunds', 'POST', {
+              idempotency_key: 'cert-refund-' + randomUUID(),
+              payment_id: paymentId,
+              amount_money: { amount: 1199, currency: 'USD' },
+              reason: 'Taste of Gratitude isolated first-party checkout QA refund',
+            });
+            refundId = typeof refund?.refund?.id === 'string' ? refund.refund.id : null;
+            refundStatus = typeof refund?.refund?.status === 'string'
+              ? refund.refund.status : null;
+          } catch {
+            evidence.refundError = true;
+          }
+        }
+        evidence.refundSubmitted = paymentId ? Boolean(refundId) : null;
+        evidence.refundStatus = refundStatus;
+        // Retain a paid QA order only in the dedicated disposable certification
+        // database for provider reconciliation. Never erase unresolved captures.
+        if (!paymentId) {
+          if (orderId) await db.collection('orders').deleteOne({
+            id: orderId, source: certificationSource,
+          }).catch(() => undefined);
+          await productCollection.deleteOne({ id: productId, source: certificationSource })
+            .catch(() => undefined);
+          await inventoryCollection.deleteOne({ productId, source: certificationSource })
+            .catch(() => undefined);
+        }
+      }
+      const pass = !failurePhase && evidence.paymentCaptured === true &&
+        evidence.sameOrderOnReplay === true && evidence.singleUnitConsumed === true &&
+        evidence.refundSubmitted === true;
+      return NextResponse.json({
+        pass, paymentAttempted, failurePhase, errorType,
+        ...evidence, sandboxPaymentId: paymentId, sandboxRefundId: refundId,
+      }, { status: pass ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
+    }
+
     if (action === 'mongo_race') {
       phase = 'mongo_concurrency';
       const { reserveCheckoutInventory, releaseCheckoutInventory } =
