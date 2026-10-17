@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
           enabled: s.enabled === true,
           host, path, bypassParameterPresent,
           eventTypes: Array.isArray(s.event_types) ? s.event_types.filter((v: any) =>
-            v === 'payment.created' || v === 'payment.updated') : [],
+            ['payment.created', 'payment.updated', 'refund.created', 'refund.updated'].includes(v)) : [],
           signingKeyMatches: typeof s.signature_key === 'string' && configuredKey
             ? s.signature_key === configuredKey : null,
           currentDeploymentHost: host === currentHost,
@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
           const u = new URL(String(s.notification_url || ''));
           return s.enabled === true && u.protocol === 'https:' &&
             u.hostname.endsWith('.vercel.app') &&
-            u.pathname === '/api/webhooks/square/payment' &&
+            ['/api/webhooks/square/payment', '/api/webhooks/square'].includes(u.pathname) &&
             Array.isArray(s.event_types) && s.event_types.includes('payment.created');
         } catch { return false; }
       });
@@ -247,7 +247,7 @@ export async function POST(request: NextRequest) {
       if (bypassSecret.length < 24 || !/^[a-zA-Z0-9]+$/.test(bypassSecret)) {
         return NextResponse.json({ pass: false, reason: 'Automation bypass not configured' }, { status: 503 });
       }
-      const target = new URL('https://' + branchHost + '/api/webhooks/square/payment');
+      const target = new URL('https://' + branchHost + '/api/webhooks/square');
       target.searchParams.set('x-vercel-protection-bypass', bypassSecret);
       // Verify the secret really reaches this branch's application before changing Square.
       const probe = await fetch(target, {
@@ -273,7 +273,7 @@ export async function POST(request: NextRequest) {
           const u = new URL(String(item.notification_url || ''));
           return item.enabled === true && u.protocol === 'https:' &&
             approvedHosts.has(u.hostname.toLowerCase()) &&
-            u.pathname === '/api/webhooks/square/payment' &&
+            u.pathname === '/api/webhooks/square' &&
             Array.isArray(item.event_types) &&
             item.event_types.includes('payment.created') &&
             item.event_types.includes('payment.updated') &&
@@ -284,9 +284,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ pass: false, reason: 'Expected exactly one approved active Sandbox payment subscription', matchingCount: candidates.length }, { status: 503 });
       }
       const record = candidates[0];
-      if (record.notification_url !== target.toString()) {
+      if (record.notification_url !== target.toString() || !['refund.created', 'refund.updated'].every((name) => record.event_types?.includes(name))) {
         const changed = await squareApi('/v2/webhooks/subscriptions/' + encodeURIComponent(record.id), 'PUT', {
-          subscription: { notification_url: target.toString() },
+          subscription: { notification_url: target.toString(), event_types: ['payment.created', 'payment.updated', 'refund.created', 'refund.updated'] },
         });
         if (changed?.subscription?.notification_url !== target.toString()) {
           return NextResponse.json({ pass: false, reason: 'Square did not confirm callback update' }, { status: 503 });
@@ -513,6 +513,29 @@ export async function POST(request: NextRequest) {
         pass, paymentAttempted, failurePhase, errorType,
         ...evidence, sandboxPaymentId: paymentId, sandboxRefundId: refundId,
       }, { status: pass ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
+    }
+
+    if (action === 'first_party_refund_audit') {
+      phase = 'first_party_refund_audit';
+      const paymentId = payload?.paymentId;
+      if (typeof paymentId !== 'string' || !/^[A-Za-z0-9_-]{10,140}$/.test(paymentId)) {
+        return NextResponse.json({ pass: false, error: 'Valid Sandbox paymentId required' }, { status: 400 });
+      }
+      const order = await db.collection('orders').findOne({
+        squarePaymentId: paymentId, source: 'qa_isolated_preview_only',
+      });
+      if (!order) return NextResponse.json({ pass: false, orderFound: false }, { status: 404 });
+      const status = String(order.paymentStatus || '');
+      const captured = String(order.status || '');
+      const refunded = ['REFUNDED', 'refunded'].includes(status) ||
+        ['REFUNDED', 'refunded'].includes(captured);
+      return NextResponse.json({
+        pass: refunded, orderFound: true, sandboxOnly: true, isolatedDatabase: true,
+        paymentStatus: status, orderStatus: captured,
+        refundLedgerCents: Number(order.refundAmountCents || order.refundAmount || 0),
+        customerEmailClaimRecorded: Boolean(order.emailSentAt),
+        staffNotificationClaimRecorded: Boolean(order.staffNotifiedAt),
+      }, { status: refunded ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
     }
 
     if (action === 'mongo_race') {
