@@ -150,7 +150,6 @@ export async function POST(request: NextRequest) {
 
     if (action === 'refund_status') {
       phase = 'square_refund_status';
-      const payload = (request as any)._certBody;
       const refundId = payload?.refundId;
       if (typeof refundId !== 'string' || !/^[A-Za-z0-9_-]{10,140}$/.test(refundId)) {
         return NextResponse.json({ error: 'Valid refundId required' }, { status: 400 });
