@@ -1,0 +1,29 @@
+name: Turso Recovery SQL Contracts
+on:
+  push:
+    branches:
+      - feat/turso-checkout-recovery-20261017
+  pull_request:
+    paths:
+      - 'db/migrations/**'
+      - 'scripts/migrate/validate-schema.mjs'
+      - 'tests/migration/turso-checkout-contract.test.mjs'
+      - '.github/workflows/turso-recovery-contracts.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-sql-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '26'
+      - name: Apply and verify all recovered migrations
+        run: node scripts/migrate/validate-schema.mjs
+      - name: Prove isolated checkout SQL constraints (no secrets)
+        run: node --test tests/migration/turso-checkout-contract.test.mjs

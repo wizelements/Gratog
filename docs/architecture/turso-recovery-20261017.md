@@ -1,0 +1,41 @@
+# Turso recovery architecture and release law
+
+**Status: schema/contract recovery only. No live Turso migration or deployment is authorized by these changes.**
+
+## Branch provenance
+- Current application base: `fix/vorax-recovery-integrity-20261016` (checkout release candidate, unmerged).
+- Historical SQL source: `migration/mongodb-to-turso` at `6c6c5ab`.
+- All 11 historical schema migrations are preserved exactly, followed by new `0012_checkout_payment_invariants.sql` for modern checkout contracts.
+- Historical migration totals (851 orders, 1,209 items, $21,621.48 order value) are **not** current production parity proof.
+
+## Observed incompatibilities
+1. The old SQLite schema has no native equivalent of the latest Mongo `checkout_stock_claims`, `square_refund_entries`, unique `orders.checkoutAttemptKey`, or claimed/sent notification tracking. Migration 0012 introduces those structural boundaries but does not convert runtime handlers.
+2. Production checkout still uses MongoDB transactions with snapshot reads, majority writes, conditional stock updates, and exactly-once claim semantics. These must be ported to actual Turso write transactions with conditional row counts and idempotent replay; no cross-provider transaction exists with Square.
+3. Two order namespaces (`orders`, `marketorders`) and unifying reporting, unique refund IDs, webhook event deduplication, and notification retry states all need explicit model mapping. Partial source attribution is unacceptable.
+4. Historical ETL scripts hardcode `taste_of_gratitude`, baseline row counts, and migration version `0003`; do not reuse in a live delta without removing those assumptions and re-verifying source identity.
+5. Generic dual-writing Mongo and Turso on a payment request is **not** atomic and is not an acceptable consistency guarantee.
+
+## Recovery tracks (parallel, but promotion sequential)
+- **Model/Schema:** Inventory ownership, purchase+preorder states, payment IDs, refund ledger, webhook lifecycle, capacity limits, user/reward data, catalogs, market schedules and role permissions; prove FK/cardinality/index invariants.
+- **Runtime adaptation:** Define a bounded storage abstraction with explicit Mongo and Turso implementations for each transaction. Port stock reservation/release/commit first, then order admission, idempotency/retries, signed webhook reconciliation, refunds, notification outbox, auth and analytics. No request may mix backends in a non-atomic mutation.
+- **Historical and delta ETL:** Signed/checksummed read-only Mongo snapshot; immutable checkpoints, reject reports, idempotent inserts and source fingerprints; map all order histories and payment states; then incremental catch-up with sequence/watermark and reconciliation.
+- **Payment authority:** Square alone is final authority on captured/refunded amounts. Reconcile stored payment IDs, currencies, refund totals and unsettled/unknown states, including orphan webhook handling.
+- **Validation:** SQLite local deterministic tests plus genuine Turso staging concurrency (multi-client 24-buyer race), fault injection, simulated provider timeouts, real Square Sandbox capture/decline/partial+full refund, duplicate/out-of-order signed webhooks, Resend confirmed delivery, browser tests on mobile and desktop, authenticated admin flows, and 13 previously skipped tests.
+- **Operations:** Backup/PITR restore drill, least-privilege database keys, Vercel Preview/Production separation, read-only shadow comparisons, observed latency/budgets, metrics and alerts, cutover and reverse-cutover evidence.
+
+## Release gates (all mandatory)
+G0. Freeze exact checkout commit and unrelated write paths; enumerate all Mongo collections and direct model callers with source ownership.
+G1. Validate complete Turso schema including runtime migrations and indexes; local tests are not sufficient to prove remote concurrency.
+G2. Migrate every active domain with zero unexplained rejects/orphans and 100% key and fingerprint equivalence.
+G3. Reconcile **fresh** Mongo source snapshot and Turso: exact IDs, order/order-item counts, per-status counts, cents by source/date, unique Square IDs, paid/refunded balances, inventory by SKU, member/customer linkages.
+G4. Catch up all changes since the snapshot with verified checkpoint/watermark; compare at quiescent watermark to catch writes during ETL.
+G5. Prove real Turso multi-client atomic final-stock sale, idempotent retries, multi-item all-or-nothing, refund exactly once, and no duplicate notifications.
+G6. Prove actual application Preview checkout->Square Sandbox->signed webhook->Turso order/inventory/email, preorder payment links, partial/full refunds, retry and cancel paths, on desktop and mobile.
+G7. Run sustained, recovery, security, permission and rollback drills; verify a guaranteed route back to Mongo without losing post-cutover writes.
+G8. Only then authorize controlled production freeze, final delta, production config swap and read-only acceptance; monitor and retain Mongo rollback until formally released.
+
+## Current evidence and blockers
+- 12 local migrations successfully produce 41 tables using Node's SQLite runtime (not a Turso production service).
+- Structural regression: local invariant tests cover last-unit stock, idempotent replay, refund deduplication and unique notifications.
+- There is **no evidence** that Turso runtime adapters, real remote writes, latest data parity, Preview database secret isolation, end-to-end Square/Turso/Resend proof or rollback drill have passed.
+- Keep all production database credentials, Square keys and Vercel tokens in protected managers; never print or commit them. Staging tests must not write to production.
