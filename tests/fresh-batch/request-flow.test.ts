@@ -79,7 +79,7 @@ describe('fresh-batch request form validation', () => {
   it('rejects missing market', () => {
     expect(() =>
       normalizeRequestInput({ ...validInput, preferredMarketId: '' })
-    ).toThrow('Preferred pickup market is required');
+    ).toThrow('Preferred fulfillment selection is required');
   });
 
   it('accepts flavor profile when product slug is absent', () => {

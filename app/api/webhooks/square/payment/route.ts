@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import { verifySquareWebhookSignature } from '@/lib/batches/square-webhook-auth';
+import { getIsolatedPreviewWebhookKey } from '@/lib/preview-square-webhook-key';
 import { reconcileSquareBatchReservation } from '@/lib/batches/reconcile-square-reservation';
 
 /**
@@ -14,15 +15,25 @@ import { reconcileSquareBatchReservation } from '@/lib/batches/reconcile-square-
  */
 export async function POST(request: NextRequest) {
   const rawBody = await request.text();
+  if (rawBody.length > 256000) {
+    return NextResponse.json({ success: false, error: 'Payload too large' }, { status: 413 });
+  }
   const key = process.env.SQUARE_PAYMENT_WEBHOOK_SIGNATURE_KEY ||
     process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
-  if (!key) {
-    logger.error('SquarePaymentWebhook', 'Webhook signature key not configured');
-    return NextResponse.json({ success: false, error: 'Webhook not configured' }, { status: 503 });
-  }
   const signature = request.headers.get('x-square-hmacsha256-signature');
   const notificationUrl = process.env.SQUARE_PAYMENT_WEBHOOK_URL || request.url;
-  if (!verifySquareWebhookSignature(signature, rawBody, notificationUrl, key)) {
+  if (!signature || !/^[A-Za-z0-9+/=]{40,120}$/.test(signature)) {
+    return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 401 });
+  }
+  let verified = Boolean(key) &&
+    verifySquareWebhookSignature(signature, rawBody, notificationUrl, key);
+  if (!verified && process.env.VERCEL_ENV === 'preview' &&
+      process.env.SQUARE_ENVIRONMENT === 'sandbox') {
+    const previewKey = await getIsolatedPreviewWebhookKey(notificationUrl);
+    verified = Boolean(previewKey) &&
+      verifySquareWebhookSignature(signature, rawBody, notificationUrl, previewKey!);
+  }
+  if (!verified) {
     return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 401 });
   }
 
