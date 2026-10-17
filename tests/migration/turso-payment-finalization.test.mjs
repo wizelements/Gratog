@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
 import {readdirSync,readFileSync} from 'node:fs';
 import {reserveTursoCheckoutInventory} from '../../lib/checkout/turso-commerce.mjs';
-import {finalizeVerifiedTursoSquarePayment} from '../../lib/checkout/turso-payment-finalization.mjs';
+import {finalizeVerifiedTursoSquarePayment,finalizeVerifiedTursoSquareRefund} from '../../lib/checkout/turso-payment-finalization.mjs';
 
 const square=(id='sqp1')=>({id,status:'COMPLETED',currency:'USD',amountCents:1199,idempotencyKey:'square-checkout-1'});
 function fixture(){
@@ -129,5 +129,37 @@ test('captured payment on canceled order refuses status resurrection',async()=>{
   f.raw.prepare("UPDATE orders SET payment_status='cancelled',status='cancelled' WHERE id='o1'").run();
   await assert.rejects(finalizeVerifiedTursoSquarePayment(f.db,{orderId:'o1',squarePayment:square(),providerVerified:true}),/NOT_PAYABLE/);
   assert.equal(f.count('payments'),0);
+ }finally{f.raw.close()}
+});
+
+test('actual-provider-confirmed partial/full refunds atomically update canonical order state',async()=>{
+ const f=fixture();
+ try{
+  await hold(f);
+  await finalizeVerifiedTursoSquarePayment(f.db,{orderId:'o1',squarePayment:square(),providerVerified:true});
+  const refund=id=>({id,paymentId:'sqp1',status:'COMPLETED',currency:'USD',amountCents:500});
+  await assert.rejects(finalizeVerifiedTursoSquareRefund(f.db,{orderId:'o1',squareRefund:refund('r1')}),/NOT_INDEPENDENTLY_VERIFIED/);
+  const first=await finalizeVerifiedTursoSquareRefund(f.db,{orderId:'o1',squareRefund:refund('r1'),providerVerified:true});
+  assert.deepEqual(first,{alreadyRecorded:false,refundedCents:500,paymentStatus:'partially_refunded'});
+  assert.equal(f.order('o1').payment_status,'partially_refunded');
+  assert.deepEqual(await finalizeVerifiedTursoSquareRefund(f.db,{orderId:'o1',squareRefund:refund('r1'),providerVerified:true}),
+   {alreadyRecorded:true,refundedCents:500,paymentStatus:'partially_refunded'});
+  await assert.rejects(finalizeVerifiedTursoSquareRefund(f.db,{orderId:'o1',squareRefund:{...refund('r2'),amountCents:700},providerVerified:true}),/EXCEEDS_CAPTURE/);
+  const full=await finalizeVerifiedTursoSquareRefund(f.db,{orderId:'o1',squareRefund:{...refund('r2'),amountCents:699},providerVerified:true});
+  assert.equal(full.paymentStatus,'refunded');assert.equal(full.refundedCents,1199);
+  assert.equal(f.order('o1').payment_status,'refunded');assert.equal(f.order('o1').status,'refunded');
+  assert.equal(f.count('square_refund_entries'),2);
+ }finally{f.raw.close()}
+});
+test('reused Square refund ID with changed amount or payment identity never alters totals',async()=>{
+ const f=fixture();
+ try{
+  await hold(f);await finalizeVerifiedTursoSquarePayment(f.db,{orderId:'o1',squarePayment:square(),providerVerified:true});
+  const refund={id:'r1',paymentId:'sqp1',status:'COMPLETED',currency:'USD',amountCents:200};
+  await finalizeVerifiedTursoSquareRefund(f.db,{orderId:'o1',squareRefund:refund,providerVerified:true});
+  await assert.rejects(finalizeVerifiedTursoSquareRefund(f.db,{orderId:'o1',squareRefund:{...refund,amountCents:100},providerVerified:true}),/ID_CONFLICT/);
+  await assert.rejects(finalizeVerifiedTursoSquareRefund(f.db,{orderId:'o1',squareRefund:{...refund,paymentId:'another_payment'},providerVerified:true}),/CAPTURE_NOT_FOUND/);
+  assert.equal(f.count('square_refund_entries'),1);
+  assert.equal(f.order('o1').payment_status,'partially_refunded');
  }finally{f.raw.close()}
 });
