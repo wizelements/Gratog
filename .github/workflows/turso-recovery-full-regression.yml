@@ -1,0 +1,50 @@
+name: Turso Recovery Full Regression (no secrets)
+on:
+  push:
+    branches:
+      - feat/turso-checkout-recovery-20261017
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-application-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      VERCEL_ENV: preview
+      SQUARE_ENVIRONMENT: sandbox
+      SQUARE_ACCESS_TOKEN: ci-square-placeholder-no-provider-connection
+      SQUARE_APPLICATION_ID: ci-square-app-placeholder
+      SQUARE_LOCATION_ID: ci-square-location-placeholder
+      SQUARE_WEBHOOK_SIGNATURE_KEY: ci-square-webhook-placeholder
+      RESEND_WEBHOOK_SECRET: ci-resend-webhook-placeholder
+      JWT_SECRET: ci-test-secret-at-least-32-characters-long
+      ADMIN_SETUP_SECRET: ci-test-admin-setup-secret
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install application dependencies
+        run: npm ci --include=dev
+      - name: Full unit and domain suite
+        run: npm test -- --reporter=dot
+      - name: Strict application typecheck
+        run: npm run typecheck:ci
+      - name: Next.js build using nonlive test credentials
+        run: npm run build
+      - name: Final migration-contract check with Node SQLite
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '26'
+      - name: Migration and 24-client inventory stress
+        run: |
+          node scripts/migrate/validate-schema.mjs
+          node --test tests/migration/turso-checkout-contract.test.mjs tests/migration/turso-sqlite-contention.test.mjs
