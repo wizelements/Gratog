@@ -50,8 +50,10 @@ describe('regular Georgia customers can order without selecting a market', () =>
     const home = read('components/home/HomePageClient.jsx');
     expect(catalog).toContain('market-only products are reserved for pickup');
     expect(home).toContain('35-mile radius of Atlanta ZIP 30331');
-    expect(home).toContain('full-address check at checkout');
-    expect(home).toContain('Market-only preorders are currently pickup orders.');
+    // Both the branch and GitHub's PR merge preview must say delivery is address-gated,
+    // without depending on one exact marketing sentence.
+    expect(home).toMatch(/full-address check(?: at checkout)?/);
+    expect(home).toMatch(/Market-only preorders (?:are currently pickup orders|remain pickup orders)/);
     expect(catalog).not.toMatch(/nationwide shipping|all (?:products|items) ship/i);
   });
 });
