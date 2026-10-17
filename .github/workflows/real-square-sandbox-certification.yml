@@ -38,6 +38,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify Square payment key and rejection contract
+        run: node --test tests/square-sandbox-idempotency.test.mjs
       - name: Assert and certify only Square Sandbox
         env:
           # Never fall back to production/live SQUARE_ACCESS_TOKEN.
