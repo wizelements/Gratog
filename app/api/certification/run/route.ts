@@ -151,7 +151,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       pass: false, phase,
       errorType: error instanceof Error ? error.name : 'UnknownError',
-      errorMessage: error instanceof Error ? error.message.replace(/Bearer\\s+[^\\s]+/g, 'Bearer [redacted]').slice(0, 180) : 'Unknown error',
     }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
   }
 }
