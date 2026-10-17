@@ -2,8 +2,9 @@ import { createHmac } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
-const { connection } = vi.hoisted(() => ({ connection: vi.fn() }));
+const { connection, isolatedKey } = vi.hoisted(() => ({ connection: vi.fn(), isolatedKey: vi.fn() }));
 vi.mock('@/lib/db-optimized', () => ({ connectToDatabase: connection }));
+vi.mock('@/lib/preview-square-webhook-key', () => ({ getIsolatedPreviewWebhookKey: isolatedKey }));
 vi.mock('@/lib/batches/audit-log', () => ({
   logPaymentReceived: vi.fn().mockResolvedValue(undefined),
   logReservationStatusChange: vi.fn().mockResolvedValue(undefined),
@@ -36,6 +37,8 @@ describe('Fresh-batch signed Square webhook route', () => {
   beforeEach(() => {
     vi.stubEnv('SQUARE_WEBHOOK_SIGNATURE_KEY', key);
     connection.mockReset();
+    isolatedKey.mockReset();
+    isolatedKey.mockResolvedValue(null);
     connection.mockResolvedValue({ db: { collection: vi.fn().mockReturnValue({
       findOne: vi.fn().mockResolvedValue(null)
     }) } });
@@ -72,6 +75,32 @@ describe('Fresh-batch signed Square webhook route', () => {
     expect(result.status).toBe(200);
     expect(await result.json()).toMatchObject({ success: true, ignored: true });
     expect(connection).toHaveBeenCalledOnce();
+  });
+
+
+  it('never falls back to production webhook signer in Sandbox Preview', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.stubEnv('SQUARE_ENVIRONMENT', 'sandbox');
+    isolatedKey.mockResolvedValue(null);
+    // Even a valid production-signed payload must not authenticate in Preview.
+    const result = await POST(makeRequest(body, sign(body)));
+    expect(result.status).toBe(503);
+    expect(connection).not.toHaveBeenCalled();
+  });
+
+  it('accepts only the active Sandbox Preview subscription signer', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.stubEnv('SQUARE_ENVIRONMENT', 'sandbox');
+    const previewSigningKey = 'isolated-preview-test-signing-key';
+    isolatedKey.mockResolvedValue(previewSigningKey);
+    const productionSignature = sign(body);
+    expect((await POST(makeRequest(body, productionSignature))).status).toBe(401);
+    expect(connection).not.toHaveBeenCalled();
+    const previewSignature = createHmac('sha256', previewSigningKey)
+      .update(url + body).digest('base64');
+    const response = await POST(makeRequest(body, previewSignature));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({success:true, ignored:true});
   });
 
   it('rejects malformed JSON only after verifying the real raw-body signature', async () => {
