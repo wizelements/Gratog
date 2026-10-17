@@ -47,4 +47,4 @@ jobs:
       - name: Migration and 24-client inventory stress
         run: |
           node scripts/migrate/validate-schema.mjs
-          node --test tests/migration/turso-checkout-contract.test.mjs tests/migration/turso-sqlite-contention.test.mjs tests/migration/turso-migration-hygiene.test.mjs tests/migration/turso-commerce-adapter.test.mjs
+          node --test tests/migration/turso-checkout-contract.test.mjs tests/migration/turso-sqlite-contention.test.mjs tests/migration/turso-migration-hygiene.test.mjs tests/migration/turso-commerce-adapter.test.mjs tests/migration/turso-order-admission.test.mjs
