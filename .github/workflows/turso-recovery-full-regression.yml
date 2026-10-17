@@ -40,6 +40,8 @@ jobs:
         run: npx vitest run tests/gratitude-square-webhook-signature.test.ts --reporter=verbose
       - name: Release gate regression (no deployment mutation)
         run: node --test tests/release/turso-cutover-gates.test.mjs
+      - name: Ensure no phantom inventory or placeholder-price availability
+        run: npx vitest run tests/catalog-unknown-stock-safety.test.ts --reporter=verbose
       - name: Strict application typecheck
         run: npm run typecheck:ci
       - name: Next.js build using nonlive test credentials
