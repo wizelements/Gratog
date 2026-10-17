@@ -165,7 +165,14 @@ export async function POST(request: NextRequest) {
     if (action === 'square_webhook_subscriptions' || action === 'square_webhook_test') {
       phase = 'square_webhook_subscriptions';
       const current = await squareApi('/v2/webhooks/subscriptions?include_disabled=true', 'GET');
-      const records = Array.isArray(current?.subscriptions) ? current.subscriptions : [];
+      const listed = Array.isArray(current?.subscriptions) ? current.subscriptions : [];
+      const records = await Promise.all(listed.map(async (item: any) => {
+        if (!item?.id || typeof item.id !== 'string') return item;
+        try {
+          const detail = await squareApi('/v2/webhooks/subscriptions/' + encodeURIComponent(item.id), 'GET');
+          return { ...item, ...(detail?.subscription || {}) };
+        } catch { return item; }
+      }));
       const currentHost = String(process.env.VERCEL_URL || '').toLowerCase();
       const safeRecords = records.map((s: any) => {
         let host = '';
@@ -197,6 +204,7 @@ export async function POST(request: NextRequest) {
           activeSubscriptions: safeRecords.filter((s) => s.enabled).length,
           disabledSubscriptions: safeRecords.filter((s) => !s.enabled).length,
           subscriptions: safeRecords,
+          automationBypassAvailable: Boolean(process.env.VERCEL_AUTOMATION_BYPASS_SECRET),
         }, { headers: { 'Cache-Control': 'no-store' } });
       }
 
@@ -225,6 +233,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         pass, sandboxOnly: true, providerTestDispatched: true,
         providerDeliveryStatus: statusCode ?? null,
+        providerResponseFields: Object.keys(test || {}),
+        providerResultFields: Object.keys(test?.subscription_test_result || {}),
         notificationHost: safeRecords.find((s) => s.host &&
           String(chosen.notification_url).includes(s.host))?.host || null,
       }, { status: pass ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
