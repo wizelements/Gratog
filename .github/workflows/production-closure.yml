@@ -69,6 +69,9 @@ jobs:
       - name: Fresh Batch Square financial safety regression
         run: npx vitest run tests/fresh-batch/square-reservations.test.ts tests/fresh-batch/square-payment-reconciliation.test.ts tests/fresh-batch/square-webhook-auth.test.ts --reporter=verbose
 
+      - name: Non-destructive Square catalog and Preview QA isolation proof
+        run: npx vitest run tests/catalog-sync-preservation.test.ts tests/curated-stock-failclosed.test.ts tests/sandbox-filtering.test.ts --reporter=verbose
+
       - name: Navigation coherence
         run: npx vitest run tests/navigation-coherence.test.ts --reporter=verbose
 
