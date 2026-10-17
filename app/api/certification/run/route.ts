@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
 
     if (action === 'square_webhook_subscriptions') {
       phase = 'square_webhook_subscriptions';
-      const current = await squareApi('/v2/webhooks/subscriptions', 'GET');
+      const current = await squareApi('/v2/webhooks/subscriptions?include_disabled=true', 'GET');
       const records = Array.isArray(current?.subscriptions) ? current.subscriptions : [];
       const currentHost = String(process.env.VERCEL_URL || '').toLowerCase();
       return NextResponse.json({
@@ -172,6 +172,7 @@ export async function POST(request: NextRequest) {
         subscriptionCount: records.length,
         currentPreviewRegistered: records.some((s: any) => typeof s.notification_url === 'string' && s.notification_url.toLowerCase().includes(currentHost)),
         activeSubscriptions: records.filter((s: any) => s.enabled === true).length,
+        disabledSubscriptions: records.filter((s: any) => s.enabled === false).length,
       }, { headers: { 'Cache-Control': 'no-store' } });
     }
 
