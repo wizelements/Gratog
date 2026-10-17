@@ -57,6 +57,56 @@ test('conditional inventory reservation and SQL claim are atomic; the last unit 
   db.close();
 });
 
+test('a failed multi-item reservation rolls back every stock decrement and claim',()=>{
+  const db=makeFixture();
+  const now='2026-10-17';
+  db.prepare('INSERT INTO products(id,name) VALUES (?,?)').run('sku2','Sold out item');
+  db.prepare('INSERT INTO inventory(product_id,current_stock,source,updated_at) VALUES (?,?,?,?)')
+    .run('sku2',0,'test',now);
+  const reserve=db.prepare('UPDATE inventory SET current_stock=current_stock-? WHERE product_id=? AND current_stock>=?');
+  db.exec('BEGIN IMMEDIATE');
+  let succeeded=true;
+  try {
+    for(const [sku,qty] of [['sku1',1],['sku2',1]]) {
+      if(reserve.run(qty,sku,qty).changes !== 1) {succeeded=false; break;}
+    }
+    if(!succeeded) db.exec('ROLLBACK');
+    else db.exec('COMMIT');
+  } catch(error) {db.exec('ROLLBACK');throw error;}
+  assert.equal(succeeded,false);
+  assert.equal(db.prepare('SELECT current_stock FROM inventory WHERE product_id=?').get('sku1').current_stock,1);
+  assert.equal(db.prepare('SELECT current_stock FROM inventory WHERE product_id=?').get('sku2').current_stock,0);
+  assert.equal(db.prepare('SELECT count(*) n FROM checkout_stock_claims').get().n,0);
+  db.close();
+});
+
+test('partial refunds retain exact cents; cumulative over-refunds are refused',()=>{
+  const db=makeFixture();
+  const add=db.prepare('INSERT INTO square_refund_entries (refund_id,order_id,payment_id,amount_cents,currency,confirmed_at) VALUES (?,?,?,?,?,?)');
+  function reconcile(refundId,cents) {
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      const paidCents=1199;
+      const already=db.prepare('SELECT * FROM square_refund_entries WHERE refund_id=?').get(refundId);
+      if (already) {
+        if(already.amount_cents!==cents||already.order_id!=='order1'||already.payment_id!=='payment1') throw Error('REFUND_ID_CONFLICT');
+        db.exec('COMMIT');return 'replay';
+      }
+      const total=db.prepare('SELECT coalesce(sum(amount_cents),0) cents FROM square_refund_entries WHERE order_id=?').get('order1').cents;
+      if(!Number.isSafeInteger(cents)||cents<1||total+cents>paidCents) throw Error('REFUND_OVERPAY');
+      add.run(refundId,'order1','payment1',cents,'USD','2026-10-17');
+      db.exec('COMMIT');return 'recorded';
+    } catch(error){db.exec('ROLLBACK');throw error;}
+  }
+  assert.equal(reconcile('r1',500),'recorded');
+  assert.equal(reconcile('r1',500),'replay');
+  assert.throws(()=>reconcile('r2',700),/REFUND_OVERPAY/);
+  assert.equal(reconcile('r2',699),'recorded');
+  assert.equal(db.prepare('SELECT sum(amount_cents) cents FROM square_refund_entries').get().cents,1199);
+  assert.throws(()=>reconcile('r1',400),/REFUND_ID_CONFLICT/);
+  db.close();
+});
+
 test('refund ID cannot be double counted or reused against another amount',()=>{
   const db=makeFixture();
   const insert=db.prepare('INSERT INTO square_refund_entries(refund_id,order_id,payment_id,amount_cents,currency,confirmed_at) VALUES (?,?,?,?,?,?)');
