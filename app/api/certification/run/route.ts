@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
 
       const paymentKey = randomUUID();
       const refundKey = randomUUID();
-      const referenceId = 'tog-cert-' + randomUUID();
+      const referenceId = 'tog-cert-' + randomUUID().slice(0, 24);
       const payload = {
         source_id: 'cnon:card-nonce-ok',
         idempotency_key: paymentKey,
