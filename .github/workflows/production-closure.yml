@@ -72,6 +72,9 @@ jobs:
       - name: Production storefront semantic and retired-review regressions
         run: node --test tests/release/production-storefront-browser-repair.test.mjs
 
+      - name: Single Vercel deployment authority regression
+        run: node --test tests/release/single-deployment-authority.test.mjs
+
       - name: Typecheck
         run: npm run typecheck:ci
 
