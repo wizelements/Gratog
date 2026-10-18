@@ -9,6 +9,7 @@ permissions:
 
 jobs:
   real-provider-staging-integration:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_legacy == 'true' }}
     name: Real Square Sandbox capture/refund to Turso isolated staging
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -48,6 +49,7 @@ jobs:
           retention-days: 30
 
   sandbox-webhook-subscription-audit:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_legacy == 'true' }}
     name: Read-only Square Sandbox subscription destination audit
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -78,5 +80,100 @@ jobs:
         with:
           name: square-sandbox-webhook-subscriptions-${{ github.run_id }}
           path: test-results/square-sandbox-webhook-subscriptions.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  sandbox-buyer-certification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    environment: square-sandbox-certification
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '26'
+          cache: npm
+      - name: Resolve immutable READY Preview for exact dispatched branch SHA
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          import {appendFileSync} from 'node:fs';
+          if(process.env.GITHUB_EVENT_NAME!=='workflow_dispatch' ||
+             process.env.GITHUB_REF!=='refs/heads/feat/turso-checkout-recovery-20261017' ||
+             !process.env.VERCEL_TOKEN)throw Error('PROTECTED_BRANCH_AND_VERCEL_CREDENTIAL_REQUIRED');
+          let deployment=null;
+          for(let attempt=0;attempt<15;attempt++){
+            const u=new URL('https://api.vercel.com/v6/deployments');
+            u.searchParams.set('projectId','prj_HnwKt5XyWC1Evcrv3mZLa3cdpDcG');
+            u.searchParams.set('teamId','team_HLmyvqEhI158ahAD2U1p7MxM');
+            u.searchParams.set('sha',process.env.GITHUB_SHA);
+            u.searchParams.set('limit','10');
+            const res=await fetch(u,{headers:{Authorization:'Bearer '+process.env.VERCEL_TOKEN},
+              signal:AbortSignal.timeout(15000)});
+            if(!res.ok)throw Error('VERCEL_DEPLOYMENT_LIST_FAILED_'+res.status);
+            const j=await res.json();
+            deployment=(j.deployments||[]).find(d=>
+              (d.state==='READY'||d.readyState==='READY')&&
+              d.meta?.githubCommitSha===process.env.GITHUB_SHA&&
+              d.meta?.githubCommitRef==='feat/turso-checkout-recovery-20261017'&&
+              d.target!=='production'&&d.url&&
+              /^gratog-[a-z0-9]+-theangelsilvers-projects\.vercel\.app$/.test(d.url));
+            if(deployment)break;
+            await new Promise(r=>setTimeout(r,8000));
+          }
+          if(!deployment)throw Error('EXACT_READY_PREVIEW_FOR_DISPATCHED_SHA_NOT_FOUND');
+          appendFileSync(process.env.GITHUB_ENV,'PREVIEW_BASE_URL=https://'+deployment.url+'\n');
+          console.log('PASS: selected exact SHA-matched READY Preview; public Square webhook destination pinned');
+          NODE
+      - name: Require exact branch, deployed commit, and project
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          EXPECTED_PROJECT_ID: prj_HnwKt5XyWC1Evcrv3mZLa3cdpDcG
+        run: |
+          node --input-type=module <<'NODE'
+          if(process.env.GITHUB_EVENT_NAME!=='workflow_dispatch' ||
+             process.env.GITHUB_REF!=='refs/heads/feat/turso-checkout-recovery-20261017' ||
+             !process.env.VERCEL_TOKEN)throw Error('PROTECTED_BRANCH_AND_VERCEL_CREDENTIAL_REQUIRED');
+          let u;try{u=new URL(process.env.PREVIEW_BASE_URL)}catch{}
+          if(!u||u.protocol!=='https:'||u.origin!==process.env.PREVIEW_BASE_URL||
+             !/^gratog-[a-z0-9]+-theangelsilvers-projects\.vercel\.app$/.test(u.hostname))
+             throw Error('INVALID_PREVIEW_HOST');
+          const endpoint='https://api.vercel.com/v13/deployments/'+
+            encodeURIComponent(u.hostname)+'?teamId=team_HLmyvqEhI158ahAD2U1p7MxM';
+          const res=await fetch(endpoint,{headers:{Authorization:'Bearer '+process.env.VERCEL_TOKEN},
+            signal:AbortSignal.timeout(15000)});
+          if(!res.ok)throw Error('VERCEL_DEPLOYMENT_READBACK_FAILED_'+res.status);
+          const d=await res.json();
+          if(d.readyState!=='READY'||d.meta?.githubCommitSha!==process.env.GITHUB_SHA||
+             d.meta?.githubCommitRef!=='feat/turso-checkout-recovery-20261017'||
+             d.projectId!==process.env.EXPECTED_PROJECT_ID||d.target==='production')
+             throw Error('DEPLOYMENT_IS_NOT_EXACT_PROTECTED_PREVIEW_HEAD');
+          console.log('PASS: exact READY Vercel Preview matches reviewed branch SHA and project');
+          NODE
+      - name: Install runtime dependencies without any provider secrets in environment
+        run: npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Create or verify Square Sandbox signed subscription at that exact URL
+        env:
+          SQUARE_ENVIRONMENT: sandbox
+          SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
+        run: node scripts/certify-preview-square-subscription.mjs
+      - name: Real customer-facing HTTP payment, refund, webhook and notification test
+        env:
+          TURSO_STAGING_DATABASE_URL: libsql://gratog-migration-cert-20261017-swatkins.aws-us-east-1.turso.io
+          TURSO_STAGING_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
+          SQUARE_ENVIRONMENT: sandbox
+          SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
+        run: node scripts/certify-preview-live-checkout.mjs
+      - name: Publish strictly nonsecret test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: turso-preview-real-sandbox-${{ github.run_id }}
+          path: |
+            test-results/preview-square-webhook-subscription.json
+            test-results/turso-preview-live-checkout.json
           if-no-files-found: warn
           retention-days: 30
