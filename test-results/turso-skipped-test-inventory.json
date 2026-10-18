@@ -1,7 +1,7 @@
 {
   "kind": "KNOWN_SKIP_DISPOSITION",
-  "observedSkipCount": 13,
-  "baseline": 13,
+  "observedSkipCount": 12,
+  "baseline": 12,
   "tests": [
     {
       "suite": "tests/reviews-flow.test.ts",
@@ -19,10 +19,10 @@
     },
     {
       "suite": "tests/hydration-issues.test.ts",
-      "count": 1,
-      "status": "BLOCKED",
-      "cause": "SSR import verification for WhatsNewModal explicitly skipped",
-      "requiredEvidence": "Enable import test or independently certify component is unreachable and intentionally retired"
+      "count": 0,
+      "status": "VERIFIED_RETIRED",
+      "cause": "WhatsNewModal is absent and active application references are forbidden by a passing replacement test",
+      "requiredEvidence": "tests/hydration-issues.test.ts active-reference regression"
     }
   ],
   "noUnknownSkips": true,
