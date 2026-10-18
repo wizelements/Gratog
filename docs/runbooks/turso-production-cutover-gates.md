@@ -101,3 +101,18 @@ proved or a formally justified product exclusion is recorded.
 The production rollback candidate must be re-inspected immediately before
 the final approval. Never use the historical deployment IDs earlier in this
 runbook without refreshing current Vercel state.
+
+### Reverse-delta logic: validated planner, not executed rollback
+
+`lib/checkout/turso-reverse-delta-plan.mjs` now produces a **read-only**
+post-freeze manifest. It requires actual captured Square payment readbacks,
+completed Square refund readbacks, exact cents/currency/status agreement and
+no collision with restored Mongo order/payment IDs. Node unit tests verify
+idempotent deterministic plans and block missing provider proofs, over-refunds,
+misclassified refunds, pre-freeze records and payment collisions.
+
+This does **not** transfer or write data into Mongo. The production
+`reverseDelta` gate must stay **false** until an independently authenticated
+Mongo PITR clone exists, the manifest is applied under transactions with
+correctly checked indexes, retries are idempotent, and post-restore provider
+identities, order totals and stock match independently.

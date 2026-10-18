@@ -53,7 +53,7 @@ jobs:
         with:
           node-version: '26'
       - name: Isolated Turso Preview pricing and security contracts
-        run: node --test tests/migration/turso-preview-pricing.test.mjs
+        run: node --test tests/migration/turso-preview-pricing.test.mjs tests/migration/turso-reverse-delta-plan.test.mjs
       - name: Migration and 24-client inventory stress
         run: |
           node scripts/migrate/validate-schema.mjs
