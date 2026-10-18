@@ -36,3 +36,68 @@ October 17, 2026 — PR #41 is **draft**; operational cutover is prohibited.
 
 ## No false completion
 Passing local SQLite or direct Square Sandbox tests alone does not authorize a customer-facing deployment. The mechanical release gate refuses absent/partial evidence, and the existing `DATABASE_PROVIDER=turso` guard remains on until complete certified routing exists.
+
+## October 17 follow-up — isolated HTTP buyer adapters and restoration evidence
+
+Latest feature-branch additions are **not production cutover certification**.
+They implement an opt-in Preview-specific HTTP buyer path behind
+`DATABASE_PROVIDER=turso`, `VERCEL_ENV=preview`, and an exact
+`VERCEL_GIT_COMMIT_REF=feat/turso-checkout-recovery-20261017` check.
+`TURSO_STAGING_DATABASE_URL` is bound to that branch only, and the runtime
+requires a dedicated `TURSO_STAGING_AUTH_TOKEN`; no production Turso token
+can satisfy its database-host identity guard.
+
+The Preview-only buyer path now uses Turso for server-side price verification,
+idempotent order creation, stock reservation, Sandbox Square order/payment
+readback, payment finalization, guest payment-status checks, and signed
+Square-event reconciliation. It queues customer/staff notices exactly once
+and sends **QA-only** messages to Resend's test recipient when configured.
+Provider acceptance is not the same as confirmed delivery.
+
+**Important limitations, fail-closed rather than waived:**
+- The Vercel branch-scoped staging token and explicit Preview provider toggle
+  have not been certified. Use `GET /api/certification/turso-ready` on the
+  exact branch Preview to assess isolated Turso readback and Square Sandbox
+  identity without touching production. HTTP readiness does not certify pay/refund.
+- Real production Square catalog authority is still unresolved. Initial Preview
+  buyer availability is deliberately restricted to two independently observed
+  $11.99 variations (Strawberry Bliss and Pineapple Mango Lemonade). Other items
+  may be displayed but cannot pass protected server-side payment validation.
+- Blue Lotus 16oz has a staging product variation at 3600 cents but staging
+  current inventory is **-6**; provider was earlier observed at 3500 cents.
+  It must remain unavailable. Do not turn negative counts into fictitious stock.
+- Square ID F2YVC7OVRYJU575JXROKFHFT has a name/provenance conflict
+  (Vitamin Sea vs Pineapple Mango). It must never be auto-reconciled by name.
+- Preview delivery, shipping, promotions, market preorders, membership, rewards,
+  refunds initiated by a logged-in administrator, and all remaining Mongo
+  reader/admin routes are **not** Turso-native yet.
+- The real Square Sandbox subscription currently targets the separate
+  `fix/vorax-recovery...` Preview, not the Turso feature branch. The read-only
+  subscription gate rightly fails on a mismatched target; no provider-signed
+  callback to the Turso Preview can be claimed.
+- Resend QA-only sends are accepted if configured, but durable delivered-state
+  correlation to the payment/order and live customer/staff inboxes are not certified.
+
+### Recovery and skipped-suite evidence
+
+A disposable Turso branch clone of `gratog-migration-cert-20261017`
+was created, compared to its source, tested with a clone-only schema/write
+canary, and removed. The restore verification passed for 864 orders, 40
+products, three payment records, 2,303,702 historical order cents, and 93
+aggregate stock units; SQLite integrity was `ok`. Evidence:
+`test-results/turso-staging-restore-drill.json`. This is **not Mongo
+PITR**, not consistent live Mongo source backup, and not reverse-delta
+cutover recovery. The latter must still be tested on an isolated Mongo
+restore clone using actual post-cutover Square payment/refund IDs.
+
+The original 13 Vitest skips were inventoried. One nonexistent WhatsNewModal
+SSR test has been replaced by an active regression forbidding references
+to the removed component. Twelve remain blocked: seven customer reviews
+API flow tests and five genuine Mongo replica-set concurrency tests.
+Evidence: `test-results/turso-skipped-test-inventory.json`. Do not set
+`skippedTests.pass=true` until the remaining functionality is enabled and
+proved or a formally justified product exclusion is recorded.
+
+The production rollback candidate must be re-inspected immediately before
+the final approval. Never use the historical deployment IDs earlier in this
+runbook without refreshing current Vercel state.
