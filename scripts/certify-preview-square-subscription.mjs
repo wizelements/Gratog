@@ -16,7 +16,7 @@ if(!parsed||parsed.protocol!=='https:'||!expectedHost.test(parsed.hostname)||
    throw Error('EXACT_IMMUTABLE_PREVIEW_REQUIRED');
 const url=base+'/api/webhooks/square';
 const report={commit:process.env.GITHUB_SHA,previewHost:parsed.hostname,
-   created:false,subscriptionId:null,signatureKeyReturned:false,
+   created:false,subscriptionId:null,disabledOlderCertificationSubscriptions:0,signatureKeyReturned:false,
    providerEnabled:false,providerUrlMatches:false,providerEventsMatch:false};
 function persist(){
  mkdirSync('test-results',{recursive:true});
@@ -61,6 +61,22 @@ try {
  if(!report.signatureKeyReturned||!report.providerEnabled||
     !report.providerUrlMatches||!report.providerEventsMatch)
     throw Error('SUBSCRIPTION_NOT_SIGNED_AND_EXACT');
+ // Old immutable Preview URLs must not consume signed events for the same
+ // shared staging ledger. Change ONLY subscriptions created by this
+ // certification workflow, never another Sandbox integration.
+ for(const old of found.subscriptions||[]){
+   if(old.id===s.id||old.enabled!==true||
+      old.name!=='Taste of Gratitude Turso Preview Sandbox')continue;
+   let o;try{o=new URL(old.notification_url)}catch{}
+   if(!o||o.protocol!=='https:'||
+      !expectedHost.test(o.hostname)||o.pathname!=='/api/webhooks/square'||
+      o.search||o.hash)throw Error('OLD_CERTIFICATION_DESTINATION_UNSAFE_TO_MODIFY');
+   const disabled=await square('/v2/webhooks/subscriptions/'+encodeURIComponent(old.id),
+      'PUT',{subscription:{enabled:false}});
+   if(disabled.subscription?.enabled!==false)
+      throw Error('PREVIOUS_SANDBOX_SUBSCRIPTION_NOT_DISABLED');
+   report.disabledOlderCertificationSubscriptions++;
+ }
  console.log('PASS: Square Sandbox signed subscription exact immutable Preview');
  console.log('subscriptionId='+report.subscriptionId);
 }finally{persist()}
