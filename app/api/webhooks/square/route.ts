@@ -10,6 +10,7 @@ import { reconcileCapturedSquareRefund } from '@/lib/checkout/square-refund-ledg
 import { assertExactCapturedPayment } from '@/lib/checkout/provider-payment-amount';
 import { getSquareWebhookSignatureKey } from '@/lib/square';
 import { verifySquareWebhookSignature } from '@/lib/batches/square-webhook-auth';
+import {tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
 import { getIsolatedPreviewWebhookKey } from '@/lib/preview-square-webhook-key';
 import { reconcileSquareBatchReservation } from '@/lib/batches/reconcile-square-reservation';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
@@ -489,6 +490,25 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Isolated Turso buyer Preview does not touch the Mongo connector.
+    // Signature was validated above against the exact active Square Sandbox
+    // subscription key and public notification URL.
+    if (tursoPreviewSelected()) {
+      try {
+        const {reconcileTursoPreviewSignedWebhook}=await import(
+          '@/lib/checkout/turso-preview-webhook.mjs'
+        );
+        const reconciliation=await reconcileTursoPreviewSignedWebhook(webhookEvent);
+        return NextResponse.json(reconciliation);
+      } catch(error) {
+        logger.error('Webhook','Isolated Turso reconciliation requires retry', {
+          eventId,eventType,
+          code:error instanceof Error ? error.name : 'Unknown',
+        });
+        return NextResponse.json({received:false,error:'Reconciliation pending'}, {status:503});
+      }
+    }
+
     // Connect to database
     const { db } = await connectToDatabase();
     

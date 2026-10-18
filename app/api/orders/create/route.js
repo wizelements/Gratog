@@ -1,6 +1,8 @@
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
+import {tursoPreviewSelected,TursoPreviewRefusal} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {createTursoPreviewBuyerOrder} from '@/lib/checkout/turso-preview-buyer.mjs';
 import { createOrderAtomic } from '@/lib/transactions';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { createOrReuseCheckoutOrder, CheckoutAttemptConflictError, CheckoutAttemptPendingError } from '@/lib/checkout/single-order';
@@ -46,6 +48,14 @@ export async function POST(request) {
         },
         { status: 400 }
       );
+    }
+
+    // Isolated, explicitly enabled feature Preview uses Turso exclusively.
+    // Any missing Preview credential or unsupported delivery mode fails closed;
+    // production continues the existing Mongo-backed checkout below.
+    if (tursoPreviewSelected()) {
+      const payload=await createTursoPreviewBuyerOrder(orderData,idempotencyKey);
+      return NextResponse.json(payload);
     }
 
     // Fulfillment restrictions must be checked before creating a payable order.
@@ -271,6 +281,15 @@ export async function POST(request) {
 
     return NextResponse.json(result);
   } catch (error) {
+    if (error instanceof TursoPreviewRefusal) {
+      return NextResponse.json({success:false,code:error.code,
+        error:'This checkout option is temporarily unavailable. No charge was made.'},
+        {status:error.status});
+    }
+    if (error?.code === 'CHECKOUT_ATTEMPT_CONFLICT' || error?.code === 'CHECKOUT_LEDGER_MISSING') {
+      return NextResponse.json({success:false,code:'CHECKOUT_ATTEMPT_CONFLICT',
+        error:'This checkout attempt cannot be reused for a different cart.'},{status:409});
+    }
     if (error instanceof CheckoutAttemptConflictError) {
       return NextResponse.json({ success: false, code: 'CHECKOUT_ATTEMPT_CONFLICT', error: error.message }, { status: 409 });
     }

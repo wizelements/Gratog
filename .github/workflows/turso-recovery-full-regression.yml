@@ -38,6 +38,8 @@ jobs:
         run: npm test -- --reporter=dot
       - name: Fail-closed Gratitude Square signature regression
         run: npx vitest run tests/gratitude-square-webhook-signature.test.ts --reporter=verbose
+      - name: Explicit disposition inventory for all 13 skipped tests
+        run: node scripts/release/audit-skipped-tests.mjs
       - name: Release gate regression (no deployment mutation)
         run: node --test tests/release/turso-cutover-gates.test.mjs
       - name: Ensure no phantom inventory or placeholder-price availability
@@ -50,6 +52,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '26'
+      - name: Isolated Turso Preview pricing and security contracts
+        run: node --test tests/migration/turso-preview-pricing.test.mjs
       - name: Migration and 24-client inventory stress
         run: |
           node scripts/migrate/validate-schema.mjs

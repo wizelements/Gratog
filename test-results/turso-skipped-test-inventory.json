@@ -1,0 +1,30 @@
+{
+  "kind": "KNOWN_SKIP_DISPOSITION",
+  "observedSkipCount": 13,
+  "baseline": 13,
+  "tests": [
+    {
+      "suite": "tests/reviews-flow.test.ts",
+      "count": 7,
+      "status": "BLOCKED",
+      "cause": "Consumer review submission/read/voting API was removed while storefront still references it",
+      "requiredEvidence": "Restore secure APIs and verify moderation/privacy/limits, or disable UI and approve an explicit exclusion"
+    },
+    {
+      "suite": "tests/integration/checkout-mongo-race.test.ts",
+      "count": 5,
+      "status": "BLOCKED",
+      "cause": "Real replica-set checkout proof requires an isolated Mongo URI named tog_checkout_race_ci",
+      "requiredEvidence": "Run on actual isolated Mongo replica set, including concurrent stock, refund, market link races"
+    },
+    {
+      "suite": "tests/hydration-issues.test.ts",
+      "count": 1,
+      "status": "BLOCKED",
+      "cause": "SSR import verification for WhatsNewModal explicitly skipped",
+      "requiredEvidence": "Enable import test or independently certify component is unreachable and intentionally retired"
+    }
+  ],
+  "noUnknownSkips": true,
+  "releaseEligible": false
+}
