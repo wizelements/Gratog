@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {assertTursoPreviewEnvironment,priceTursoPreviewCart,
+import {assertTursoPreviewEnvironment,priceTursoPreviewCart,validateTursoPreviewPickup,
   TursoPreviewRefusal} from '../../lib/checkout/turso-preview-runtime.mjs';
 const env={
   VERCEL_ENV:'preview',VERCEL_GIT_COMMIT_REF:'feat/turso-checkout-recovery-20261017',
@@ -58,4 +58,30 @@ test('actual browser checkout pickup variants are supported without authorizing 
     await assert.rejects(()=>priceTursoPreviewCart(db,{...basket,fulfillmentType}),
       /TURSO_FULFILLMENT_NOT_CERTIFIED/);
   }
+});
+
+test('server validates migrated Serenbe market and selected pickup date before Square',async()=>{
+  const now=new Date('2026-10-17T21:00:00-04:00');
+  const db={get:async()=>({id:'695dd01de122fc20e6efdef1',
+    name:'Serenbe Farmers Market',day_of_week:6,active:1})};
+  const accepted=await validateTursoPreviewPickup(db,{
+    fulfillmentType:'pickup_market',
+    pickup:{locationId:'serenbe',date:'2026-10-24T04:00:00.000Z'},
+  },now);
+  assert.equal(accepted.pickup.marketId,'695dd01de122fc20e6efdef1');
+  for(const bad of [
+    {locationId:'dunwoody',date:'2026-10-24T04:00:00.000Z'},
+    {locationId:'browns_mill',date:'2026-10-24T04:00:00.000Z'},
+    {locationId:'serenbe',date:'2026-10-21T04:00:00.000Z'},
+    {locationId:'serenbe',date:'2026-10-17T04:00:00.000Z'},
+    {locationId:'serenbe',date:'2026-12-12T04:00:00.000Z'},
+  ]) {
+    await assert.rejects(()=>validateTursoPreviewPickup(db,{
+      fulfillmentType:'pickup_market',pickup:bad},now),TursoPreviewRefusal);
+  }
+  await assert.rejects(()=>validateTursoPreviewPickup({
+    get:async()=>({day_of_week:6,active:0})},{
+      fulfillmentType:'pickup_market',pickup:{
+        locationId:'serenbe',date:'2026-10-24T04:00:00.000Z'},
+    },now),TursoPreviewRefusal);
 });
