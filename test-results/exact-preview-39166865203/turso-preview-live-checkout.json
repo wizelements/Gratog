@@ -1,0 +1,103 @@
+{
+  "kind": "EXACT_PREVIEW_HTTP_SQUARE_AND_SIGNED_EVENT",
+  "githubSha": "617a6f1f183acb297409b04924643647d961c63c",
+  "preview": "https://gratog-crs83gtis-theangelsilvers-projects.vercel.app",
+  "orderId": "269bc606-6b28-4891-959e-7349053ba1d8",
+  "paymentId": "07xAyvyCbhvmmOa0h2J9IrDMv2eZY",
+  "refundId": "07xAyvyCbhvmmOa0h2J9IrDMv2eZY_yaCRh2huuAVieL0UpjYYFeKLi0DErkxI4Fc85LHxmda",
+  "notifications": [
+    {
+      "kind": "customer_confirmation",
+      "status": "sent",
+      "providerMessageId": "01a150dd-64f7-7955-b2eb-12b528fe74d0"
+    },
+    {
+      "kind": "staff_notification",
+      "status": "sent",
+      "providerMessageId": "01a150dd-6600-7a3c-b4f0-8a7db1594ea4"
+    }
+  ],
+  "checks": [
+    {
+      "name": "unprotected exact Preview has isolated Turso + Sandbox read",
+      "pass": true
+    },
+    {
+      "name": "buyer storefront catalog authoritative price and stock",
+      "pass": true
+    },
+    {
+      "name": "actual buyer HTTP order created at 1199 cents",
+      "pass": true
+    },
+    {
+      "name": "exact checkout replay returns same order",
+      "pass": true
+    },
+    {
+      "name": "changed cart with same key rejected before Square",
+      "pass": true
+    },
+    {
+      "name": "isolated Turso inventory reserved before Square",
+      "pass": true
+    },
+    {
+      "name": "buyer HTTP sandbox payment confirmed",
+      "pass": true
+    },
+    {
+      "name": "independent Square Sandbox captured exact amount",
+      "pass": true
+    },
+    {
+      "name": "Turso marks order paid exactly once",
+      "pass": true
+    },
+    {
+      "name": "customer and staff Resend messages accepted with IDs",
+      "pass": true
+    },
+    {
+      "name": "signed Resend delivery reconciled both exact order message IDs",
+      "pass": true
+    },
+    {
+      "name": "real signed Square payment webhook processed in staging",
+      "pass": true
+    },
+    {
+      "name": "real Sandbox refund submitted",
+      "pass": true
+    },
+    {
+      "name": "independently verified full Square Sandbox refund",
+      "pass": true
+    },
+    {
+      "name": "actual signed refund webhook reconciled Turso order",
+      "pass": true
+    },
+    {
+      "name": "refund provider event recorded once",
+      "pass": true
+    }
+  ],
+  "sandbox": true,
+  "cleanupPending": true,
+  "pass": true,
+  "notificationDeliveries": [
+    {
+      "kind": "customer_confirmation",
+      "providerMessageId": "01a150dd-64f7-7955-b2eb-12b528fe74d0",
+      "status": "delivered",
+      "deliveredAt": "2026-10-18T21:14:09.653Z"
+    },
+    {
+      "kind": "staff_notification",
+      "providerMessageId": "01a150dd-6600-7a3c-b4f0-8a7db1594ea4",
+      "status": "delivered",
+      "deliveredAt": "2026-10-18T21:14:09.967Z"
+    }
+  ]
+}
