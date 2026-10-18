@@ -124,6 +124,15 @@ jobs:
           NODE
       - name: Install runtime dependencies without any provider secrets in environment
         run: npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Apply additive schema to the exact isolated staging database
+        env:
+          TURSO_DATABASE_URL: libsql://gratog-migration-cert-20261017-swatkins.aws-us-east-1.turso.io
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
+          TURSO_TARGET_ENV: staging
+          TURSO_APPROVED_STAGING_NAME: gratog-migration-cert-20261017
+        run: node scripts/migrate/apply-schema.mjs
+      - name: Check certification subscription ownership guards
+        run: node --test tests/migration/square-certification-subscription.test.mjs
       - name: Create or verify Square Sandbox signed subscription at that exact URL
         env:
           SQUARE_ENVIRONMENT: sandbox

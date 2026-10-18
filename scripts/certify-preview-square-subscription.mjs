@@ -45,7 +45,7 @@ async function square(path,method='GET',body){
        .replace(/[A-Za-z0-9_=-]{28,}/g,'[identifier]')
        .replace(/[\u0000-\u001f\u007f]/g,' ').slice(0,500);
    };
-   const requestId=res.headers.get('x-request-id')||res.headers.get('square-request-id')||'';
+   const requestId=res.headers.get('x-request-id')||res.headers.get('x-sq-request-id')||res.headers.get('square-request-id')||'';
    report.providerFailure={method,operation:path.replace(/wbhk_[A-Za-z0-9]+/g,'[subscription]'),
      httpStatus:res.status,requestId:/^[A-Za-z0-9:_-]{1,180}$/.test(requestId)?requestId:null,
      errors:(Array.isArray(fault.errors)?fault.errors:[]).slice(0,4).map(e=>({category:clean(e.category),code:clean(e.code),field:clean(e.field),detail:clean(e.detail)}))};

@@ -102,6 +102,14 @@ async function run(){
  },20,1500);
  report.notifications=(outbox||[]).map(x=>({kind:x.kind,status:x.status,providerMessageId:x.provider_message_id}));
  check('customer and staff Resend messages accepted with IDs',outbox?.length===2);
+ const deliveries=await eventually(async()=>{
+   const rows=await db.all('SELECT kind,provider_message_id,delivery_status,delivered_at FROM checkout_notification_deliveries WHERE order_id=?',orderId);
+   return rows.length===2&&rows.every(row=>row.delivery_status==='delivered'&&row.delivered_at&&
+     outbox.some(message=>message.kind===row.kind&&message.provider_message_id===row.provider_message_id))?rows:null;
+ },30,2000);
+ report.notificationDeliveries=(deliveries||[]).map(row=>({kind:row.kind,providerMessageId:row.provider_message_id,status:row.delivery_status,deliveredAt:row.delivered_at}));
+ check('signed Resend delivery reconciled both exact order message IDs',deliveries?.length===2);
+
  const signed=await eventually(async()=>{
    const events=await db.all("SELECT event_id,event_type,status,result_json FROM webhook_events WHERE provider='square' AND status='processed' AND event_type LIKE 'payment.%' ORDER BY processed_at DESC LIMIT 50");
    return events.find(x=>{

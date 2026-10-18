@@ -168,6 +168,12 @@ export async function POST(request) {
     // Provider signature verification above must complete before this boundary.
     if (tursoPreview) {
       const event = JSON.parse(rawBody);
+      // This endpoint certifies only the isolated QA outbox. Account-wide
+      // Production delivery events must never be persisted in staging.
+      if (!Array.isArray(event?.data?.to) || event.data.to.length !== 1 ||
+          String(event.data.to[0]).trim().toLowerCase() !== 'delivered@resend.dev') {
+        return NextResponse.json({received:true,ignored:true});
+      }
       const previewDb = await openTursoPreview(); // asserts exact branch, DB and Sandbox identities
       const reconciliation = await recordVerifiedTursoResendEvent(previewDb, {
         eventId: svixId, event, signatureVerified: true,
