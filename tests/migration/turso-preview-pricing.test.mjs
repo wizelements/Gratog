@@ -43,3 +43,19 @@ test('non-pickup/discount checkout cannot incorrectly skip fee accounting',async
   await assert.rejects(()=>priceTursoPreviewCart(db,{...basket,fulfillmentType:'delivery'}),/NOT_CERTIFIED/);
   await assert.rejects(()=>priceTursoPreviewCart(db,{...basket,couponCode:'FREE'}),/NOT_CERTIFIED/);
 });
+
+test('actual browser checkout pickup variants are supported without authorizing delivery',async()=>{
+  const db={get:async()=>strawberry};
+  for(const fulfillmentType of ['pickup_market','pickup_dunwoody']) {
+    const actualBrowserShape={...basket,fulfillmentType,pickup:{
+      locationId:'market-test',date:'2026-10-18T12:00:00.000Z'},
+      couponCode:undefined,deliveryAddress:undefined,shippingAddress:undefined,
+    };
+    const quote=await priceTursoPreviewCart(db,actualBrowserShape);
+    assert.equal(quote.totalCents,2398);
+  }
+  for(const fulfillmentType of ['delivery','shipping','pickup_other','pickup_market_delivery']) {
+    await assert.rejects(()=>priceTursoPreviewCart(db,{...basket,fulfillmentType}),
+      /TURSO_FULFILLMENT_NOT_CERTIFIED/);
+  }
+});
