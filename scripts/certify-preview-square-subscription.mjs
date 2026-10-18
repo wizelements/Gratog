@@ -17,7 +17,8 @@ if(!parsed||parsed.protocol!=='https:'||!expectedHost.test(parsed.hostname)||
 const url=base+'/api/webhooks/square';
 const report={commit:process.env.GITHUB_SHA,previewHost:parsed.hostname,
    created:false,subscriptionId:null,disabledOlderCertificationSubscriptions:0,signatureKeyReturned:false,
-   providerEnabled:false,providerUrlMatches:false,providerEventsMatch:false};
+   providerEnabled:false,providerUrlMatches:false,providerEventsMatch:false,
+   subscriptionListHttp:null,activeSubscriptionCount:null,providerFailure:null};
 function persist(){
  mkdirSync('test-results',{recursive:true});
  writeFileSync('test-results/preview-square-webhook-subscription.json',JSON.stringify(report,null,2)+'\n');
@@ -30,11 +31,24 @@ async function square(path,method='GET',body){
    ...(body?{body:JSON.stringify(body)}:{})
  });
  if(!res.ok){
-   // Only fixed-schema Square codes, never response details, credentials or URLs.
+   // Bounded provider diagnostics with credentials and identifiers removed.
    const fault=await res.json().catch(()=>({}));
    const codes=(Array.isArray(fault.errors)?fault.errors:[]).slice(0,4).map(e=>
      [e.category,e.code].filter(v=>typeof v==='string'&&/^[A-Z_]{2,60}$/.test(v)).join(':')
    ).filter(Boolean);
+   const clean=value=>{
+     let out=String(value||'');
+     for(const secret of [process.env.SQUARE_SANDBOX_ACCESS_TOKEN,process.env.TURSO_STAGING_AUTH_TOKEN].filter(Boolean))out=out.replaceAll(secret,'[credential]');
+     return out.replace(/https?:\/\/[^\s"'<>]+/g,'[url]')
+       .replace(/[^\s@]+@[^\s@]+\.[^\s@]+/g,'[email]')
+       .replace(/[A-Za-z0-9_=-]{28,}/g,'[identifier]')
+       .replace(/[\u0000-\u001f\u007f]/g,' ').slice(0,500);
+   };
+   const requestId=res.headers.get('x-request-id')||res.headers.get('square-request-id')||'';
+   report.providerFailure={method,operation:path.replace(/wbhk_[A-Za-z0-9]+/g,'[subscription]'),
+     httpStatus:res.status,requestId:/^[A-Za-z0-9:_-]{1,180}$/.test(requestId)?requestId:null,
+     errors:(Array.isArray(fault.errors)?fault.errors:[]).slice(0,4).map(e=>({category:clean(e.category),code:clean(e.code),field:clean(e.field),detail:clean(e.detail)}))};
+   console.error('SQUARE_SANITIZED_FAILURE '+JSON.stringify(report.providerFailure));
    throw Error('SQUARE_PROVIDER_HTTP_'+res.status+(codes.length?'_'+codes.join(','):'_UNCLASSIFIED'));
  }
  return res.json();
@@ -46,6 +60,9 @@ try {
    throw Error('PUBLIC_PREVIEW_STAGING_NOT_READY');
  // Queryless provider request avoids implementation-specific query parsing; enabled subscriptions are sufficient for exact active URL safety checks.
  const found=await square('/v2/webhooks/subscriptions');
+ report.subscriptionListHttp=200;
+ report.activeSubscriptionCount=(found.subscriptions||[]).length;
+ console.log('PASS: GitHub Square Sandbox subscription listing HTTP 200; active='+report.activeSubscriptionCount);
  if(found.cursor)throw Error('WEBHOOK_SUBSCRIPTION_PAGINATION_REQUIRES_REVIEW');
  const matches=(found.subscriptions||[]).filter(s=>s.notification_url===url);
  if(matches.length>1)throw Error('DUPLICATE_WEBHOOK_SUBSCRIPTIONS');

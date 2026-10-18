@@ -47,7 +47,15 @@ export async function GET() {
     const provider=await response.json();
     const validSandboxLocation=Array.isArray(provider.locations)&&
       provider.locations.some((x:any)=>x.id===process.env.SQUARE_LOCATION_ID&&x.status==='ACTIVE');
+    step='square_subscription_list';
+    const subscriptions=await fetch('https://connect.squareupsandbox.com/v2/webhooks/subscriptions',{
+      redirect:'error',signal:AbortSignal.timeout(12000),cache:'no-store',
+      headers:{Authorization:'Bearer '+process.env.SQUARE_ACCESS_TOKEN,'Square-Version':'2026-09-16'},
+    });
+    if(subscriptions.status!==200)throw Error('SQUARE_SANDBOX_SUBSCRIPTION_LIST_UNAVAILABLE');
     return NextResponse.json({
+      squareWebhookSubscriptionListHttp:subscriptions.status,
+      squareWebhookSubscriptionListVerified:true,
       ready:validSandboxLocation,
       commit:process.env.VERCEL_GIT_COMMIT_SHA || null,
       code:validSandboxLocation?'READ_ONLY_STAGING_READY':'SQUARE_SANDBOX_LOCATION_MISMATCH',
