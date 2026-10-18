@@ -17,7 +17,7 @@ const expectedPages = viewports.length * urls.length;
 const report = { kind: 'READ_ONLY_BROWSER_AUDIT', status: 'RUNNING', startedAt: new Date().toISOString(), base,
   expectedCommit: process.env.EXPECTED_SHA || null, engine,
   providerFinancialTest: false, expectedCommitVerifiedByBrowser: false,
-  pages: [], errors: [], deliberatelyBlockedMutations: [] };
+  pages: [], errors: [], deliberatelyBlockedMutations: [], canceledLinkPrefetches: [] };
 async function main() {
   fs.writeFileSync(path.join(directory, 'browser-readonly.json'), JSON.stringify(report, null, 2));
   if (engine === 'puppeteer') {
@@ -71,8 +71,17 @@ async function main() {
       });
       page.on('requestfailed', request => {
         if (request.url().startsWith(base) && ['GET', 'HEAD'].includes(request.method())) {
-          failures.push({ type: 'requestfailed', path: new URL(request.url()).pathname,
-            message: request.failure()?.errorText || 'UNKNOWN_NETWORK_FAILURE' });
+          const message = request.failure()?.errorText || 'UNKNOWN_NETWORK_FAILURE';
+          const route = new URL(request.url()).pathname;
+          // Next route prefetches are routinely canceled when page.goto navigates
+          // to the next page. Preserve the evidence; only aborts of fetch/XHR
+          // count as nonfatal. All document, asset, HTTP and hydration failures
+          // remain release blockers.
+          if (message === 'net::ERR_ABORTED' && ['fetch', 'xhr'].includes(request.resourceType())) {
+            report.canceledLinkPrefetches.push({ viewport: name, path: route });
+            return;
+          }
+          failures.push({ type: 'requestfailed', path: route, message });
         }
       });
       for (const route of urls) {
