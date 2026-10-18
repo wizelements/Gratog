@@ -1,14 +1,16 @@
 {
   "kind": "KNOWN_SKIP_DISPOSITION",
-  "observedSkipCount": 12,
+  "observedSkipCount": 5,
   "baseline": 12,
+  "sourceInventoryOnly": true,
   "tests": [
     {
       "suite": "tests/reviews-flow.test.ts",
-      "count": 7,
-      "status": "BLOCKED",
-      "cause": "Consumer review submission/read/voting API was removed while storefront still references it",
-      "requiredEvidence": "Restore secure APIs and verify moderation/privacy/limits, or disable UI and approve an explicit exclusion"
+      "count": 0,
+      "activeReplacements": 7,
+      "status": "RETIRED_WITH_ACTIVE_REGRESSIONS",
+      "cause": "Public review APIs and page were already retired; product-page controls and false submission confirmation are now removed",
+      "requiredEvidence": "Run all seven active retirement regressions; preserve authenticated access to historical records"
     },
     {
       "suite": "tests/integration/checkout-mongo-race.test.ts",
@@ -26,5 +28,8 @@
     }
   ],
   "noUnknownSkips": true,
-  "releaseEligible": false
+  "releaseEligible": false,
+  "skipDeclarationFiles": [
+    "tests/integration/checkout-mongo-race.test.ts"
+  ]
 }

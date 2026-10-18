@@ -140,15 +140,13 @@ export async function getSquareCatalog(options: {
           id: obj.id,
           name: item.name || 'Unnamed Product',
           description: item.description || item.description_plaintext,
-          price: approvedBlueLotus
-            ? approvedVariation ? 36 : 0
-            : priceMoney.amount ? parseInt(String(priceMoney.amount)) / 100 : 0,
+          price: priceMoney.amount ? Number(priceMoney.amount) / 100 : 0,
           currency: priceMoney.currency || 'USD',
           imageUrl: item.image_ids?.[0] || item.imageIds?.[0]
             ? `${baseUrl}/v2/catalog/object/${item.image_ids?.[0] || item.imageIds?.[0]}` 
             : undefined,
           category: item.category_id || item.categoryId,
-          available: (!approvedBlueLotus || Boolean(approvedVariation)) &&
+          available: (!approvedBlueLotus || (Boolean(approvedVariation) && Number(priceMoney.amount) === 3600 && priceMoney.currency === 'USD')) &&
             item.is_archived !== true && item.isArchived !== true &&
             obj.is_deleted !== true && obj.isDeleted !== true,
         };
@@ -208,15 +206,13 @@ export async function getSquareProduct(id: string): Promise<CatalogItem | null> 
       id: obj.id,
       name: item.name || 'Unnamed Product',
       description: item.description || item.description_plaintext,
-      price: approvedBlueLotus
-        ? approvedVariation ? 36 : 0
-        : priceMoney.amount ? parseInt(String(priceMoney.amount)) / 100 : 0,
+      price: priceMoney.amount ? Number(priceMoney.amount) / 100 : 0,
       currency: priceMoney.currency || 'USD',
       imageUrl: item.image_ids?.[0] || item.imageIds?.[0]
         ? `${baseUrl}/v2/catalog/object/${item.image_ids?.[0] || item.imageIds?.[0]}` 
         : undefined,
       category: item.category_id || item.categoryId,
-      available: (!approvedBlueLotus || Boolean(approvedVariation)) &&
+      available: (!approvedBlueLotus || (Boolean(approvedVariation) && Number(priceMoney.amount) === 3600 && priceMoney.currency === 'USD')) &&
         item.is_archived !== true && item.isArchived !== true &&
         obj.is_deleted !== true && obj.isDeleted !== true,
     };

@@ -55,6 +55,8 @@ def main():
         "mongoPitrCertified": False, "mongoReverseDeltaCertified": False,
         "sourceBefore": {}, "cloneSnapshot": {},
         "cloneCanaryWritten": False, "sourceCanaryAbsent": False,
+        "initialIntegrityVerified": False, "finalIntegrityVerified": False,
+        "errorCode": None,
         "cloneDestroyed": False, "passed": False,
     }
     # Never destroy an unfamiliar target.
@@ -70,6 +72,7 @@ def main():
         if report["cloneSnapshot"] != report["sourceBefore"]:
             raise RuntimeError("SNAPSHOT_INVARIANT_MISMATCH")
         integrity(CLONE)
+        report["initialIntegrityVerified"] = True
         cli("shell", CLONE, "CREATE TABLE opee_isolated_restore_canary(token TEXT PRIMARY KEY);")
         cli("shell", CLONE, "INSERT INTO opee_isolated_restore_canary VALUES ('restore-test-only');")
         report["cloneCanaryWritten"] = scalar(CLONE,
@@ -78,6 +81,10 @@ def main():
         if not report["cloneCanaryWritten"] or not report["sourceCanaryAbsent"]:
             raise RuntimeError("CLONE_ISOLATION_TEST_FAILED")
         integrity(CLONE)
+        report["finalIntegrityVerified"] = True
+    except Exception as error:
+        report["errorCode"] = str(error)[:160]
+        raise
     finally:
         # Even failed drills MUST NOT leave sensitive copied staging data behind.
         try:
@@ -87,6 +94,8 @@ def main():
             report["passed"] = (
                 report["cloneDestroyed"] and report["cloneCanaryWritten"]
                 and report["sourceCanaryAbsent"]
+                and report["initialIntegrityVerified"] and report["finalIntegrityVerified"]
+                and report["errorCode"] is None
                 and report["sourceBefore"] == report["cloneSnapshot"]
             )
             # Evidence contains counts only, no copied customer data or tokens.

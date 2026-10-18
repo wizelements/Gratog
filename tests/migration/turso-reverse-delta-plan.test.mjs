@@ -5,10 +5,11 @@ const freezeWatermark='2026-10-17T20:00:00Z';
 const source={
   freezeWatermark,
   orders:[{id:'o1',total_cents:1199,currency:'USD',payment_status:'refunded',
-    updated_at:'2026-10-17T20:01:00Z'}],
+    updated_at:'2026-10-17T20:01:00Z',square_order_id:'sq-o1'}],
   payments:[{order_id:'o1',square_payment_id:'p1',amount_cents:1199,currency:'USD',status:'COMPLETED'}],
   refunds:[{order_id:'o1',refund_id:'r1',payment_id:'p1',amount_cents:1199,currency:'USD'}],
-  providerPayments:[{id:'p1',status:'COMPLETED',amountCents:1199,currency:'USD'}],
+  providerPayments:[{id:'p1',status:'COMPLETED',amountCents:1199,currency:'USD',
+    squareOrderId:'sq-o1',referenceId:'o1'}],
   providerRefunds:[{id:'r1',paymentId:'p1',status:'COMPLETED',amountCents:1199,currency:'USD'}],
 };
 test('provider-verified full refund produces deterministic plan-only recovery operations',()=>{
@@ -35,4 +36,34 @@ test('any missing freeze watermark or out-of-window event blocks rollback',()=>{
   assert.throws(()=>planVerifiedReverseDelta({...source,freezeWatermark:null}),ReverseDeltaBlocked);
   assert.throws(()=>planVerifiedReverseDelta({...source,
     orders:[{...source.orders[0],updated_at:'2026-10-17T19:59:59Z'}]}),ReverseDeltaBlocked);
+});
+test('invalid timestamps cannot pass the watermark comparison',()=>{
+  assert.throws(()=>planVerifiedReverseDelta({...source,
+    orders:[{...source.orders[0],updated_at:'not-a-date'}]}),
+    {code:'DELTA_OUTSIDE_FREEZE_WINDOW'});
+});
+test('one provider capture cannot fund two restored orders',()=>{
+  assert.throws(()=>planVerifiedReverseDelta({...source,
+    orders:[...source.orders,{...source.orders[0],id:'o2'}],
+    payments:[...source.payments,{...source.payments[0],order_id:'o2'}]}),
+    {code:'DELTA_CAPTURE_INVALID'});
+});
+test('provider readback must bind both Square order and canonical order',()=>{
+  for(const change of [{squareOrderId:'other-square-order'}, {referenceId:'other-order'}]) {
+    assert.throws(()=>planVerifiedReverseDelta({...source,
+      providerPayments:[{...source.providerPayments[0],...change}]}),
+      {code:'SQUARE_CAPTURE_ORDER_BINDING_MISMATCH'});
+  }
+});
+test('duplicate provider evidence is ambiguous even if amounts agree',()=>{
+  assert.throws(()=>planVerifiedReverseDelta({...source,
+    providerPayments:[...source.providerPayments,...source.providerPayments]}),
+    {code:'SQUARE_CAPTURE_READBACK_AMBIGUOUS'});
+  assert.throws(()=>planVerifiedReverseDelta({...source,
+    providerRefunds:[...source.providerRefunds,...source.providerRefunds]}),
+    {code:'SQUARE_REFUND_READBACK_AMBIGUOUS'});
+});
+test('booleans cannot be interpreted as one cent',()=>{
+  assert.throws(()=>planVerifiedReverseDelta({...source,
+    orders:[{...source.orders[0],total_cents:true}]}),{code:'DELTA_ORDER_INVALID'});
 });

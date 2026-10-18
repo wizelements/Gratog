@@ -201,11 +201,23 @@ function unitPriceCentsFromProduct(
   variationId: string | undefined | null
 ): number {
   const v = resolveVariation(product, variationId);
-  // Merchant-approved selling price for the *only* Blue Lotus SKU is $36.
-  // The legacy Square/Mongo catalog may still carry a $35 price until the
-  // credential-gated merchant catalog reconciliation is performed.
-  if (product.id === 'DSROEB4HMZK63V7IGBH6SSJH' &&
-      v?.id === 'QIX6D5PRQKX4TKEMTQUJPZUX') return 3600;
+  // Merchant approval cannot silently overwrite a conflicting provider price.
+  // Keep the known identity conflict unavailable until source lineage is fixed.
+  if (product.id === 'F2YVC7OVRYJU575JXROKFHFT') {
+    throw new CartPricingError('CATALOG_IDENTITY_UNRECONCILED', 'This product is awaiting catalog confirmation.', 409);
+  }
+  const approvedCents = product.id === 'DSROEB4HMZK63V7IGBH6SSJH' ? 3600
+    : product.id === 'KZXEV24XZ2UCQUJ64BH7ZUJP' ? 1199 : null;
+  if (approvedCents !== null) {
+    const variationCents = typeof v?.priceCents === 'number' ? v.priceCents
+      : typeof v?.price === 'number' ? toCents(v.price) : null;
+    if (!v || variationCents !== approvedCents ||
+        (product.id === 'DSROEB4HMZK63V7IGBH6SSJH' &&
+         (v.id !== 'QIX6D5PRQKX4TKEMTQUJPZUX' || !/^16\s*oz$/i.test(v.name || '')))) {
+      throw new CartPricingError('CATALOG_PRICE_UNRECONCILED', 'This selection is awaiting catalog confirmation.', 409);
+    }
+    return variationCents;
+  }
   if (v && typeof v.priceCents === 'number') return v.priceCents;
   if (v && typeof v.price === 'number') return toCents(v.price);
   if (typeof product.priceCents === 'number') return product.priceCents;
