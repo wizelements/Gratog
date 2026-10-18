@@ -3,6 +3,7 @@
    immutable Preview. Never prints bearer tokens or subscription signature keys. */
 import {randomUUID} from 'node:crypto';
 import {mkdirSync,writeFileSync} from 'node:fs';
+import {selectCertificationSubscription,CERTIFICATION_SUBSCRIPTION_NAME} from '../lib/checkout/square-certification-subscription.mjs';
 const branch='refs/heads/feat/turso-checkout-recovery-20261017';
 const expectedHost=/^gratog-[a-z0-9]+-theangelsilvers-projects\.vercel\.app$/;
 if(process.env.GITHUB_EVENT_NAME!=='workflow_dispatch'||
@@ -16,7 +17,7 @@ if(!parsed||parsed.protocol!=='https:'||!expectedHost.test(parsed.hostname)||
    throw Error('EXACT_IMMUTABLE_PREVIEW_REQUIRED');
 const url=base+'/api/webhooks/square';
 const report={commit:process.env.GITHUB_SHA,previewHost:parsed.hostname,
-   created:false,subscriptionId:null,disabledOlderCertificationSubscriptions:0,signatureKeyReturned:false,
+   created:false,reusedAndRetargeted:false,subscriptionId:null,disabledOlderCertificationSubscriptions:0,signatureKeyReturned:false,
    providerEnabled:false,providerUrlMatches:false,providerEventsMatch:false,
    subscriptionListHttp:null,activeSubscriptionCount:null,providerFailure:null};
 function persist(){
@@ -59,15 +60,22 @@ try {
  if(ready.status!==200||!((proof)=>proof.code==='READ_ONLY_STAGING_READY'&&proof.commit===process.env.GITHUB_SHA)(await ready.json()))
    throw Error('PUBLIC_PREVIEW_STAGING_NOT_READY');
  // Queryless provider request avoids implementation-specific query parsing; enabled subscriptions are sufficient for exact active URL safety checks.
- const found=await square('/v2/webhooks/subscriptions');
+ const found=await square('/v2/webhooks/subscriptions?include_disabled=true');
  report.subscriptionListHttp=200;
- report.activeSubscriptionCount=(found.subscriptions||[]).length;
+ report.activeSubscriptionCount=(found.subscriptions||[]).filter(s=>s.enabled===true).length;
+ report.totalSubscriptionCount=(found.subscriptions||[]).length;
  console.log('PASS: GitHub Square Sandbox subscription listing HTTP 200; active='+report.activeSubscriptionCount);
  if(found.cursor)throw Error('WEBHOOK_SUBSCRIPTION_PAGINATION_REQUIRES_REVIEW');
- const matches=(found.subscriptions||[]).filter(s=>s.notification_url===url);
- if(matches.length>1)throw Error('DUPLICATE_WEBHOOK_SUBSCRIPTIONS');
- let s=matches[0];
- if(!s){
+ const selected=selectCertificationSubscription(found.subscriptions||[],url);
+ let s=selected.subscription;
+ if(selected.action==='update'){
+   const updated=await square('/v2/webhooks/subscriptions/'+encodeURIComponent(s.id),'PUT',{
+     subscription:{name:CERTIFICATION_SUBSCRIPTION_NAME,enabled:true,
+       notification_url:url,event_types:events,api_version:'2026-09-16'}
+   });
+   s=updated.subscription;report.reusedAndRetargeted=true;
+ }
+ if(selected.action==='create'){
    const created=await square('/v2/webhooks/subscriptions','POST',{
      idempotency_key:randomUUID(),
      subscription:{name:'Taste of Gratitude Turso Preview Sandbox',enabled:true,
