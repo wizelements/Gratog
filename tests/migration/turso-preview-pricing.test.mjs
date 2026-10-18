@@ -6,7 +6,7 @@ const env={
   VERCEL_ENV:'preview',VERCEL_GIT_COMMIT_REF:'feat/turso-checkout-recovery-20261017',
   SQUARE_ENVIRONMENT:'sandbox',SQUARE_ACCESS_TOKEN:'sandbox',
   SQUARE_LOCATION_ID:'sandbox-location',JWT_SECRET:'test-secret',
-  TURSO_STAGING_DATABASE_URL:'libsql://gratog-migration-cert-20261017-swatkins.aws-us-east-1.turso.io',
+  TURSO_STAGING_DATABASE_URL:'libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io',
   TURSO_STAGING_AUTH_TOKEN:'x'.repeat(25),
 };
 test('branch/production isolation is exact',()=>{

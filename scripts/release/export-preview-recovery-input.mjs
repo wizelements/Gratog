@@ -2,7 +2,7 @@
 /** READ ONLY: export one certified QA order and fresh authenticated Sandbox readbacks. */
 import {connect} from '@tursodatabase/serverless';
 import {mkdirSync,writeFileSync} from 'node:fs';
-const target='libsql://gratog-migration-cert-20261017-swatkins.aws-us-east-1.turso.io';
+const target='libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io';
 const {RECOVERY_ORDER_ID:orderId,PREVIEW_BASE_URL:preview,CERTIFIED_PREVIEW_SHA:sha}=process.env;
 if(process.env.GITHUB_EVENT_NAME!=='workflow_dispatch'||process.env.GITHUB_REF!=='refs/heads/feat/turso-checkout-recovery-20261017'||
  process.env.TURSO_STAGING_DATABASE_URL!==target||!process.env.TURSO_STAGING_AUTH_TOKEN||

@@ -20,7 +20,7 @@ export function cents(value, field, unit = 'cents') {
   if (!/^-?\d+(?:\.\d+)?$/.test(source)) throw new Error(`INVALID_MONEY:${field}`);
   const parsed = Number(source);
   if (unit === 'cents') {
-    if (!Number.isInteger(parsed)) throw new Error(`INEXACT_MONEY:${field}`);
+    if (!Number.isSafeInteger(parsed)) throw new Error(`INEXACT_OR_UNSAFE_MONEY:${field}`);
     return parsed;
   }
   if (unit !== 'dollars') throw new Error(`UNKNOWN_MONEY_UNIT:${field}`);

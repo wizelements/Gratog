@@ -31,8 +31,8 @@ jobs:
     timeout-minutes: 15
     environment: square-sandbox-certification
     env:
-      TURSO_APPROVED_STAGING_NAME: gratog-migration-cert-20261017
-      TURSO_STAGING_DATABASE_URL: libsql://gratog-migration-cert-20261017-swatkins.aws-us-east-1.turso.io
+      TURSO_APPROVED_STAGING_NAME: gratog-migration-cert-20261018
+      TURSO_STAGING_DATABASE_URL: libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io
       TURSO_STAGING_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
       SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
       SQUARE_ENVIRONMENT: sandbox
@@ -138,10 +138,10 @@ jobs:
         run: npm ci --omit=dev --ignore-scripts --no-audit --no-fund
       - name: Apply additive schema to the exact isolated staging database
         env:
-          TURSO_DATABASE_URL: libsql://gratog-migration-cert-20261017-swatkins.aws-us-east-1.turso.io
+          TURSO_DATABASE_URL: libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
           TURSO_TARGET_ENV: staging
-          TURSO_APPROVED_STAGING_NAME: gratog-migration-cert-20261017
+          TURSO_APPROVED_STAGING_NAME: gratog-migration-cert-20261018
         run: node scripts/migrate/apply-schema.mjs
       - name: Check certification subscription ownership guards
         run: node --test tests/migration/square-certification-subscription.test.mjs
@@ -152,7 +152,7 @@ jobs:
         run: node scripts/certify-preview-square-subscription.mjs
       - name: Real customer-facing HTTP payment, refund, webhook and notification test
         env:
-          TURSO_STAGING_DATABASE_URL: libsql://gratog-migration-cert-20261017-swatkins.aws-us-east-1.turso.io
+          TURSO_STAGING_DATABASE_URL: libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io
           TURSO_STAGING_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
           SQUARE_ENVIRONMENT: sandbox
           SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
@@ -188,7 +188,7 @@ jobs:
           PREVIEW_BASE_URL: ${{ inputs.preview_base_url }}
           CERTIFIED_PREVIEW_SHA: ${{ inputs.certified_preview_sha }}
           RECOVERY_ORDER_ID: ${{ inputs.read_only_recovery_order_id }}
-          TURSO_STAGING_DATABASE_URL: libsql://gratog-migration-cert-20261017-swatkins.aws-us-east-1.turso.io
+          TURSO_STAGING_DATABASE_URL: libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io
           TURSO_STAGING_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
           SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
           SQUARE_ENVIRONMENT: sandbox

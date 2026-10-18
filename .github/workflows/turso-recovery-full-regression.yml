@@ -55,7 +55,7 @@ jobs:
       - name: Isolated Turso Preview pricing and security contracts
         run: node --test tests/migration/turso-preview-pricing.test.mjs tests/migration/turso-reverse-delta-plan.test.mjs tests/migration/turso-order-read.test.mjs tests/migration/turso-notification-delivery.test.mjs tests/migration/mongo-clone-reverse-delta.test.mjs
       - name: Backup encryption and certification subscription ownership regressions
-        run: node --test tests/migration/mongo-snapshot-archive.test.mjs tests/migration/square-certification-subscription.test.mjs
+        run: node --test tests/migration/mongo-snapshot-archive.test.mjs tests/migration/square-certification-subscription.test.mjs tests/migration/legacy-commerce-references.test.mjs tests/migration/turso-preview-ownership.test.mjs
       - name: Provider truth and catalog authority regressions
         run: node --experimental-vm-modules --test tests/release/*.test.mjs
       - name: Restore report failure-injection regressions

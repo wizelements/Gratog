@@ -31,7 +31,8 @@ test('rejects fail closed and verified schema is pinned to the latest checkout i
  assert.match(read('scripts/migrate/verify-mongodb-turso.mjs'),/if \(!report\.pass\) process\.exitCode = 1/);
  const schema=read('scripts/migrate/verify-schema.mjs');
  assert.match(schema,/0013_notification_delivery\.sql/);
+ assert.match(schema,/0014_legacy_commerce_references\.sql/);
  assert.match(schema,/checkout_notification_delivery_events/);
  assert.match(schema,/checkout_notification_deliveries/);
- assert.match(schema,/tables\.length===43&&versions\.length===13/);
+ assert.match(schema,/tables\.length===45&&versions\.length===14/);
 });

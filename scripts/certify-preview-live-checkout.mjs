@@ -4,7 +4,7 @@
 import {randomUUID} from 'node:crypto';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {connect} from '@tursodatabase/serverless';
-const URL='libsql://gratog-migration-cert-20261017-swatkins.aws-us-east-1.turso.io';
+const URL='libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io';
 const branch='refs/heads/feat/turso-checkout-recovery-20261017';
 const preview=process.env.PREVIEW_BASE_URL||'';
 if(process.env.GITHUB_EVENT_NAME!=='workflow_dispatch'||

@@ -59,7 +59,7 @@ jobs:
       - name: Real customer-facing HTTP payment, refund, webhook and notification test
         env:
           PREVIEW_BASE_URL: ${{ inputs.preview_base_url }}
-          TURSO_STAGING_DATABASE_URL: libsql://gratog-migration-cert-20261017-swatkins.aws-us-east-1.turso.io
+          TURSO_STAGING_DATABASE_URL: libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io
           TURSO_STAGING_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
           SQUARE_ENVIRONMENT: sandbox
           SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}

@@ -7,6 +7,7 @@ import { withRetry } from './retry.mjs';
 import { commitBatch } from './batch-runner.mjs';
 import { decodeCheckpointId, encodeCheckpointId } from './checkpoint.mjs';
 import { insertStatement } from './upsert-policy.mjs';
+import {bindOrderReferences,bindCustomerReferences} from './reference-context.mjs';
 
 const require = createRequire(import.meta.url);
 const { MongoClient } = require('mongodb');
@@ -51,11 +52,11 @@ const turso = dryRun ? null : connect({ url: process.env.TURSO_DATABASE_URL, aut
 try {
   await mongo.connect();
   const db = mongo.db('taste_of_gratitude');
-  const customerDocs = await db.collection('customers').find({}, { projection: { _id: 1, email: 1, squareCustomerId: 1 } }).toArray();
+  const customerDocs = await db.collection('customers').find({}, { projection: { _id: 1, id: 1, email: 1, squareCustomerId: 1 } }).toArray();
   const context = { customerById: new Map(), customerBySquareId: new Map(), customerByEmail: new Map(), marketByReference: new Map(), orderByReference: new Map(), productSlugCounts: new Map() };
   const emailCounts = new Map();
   for (const customer of customerDocs) {
-    const id = String(customer._id); context.customerById.set(id, id);
+    const id = String(customer._id); bindCustomerReferences(context.customerById,customer);
     if (customer.squareCustomerId != null) context.customerBySquareId.set(String(customer.squareCustomerId), id);
     if (typeof customer.email === 'string' && customer.email.trim()) { const email = customer.email.trim().toLowerCase(); emailCounts.set(email, (emailCounts.get(email) ?? 0) + 1); context.customerByEmail.set(email, id); }
   }
@@ -64,9 +65,8 @@ try {
     const targetId = String(marketDoc._id);
     for (const reference of [marketDoc._id, marketDoc.id, marketDoc.slug]) if (reference != null) context.marketByReference.set(String(reference), targetId);
   }
-  for await (const orderDoc of db.collection('orders').find({}, { projection: { _id: 1, squareOrderId: 1 } })) {
-    const targetId = String(orderDoc._id); context.orderByReference.set(targetId, targetId);
-    if (orderDoc.squareOrderId != null) context.orderByReference.set(String(orderDoc.squareOrderId), targetId);
+  for await (const orderDoc of db.collection('orders').find({}, { projection: { _id: 1, id: 1, squareOrderId: 1 } })) {
+    bindOrderReferences(context.orderByReference,orderDoc);
   }
   for await (const product of db.collection('unified_products').find({}, { projection: { slug: 1 } })) {
     if (typeof product.slug === 'string' && product.slug) context.productSlugCounts.set(product.slug, (context.productSlugCounts.get(product.slug) ?? 0) + 1);

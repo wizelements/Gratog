@@ -70,3 +70,22 @@ test('existing order with orphaned idempotency ledger must block retry',async()=
   await assert.rejects(createOrReuseTursoPricedOrder(f.conn,priced()),{name:'TursoCheckoutConflict',code:'CHECKOUT_LEDGER_MISSING'});
  }finally{f.raw.close()}
 });
+test('persisted paid-order lines retain the verified variation identity',async()=>{
+ const f=fixture();
+ try{
+  f.raw.prepare('INSERT INTO product_variations(id,product_id,name,price_cents,currency) VALUES (?,?,?,?,?)').run('variation1','sku1','Regular',1199,'USD');
+  const input=priced();input.items[0].variationId='variation1';input.items[0].catalogObjectId='variation1';
+  const result=await createOrReuseTursoPricedOrder(f.conn,input);
+  const row=f.raw.prepare('SELECT variation_id,external_catalog_id FROM order_items WHERE order_id=?').get(result.orderId);
+  assert.equal(row.variation_id,'variation1');assert.equal(row.external_catalog_id,'variation1');
+ }finally{f.raw.close()}
+});
+test('a variation owned by another product cannot create any order or attempt ledger',async()=>{
+ const f=fixture();
+ try{
+  f.raw.exec("INSERT INTO products(id,name) VALUES ('other','Other'); INSERT INTO product_variations(id,product_id) VALUES ('foreign','other')");
+  const input=priced();input.items[0].variationId='foreign';
+  await assert.rejects(createOrReuseTursoPricedOrder(f.conn,input),/VARIATION_IDENTITY_MISMATCH/);
+  assert.equal(f.count('orders'),0);assert.equal(f.count('idempotency_keys'),0);
+ }finally{f.raw.close()}
+});

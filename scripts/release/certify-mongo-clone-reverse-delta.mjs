@@ -52,7 +52,8 @@ try {
   await source.collection('orders').insertOne({id:'fixture-historical',squarePaymentId:'fixture-historical-payment',
     totalCents:499,currency:'USD',status:'FULFILLED',paymentStatus:'PAID',
     createdAt:'2026-10-17T00:00:00.000Z',updatedAt:'2026-10-17T00:00:00.000Z'});
-  await source.collection('orders').createIndex({id:1},{unique:true});
+  await source.collection('orders').insertMany([{legacyOnly:'A',totalCents:0},{legacyOnly:'B',totalCents:0}]);
+  await source.collection('orders').createIndex({id:1},{name:'legacy_nonunique_business_id'});
   await source.collection('payment_records').insertOne({squarePaymentId:'fixture-historical-payment',
     status:'COMPLETED',amountCents:499,currency:'USD',metadata:{orderId:'fixture-historical'}});
   await source.collection('payment_records').createIndex({squarePaymentId:1},{unique:true});
@@ -86,7 +87,7 @@ try {
   await assert.rejects(()=>replayIntoMongoClone({...args,fault:async point=>{
     if(point==='after_inventory') throw new Error('INJECTED_INVENTORY_FAILURE');
   }}),/INJECTED_INVENTORY_FAILURE/);
-  assert.equal(await clone.collection('orders').countDocuments(),1);
+  assert.equal(await clone.collection('orders').countDocuments(),3);
   assert.equal(await clone.collection('payment_records').countDocuments(),1);
   assert.equal(await clone.collection('square_refund_entries').countDocuments(),0);
   assert.equal(await clone.collection('inventory_events').countDocuments(),0);
@@ -103,7 +104,7 @@ try {
   check('resume_after_committed_order_without_acknowledgement',resumed);
   const repeats=await Promise.all([replayIntoMongoClone(args),replayIntoMongoClone(args)]);
   for(const r of repeats) { assert.equal(r.applied,0); assert.equal(r.replayed,3); }
-  assert.equal(await clone.collection('orders').countDocuments(),4);
+  assert.equal(await clone.collection('orders').countDocuments(),6);
   assert.equal(await clone.collection('payment_records').countDocuments(),4);
   assert.equal(await clone.collection('square_refund_entries').countDocuments(),2);
   assert.equal(await clone.collection('inventory_events').countDocuments(),4);

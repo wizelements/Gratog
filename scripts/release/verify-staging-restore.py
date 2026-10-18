@@ -12,7 +12,7 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
-SOURCE = "gratog-migration-cert-20261017"
+SOURCE = "gratog-migration-cert-20261018"
 CLONE = "gratog-rollback-drill-20261017-01"
 SQL = {
     "orders": "SELECT count(*) FROM orders",

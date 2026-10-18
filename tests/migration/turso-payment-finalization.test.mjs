@@ -163,3 +163,16 @@ test('reused Square refund ID with changed amount or payment identity never alte
   assert.equal(f.order('o1').payment_status,'partially_refunded');
  }finally{f.raw.close()}
 });
+test('late captured-payment event preserves an already reconciled partial or full refund',async()=>{
+ const f=fixture();
+ try{
+  await hold(f);await finalizeVerifiedTursoSquarePayment(f.db,{orderId:'o1',squarePayment:square(),providerVerified:true});
+  await finalizeVerifiedTursoSquareRefund(f.db,{orderId:'o1',squareRefund:{id:'partial',paymentId:'sqp1',status:'COMPLETED',currency:'USD',amountCents:500},providerVerified:true});
+  const partial=await finalizeVerifiedTursoSquarePayment(f.db,{orderId:'o1',squarePayment:square(),providerVerified:true});
+  assert.equal(partial.alreadyFinalized,true);assert.equal(f.order('o1').payment_status,'partially_refunded');
+  await finalizeVerifiedTursoSquareRefund(f.db,{orderId:'o1',squareRefund:{id:'rest',paymentId:'sqp1',status:'COMPLETED',currency:'USD',amountCents:699},providerVerified:true});
+  const full=await finalizeVerifiedTursoSquarePayment(f.db,{orderId:'o1',squarePayment:square(),providerVerified:true});
+  assert.equal(full.alreadyFinalized,true);assert.equal(f.order('o1').payment_status,'refunded');
+  assert.equal(f.order('o1').status,'refunded');assert.equal(f.count('payments'),1);assert.equal(f.count('inventory_events'),1);assert.equal(f.count('checkout_notification_outbox'),2);
+ }finally{f.raw.close()}
+});
