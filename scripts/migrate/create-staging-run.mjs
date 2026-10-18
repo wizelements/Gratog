@@ -30,7 +30,7 @@ const report = {
   baselineKind:'NON_ATOMIC_READ_ONLY', sourceFingerprintSha256:digest,
   sourceBackupSha256:'UNVERIFIED_NON_ATOMIC_' + digest,
   sourceDocumentBaseline:sourceDocuments, sourceCollectionCount:sourceCollections,
-  schemaVersion:'0012_checkout_payment_invariants.sql', batchSize:100, gitSha,
+  schemaVersion:'0013_notification_delivery.sql', batchSize:100, gitSha,
   sourceWatermark:process.env.MIGRATION_SOURCE_WATERMARK || startedAt,
   startedAt, releaseEligible:false,
 };

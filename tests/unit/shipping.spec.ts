@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 
-// No API keys set = flat rate mode
+// Missing configuration must never quote fictitious rates or tracking.
 vi.stubEnv('SHIPENGINE_API_KEY', '');
 vi.stubEnv('EASYPOST_API_KEY', '');
 
@@ -12,37 +12,11 @@ describe('Shipping Service', () => {
     });
   });
 
-  describe('getShippingRates (flat rate mode)', () => {
-    it('should return flat rates when API not configured', async () => {
+  describe('unconfigured shipping', () => {
+    it('refuses to quote unapproved shipping rates', async () => {
       const { getShippingRates } = await import('@/lib/shipping-service');
-      
-      const rates = await getShippingRates({
-        street: '123 Main St',
-        city: 'Atlanta',
-        state: 'GA',
-        zip: '30301'
-      });
-      
-      expect(rates).toHaveLength(3);
-      expect(rates[0].rate).toBe(6.99);
-      expect(rates[1].rate).toBe(12.99);
-      expect(rates[2].rate).toBe(24.99);
-    });
-
-    it('should include estimated delivery dates', async () => {
-      const { getShippingRates } = await import('@/lib/shipping-service');
-      
-      const rates = await getShippingRates({
-        street: '123 Main St',
-        city: 'Atlanta',
-        state: 'GA',
-        zip: '30301'
-      });
-      
-      rates.forEach(rate => {
-        expect(rate.deliveryDate).toBeDefined();
-        expect(rate.estimatedDays).toBeGreaterThan(0);
-      });
+      await expect(getShippingRates({ street: '123 Main St', city: 'Atlanta', state: 'GA', zip: '30301' }))
+        .rejects.toThrow('SHIPPING_NOT_CONFIGURED');
     });
   });
 
@@ -130,24 +104,12 @@ describe('Shipping Service', () => {
     });
   });
 
-  describe('createShipment (flat rate mode)', () => {
-    it('should create shipment with mock tracking', async () => {
+  describe('unconfigured labels', () => {
+    it('refuses mock tracking for a flat-rate selection', async () => {
       const { createShipment } = await import('@/lib/shipping-service');
-      
-      const result = await createShipment(
-        'order_123',
-        'flat_standard',
-        {
-          street: '123 Main St',
-          city: 'Atlanta',
-          state: 'GA',
-          zip: '30301'
-        }
-      );
-      
-      expect(result.trackingNumber).toBeDefined();
-      expect(result.trackingNumber).toContain('TOG');
-      expect(result.carrier).toBe('USPS');
+      await expect(createShipment('order_123', 'flat_standard', {
+        street: '123 Main St', city: 'Atlanta', state: 'GA', zip: '30301'
+      })).rejects.toThrow('SHIPPING_LABEL_NOT_CONFIGURED');
     });
   });
 
@@ -195,15 +157,10 @@ describe('Shipping Service', () => {
     });
   });
 
-  describe('getTrackingInfo (mock mode)', () => {
-    it('should return mock tracking data', async () => {
+  describe('unconfigured tracking', () => {
+    it('never claims an unverified package is in transit', async () => {
       const { getTrackingInfo } = await import('@/lib/shipping-service');
-      
-      const result = await getTrackingInfo('TOG123456');
-      
-      expect(result.trackingNumber).toBe('TOG123456');
-      expect(result.status).toBe('in_transit');
-      expect(result.events).toHaveLength(1);
+      await expect(getTrackingInfo('TOG123456')).rejects.toThrow('SHIPPING_TRACKING_NOT_CONFIGURED');
     });
   });
 });

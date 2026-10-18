@@ -248,11 +248,15 @@ export async function getAdminSession(request: NextRequest): Promise<AdminSessio
     const { db } = await connectToDatabase();
     const admin = await db.collection('admin_users').findOne(
       getAdminLookupQuery(session.id),
-      { projection: { isActive: 1, role: 1 } }
+      { projection: { isActive: 1, active: 1, role: 1, email: 1 } }
     );
     
-    if (!admin || admin.isActive === false) {
-      logger.warn('AUTH', 'Session valid but admin inactive or deleted', {
+    // Both schemas exist during the authentication migration. At least one
+    // active flag must affirm access; an explicit revocation always wins.
+    if (!admin || admin.isActive === false || admin.active === false ||
+        (admin.isActive !== true && admin.active !== true) ||
+        !['admin', 'super_admin'].includes(admin.role)) {
+      logger.warn('AUTH', 'Session valid but administrator access was revoked or is unverified', {
         adminId: session.id,
       });
       return null;
@@ -260,10 +264,14 @@ export async function getAdminSession(request: NextRequest): Promise<AdminSessio
     
     // Update session with current role from DB
     session.role = admin.role;
+    if (typeof admin.email === 'string' && admin.email.trim()) session.email = admin.email;
     
   } catch (error) {
-    // Database error - don't fail auth, but log
+    // A signed, unexpired JWT is not evidence that access remains active.
+    // In particular, Turso selection must not turn a blocked Mongo lookup into
+    // administrator authorization from a stale claim.
     logger.error('AUTH', 'Failed to verify admin in database', error);
+    throw new AdminAuthError('Administrator verification is temporarily unavailable', 503, 'ADMIN_VERIFICATION_UNAVAILABLE');
   }
   
   return session;

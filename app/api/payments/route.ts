@@ -1159,6 +1159,7 @@ export async function POST(request: NextRequest) {
         const emailClaim = await db.collection('orders').updateOne(
           { 
             id: orderId, 
+            customerNotificationRecoveryHold: { $ne: true },
             emailSentAt: { $exists: false } // Only if no email sent yet
           },
           { 

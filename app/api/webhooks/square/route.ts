@@ -799,6 +799,7 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
     try {
       const claim = await confirmationCollection.updateOne({
         ...confirmationFilter,
+        customerNotificationRecoveryHold: { $ne: true },
         emailSentAt: { $exists: false },
         confirmationEmailClaimedAt: { $exists: false },
       }, { $set: {

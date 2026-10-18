@@ -1,82 +1,54 @@
-import { describe, expect, it } from 'vitest';
-import {
-  LABEL_QUANTITY_MAX,
-  normalizeLabelQuantity,
-  resolveLabelProductFromCatalog,
-} from '@/lib/label-commerce';
+import { describe, expect, it, vi } from 'vitest';
+vi.mock('@/lib/storefront-products', () => ({ getStorefrontCatalogSnapshot: async () => ({ products: [] }) }));
+import { LABEL_QUANTITY_MAX, normalizeLabelQuantity, resolveLabelProductFromCatalog } from '@/lib/label-commerce';
 
-describe('label commerce', () => {
-  it('prefers live Square price and variation data over curated fallback price', () => {
-    const result = resolveLabelProductFromCatalog('strawberry-bliss', [
-      {
-        id: 'SQUAREITEM123456789012345',
-        slug: 'strawberry-bliss',
-        name: 'Strawberry Bliss',
-        category: 'lemonades',
-        price: 11.99,
-        priceCents: 1199,
-        size: '16oz bottle',
-        ingredients: [{ name: 'Strawberry' }],
-        source: 'square_sync',
-        variationId: 'HYODQWXIJJVAPRIZ66SVUYE5',
-      },
-    ]);
+const live = {
+  id: 'KZXEV24XZ2UCQUJ64BH7ZUJP', slug: 'strawberry-bliss', name: 'Strawberry Bliss',
+  category: 'lemonades', price: 11.99, priceCents: 1199, stock: 4, currentStock: 4,
+  checkoutReady: true, inStock: true, size: '16oz bottle', ingredients: [{ name: 'Strawberry' }],
+  source: 'square_sync', variationId: 'HYODQWXIJJVAPRIZ66SVUYE5',
+  variations: [{ id: 'HYODQWXIJJVAPRIZ66SVUYE5', name: '16oz', priceCents: 1199 }],
+};
 
-    expect(result.payable).toBe(true);
+describe('labels discover products through canonical checkout', () => {
+  it('preserves verified product identity and price without authorizing a standalone payment', () => {
+    const result = resolveLabelProductFromCatalog('strawberry-bliss', [live]);
+    expect(result.payable).toBe(false);
+    expect(result.productPath).toBe('/product/strawberry-bliss');
+    expect(result.product?.priceVerified).toBe(true);
     expect(result.product?.priceCents).toBe(1199);
     expect(result.product?.squareVariationId).toBe('HYODQWXIJJVAPRIZ66SVUYE5');
   });
 
-  it('supports stable label aliases for Square-only market products', () => {
-    const result = resolveLabelProductFromCatalog('pineapple-mango', [
-      {
-        slug: 'pineapple-mango-lemonade',
-        name: 'Pineapple Mango Lemonade',
-        category: 'Lemonades & Juices',
-        price: 9,
-        priceCents: 900,
-        size: '16oz',
-        source: 'square_sync',
-        variationId: '4YFOIFCPUXTDKDA5DU2LLQ2G',
-      },
-    ]);
-
-    expect(result.payable).toBe(true);
-    expect(result.product?.slug).toBe('pineapple-mango-lemonade');
-    expect(result.product?.priceCents).toBe(900);
-  });
-
-  it('allows a priced seasonal curated item even when it is not on the active weekly menu', () => {
+  it('does not convert seasonal curated copy into a price or payment path', () => {
     const result = resolveLabelProductFromCatalog('vitamin-sea', []);
-    expect(result.payable).toBe(true);
-    expect(result.product?.priceCents).toBe(1000);
-  });
-
-  it('supports Square-only boba flavors when they have a verified price', () => {
-    const result = resolveLabelProductFromCatalog('strawberry-milk-tea', [
-      {
-        slug: 'strawberry-milk-tea',
-        name: 'Strawberry Milk Tea',
-        category: 'Boba',
-        price: 9.75,
-        priceCents: 975,
-        size: 'Regular',
-        source: 'square_sync',
-        variationId: 'OGMHH6NVS2MOAGZH4BFJ6HD2',
-      },
-    ]);
-
-    expect(result.payable).toBe(true);
-    expect(result.product?.priceCents).toBe(975);
-  });
-
-  it('refuses archived generic products without inventing a price', () => {
-    const result = resolveLabelProductFromCatalog('boba', []);
     expect(result.payable).toBe(false);
-    expect(result.reason).toBe('inactive');
+    expect(result.product?.priceVerified).toBe(false);
+    expect(result.product?.priceCents).toBeNull();
+    expect(result.productPath).toBe('/product/vitamin-sea');
   });
 
-  it('bounds label quantities for booth checkout', () => {
+  it.each([0, -1, null, undefined])('does not quote inventory that is unavailable or unknown: %s', stock => {
+    const result = resolveLabelProductFromCatalog('strawberry-bliss', [{ ...live, stock, currentStock: stock }]);
+    expect(result.product?.priceVerified).toBe(false);
+    expect(result.product?.priceCents).toBeNull();
+    expect(result.payable).toBe(false);
+  });
+
+  it('rejects conflicting product identities instead of picking a similar name', () => {
+    expect(resolveLabelProductFromCatalog('strawberry-bliss', [live, { ...live, id: 'different-item' }]))
+      .toMatchObject({ payable: false, productPath: null, reason: 'identity_unverified' });
+    expect(resolveLabelProductFromCatalog('pineapple-mango', [{
+      ...live, id: 'F2YVC7OVRYJU575JXROKFHFT', name: 'Pineapple Mango Lemonade', slug: 'pineapple-mango-lemonade',
+    }])).toMatchObject({ payable: false, productPath: null, reason: 'identity_unverified' });
+  });
+
+  it('refuses archived generic product purchase paths', () => {
+    expect(resolveLabelProductFromCatalog('boba', []))
+      .toMatchObject({ payable: false, productPath: null, reason: 'inactive' });
+  });
+
+  it('preserves bounded quantities for legacy consumers without creating an order', () => {
     expect(normalizeLabelQuantity('0')).toBe(1);
     expect(normalizeLabelQuantity('3')).toBe(3);
     expect(normalizeLabelQuantity('99')).toBe(LABEL_QUANTITY_MAX);

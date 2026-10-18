@@ -1,86 +1,30 @@
-import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
-import { createPaymentLink } from '@/lib/square-api';
-import { normalizeLabelQuantity, resolveLabelProduct } from '@/lib/label-commerce';
+import { resolveLabelProduct } from '@/lib/label-commerce';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function siteOrigin(request: NextRequest) {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, '');
-  if (configured) return configured;
-  return new URL(request.url).origin;
-}
-
-function safeMarket(value: FormDataEntryValue | null) {
-  const normalized = String(value || '').trim().slice(0, 80);
-  return normalized || undefined;
-}
-
+/**
+ * Old printed labels still post here. A label is a discovery link, never an
+ * independent payment authority: canonical checkout must admit the order,
+ * reserve stock and verify fulfillment before any Square capture.
+ */
 export async function POST(request: NextRequest) {
-  const form = await request.formData();
-  const slug = String(form.get('slug') || '').trim();
-  const quantity = normalizeLabelQuantity(form.get('quantity'));
-  const market = safeMarket(form.get('market'));
-
-  const resolved = await resolveLabelProduct(slug);
-  if (!resolved.payable || !resolved.product) {
-    const fallbackSlug = resolved.product?.slug || slug;
-    const destination = fallbackSlug
-      ? new URL(`/q/${encodeURIComponent(fallbackSlug)}?error=unavailable`, request.url)
-      : new URL('/weekly-menu?source=label', request.url);
-    return NextResponse.redirect(destination, 303);
+  let slug = '';
+  try {
+    const form = await request.formData();
+    const value = form.get('slug');
+    if (typeof value === 'string' && value.length <= 120) slug = value;
+  } catch {
+    // Malformed legacy posts have no financial side effect.
   }
-
-  const product = resolved.product;
-  const origin = siteOrigin(request);
-  const referenceId = `LQR-${product.slug.slice(0, 18)}-${randomUUID().slice(0, 8)}`;
-
-  const lineItem = {
-    name: product.name,
-    quantity: String(quantity),
-    note: `${product.size} · QR label purchase`,
-    ...(product.squareVariationId
-      ? { catalogObjectId: product.squareVariationId }
-      : {
-          basePriceMoney: {
-            amount: product.priceCents,
-            currency: 'USD',
-          },
-        }),
-  };
-
-  const result = await createPaymentLink({
-    referenceId,
-    description: `Taste of Gratitude label purchase: ${product.name}`,
-    redirectUrl: `${origin}/q/${encodeURIComponent(product.slug)}?paid=1`,
-    lineItems: [lineItem],
-    metadata: {
-      source: 'label_qr',
-      product_slug: product.slug,
-      ...(market ? { market } : {}),
-      label_flow: 'v1',
-      price_source: product.squareVariationId ? 'square_catalog' : product.source || 'curated',
-    },
+  const resolved = slug ? await resolveLabelProduct(slug) : null;
+  // productPath comes from a catalog identity, never a supplied return URL,
+  // market, price, quantity, or success claim from the browser.
+  const destination = new URL(resolved?.productPath || '/catalog', request.url);
+  destination.searchParams.set('source', 'label');
+  return NextResponse.redirect(destination, {
+    status: 303,
+    headers: { 'Cache-Control': 'no-store' },
   });
-
-  const paymentUrl = result.data?.paymentLink?.url;
-  if (!result.success || !paymentUrl) {
-    console.error('[Label Checkout] Square payment link creation failed', {
-      slug: product.slug,
-      quantity,
-      errors: result.errors?.map((error) => ({
-        category: error.category,
-        code: error.code,
-        detail: error.detail,
-      })),
-    });
-
-    return NextResponse.redirect(
-      new URL(`/q/${encodeURIComponent(product.slug)}?error=payment`, request.url),
-      303,
-    );
-  }
-
-  return NextResponse.redirect(paymentUrl, 303);
 }
