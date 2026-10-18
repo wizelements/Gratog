@@ -49,6 +49,7 @@ export async function GET() {
       provider.locations.some((x:any)=>x.id===process.env.SQUARE_LOCATION_ID&&x.status==='ACTIVE');
     return NextResponse.json({
       ready:validSandboxLocation,
+      commit:process.env.VERCEL_GIT_COMMIT_SHA || null,
       code:validSandboxLocation?'READ_ONLY_STAGING_READY':'SQUARE_SANDBOX_LOCATION_MISMATCH',
       isolatedTursoRead:true,
       sandboxLocationVerified:validSandboxLocation,

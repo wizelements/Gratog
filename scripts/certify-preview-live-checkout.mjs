@@ -55,7 +55,8 @@ async function eventually(fn,tries=30,delay=2000){
 async function run(){
  const ready=await http(preview+'/api/certification/turso-ready');
  check('unprotected exact Preview has isolated Turso + Sandbox read',ready.ok&&
-   ready.body.ready===true&&ready.body.code==='READ_ONLY_STAGING_READY');
+   ready.body.ready===true&&ready.body.code==='READ_ONLY_STAGING_READY'&&
+   ready.body.commit===process.env.GITHUB_SHA);
  const products=await http(preview+'/api/products');
  const sku=(products.body.products||[]).find(x=>x.id===productId&&x.variationId===variationId);
  check('buyer storefront catalog authoritative price and stock',

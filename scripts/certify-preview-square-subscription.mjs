@@ -35,7 +35,7 @@ async function square(path,method='GET',body){
 const events=['payment.created','payment.updated','refund.created','refund.updated'];
 try {
  const ready=await fetch(base+'/api/certification/turso-ready',{redirect:'manual',signal:AbortSignal.timeout(20000)});
- if(ready.status!==200||(await ready.json()).code!=='READ_ONLY_STAGING_READY')
+ if(ready.status!==200||!((proof)=>proof.code==='READ_ONLY_STAGING_READY'&&proof.commit===process.env.GITHUB_SHA)(await ready.json()))
    throw Error('PUBLIC_PREVIEW_STAGING_NOT_READY');
  const found=await square('/v2/webhooks/subscriptions?include_disabled=true&limit=100');
  if(found.cursor)throw Error('WEBHOOK_SUBSCRIPTION_PAGINATION_REQUIRES_REVIEW');
