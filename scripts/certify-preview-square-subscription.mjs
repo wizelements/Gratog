@@ -29,7 +29,14 @@ async function square(path,method='GET',body){
      'Square-Version':'2026-09-16','Content-Type':'application/json'},
    ...(body?{body:JSON.stringify(body)}:{})
  });
- if(!res.ok)throw Error('SQUARE_PROVIDER_HTTP_'+res.status);
+ if(!res.ok){
+   // Only fixed-schema Square codes, never response details, credentials or URLs.
+   const fault=await res.json().catch(()=>({}));
+   const codes=(Array.isArray(fault.errors)?fault.errors:[]).slice(0,4).map(e=>
+     [e.category,e.code].filter(v=>typeof v==='string'&&/^[A-Z_]{2,60}$/.test(v)).join(':')
+   ).filter(Boolean);
+   throw Error('SQUARE_PROVIDER_HTTP_'+res.status+(codes.length?'_'+codes.join(','):'_UNCLASSIFIED'));
+ }
  return res.json();
 }
 const events=['payment.created','payment.updated','refund.created','refund.updated'];
