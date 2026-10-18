@@ -55,11 +55,12 @@ describe('Navigation Coherence', () => {
     expect(adminLayout).not.toContain("href: '/admin/queue'");
   });
 
-  it('product detail reviews tab uses live review component', () => {
+  it('product detail omits the retired public review integration', () => {
     const productClient = tryRead('app/product/[slug]/ProductDetailClient.jsx');
 
-    expect(productClient).toContain('ProductReviews');
-    expect(productClient).toContain('<ProductReviews');
+    expect(productClient).not.toContain('ProductReviews');
+    expect(productClient).not.toContain('/api/reviews');
+    expect(productClient).not.toContain('value="reviews"');
   });
 
   it('product detail pages serialize a claim-safe storefront product projection', () => {

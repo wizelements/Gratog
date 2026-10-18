@@ -30,9 +30,11 @@ export default async function CatalogPage() {
   const { products, categories } = await getCatalogBootstrap();
 
   return (
-    <CatalogPageClient
-      initialProducts={products}
-      initialCategories={categories}
-    />
+    <main id="catalog-main">
+      <CatalogPageClient
+        initialProducts={products}
+        initialCategories={categories}
+      />
+    </main>
   );
 }

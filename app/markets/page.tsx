@@ -174,6 +174,11 @@ function getMarketMeta(market: PublicMarket) {
 
 function MarketCard({ market }: { market: PublicMarket }) {
   const meta = getMarketMeta(market);
+  // Compute volatile date labels after hydration: avoid server/client timezone mismatches.
+  const [nextMarketLabel, setNextMarketLabel] = useState('Schedule updating');
+  useEffect(() => {
+    setNextMarketLabel(getNextMarketLabel(market));
+  }, [market.dayOfWeek, market.recurrence]);
   const fullAddress = getFullAddress(market);
   const mapsUrl = market.mapsUrl || `https://maps.google.com/?q=${encodeURIComponent(fullAddress)}`;
 
@@ -186,7 +191,7 @@ function MarketCard({ market }: { market: PublicMarket }) {
               {market.featured ? 'Featured market' : 'Market pickup'}
             </span>
             <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
-              Next: {getNextMarketLabel(market)}
+              Next: {nextMarketLabel}
             </span>
           </div>
           <h3 className="text-xl font-semibold leading-tight text-stone-950">{market.name}</h3>

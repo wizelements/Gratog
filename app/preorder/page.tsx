@@ -5,5 +5,5 @@ export const fetchCache = 'force-no-store';
 import PreorderClientPage from './PreorderClientPage';
 
 export default function PreorderPage() {
-  return <PreorderClientPage />;
+  return <main id="preorder-main"><PreorderClientPage /></main>;
 }
