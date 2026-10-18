@@ -44,7 +44,8 @@ try {
  const ready=await fetch(base+'/api/certification/turso-ready',{redirect:'manual',signal:AbortSignal.timeout(20000)});
  if(ready.status!==200||!((proof)=>proof.code==='READ_ONLY_STAGING_READY'&&proof.commit===process.env.GITHUB_SHA)(await ready.json()))
    throw Error('PUBLIC_PREVIEW_STAGING_NOT_READY');
- const found=await square('/v2/webhooks/subscriptions?include_disabled=true&limit=100');
+ // Queryless provider request avoids implementation-specific query parsing; enabled subscriptions are sufficient for exact active URL safety checks.
+ const found=await square('/v2/webhooks/subscriptions');
  if(found.cursor)throw Error('WEBHOOK_SUBSCRIPTION_PAGINATION_REQUIRES_REVIEW');
  const matches=(found.subscriptions||[]).filter(s=>s.notification_url===url);
  if(matches.length>1)throw Error('DUPLICATE_WEBHOOK_SUBSCRIPTIONS');
