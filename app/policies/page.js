@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function PoliciesPage() {
   return (
-    <div className="container mx-auto py-12 max-w-4xl">
+    <main className="container mx-auto py-12 max-w-4xl">
       <div className="space-y-8">
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold">Store Policies</h1>
@@ -246,6 +246,6 @@ export default function PoliciesPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </main>
   );
 }

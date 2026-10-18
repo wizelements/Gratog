@@ -6,12 +6,11 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ShoppingCart, Loader2, Star, MapPin, ShieldCheck, Truck, RefreshCw, Lock } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Loader2, MapPin, ShieldCheck, Truck, RefreshCw, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cart-engine';
 
 import Breadcrumbs, { getProductBreadcrumbs } from '@/components/Breadcrumbs';
-import ProductReviews from '@/components/ProductReviews';
 import Script from 'next/script';
 import ProductVisual from '@/components/ProductVisual';
 import { getTrustedProductImages } from '@/lib/product-visual';
@@ -21,42 +20,12 @@ import { getActiveProducts, getProductBySlugOrId } from '@/data/products';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop';
 
-const DEFAULT_REVIEW_SUMMARY = {
-  averageRating: 0,
-  reviewCount: 0,
-  ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
-  verifiedCount: 0,
-};
-
-function normalizeReviewSummary(summary) {
-  const source = summary && typeof summary === 'object' ? summary : {};
-  return {
-    averageRating: Number.isFinite(Number(source.averageRating))
-      ? Number(source.averageRating)
-      : DEFAULT_REVIEW_SUMMARY.averageRating,
-    reviewCount: Number.isFinite(Number(source.reviewCount))
-      ? Number(source.reviewCount)
-      : DEFAULT_REVIEW_SUMMARY.reviewCount,
-    ratingDistribution: {
-      1: Number(source.ratingDistribution?.[1] || 0),
-      2: Number(source.ratingDistribution?.[2] || 0),
-      3: Number(source.ratingDistribution?.[3] || 0),
-      4: Number(source.ratingDistribution?.[4] || 0),
-      5: Number(source.ratingDistribution?.[5] || 0),
-    },
-    verifiedCount: Number.isFinite(Number(source.verifiedCount))
-      ? Number(source.verifiedCount)
-      : DEFAULT_REVIEW_SUMMARY.verifiedCount,
-  };
-}
-
 export default function ProductDetailClient({ product, slug }) {
   const [isAdding, setIsAdding] = useState(false);
   const [selectedVariation, setSelectedVariation] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState('flavor');
-  const [reviewSummary, setReviewSummary] = useState(DEFAULT_REVIEW_SUMMARY);
   const checkoutReady = product?.checkoutReady !== false;
   const isMarketOnly = Boolean(
     product?.marketPickupOnly ||
@@ -83,36 +52,6 @@ export default function ProductDetailClient({ product, slug }) {
       }
     }
   }, [product]);
-
-  // Fetch reviews
-  useEffect(() => {
-    if (!product?.id && !product?.slug) return;
-    
-    const resolvedProductId = product.id || product.slug;
-    let isCancelled = false;
-
-    async function fetchReviewSummary() {
-      try {
-        const response = await fetch(`/api/reviews?productId=${encodeURIComponent(resolvedProductId)}&page=1&limit=3`, {
-          cache: 'no-store'
-        });
-        
-        if (!response.ok) throw new Error('Failed to fetch reviews');
-        
-        const data = await response.json();
-        if (isCancelled) return;
-        
-        if (data.success) {
-          setReviewSummary(normalizeReviewSummary(data.summary));
-        }
-      } catch (err) {
-        console.error('[ProductReviews] Error fetching reviews:', err);
-      }
-    }
-
-    fetchReviewSummary();
-    return () => { isCancelled = true; };
-  }, [product?.id, product?.slug]);
 
   useEffect(() => {
     if (!product?.id && !product?.slug) return;
@@ -288,12 +227,7 @@ export default function ProductDetailClient({ product, slug }) {
               '@type': 'Product',
               name: product.name
             }
-          },
-          aggregateRating: reviewSummary.reviewCount > 0 ? {
-            '@type': 'AggregateRating',
-            ratingValue: reviewSummary.averageRating.toFixed(1),
-            reviewCount: reviewSummary.reviewCount
-          } : undefined
+          }
         })}
       </Script>
 
@@ -366,27 +300,6 @@ export default function ProductDetailClient({ product, slug }) {
               </p>
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">{product.name}</h1>
               
-              {/* Rating */}
-              {reviewSummary.reviewCount > 0 && (
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < Math.round(reviewSummary.averageRating)
-                            ? 'text-yellow-400 fill-yellow-400'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-600">
-                    {reviewSummary.averageRating.toFixed(1)} ({reviewSummary.reviewCount} reviews)
-                  </span>
-                </div>
-              )}
-
               <p className="text-3xl font-bold text-emerald-600">{formatPrice(displayPrice)}</p>
             </div>
 
@@ -618,11 +531,10 @@ export default function ProductDetailClient({ product, slug }) {
         {/* Tabs Section */}
         <div className="mt-16">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="flavor">Flavor</TabsTrigger>
               <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
               <TabsTrigger value="care">Storage & Fulfillment</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews ({reviewSummary.reviewCount})</TabsTrigger>
             </TabsList>
 
             <TabsContent value="flavor" className="mt-6">
@@ -704,12 +616,7 @@ export default function ProductDetailClient({ product, slug }) {
               </Card>
             </TabsContent>
 
-            <TabsContent value="reviews" className="mt-6">
-              <ProductReviews 
-                productId={product.id || product.slug}
-                productName={product.name}
-              />
-            </TabsContent>
+
           </Tabs>
         </div>
 

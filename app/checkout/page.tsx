@@ -8,5 +8,5 @@ export const metadata = {
 };
 
 export default function CheckoutPage() {
-  return <CheckoutRoot />;
+  return <main id="checkout-main"><CheckoutRoot /></main>;
 }

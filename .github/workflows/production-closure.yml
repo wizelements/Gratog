@@ -69,6 +69,9 @@ jobs:
       - name: Navigation coherence
         run: npx vitest run tests/navigation-coherence.test.ts --reporter=verbose
 
+      - name: Production storefront semantic and retired-review regressions
+        run: node --test tests/release/production-storefront-browser-repair.test.mjs
+
       - name: Typecheck
         run: npm run typecheck:ci
 

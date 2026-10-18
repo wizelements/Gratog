@@ -235,7 +235,7 @@ export default async function ProductPage({ params }) {
     
     console.log(`[Product SSR] Successfully loaded product: ${serializedProduct.name}`);
     
-    return <ProductDetailClient product={serializedProduct} slug={slug} />;
+    return <main id="product-main"><ProductDetailClient product={serializedProduct} slug={slug} /></main>;
     
   } catch (error) {
     // Next.js notFound() raises a special control-flow error; never swallow it.
@@ -243,7 +243,7 @@ export default async function ProductPage({ params }) {
     console.error('[Product SSR] Error fetching product:', error);
     const curatedProduct = getProductBySlugOrId(slug);
     if (curatedProduct) {
-      return <ProductDetailClient product={serializeProductForClient(toStorefrontProduct(curatedProduct))} slug={slug} />;
+      return <main id="product-main"><ProductDetailClient product={serializeProductForClient(toStorefrontProduct(curatedProduct))} slug={slug} /></main>;
     }
     // No valid product: return an actual 404 rather than a misleading 200.
     notFound();
