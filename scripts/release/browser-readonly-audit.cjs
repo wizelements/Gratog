@@ -27,7 +27,11 @@ async function main() {
   } else driver = require(process.env.PLAYWRIGHT_MODULE || 'playwright').chromium;
   report.requestedExecutable = process.env.BROWSER_EXECUTABLE || driver.executablePath();
   fs.writeFileSync(path.join(directory, 'browser-readonly.json'), JSON.stringify(report, null, 2));
+  // GitHub-hosted Ubuntu disables Chromium's user-namespace sandbox. Only this
+  // read-only ephemeral CI runner uses --no-sandbox; production browsers do not.
+  const isolatedGitHubRunner = process.env.CI === 'true' && process.env.GITHUB_ACTIONS === 'true' && process.platform === 'linux';
   const browser = await driver.launch({ headless: true, timeout: 20000,
+    ...(isolatedGitHubRunner ? { args: ['--no-sandbox', '--disable-setuid-sandbox'] } : {}),
     ...(process.env.BROWSER_EXECUTABLE ? { executablePath: process.env.BROWSER_EXECUTABLE } : {}) });
   report.browserVersion = await browser.version();
   try {
