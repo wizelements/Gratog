@@ -8,6 +8,8 @@ on:
       - 'lib/markets/repository.ts'
       - 'lib/markets/turso-markets.mjs'
       - 'tests/migration/turso-market-parity.test.mjs'
+      - 'tests/migration/turso-market-crud.test.mjs'
+      - 'app/api/admin/markets/route.ts'
       - '.github/workflows/turso-market-parity.yml'
   workflow_dispatch:
 permissions:
@@ -29,6 +31,7 @@ jobs:
           node --check lib/markets/turso-markets.mjs
           node --test \
             tests/migration/turso-market-parity.test.mjs \
+            tests/migration/turso-market-crud.test.mjs \
             tests/migration/turso-migration-hygiene.test.mjs \
             tests/migration/legacy-commerce-references.test.mjs \
             tests/migration/turso-preview-pricing.test.mjs \

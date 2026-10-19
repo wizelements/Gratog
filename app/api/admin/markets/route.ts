@@ -9,6 +9,7 @@ import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-session';
 import { requireAdminSession } from '@/lib/auth/unified-admin';
 import { logger } from '@/lib/logger';
+import {tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
 import {
   getAllMarkets,
   createMarket,
@@ -217,9 +218,13 @@ export async function DELETE(request: any) {
       marketId,
     });
 
+    // Turso retains historically referenced market records; never claim physical deletion.
     return NextResponse.json({
       success: true,
-      message: 'Market deleted successfully',
+      ...(tursoPreviewSelected() ? { archived: true } : {}),
+      message: tursoPreviewSelected()
+        ? 'Market archived successfully; historical order links preserved'
+        : 'Market deleted successfully',
     });
   } catch (error: any) {
     if (error.name === 'AdminAuthError') {
