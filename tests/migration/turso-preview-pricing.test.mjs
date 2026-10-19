@@ -11,8 +11,10 @@ const env={
 };
 test('branch/production isolation is exact',()=>{
   assertTursoPreviewEnvironment(env);
+  assertTursoPreviewEnvironment({...env,VERCEL_GIT_COMMIT_REF:'integration/turso-closure-candidate-20261018'});
   for(const changed of [
     {VERCEL_ENV:'production'},{VERCEL_GIT_COMMIT_REF:'main'},
+    {VERCEL_GIT_COMMIT_REF:'fix/turso-integrated-preview-gates-20261018'},
     {SQUARE_ENVIRONMENT:'production'},{SQUARE_MOCK_MODE:'true'},
     {TURSO_STAGING_DATABASE_URL:'libsql://tasteofgratitude-swatkins.aws-us-east-1.turso.io'},
     {TURSO_STAGING_DATABASE_URL:env.TURSO_STAGING_DATABASE_URL+'?prod=1'},

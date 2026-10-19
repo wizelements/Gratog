@@ -1,0 +1,65 @@
+name: Turso integrated candidate validation (non-release)
+on:
+  pull_request:
+    branches:
+      - feat/turso-checkout-recovery-20261017
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  candidate-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      VERCEL_ENV: preview
+      SQUARE_ENVIRONMENT: sandbox
+      SQUARE_ACCESS_TOKEN: ci-square-placeholder-not-live
+      SQUARE_APPLICATION_ID: ci-square-app-placeholder
+      SQUARE_LOCATION_ID: ci-square-location-placeholder
+      SQUARE_WEBHOOK_SIGNATURE_KEY: ci-webhook-placeholder
+      RESEND_WEBHOOK_SECRET: ci-resend-placeholder
+      JWT_SECRET: ci-candidate-test-secret-at-least-32-characters
+      ADMIN_SETUP_SECRET: ci-test-admin-setup
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify integration security, routing and schema contracts
+        run: |
+          node --test \
+            tests/migration/turso-market-auth-boundary.test.mjs \
+            tests/migration/turso-market-parity.test.mjs \
+            tests/migration/turso-market-crud.test.mjs \
+            tests/migration/turso-admin-session-identity.test.mjs \
+            tests/migration/turso-customer-snapshot-auth.test.mjs \
+            tests/migration/turso-migration-hygiene.test.mjs \
+            tests/migration/legacy-commerce-references.test.mjs \
+            tests/release/turso-routing-inventory.test.mjs \
+            tests/release/turso-cutover-gates.test.mjs
+      - name: Fail-closed database cutover and routing audit
+        run: |
+          set +e
+          node scripts/release/inventory-turso-routing.mjs --strict > /tmp/turso-routing.json
+          routing_status=$?
+          node scripts/release/check-turso-cutover.mjs > /tmp/cutover-blocked.json
+          cutover_status=$?
+          set -e
+          test "$routing_status" -eq 2
+          test "$cutover_status" -eq 1
+          echo 'Incomplete application routing and absent release evidence correctly block cutover.'
+      - name: Install locked dependencies without real provider secrets
+        run: npm ci --include=dev --ignore-scripts --no-audit --no-fund
+      - name: Full application regression
+        run: npm test -- --reporter=dot
+      - name: TypeScript route validation
+        run: npm run typecheck:ci
+      - name: Linux Next.js candidate build
+        run: npm run build

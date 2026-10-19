@@ -5,10 +5,10 @@ import {randomUUID} from 'node:crypto';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {connect} from '@tursodatabase/serverless';
 const URL='libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io';
-const branch='refs/heads/feat/turso-checkout-recovery-20261017';
+const protectedBranches=new Set(['refs/heads/feat/turso-checkout-recovery-20261017','refs/heads/integration/turso-closure-candidate-20261018']);
 const preview=process.env.PREVIEW_BASE_URL||'';
 if(process.env.GITHUB_EVENT_NAME!=='workflow_dispatch'||
-   process.env.GITHUB_REF!==branch||process.env.SQUARE_ENVIRONMENT!=='sandbox'||
+   !protectedBranches.has(process.env.GITHUB_REF)||process.env.SQUARE_ENVIRONMENT!=='sandbox'||
    process.env.TURSO_STAGING_DATABASE_URL!==URL||
    !process.env.TURSO_STAGING_AUTH_TOKEN||!process.env.SQUARE_SANDBOX_ACCESS_TOKEN||
    !/^https:\/\/gratog-[a-z0-9]+-theangelsilvers-projects\.vercel\.app$/.test(preview))

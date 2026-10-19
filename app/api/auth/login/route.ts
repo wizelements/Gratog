@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { comparePassword, generateToken } from '@/lib/auth/jwt';
 import { findUserByEmail } from '@/lib/db/users';
+import { tursoPreviewSelected, openTursoPreview } from '@/lib/checkout/turso-preview-runtime.mjs';
+import { getTursoCustomerForLogin } from '@/lib/auth/turso-customer-snapshot.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +46,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Find user
-    const user = await findUserByEmail(normalizedEmail);
+    // This branch is strictly isolated Turso Preview; never silently read Mongo.
+    const user = tursoPreviewSelected()
+      ? await getTursoCustomerForLogin(await openTursoPreview(), normalizedEmail)
+      : await findUserByEmail(normalizedEmail);
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'Invalid credentials' },
