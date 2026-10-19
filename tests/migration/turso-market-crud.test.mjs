@@ -59,6 +59,8 @@ test('unexpected fields and invalid data fail before SQL writes',async()=>{
   try {
     await assert.rejects(createTursoMarket(db,{...sample,name:''}),/NAME_MISSING/);
     await assert.rejects(createTursoMarket(db,{...sample,_id:'forged'}),/FIELD_NOT_EDITABLE/);
+    await assert.rejects(createTursoMarket(db,{...sample,isActive:'false'}),/FLAG_INVALID/);
+    await assert.rejects(createTursoMarket(db,{...sample,recurrence:'daily'}),/RECURRENCE_INVALID/);
     const created=await createTursoMarket(db,sample);
     await assert.rejects(updateTursoMarket(db,created.id,{id:'forged'}),/FIELD_NOT_EDITABLE/);
     await assert.rejects(updateTursoMarket(db,created.id,{lat:999}),/COORDINATES_INVALID/);
@@ -112,4 +114,13 @@ test('repository API selects SQL before Mongo for all market operations',()=>{
   }
   const endpoint=readFileSync('app/api/admin/markets/route.ts','utf8');
   assert.match(endpoint,/Market archived successfully; historical order links preserved/);
+});
+
+test('owner-editable pickup fields survive route validation contract',()=>{
+  const schema=readFileSync('lib/markets/schema.ts','utf8');
+  for(const field of ['pickupDays','preorderCutoff','parkingNotes','recurrence'])
+    assert.match(schema,new RegExp('\\b'+field+': z\\.'));
+  const route=readFileSync('app/api/admin/markets/route.ts','utf8');
+  assert.match(route,/updateMarketSchema\.safeParse/);
+  assert.match(route,/createMarketSchema\.safeParse/);
 });

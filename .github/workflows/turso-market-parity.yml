@@ -6,6 +6,7 @@ on:
     paths:
       - 'scripts/migrate/transformers.mjs'
       - 'lib/markets/repository.ts'
+      - 'lib/markets/schema.ts'
       - 'lib/markets/turso-markets.mjs'
       - 'tests/migration/turso-market-parity.test.mjs'
       - 'tests/migration/turso-market-crud.test.mjs'
