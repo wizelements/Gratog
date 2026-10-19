@@ -14,6 +14,8 @@ import { jwtVerify, SignJWT } from 'jose';
 import * as bcrypt from 'bcryptjs';
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
+import {tursoPreviewSelected,openTursoPreview} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {getTursoVerifiedAdminSession} from '@/lib/auth/turso-admin-session.mjs';
 import { logger } from '@/lib/logger';
 
 // ============================================================================
@@ -243,8 +245,12 @@ export async function getAdminSession(request: NextRequest): Promise<AdminSessio
     return null;
   }
   
-  // Additional validation: check if admin still exists and is active
+  // A signed JWT alone does not establish unrevoked administrator access.
   try {
+    if (tursoPreviewSelected()) {
+      const db=await openTursoPreview(); // explicit Preview-only provider boundary
+      return await getTursoVerifiedAdminSession(db,session) as AdminSession | null;
+    }
     const { db } = await connectToDatabase();
     const admin = await db.collection('admin_users').findOne(
       getAdminLookupQuery(session.id),
