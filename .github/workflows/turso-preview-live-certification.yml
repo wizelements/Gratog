@@ -6,37 +6,11 @@ on:
         description: Exact immutable READY Preview URL belonging to this commit
         type: string
         required: true
-      provision_only:
-        description: Provision isolated Preview branch values without running payment tests
-        type: boolean
-        required: false
-        default: false
 permissions:
   contents: read
 
 jobs:
-  provision-integrated-preview:
-    if: ${{ inputs.provision_only }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 7
-    environment: square-sandbox-certification
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '22'
-      - name: Safely provision exact-branch Preview Sandbox without echoing credentials
-        env:
-          PREVIEW_BASE_URL: ${{ inputs.preview_base_url }}
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
-          TURSO_STAGING_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
-        run: node scripts/certify-integrated-preview-provision.mjs
-
   sandbox-buyer-certification:
-    if: ${{ !inputs.provision_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 24
     environment: square-sandbox-certification
