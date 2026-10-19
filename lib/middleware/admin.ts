@@ -224,7 +224,7 @@ async function executeMiddleware(
         config.resource,
         { method: request.method, duration },
         request,
-        { success: true }
+        { success: response.ok, ...(response.ok ? {} : { errorMessage: `HTTP ${response.status}` }) }
       );
     }
 

@@ -48,6 +48,7 @@ jobs:
             tests/migration/turso-staff-inventory.test.mjs \
             tests/migration/turso-customer-snapshot-auth.test.mjs \
             tests/migration/turso-admin-order-search.test.mjs \
+            tests/migration/turso-admin-order-list.test.mjs \
             tests/migration/turso-order-read.test.mjs \
             tests/migration/turso-migration-hygiene.test.mjs \
             tests/migration/legacy-commerce-references.test.mjs \
