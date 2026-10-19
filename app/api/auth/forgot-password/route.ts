@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { findUserByEmail } from '@/lib/db/users';
-import { sendPasswordResetEmail } from '@/lib/email/service';
-import { connectToDatabase } from '@/lib/db-optimized';
 import {openTursoPreview,tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
-import {createTursoPasswordReset} from '@/lib/auth/turso-customer-accounts.mjs';
+import {createTursoPasswordReset,findTursoCustomerByEmail} from '@/lib/auth/turso-customer-accounts.mjs';
+import {isTursoPreviewResetRecipient,trustedTursoPreviewResetBaseUrl,deliverTursoPreviewReset} from '@/lib/auth/turso-preview-password-reset.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,17 +46,25 @@ export async function POST(request: NextRequest) {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Look up user (don't reveal whether they exist)
-    const user = await findUserByEmail(normalizedEmail);
+    // Preview cannot look up customer identities in Mongo or notify real
+    // customers. Do not use an untrusted request Host as a reset URL.
+    const selected=tursoPreviewSelected();
+    if(selected&&!isTursoPreviewResetRecipient(normalizedEmail))return NextResponse.json(SAFE_RESPONSE);
+    const resetBaseUrl=selected?trustedTursoPreviewResetBaseUrl():undefined;
+    const tursoDb=selected?await openTursoPreview():null;
+    // Look up user without revealing whether the account exists.
+    const user=tursoDb
+      ?await findTursoCustomerByEmail(tursoDb,normalizedEmail)
+      :await (await import('@/lib/db/users')).findUserByEmail(normalizedEmail);
     if (user) {
       const token = crypto.randomBytes(32).toString('hex');
       const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
-      if (tursoPreviewSelected()) {
-        await createTursoPasswordReset(await openTursoPreview(),user.id,tokenHash,
+      if (tursoDb) {
+        await createTursoPasswordReset(tursoDb,user.id,tokenHash,
           new Date(Date.now()+30*60*1000).toISOString());
       } else {
-        const { db } = await connectToDatabase();
+        const { db } = await (await import('@/lib/db-optimized')).connectToDatabase();
         await db.collection('password_resets').insertOne({
         userId: user.id,
         email: normalizedEmail,
@@ -71,7 +77,8 @@ export async function POST(request: NextRequest) {
 
       // Send reset email (don't let failure leak info)
       try {
-        await sendPasswordResetEmail(user, token);
+        if(tursoDb)await deliverTursoPreviewReset(tursoDb,{user,token,baseUrl:resetBaseUrl});
+        else await (await import('@/lib/email/service')).sendPasswordResetEmail(user,token);
       } catch (e) {
         console.error('Failed to send password reset email:', e);
       }

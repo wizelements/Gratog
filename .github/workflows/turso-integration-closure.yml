@@ -44,6 +44,7 @@ jobs:
             tests/migration/admin-session-epoch.test.mjs \
             tests/migration/turso-menu-operations.test.mjs \
             tests/migration/turso-customer-accounts.test.mjs \
+            tests/migration/turso-preview-password-reset.test.mjs \
             tests/migration/turso-native-admin-login.test.mjs \
             tests/migration/turso-staff-inventory.test.mjs \
             tests/migration/turso-customer-snapshot-auth.test.mjs \
