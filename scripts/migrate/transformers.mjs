@@ -67,9 +67,31 @@ function menu(doc) { const id = sourceId(doc._id); return [row('menus', { id, ma
 function payment(collection, doc, context = {}) { const amount = doc.amountCents ?? doc.amountMoney?.amount ?? doc.totalMoney?.amount; if (amount == null) return operational(collection, doc); const orderReference = doc.orderId ?? doc.metadata?.orderId ?? null; if(orderReference!=null&&!context.orderByReference?.has(String(orderReference)))throw Error('RELATIONSHIP_UNRESOLVED:orderId'); return [row('payments', { id: sourceId(doc._id), order_id: orderReference == null ? null : context.orderByReference?.get(String(orderReference)) ?? null, square_payment_id: doc.squarePaymentId ?? doc.id ?? null, idempotency_key: doc.idempotencyKey ?? null, status: doc.status ?? 'unknown', amount_cents: cents(amount, 'amountCents'), currency: doc.currency ?? doc.amountMoney?.currency ?? doc.totalMoney?.currency ?? 'USD', receipt_url: doc.receiptUrl ?? null, provider_metadata_json: json({ receiptNumber: doc.receiptNumber, cardBrand: doc.cardBrand, cardLast4: doc.cardLast4, legacyOrderId: orderReference == null ? null : String(orderReference) }), created_at: iso(doc.createdAt, 'createdAt'), updated_at: iso(doc.updatedAt, 'updatedAt') })]; }
 function webhook(doc) { if (!doc.eventId) throw new Error('EXTERNAL_ID_MISSING:eventId'); return [row('webhook_events', { event_id: doc.eventId, provider: 'square', event_type: doc.eventType ?? 'unknown', status: doc.status ?? 'unknown', attempt_count: Number(doc.attemptCount ?? 1), first_attempt_at: iso(doc.firstAttemptAt, 'firstAttemptAt'), last_attempt_at: iso(doc.lastAttemptAt, 'lastAttemptAt'), processed_at: iso(doc.processedAt, 'processedAt'), result_json: json(doc.result) })]; }
 
+
+function adminIdentity(doc) {
+  const id=sourceId(doc._id);
+  const hasPositive=doc.isActive===true || doc.active===true;
+  const revoked=doc.isActive===false || doc.active===false;
+  // Conflicting active flags are ALWAYS revoked. Unverified is not active.
+  const active=revoked || !hasPositive ? 0 : 1;
+  const email=typeof doc.email==='string' && doc.email.trim()
+    ? doc.email.trim().toLowerCase() : null;
+  const role=typeof doc.role==='string' && doc.role.trim()
+    ? doc.role.trim() : 'unverified';
+  return [...operational('admin_users',doc),
+    row('admin_identities',{
+      id,email,role,is_active:active,created_at:timestamp(doc),
+      updated_at:timestamp(doc,'updatedAt'),
+      legacy_id:doc.id==null?null:String(doc.id),
+    }),
+    ...references('admin_identity_references','admin_id',id,[
+      [doc._id,'mongo_id'],[doc.id,'business_id']
+    ])
+  ];
+}
 const operationalNames = ['admin_users','audit_log','audit_logs','market_audit_log','menu_audit_log','challenges','contact_messages','coupons','customer_passports','email_logs','email_sends','gratitude_accounts','idempotency_keys','inventory_events','lead_intents','learning_enrollments','learning_modules','market_counters','market_schedules','newsletter_subscribers','passport_idempotency','passports','product_reviews','products','quiz_results','reward_transactions','rewards','scheduled_emails','square_sync_metadata','users'];
 const handlers = Object.fromEntries(operationalNames.map((name) => [name, (doc) => operational(name, doc)]));
-Object.assign(handlers, { customers, inventory, markets: market, menus: menu, marketorders: (doc, context) => order('marketorders', doc, context), orders: (doc, context) => order('orders', doc, context), payment_records: (doc, context) => payment('payment_records', doc, context), payments: (doc, context) => payment('payments', doc, context), square_catalog_items: product, unified_products: product, webhook_events_processed: webhook });
+Object.assign(handlers, { admin_users: adminIdentity, customers, inventory, markets: market, menus: menu, marketorders: (doc, context) => order('marketorders', doc, context), orders: (doc, context) => order('orders', doc, context), payment_records: (doc, context) => payment('payment_records', doc, context), payments: (doc, context) => payment('payments', doc, context), square_catalog_items: product, unified_products: product, webhook_events_processed: webhook });
 // Square catalog and unified-product projections have explicit handlers for
 // pilot/rebuild use, but are classified DERIVED and are not part of the 37
 // active MIGRATE/TRANSFORM collection contract.

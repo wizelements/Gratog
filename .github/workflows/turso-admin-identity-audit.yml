@@ -1,0 +1,43 @@
+name: Turso admin identity isolation and revocation (non-release)
+on:
+  pull_request:
+    branches:
+      - feat/turso-checkout-recovery-20261017
+    paths:
+      - 'db/migrations/0015_admin_identity.sql'
+      - 'lib/auth/turso-admin-session.mjs'
+      - 'lib/auth/unified-admin.ts'
+      - 'scripts/migrate/transformers.mjs'
+      - 'scripts/migrate/upsert-policy.mjs'
+      - 'scripts/migrate/verify-schema.mjs'
+      - 'scripts/migrate/create-staging-run.mjs'
+      - 'tests/migration/turso-admin-session-identity.test.mjs'
+      - '.github/workflows/turso-admin-identity-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  admin-identity-failclosed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Native identity, revocation, history and cutover HOLD
+        run: |
+          node --check scripts/migrate/transformers.mjs
+          node --check scripts/migrate/upsert-policy.mjs
+          node --check lib/auth/turso-admin-session.mjs
+          node --test \
+            tests/migration/turso-admin-session-identity.test.mjs \
+            tests/migration/turso-migration-hygiene.test.mjs \
+            tests/migration/legacy-commerce-references.test.mjs \
+            tests/release/turso-cutover-gates.test.mjs
+      - name: Maintain independent release authority
+        run: |
+          test -f scripts/release/check-turso-cutover.mjs
+          echo "These isolated identity tests do not authorize a production provider cutover."
