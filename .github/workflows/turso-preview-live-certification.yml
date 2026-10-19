@@ -30,7 +30,7 @@ jobs:
         run: |
           node --input-type=module <<'NODE'
           if(process.env.GITHUB_EVENT_NAME!=='workflow_dispatch' ||
-             !['refs/heads/feat/turso-checkout-recovery-20261017','refs/heads/integration/turso-closure-candidate-20261018'].includes(process.env.GITHUB_REF) ||
+             !['refs/heads/feat/turso-checkout-recovery-20261017','refs/heads/integration/turso-closure-candidate-20261018','refs/heads/feat/turso-completion-20261019'].includes(process.env.GITHUB_REF) ||
              !process.env.VERCEL_TOKEN)throw Error('PROTECTED_BRANCH_AND_VERCEL_CREDENTIAL_REQUIRED');
           let u;try{u=new URL(process.env.PREVIEW_BASE_URL)}catch{}
           if(!u||u.protocol!=='https:'||u.origin!==process.env.PREVIEW_BASE_URL||

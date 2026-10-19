@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Protected manual-only branch-scope provisioning. Never print secrets.
-const BRANCH='integration/turso-closure-candidate-20261018';
+const BRANCH='feat/turso-completion-20261019';
 const PROJECT='prj_HnwKt5XyWC1Evcrv3mZLa3cdpDcG';
 const TEAM='team_HLmyvqEhI158ahAD2U1p7MxM';
 const STAGING_URL='libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io';

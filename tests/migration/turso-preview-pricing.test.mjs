@@ -12,6 +12,7 @@ const env={
 test('branch/production isolation is exact',()=>{
   assertTursoPreviewEnvironment(env);
   assertTursoPreviewEnvironment({...env,VERCEL_GIT_COMMIT_REF:'integration/turso-closure-candidate-20261018'});
+  assertTursoPreviewEnvironment({...env,VERCEL_GIT_COMMIT_REF:'feat/turso-completion-20261019'});
   for(const changed of [
     {VERCEL_ENV:'production'},{VERCEL_GIT_COMMIT_REF:'main'},
     {VERCEL_GIT_COMMIT_REF:'fix/turso-integrated-preview-gates-20261018'},

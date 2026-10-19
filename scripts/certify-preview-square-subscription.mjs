@@ -4,7 +4,7 @@
 import {randomUUID} from 'node:crypto';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {selectCertificationSubscription,CERTIFICATION_SUBSCRIPTION_NAME} from '../lib/checkout/square-certification-subscription.mjs';
-const protectedBranches=new Set(['refs/heads/feat/turso-checkout-recovery-20261017','refs/heads/integration/turso-closure-candidate-20261018']);
+const protectedBranches=new Set(['refs/heads/feat/turso-checkout-recovery-20261017','refs/heads/integration/turso-closure-candidate-20261018','refs/heads/feat/turso-completion-20261019']);
 const expectedHost=/^gratog-[a-z0-9]+-theangelsilvers-projects\.vercel\.app$/;
 if(process.env.GITHUB_EVENT_NAME!=='workflow_dispatch'||
    !protectedBranches.has(process.env.GITHUB_REF)||!process.env.GITHUB_SHA||
