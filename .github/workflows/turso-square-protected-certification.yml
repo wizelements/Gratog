@@ -9,6 +9,12 @@ on:
         type: string
         required: true
 
+      schema_probe_only:
+        description: Read-only schema inventory of the fixed Turso staging database
+        type: boolean
+        required: false
+        default: false
+
       provision_only:
         description: Provision isolated Preview branch values without running payment tests
         type: boolean
@@ -36,6 +42,34 @@ permissions:
   contents: read
 
 jobs:
+  protected-staging-schema-probe:
+    if: ${{ inputs.schema_probe_only }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: square-sandbox-certification
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install runtime dependencies without production credentials
+        run: npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Inspect exact isolated staging schema, read-only
+        env:
+          TURSO_STAGING_DATABASE_URL: libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io
+          TURSO_STAGING_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
+        run: node scripts/migrate/inspect-protected-staging-schema.mjs
+      - name: Persist nonsecret staging schema evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: turso-staging-schema-${{ github.run_id }}
+          path: test-results/protected-staging-schema-read.json
+          if-no-files-found: error
+          retention-days: 14
+
   provision-integrated-preview:
     if: ${{ inputs.provision_only }}
     runs-on: ubuntu-latest
@@ -138,7 +172,7 @@ jobs:
           retention-days: 30
 
   sandbox-buyer-certification:
-    if: ${{ inputs.read_only_recovery_order_id == '' && !inputs.provision_only }}
+    if: ${{ inputs.read_only_recovery_order_id == '' && !inputs.provision_only && !inputs.schema_probe_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 24
     environment: square-sandbox-certification
