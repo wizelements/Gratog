@@ -5,8 +5,9 @@ export const UPSERT_POLICIES = {
   migration_source_records: { key: ['source_collection', 'source_id'], mode: 'UPSERT_SELECTED_FIELDS', mutable: ['canonical_fingerprint', 'migrated_at'] },
   order_references: {key:['reference'],mode:'UPSERT_SELECTED_FIELDS',mutable:['order_id']},
   customer_references: {key:['reference'],mode:'UPSERT_SELECTED_FIELDS',mutable:['customer_id']},
+  customer_accounts: {key:['id'],mode:'UPSERT_SELECTED_FIELDS',mutable:['email','name','phone','avatar','password_hash','active','updated_at']},
   admin_identities: { key: ['id'], mode: 'UPSERT_SELECTED_FIELDS',
-    mutable: ['email','role','is_active','updated_at','legacy_id'] },
+    mutable: ['email','role','is_active','updated_at','legacy_id','session_version','credential_fingerprint'] },
   admin_identity_references: { key: ['reference'], mode: 'UPSERT_SELECTED_FIELDS',
     mutable: ['admin_id'] },
   customers: { key: ['id'], mode: 'UPSERT_SELECTED_FIELDS', mutable: ['email', 'name', 'phone', 'square_customer_id', 'preferences_json', 'total_orders', 'total_spent_cents', 'updated_at', 'legacy_snapshot_json'] },
@@ -41,7 +42,9 @@ export function insertStatement(table, row) {
   let action = 'DO NOTHING';
   if (policy.mode === 'UPSERT_SELECTED_FIELDS') {
     const mutable = policy.mutable.filter((column) => columns.includes(column));
-    action = mutable.length ? `DO UPDATE SET ${mutable.map((column) => `${column}=excluded.${column}`).join(',')}` : 'DO NOTHING';
+    action = mutable.length ? `DO UPDATE SET ${mutable.map((column) => table==='admin_identities'&&column==='session_version'
+      ? 'session_version=max(admin_identities.session_version,excluded.session_version)'
+      : `${column}=excluded.${column}`).join(',')}` : 'DO NOTHING';
   }
   // Stale migration snapshots must never re-enable a revoked administrator.
   // Equal-timestamp revocation wins; a later verified source may reactivate.
@@ -49,6 +52,9 @@ export function insertStatement(table, row) {
     action += ' WHERE excluded.updated_at > admin_identities.updated_at OR ('+
       'excluded.updated_at = admin_identities.updated_at AND '+
       'excluded.is_active=0 AND admin_identities.is_active=1)';
+  }
+  if(table==='customer_accounts'&&policy.mode==='UPSERT_SELECTED_FIELDS'){
+    action+=' WHERE excluded.updated_at>customer_accounts.updated_at OR (excluded.updated_at=customer_accounts.updated_at AND excluded.active=0 AND customer_accounts.active=1)';
   }
   return { sql: `INSERT INTO ${table} (${columns.join(',')}) VALUES (${placeholders}) ON CONFLICT(${conflict}) ${action}`, args: Object.values(row) };
 }

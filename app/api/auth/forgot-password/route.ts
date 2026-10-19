@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import { findUserByEmail } from '@/lib/db/users';
 import { sendPasswordResetEmail } from '@/lib/email/service';
 import { connectToDatabase } from '@/lib/db-optimized';
+import {openTursoPreview,tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {createTursoPasswordReset} from '@/lib/auth/turso-customer-accounts.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +32,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email } = body;
 
-    if (!email) {
+    if (typeof email!=='string'||!email||email.length>254) {
       return NextResponse.json(SAFE_RESPONSE);
     }
 
@@ -52,15 +54,20 @@ export async function POST(request: NextRequest) {
       const token = crypto.randomBytes(32).toString('hex');
       const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
-      const { db } = await connectToDatabase();
-      await db.collection('password_resets').insertOne({
+      if (tursoPreviewSelected()) {
+        await createTursoPasswordReset(await openTursoPreview(),user.id,tokenHash,
+          new Date(Date.now()+30*60*1000).toISOString());
+      } else {
+        const { db } = await connectToDatabase();
+        await db.collection('password_resets').insertOne({
         userId: user.id,
         email: normalizedEmail,
         tokenHash,
         expiresAt: new Date(Date.now() + 30 * 60 * 1000),
         consumed: false,
         createdAt: new Date(),
-      });
+        });
+      }
 
       // Send reset email (don't let failure leak info)
       try {

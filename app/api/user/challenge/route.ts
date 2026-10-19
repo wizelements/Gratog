@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 import { connectToDatabase } from '@/lib/db-optimized';
+import {openTursoPreview,tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {readTursoAccountRecord,canTursoCheckIn} from '@/lib/auth/turso-customer-accounts.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +28,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
+    if(tursoPreviewSelected()){
+      const challenge=await readTursoAccountRecord(await openTursoPreview(),'challenges',decoded.userId);
+      return NextResponse.json({success:true,challenge:{streakDays:challenge?.streakDays??0,lastCheckIn:challenge?.lastCheckIn??null,totalCheckIns:challenge?.totalCheckIns??0,canCheckIn:canTursoCheckIn(challenge)}});
+    }
+
     const { db } = await connectToDatabase();
     const challenge = await db.collection('challenges').findOne({ userId: decoded.userId });
 
@@ -38,7 +45,8 @@ export async function GET(request: NextRequest) {
         canCheckIn: canCheckIn(challenge?.lastCheckIn || null),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
+    if(error?.name==='TursoCustomerRefusal')return NextResponse.json({success:false,error:error.message},{status:error.status});
     console.error('Challenge fetch error:', error);
     return NextResponse.json({ success: false, error: 'Failed to fetch challenge' }, { status: 500 });
   }

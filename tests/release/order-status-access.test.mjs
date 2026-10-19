@@ -10,6 +10,9 @@ import { readFileSync } from 'node:fs';
 import { stripTypeScriptTypes } from 'node:module';
 import { SourceTextModule, SyntheticModule, createContext } from 'node:vm';
 import { generateOrderAccessToken, verifyOrderAccessToken } from '../../lib/order-access-token.js';
+import * as policy from '../../lib/auth/admin-session-policy.mjs';
+import {getTursoVerifiedAdminSession} from '../../lib/auth/turso-admin-session.mjs';
+import {persistTursoAdminAudit} from '../../lib/auth/turso-admin-audit.mjs';
 
 const routePath = 'app/api/orders/[id]/status/route.ts';
 const sessionPath = 'lib/auth/unified-admin.ts';
@@ -273,8 +276,8 @@ test('malformed payloads and estimated times are rejected without mutation', asy
 
 async function sessionFixture() {
   const state = {
-    payload: { id: 'admin-1', email: 'old@example.invalid', role: 'admin', iat: 1, exp: 9999999999 },
-    record: { isActive: true, role: 'admin', email: 'current@example.invalid' },
+    payload: { id: 'admin-1', email: 'old@example.invalid', role: 'admin', sessionVersion:1, iat: 1, exp: 9999999999 },
+    record: { isActive: true, role: 'admin', email: 'current@example.invalid',tokenVersion:1 },
     dbError: null, lookups: 0, jwtError: null,
   };
   class ObjectId {
@@ -284,6 +287,10 @@ async function sessionFixture() {
   const sessions = await loadTypeScript(sessionPath, {
     'next/server': { NextRequest: class {}, NextResponse: class {} },
     jose: { jwtVerify: async () => { if (state.jwtError) throw state.jwtError; return { payload: state.payload }; }, SignJWT: class {} },
+    '@/lib/checkout/turso-preview-runtime.mjs':{tursoPreviewSelected:()=>false,openTursoPreview:async()=>{throw Error('UNEXPECTED_SQL_OPEN')}},
+    '@/lib/auth/turso-admin-session.mjs':{getTursoVerifiedAdminSession},
+    '@/lib/auth/turso-admin-audit.mjs':{persistTursoAdminAudit},
+    '@/lib/auth/admin-session-policy.mjs':policy,
     bcryptjs: { hash: async () => '', compare: async () => false },
     mongodb: { ObjectId },
     '@/lib/db-optimized': { connectToDatabase: async () => {
@@ -296,14 +303,14 @@ async function sessionFixture() {
   return { state, sessions, input };
 }
 
-test('administrator sessions support both active schemas and refresh the current DB role/email', async () => {
+test('administrator sessions support both active schemas and refresh email without elevating a prior token', async () => {
   const { state, sessions, input } = await sessionFixture();
   let session = await sessions.getAdminSession(input);
   assert.equal(session.email, 'current@example.invalid');
   assert.equal(session.role, 'admin');
-  state.record = { active: true, role: 'super_admin', email: 'legacy@example.invalid' };
+  state.record = { active: true, role: 'super_admin', email: 'legacy@example.invalid',tokenVersion:1 };
   session = await sessions.getAdminSession(input);
-  assert.equal(session.role, 'super_admin');
+  assert.equal(session.role, 'admin');
   assert.equal(session.email, 'legacy@example.invalid');
 });
 

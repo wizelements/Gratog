@@ -7,7 +7,7 @@ import {insertStatement} from '../../scripts/migrate/upsert-policy.mjs';
 import {getTursoVerifiedAdminSession} from '../../lib/auth/turso-admin-session.mjs';
 
 const initial={_id:'507f191e810c19729de860ea',id:'admin-user-123',
- email:'ADMIN@example.invalid',role:'super_admin',isActive:true,active:true,
+ email:'ADMIN@example.invalid',role:'super_admin',sessionVersion:1,isActive:true,active:true,
  createdAt:'2026-10-01T00:00:00Z',updatedAt:'2026-10-18T00:00:00Z'};
 const build=()=>{
   const raw=new DatabaseSync(':memory:');
@@ -32,15 +32,15 @@ const build=()=>{
 test('admin source migration retains raw evidence and two immutable identity aliases',async()=>{
  const {raw,db,importDoc,files}=build();
  try {
-   assert.equal(files.at(-1),'0015_admin_identity.sql');
+   assert.ok(files.includes('0016_admin_session_epoch.sql'));
    const st=importDoc(initial);
    assert.ok(st.some(x=>x.table==='operational_records'));
    assert.ok(st.some(x=>x.table==='admin_identities'));
    assert.equal(st.filter(x=>x.table==='admin_identity_references').length,2);
    const byBusiness=await getTursoVerifiedAdminSession(db,{
-     id:'admin-user-123',email:'ADMIN@example.invalid',role:'super_admin'});
+     id:'admin-user-123',email:'ADMIN@example.invalid',role:'super_admin',sessionVersion:1});
    const byMongo=await getTursoVerifiedAdminSession(db,{
-     id:initial._id,email:'ADMIN@example.invalid',role:'super_admin'});
+     id:initial._id,email:'ADMIN@example.invalid',role:'super_admin',sessionVersion:1});
    assert.equal(byBusiness.id,initial._id);
    assert.equal(byMongo.id,initial._id);
    assert.equal(byMongo.email,'admin@example.invalid');
@@ -52,7 +52,7 @@ test('revocation is immediately enforced despite previously signed admin claim',
  const {raw,db,importDoc}=build();
  try {
    importDoc(initial);
-   const claim={id:initial.id,email:initial.email,role:'super_admin'};
+   const claim={id:initial.id,email:initial.email,role:'super_admin',sessionVersion:1};
    assert.equal((await getTursoVerifiedAdminSession(db,claim)).role,'super_admin');
    importDoc({...initial,active:false,updatedAt:'2026-10-18T21:30:00Z'});
    assert.equal(await getTursoVerifiedAdminSession(db,claim),null);
@@ -65,14 +65,14 @@ test('no implicit elevation, unknown role, inactive principal, or unsigned ident
  try {
    importDoc(initial);
    assert.equal((await getTursoVerifiedAdminSession(db,{
-     id:initial.id,email:initial.email,role:'admin'})).role,'admin');
+     id:initial.id,email:initial.email,role:'admin',sessionVersion:1})).role,'admin');
    assert.equal(await getTursoVerifiedAdminSession(db,{
      id:initial.id,email:initial.email,role:'staff'}),null);
    assert.equal(await getTursoVerifiedAdminSession(db,{
-     id:'other',email:initial.email,role:'admin'}),null);
+     id:'other',email:initial.email,role:'admin',sessionVersion:1}),null);
    importDoc({...initial,role:'staff',updatedAt:'2026-10-19T00:00:00Z'});
    assert.equal(await getTursoVerifiedAdminSession(db,{
-     id:initial.id,email:initial.email,role:'super_admin'}),null);
+     id:initial.id,email:initial.email,role:'super_admin',sessionVersion:1}),null);
  }finally {raw.close();}
 });
 test('alias collision rolls back, never rebinds a prior admin session',async()=>{
@@ -83,7 +83,7 @@ test('alias collision rolls back, never rebinds a prior admin session',async()=>
        email:'different@example.invalid'}),/ADMIN_REFERENCE_COLLISION/);
    assert.equal(raw.prepare('SELECT admin_id FROM admin_identity_references WHERE reference=?').get(initial.id).admin_id,initial._id);
    const old=await getTursoVerifiedAdminSession(db,{
-     id:initial.id,email:initial.email,role:'admin'});
+     id:initial.id,email:initial.email,role:'admin',sessionVersion:1});
    assert.equal(old?.id,initial._id);
  }finally{raw.close();}
 });
@@ -92,13 +92,13 @@ test('ambiguous identity, lost SQL, and missing flags cannot silently allow admi
  try{
    importDoc({...initial,isActive:undefined,active:undefined});
    assert.equal(await getTursoVerifiedAdminSession(db,{
-     id:initial.id,email:initial.email,role:'admin'}),null);
+     id:initial.id,email:initial.email,role:'admin',sessionVersion:1}),null);
    await assert.rejects(getTursoVerifiedAdminSession({all:async()=>{throw Error('SQL_DOWN')}},{
-     id:initial.id,email:initial.email,role:'admin'}),/SQL_DOWN/);
+     id:initial.id,email:initial.email,role:'admin',sessionVersion:1}),/SQL_DOWN/);
    await assert.rejects(getTursoVerifiedAdminSession({all:async()=>[
-     {id:'one',role:'admin',is_active:1,email:'a@example.invalid'},
-     {id:'two',role:'admin',is_active:1,email:'b@example.invalid'}]},{
-     id:initial.id,email:initial.email,role:'admin'}),/AMBIGUOUS/);
+     {id:'one',role:'admin',sessionVersion:1,is_active:1,email:'a@example.invalid'},
+     {id:'two',role:'admin',sessionVersion:1,is_active:1,email:'b@example.invalid'}]},{
+     id:initial.id,email:initial.email,role:'admin',sessionVersion:1}),/AMBIGUOUS/);
  }finally{raw.close();}
 });
 test('actual admin authorization checks Turso first and requires active DB state',()=>{
@@ -120,7 +120,7 @@ test('stale snapshots and equal-time reactivation cannot undo a revocation',asyn
    importDoc({...initial,updatedAt:'2026-10-18T21:00:00Z'});
    importDoc({...initial,updatedAt:revoked.updatedAt});
    assert.equal(await getTursoVerifiedAdminSession(db,{
-     id:initial.id,email:initial.email,role:'admin'}),null);
+     id:initial.id,email:initial.email,role:'admin',sessionVersion:1}),null);
    assert.equal(raw.prepare('SELECT is_active FROM admin_identities').get().is_active,0);
  }finally{raw.close();}
 });

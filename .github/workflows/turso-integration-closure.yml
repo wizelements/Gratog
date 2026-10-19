@@ -32,13 +32,20 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      - name: Install locked dependencies without real provider secrets
+        run: npm ci --include=dev --ignore-scripts --no-audit --no-fund
       - name: Verify integration security, routing and schema contracts
         run: |
-          node --test \
+          node --experimental-vm-modules --test \
             tests/migration/turso-market-auth-boundary.test.mjs \
             tests/migration/turso-market-parity.test.mjs \
             tests/migration/turso-market-crud.test.mjs \
             tests/migration/turso-admin-session-identity.test.mjs \
+            tests/migration/admin-session-epoch.test.mjs \
+            tests/migration/turso-menu-operations.test.mjs \
+            tests/migration/turso-customer-accounts.test.mjs \
+            tests/migration/turso-native-admin-login.test.mjs \
+            tests/migration/turso-staff-inventory.test.mjs \
             tests/migration/turso-customer-snapshot-auth.test.mjs \
             tests/migration/turso-migration-hygiene.test.mjs \
             tests/migration/legacy-commerce-references.test.mjs \
@@ -55,8 +62,6 @@ jobs:
           test "$routing_status" -eq 2
           test "$cutover_status" -eq 1
           echo 'Incomplete application routing and absent release evidence correctly block cutover.'
-      - name: Install locked dependencies without real provider secrets
-        run: npm ci --include=dev --ignore-scripts --no-audit --no-fund
       - name: Full application regression
         run: npm test -- --reporter=dot
       - name: TypeScript route validation

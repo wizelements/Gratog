@@ -16,6 +16,8 @@ import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import {tursoPreviewSelected,openTursoPreview} from '@/lib/checkout/turso-preview-runtime.mjs';
 import {getTursoVerifiedAdminSession} from '@/lib/auth/turso-admin-session.mjs';
+import {persistTursoAdminAudit} from '@/lib/auth/turso-admin-audit.mjs';
+import {isActiveAdminRecord,isSessionVersion,sessionMatchesAdminVersion,constrainAdminRole} from '@/lib/auth/admin-session-policy.mjs';
 import { logger } from '@/lib/logger';
 
 // ============================================================================
@@ -49,6 +51,7 @@ export interface AdminSession {
   email: string;
   role: string;
   name?: string;
+  sessionVersion: number;
   iat?: number;
   exp?: number;
 }
@@ -68,7 +71,7 @@ export interface AdminUser {
 export class AdminAuthError extends Error {
   statusCode: number;
   code: string;
-  
+
   constructor(message: string, statusCode: number = 401, code: string = 'AUTH_ERROR') {
     super(message);
     this.name = 'AdminAuthError';
@@ -95,12 +98,12 @@ function getAdminLookupQuery(adminId: string): Record<string, unknown> {
 
 function getJwtSecret(): Uint8Array {
   const secret = process.env.JWT_SECRET;
-  
+
   // Build-time placeholder
   if (IS_BUILD_TIME) {
     return textEncoder.encode('build-time-placeholder-do-not-use');
   }
-  
+
   // Production enforcement
   if (IS_PRODUCTION) {
     if (!secret) {
@@ -110,7 +113,7 @@ function getJwtSecret(): Uint8Array {
         'MISSING_SECRET'
       );
     }
-    
+
     if (secret.length < 32) {
       throw new AdminAuthError(
         'JWT_SECRET must be at least 32 characters in production',
@@ -118,13 +121,13 @@ function getJwtSecret(): Uint8Array {
         'WEAK_SECRET'
       );
     }
-    
+
     // Check for common weak secrets
     const weakSecrets = [
       'secret', 'password', 'admin', '123456', 'changeme',
       'dev-only', 'development', 'test', 'example'
     ];
-    
+
     if (weakSecrets.some(w => secret.toLowerCase().includes(w))) {
       throw new AdminAuthError(
         'JWT_SECRET contains weak/common values',
@@ -133,17 +136,17 @@ function getJwtSecret(): Uint8Array {
       );
     }
   }
-  
+
   // Development fallback (warn but allow)
   if (!secret) {
     console.warn('⚠️  JWT_SECRET not set - using insecure development secret');
     return textEncoder.encode('dev-only-insecure-secret-do-not-use-in-production');
   }
-  
+
   if (secret.length < 32 && !IS_PRODUCTION) {
     console.warn('⚠️  JWT_SECRET should be at least 32 characters');
   }
-  
+
   return textEncoder.encode(secret);
 }
 
@@ -159,20 +162,23 @@ export async function generateAdminToken(admin: {
   email: string;
   role: string;
   name?: string;
+  sessionVersion: number;
 }): Promise<string> {
+  if (!isSessionVersion(admin.sessionVersion)) throw new AdminAuthError('A current database session version is required', 401, 'ADMIN_SESSION_VERSION_REQUIRED');
   const secretKey = getJwtSecret();
-  
+
   const token = await new SignJWT({
     id: admin.id,
     email: admin.email,
     role: admin.role,
     name: admin.name,
+    sessionVersion: admin.sessionVersion,
   })
     .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
     .setIssuedAt()
     .setExpirationTime(TOKEN_EXPIRY)
     .sign(secretKey);
-  
+
   return token;
 }
 
@@ -183,24 +189,25 @@ export async function verifyAdminToken(token: string): Promise<AdminSession | nu
   try {
     const secretKey = getJwtSecret();
     const { payload } = await jwtVerify(token, secretKey);
-    
+
     // Validate required fields
-    if (!payload.id || !payload.email || !payload.role) {
+    if (typeof payload.id !== 'string' || !payload.id || typeof payload.email !== 'string' || !payload.email.trim() || !payload.role || !isSessionVersion(payload.sessionVersion)) {
       logger.warn('AUTH', 'Token missing required fields');
       return null;
     }
-    
+
     // Validate role
     if (payload.role !== 'admin' && payload.role !== 'super_admin') {
       logger.warn('AUTH', 'Token has invalid role', { role: payload.role });
       return null;
     }
-    
+
     return {
       id: payload.id as string,
       email: payload.email as string,
       role: payload.role as string,
       name: payload.name as string | undefined,
+      sessionVersion: payload.sessionVersion as number,
       iat: payload.iat,
       exp: payload.exp,
     };
@@ -217,10 +224,10 @@ export async function verifyAdminToken(token: string): Promise<AdminSession | nu
  */
 export function shouldRotateToken(session: AdminSession): boolean {
   if (!session.iat) return false;
-  
+
   const issuedAt = session.iat * 1000;
   const age = Date.now() - issuedAt;
-  
+
   return age > TOKEN_ROTATION_THRESHOLD_MS;
 }
 
@@ -232,19 +239,19 @@ export function shouldRotateToken(session: AdminSession): boolean {
  * Extract admin session from request
  * Primary method for checking authentication
  */
-export async function getAdminSession(request: NextRequest): Promise<AdminSession | null> {
+export async function getAdminSession(request: NextRequest | Request): Promise<AdminSession | null> {
   const token = extractTokenFromRequest(request);
-  
+
   if (!token) {
     return null;
   }
-  
+
   const session = await verifyAdminToken(token);
-  
+
   if (!session) {
     return null;
   }
-  
+
   // A signed JWT alone does not establish unrevoked administrator access.
   try {
     if (tursoPreviewSelected()) {
@@ -254,24 +261,22 @@ export async function getAdminSession(request: NextRequest): Promise<AdminSessio
     const { db } = await connectToDatabase();
     const admin = await db.collection('admin_users').findOne(
       getAdminLookupQuery(session.id),
-      { projection: { isActive: 1, active: 1, role: 1, email: 1 } }
+      { projection: { isActive: 1, active: 1, role: 1, email: 1, tokenVersion: 1 } }
     );
-    
+
     // Both schemas exist during the authentication migration. At least one
     // active flag must affirm access; an explicit revocation always wins.
-    if (!admin || admin.isActive === false || admin.active === false ||
-        (admin.isActive !== true && admin.active !== true) ||
-        !['admin', 'super_admin'].includes(admin.role)) {
+    if (!isActiveAdminRecord(admin) || !sessionMatchesAdminVersion(session, admin.tokenVersion)) {
       logger.warn('AUTH', 'Session valid but administrator access was revoked or is unverified', {
         adminId: session.id,
       });
       return null;
     }
-    
+
     // Update session with current role from DB
-    session.role = admin.role;
+    session.role = constrainAdminRole(session.role, admin.role);
     if (typeof admin.email === 'string' && admin.email.trim()) session.email = admin.email;
-    
+
   } catch (error) {
     // A signed, unexpired JWT is not evidence that access remains active.
     // In particular, Turso selection must not turn a blocked Mongo lookup into
@@ -279,16 +284,16 @@ export async function getAdminSession(request: NextRequest): Promise<AdminSessio
     logger.error('AUTH', 'Failed to verify admin in database', error);
     throw new AdminAuthError('Administrator verification is temporarily unavailable', 503, 'ADMIN_VERIFICATION_UNAVAILABLE');
   }
-  
+
   return session;
 }
 
 /**
  * Require admin session - throws if not authenticated
  */
-export async function requireAdminSession(request: NextRequest): Promise<AdminSession> {
+export async function requireAdminSession(request: NextRequest | Request): Promise<AdminSession> {
   const session = await getAdminSession(request);
-  
+
   if (!session) {
     throw new AdminAuthError(
       'Unauthorized - Admin access required',
@@ -296,26 +301,28 @@ export async function requireAdminSession(request: NextRequest): Promise<AdminSe
       'UNAUTHORIZED'
     );
   }
-  
+
   return session;
 }
 
 /**
  * Extract token from request (cookie or header)
  */
-function extractTokenFromRequest(request: NextRequest): string | null {
-  // Check cookie first
-  const cookieToken = request.cookies.get('admin_token')?.value;
+function extractTokenFromRequest(request: NextRequest | Request): string | null {
+  // Support NextRequest and ordinary Request without trusting cookie substrings.
+  const cookieToken = 'cookies' in request
+    ? request.cookies.get('admin_token')?.value
+    : request.headers.get('cookie')?.match(/(?:^|;\s*)admin_token=([^;]+)/)?.[1];
   if (cookieToken) {
     return cookieToken;
   }
-  
+
   // Check Authorization header
   const authHeader = request.headers.get('authorization');
   if (authHeader?.startsWith('Bearer ')) {
     return authHeader.substring(7);
   }
-  
+
   return null;
 }
 
@@ -391,7 +398,7 @@ interface RateLimitResult {
 export function checkRateLimit(key: string, maxRequests: number, windowMs: number): RateLimitResult {
   const now = Date.now();
   const entry = rateLimitStore.get(key);
-  
+
   if (!entry || now > entry.resetAt) {
     // New window
     rateLimitStore.set(key, {
@@ -400,11 +407,11 @@ export function checkRateLimit(key: string, maxRequests: number, windowMs: numbe
     });
     return { allowed: true, remaining: maxRequests - 1, resetAt: now + windowMs };
   }
-  
+
   if (entry.count >= maxRequests) {
     return { allowed: false, remaining: 0, resetAt: entry.resetAt };
   }
-  
+
   entry.count++;
   return { allowed: true, remaining: maxRequests - entry.count, resetAt: entry.resetAt };
 }
@@ -427,11 +434,11 @@ export function getGeneralRateLimitKey(ip: string, path: string): string {
 export function validateCsrfToken(request: NextRequest): boolean {
   const csrfHeader = request.headers.get('x-csrf-token');
   const csrfCookie = request.cookies.get('admin_csrf')?.value;
-  
+
   if (!csrfHeader || !csrfCookie) {
     return false;
   }
-  
+
   // Constant-time comparison to prevent timing attacks
   try {
     return timingSafeEqual(csrfHeader, csrfCookie);
@@ -453,7 +460,7 @@ function timingSafeEqual(a: string, b: string): boolean {
     }
     return result === 0 && false; // Always false due to length mismatch
   }
-  
+
   let result = 0;
   for (let i = 0; i < a.length; i++) {
     result |= a.charCodeAt(i) ^ b.charCodeAt(i);
@@ -521,15 +528,15 @@ export function createSuccessResponse<T>(data: T, meta?: Record<string, unknown>
  */
 export async function findAdminByEmail(email: string): Promise<AdminUser | null> {
   const { db } = await connectToDatabase();
-  
+
   const admin = await db.collection('admin_users').findOne({
     email: email.toLowerCase(),
   });
-  
+
   if (!admin) {
     return null;
   }
-  
+
   return {
     _id: admin._id.toString(),
     id: admin.id || admin._id.toString(),
@@ -548,7 +555,7 @@ export async function findAdminByEmail(email: string): Promise<AdminUser | null>
  */
 export async function updateAdminLastLogin(adminId: string): Promise<void> {
   const { db } = await connectToDatabase();
-  
+
   await db.collection('admin_users').updateOne(
     getAdminLookupQuery(adminId),
     { $set: { lastLogin: new Date() } }
@@ -591,25 +598,30 @@ export async function logAdminAction(
     userAgent: request.headers.get('user-agent') || 'unknown',
     success,
   };
-  
+
   logger.info('AUDIT', `${admin.email}: ${action} on ${resource}`, {
     success,
     ip: entry.ipAddress,
   });
-  
-  // Persist async
+
+  // Persist before reporting success; the selected SQL provider cannot fall back.
   try {
+    if(tursoPreviewSelected()){
+      await persistTursoAdminAudit(await openTursoPreview(),entry);
+      return;
+    }
     const { db } = await connectToDatabase();
     await db.collection('audit_logs').insertOne(entry);
   } catch (error) {
     logger.error('AUDIT', 'Failed to persist audit log', error);
+    throw new AdminAuthError('Administrator audit persistence unavailable',503,'ADMIN_AUDIT_UNAVAILABLE');
   }
 }
 
 function sanitizeForLogging(data: Record<string, unknown>): Record<string, unknown> {
   const sensitiveFields = ['password', 'passwordHash', 'token', 'secret', 'apiKey', 'csrf'];
   const sanitized: Record<string, unknown> = {};
-  
+
   for (const [key, value] of Object.entries(data)) {
     const lowerKey = key.toLowerCase();
     if (sensitiveFields.some(s => lowerKey.includes(s))) {
@@ -620,7 +632,7 @@ function sanitizeForLogging(data: Record<string, unknown>): Record<string, unkno
       sanitized[key] = value;
     }
   }
-  
+
   return sanitized;
 }
 
@@ -629,11 +641,11 @@ function getClientIp(request: NextRequest): string {
   if (forwarded) {
     return forwarded.split(',')[0].trim();
   }
-  
+
   const realIp = request.headers.get('x-real-ip');
   if (realIp) {
     return realIp;
   }
-  
+
   return 'unknown';
 }

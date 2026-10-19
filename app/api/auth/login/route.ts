@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password } = body;
 
-    if (!email || !password) {
+    if (typeof email!=='string' || typeof password!=='string' || !email || !password || password.length>1024) {
       return NextResponse.json(
         { success: false, error: 'Email and password are required' },
         { status: 400 }
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     rateLimitStore.delete(rateLimitKey);
 
     // Generate JWT token
-    const token = await generateToken(user.id, user.email);
+    const token = await generateToken(user.id, user.email, {passwordHash:user.passwordHash});
 
     const response = NextResponse.json({
       success: true,

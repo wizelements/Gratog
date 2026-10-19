@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Hardened Admin Login Route
- * 
+ *
  * SECURITY:
  * - Rate limited (5 attempts per 15 minutes)
  * - Password validation with bcrypt
@@ -17,8 +17,12 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
-import { 
-  generateAdminToken, 
+import {isActiveAdminRecord} from '@/lib/auth/admin-session-policy.mjs';
+import {establishMongoAdminLogin} from '@/lib/auth/mongo-admin-session.mjs';
+import {openTursoPreview,tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {findTursoAdminCredentials,establishTursoAdminLogin} from '@/lib/auth/turso-admin-login.mjs';
+import {
+  generateAdminToken,
   generateCsrfToken,
 } from '@/lib/auth/unified-admin';
 
@@ -51,41 +55,41 @@ const LoginSchema = z.object({
 function checkLoginRateLimit(key: string): LoginRateLimit {
   const now = Date.now();
   const entry = rateLimitStore.get(key);
-  
+
   // Check if locked
   if (entry?.locked && entry.lockUntil && now < entry.lockUntil) {
-    return { 
-      allowed: false, 
-      remaining: 0, 
+    return {
+      allowed: false,
+      remaining: 0,
       resetAt: entry.lockUntil,
       locked: true,
       lockUntil: entry.lockUntil,
     };
   }
-  
+
   // Clear lock if expired
   if (entry?.locked && entry.lockUntil && now >= entry.lockUntil) {
     rateLimitStore.delete(key);
   }
-  
+
   if (!entry || now > entry.resetAt) {
     return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS, resetAt: now + LOCKOUT_DURATION_MS };
   }
-  
+
   // Check if max attempts reached
   if (entry.count >= MAX_LOGIN_ATTEMPTS) {
     // Lock account
     entry.locked = true;
     entry.lockUntil = now + LOCKOUT_DURATION_MS;
-    return { 
-      allowed: false, 
-      remaining: 0, 
+    return {
+      allowed: false,
+      remaining: 0,
       resetAt: entry.lockUntil,
       locked: true,
       lockUntil: entry.lockUntil,
     };
   }
-  
+
   return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS - entry.count, resetAt: entry.resetAt };
 }
 
@@ -93,7 +97,7 @@ function recordFailedAttempt(key: string): LoginRateLimit {
   const now = Date.now();
   const entry = rateLimitStore.get(key);
   const resetAt = now + LOCKOUT_DURATION_MS;
-  
+
   if (!entry || now > entry.resetAt) {
     const next = { count: 1, resetAt };
     rateLimitStore.set(key, next);
@@ -171,24 +175,24 @@ function getClientIp(request: NextRequest): string {
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimitKey = `login:${ip}`;
-  
+
   try {
     // Rate limiting check
     const rateLimit = checkLoginRateLimit(rateLimitKey);
     if (!rateLimit.allowed) {
-      const retryAfter = rateLimit.lockUntil 
+      const retryAfter = rateLimit.lockUntil
         ? Math.ceil((rateLimit.lockUntil - Date.now()) / 1000)
         : 900;
-      
-      logger.warn('LOGIN', 'Rate limit exceeded', { 
-        ip, 
+
+      logger.warn('LOGIN', 'Rate limit exceeded', {
+        ip,
         locked: rateLimit.locked,
         retryAfter,
       });
-      
+
       return rateLimitResponse(rateLimit);
     }
-    
+
     // Parse and validate body
     let body: unknown;
     try {
@@ -199,7 +203,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     const validation = LoginSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
@@ -207,29 +211,29 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     const { email, password, rememberMe } = validation.data;
     const normalizedEmail = email.toLowerCase().trim();
-    
+
     // Get database
-    const { db } = await connectToDatabase();
-    
-    // Find admin user
-    const admin = await db.collection('admin_users').findOne({
-      email: normalizedEmail,
-    });
-    
+    const nativeTurso=tursoPreviewSelected();
+    const db=nativeTurso?await openTursoPreview():(await connectToDatabase()).db;
+
+    // Turso selection never opens the legacy database, including login.
+    let admin=nativeTurso?await findTursoAdminCredentials(db,normalizedEmail)
+      :await db.collection('admin_users').findOne({email:normalizedEmail});
+
     // Check if user exists and is active
-    if (!admin || admin.isActive === false) {
+    if (!isActiveAdminRecord(admin)) {
       // Record failed attempt (even for non-existent users to prevent user enumeration)
       const failedRateLimit = recordFailedAttempt(rateLimitKey);
-      
-      logger.warn('LOGIN', 'Failed login attempt - user not found or inactive', { 
-        email: normalizedEmail, 
+
+      logger.warn('LOGIN', 'Failed login attempt - user not found or inactive', {
+        email: normalizedEmail,
         ip,
         remaining: failedRateLimit.remaining,
       });
-      
+
       // Generic error to prevent user enumeration
       return invalidCredentialsResponse(failedRateLimit);
     }
@@ -245,27 +249,29 @@ export async function POST(request: NextRequest) {
 
       return invalidCredentialsResponse(failedRateLimit);
     }
-    
+
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, admin.passwordHash);
-    
+
     if (!isPasswordValid) {
       // Record failed attempt
       const updatedRateLimit = recordFailedAttempt(rateLimitKey);
-      
-      logger.warn('LOGIN', 'Failed login attempt - invalid password', { 
-        email: normalizedEmail, 
+
+      logger.warn('LOGIN', 'Failed login attempt - invalid password', {
+        email: normalizedEmail,
         ip,
         remaining: updatedRateLimit.remaining,
       });
-      
+
       // Generic error
       return invalidCredentialsResponse(updatedRateLimit);
     } else {
       // Password valid - clear rate limit
       rateLimitStore.delete(rateLimitKey);
     }
-    
+
+    admin = nativeTurso?await establishTursoAdminLogin(db,admin,{ip,userAgent:request.headers.get('user-agent')||'unknown'})
+      :await establishMongoAdminLogin(db.collection('admin_users'), admin);
     const adminId = admin.id || admin._id?.toString();
 
     if (!adminId) {
@@ -286,30 +292,15 @@ export async function POST(request: NextRequest) {
       email: admin.email,
       role: admin.role,
       name: admin.name,
+      sessionVersion: admin.tokenVersion,
     });
-    
+
     // Generate CSRF token
     const csrfToken = generateCsrfToken();
-    
-    // Update last login
-    await db.collection('admin_users').updateOne(
-      admin.id ? { id: admin.id } : { _id: admin._id },
-      { 
-        $set: { 
-          lastLogin: new Date(),
-          lastLoginIp: ip,
-        },
-        $push: {
-          loginHistory: {
-            $each: [{ date: new Date(), ip }],
-            $slice: -10, // Keep last 10 logins
-          },
-        },
-      }
-    );
-    
+
+
     // Audit log
-    await db.collection('audit_logs').insertOne({
+    if(!nativeTurso)await db.collection('audit_logs').insertOne({
       timestamp: new Date(),
       adminId,
       adminEmail: admin.email,
@@ -320,10 +311,10 @@ export async function POST(request: NextRequest) {
       userAgent: request.headers.get('user-agent') || 'unknown',
       success: true,
     });
-    
+
     // Success response
     logger.info('LOGIN', `Successful login: ${admin.email}`, { ip });
-    
+
     const response = NextResponse.json({
       success: true,
       user: {
@@ -334,12 +325,12 @@ export async function POST(request: NextRequest) {
         mustChangePassword: admin.mustChangePassword || false,
       },
     });
-    
+
     // Set auth cookie with appropriate expiration
-    const cookieMaxAge = rememberMe 
+    const cookieMaxAge = rememberMe
       ? 30 * 24 * 60 * 60 // 30 days
       : 7 * 24 * 60 * 60; // 7 days
-    
+
     response.cookies.set('admin_token', token, {
       httpOnly: true,
       secure: IS_PRODUCTION,
@@ -347,7 +338,7 @@ export async function POST(request: NextRequest) {
       path: '/',
       maxAge: cookieMaxAge,
     });
-    
+
     // Set CSRF cookie
     response.cookies.set('admin_csrf', csrfToken, {
       httpOnly: false, // Must be readable by JS
@@ -356,9 +347,9 @@ export async function POST(request: NextRequest) {
       path: '/',
       maxAge: cookieMaxAge,
     });
-    
+
     return response;
-    
+
   } catch (error) {
     logger.error('LOGIN', 'Login error', { error, ip });
     return NextResponse.json(

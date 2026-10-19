@@ -5,6 +5,13 @@ on:
       - feat/turso-checkout-recovery-20261017
     paths:
       - 'db/migrations/0015_admin_identity.sql'
+      - 'db/migrations/0016_admin_session_epoch.sql'
+      - 'lib/auth/admin-session-policy.mjs'
+      - 'lib/auth/mongo-admin-session.mjs'
+      - 'lib/admin-session.ts'
+      - 'lib/admin-token.ts'
+      - 'app/api/admin/auth/login/route.ts'
+      - 'app/api/admin/auth/reset-password/route.ts'
       - 'lib/auth/turso-admin-session.mjs'
       - 'lib/auth/unified-admin.ts'
       - 'scripts/migrate/transformers.mjs'
@@ -32,8 +39,9 @@ jobs:
           node --check scripts/migrate/transformers.mjs
           node --check scripts/migrate/upsert-policy.mjs
           node --check lib/auth/turso-admin-session.mjs
-          node --test \
+          node --experimental-vm-modules --test \
             tests/migration/turso-admin-session-identity.test.mjs \
+            tests/migration/admin-session-epoch.test.mjs \
             tests/migration/turso-migration-hygiene.test.mjs \
             tests/migration/legacy-commerce-references.test.mjs \
             tests/release/turso-cutover-gates.test.mjs

@@ -1,7 +1,7 @@
 /**
  * Admin token verification for middleware
  * Uses 'jose' library for Edge Runtime compatibility
- * 
+ *
  * Note: jsonwebtoken is not compatible with Edge Runtime,
  * so we use jose for middleware verification
  */
@@ -13,13 +13,14 @@ interface AdminTokenPayload {
   email: string;
   role: string;
   name?: string;
+  sessionVersion: number;
   iat?: number;
   exp?: number;
 }
 
 function getJwtSecretKey(): Uint8Array {
   const secret = process.env.JWT_SECRET;
-  
+
   if (!secret) {
     const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
     if (isProd) {
@@ -27,7 +28,7 @@ function getJwtSecretKey(): Uint8Array {
     }
     return new TextEncoder().encode('dev-only-insecure-secret-do-not-use-in-production');
   }
-  
+
   return new TextEncoder().encode(secret);
 }
 
@@ -40,16 +41,20 @@ export async function verifyAdminCookieToken(token: string): Promise<AdminTokenP
   try {
     const secretKey = getJwtSecretKey();
     const { payload } = await jwtVerify(token, secretKey);
-    
-    if (payload.role !== 'admin' && payload.role !== 'super_admin') {
+
+    if ((payload.role !== 'admin' && payload.role !== 'super_admin') ||
+        typeof payload.id !== 'string' || !payload.id || typeof payload.email !== 'string' || !payload.email.trim() ||
+        !Number.isSafeInteger(payload.sessionVersion) || Number(payload.sessionVersion) < 1) {
       return null;
     }
-    
+
     return {
       id: payload.id as string,
       email: payload.email as string,
       role: payload.role as string,
       name: payload.name as string | undefined,
+      sessionVersion: payload.sessionVersion as number,
+      iat: payload.iat, exp: payload.exp,
     };
   } catch (error) {
     return null;
@@ -65,23 +70,26 @@ export function decodeTokenPayload(token: string): AdminTokenPayload | null {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return null;
-    
+
     const payload = JSON.parse(atob(parts[1]));
-    
-    if (payload.role !== 'admin' && payload.role !== 'super_admin') {
+
+    if ((payload.role !== 'admin' && payload.role !== 'super_admin') ||
+        typeof payload.id !== 'string' || !payload.id || typeof payload.email !== 'string' || !payload.email.trim() ||
+        !Number.isSafeInteger(payload.sessionVersion) || Number(payload.sessionVersion) < 1) {
       return null;
     }
-    
+
     // Check expiry
     if (payload.exp && payload.exp * 1000 < Date.now()) {
       return null;
     }
-    
+
     return {
       id: payload.id || payload.userId,
       email: payload.email,
       role: payload.role,
       name: payload.name,
+      sessionVersion: payload.sessionVersion,
     };
   } catch {
     return null;
@@ -96,13 +104,13 @@ export function isTokenExpired(token: string): boolean {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return true;
-    
+
     const payload = JSON.parse(atob(parts[1]));
-    
+
     if (!payload.exp) {
       return true;
     }
-    
+
     return payload.exp * 1000 < Date.now();
   } catch {
     return true;

@@ -95,15 +95,33 @@ function adminIdentity(doc) {
       id,email,role,is_active:active,created_at:timestamp(doc),
       updated_at:timestamp(doc,'updatedAt'),
       legacy_id:doc.id==null?null:String(doc.id),
+      session_version:Number.isSafeInteger(doc.tokenVersion)&&doc.tokenVersion>=1?doc.tokenVersion:1,
+      credential_fingerprint:fingerprint({passwordHash:doc.passwordHash??null,password:doc.password??null}),
     }),
     ...references('admin_identity_references','admin_id',id,[
       [doc._id,'mongo_id'],[doc.id,'business_id']
     ])
   ];
 }
+function customerAccount(doc,context={}) {
+  const id=sourceId(doc._id),userId=String(doc.id??id),email=normalizedEmail(doc.email);
+  if(!email||userId.length>250||/[\x00-\x1f]/.test(userId))throw Error('CUSTOMER_ACCOUNT_IDENTITY_INVALID');
+  // Retain password hashes byte-for-byte. Missing or revoked credentials never
+  // become an active account merely because a source document exists.
+  const passwordHash=doc.passwordHash??null;
+  const active=doc.active===false||doc.isActive===false||doc.disabled===true||
+    doc.deletedAt!=null||doc.deleted===true||['disabled','revoked'].includes(String(doc.status||'').toLowerCase())||typeof passwordHash!=='string'||!passwordHash ? 0 : 1;
+  const customerId=doc.customerId==null?null:context.customerById?.get(String(doc.customerId))??null;
+  if(doc.customerId!=null&&!customerId)throw Error('CUSTOMER_ACCOUNT_LINK_UNRESOLVED');
+  return [...operational('users',doc),row('customer_accounts',{
+    id,user_id:userId,email,name:doc.name??null,phone:doc.phone??null,
+    avatar:doc.avatar??null,password_hash:passwordHash,active,customer_id:customerId,
+    joined_at:timestamp(doc,'joinedAt'),created_at:timestamp(doc),updated_at:timestamp(doc,'updatedAt')
+  })];
+}
 const operationalNames = ['admin_users','audit_log','audit_logs','market_audit_log','menu_audit_log','challenges','contact_messages','coupons','customer_passports','email_logs','email_sends','gratitude_accounts','idempotency_keys','inventory_events','lead_intents','learning_enrollments','learning_modules','market_counters','market_schedules','newsletter_subscribers','passport_idempotency','passports','product_reviews','products','quiz_results','reward_transactions','rewards','scheduled_emails','square_sync_metadata','users'];
 const handlers = Object.fromEntries(operationalNames.map((name) => [name, (doc) => operational(name, doc)]));
-Object.assign(handlers, { admin_users: adminIdentity, customers, inventory, markets: market, menus: menu, marketorders: (doc, context) => order('marketorders', doc, context), orders: (doc, context) => order('orders', doc, context), payment_records: (doc, context) => payment('payment_records', doc, context), payments: (doc, context) => payment('payments', doc, context), square_catalog_items: product, unified_products: product, webhook_events_processed: webhook });
+Object.assign(handlers, { users:customerAccount, admin_users: adminIdentity, customers, inventory, markets: market, menus: menu, marketorders: (doc, context) => order('marketorders', doc, context), orders: (doc, context) => order('orders', doc, context), payment_records: (doc, context) => payment('payment_records', doc, context), payments: (doc, context) => payment('payments', doc, context), square_catalog_items: product, unified_products: product, webhook_events_processed: webhook });
 // Square catalog and unified-product projections have explicit handlers for
 // pilot/rebuild use, but are classified DERIVED and are not part of the 37
 // active MIGRATE/TRANSFORM collection contract.
