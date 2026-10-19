@@ -6,6 +6,8 @@
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
+import {tursoPreviewSelected,openTursoPreview} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {getTursoActiveMarkets} from './turso-markets.mjs';
 import type { AdminMarket, MarketDocument, MarketLocation } from './types';
 
 const COLLECTION_NAME = 'markets';
@@ -57,6 +59,11 @@ export async function getAllMarkets(): Promise<AdminMarket[]> {
 
 export async function getActiveMarkets(): Promise<AdminMarket[]> {
   try {
+    if (tursoPreviewSelected()) {
+      // Preview-only, fail closed: never read Mongo under Turso selection.
+      const db = await openTursoPreview();
+      return await getTursoActiveMarkets(db) as AdminMarket[];
+    }
     const { db } = await connectToDatabase();
     const docs = await db
       .collection(COLLECTION_NAME)
