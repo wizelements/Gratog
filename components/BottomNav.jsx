@@ -64,7 +64,7 @@ export function BottomNav() {
                 transition-colors duration-150
                 no-select
                 ${isActive 
-                  ? 'text-emerald-600 dark:text-emerald-400' 
+                  ? 'text-emerald-800 dark:text-emerald-300' 
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                 }
                 active:scale-95
