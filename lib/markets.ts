@@ -78,101 +78,73 @@ export function getMarketsByDay(dayName: string): MarketConfig[] {
   );
 }
 
+export const MARKET_TIME_ZONE = 'America/New_York';
+
 /**
- * Check if a market is currently open
+ * One authoritative local clock for Georgia market dates and opening hours.
+ * Never depend on the server process timezone (often UTC on Vercel).
  */
-export function isMarketOpenNow(market: MarketConfig): boolean {
-  const now = new Date();
-  const dayName = now.toLocaleDateString('en-US', { weekday: 'long' });
-  
-  // Check if market runs today
-  if (!market.days.includes(dayName)) {
-    return false;
-  }
-  
-  // Parse current time
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-  const currentTime = currentHour * 60 + currentMinute;
-  
-  // Parse market hours
-  const [openHour, openMinute] = market.hours.open.split(':').map(Number);
-  const [closeHour, closeMinute] = market.hours.close.split(':').map(Number);
-  const openTime = openHour * 60 + openMinute;
-  const closeTime = closeHour * 60 + closeMinute;
-  
-  return currentTime >= openTime && currentTime < closeTime;
+export function getMarketLocalNow(now: Date = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: MARKET_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'long',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(now);
+  const fields = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  return {
+    date: `${fields.year}-${fields.month}-${fields.day}`,
+    dayName: fields.weekday,
+    minutesSinceMidnight: Number(fields.hour) * 60 + Number(fields.minute),
+  };
+}
+
+function marketMinutes(hhmm: string): number {
+  const [hour, minute] = hhmm.split(':').map(Number);
+  return hour * 60 + minute;
+}
+
+/** Check whether a market is currently open in America/New_York. */
+export function isMarketOpenNow(market: MarketConfig, now: Date = new Date()): boolean {
+  const local = getMarketLocalNow(now);
+  return market.days.includes(local.dayName)
+    && local.minutesSinceMidnight >= marketMinutes(market.hours.open)
+    && local.minutesSinceMidnight < marketMinutes(market.hours.close);
+}
+
+/** Minutes until today's opening, or -1 when not scheduled today. */
+export function getMinutesUntilOpen(market: MarketConfig, now: Date = new Date()): number {
+  const local = getMarketLocalNow(now);
+  if (!market.days.includes(local.dayName)) return -1;
+  return Math.max(0, marketMinutes(market.hours.open) - local.minutesSinceMidnight);
+}
+
+/** Minutes until today's closing, or -1 when not scheduled today. */
+export function getMinutesUntilClose(market: MarketConfig, now: Date = new Date()): number {
+  const local = getMarketLocalNow(now);
+  if (!market.days.includes(local.dayName)) return -1;
+  return Math.max(0, marketMinutes(market.hours.close) - local.minutesSinceMidnight);
 }
 
 /**
- * Get time until market opens (in minutes)
+ * Return UTC midnight for the next local market calendar date.
+ * The returned ISO date is the Georgia date, not the server's date.
  */
-export function getMinutesUntilOpen(market: MarketConfig): number {
-  const now = new Date();
-  const dayName = now.toLocaleDateString('en-US', { weekday: 'long' });
-  
-  if (!market.days.includes(dayName)) {
-    return -1; // Not running today
-  }
-  
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-  const currentTime = currentHour * 60 + currentMinute;
-  
-  const [openHour, openMinute] = market.hours.open.split(':').map(Number);
-  const openTime = openHour * 60 + openMinute;
-  
-  if (currentTime >= openTime) {
-    return 0; // Already open or passed
-  }
-  
-  return openTime - currentTime;
-}
-
-/**
- * Get time until market closes (in minutes)
- */
-export function getMinutesUntilClose(market: MarketConfig): number {
-  const now = new Date();
-  const dayName = now.toLocaleDateString('en-US', { weekday: 'long' });
-  
-  if (!market.days.includes(dayName)) {
-    return -1;
-  }
-  
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-  const currentTime = currentHour * 60 + currentMinute;
-  
-  const [closeHour, closeMinute] = market.hours.close.split(':').map(Number);
-  const closeTime = closeHour * 60 + closeMinute;
-  
-  if (currentTime >= closeTime) {
-    return 0;
-  }
-  
-  return closeTime - currentTime;
-}
-
-/**
- * Get next market day for a specific market
- */
-export function getNextMarketDay(market: MarketConfig): Date | null {
-  const today = new Date();
+export function getNextMarketDay(market: MarketConfig, now: Date = new Date()): Date | null {
+  const local = getMarketLocalNow(now);
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const todayIndex = today.getDay();
-  
-  // Find the next occurrence of this market
+  const todayIndex = dayNames.indexOf(local.dayName);
+  const [year, month, day] = local.date.split('-').map(Number);
+  const localCalendarDate = Date.UTC(year, month - 1, day);
   for (let i = 0; i < 7; i++) {
-    const checkIndex = (todayIndex + i) % 7;
-    const checkDay = dayNames[checkIndex];
-    
-    if (market.days.includes(checkDay)) {
-      const nextDate = new Date(today);
-      nextDate.setDate(today.getDate() + i);
-      return nextDate;
+    const candidateDay = dayNames[(todayIndex + i) % 7];
+    if (market.days.includes(candidateDay)) {
+      return new Date(localCalendarDate + i * 86_400_000);
     }
   }
-  
   return null;
 }
