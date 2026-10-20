@@ -65,7 +65,7 @@ export function BottomNav() {
                 no-select
                 ${isActive 
                   ? 'text-emerald-800 dark:text-emerald-300' 
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
                 }
                 active:scale-95
               `}
