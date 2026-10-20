@@ -10,7 +10,9 @@
  */
 import {createHash, randomUUID} from 'node:crypto';
 import {readFileSync} from 'node:fs';
-import {MongoClient, EJSON} from 'mongodb';
+import mongodb from 'mongodb';
+import {EJSON} from 'bson';
+const {MongoClient} = mongodb;
 import {connect} from '@tursodatabase/serverless';
 
 const TARGET='libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io';
