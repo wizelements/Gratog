@@ -76,7 +76,7 @@ export default function CheckoutProgress({ currentStage, onStageClick }: Checkou
                   ) : (
                     <span
                       className={`text-sm font-semibold ${
-                        isActive ? 'text-emerald-600' : 'text-gray-400'
+                        isActive ? 'text-emerald-800' : 'text-gray-700'
                       }`}
                     >
                       {stage.step}
@@ -87,13 +87,13 @@ export default function CheckoutProgress({ currentStage, onStageClick }: Checkou
                 <motion.span
                   className={`mt-2 text-sm font-medium ${
                     isActive
-                      ? 'text-emerald-600'
+                      ? 'text-emerald-800'
                       : isCompleted
                       ? 'text-gray-700'
-                      : 'text-gray-400'
-                  } ${isClickable ? 'group-hover:text-emerald-600' : ''}`}
+                      : 'text-gray-700'
+                  } ${isClickable ? 'group-hover:text-emerald-800' : ''}`}
                   initial={{ opacity: 0.5 }}
-                  animate={{ opacity: isActive ? 1 : 0.7 }}
+                  animate={{ opacity: 1 }}
                 >
                   {stage.label}
                 </motion.span>
