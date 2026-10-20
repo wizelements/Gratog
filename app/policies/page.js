@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Truck, RefreshCw, FileText, Phone, Mail } from 'lucide-react';
+import { Shield, Truck, RefreshCw, FileText, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata = {
@@ -228,18 +228,18 @@ export default function PoliciesPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Link 
                   href="/contact" 
-                  className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700"
+                  className="flex items-center gap-2 text-emerald-800 hover:text-emerald-900"
                 >
                   <Mail className="h-4 w-4" />
                   Contact Us
                 </Link>
                 <span className="hidden sm:inline text-muted-foreground">|</span>
                 <a 
-                  href="tel:+1-555-GRATOG" 
-                  className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700"
+                  href="mailto:hello@tasteofgratitude.shop?subject=Policy%20Question" 
+                  className="flex items-center gap-2 text-emerald-800 hover:text-emerald-900"
                 >
-                  <Phone className="h-4 w-4" />
-                  Call Us
+                  <Mail className="h-4 w-4" />
+                  Email Support
                 </a>
               </div>
             </div>
