@@ -2,6 +2,7 @@
 /** READ ONLY: export one certified QA order and fresh authenticated Sandbox readbacks. */
 import {connect} from '@tursodatabase/serverless';
 import {mkdirSync,writeFileSync} from 'node:fs';
+import {requireQaRecoveryIdentity} from './qa-recovery-identity.mjs';
 const target='libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io';
 const {RECOVERY_ORDER_ID:orderId,PREVIEW_BASE_URL:preview,CERTIFIED_PREVIEW_SHA:sha}=process.env;
 if(process.env.GITHUB_EVENT_NAME!=='workflow_dispatch'||process.env.GITHUB_REF!=='refs/heads/feat/turso-checkout-recovery-20261017'||
@@ -23,8 +24,7 @@ try{
  const readiness=await fetch(preview+'/api/certification/turso-ready',{redirect:'manual',signal:AbortSignal.timeout(20000)});
  if(readiness.status!==200||(await readiness.json()).commit!==sha)throw Error('CERTIFIED_PREVIEW_IDENTITY_MISMATCH');
  const identity=await db.get('SELECT customer_snapshot_json FROM orders WHERE id=?',orderId);
- const customer=JSON.parse(identity?.customer_snapshot_json||'{}');
- if(customer.email!=='delivered@resend.dev'||customer.name!=='Preview Certification Buyer')throw Error('QA_ORDER_IDENTITY_REQUIRED');
+ requireQaRecoveryIdentity(identity);
  const order=await db.get('SELECT id,order_number,square_order_id,status,payment_status,subtotal_cents,tax_cents,total_cents,amount_paid_cents,currency,created_at,updated_at FROM orders WHERE id=?',orderId);
  const payment=await db.get('SELECT id,order_id,square_payment_id,status,amount_cents,currency,created_at,updated_at FROM payments WHERE order_id=?',orderId);
  const refunds=await db.all('SELECT refund_id,order_id,payment_id,amount_cents,currency,confirmed_at FROM square_refund_entries WHERE order_id=?',orderId);
