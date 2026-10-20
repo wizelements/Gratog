@@ -65,7 +65,7 @@ export default function NewsletterSignup({ variant = 'default' }) {
         <Button
           type="submit"
           disabled={loading || subscribed}
-          className="bg-emerald-600 hover:bg-emerald-700"
+          className="bg-emerald-700 hover:bg-emerald-800"
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -87,7 +87,7 @@ export default function NewsletterSignup({ variant = 'default' }) {
         </div>
         <div>
           <h3 className="text-xl font-bold text-emerald-900">Join Our Wellness Community</h3>
-          <p className="text-emerald-600">Get exclusive tips, recipes & early access to new products</p>
+          <p className="text-emerald-800">Get exclusive tips, recipes & early access to new products</p>
         </div>
       </div>
 
@@ -120,7 +120,7 @@ export default function NewsletterSignup({ variant = 'default' }) {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-700"
+            className="w-full bg-emerald-700 hover:bg-emerald-800"
             size="lg"
           >
             {loading ? (

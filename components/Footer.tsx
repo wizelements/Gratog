@@ -218,7 +218,7 @@ export default function Footer() {
             <p className="text-sm text-muted-foreground mb-4">
               Follow new menus, market booth updates, and fresh product photos.
             </p>
-            <div className="flex space-x-3" role="list" aria-labelledby="social-heading">
+            <div className="flex space-x-3" aria-label="Follow Taste of Gratitude on social media">
               <a
                 href="https://www.facebook.com/tasteofgratitude"
                 target="_blank"

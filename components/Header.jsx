@@ -47,7 +47,7 @@ export default function Header() {
       {/* Primary navigation */}
       <div className="container flex h-16 items-center justify-between gap-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center space-x-2 group flex-shrink-0">
+        <Link href="/" aria-label="Taste of Gratitude home" className="flex items-center space-x-2 group flex-shrink-0">
           <div className="relative">
             <ShoppingBag className="h-6 w-6 text-emerald-700 transition-transform group-hover:scale-105" />
           </div>
@@ -86,7 +86,7 @@ export default function Header() {
               asChild
               size="sm"
               variant="outline"
-              className="border-emerald-500/50 text-emerald-600 hover:bg-emerald-600 hover:text-white"
+              className="border-emerald-700/50 text-emerald-800 hover:bg-emerald-800 hover:text-white"
             >
               <Link href="/profile">
                 <User className="h-4 w-4 mr-1" />
@@ -98,7 +98,7 @@ export default function Header() {
               asChild
               size="sm"
               variant="outline"
-              className="border-emerald-500/50 text-emerald-600 hover:bg-emerald-600 hover:text-white"
+              className="border-emerald-700/50 text-emerald-800 hover:bg-emerald-800 hover:text-white"
             >
               <Link href="/login">
                 <LogIn className="h-4 w-4 mr-1" />

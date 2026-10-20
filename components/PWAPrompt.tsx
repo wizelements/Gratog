@@ -64,7 +64,8 @@ export function PWAPrompt() {
           </div>
           <button
             onClick={handleDismiss}
-            className="text-gray-400 hover:text-gray-600 flex-shrink-0"
+            className="text-gray-600 hover:text-gray-900 flex-shrink-0"
+            aria-label="Dismiss install app prompt"
           >
             <X size={18} />
           </button>
@@ -95,7 +96,8 @@ export function PWAPrompt() {
           </button>
           <button
             onClick={handleDismiss}
-            className="text-white/80 hover:text-white flex-shrink-0"
+            className="text-white hover:text-emerald-100 flex-shrink-0"
+            aria-label="Dismiss install app prompt"
           >
             <X size={18} />
           </button>
