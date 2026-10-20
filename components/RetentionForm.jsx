@@ -118,17 +118,18 @@ export default function RetentionForm({
       <form onSubmit={handleSubmit} className="grid gap-3">
         <input type="text" name="website" value={form.website} onChange={handleChange} tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
         {!compact && (
-          <Input name="name" value={form.name} onChange={handleChange} placeholder="First name (optional)" autoComplete="given-name" />
+          <Input aria-label="First name (optional)" name="name" value={form.name} onChange={handleChange} placeholder="First name (optional)" autoComplete="given-name" />
         )}
         {collectEmail && (
-          <Input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email address" autoComplete="email" required={!collectPhone || requireEmail} />
+          <Input aria-label="Email address" name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email address" autoComplete="email" required={!collectPhone || requireEmail} />
         )}
         {collectPhone && (
-          <Input name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="Phone number" autoComplete="tel" required />
+          <Input aria-label="Phone number" name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="Phone number" autoComplete="tel" required />
         )}
         {collectMarket && marketOptions.length > 0 && (
           <select
             name="marketId"
+            aria-label="Preferred market"
             value={form.marketId}
             onChange={handleChange}
             className="h-11 w-full rounded-md border border-stone-300 bg-white px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -143,6 +144,7 @@ export default function RetentionForm({
         )}
         {collectMessage && (
           <Textarea
+            aria-label="Message"
             name="message"
             value={form.message}
             onChange={handleChange}
