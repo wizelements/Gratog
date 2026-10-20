@@ -62,14 +62,66 @@ function product(doc, context = {}) {
 }
 
 function inventory(doc) { const productId = doc.productId ?? doc.squareId; if (!productId) throw new Error('RELATIONSHIP_MISSING:productId'); return [row('inventory', { product_id: String(productId), current_stock: Number(doc.currentStock ?? 0), low_stock_threshold: Number(doc.lowStockThreshold ?? 0), active: doc.isActive === false ? 0 : 1, source: doc.source ?? 'mongo', updated_at: timestamp(doc, 'updatedAt') }), ...(doc.variationIds ?? []).map((variationId) => row('inventory_variations', { product_id: String(productId), variation_id: String(variationId) }))]; }
-function market(doc) { return [row('markets', { id: sourceId(doc._id), name: doc.name, slug: doc.slug ?? null, address: doc.address ?? null, city: doc.city ?? null, state: doc.state ?? null, zip: doc.zip ?? null, latitude: doc.lat ?? null, longitude: doc.lng ?? null, hours: doc.hours ?? null, day_of_week: doc.dayOfWeek ?? null, description: doc.description ?? null, maps_url: doc.mapsUrl ?? null, featured: doc.featured ? 1 : 0, active: doc.isActive === false ? 0 : 1, schedule_json: json(doc.schedule), created_at: iso(doc.createdAt, 'createdAt'), updated_at: iso(doc.updatedAt, 'updatedAt') })]; }
+function marketSchedule(doc) {
+  // The legacy market editor stores these operational pickup fields at the
+  // document root, not inside schedule. Dropping them loses advertised
+  // collection times, cutoff terms and recurrence during migration.
+  const fields=['pickupDays','preorderCutoff','parkingNotes','recurrence'];
+  const extras=Object.fromEntries(fields.filter(key=>doc[key] !== undefined).map(key=>[key,doc[key]]));
+  if(doc.schedule == null)return Object.keys(extras).length ? extras : null;
+  if(typeof doc.schedule==='object' && !Array.isArray(doc.schedule))
+    return {...doc.schedule,...extras};
+  // Keep non-object legacy schedule data instead of overwriting it.
+  return {legacySchedule:doc.schedule,...extras};
+}
+function market(doc) { return [row('markets', { id: sourceId(doc._id), name: doc.name, slug: doc.slug ?? null, address: doc.address ?? null, city: doc.city ?? null, state: doc.state ?? null, zip: doc.zip ?? null, latitude: doc.lat ?? null, longitude: doc.lng ?? null, hours: doc.hours ?? null, day_of_week: doc.dayOfWeek ?? null, description: doc.description ?? null, maps_url: doc.mapsUrl ?? null, featured: doc.featured ? 1 : 0, active: doc.isActive === false ? 0 : 1, schedule_json: json(marketSchedule(doc)), created_at: iso(doc.createdAt, 'createdAt'), updated_at: iso(doc.updatedAt, 'updatedAt') })]; }
 function menu(doc) { const id = sourceId(doc._id); return [row('menus', { id, market_id: doc.marketId || null, title: doc.title, description: doc.description ?? null, image_url: doc.imageUrl, thumbnail_url: doc.thumbnailUrl ?? null, canva_url: doc.canvaUrl ?? null, print_url: doc.printUrl ?? null, week_start: timestamp(doc, 'weekStart'), week_end: timestamp(doc, 'weekEnd'), active: doc.isActive ? 1 : 0, archived: doc.isArchived ? 1 : 0, created_at: timestamp(doc), updated_at: timestamp(doc, 'updatedAt') }), ...(doc.linkedProducts ?? []).map((productId, position) => row('menu_products', { menu_id: id, product_id: String(productId), position })), ...(doc.seasonalTags ?? []).map((tag) => row('menu_tags', { menu_id: id, tag: String(tag) }))]; }
 function payment(collection, doc, context = {}) { const amount = doc.amountCents ?? doc.amountMoney?.amount ?? doc.totalMoney?.amount; if (amount == null) return operational(collection, doc); const orderReference = doc.orderId ?? doc.metadata?.orderId ?? null; if(orderReference!=null&&!context.orderByReference?.has(String(orderReference)))throw Error('RELATIONSHIP_UNRESOLVED:orderId'); return [row('payments', { id: sourceId(doc._id), order_id: orderReference == null ? null : context.orderByReference?.get(String(orderReference)) ?? null, square_payment_id: doc.squarePaymentId ?? doc.id ?? null, idempotency_key: doc.idempotencyKey ?? null, status: doc.status ?? 'unknown', amount_cents: cents(amount, 'amountCents'), currency: doc.currency ?? doc.amountMoney?.currency ?? doc.totalMoney?.currency ?? 'USD', receipt_url: doc.receiptUrl ?? null, provider_metadata_json: json({ receiptNumber: doc.receiptNumber, cardBrand: doc.cardBrand, cardLast4: doc.cardLast4, legacyOrderId: orderReference == null ? null : String(orderReference) }), created_at: iso(doc.createdAt, 'createdAt'), updated_at: iso(doc.updatedAt, 'updatedAt') })]; }
 function webhook(doc) { if (!doc.eventId) throw new Error('EXTERNAL_ID_MISSING:eventId'); return [row('webhook_events', { event_id: doc.eventId, provider: 'square', event_type: doc.eventType ?? 'unknown', status: doc.status ?? 'unknown', attempt_count: Number(doc.attemptCount ?? 1), first_attempt_at: iso(doc.firstAttemptAt, 'firstAttemptAt'), last_attempt_at: iso(doc.lastAttemptAt, 'lastAttemptAt'), processed_at: iso(doc.processedAt, 'processedAt'), result_json: json(doc.result) })]; }
 
+
+function adminIdentity(doc) {
+  const id=sourceId(doc._id);
+  const hasPositive=doc.isActive===true || doc.active===true;
+  const revoked=doc.isActive===false || doc.active===false;
+  // Conflicting active flags are ALWAYS revoked. Unverified is not active.
+  const active=revoked || !hasPositive ? 0 : 1;
+  const email=typeof doc.email==='string' && doc.email.trim()
+    ? doc.email.trim().toLowerCase() : null;
+  const role=typeof doc.role==='string' && doc.role.trim()
+    ? doc.role.trim() : 'unverified';
+  return [...operational('admin_users',doc),
+    row('admin_identities',{
+      id,email,role,is_active:active,created_at:timestamp(doc),
+      updated_at:timestamp(doc,'updatedAt'),
+      legacy_id:doc.id==null?null:String(doc.id),
+      session_version:Number.isSafeInteger(doc.tokenVersion)&&doc.tokenVersion>=1?doc.tokenVersion:1,
+      credential_fingerprint:fingerprint({passwordHash:doc.passwordHash??null,password:doc.password??null}),
+    }),
+    ...references('admin_identity_references','admin_id',id,[
+      [doc._id,'mongo_id'],[doc.id,'business_id']
+    ])
+  ];
+}
+function customerAccount(doc,context={}) {
+  const id=sourceId(doc._id),userId=String(doc.id??id),email=normalizedEmail(doc.email);
+  if(!email||userId.length>250||/[\x00-\x1f]/.test(userId))throw Error('CUSTOMER_ACCOUNT_IDENTITY_INVALID');
+  // Retain password hashes byte-for-byte. Missing or revoked credentials never
+  // become an active account merely because a source document exists.
+  const passwordHash=doc.passwordHash??null;
+  const active=doc.active===false||doc.isActive===false||doc.disabled===true||
+    doc.deletedAt!=null||doc.deleted===true||['disabled','revoked'].includes(String(doc.status||'').toLowerCase())||typeof passwordHash!=='string'||!passwordHash ? 0 : 1;
+  const customerId=doc.customerId==null?null:context.customerById?.get(String(doc.customerId))??null;
+  if(doc.customerId!=null&&!customerId)throw Error('CUSTOMER_ACCOUNT_LINK_UNRESOLVED');
+  return [...operational('users',doc),row('customer_accounts',{
+    id,user_id:userId,email,name:doc.name??null,phone:doc.phone??null,
+    avatar:doc.avatar??null,password_hash:passwordHash,active,customer_id:customerId,
+    joined_at:timestamp(doc,'joinedAt'),created_at:timestamp(doc),updated_at:timestamp(doc,'updatedAt')
+  })];
+}
 const operationalNames = ['admin_users','audit_log','audit_logs','market_audit_log','menu_audit_log','challenges','contact_messages','coupons','customer_passports','email_logs','email_sends','gratitude_accounts','idempotency_keys','inventory_events','lead_intents','learning_enrollments','learning_modules','market_counters','market_schedules','newsletter_subscribers','passport_idempotency','passports','product_reviews','products','quiz_results','reward_transactions','rewards','scheduled_emails','square_sync_metadata','users'];
 const handlers = Object.fromEntries(operationalNames.map((name) => [name, (doc) => operational(name, doc)]));
-Object.assign(handlers, { customers, inventory, markets: market, menus: menu, marketorders: (doc, context) => order('marketorders', doc, context), orders: (doc, context) => order('orders', doc, context), payment_records: (doc, context) => payment('payment_records', doc, context), payments: (doc, context) => payment('payments', doc, context), square_catalog_items: product, unified_products: product, webhook_events_processed: webhook });
+Object.assign(handlers, { users:customerAccount, admin_users: adminIdentity, customers, inventory, markets: market, menus: menu, marketorders: (doc, context) => order('marketorders', doc, context), orders: (doc, context) => order('orders', doc, context), payment_records: (doc, context) => payment('payment_records', doc, context), payments: (doc, context) => payment('payments', doc, context), square_catalog_items: product, unified_products: product, webhook_events_processed: webhook });
 // Square catalog and unified-product projections have explicit handlers for
 // pilot/rebuild use, but are classified DERIVED and are not part of the 37
 // active MIGRATE/TRANSFORM collection contract.

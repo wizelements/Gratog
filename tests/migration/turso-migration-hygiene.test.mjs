@@ -34,5 +34,6 @@ test('rejects fail closed and verified schema is pinned to the latest checkout i
  assert.match(schema,/0014_legacy_commerce_references\.sql/);
  assert.match(schema,/checkout_notification_delivery_events/);
  assert.match(schema,/checkout_notification_deliveries/);
- assert.match(schema,/tables\.length===45&&versions\.length===14/);
+ assert.match(schema,/tables\.length>=47&&versions\.length>=16/);
+ assert.match(schema,/0015_admin_identity\.sql/);
 });

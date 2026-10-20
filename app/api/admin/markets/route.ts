@@ -6,9 +6,9 @@ export const dynamic = 'force-dynamic';
  */
 
 import { NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin-session';
 import { requireAdminSession } from '@/lib/auth/unified-admin';
 import { logger } from '@/lib/logger';
+import {tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
 import {
   getAllMarkets,
   createMarket,
@@ -27,11 +27,10 @@ import {
  * Fetch all markets for admin dashboard
  */
 export async function GET(request: any) {
-  const session = await requireAdminSession(request);
-  if (!session) return new Response('Unauthorized', { status: 401 });
-
   try {
-    const admin = await requireAdmin(request);
+    // One authoritative, database-revalidated session in Mongo production or
+    // opt-in Turso Preview. Reject revoked accounts before any market read/write.
+    const admin = await requireAdminSession(request);
 
     const markets = await getAllMarkets();
 
@@ -66,11 +65,10 @@ export async function GET(request: any) {
  * Create a new market
  */
 export async function POST(request: any) {
-  const session = await requireAdminSession(request);
-  if (!session) return new Response('Unauthorized', { status: 401 });
-
   try {
-    const admin = await requireAdmin(request);
+    // One authoritative, database-revalidated session in Mongo production or
+    // opt-in Turso Preview. Reject revoked accounts before any market read/write.
+    const admin = await requireAdminSession(request);
     const json = await request.json();
 
     const parsed = createMarketSchema.safeParse(json);
@@ -119,11 +117,10 @@ export async function POST(request: any) {
  * Update an existing market
  */
 export async function PUT(request: any) {
-  const session = await requireAdminSession(request);
-  if (!session) return new Response('Unauthorized', { status: 401 });
-
   try {
-    const admin = await requireAdmin(request);
+    // One authoritative, database-revalidated session in Mongo production or
+    // opt-in Turso Preview. Reject revoked accounts before any market read/write.
+    const admin = await requireAdminSession(request);
     const json = await request.json();
 
     const parsed = updateMarketSchema.safeParse(json);
@@ -181,11 +178,10 @@ export async function PUT(request: any) {
  * Delete a market
  */
 export async function DELETE(request: any) {
-  const session = await requireAdminSession(request);
-  if (!session) return new Response('Unauthorized', { status: 401 });
-
   try {
-    const admin = await requireAdmin(request);
+    // One authoritative, database-revalidated session in Mongo production or
+    // opt-in Turso Preview. Reject revoked accounts before any market read/write.
+    const admin = await requireAdminSession(request);
     const json = await request.json();
 
     const parsed = deleteMarketSchema.safeParse(json);
@@ -217,9 +213,13 @@ export async function DELETE(request: any) {
       marketId,
     });
 
+    // Turso retains historically referenced market records; never claim physical deletion.
     return NextResponse.json({
       success: true,
-      message: 'Market deleted successfully',
+      ...(tursoPreviewSelected() ? { archived: true } : {}),
+      message: tursoPreviewSelected()
+        ? 'Market archived successfully; historical order links preserved'
+        : 'Market deleted successfully',
     });
   } catch (error: any) {
     if (error.name === 'AdminAuthError') {

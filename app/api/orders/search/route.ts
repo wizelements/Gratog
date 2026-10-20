@@ -4,21 +4,24 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { AdminAuthError, requireAdminSession } from '@/lib/auth/unified-admin';
+import { tursoPreviewSelected, openTursoPreview } from '@/lib/checkout/turso-preview-runtime.mjs';
 import MarketOrder from '@/models/MarketOrder';
 
 export async function GET(request: NextRequest) {
   const respond = (body: unknown, status: number) => NextResponse.json(body,
     { status, headers: { 'Cache-Control': 'no-store' } });
   try {
-    if (String(process.env.DATABASE_PROVIDER).toLowerCase() === 'turso') {
-      return respond({ error: 'Order search is not yet available for this database.', code: 'TURSO_ORDER_SEARCH_NOT_CERTIFIED' }, 503);
-    }
     await requireAdminSession(request);
     const params = new URL(request.url).searchParams;
     const query = (params.get('q') || '').trim();
     const marketId = (params.get('marketId') || '').trim();
     if (query.length < 3 || query.length > 80 || !/^[a-zA-Z0-9_-]{1,100}$/.test(marketId)) {
       return respond({ error: 'A search of 3–80 characters and an explicit market identity are required.' }, 400);
+    }
+    if (tursoPreviewSelected()) {
+      const { searchTursoMarketOrders } = await import('@/lib/checkout/turso-admin-order-search.mjs');
+      const orders = await searchTursoMarketOrders(await openTursoPreview(), { query, marketId });
+      return respond({ orders }, 200);
     }
     const literal = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const matches: Record<string, unknown>[] = [

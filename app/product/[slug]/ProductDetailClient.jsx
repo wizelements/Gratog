@@ -301,7 +301,7 @@ export default function ProductDetailClient({ product, slug }) {
               </p>
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">{product.name}</h1>
               
-              <p className="text-3xl font-bold text-emerald-600">{formatPrice(displayPrice)}</p>
+              <p className="text-3xl font-bold text-emerald-800">{formatPrice(displayPrice)}</p>
             </div>
 
             {/* Description */}
