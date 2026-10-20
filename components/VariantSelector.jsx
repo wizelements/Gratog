@@ -49,13 +49,15 @@ export default function VariantSelector({ variations, defaultVariant, onVariantC
           return (
             <Button
               key={variant.id}
+              type="button"
+              aria-pressed={isSelected}
               variant={isSelected ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleVariantSelect(variant)}
               className={`relative ${
                 isSelected
-                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600'
-                  : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'
+                  ? 'bg-emerald-800 hover:bg-emerald-900 text-white border-emerald-800'
+                  : 'border-emerald-600 text-emerald-900 hover:bg-emerald-50'
               }`}
             >
               {isSelected && (
@@ -63,7 +65,7 @@ export default function VariantSelector({ variations, defaultVariant, onVariantC
               )}
               <span className="font-semibold">{variant.name}</span>
               {variant.price > 0 && (
-                <span className="ml-1.5 text-xs opacity-90">
+                <span className="ml-1.5 text-xs font-medium">
                   (${variant.price.toFixed(2)})
                 </span>
               )}

@@ -119,7 +119,7 @@ export default function CartSummary({
                           ⏳ Preorder
                         </span>
                       )}
-                      <p className="text-sm font-semibold text-emerald-600 mt-1">
+                      <p className="text-sm font-semibold text-emerald-800 mt-1">
                         {formatCurrency(item.price)}
                       </p>
                     </div>
@@ -192,7 +192,7 @@ export default function CartSummary({
               </div>
               
               {totals.couponDiscount > 0 && (
-                <div className="flex justify-between text-sm text-emerald-600">
+                <div className="flex justify-between text-sm text-emerald-800">
                   <span>Discount</span>
                   <span className="font-medium">-{formatCurrency(totals.couponDiscount)}</span>
                 </div>
@@ -200,7 +200,7 @@ export default function CartSummary({
               
               <div className="pt-2 border-t border-gray-200 flex justify-between">
                 <span className="text-base font-semibold">Total</span>
-                <span className="text-lg font-bold text-emerald-600">
+                <span className="text-lg font-bold text-emerald-800">
                   {formatCurrency(totals.total)}
                 </span>
               </div>

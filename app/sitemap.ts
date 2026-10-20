@@ -1,8 +1,9 @@
 import { MetadataRoute } from 'next';
+import { collectIndexableStorefrontProducts } from '@/lib/seo-product-sitemap.mjs';
 
 const PRODUCTION_ORIGIN = 'https://tasteofgratitude.shop';
 
-export const revalidate = 3600;
+export const revalidate = 600;
 
 function normalizeOrigin(origin: string | undefined) {
   return origin?.trim().replace(/\/+$/, '');
@@ -15,22 +16,6 @@ function isIndexableDeployment() {
 
   return [process.env.NEXT_PUBLIC_BASE_URL, process.env.NEXT_PUBLIC_SITE_URL]
     .some((origin) => normalizeOrigin(origin) === PRODUCTION_ORIGIN);
-}
-
-function toProductEntries(data: unknown): Array<{ slug?: string; id: string; updatedAt?: string }> {
-  if (Array.isArray(data)) return data as Array<{ slug?: string; id: string; updatedAt?: string }>;
-  if (!data || typeof data !== 'object') return [];
-
-  const payload = data as {
-    products?: Array<{ slug?: string; id: string; updatedAt?: string }>;
-    data?: Array<{ slug?: string; id: string; updatedAt?: string }>;
-    items?: Array<{ slug?: string; id: string; updatedAt?: string }>;
-  };
-
-  if (Array.isArray(payload.products)) return payload.products;
-  if (Array.isArray(payload.data)) return payload.data;
-  if (Array.isArray(payload.items)) return payload.items;
-  return [];
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -67,18 +52,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Fetch products for dynamic pages
   let productEntries: MetadataRoute.Sitemap = [];
   try {
-    const res = await fetch(`${baseUrl}/api/catalog`, { 
-      next: { revalidate: 3600 } // Cache for 1 hour
+    const res = await fetch(`${baseUrl}/api/products`, {
+      next: { revalidate: 600 } // Follow current storefront availability
     });
     if (res.ok) {
       const data = await res.json();
-      const products = toProductEntries(data);
-      productEntries = products
-        .filter((product) => Boolean(product.slug || product.id) && (product as { available?: boolean }).available !== false)
-        .map((product) => ({
-        url: `${baseUrl}/product/${product.slug || product.id}`,
-        lastModified: product.updatedAt ? new Date(product.updatedAt) : new Date(),
-        changeFrequency: 'weekly' as const satisfies 'weekly',
+      const products = collectIndexableStorefrontProducts(data);
+      productEntries = products.map((product: { reference: string; updatedAt?: string }) => ({
+        url: `${baseUrl}/product/${product.reference}`,
+        lastModified: product.updatedAt && !Number.isNaN(Date.parse(product.updatedAt))
+          ? new Date(product.updatedAt) : new Date(),
+        changeFrequency: 'weekly' as const,
         priority: 0.8,
       }));
     }

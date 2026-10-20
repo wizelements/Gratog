@@ -181,11 +181,11 @@ function FAQItem({ question, answer }) {
     <div className="border-b last:border-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-4 flex items-start justify-between text-left hover:text-emerald-500 transition-colors group"
+        className="w-full py-4 flex items-start justify-between text-left hover:text-emerald-800 transition-colors group"
       >
         <span className="font-medium pr-8 flex-1">{question}</span>
         <ChevronDown
-          className={`h-5 w-5 text-emerald-500 transition-transform flex-shrink-0 ${
+          className={`h-5 w-5 text-emerald-800 transition-transform flex-shrink-0 ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
@@ -208,7 +208,7 @@ function FAQCategory({ category }) {
         <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 p-4 border-b">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-              <Icon className="h-5 w-5 text-emerald-500" />
+              <Icon className="h-5 w-5 text-emerald-800" />
             </div>
             <h3 className="font-semibold text-lg">{category.title}</h3>
           </div>
@@ -230,7 +230,7 @@ export default function FAQPage() {
       <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 border-b">
         <div className="container py-16">
           <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-full text-sm font-semibold text-emerald-500 mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-full text-sm font-semibold text-emerald-800 mb-6">
               <HelpCircle className="h-4 w-4" />
               Frequently Asked Questions
             </div>
@@ -273,7 +273,7 @@ export default function FAQPage() {
                   </p>
                   <a
                     href={`mailto:${SUPPORT_EMAIL}`}
-                    className="text-sm text-emerald-500 hover:underline font-medium"
+                    className="text-sm text-emerald-800 hover:underline font-medium"
                   >
                     {SUPPORT_EMAIL}
                   </a>
@@ -291,7 +291,7 @@ export default function FAQPage() {
                   </p>
                   <a
                     href={PHONE_SUPPORT_LINK}
-                    className="text-sm text-emerald-500 hover:underline font-medium"
+                    className="text-sm text-emerald-800 hover:underline font-medium"
                   >
                     {PHONE_SUPPORT_LABEL}
                   </a>
@@ -309,7 +309,7 @@ export default function FAQPage() {
                   </p>
                   <a
                     href="/markets"
-                    className="text-sm text-emerald-500 hover:underline font-medium"
+                    className="text-sm text-emerald-800 hover:underline font-medium"
                   >
                     See Market Locations
                   </a>

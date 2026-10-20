@@ -13,7 +13,12 @@ describe('indexable storefront integrity', () => {
   });
   it('keeps unavailable products out of public sitemap entries', () => {
     const sitemap = read('app/sitemap.ts');
-    expect(sitemap).toContain('product as { available?: boolean }).available !== false');
+    expect(sitemap).toContain('collectIndexableStorefrontProducts');
+    expect(sitemap).toContain('/api/products');
+    const eligibility = read('lib/seo-product-sitemap.mjs');
+    for (const rule of ['available === false', 'squareIsArchived === true', 'isArchived === true', 'seoTitle', 'SAFE_REFERENCE']) {
+      expect(eligibility).toContain(rule);
+    }
   });
   it('noindexes archived product detail URLs and refuses ordering archived items', () => {
     const page = read('app/product/[slug]/page.jsx');
