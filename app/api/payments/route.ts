@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { logger } from '@/lib/logger';
+import {tursoPreviewSelected,TursoPreviewRefusal} from '@/lib/checkout/turso-preview-runtime.mjs';
 import { RequestContext } from '@/lib/request-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { createPayment, getPayment as getSquarePayment, findOrCreateCustomer, createOrder as createSquareOrder, getSquareConfig } from '@/lib/square-api';
@@ -174,6 +175,19 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
+    if (tursoPreviewSelected()) {
+      try {
+        const {payTursoPreviewBuyerOrder}=await import('@/lib/checkout/turso-preview-buyer.mjs');
+        return json(await payTursoPreviewBuyerOrder(body));
+      } catch(error) {
+        const code=error instanceof TursoPreviewRefusal ? error.code :
+          'PAYMENT_RECONCILIATION_REQUIRED';
+        const status=error instanceof TursoPreviewRefusal ? error.status : 503;
+        // Never invite another charge when the provider outcome is ambiguous.
+        return json({success:false,code,
+          error:'Payment could not be confirmed. Please do not pay again until your order is checked.'},status);
+      }
+    }
     const { 
       sourceId,
       amountCents,
@@ -1145,6 +1159,7 @@ export async function POST(request: NextRequest) {
         const emailClaim = await db.collection('orders').updateOne(
           { 
             id: orderId, 
+            customerNotificationRecoveryHold: { $ne: true },
             emailSentAt: { $exists: false } // Only if no email sent yet
           },
           { 
@@ -1442,6 +1457,17 @@ export async function GET(request: NextRequest) {
     const paymentId = searchParams.get('paymentId');
     const orderId = searchParams.get('orderId');
     const orderAccessToken = searchParams.get('token');
+
+    if (tursoPreviewSelected()) {
+      try {
+        const {getTursoPreviewBuyerPaymentStatus}=await import('@/lib/checkout/turso-preview-buyer.mjs');
+        return json(await getTursoPreviewBuyerPaymentStatus({orderId,orderAccessToken}));
+      } catch(error) {
+        const code=error instanceof TursoPreviewRefusal ? error.code : 'TURSO_ORDER_STATUS_UNAVAILABLE';
+        const status=error instanceof TursoPreviewRefusal ? error.status : 503;
+        return json({success:false,code,error:'Order status is temporarily unavailable.'},status);
+      }
+    }
     
     if (!paymentId && !orderId) {
       return json({ error: 'Payment ID or Order ID is required' }, 400);

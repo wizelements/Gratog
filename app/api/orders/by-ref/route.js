@@ -6,6 +6,8 @@ import { orderTracking } from '@/lib/enhanced-order-tracking';
 import { createLogger } from '@/lib/logger';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';
 import { verifyOrderAccessToken } from '@/lib/order-access-token';
+import { tursoPreviewSelected, TursoPreviewRefusal } from '@/lib/checkout/turso-preview-runtime.mjs';
+import { getTursoPreviewOrder } from '@/lib/checkout/turso-order-read.mjs';
 
 const logger = createLogger('OrdersByRefAPI');
 
@@ -13,9 +15,7 @@ function isInternalPrincipal(auth) {
   return (
     auth?.authenticated && (
       auth.authType === 'master_key' ||
-      auth.authType === 'admin_key' ||
-      auth.userId === 'system' ||
-      auth.userId === 'admin'
+      auth.authType === 'admin_key'
     )
   );
 }
@@ -28,7 +28,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const orderRef = searchParams.get('orderRef');
-    const orderAccessToken = searchParams.get('token');
+    const orderAccessToken = request.headers.get('x-order-access-token') || searchParams.get('token');
     
     if (!orderRef) {
       logger.warn('Missing orderRef parameter');
@@ -42,7 +42,7 @@ export async function GET(request) {
 
     const auth = await verifyRequestAuthentication(request, { allowPublic: true });
 
-    if (!orderAccessToken && !auth?.authenticated) {
+    if (!verifyOrderAccessToken(orderAccessToken) && !auth?.authenticated) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         {
@@ -55,7 +55,10 @@ export async function GET(request) {
     let order = null;
     let isFallback = false;
 
-    try {
+    if (tursoPreviewSelected()) {
+      // Never recover a missing or unavailable Turso order from another writer.
+      order = await getTursoPreviewOrder(orderRef);
+    } else try {
       const { db } = await connectToDatabase();
       order = await db.collection('orders').findOne({ id: orderRef });
       
@@ -96,7 +99,7 @@ export async function GET(request) {
       });
     }
 
-    if (!order) {
+    if (!order && !tursoPreviewSelected()) {
       const fallbackResult = await orderTracking.getOrder(orderRef);
       if (fallbackResult?.success && fallbackResult.order?.id) {
         order = fallbackResult.order;
@@ -196,14 +199,19 @@ export async function GET(request) {
     );
     
   } catch (error) {
+    if (error instanceof TursoPreviewRefusal) {
+      return NextResponse.json({ error: error.code }, {
+        status: error.status, headers: { 'Cache-Control': 'no-store' },
+      });
+    }
     logger.error('Error fetching order by ref', { 
       error: error.message,
       stack: error.stack 
     });
     
     return NextResponse.json(
-      { error: 'Failed to fetch order details', details: error.message },
-      { status: 500 }
+      { error: 'Failed to fetch order details' },
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }

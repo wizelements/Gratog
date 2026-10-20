@@ -25,14 +25,23 @@ export async function POST(request: NextRequest) {
   if (!signature || !/^[A-Za-z0-9+/=]{40,120}$/.test(signature)) {
     return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 401 });
   }
-  let verified = Boolean(key) &&
-    verifySquareWebhookSignature(signature, rawBody, notificationUrl, key);
-  if (!verified && process.env.VERCEL_ENV === 'preview' &&
-      process.env.SQUARE_ENVIRONMENT === 'sandbox') {
-    const previewKey = await getIsolatedPreviewWebhookKey(notificationUrl);
-    verified = Boolean(previewKey) &&
-      verifySquareWebhookSignature(signature, rawBody, notificationUrl, previewKey!);
+  const isIsolatedPreview =
+    process.env.VERCEL_ENV === 'preview' &&
+    process.env.SQUARE_ENVIRONMENT === 'sandbox';
+  // A valid-looking request without a configured signing authority is a
+  // deployment configuration failure, not a signature mismatch.
+  const previewKey = isIsolatedPreview
+    ? await getIsolatedPreviewWebhookKey(notificationUrl) : null;
+  // Never accept a production subscription key as fallback in Sandbox Preview.
+  const authorityKey = isIsolatedPreview ? previewKey : key;
+  if (!authorityKey) {
+    return NextResponse.json(
+      { success: false, error: 'Webhook not configured' }, { status: 503 }
+    );
   }
+  const verified = verifySquareWebhookSignature(
+    signature, rawBody, notificationUrl, authorityKey
+  );
   if (!verified) {
     return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 401 });
   }
@@ -55,7 +64,13 @@ export async function POST(request: NextRequest) {
   try {
     const { db } = await connectToDatabase();
     const reconciliation = await reconcileSquareBatchReservation(db, payment);
-    return NextResponse.json({ success: true, ...reconciliation });
+    return NextResponse.json({
+      success: true,
+      // A valid event unrelated to a fresh-batch reservation is not an error.
+      // Preserve the prior 200/ignored public response shape.
+      ignored: reconciliation.matched === false,
+      ...reconciliation,
+    });
   } catch (error) {
     logger.error('SquarePaymentWebhook', 'Payment reconciliation failed', {
       error: error instanceof Error ? error.message : String(error),

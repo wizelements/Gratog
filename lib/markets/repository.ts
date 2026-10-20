@@ -10,36 +10,10 @@ import type { AdminMarket, MarketDocument, MarketLocation } from './types';
 
 const COLLECTION_NAME = 'markets';
 
-const LEGACY_BROWNS_MILL_PATTERN = /browns\s*mill/i;
-
-const DHA_DUNWOODY_MARKET: MarketLocation = {
-  name: 'DHA Dunwoody Farmers Market',
-  address: '4770 N Peachtree Rd',
-  city: 'Dunwoody',
-  state: 'GA',
-  zip: '30338',
-  lat: 33.9354,
-  lng: -84.2943,
-  hours: '09:00-12:00',
-  dayOfWeek: 6,
-  description:
-    'Community market hosted at Brook Run Park in Dunwoody with local wellness vendors and fresh seasonal goods.',
-  mapsUrl: 'https://maps.google.com/?q=Brook+Run+Park+4770+N+Peachtree+Rd+Dunwoody+GA+30338',
-};
-
-function normalizeLegacyMarketDocument(doc: MarketDocument): MarketDocument {
-  if (!LEGACY_BROWNS_MILL_PATTERN.test(doc.name || '')) {
-    return doc;
-  }
-
-  return {
-    ...doc,
-    ...DHA_DUNWOODY_MARKET,
-  };
-}
-
 function documentToAdminMarket(doc: MarketDocument): AdminMarket {
-  const normalized = normalizeLegacyMarketDocument(doc);
+  // Distinct locations must retain their recorded identities. A rename or
+  // relocation requires an explicit administrator edit, never read-time aliasing.
+  const normalized = doc;
 
   return {
     id: normalized._id.toString(),

@@ -2,6 +2,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { UNIFIED_PRODUCTS_COLLECTION } from '@/lib/product-sync-engine';
 import ProductDetailClient from './ProductDetailClient';
+import {tursoPreviewSelected,getTursoPreviewStorefrontSnapshot} from '@/lib/checkout/turso-preview-runtime.mjs';
 import {
   getProductBySlugOrId,
   mergeWithCuratedProduct,
@@ -30,6 +31,18 @@ async function findProductBySlug(db, slug) {
     product = await db.collection('products').findOne(filter);
   }
   return product;
+}
+
+async function loadSelectedProduct(slug) {
+  if (tursoPreviewSelected()) {
+    const snapshot=await getTursoPreviewStorefrontSnapshot();
+    const matches=snapshot.products.filter(product=>product.slug===slug||product.id===slug);
+    if(matches.length>1&&new Set(matches.map(product=>product.id)).size>1)throw Error('TURSO_PRODUCT_REFERENCE_AMBIGUOUS');
+    return matches[0]||null;
+  }
+  const {db}=await connectToDatabase();
+  const curatedProduct=getProductBySlugOrId(slug);
+  return await findProductBySlug(db,slug)||(curatedProduct?toStorefrontProduct(curatedProduct):null);
 }
 
 const PRODUCT_COPY_FALLBACK = 'Small-batch sea moss gel made with simple ingredients and market pickup options.';
@@ -118,6 +131,9 @@ function serializeProductForClient(sourceProduct) {
     price,
     priceCents: product.priceCents,
     stock: product.stock,
+    currentStock:product.currentStock,
+    inStock:product.inStock,
+    purchaseStatus:product.purchaseStatus,
     isPreorder: product.isPreorder,
     sku: product.sku,
     catalogObjectId: product.catalogObjectId,
@@ -155,9 +171,7 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
   
   try {
-    const { db } = await connectToDatabase();
-    const curatedProduct = getProductBySlugOrId(slug);
-    const product = await findProductBySlug(db, slug) || (curatedProduct ? toStorefrontProduct(curatedProduct) : null);
+    const product=await loadSelectedProduct(slug);
     
     if (!product) {
       return {
@@ -219,11 +233,7 @@ export default async function ProductPage({ params }) {
   }
   
   try {
-    const { db } = await connectToDatabase();
-    
-    // Fetch product from database (unified_products first, then products)
-    const curatedProduct = getProductBySlugOrId(slug);
-    const product = await findProductBySlug(db, slug) || (curatedProduct ? toStorefrontProduct(curatedProduct) : null);
+    const product=await loadSelectedProduct(slug);
     
     if (!product) {
       console.log(`[Product SSR] Product not found for slug: ${slug}`);
@@ -240,6 +250,7 @@ export default async function ProductPage({ params }) {
   } catch (error) {
     // Next.js notFound() raises a special control-flow error; never swallow it.
     if (error?.digest?.startsWith?.('NEXT_HTTP_ERROR_FALLBACK')) throw error;
+    if(tursoPreviewSelected())throw error;
     console.error('[Product SSR] Error fetching product:', error);
     const curatedProduct = getProductBySlugOrId(slug);
     if (curatedProduct) {

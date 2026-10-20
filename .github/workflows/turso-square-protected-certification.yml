@@ -1,0 +1,203 @@
+name: Turso Square Protected Integration Certification
+
+# Financial credentials are NEVER exposed to automatic PR or push jobs.
+on:
+  workflow_dispatch:
+    inputs:
+      preview_base_url:
+        description: Exact Preview URL independently verified against the deployed Git SHA
+        type: string
+        required: true
+
+      read_only_recovery_order_id:
+        description: Optional existing refunded QA order; selects read-only evidence collection instead of a financial test
+        type: string
+        required: false
+        default: ''
+      certified_preview_sha:
+        description: Required only for read-only recovery evidence collection
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  real-provider-staging-integration:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_legacy == 'true' }}
+    name: Real Square Sandbox capture/refund to Turso isolated staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: square-sandbox-certification
+    env:
+      TURSO_APPROVED_STAGING_NAME: gratog-migration-cert-20261018
+      TURSO_STAGING_DATABASE_URL: libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io
+      TURSO_STAGING_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
+      SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
+      SQUARE_ENVIRONMENT: sandbox
+      SQUARE_EXPECTED_PREVIEW_WEBHOOK_URL: https://gratog-git-feat-turso-checkout-2101c9-theangelsilvers-projects.vercel.app/api/webhooks/square
+    steps:
+      - name: Refuse any unexpected ref before financial operations
+        run: |
+          test "$GITHUB_EVENT_NAME" = workflow_dispatch
+          test "$GITHUB_REF" = refs/heads/feat/turso-checkout-recovery-20261017
+          test -n "$SQUARE_SANDBOX_ACCESS_TOKEN"
+          test -n "$TURSO_STAGING_AUTH_TOKEN"
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '26'
+          cache: npm
+      - name: Install only runtime dependencies
+        run: npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Real Square Sandbox payment and refund to isolated Turso
+        run: node scripts/certify-turso-square-integration.mjs
+      - name: Preserve real provider and Turso evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: turso-square-integrated-proof-${{ github.run_id }}
+          path: test-results/turso-square-integration.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  sandbox-webhook-subscription-audit:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_legacy == 'true' }}
+    name: Read-only Square Sandbox subscription destination audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: square-sandbox-certification
+    env:
+      SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
+      SQUARE_ENVIRONMENT: sandbox
+      SQUARE_EXPECTED_PREVIEW_WEBHOOK_URL: https://gratog-git-feat-turso-checkout-2101c9-theangelsilvers-projects.vercel.app/api/webhooks/square
+    steps:
+      - name: Refuse unexpected refs before provider inspection
+        run: |
+          test "$GITHUB_EVENT_NAME" = workflow_dispatch
+          test "$GITHUB_REF" = refs/heads/feat/turso-checkout-recovery-20261017
+          test -n "$SQUARE_SANDBOX_ACCESS_TOKEN"
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '26'
+      - name: Check subscription audit safety invariants
+        run: node --test tests/migration/turso-square-subscription-audit.test.mjs
+      - name: Inspect sandbox subscriptions without mutation
+        run: node scripts/audit-square-sandbox-webhook-subscriptions.mjs
+      - name: Preserve destination evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: square-sandbox-webhook-subscriptions-${{ github.run_id }}
+          path: test-results/square-sandbox-webhook-subscriptions.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  sandbox-buyer-certification:
+    if: ${{ inputs.read_only_recovery_order_id == '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    environment: square-sandbox-certification
+    env:
+      PREVIEW_BASE_URL: ${{ inputs.preview_base_url }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '26'
+          cache: npm
+      - name: Independently prove public Preview identity and branch SHA
+        run: |
+          node --input-type=module <<'NODE'
+          if(process.env.GITHUB_EVENT_NAME!=='workflow_dispatch'||
+             process.env.GITHUB_REF!=='refs/heads/feat/turso-checkout-recovery-20261017')
+             throw Error('PROTECTED_BRANCH_REQUIRED');
+          let u;try{u=new URL(process.env.PREVIEW_BASE_URL)}catch{}
+          if(!u||u.protocol!=='https:'||u.origin!==process.env.PREVIEW_BASE_URL||
+             !/^gratog-[a-z0-9]+-theangelsilvers-projects\.vercel\.app$/.test(u.hostname))
+             throw Error('EXACT_PREVIEW_HOST_INVALID');
+          const result=await fetch(u.origin+'/api/certification/turso-ready',{
+            redirect:'manual',signal:AbortSignal.timeout(20000)});
+          if(result.status!==200)throw Error('PREVIEW_NOT_PUBLIC_AND_READY_'+result.status);
+          const proof=await result.json();
+          if(proof.ready!==true||proof.code!=='READ_ONLY_STAGING_READY'||
+             proof.commit!==process.env.GITHUB_SHA||
+             proof.isolatedTursoRead!==true||proof.sandboxLocationVerified!==true)
+             throw Error('DEPLOYED_PREVIEW_COMMIT_OR_SANDBOX_MISMATCH');
+          console.log('PASS: public immutable Preview matches protected GitHub SHA and Turso Sandbox');
+          NODE
+      - name: Install runtime dependencies without any provider secrets in environment
+        run: npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Apply additive schema to the exact isolated staging database
+        env:
+          TURSO_DATABASE_URL: libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
+          TURSO_TARGET_ENV: staging
+          TURSO_APPROVED_STAGING_NAME: gratog-migration-cert-20261018
+        run: node scripts/migrate/apply-schema.mjs
+      - name: Check certification subscription ownership guards
+        run: node --test tests/migration/square-certification-subscription.test.mjs
+      - name: Create or verify Square Sandbox signed subscription at that exact URL
+        env:
+          SQUARE_ENVIRONMENT: sandbox
+          SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
+        run: node scripts/certify-preview-square-subscription.mjs
+      - name: Real customer-facing HTTP payment, refund, webhook and notification test
+        env:
+          TURSO_STAGING_DATABASE_URL: libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io
+          TURSO_STAGING_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
+          SQUARE_ENVIRONMENT: sandbox
+          SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
+        run: node scripts/certify-preview-live-checkout.mjs
+      - name: Publish strictly nonsecret test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: turso-preview-real-sandbox-${{ github.run_id }}
+          path: |
+            test-results/preview-square-webhook-subscription.json
+            test-results/turso-preview-live-checkout.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  read-only-provider-and-ledger:
+    if: ${{ github.ref == 'refs/heads/feat/turso-checkout-recovery-20261017' && inputs.read_only_recovery_order_id != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: square-sandbox-certification
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '26'
+          cache: npm
+      - name: Install dependencies without credentials
+        run: npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Collect existing QA ledger and fresh provider readbacks without writes
+        env:
+          PREVIEW_BASE_URL: ${{ inputs.preview_base_url }}
+          CERTIFIED_PREVIEW_SHA: ${{ inputs.certified_preview_sha }}
+          RECOVERY_ORDER_ID: ${{ inputs.read_only_recovery_order_id }}
+          TURSO_STAGING_DATABASE_URL: libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io
+          TURSO_STAGING_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
+          SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
+          SQUARE_ENVIRONMENT: sandbox
+        run: node scripts/release/export-preview-recovery-input.mjs
+      - name: Preserve nonsecret provider and ledger evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: certified-preview-recovery-input-${{ github.run_id }}
+          path: test-results/preview-recovery-input.json
+          if-no-files-found: error
+          retention-days: 14

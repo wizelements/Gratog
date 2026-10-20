@@ -55,11 +55,12 @@ describe('Navigation Coherence', () => {
     expect(adminLayout).not.toContain("href: '/admin/queue'");
   });
 
-  it('product detail reviews tab uses live review component', () => {
+  it('product details do not offer the retired public review workflow', () => {
     const productClient = tryRead('app/product/[slug]/ProductDetailClient.jsx');
 
-    expect(productClient).toContain('ProductReviews');
-    expect(productClient).toContain('<ProductReviews');
+    expect(productClient).not.toContain('ProductReviews');
+    expect(productClient).not.toContain('/api/reviews');
+    expect(productClient).not.toContain('value="reviews"');
   });
 
   it('product detail pages serialize a claim-safe storefront product projection', () => {
@@ -116,10 +117,8 @@ describe('Navigation Coherence', () => {
     expect(header).toContain("href: '/events'");
   });
 
-  it('review submission UX includes a non-blocking signup prompt for guest reviewers', () => {
-    const productReviews = tryRead('components/ProductReviews.jsx');
-
-    expect(productReviews).toContain('Create Free Account');
-    expect(productReviews).toContain('setSignupPrompt');
+  it('old review signup links cannot falsely claim a review was submitted', () => {
+    const register = tryRead('app/register/page.js');
+    expect(register).not.toContain('Your review was submitted successfully');
   });
 });

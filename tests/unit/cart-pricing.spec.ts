@@ -102,7 +102,7 @@ describe('priceCart — tamper resistance', () => {
     expect(result.items[0].lineTotalCents).toBe(5000);
   });
 
-  it('corrects the old $35 Blue Lotus 16 oz merchant price to owner-approved $36', async () => {
+  it('blocks the old $35 Blue Lotus price until provider and approved price agree', async () => {
     products.push({
       id: 'DSROEB4HMZK63V7IGBH6SSJH',
       name: 'Blue Lotus',
@@ -113,12 +113,10 @@ describe('priceCart — tamper resistance', () => {
         { id: 'QIX6D5PRQKX4TKEMTQUJPZUX', name: '16oz', priceCents: 3500 },
       ],
     });
-    const priced = await priceCart({
+    await expect(priceCart({
       items: [{ productId: 'DSROEB4HMZK63V7IGBH6SSJH',
                 variationId: 'QIX6D5PRQKX4TKEMTQUJPZUX', quantity: 1 }],
-    });
-    expect(priced.items[0].unitPriceCents).toBe(3600);
-    expect(priced.totalCents).toBe(3600);
+    })).rejects.toMatchObject({ code: 'CATALOG_PRICE_UNRECONCILED' });
   });
 
   it('rejects unknown product IDs', async () => {

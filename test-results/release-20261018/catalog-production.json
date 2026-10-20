@@ -1,0 +1,1818 @@
+{
+  "evidenceType": "read_only_public_endpoint",
+  "observedVia": "authenticated_GratitudePC_Desktop_Commander",
+  "independentMongoReadback": false,
+  "independentSquareAdminReadback": false,
+  "url": "https://tasteofgratitude.shop/api/products",
+  "observedAt": "2026-10-18T04:57:10.5811257Z",
+  "source": null,
+  "success": true,
+  "count": null,
+  "products": [
+    {
+      "id": "BS6VUA5YSOINBLAWSXSBXBZF",
+      "name": "Golden Glow Gel",
+      "slug": "golden-glow-gel",
+      "price": 36,
+      "priceCents": 3600,
+      "checkoutReady": true,
+      "inStock": true,
+      "stock": 2,
+      "currentStock": 2,
+      "variationId": "MLQ3AWX6G7CUAMMRRT7N5BDN",
+      "variations": [
+        {
+          "id": "MLQ3AWX6G7CUAMMRRT7N5BDN",
+          "name": "16oz",
+          "sku": "289527X",
+          "price": 36,
+          "priceCents": 3600,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Sea Moss",
+          "benefits": []
+        },
+        {
+          "name": "Pineapple",
+          "benefits": []
+        },
+        {
+          "name": "Orange",
+          "benefits": []
+        },
+        {
+          "name": "Turmeric",
+          "benefits": []
+        },
+        {
+          "name": "Ginger",
+          "benefits": []
+        },
+        {
+          "name": "Local Honey",
+          "benefits": []
+        },
+        {
+          "name": "Alkaline Water",
+          "benefits": []
+        }
+      ],
+      "description": "Pineapple, orange, turmeric, ginger, honey, and sea moss in a golden gel."
+    },
+    {
+      "id": "YJ7KN2IT34JVXBOI5UHRSHZ4",
+      "name": "Healing Harmony",
+      "slug": "healing-harmony",
+      "price": 36,
+      "priceCents": 3600,
+      "checkoutReady": true,
+      "inStock": true,
+      "stock": 1,
+      "currentStock": 1,
+      "variationId": "JIYUFU7SUN3WUDK2FJ7CG7ZR",
+      "variations": [
+        {
+          "id": "JIYUFU7SUN3WUDK2FJ7CG7ZR",
+          "name": "",
+          "sku": null,
+          "price": 36,
+          "priceCents": 3600,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "sea moss",
+          "icon": "ð",
+          "benefits": [
+            "92 essential minerals"
+          ]
+        }
+      ],
+      "description": "Soursop\nRich in antioxidants, supports immune health, may help reduce inflammation\nCinnamon\nHelps regulate blood sugar, anti-inflammatory, warming spice\nStar Anise\nSupports digestion, antimicrobial properties, aromatic flavor\nSea Moss\nProvides 92 minerals, collagen support for skin/joints, thyroid balance, gut + respiratory health\nAlkaline Water\nHydrating, helps maintain pH balance"
+    },
+    {
+      "id": "KZXEV24XZ2UCQUJ64BH7ZUJP",
+      "name": "Strawberry Bliss",
+      "slug": "strawberry-bliss",
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": true,
+      "inStock": true,
+      "stock": 36,
+      "currentStock": 36,
+      "variationId": "HYODQWXIJJVAPRIZ66SVUYE5",
+      "variations": [
+        {
+          "id": "HYODQWXIJJVAPRIZ66SVUYE5",
+          "name": "Regular",
+          "sku": "3832062",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Strawberry",
+          "benefits": []
+        },
+        {
+          "name": "Lemon",
+          "benefits": []
+        },
+        {
+          "name": "Ginger",
+          "benefits": []
+        },
+        {
+          "name": "Sea Moss",
+          "benefits": []
+        },
+        {
+          "name": "Agave",
+          "benefits": []
+        },
+        {
+          "name": "Alkaline Water",
+          "benefits": []
+        }
+      ],
+      "description": "A strawberry ginger lemonade with sea moss and a bright market-fresh finish."
+    },
+    {
+      "id": "CN4ZZMMCI2ZTIMU56X7DFHNJ",
+      "name": "Supplemint",
+      "slug": "supplemint",
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": true,
+      "inStock": true,
+      "stock": 36,
+      "currentStock": 36,
+      "variationId": "XHR54S6JWGZJC5HDPGSGSK2L",
+      "variations": [
+        {
+          "id": "XHR54S6JWGZJC5HDPGSGSK2L",
+          "name": "Regular",
+          "sku": "7506544",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Mint",
+          "benefits": []
+        },
+        {
+          "name": "Ginger",
+          "benefits": []
+        },
+        {
+          "name": "Sea Moss",
+          "benefits": []
+        },
+        {
+          "name": "Agave",
+          "benefits": []
+        },
+        {
+          "name": "Alkaline Water",
+          "benefits": []
+        }
+      ],
+      "description": "Cool mint, ginger, sea moss, agave, and alkaline water in a crisp weekly lemonade."
+    },
+    {
+      "id": "DSROEB4HMZK63V7IGBH6SSJH",
+      "name": "Blue Lotus",
+      "slug": "blue-lotus",
+      "price": 36,
+      "priceCents": 3600,
+      "checkoutReady": false,
+      "inStock": false,
+      "stock": -6,
+      "currentStock": -6,
+      "variationId": "QIX6D5PRQKX4TKEMTQUJPZUX",
+      "variations": [
+        {
+          "id": "QIX6D5PRQKX4TKEMTQUJPZUX",
+          "name": "16oz",
+          "sku": "W744075",
+          "price": 36,
+          "priceCents": 3600,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Sea Moss",
+          "benefits": []
+        },
+        {
+          "name": "Blue Spirulina",
+          "benefits": []
+        },
+        {
+          "name": "Blue Lotus",
+          "benefits": []
+        },
+        {
+          "name": "Ashwagandha",
+          "benefits": []
+        },
+        {
+          "name": "Maca Root",
+          "benefits": []
+        },
+        {
+          "name": "Ginger",
+          "benefits": []
+        },
+        {
+          "name": "Agave",
+          "benefits": []
+        },
+        {
+          "name": "Alkaline Water",
+          "benefits": []
+        }
+      ],
+      "description": "A blue sea moss gel with blue spirulina, blue lotus, ginger, agave, and root ingredients."
+    },
+    {
+      "id": "PNVAADP63DYUZYD32DAUUHHQ",
+      "name": "Floral Tide",
+      "slug": "floral-tide",
+      "price": 36,
+      "priceCents": 3600,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": -3,
+      "currentStock": -3,
+      "variationId": "7H53HMPV3LMZZZDVSV2VEZPT",
+      "variations": [
+        {
+          "id": "7H53HMPV3LMZZZDVSV2VEZPT",
+          "name": "16oz",
+          "sku": "1420560",
+          "price": 36,
+          "priceCents": 3600,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "pineapple",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "digestion"
+          ]
+        },
+        {
+          "name": "turmeric",
+          "icon": "ð",
+          "benefits": [
+            "antioxidants",
+            "brain health"
+          ]
+        },
+        {
+          "name": "ginger",
+          "icon": "ð«",
+          "benefits": [
+            "digestion",
+            "nausea relief",
+            "immunity"
+          ]
+        },
+        {
+          "name": "lemon",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "alkalizing"
+          ]
+        },
+        {
+          "name": "agave",
+          "icon": "ð¯",
+          "benefits": [
+            "natural sweetener",
+            "low glycemic",
+            "energy"
+          ]
+        },
+        {
+          "name": "cranberry",
+          "icon": "ð«",
+          "benefits": [
+            "urinary health",
+            "antioxidants",
+            "vitamin C"
+          ]
+        },
+        {
+          "name": "apple",
+          "icon": "ð",
+          "benefits": [
+            "fiber",
+            "heart health",
+            "hydration"
+          ]
+        },
+        {
+          "name": "orange",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "immunity",
+            "hydration"
+          ]
+        }
+      ],
+      "description": "Ingredients: Hibiscus, Cranberry, Pineapple, Orange, Turmeric, Ginger, Lemon, Agave, Alkaline Water, Bee Pollen\n\nBENEFITS\nâ¢ Promotes circulation & heart health\nâ¢ Supports immune & liver function\nâ¢ Reduces inflammation & fatigue\nâ¢ Rich in antioxidants & nutrients"
+    },
+    {
+      "id": "H4C33DOZSINJKLDYVPYDUC3Q",
+      "name": "Grateful Greens",
+      "slug": "grateful-greens",
+      "price": 36,
+      "priceCents": 3600,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": 0,
+      "currentStock": 0,
+      "variationId": "URH7FGAVE46T3X2LY6NRJ77S",
+      "variations": [
+        {
+          "id": "URH7FGAVE46T3X2LY6NRJ77S",
+          "name": "",
+          "sku": null,
+          "price": 36,
+          "priceCents": 3600,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "basil",
+          "icon": "ð¿",
+          "benefits": [
+            "stress relief",
+            "antioxidants",
+            "digestion"
+          ]
+        },
+        {
+          "name": "chlorophyll",
+          "icon": "ð",
+          "benefits": [
+            "oxygen boost",
+            "skin health"
+          ]
+        },
+        {
+          "name": "honey",
+          "icon": "ð¯",
+          "benefits": [
+            "natural antibacterial",
+            "soothing",
+            "energy"
+          ]
+        }
+      ],
+      "description": "Holy Basil, Spirulina, Chlorophyll, Chlorella, Local Honey\n\nHoly Basil, Spirulina, Chlorophyll, Chlorella, Local Honey\nAlkalizing greens Â· Hormonal balance Â· Cellular rejuvenation"
+    },
+    {
+      "id": "DOBEU7ZFRXWQB6VSECMNLMXL",
+      "name": "Always Pursue Gratitude",
+      "slug": "always-pursue-gratitude",
+      "price": 13.99,
+      "priceCents": 1399,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": 0,
+      "currentStock": 0,
+      "variationId": "WFUWO7VQM4BDOYPEBPENPAMP",
+      "variations": [
+        {
+          "id": "WFUWO7VQM4BDOYPEBPENPAMP",
+          "name": "Regular",
+          "sku": null,
+          "price": 13.99,
+          "priceCents": 1399,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "sea moss",
+          "icon": "ð",
+          "benefits": [
+            "92 essential minerals"
+          ]
+        },
+        {
+          "name": "pineapple",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "digestion"
+          ]
+        },
+        {
+          "name": "ginger",
+          "icon": "ð«",
+          "benefits": [
+            "digestion",
+            "nausea relief",
+            "immunity"
+          ]
+        },
+        {
+          "name": "lemon",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "alkalizing"
+          ]
+        },
+        {
+          "name": "apple",
+          "icon": "ð",
+          "benefits": [
+            "fiber",
+            "heart health",
+            "hydration"
+          ]
+        }
+      ],
+      "description": "Apple, pineapple, ginger, lemon, sea moss\nâ Aids digestion, boosts immunity, supports skin health"
+    },
+    {
+      "id": "KIJASOFCHSOG4B3GJPOQ7OQB",
+      "name": "Herbal Vibe",
+      "slug": "herbal-vibe",
+      "price": 14.99,
+      "priceCents": 1499,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": -1,
+      "currentStock": -1,
+      "variationId": "AS4OJS33FJEHZMJ5W24IJ6TV",
+      "variations": [
+        {
+          "id": "AS4OJS33FJEHZMJ5W24IJ6TV",
+          "name": "Regular",
+          "sku": "W491082",
+          "price": 14.99,
+          "priceCents": 1499,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "pineapple",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "digestion"
+          ]
+        },
+        {
+          "name": "ginger",
+          "icon": "ð«",
+          "benefits": [
+            "digestion",
+            "nausea relief",
+            "immunity"
+          ]
+        },
+        {
+          "name": "lemon",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "alkalizing"
+          ]
+        },
+        {
+          "name": "apple",
+          "icon": "ð",
+          "benefits": [
+            "fiber",
+            "heart health",
+            "hydration"
+          ]
+        }
+      ],
+      "description": "Herbal Vibe is a bold blend featuring pineapple, apple, ginger, oregano, mint, and lemon, thoughtfully crafted to invigorate your senses. Enjoy a refreshing mix designed to energize, purify, and support your daily wellness routine."
+    },
+    {
+      "id": "OAMZ3IUIU75QRNH7WJETSPX6",
+      "name": "Kissed by Gods",
+      "slug": "kissed-by-gods",
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": 0,
+      "currentStock": 0,
+      "variationId": "24IR66LLZDKD2NMM3FI4JKPG",
+      "variations": [
+        {
+          "id": "24IR66LLZDKD2NMM3FI4JKPG",
+          "name": "16oz",
+          "sku": null,
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        },
+        {
+          "id": "VSZHBA37GKBBUNT5ESKGGBW2",
+          "name": "64oz",
+          "sku": "Z670993",
+          "price": 47.96,
+          "priceCents": 4796,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Basil",
+          "benefits": []
+        },
+        {
+          "name": "Chlorophyll",
+          "benefits": []
+        },
+        {
+          "name": "Ginger",
+          "benefits": []
+        },
+        {
+          "name": "Lemon",
+          "benefits": []
+        },
+        {
+          "name": "Sea Moss",
+          "benefits": []
+        },
+        {
+          "name": "Agave",
+          "benefits": []
+        },
+        {
+          "name": "Alkaline Water",
+          "benefits": []
+        }
+      ],
+      "description": "A bright green lemonade with basil, ginger, lemon, chlorophyll, and sea moss."
+    },
+    {
+      "id": "CRH72FI2JOGIOCZBWGD5YBWK",
+      "name": "Peach Lemonade",
+      "slug": "peach-lemonade",
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": -1,
+      "currentStock": -1,
+      "variationId": "NGUVDKZZZMSK6N6VRXRG37HJ",
+      "variations": [
+        {
+          "id": "NGUVDKZZZMSK6N6VRXRG37HJ",
+          "name": "Regular",
+          "sku": "3618231",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Peach",
+          "benefits": []
+        },
+        {
+          "name": "Lemon",
+          "benefits": []
+        },
+        {
+          "name": "Ginger",
+          "benefits": []
+        },
+        {
+          "name": "Sea Moss",
+          "benefits": []
+        },
+        {
+          "name": "Agave",
+          "benefits": []
+        },
+        {
+          "name": "Alkaline Water",
+          "benefits": []
+        }
+      ],
+      "description": "Georgia peach, lemon, ginger, sea moss, and agave in a seasonal lemonade."
+    },
+    {
+      "id": "XZBLCZKU2AW3FUBPYD2IE2O5",
+      "name": "Rooted in Gratitude",
+      "slug": "rooted-in-gratitude",
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": 0,
+      "currentStock": 0,
+      "variationId": "4QEYUKKHVUDNRSYYUIK6FPYF",
+      "variations": [
+        {
+          "id": "4QEYUKKHVUDNRSYYUIK6FPYF",
+          "name": "Regular",
+          "sku": "Y969342",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "sea moss",
+          "icon": "ð",
+          "benefits": [
+            "92 essential minerals"
+          ]
+        },
+        {
+          "name": "pineapple",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "digestion"
+          ]
+        },
+        {
+          "name": "ginger",
+          "icon": "ð«",
+          "benefits": [
+            "digestion",
+            "nausea relief",
+            "immunity"
+          ]
+        },
+        {
+          "name": "lemon",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "alkalizing"
+          ]
+        },
+        {
+          "name": "agave",
+          "icon": "ð¯",
+          "benefits": [
+            "natural sweetener",
+            "low glycemic",
+            "energy"
+          ]
+        },
+        {
+          "name": "apple",
+          "icon": "ð",
+          "benefits": [
+            "fiber",
+            "heart health",
+            "hydration"
+          ]
+        }
+      ],
+      "description": "Beet, pineapple, parsley, celery, lemon, ginger, apples, sea moss, agave, alkaline water \nâ Promotes circulation, liver detox, hydration, and inflammation relief"
+    },
+    {
+      "id": "SSATSEXDDPFEFDU6HCVDUPHQ",
+      "name": "Gratitude Defense",
+      "slug": "gratitude-defense",
+      "price": 6,
+      "priceCents": 600,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": 0,
+      "currentStock": 0,
+      "variationId": "KXSSG4AGO73322YJQJOKR2VG",
+      "variations": [
+        {
+          "id": "KXSSG4AGO73322YJQJOKR2VG",
+          "name": "",
+          "sku": null,
+          "price": 6,
+          "priceCents": 600,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "sea moss",
+          "icon": "ð",
+          "benefits": [
+            "92 essential minerals"
+          ]
+        },
+        {
+          "name": "ginger",
+          "icon": "ð«",
+          "benefits": [
+            "digestion",
+            "nausea relief",
+            "immunity"
+          ]
+        },
+        {
+          "name": "lemon",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "alkalizing"
+          ]
+        },
+        {
+          "name": "cranberry",
+          "icon": "ð«",
+          "benefits": [
+            "urinary health",
+            "antioxidants",
+            "vitamin C"
+          ]
+        },
+        {
+          "name": "apple",
+          "icon": "ð",
+          "benefits": [
+            "fiber",
+            "heart health",
+            "hydration"
+          ]
+        },
+        {
+          "name": "elderberry",
+          "icon": "ð«",
+          "benefits": [
+            "antioxidants",
+            "respiratory health"
+          ]
+        }
+      ],
+      "description": "Elderberry, Cranberry, Apple, Ginger, Lemon, Echinacea, Sea Moss\nStrong immune defense, digestive support, 92+ essential minerals"
+    },
+    {
+      "id": "QDZ5VIFHYIP243KIH4I5YW5R",
+      "name": "Spicy Bloom",
+      "slug": "spicy-bloom",
+      "price": 5.5,
+      "priceCents": 550,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": 0,
+      "currentStock": 0,
+      "variationId": "JRH3GPIUTSPNTTKCEHGRRZET",
+      "variations": [
+        {
+          "id": "JRH3GPIUTSPNTTKCEHGRRZET",
+          "name": "Regular",
+          "sku": "F034305",
+          "price": 5.5,
+          "priceCents": 550,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Hibiscus",
+          "benefits": []
+        },
+        {
+          "name": "Pineapple",
+          "benefits": []
+        },
+        {
+          "name": "Orange",
+          "benefits": []
+        },
+        {
+          "name": "Cranberry",
+          "benefits": []
+        },
+        {
+          "name": "Lemon",
+          "benefits": []
+        },
+        {
+          "name": "JalapeÃ±o",
+          "benefits": []
+        },
+        {
+          "name": "Sea Moss",
+          "benefits": []
+        },
+        {
+          "name": "Agave",
+          "benefits": []
+        },
+        {
+          "name": "Alkaline Water",
+          "benefits": []
+        }
+      ],
+      "description": "A tart floral shot with jalapeÃ±o heat, citrus, cranberry, hibiscus, and sea moss."
+    },
+    {
+      "id": "CIEYXH3G7FHAST6DLWMCFYS5",
+      "name": "Calm Waters",
+      "slug": "calm-waters",
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": true,
+      "inStock": true,
+      "stock": 30,
+      "currentStock": 30,
+      "variationId": "H2DTZPLPJRMKYZIOAUWENWIR",
+      "variations": [
+        {
+          "id": "H2DTZPLPJRMKYZIOAUWENWIR",
+          "name": "Regular",
+          "sku": "6876012",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Blue Spirulina",
+          "benefits": []
+        },
+        {
+          "name": "Lemon",
+          "benefits": []
+        },
+        {
+          "name": "Ashwagandha",
+          "benefits": []
+        },
+        {
+          "name": "Celtic Salt",
+          "benefits": []
+        },
+        {
+          "name": "Agave",
+          "benefits": []
+        }
+      ],
+      "description": "Blue spirulina, lemon, ashwagandha, Celtic salt, and agave in a bright botanical lemonade."
+    },
+    {
+      "id": "M2YWBEQGL73SJLAKVYDSFORC",
+      "name": "Black Minerals",
+      "slug": "black-minerals",
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": -2,
+      "currentStock": -2,
+      "variationId": "RZ5E2KMKDEXFJLEOHYRUQRTV",
+      "variations": [
+        {
+          "id": "RZ5E2KMKDEXFJLEOHYRUQRTV",
+          "name": "Regular",
+          "sku": "7664502",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Lemon",
+          "benefits": []
+        },
+        {
+          "name": "Ginger",
+          "benefits": []
+        },
+        {
+          "name": "Sea Moss",
+          "benefits": []
+        },
+        {
+          "name": "Trace Mineral Blend",
+          "benefits": []
+        },
+        {
+          "name": "Agave",
+          "benefits": []
+        },
+        {
+          "name": "Alkaline Water",
+          "benefits": []
+        }
+      ],
+      "description": "A dark lemon and ginger drink with sea moss and a trace mineral blend."
+    },
+    {
+      "id": "VQ3PGYYJYAC5DEZPDZO5IAKT",
+      "name": "Desert Glow",
+      "slug": "desert-glow",
+      "price": 12.99,
+      "priceCents": 1299,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": 0,
+      "currentStock": 0,
+      "variationId": "K4JKQGL6MCZRUTW4Q6IVUIMC",
+      "variations": [
+        {
+          "id": "K4JKQGL6MCZRUTW4Q6IVUIMC",
+          "name": "Regular",
+          "sku": null,
+          "price": 12.99,
+          "priceCents": 1299,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "sea moss",
+          "icon": "ð",
+          "benefits": [
+            "92 essential minerals"
+          ]
+        },
+        {
+          "name": "ginger",
+          "icon": "ð«",
+          "benefits": [
+            "digestion",
+            "nausea relief",
+            "immunity"
+          ]
+        },
+        {
+          "name": "lemon",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "alkalizing"
+          ]
+        },
+        {
+          "name": "agave",
+          "icon": "ð¯",
+          "benefits": [
+            "natural sweetener",
+            "low glycemic",
+            "energy"
+          ]
+        }
+      ],
+      "description": "A refreshing blend of prickly pear, ginger, sea moss, lemon, agave, and alkaline water, crafted with natural ingredients. Perfect for hydration and supporting overall wellness."
+    },
+    {
+      "id": "GGFFU35UI5TCMORHXHU56ZZ7",
+      "name": "Golden Glow",
+      "slug": "golden-glow",
+      "price": 12.99,
+      "priceCents": 1299,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": 0,
+      "currentStock": 0,
+      "variationId": "KZR54XNQOXDMY74UXOHRH242",
+      "variations": [
+        {
+          "id": "KZR54XNQOXDMY74UXOHRH242",
+          "name": "Regular",
+          "sku": "1356784",
+          "price": 12.99,
+          "priceCents": 1299,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "pineapple",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "digestion"
+          ]
+        },
+        {
+          "name": "turmeric",
+          "icon": "ð",
+          "benefits": [
+            "antioxidants",
+            "brain health"
+          ]
+        },
+        {
+          "name": "ginger",
+          "icon": "ð«",
+          "benefits": [
+            "digestion",
+            "nausea relief",
+            "immunity"
+          ]
+        },
+        {
+          "name": "lemon",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "alkalizing"
+          ]
+        },
+        {
+          "name": "cayenne",
+          "icon": "ð¶ï¸",
+          "benefits": [
+            "metabolism",
+            "circulation",
+            "pain relief"
+          ]
+        },
+        {
+          "name": "apple",
+          "icon": "ð",
+          "benefits": [
+            "fiber",
+            "heart health",
+            "hydration"
+          ]
+        },
+        {
+          "name": "orange",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "immunity",
+            "hydration"
+          ]
+        }
+      ],
+      "description": "Golden\nCarrot Â· Orange Â· Pineapple Â· Ginger Â· Turmeric Â· Cayenne Â· Lemon\nFocus: Circulation support"
+    },
+    {
+      "id": "F2YVC7OVRYJU575JXROKFHFT",
+      "name": "Pineapple Mango Lemonade",
+      "slug": "pineapple-mango-lemonade",
+      "price": 9,
+      "priceCents": 900,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": 0,
+      "currentStock": 0,
+      "variationId": "4YFOIFCPUXTDKDA5DU2LLQ2G",
+      "variations": [
+        {
+          "id": "4YFOIFCPUXTDKDA5DU2LLQ2G",
+          "name": "Regular",
+          "sku": "5504418",
+          "price": 9,
+          "priceCents": 900,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "pineapple",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "digestion"
+          ]
+        },
+        {
+          "name": "lemon",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "alkalizing"
+          ]
+        },
+        {
+          "name": "lemonade",
+          "icon": "ð",
+          "benefits": [
+            "hydration",
+            "refreshing",
+            "vitamin C"
+          ]
+        },
+        {
+          "name": "mango",
+          "icon": "ð¥­",
+          "benefits": [
+            "vitamin C",
+            "digestion",
+            "immunity"
+          ]
+        },
+        {
+          "name": "apple",
+          "icon": "ð",
+          "benefits": [
+            "fiber",
+            "heart health",
+            "hydration"
+          ]
+        }
+      ],
+      "description": "Premium Pineapple Mango Lemonade"
+    },
+    {
+      "id": "656N3Q4B7FX25MKSVPJ6XWEE",
+      "name": "Strawberry Rose Lemonade",
+      "slug": "strawberry-rose-lemonade",
+      "price": 9,
+      "priceCents": 900,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": 0,
+      "currentStock": 0,
+      "variationId": "RBACXLQMEPFZVLHMCNUUSOR3",
+      "variations": [
+        {
+          "id": "RBACXLQMEPFZVLHMCNUUSOR3",
+          "name": "Regular",
+          "sku": "6415368",
+          "price": 9,
+          "priceCents": 900,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "lemon",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "alkalizing"
+          ]
+        },
+        {
+          "name": "lemonade",
+          "icon": "ð",
+          "benefits": [
+            "hydration",
+            "refreshing",
+            "vitamin C"
+          ]
+        },
+        {
+          "name": "strawberry",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "heart health",
+            "antioxidants"
+          ]
+        }
+      ],
+      "description": "Premium Strawberry Rose Lemonade"
+    },
+    {
+      "id": "QZG2GHCF64WIWEO6KWNOSYWB",
+      "name": "Homemade Apple Cider",
+      "slug": "homemade-apple-cider",
+      "price": 6,
+      "priceCents": 600,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": 0,
+      "currentStock": 0,
+      "variationId": "X7ISEZVIJVYU5DUCPXGGKZQ3",
+      "variations": [
+        {
+          "id": "X7ISEZVIJVYU5DUCPXGGKZQ3",
+          "name": "Regular",
+          "sku": "643370G",
+          "price": 6,
+          "priceCents": 600,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "pineapple",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "digestion"
+          ]
+        },
+        {
+          "name": "ginger",
+          "icon": "ð«",
+          "benefits": [
+            "digestion",
+            "nausea relief",
+            "immunity"
+          ]
+        },
+        {
+          "name": "apple",
+          "icon": "ð",
+          "benefits": [
+            "fiber",
+            "heart health",
+            "hydration"
+          ]
+        }
+      ],
+      "description": "Crafted from slow-simmered apples and infused with our signature A.P.G. blend of pineapple and ginger for a bright, uplifting twist. Lightly spiced and naturally sweet, this cider energizes the senses and supports immunity with every sip."
+    },
+    {
+      "id": "JRCM5Y24NKELIT4SQHJD2APC",
+      "name": "Strawberry Milk Tea",
+      "slug": "strawberry-milk-tea",
+      "price": 9.75,
+      "priceCents": 975,
+      "checkoutReady": true,
+      "inStock": false,
+      "stock": 0,
+      "currentStock": 0,
+      "variationId": "OGMHH6NVS2MOAGZH4BFJ6HD2",
+      "variations": [
+        {
+          "id": "OGMHH6NVS2MOAGZH4BFJ6HD2",
+          "name": "Regular",
+          "sku": "7091271",
+          "price": 9.75,
+          "priceCents": 975,
+          "currency": "USD",
+          "trackQuantity": false,
+          "inventoryAlertThreshold": null
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "strawberry",
+          "icon": "ð",
+          "benefits": [
+            "vitamin C",
+            "heart health",
+            "antioxidants"
+          ]
+        },
+        {
+          "name": "milk tea",
+          "icon": "ð¥",
+          "benefits": [
+            "antioxidants",
+            "energy",
+            "soothing"
+          ]
+        }
+      ],
+      "description": "Real strawberry + jasmine \nCreamy â¢ smooth â¢ naturally sweet"
+    },
+    {
+      "id": "peach-refresher",
+      "name": "Peach Refresher",
+      "slug": "peach-refresher",
+      "price": 9,
+      "priceCents": 900,
+      "checkoutReady": false,
+      "inStock": true,
+      "stock": 20,
+      "currentStock": null,
+      "variationId": "tog-6-peach-ref",
+      "variations": [
+        {
+          "id": "tog-0-peach-ref",
+          "name": "16oz bottle",
+          "price": 9,
+          "priceCents": 900
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Peach"
+        },
+        {
+          "name": "Cucumber"
+        },
+        {
+          "name": "Mint"
+        },
+        {
+          "name": "Lime"
+        },
+        {
+          "name": "Agave"
+        },
+        {
+          "name": "Alkaline Water"
+        }
+      ],
+      "description": "A lighter peach cucumber mint refresher for hot market days."
+    },
+    {
+      "id": "peach-sea-moss-fizz",
+      "name": "Peach Sea Moss Fizz",
+      "slug": "peach-sea-moss-fizz",
+      "price": 10,
+      "priceCents": 1000,
+      "checkoutReady": false,
+      "inStock": true,
+      "stock": 4,
+      "currentStock": null,
+      "variationId": "tog-7-peach-sea",
+      "variations": [
+        {
+          "id": "tog-0-peach-sea",
+          "name": "16oz bottle",
+          "price": 10,
+          "priceCents": 1000
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Peach"
+        },
+        {
+          "name": "Lemon"
+        },
+        {
+          "name": "Sea Moss"
+        },
+        {
+          "name": "Agave"
+        },
+        {
+          "name": "Sparkling Water"
+        }
+      ],
+      "description": "A sparkling peach sea moss refresher with lemon and agave."
+    },
+    {
+      "id": "strawberry-rose-ginger",
+      "name": "Strawberry Rose Ginger",
+      "slug": "strawberry-rose-ginger",
+      "price": 9,
+      "priceCents": 900,
+      "checkoutReady": false,
+      "inStock": true,
+      "stock": 20,
+      "currentStock": null,
+      "variationId": "tog-8-strawberr",
+      "variations": [
+        {
+          "id": "tog-0-strawberr",
+          "name": "16oz bottle",
+          "price": 9,
+          "priceCents": 900
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Strawberry"
+        },
+        {
+          "name": "Rose"
+        },
+        {
+          "name": "Ginger"
+        },
+        {
+          "name": "Lime"
+        },
+        {
+          "name": "Agave"
+        },
+        {
+          "name": "Alkaline Water"
+        }
+      ],
+      "description": "A floral strawberry refresher with rose, ginger, lime, and agave."
+    },
+    {
+      "id": "cucumber-mint-ginger",
+      "name": "Cucumber Mint Ginger",
+      "slug": "cucumber-mint-ginger",
+      "price": 9,
+      "priceCents": 900,
+      "checkoutReady": false,
+      "inStock": true,
+      "stock": 20,
+      "currentStock": null,
+      "variationId": "tog-9-cucumber-",
+      "variations": [
+        {
+          "id": "tog-0-cucumber-",
+          "name": "16oz bottle",
+          "price": 9,
+          "priceCents": 900
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Cucumber"
+        },
+        {
+          "name": "Mint"
+        },
+        {
+          "name": "Ginger"
+        },
+        {
+          "name": "Lime"
+        },
+        {
+          "name": "Agave"
+        },
+        {
+          "name": "Alkaline Water"
+        }
+      ],
+      "description": "Cucumber, mint, ginger, and lime in a clean market refresher."
+    },
+    {
+      "id": "electric-melon",
+      "name": "Electric Melon",
+      "slug": "electric-melon",
+      "price": 10,
+      "priceCents": 1000,
+      "checkoutReady": false,
+      "inStock": true,
+      "stock": 4,
+      "currentStock": null,
+      "variationId": "tog-10-electric-",
+      "variations": [
+        {
+          "id": "tog-0-electric-",
+          "name": "16oz bottle",
+          "price": 10,
+          "priceCents": 1000
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Watermelon"
+        },
+        {
+          "name": "Lime"
+        },
+        {
+          "name": "Mint"
+        },
+        {
+          "name": "Ginger"
+        },
+        {
+          "name": "Sea Moss"
+        },
+        {
+          "name": "Agave"
+        },
+        {
+          "name": "Alkaline Water"
+        }
+      ],
+      "description": "Watermelon, lime, mint, ginger, and sea moss in a bright refresher."
+    },
+    {
+      "id": "vitamin-sea",
+      "name": "Vitamin Sea",
+      "slug": "vitamin-sea",
+      "price": 10,
+      "priceCents": 1000,
+      "checkoutReady": false,
+      "inStock": true,
+      "stock": 20,
+      "currentStock": null,
+      "variationId": "tog-11-vitamin-s",
+      "variations": [
+        {
+          "id": "tog-0-vitamin-s",
+          "name": "16oz bottle",
+          "price": 10,
+          "priceCents": 1000
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Orange"
+        },
+        {
+          "name": "Pineapple"
+        },
+        {
+          "name": "Lemon"
+        },
+        {
+          "name": "Ginger"
+        },
+        {
+          "name": "Sea Moss"
+        },
+        {
+          "name": "Agave"
+        },
+        {
+          "name": "Alkaline Water"
+        }
+      ],
+      "description": "A citrus-pineapple sea moss refresher preserved as a seasonal menu item."
+    },
+    {
+      "id": "grateful-greens-gel",
+      "name": "Grateful Greens Gel",
+      "slug": "grateful-greens-gel",
+      "price": 35,
+      "priceCents": 3500,
+      "checkoutReady": false,
+      "inStock": true,
+      "stock": 4,
+      "currentStock": null,
+      "variationId": "tog-13-grateful-",
+      "variations": [
+        {
+          "id": "tog-0-grateful-",
+          "name": "16oz jar",
+          "price": 35,
+          "priceCents": 3500
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Sea Moss"
+        },
+        {
+          "name": "Holy Basil"
+        },
+        {
+          "name": "Spirulina"
+        },
+        {
+          "name": "Chlorophyll"
+        },
+        {
+          "name": "Chlorella"
+        },
+        {
+          "name": "Local Honey"
+        },
+        {
+          "name": "Alkaline Water"
+        }
+      ],
+      "description": "A green sea moss gel with spirulina, chlorophyll, chlorella, holy basil, and honey."
+    },
+    {
+      "id": "healing-harmony-gel",
+      "name": "Soursop Spice Sea Moss Gel",
+      "slug": "healing-harmony-gel",
+      "price": 35,
+      "priceCents": 3500,
+      "checkoutReady": false,
+      "inStock": true,
+      "stock": 20,
+      "currentStock": null,
+      "variationId": "tog-14-healing-h",
+      "variations": [
+        {
+          "id": "tog-0-healing-h",
+          "name": "16oz jar",
+          "price": 35,
+          "priceCents": 3500
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Sea Moss"
+        },
+        {
+          "name": "Soursop"
+        },
+        {
+          "name": "Cinnamon"
+        },
+        {
+          "name": "Star Anise"
+        },
+        {
+          "name": "Alkaline Water"
+        }
+      ],
+      "description": "A warm-spiced soursop sea moss gel with cinnamon and star anise."
+    },
+    {
+      "id": "elderberry-apple-gel",
+      "name": "Elderberry Apple Gel",
+      "slug": "elderberry-apple-gel",
+      "price": 36,
+      "priceCents": 3600,
+      "checkoutReady": false,
+      "inStock": true,
+      "stock": 20,
+      "currentStock": null,
+      "variationId": "tog-15-elderberr",
+      "variations": [
+        {
+          "id": "tog-0-elderberr",
+          "name": "16oz jar",
+          "price": 36,
+          "priceCents": 3600
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Sea Moss"
+        },
+        {
+          "name": "Elderberry"
+        },
+        {
+          "name": "Apple"
+        },
+        {
+          "name": "Ginger"
+        },
+        {
+          "name": "Lemon"
+        },
+        {
+          "name": "Alkaline Water"
+        }
+      ],
+      "description": "Elderberry, apple, ginger, lemon, and sea moss in a fruit-forward gel."
+    },
+    {
+      "id": "floral-tide-gel",
+      "name": "Floral Tide Gel",
+      "slug": "floral-tide-gel",
+      "price": 36,
+      "priceCents": 3600,
+      "checkoutReady": false,
+      "inStock": true,
+      "stock": 4,
+      "currentStock": null,
+      "variationId": "tog-17-floral-ti",
+      "variations": [
+        {
+          "id": "tog-0-floral-ti",
+          "name": "2oz sample",
+          "price": 11,
+          "priceCents": 1100
+        },
+        {
+          "id": "tog-1-floral-ti",
+          "name": "16oz jar",
+          "price": 36,
+          "priceCents": 3600
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Sea Moss"
+        },
+        {
+          "name": "Hibiscus"
+        },
+        {
+          "name": "Cranberry"
+        },
+        {
+          "name": "Pineapple"
+        },
+        {
+          "name": "Orange"
+        },
+        {
+          "name": "Turmeric"
+        },
+        {
+          "name": "Ginger"
+        },
+        {
+          "name": "Lemon"
+        },
+        {
+          "name": "Agave"
+        },
+        {
+          "name": "Bee Pollen"
+        },
+        {
+          "name": "Alkaline Water"
+        }
+      ],
+      "description": "A hibiscus-cranberry sea moss gel with citrus, ginger, turmeric, and bee pollen."
+    },
+    {
+      "id": "grateful-defense",
+      "name": "Elderberry Ginger Shot",
+      "slug": "grateful-defense",
+      "price": 5,
+      "priceCents": 500,
+      "checkoutReady": false,
+      "inStock": true,
+      "stock": 20,
+      "currentStock": null,
+      "variationId": "tog-19-grateful-",
+      "variations": [
+        {
+          "id": "tog-0-grateful-",
+          "name": "2oz shot",
+          "price": 5,
+          "priceCents": 500
+        }
+      ],
+      "ingredients": [
+        {
+          "name": "Elderberry"
+        },
+        {
+          "name": "Cranberry"
+        },
+        {
+          "name": "Apple"
+        },
+        {
+          "name": "Ginger"
+        },
+        {
+          "name": "Lemon"
+        },
+        {
+          "name": "Echinacea"
+        },
+        {
+          "name": "Sea Moss"
+        },
+        {
+          "name": "Alkaline Water"
+        }
+      ],
+      "description": "An elderberry, echinacea, ginger, lemon, cranberry, apple, and sea moss shot."
+    }
+  ],
+  "markets": null
+}

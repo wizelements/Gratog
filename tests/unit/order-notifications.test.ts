@@ -1,4 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+beforeEach(() => vi.stubEnv('STAFF_EMAIL', 'staff-unit@example.invalid'));
+afterEach(() => vi.unstubAllEnvs());
 
 // ============================================================================
 // Mock setup — must be before imports
@@ -145,6 +148,45 @@ describe('Phase 1: Staff Notification Hotfix', () => {
     const result = await notifyStaffPickupOrder(order);
     expect(result).toBeDefined();
     expect(result.success).toBe(true);
+  });
+
+  it('renders a meaningful pickup alert when fulfillment is a nested canonical pickup', async () => {
+    const order = makeOrder({
+      fulfillmentType: undefined,
+      fulfillment: { type: 'pickup', pickup: { locationName: 'Verified market pickup', window: '10:00 AM' } },
+    });
+    expect((await notifyStaffPickupOrder(order)).success).toBe(true);
+    const payload = vi.mocked(sendEmail).mock.calls.at(-1)?.[0] as any;
+    expect(payload.subject).toContain('NEW PICKUP ORDER');
+    expect(payload.subject).toContain('Verified market pickup');
+    expect(payload.html).toContain('NEW PICKUP ORDER');
+    expect(payload.html).not.toContain('undefined');
+    expect(payload.text).not.toContain('NEW DELIVERY ORDER');
+  });
+
+  it('rejects unsupported fulfillment without notifying staff', async () => {
+    const result = await notifyStaffPickupOrder(makeOrder({ fulfillmentType: 'mystery' }));
+    expect(result).toEqual({ success: false, error: 'UNKNOWN_FULFILLMENT_TYPE' });
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('rejects delivery with no address instead of inventing delivery instructions', async () => {
+    const result = await notifyStaffPickupOrder(makeOrder({ fulfillmentType: 'shipping' }));
+    expect(result).toEqual({ success: false, error: 'MISSING_DELIVERY_ADDRESS' });
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('renders a real shipping address without defaulting to a made-up fee', async () => {
+    const result = await notifyStaffPickupOrder(makeOrder({
+      fulfillmentType: 'shipping',
+      deliveryAddress: { street: '123 Main', city: 'Atlanta', state: 'GA', zip: '30301' },
+    }));
+    expect(result.success).toBe(true);
+    const payload = vi.mocked(sendEmail).mock.calls.at(-1)?.[0] as any;
+    expect(payload.subject).toContain('NEW DELIVERY ORDER');
+    expect(payload.html).not.toContain('undefined');
+    expect(payload.html).toContain('Confirm fee in Square/admin dashboard');
+    expect(payload.text).toContain('NEW DELIVERY ORDER');
   });
 
   it('should handle delivery fulfillment type', async () => {

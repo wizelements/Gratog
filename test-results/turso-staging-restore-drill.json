@@ -1,0 +1,30 @@
+{
+  "kind": "ISOLATED_TURSO_STAGING_RESTORE_TEST",
+  "source": "gratog-migration-cert-20261017",
+  "clone": "gratog-rollback-drill-20261017-01",
+  "executedAt": "2026-10-18T01:30:56.654743+00:00",
+  "sourceReadOnly": true,
+  "productionDatabaseAccess": false,
+  "mongoPitrCertified": false,
+  "mongoReverseDeltaCertified": false,
+  "sourceBefore": {
+    "orders": 864,
+    "products": 40,
+    "payment_rows": 3,
+    "order_total_cents": 2303702,
+    "inventory_units": 93,
+    "source_canary": 0
+  },
+  "cloneSnapshot": {
+    "orders": 864,
+    "products": 40,
+    "payment_rows": 3,
+    "order_total_cents": 2303702,
+    "inventory_units": 93,
+    "source_canary": 0
+  },
+  "cloneCanaryWritten": true,
+  "sourceCanaryAbsent": true,
+  "cloneDestroyed": true,
+  "passed": true
+}
