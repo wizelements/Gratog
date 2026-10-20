@@ -269,6 +269,15 @@ function CheckoutContent() {
                       }}
                       collapsible={false}
                     />
+                    {cart.length === 0 && (
+                      <div className="mt-5 rounded-lg border border-gray-200 bg-gray-50 p-5 text-center" role="status">
+                        <p className="font-semibold text-gray-900">Your cart is empty</p>
+                        <p className="mt-1 text-sm text-gray-600">Add products to your cart before continuing to checkout.</p>
+                        <Link href="/catalog" className="mt-3 inline-block font-medium text-emerald-800 underline underline-offset-4">
+                          Browse Products
+                        </Link>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
