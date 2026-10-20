@@ -237,7 +237,12 @@ for (const excluded of ['/admin', '/api', '/cart', '/checkout', '/order', '/acco
 }
 assertContains(robots, "disallow: '/'", 'app/robots.ts staging noindex');
 assertContains(robots, 'VERCEL_ENV', 'app/robots.ts indexability gating');
-assertContains(sitemap, 'toProductEntries', 'app/sitemap.ts product payload normalization');
+assertContains(sitemap, 'collectIndexableStorefrontProducts', 'app/sitemap.ts storefront normalization');
+assertContains(sitemap, '/api/products', 'app/sitemap.ts canonical customer storefront source');
+const seoFilter = read('lib/seo-product-sitemap.mjs');
+for (const guard of ['SAFE_REFERENCE','squareIsArchived','isArchived','available === false','seoTitle']) {
+  assertContains(seoFilter, guard, 'lib/seo-product-sitemap.mjs safe product indexability');
+}
 assertContains(sitemap, 'return []', 'app/sitemap.ts staging sitemap suppression');
 assertContains(sitemap, 'VERCEL_ENV', 'app/sitemap.ts indexability gating');
 
