@@ -20,10 +20,10 @@ describe('regular Georgia customers can order without selecting a market', () =>
     expect(catalog).toContain('Regular online orders can go through the cart above.');
   });
 
-  it('defaults new online checkouts to shipping without changing the separate pickup-only journey', () => {
+  it('defaults new online checkouts to local delivery while keeping unavailable shipping opt-in', () => {
     const store = read('stores/checkout.ts');
     const checkout = read('components/checkout/CheckoutRoot.tsx');
-    expect(store).toMatch(/const initialFulfillment: FulfillmentData = \{\s*\/\/[^\n]*\n\s*\/\/[^\n]*\n\s*type: 'shipping'/);
+    expect(store).toMatch(/const initialFulfillment: FulfillmentData = \{\s*\/\/[^\n]*\n\s*\/\/[^\n]*\n\s*type: 'delivery'/);
     expect(checkout).toContain('item.isPreorder || item.marketExclusive');
     expect(checkout).toContain("type: 'pickup'");
     expect(checkout).toContain('<ShippingForm');

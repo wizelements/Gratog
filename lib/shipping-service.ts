@@ -1,7 +1,7 @@
 /**
  * Shipping Service
  * Handles shipping rate calculations and label creation
- * Supports ShipEngine/EasyPost integration with fallback to flat rates
+ * Supports ShipEngine/EasyPost integration with NO synthetic quotes, labels or tracking
  */
 
 import { createLogger } from '@/lib/logger';
@@ -71,12 +71,7 @@ const ORIGIN_ADDRESS: ShippingAddress = {
 };
 
 // Default package dimensions for sea moss products
-const DEFAULT_PACKAGE: PackageDimensions = {
-  weight: 16, // 1 lb
-  length: 8,
-  width: 6,
-  height: 4
-};
+const DEFAULT_PACKAGE: PackageDimensions = { weight: 0 };
 
 /**
  * Check if shipping API is configured
@@ -92,6 +87,14 @@ export async function getShippingRates(
   toAddress: ShippingAddress,
   packageDimensions: PackageDimensions = DEFAULT_PACKAGE
 ): Promise<ShippingRate[]> {
+  if (process.env.GA_SHIPPING_OPERATIONAL_APPROVED !== 'true'
+      || process.env.SHIPPING_ORIGIN_VERIFIED !== 'true') {
+    throw new Error('Georgia shipping is not certified for customer orders.');
+  }
+  if (![packageDimensions.weight, packageDimensions.length, packageDimensions.width, packageDimensions.height]
+    .every(n => Number.isFinite(n) && Number(n) > 0)) {
+    throw new Error('A verified packed parcel is required.');
+  }
   const eligibility = validateGeorgiaDestination(toAddress);
   if (!eligibility.valid) throw new Error(eligibility.message);
   if (!ORIGIN_ADDRESS.street || !ORIGIN_ADDRESS.city || !ORIGIN_ADDRESS.zip) {
@@ -122,6 +125,7 @@ async function getShipEngineRates(
   try {
     const response = await fetch('https://api.shipengine.com/v1/rates', {
       method: 'POST',
+      signal: AbortSignal.timeout(8000),
       headers: {
         'API-Key': process.env.SHIPENGINE_API_KEY!,
         'Content-Type': 'application/json'
@@ -196,6 +200,7 @@ async function getEasyPostRates(
   try {
     const response = await fetch('https://api.easypost.com/v2/shipments', {
       method: 'POST',
+      signal: AbortSignal.timeout(8000),
       headers: {
         'Authorization': `Bearer ${process.env.EASYPOST_API_KEY}`,
         'Content-Type': 'application/json'
@@ -287,6 +292,7 @@ export async function validateAddress(address: ShippingAddress): Promise<Address
     try {
       const response = await fetch('https://api.shipengine.com/v1/addresses/validate', {
         method: 'POST',
+        signal: AbortSignal.timeout(8000),
         headers: {
           'API-Key': process.env.SHIPENGINE_API_KEY,
           'Content-Type': 'application/json'
@@ -346,6 +352,7 @@ export async function createShipment(
     try {
       const response = await fetch(`https://api.shipengine.com/v1/labels/rates/${rateId}`, {
         method: 'POST',
+        signal: AbortSignal.timeout(8000),
         headers: {
           'API-Key': process.env.SHIPENGINE_API_KEY,
           'Content-Type': 'application/json'
@@ -371,13 +378,8 @@ export async function createShipment(
     }
   }
 
-  // Fallback mock tracking
-  return {
-    trackingNumber: `TOG${Date.now()}`,
-    carrier: 'USPS',
-    service: 'STANDARD',
-    estimatedDelivery: calculateDeliveryDate(7)
-  };
+  // Never create a fictional paid shipment.
+  throw new Error('Carrier label purchase failed; the order remains unshipped.');
 }
 
 /**
@@ -405,57 +407,34 @@ export async function getTrackingInfo(trackingNumber: string): Promise<any> {
     }
   }
 
-  // Return mock tracking for demo
-  return {
-    trackingNumber,
-    status: 'in_transit',
-    statusDescription: 'Package is on its way',
-    events: [
-      {
-        occurredAt: new Date().toISOString(),
-        description: 'Package shipped'
-      }
-    ]
-  };
+  throw new Error('Carrier tracking has not been verified.');
 }
 
 /**
- * Calculate estimated delivery date
+ * Each supported shipping SKU must have an approved physical packed parcel.
+ * Multi-product and multi-quantity shipping need a validated pack-plan first.
  */
-function calculateDeliveryDate(days: number): string {
-  const date = new Date();
-  let businessDays = 0;
-  
-  while (businessDays < days) {
-    date.setDate(date.getDate() + 1);
-    const dayOfWeek = date.getDay();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-      businessDays++;
-    }
+export function calculatePackageDimensions(items: {
+  quantity: number;
+  shippingPackageWeightOz?: number;
+  shippingPackageLengthIn?: number;
+  shippingPackageWidthIn?: number;
+  shippingPackageHeightIn?: number;
+}[]): PackageDimensions {
+  if (items.length !== 1 || items[0]?.quantity !== 1) {
+    throw new Error('Approved package dimensions for multi-item orders are unavailable.');
   }
-  
-  return date.toISOString().split('T')[0];
-}
-
-/**
- * Calculate package dimensions from cart items
- */
-export function calculatePackageDimensions(items: { weight?: number; quantity: number }[]): PackageDimensions {
-  let totalWeight = 0;
-  
-  for (const item of items) {
-    totalWeight += (item.weight || 16) * item.quantity; // Conservative 16oz per item unless approved weight exists
-  }
-
-  // Add packaging weight
-  totalWeight += 4;
-
-  return {
-    weight: totalWeight,
-    length: 10,
-    width: 8,
-    height: Math.min(6 + Math.floor(items.length / 2), 12)
+  const item = items[0];
+  const dims = {
+    weight: item.shippingPackageWeightOz,
+    length: item.shippingPackageLengthIn,
+    width: item.shippingPackageWidthIn,
+    height: item.shippingPackageHeightIn,
   };
+  if (!Object.values(dims).every(v => typeof v === 'number' && Number.isFinite(v) && v > 0)) {
+    throw new Error('Verified physical package weight and dimensions are required.');
+  }
+  return dims as PackageDimensions;
 }
 
 const shippingService = {

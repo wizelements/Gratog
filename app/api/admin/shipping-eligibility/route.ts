@@ -16,7 +16,9 @@ export async function GET(request: NextRequest) {
     const { db } = await connectToDatabase();
     const rows = await db.collection('unified_products').find({}).project({
       _id: 0, id: 1, name: 1, shippingEligible: 1, shippingTemperatureClass: 1,
-      shippingApprovalNote: 1, shippingApprovedAt: 1,
+      shippingApprovalNote: 1, shippingApprovedAt: 1, shippingApproval: 1,
+      shippingPackageWeightOz: 1, shippingPackageLengthIn: 1,
+      shippingPackageWidthIn: 1, shippingPackageHeightIn: 1,
     }).sort({ name: 1 }).limit(300).toArray();
     return NextResponse.json({ success: true, products: rows }, { headers: { 'Cache-Control': 'no-store' } });
   } catch {
@@ -31,6 +33,12 @@ const input = z.object({
   packagingConfirmed: z.boolean().optional(),
   foodSafetyConfirmed: z.boolean().optional(),
   notes: z.string().max(600).default(''),
+  regulatoryAuthority: z.string().trim().min(3).max(160).optional(),
+  evidenceReference: z.string().trim().min(5).max(600).optional(),
+  packageWeightOz: z.number().positive().max(1120).optional(),
+  packageLengthIn: z.number().positive().max(72).optional(),
+  packageWidthIn: z.number().positive().max(72).optional(),
+  packageHeightIn: z.number().positive().max(72).optional(),
 });
 
 export async function PUT(request: NextRequest) {
@@ -39,8 +47,13 @@ export async function PUT(request: NextRequest) {
   try {
     const parsed = input.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ success: false, error: 'Invalid approval information' }, { status: 400 });
-    const { productId, approved, complianceConfirmed, packagingConfirmed, foodSafetyConfirmed, notes } = parsed.data;
-    if (approved && (!complianceConfirmed || !packagingConfirmed || !foodSafetyConfirmed || notes.trim().length < 10)) {
+    const { productId, approved, complianceConfirmed, packagingConfirmed, foodSafetyConfirmed, notes,
+      regulatoryAuthority, evidenceReference, packageWeightOz,
+      packageLengthIn, packageWidthIn, packageHeightIn } = parsed.data;
+    if (approved && (!complianceConfirmed || !packagingConfirmed || !foodSafetyConfirmed
+      || notes.trim().length < 10 || !regulatoryAuthority || !evidenceReference
+      || ![packageWeightOz, packageLengthIn, packageWidthIn, packageHeightIn]
+        .every(v => typeof v === 'number' && Number.isFinite(v) && v > 0))) {
       return NextResponse.json({
         success: false,
         error: 'To approve parcel shipping, confirm regulatory requirements, validated packaging, food safety, and provide the verification reference.',
@@ -51,6 +64,15 @@ export async function PUT(request: NextRequest) {
       shippingEligible: approved,
       shippingTemperatureClass: approved ? 'ambient' : null,
       shippingApprovalNote: approved ? notes.trim() : '',
+      shippingApproval: approved
+        ? { status: 'approved', regulatoryAuthority, evidenceReference,
+            approvedBy: owner.email, effectiveAt: new Date().toISOString(), revokedAt: null }
+        : { status: 'revoked', revokedAt: new Date().toISOString(),
+            approvedBy: owner.email, evidenceReference: notes.trim() },
+      shippingPackageWeightOz: approved ? packageWeightOz : null,
+      shippingPackageLengthIn: approved ? packageLengthIn : null,
+      shippingPackageWidthIn: approved ? packageWidthIn : null,
+      shippingPackageHeightIn: approved ? packageHeightIn : null,
       shippingApprovedBy: owner.email,
       shippingApprovedAt: new Date(),
       updatedAt: new Date(),

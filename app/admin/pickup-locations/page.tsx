@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { adminFetch } from '@/lib/admin-fetch';
 
 type Window = { startsAt: string; endsAt: string; cutoffAt: string; capacity: number };
-type Location = { id?: string; name: string; street: string; city: string; state: 'GA'; zip: string; instructions: string; isActive: boolean; windows: Window[] };
-const empty: Location = { name: '', street: '', city: '', state: 'GA', zip: '', instructions: '', isActive: false, windows: [] };
+type Location = { id?: string; name: string; street: string; city: string; state: 'GA'; zip: string; instructions: string; isActive: boolean; staffingConfirmed: boolean; addressVerified: boolean; windows: Window[] };
+const empty: Location = { name: '', street: '', city: '', state: 'GA', zip: '', instructions: '', isActive: false, staffingConfirmed: false, addressVerified: false, windows: [] };
 const toLocal = (iso: string) => {
   if (!iso) return '';
   const date = new Date(iso);
@@ -52,7 +52,7 @@ export default function PickupLocationSettings() {
       <div>
         <Link className="text-sm text-emerald-700 underline" href="/admin">← Admin dashboard</Link>
         <h1 className="mt-2 text-3xl font-bold">Non-market pickup</h1>
-        <p className="mt-2 text-gray-600">Manage verified pickup addresses and exact appointments separately from farmers markets. New locations are hidden by default. Dates and cutoffs below use your device time zone; verify they correspond to Georgia Eastern Time.</p>
+        <p className="mt-2 text-gray-600">Manage verified pickup addresses and exact appointments separately from farmers markets. New locations are hidden by default. Enter dates with care: appointments are fulfilled in America/New_York. This editor currently converts from your device timezone; confirm the saved times before publication.</p>
       </div>
       <section aria-label="Configured pickup locations" className="space-y-2">
         <h2 className="text-xl font-semibold">Existing locations</h2>
@@ -93,6 +93,16 @@ export default function PickupLocationSettings() {
           ))}
           <button type="button" onClick={()=>patch({windows:[...form.windows, { startsAt: new Date(Date.now()+3*86400000).toISOString(), endsAt: new Date(Date.now()+3*86400000+3600000).toISOString(), cutoffAt:new Date(Date.now()+2*86400000).toISOString(),capacity:5 }]})} className="rounded-md border p-2 text-sm font-semibold">+ Add confirmed window</button>
         </div>
+        <label className="flex items-center gap-2 text-sm font-semibold">
+          <input type="checkbox" checked={form.addressVerified || false}
+            onChange={e=>patch({addressVerified:e.target.checked})} />
+          I have authorization to publish this exact pickup address
+        </label>
+        <label className="flex items-center gap-2 text-sm font-semibold">
+          <input type="checkbox" checked={form.staffingConfirmed || false}
+            onChange={e=>patch({staffingConfirmed:e.target.checked})} />
+          Staff availability and operating capacity are confirmed for these windows
+        </label>
         <label className="flex items-center gap-2 text-sm font-semibold">
           <input type="checkbox" checked={form.isActive} onChange={e=>patch({isActive:e.target.checked})} />
           Publish this location and its available appointments

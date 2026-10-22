@@ -2,7 +2,8 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { createOrderAtomic } from '@/lib/transactions';
-import { randomUUID } from 'crypto';
+import { connectToDatabase } from '@/lib/db-optimized';
+import { createHash, randomUUID } from 'crypto';
 import {
   getIdempotencyKeyFromHeaders,
   withIdempotency,
@@ -148,12 +149,27 @@ export async function POST(request) {
       throw err;
     }
 
-    const orderId = randomUUID();
+    // Public pickup windows are previews only. Atomic capacity admission is
+    // performed by createOrderAtomic in the same transaction as order insertion.
+    // Enforce retry identity at the database's unique primary key, not only
+    // through a best-effort Redis or in-memory response cache.
+    const digest = idempotencyKey
+      ? createHash('sha256').update('tog-checkout-v1:' + idempotencyKey).digest('hex')
+      : null;
+    const orderId = digest
+      ? [digest.slice(0,8),digest.slice(8,12),'4'+digest.slice(13,16),
+          'a'+digest.slice(17,20),digest.slice(20,32)].join('-')
+      : randomUUID();
+    const checkoutRequestHash = idempotencyKey
+      ? createHash('sha256').update(JSON.stringify(orderData)).digest('hex')
+      : null;
     const timestamp = new Date();
     const storedFulfillment = buildStoredFulfillment(orderData, fulfillmentQuote, appointmentConfirmation);
 
     // Build order object — pricing comes from the server, not the client.
     const enhancedOrder = {
+      // Mongo _id is intrinsically unique even when idempotency-cache calls race.
+      ...(idempotencyKey ? { _id: orderId, checkoutRequestHash } : {}),
       id: orderId,
       customerId: orderData.customer?.email || null,
       customerEmail: orderData.customer?.email,
@@ -242,7 +258,23 @@ export async function POST(request) {
     // Wrap order creation in idempotency check
     const createOrder = async () => {
       try {
-        const order = await createOrderAtomic(enhancedOrder);
+        let order;
+        try {
+          order = await createOrderAtomic(enhancedOrder);
+        } catch (writeError) {
+          if (idempotencyKey && writeError?.code === 11000) {
+            const { db } = await connectToDatabase();
+            const existing = await db.collection('orders').findOne({ _id: orderId });
+            if (existing && existing.checkoutRequestHash === checkoutRequestHash) {
+              order = existing; // Same customer request, already committed.
+            } else {
+              throw new CartPricingError('IDEMPOTENCY_CONFLICT',
+                'Checkout details changed. Restart this order with a new attempt.',409);
+            }
+          } else {
+            throw writeError;
+          }
+        }
 
         // INTENTIONAL NO-OP: reward points used to be fired here in
         // parallel with /api/payments, which double-awarded every order.
@@ -283,6 +315,7 @@ export async function POST(request) {
           },
         };
       } catch (dbError) {
+        if (dbError instanceof CartPricingError) throw dbError;
         console.error('Atomic order creation failed:', dbError);
 
         if (dbError.code === 'ECONNREFUSED' || dbError.message?.includes('timeout')) {
@@ -303,6 +336,18 @@ export async function POST(request) {
     return NextResponse.json(result);
   } catch (error) {
     console.error('Create order error:', error);
+    if (error instanceof CartPricingError) {
+      return NextResponse.json({
+        success: false, code: error.code, error: error.message
+      }, { status: error.status });
+    }
+    if (/pickup appointment|pickup location|pickup cutoff/i.test(String(error?.message || ''))) {
+      return NextResponse.json({
+        success: false,
+        code: 'PICKUP_APPOINTMENT_UNAVAILABLE',
+        error: 'That pickup time is no longer available. Please choose another appointment.',
+      }, { status: 409 });
+    }
     return NextResponse.json(
       {
         success: false,

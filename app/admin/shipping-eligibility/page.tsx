@@ -7,6 +7,9 @@ export default function ShippingEligibility() {
   const [products, setProducts] = useState<Product[]>([]);
   const [selected, setSelected] = useState<Product | null>(null);
   const [notes, setNotes] = useState('');
+  const [authority, setAuthority] = useState('');
+  const [evidence, setEvidence] = useState('');
+  const [packageDetails, setPackageDetails] = useState({ weight: '', length: '', width: '', height: '' });
   const [regulatory, setRegulatory] = useState(false);
   const [packaging, setPackaging] = useState(false);
   const [foodSafety, setFoodSafety] = useState(false);
@@ -28,6 +31,9 @@ export default function ShippingEligibility() {
         method:'PUT', body: JSON.stringify({
           productId:selected.id, approved, notes,
           complianceConfirmed:regulatory, packagingConfirmed:packaging, foodSafetyConfirmed:foodSafety,
+          regulatoryAuthority:authority, evidenceReference:evidence,
+          packageWeightOz:approved?Number(packageDetails.weight):undefined, packageLengthIn:approved?Number(packageDetails.length):undefined,
+          packageWidthIn:approved?Number(packageDetails.width):undefined, packageHeightIn:approved?Number(packageDetails.height):undefined,
         }),
       });
       if (!response.success) throw new Error(response.error || 'Unable to update');
@@ -51,8 +57,26 @@ export default function ShippingEligibility() {
         <label key={id} className="flex gap-2 text-sm"><input type="checkbox" checked={checked} onChange={e=>setter(e.target.checked)}/>{label}</label>)}
       <label className="block text-sm">Approval evidence / verification reference
         <textarea className="mt-1 w-full rounded-md border p-3" value={notes} onChange={e=>setNotes(e.target.value)} maxLength={600} rows={3} placeholder="What evidence supports safe, lawful ambient shipping?"/></label>
+      <label className="block text-sm">Regulatory authority / qualified food-safety reviewer
+        <input className="mt-1 w-full rounded-md border p-3" value={authority}
+          onChange={e=>setAuthority(e.target.value)} placeholder="Named authority and authorization basis" />
+      </label>
+      <label className="block text-sm">Documented approval and packaging evidence reference
+        <input className="mt-1 w-full rounded-md border p-3" value={evidence}
+          onChange={e=>setEvidence(e.target.value)} placeholder="Controlled record, document or evidence URL" />
+      </label>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {(['weight','length','width','height'] as const).map(field=>
+          <label key={field} className="text-sm capitalize">{field} ({field==='weight'?'oz':'in'})
+            <input type="number" min=".01" step=".01" className="mt-1 w-full rounded-md border p-3"
+              value={packageDetails[field]}
+              onChange={e=>setPackageDetails(prev=>({...prev,[field]:e.target.value}))} />
+          </label>)}
+      </div>
       <div className="flex flex-wrap gap-3">
-        <button disabled={busy || !regulatory || !packaging || !foodSafety || notes.trim().length<10} onClick={()=>void save(true)} className="rounded-md bg-emerald-700 p-3 font-semibold text-white disabled:opacity-40">Approve Georgia shipping</button>
+        <button disabled={busy || !regulatory || !packaging || !foodSafety || notes.trim().length<10
+          || !authority.trim() || !evidence.trim()
+          || Object.values(packageDetails).some(value=>!(Number(value)>0))} onClick={()=>void save(true)} className="rounded-md bg-emerald-700 p-3 font-semibold text-white disabled:opacity-40">Approve Georgia shipping</button>
         <button disabled={busy} onClick={()=>void save(false)} className="rounded-md border border-red-300 p-3 text-red-700">Disable shipping for product</button>
         <button onClick={()=>setSelected(null)} className="rounded-md border p-3">Cancel</button>
       </div>
