@@ -3,17 +3,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { adminFetch } from '@/lib/admin-fetch';
+import { easternDisplayInput, easternInputToUtc } from '@/lib/pickup-eastern-time';
 
 type Window = { startsAt: string; endsAt: string; cutoffAt: string; capacity: number };
 type Location = { id?: string; name: string; street: string; city: string; state: 'GA'; zip: string; instructions: string; isActive: boolean; staffingConfirmed: boolean; addressVerified: boolean; windows: Window[] };
 const empty: Location = { name: '', street: '', city: '', state: 'GA', zip: '', instructions: '', isActive: false, staffingConfirmed: false, addressVerified: false, windows: [] };
-const toLocal = (iso: string) => {
-  if (!iso) return '';
-  const date = new Date(iso);
-  const offset = date.getTimezoneOffset();
-  return new Date(date.getTime() - offset * 60000).toISOString().slice(0, 16);
-};
-const toIso = (value: string) => value ? new Date(value).toISOString() : '';
+const toLocal = easternDisplayInput;
+const toIso = easternInputToUtc;
 
 export default function PickupLocationSettings() {
   const [locations, setLocations] = useState<Location[]>([]);
@@ -32,6 +28,10 @@ export default function PickupLocationSettings() {
   const patch = (values: Partial<Location>) => setForm(previous => ({ ...previous, ...values }));
   const patchWindow = (index: number, values: Partial<Window>) =>
     setForm(previous => ({ ...previous, windows: previous.windows.map((window, i) => i === index ? { ...window, ...values } : window) }));
+  const updateEasternTime = (index: number, key: 'startsAt'|'endsAt'|'cutoffAt', value: string) => {
+    try { patchWindow(index,{[key]:toIso(value)}); setError(''); }
+    catch (error) { setError(error instanceof Error ? error.message : 'Invalid Eastern time'); }
+  };
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault(); setBusy(true); setError(''); setMessage('');
@@ -52,7 +52,7 @@ export default function PickupLocationSettings() {
       <div>
         <Link className="text-sm text-emerald-700 underline" href="/admin">← Admin dashboard</Link>
         <h1 className="mt-2 text-3xl font-bold">Non-market pickup</h1>
-        <p className="mt-2 text-gray-600">Manage verified pickup addresses and exact appointments separately from farmers markets. New locations are hidden by default. Enter dates with care: appointments are fulfilled in America/New_York. This editor currently converts from your device timezone; confirm the saved times before publication.</p>
+        <p className="mt-2 text-gray-600">Manage verified pickup addresses and exact appointments separately from farmers markets. New locations are hidden by default. All appointment times are Georgia Eastern Time, regardless of your device location. Missing and repeated daylight-saving times are rejected.</p>
       </div>
       <section aria-label="Configured pickup locations" className="space-y-2">
         <h2 className="text-xl font-semibold">Existing locations</h2>
@@ -82,7 +82,7 @@ export default function PickupLocationSettings() {
             <div key={index} className="grid gap-2 rounded-lg bg-stone-50 p-3 sm:grid-cols-2">
               {([['startsAt','Starts'],['endsAt','Ends'],['cutoffAt','Order cutoff']] as const).map(([key,label]) => (
                 <label key={key} className="text-sm">{label}
-                  <input required type="datetime-local" value={toLocal(window[key])} onChange={e=>patchWindow(index,{[key]:toIso(e.target.value)})} className="mt-1 block w-full rounded-md border p-2"/>
+                  <input required type="datetime-local" value={toLocal(window[key])} onChange={e=>updateEasternTime(index,key,e.target.value)} className="mt-1 block w-full rounded-md border p-2"/>
                 </label>
               ))}
               <label className="text-sm">Maximum appointments

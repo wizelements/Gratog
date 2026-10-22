@@ -55,3 +55,10 @@ Stage 1: staffed address + transactional last-slot proof + Sandbox payment and r
 
 ## Business instrumentation planned
 Order method conversion, blocked-method abandonment, actual carrier+packaging delta, delivery route margin, slot utilization, reservation failure and refund rate, repeat purchase, operational fulfillment margin.
+
+## Oct 22 follow-up verification and reliability changes
+- Protected Preview deployment dpl_7kewXUssU96J5K7zWzMmBLa62uKh for commit 752399d8b28dffcb11d51f979e6ebe524d7311f1 reached READY.
+- Read-only Playwright Chromium tests: 1440x900 desktop and 390x844 mobile rendered /checkout HTTP 200 without page errors or horizontal overflow. /api/pickup-locations returned 0 published locations. Out-of-GA rate request returned HTTP 422 GEORGIA_ONLY. Unauthenticated /api/admin/pickup-locations returned HTTP 401. No payment or order was created.
+- Real Vercel production logs show abandoned-cart promotional email error from invalid header characters. Added controlled List-Unsubscribe URL validation and canonical HTTPS fallback to the known approved domain, retaining unsubscribe semantics. Test on deployed SHA and actual delivery remains necessary.
+- Admin appointment input now converts from and displays America/New_York regardless of device zone, and rejects DST repeated/missing wall times rather than guessing.
+- Regression: 34 targeted unit tests PASS, TypeScript PASS on local hardening branch after follow-up changes. This is not Square/Turso certification.
