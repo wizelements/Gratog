@@ -123,7 +123,9 @@ async function resolvePreorderCartItems(submittedItems: any[]) {
         : listedPrice;
     const approved = approvedUnitPriceCents(product);
     const sampleGel = !isApprovedBlueLotus(product) &&
-      /gel$/i.test(String(product.name || '').trim()) &&
+      (/gel$/i.test(String(product.name || '').trim()) ||
+       /(?:^|[- ])floral[- ]tide(?:$|[- ])/i.test(String(product.slug || product.name || '')) ||
+       /\bgels?\b/i.test(String(product.category || ''))) &&
       /^2\s*oz(?:\b|$)/i.test(String(variation?.name || '').trim());
     if (approved !== null && variation?.name && !sampleGel &&
         !/^(16\s*oz|regular|standard|market item)(?:\b|$)/i.test(String(variation.name).trim())) {
