@@ -6,7 +6,7 @@ import {
 } from '@/lib/label-commerce';
 
 describe('label commerce', () => {
-  it('prefers live Square price and variation data over curated fallback price', () => {
+  it('preserves the approved price and live Square variation identity', () => {
     const result = resolveLabelProductFromCatalog('strawberry-bliss', [
       {
         id: 'SQUAREITEM123456789012345',
@@ -43,7 +43,7 @@ describe('label commerce', () => {
 
     expect(result.payable).toBe(true);
     expect(result.product?.slug).toBe('pineapple-mango-lemonade');
-    expect(result.product?.priceCents).toBe(900);
+    expect(result.product?.priceCents).toBe(1199); // owner-approved; Square's old $9 cannot win
   });
 
   it('allows a priced seasonal curated item even when it is not on the active weekly menu', () => {

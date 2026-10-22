@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { createPaymentLink } from '@/lib/square-api';
 import { normalizeLabelQuantity, resolveLabelProduct } from '@/lib/label-commerce';
+import { approvedUnitPriceCents } from '@/lib/merchant-pricing';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -40,7 +41,9 @@ export async function POST(request: NextRequest) {
     name: product.name,
     quantity: String(quantity),
     note: `${product.size} · QR label purchase`,
-    ...(product.squareVariationId
+    // For owner-approved SKUs, an old Square catalog price must NOT override
+    // the verified amount. Use an explicit-price item until Square matches.
+    ...(product.squareVariationId && approvedUnitPriceCents(product) === null
       ? { catalogObjectId: product.squareVariationId }
       : {
           basePriceMoney: {
@@ -60,7 +63,7 @@ export async function POST(request: NextRequest) {
       product_slug: product.slug,
       ...(market ? { market } : {}),
       label_flow: 'v1',
-      price_source: product.squareVariationId ? 'square_catalog' : product.source || 'curated',
+      price_source: approvedUnitPriceCents(product) !== null ? 'merchant_approved' : product.squareVariationId ? 'square_catalog' : product.source || 'curated',
     },
   });
 

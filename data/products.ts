@@ -1,3 +1,5 @@
+import { applyMerchantPrice } from '@/lib/merchant-pricing';
+
 export type ProductCategory =
   | 'lemonades'
   | 'refreshers'
@@ -115,7 +117,7 @@ export const PRODUCTS: MarketProduct[] = [
     name: 'Supplemint',
     category: 'lemonades',
     weeklyStatus: 'active',
-    price: 11,
+    price: 11.99,
     sizes: ['16oz bottle'],
     ingredients: ['Mint', 'Ginger', 'Sea Moss', 'Agave', 'Alkaline Water'],
     shortDescription: 'Cool mint, ginger, sea moss, agave, and alkaline water in a crisp weekly lemonade.',
@@ -927,7 +929,7 @@ export function toStorefrontProduct(product: MarketProduct, index = 0) {
   const categoryIcon = getCategoryIcon(product.category);
   const stock = product.inventoryStatus === 'sold_out' || product.soldOut ? 0 : product.inventoryStatus === 'limited' ? 4 : 20;
 
-  return {
+  return applyMerchantPrice({
     ...product,
     id: product.id,
     slug: product.slug,
@@ -994,7 +996,7 @@ export function toStorefrontProduct(product: MarketProduct, index = 0) {
     checkoutUnavailableReason: 'This weekly market item is not connected to Square checkout yet. Join the weekly menu email or ask at the market for current availability.',
     squareData: product.squareProductUrl ? { productUrl: product.squareProductUrl } : undefined,
     source: 'curated_weekly_market',
-  };
+  });
 }
 
 export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProduct: T, index = 0) {
@@ -1009,7 +1011,7 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
     getProductByName(liveProduct.name) ||
     (isBlueLotusSquareGel ? getProductBySlugOrId('blue-lotus-gel') : null);
 
-  if (!curated) return liveProduct;
+  if (!curated) return applyMerchantPrice(liveProduct);
 
   const curatedProduct = toStorefrontProduct(curated, index);
   const availableVariations = Array.isArray(liveProduct.variations) && liveProduct.variations.length > 0
@@ -1045,7 +1047,7 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
         resolvedLiveVariationId && !String(resolvedLiveVariationId).startsWith('tog-')
       );
 
-  return {
+  return applyMerchantPrice({
     ...liveProduct,
     curatedProductId: curated.id,
     slug: isBlueLotusSquareGel ? liveProduct.slug : curated.slug || liveProduct.slug,
@@ -1100,7 +1102,7 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
     marketExclusive: liveProduct.marketExclusive ?? curated.marketPickupOnly,
     seoTitle: curated.seoTitle,
     seoDescription: curated.seoDescription,
-  };
+  });
 }
 
 export function getCuratedStorefrontProducts() {

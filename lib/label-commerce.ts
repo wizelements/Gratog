@@ -1,4 +1,5 @@
 import { getProductBySlugOrId, normalizeProductKey, toStorefrontProduct } from '@/data/products';
+import { approvedUnitPriceCents } from '@/lib/merchant-pricing';
 
 export const LABEL_QUANTITY_MIN = 1;
 export const LABEL_QUANTITY_MAX = 6;
@@ -100,7 +101,7 @@ export function resolveLabelProductFromCatalog(value: unknown, liveProducts: any
 
   if (!source) return { payable: false, product: null, reason: 'not_found' };
 
-  const priceCents = getPriceCents(source);
+  const priceCents = approvedUnitPriceCents(source) ?? getPriceCents(source);
   const price = priceCents / 100;
   const slug = normalizeProductKey(source.slug || source.id || source.name || key);
   const weeklyStatus = String(source.weeklyStatus || '').toLowerCase();

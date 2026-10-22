@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSquareClient, getSquareLocationId } from '@/lib/square';
+import { applyMerchantPrice } from '@/lib/merchant-pricing';
 import { 
   MARKETS, 
   getMarketsByDay, 
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest) {
           availability = 'shippable';
         }
         
-        return {
+        return applyMerchantPrice({
           id: item.id,
           name: item.itemData?.name || 'Unnamed Item',
           description: item.itemData?.description || '',
@@ -77,7 +78,7 @@ export async function GET(request: NextRequest) {
               : price,
             sku: v.itemVariationData?.sku,
           })),
-        };
+        });
       });
     } catch (squareError) {
       console.error('Square catalog fetch error:', squareError);
