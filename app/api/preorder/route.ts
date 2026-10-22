@@ -133,7 +133,12 @@ async function resolvePreorderCartItems(submittedItems: any[]) {
         (!variation || !/^16\s*oz(?:\b|$)/i.test(String(variation.name || '').trim()))) {
       throw new Error('Blue Lotus is available only as a 16 oz jar.');
     }
-    const authorizedPrice = approved === null || sampleGel ? price : approved / 100;
+    // A 2oz gel sample may be the first/default variation. In that case
+    // product.price is the 16oz jar price and MUST NOT be used for samples.
+    if (sampleGel && !(Number.isFinite(variantPrice) && variantPrice > 0)) {
+      throw new Error(`${product.name}: the sample size has no verified price.`);
+    }
+    const authorizedPrice = sampleGel ? variantPrice : approved === null ? price : approved / 100;
     const priceCents = Math.round(authorizedPrice * 100);
     const quantity = Math.max(1, Math.min(99, Number(item.quantity) || 1));
 
