@@ -101,7 +101,14 @@ export function resolveLabelProductFromCatalog(value: unknown, liveProducts: any
 
   if (!source) return { payable: false, product: null, reason: 'not_found' };
 
-  const priceCents = approvedUnitPriceCents(source) ?? getPriceCents(source);
+  const approvedPriceCents = approvedUnitPriceCents(source);
+  // The approved gel-jar price is not a 2oz sample price. When a source
+  // offers multiple sizes, deliberately select the full 16oz variation.
+  const approvedFullSize = approvedPriceCents !== null && Array.isArray(source.variations)
+    ? source.variations.find((variant: any) =>
+        /^16\s*oz(?:\b|$)/i.test(String(variant?.name || '').trim()))
+    : null;
+  const priceCents = approvedPriceCents ?? getPriceCents(source);
   const price = priceCents / 100;
   const slug = normalizeProductKey(source.slug || source.id || source.name || key);
   const weeklyStatus = String(source.weeklyStatus || '').toLowerCase();
@@ -114,9 +121,11 @@ export function resolveLabelProductFromCatalog(value: unknown, liveProducts: any
     category,
     price,
     priceCents,
-    size: String(source.size || source.variations?.[0]?.name || source.sizes?.[0] || 'Market item'),
+    size: String(approvedFullSize?.name || source.size || source.variations?.[0]?.name || source.sizes?.[0] || 'Market item'),
     ingredients: asIngredientNames(source),
-    squareVariationId: getSquareVariationId(source),
+    squareVariationId: getSquareVariationId(approvedFullSize
+      ? { ...source, squareData: undefined, variationId: approvedFullSize.id, catalogObjectId: approvedFullSize.id, variations: [approvedFullSize] }
+      : source),
     source: source.source,
   };
 
