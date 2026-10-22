@@ -213,7 +213,9 @@ function unitPriceCentsFromProduct(
     if (v?.name && !/^(16\s*oz|regular|standard|market item)(?:\b|$)/i.test(v.name)) {
       // Other gels can have an explicitly priced 2 oz sample. Blue Lotus
       // is handled above and never permits one.
-      if (String(product.name).toLowerCase().includes('gel') &&
+      if ((String(product.name).toLowerCase().includes('gel') ||
+           /^floral[ -]tide$/i.test(String(product.name).trim()) ||
+           /\bgels?\b/i.test(String(product.category || ''))) &&
           /^2\s*oz(?:\b|$)/i.test(v.name)) {
         const cents = typeof v.priceCents === 'number' ? v.priceCents : toCents(v.price);
         if (Number.isInteger(cents) && cents > 0) return cents;
