@@ -62,6 +62,13 @@ describe('merchant-approved pricing cannot regress', () => {
     ])).toBeNull();
   });
 
+  it('preorder cannot substitute the full-jar price for a default 2oz sample', async () => {
+    const { readFileSync } = await import('node:fs');
+    const source = readFileSync('app/api/preorder/route.ts', 'utf8');
+    expect(source).toContain('const authorizedPrice = sampleGel ? variantPrice');
+    expect(source).toContain('the sample size has no verified price');
+  });
+
   it('rejects an obsolete Blue Lotus size even when its price equals $36', () => {
     expect(findApprovedOrderPriceMismatch([
       { id: 'DSROEB4HMZK63V7IGBH6SSJH', name: 'Blue Lotus', priceCents: 3600, size: '2oz sample' },
