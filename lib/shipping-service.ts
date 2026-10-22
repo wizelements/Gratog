@@ -54,41 +54,19 @@ export interface AddressValidation {
   suggestions?: ShippingAddress[];
 }
 
-// Default flat rates when no shipping API is configured
-const FLAT_RATES: ShippingRate[] = [
-  {
-    id: 'flat_standard',
-    carrier: 'USPS',
-    service: 'STANDARD',
-    serviceName: 'Standard Shipping (5-7 business days)',
-    rate: 6.99,
-    estimatedDays: 7
-  },
-  {
-    id: 'flat_express',
-    carrier: 'USPS',
-    service: 'EXPRESS',
-    serviceName: 'Express Shipping (2-3 business days)',
-    rate: 12.99,
-    estimatedDays: 3
-  },
-  {
-    id: 'flat_priority',
-    carrier: 'USPS',
-    service: 'PRIORITY',
-    serviceName: 'Priority Overnight (1 business day)',
-    rate: 24.99,
-    estimatedDays: 1
-  }
-];
+// Carrier and service identify customer-selected shipping choices across independent quotes.
+export function shippingMethodKey(rate: Pick<ShippingRate, 'carrier' | 'service'>): string {
+  return [rate.carrier.trim().toLowerCase(), rate.service.trim().toLowerCase()].join('::');
+}
+
 
 // Origin address (warehouse)
 const ORIGIN_ADDRESS: ShippingAddress = {
   name: 'Taste of Gratitude',
-  street: process.env.SHIPPING_ORIGIN_STREET || '123 Wellness Way',
-  city: process.env.SHIPPING_ORIGIN_CITY || 'Atlanta',
+  street: process.env.SHIPPING_ORIGIN_STREET || '',
+  city: process.env.SHIPPING_ORIGIN_CITY || '',
   state: process.env.SHIPPING_ORIGIN_STATE || 'GA',
-  zip: process.env.SHIPPING_ORIGIN_ZIP || '30301',
+  zip: process.env.SHIPPING_ORIGIN_ZIP || '',
   country: 'US'
 };
 
@@ -116,7 +94,11 @@ export async function getShippingRates(
 ): Promise<ShippingRate[]> {
   const eligibility = validateGeorgiaDestination(toAddress);
   if (!eligibility.valid) throw new Error(eligibility.message);
-  logger.info('Getting shipping rates', { to: toAddress.zip });
+  if (!ORIGIN_ADDRESS.street || !ORIGIN_ADDRESS.city || !ORIGIN_ADDRESS.zip) {
+    throw new Error('Shipping has not been enabled: verified dispatch address is required.');
+  }
+  if (!isShippingApiConfigured()) throw new Error('Georgia shipping rates are not configured.');
+  logger.info('Getting verified shipping rates', { to: toAddress.zip });
 
   // Use API if configured
   if (process.env.SHIPENGINE_API_KEY) {
@@ -127,12 +109,7 @@ export async function getShippingRates(
     return await getEasyPostRates(toAddress, packageDimensions);
   }
 
-  // Return flat rates as fallback
-  logger.info('Using flat rate shipping (no API configured)');
-  return FLAT_RATES.map(rate => ({
-    ...rate,
-    deliveryDate: calculateDeliveryDate(rate.estimatedDays)
-  }));
+  throw new Error('Georgia shipping requires an active carrier integration.');
 }
 
 /**
@@ -204,8 +181,8 @@ async function getShipEngineRates(
       deliveryDate: rate.estimated_delivery_date
     }));
   } catch (error) {
-    logger.error('ShipEngine API error, falling back to flat rates', { error: (error as Error).message });
-    return FLAT_RATES;
+    logger.error('ShipEngine rate lookup failed', { error: (error as Error).message });
+    throw new Error('Live carrier shipping rates are unavailable. Please try again later.');
   }
 }
 
@@ -269,8 +246,8 @@ async function getEasyPostRates(
       deliveryDate: rate.delivery_date
     }));
   } catch (error) {
-    logger.error('EasyPost API error, falling back to flat rates', { error: (error as Error).message });
-    return FLAT_RATES;
+    logger.error('EasyPost rate lookup failed', { error: (error as Error).message });
+    throw new Error('Live carrier shipping rates are unavailable. Please try again later.');
   }
 }
 
@@ -362,18 +339,7 @@ export async function createShipment(
   if (!eligibility.valid) throw new Error(eligibility.message);
   logger.info('Creating shipment', { orderId, rateId });
 
-  // For flat rates, generate mock tracking
-  if (rateId.startsWith('flat_')) {
-    const trackingNumber = `TOG${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-    const rate = FLAT_RATES.find(r => r.id === rateId) || FLAT_RATES[0];
-    
-    return {
-      trackingNumber,
-      carrier: rate.carrier,
-      service: rate.service,
-      estimatedDelivery: calculateDeliveryDate(rate.estimatedDays)
-    };
-  }
+  if (rateId.startsWith('flat_')) throw new Error('Mock tracking identifiers are not permitted.');
 
   // Use ShipEngine for label creation
   if (process.env.SHIPENGINE_API_KEY) {
@@ -478,7 +444,7 @@ export function calculatePackageDimensions(items: { weight?: number; quantity: n
   let totalWeight = 0;
   
   for (const item of items) {
-    totalWeight += (item.weight || 8) * item.quantity; // Default 8oz per item
+    totalWeight += (item.weight || 16) * item.quantity; // Conservative 16oz per item unless approved weight exists
   }
 
   // Add packaging weight

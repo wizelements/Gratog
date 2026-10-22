@@ -74,11 +74,15 @@ export default function ReviewAndPay({
   }, [fulfillment.pickup?.locationId]);
   const shippingMethod = useMemo(() => {
     if (!fulfillment.shipping?.methodId) return null;
-    return Fulfillment.shippingMethods().find((method) => method.id === fulfillment.shipping?.methodId) || null;
+    return fulfillment.shipping?.methodId ? {
+      name: fulfillment.shipping.methodLabel || 'Carrier shipping',
+      price: fulfillment.shipping.fee || 0,
+      estimatedDays: 'Carrier estimate',
+    } : null;
   }, [fulfillment.shipping?.methodId]);
   
   const validationResult = useMemo(() => {
-    const marketId = fulfillment.pickup?.locationId || fulfillment.type;
+    const marketId = fulfillment.pickup?.mode === 'appointment' ? 'pickup' : (fulfillment.pickup?.locationId || fulfillment.type);
     const fulfillmentCheck = validateCartForFulfillment(cart as any, fulfillment.type, marketId);
     if (!fulfillmentCheck.valid) return fulfillmentCheck;
     

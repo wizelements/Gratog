@@ -57,6 +57,7 @@ export interface PricedLineItem {
   rewardPoints: number;
   isPreorder: boolean;
   marketExclusive: boolean;
+  shippingEligible: boolean;
   category?: string;
   size?: string;
   image?: string;
@@ -153,6 +154,8 @@ interface UnifiedProductDoc {
   preorderOnly?: boolean;
   marketExclusive?: boolean;
   marketPickupOnly?: boolean;
+  shippingEligible?: boolean;
+  shippingTemperatureClass?: 'ambient' | 'chilled' | 'frozen';
   fulfillmentType?: string;
   squareIsArchived?: boolean;
   squareEcomAvailable?: boolean;
@@ -483,6 +486,8 @@ export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
         product.fulfillmentType === 'market_pickup_only' ||
         item.marketExclusive
       ),
+      // Shipping is an explicit merchant approval, NEVER a cart assertion.
+      shippingEligible: product.shippingEligible === true && product.shippingTemperatureClass === 'ambient',
       category: item.category || product.category,
       size: item.size,
       image: item.image || product.image,

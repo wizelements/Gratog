@@ -158,7 +158,8 @@ function buildSquareFulfillments(
           recipient,
           scheduleType: pickupAt ? 'SCHEDULED' : 'ASAP',
           pickupAt,
-          note: [pickup.locationId, pickup.instructions].filter(Boolean).join(' — ') || undefined,
+          note: [pickup.locationName, pickup.locationAddress?.street, pickup.locationAddress?.city,
+            pickup.arrivalInstructions, pickup.instructions].filter(Boolean).join(' — ') || undefined,
         },
       },
     ];

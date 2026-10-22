@@ -12,8 +12,9 @@ import { generateOrderAccessToken } from '@/lib/order-access-token';
 import { priceCart, CartPricingError } from '@/lib/cart-pricing';
 import { checkDeliveryRadius } from '@/lib/delivery-radius';
 import { calculateDistanceBasedDeliveryFee } from '@/lib/delivery-fees';
-import { shippingMethods } from '@/adapters/fulfillmentAdapter';
+import { getShippingRates, calculatePackageDimensions, shippingMethodKey } from '@/lib/shipping-service';
 import { validateGeorgiaDestination } from '@/lib/georgia-orders';
+import { assertPickupAppointment } from '@/lib/pickup-locations';
 
 // Order access token TTL — must outlive the longest realistic checkout session.
 // Payment route uses 30m; we use the same so the token survives until pay click.
@@ -65,6 +66,7 @@ export async function POST(request) {
     // -----------------------------------------------------------------------
     let pricing;
     let fulfillmentQuote = null;
+    let appointmentConfirmation = null;
     try {
       const couponCode =
         orderData.appliedCoupon?.code ||
@@ -92,7 +94,28 @@ export async function POST(request) {
         );
       }
 
-      fulfillmentQuote = await quoteServerFulfillment(orderData, basePricing.subtotal);
+      if (isPickupFulfillment(orderData.fulfillmentType) && orderData.pickup?.mode === 'appointment') {
+        if (basePricing.items.some(line => line.isPreorder || line.marketExclusive)) {
+          throw new CartPricingError('MARKET_PICKUP_REQUIRED', 'Your cart contains items restricted to market pickup.', 422);
+        }
+        const appointmentDate = orderData.pickup?.date;
+        const locationId = orderData.pickup?.locationId;
+        try {
+          const appointment = await assertPickupAppointment(locationId, appointmentDate);
+          appointmentConfirmation = {
+            name: appointment.location.name,
+            street: appointment.location.street,
+            city: appointment.location.city,
+            state: 'GA',
+            zip: appointment.location.zip,
+            endsAt: appointment.slot.endsAt,
+            instructions: appointment.location.instructions,
+          };
+        } catch (error) {
+          throw new CartPricingError('PICKUP_APPOINTMENT_UNAVAILABLE', error?.message || 'Pickup appointment is unavailable.', 409);
+        }
+      }
+      fulfillmentQuote = await quoteServerFulfillment(orderData, basePricing.subtotal, basePricing.items);
 
       pricing = await priceCart({
         items: orderData.cart,
@@ -127,7 +150,7 @@ export async function POST(request) {
 
     const orderId = randomUUID();
     const timestamp = new Date();
-    const storedFulfillment = buildStoredFulfillment(orderData, fulfillmentQuote);
+    const storedFulfillment = buildStoredFulfillment(orderData, fulfillmentQuote, appointmentConfirmation);
 
     // Build order object — pricing comes from the server, not the client.
     const enhancedOrder = {
@@ -311,7 +334,7 @@ function isPickupFulfillment(type) {
   return value.includes('pickup') || value === 'preorder';
 }
 
-function buildStoredFulfillment(orderData, quote) {
+function buildStoredFulfillment(orderData, quote, appointment) {
   if (isShippingFulfillment(orderData.fulfillmentType)) {
     return {
       type: 'shipping',
@@ -341,6 +364,13 @@ function buildStoredFulfillment(orderData, quote) {
     return {
       type: 'pickup',
       pickup: {
+        mode: pickup.mode || 'market',
+        locationName: appointment?.name || null,
+        locationAddress: appointment ? {
+          street: appointment.street, city: appointment.city, state: appointment.state, zip: appointment.zip
+        } : null,
+        windowEndsAt: appointment?.endsAt || null,
+        arrivalInstructions: appointment?.instructions || null,
         locationId: pickup.locationId || orderData.pickupLocation || null,
         date: pickup.date || orderData.pickupDate || orderData.orderTiming?.requestedDate || null,
         instructions: pickup.instructions || orderData.pickupInstructions || null,
@@ -370,23 +400,31 @@ function orderError(message, status, code) {
   return err;
 }
 
-async function quoteServerFulfillment(orderData, subtotalDollars) {
+async function quoteServerFulfillment(orderData, subtotalDollars, pricedItems) {
   if (isShippingFulfillment(orderData.fulfillmentType)) {
     const address = orderData.shippingAddress;
     if (!address?.street || !address?.city || !address?.state || !address?.zip) {
       throw orderError('Shipping address is required', 400, 'SHIPPING_ADDRESS_REQUIRED');
     }
 
-    const method = shippingMethods().find((option) => option.id === orderData.shippingMethod);
-    if (!method) {
-      throw orderError('Shipping method is required', 400, 'SHIPPING_METHOD_REQUIRED');
+    if (!Array.isArray(pricedItems) || pricedItems.some(item => !item.shippingEligible || item.marketExclusive || item.isPreorder)) {
+      throw orderError('One or more products are not approved for Georgia parcel shipping.', 422, 'PRODUCT_NOT_APPROVED_FOR_SHIPPING');
     }
-
+    let rates;
+    try {
+      rates = await getShippingRates({ ...address, street2: address.suite || address.street2 }, calculatePackageDimensions(pricedItems));
+    } catch {
+      throw orderError('Carrier shipping is not available. Please choose another fulfillment option.', 503, 'SHIPPING_UNAVAILABLE');
+    }
+    const method = rates.find(rate => shippingMethodKey(rate) === orderData.shippingMethod);
+    if (!method || !Number.isFinite(method.rate) || method.rate <= 0) {
+      throw orderError('Shipping quote expired or is no longer available. Request a new quote.', 409, 'SHIPPING_QUOTE_EXPIRED');
+    }
     return {
-      feeCents: dollarsToCents(method.price),
-      fee: method.price,
-      shippingService: method.name,
-      message: `${method.name} selected — estimated ${method.estimatedDays}.`,
+      feeCents: dollarsToCents(method.rate),
+      fee: method.rate,
+      shippingService: `${method.carrier} ${method.serviceName}`,
+      message: `${method.carrier} ${method.serviceName} — current carrier quote.`,
     };
   }
 

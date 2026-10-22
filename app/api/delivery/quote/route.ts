@@ -46,6 +46,8 @@ export async function POST(request: Request) {
         {
           success: false,
           eligible: false,
+          code: 'OUTSIDE_DELIVERY_AREA',
+          shippingAlternative: true,
           error: radius.message,
           distanceMiles: radius.distance,
           nearestLocationName: radius.nearestLocationName,

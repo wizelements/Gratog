@@ -1,163 +1,133 @@
-
 'use client';
 
-/**
- * PickupForm - Location and date selection for pickup orders
- */
-
-import { motion } from 'framer-motion';
-import { MapPin, Calendar } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Calendar, MapPin } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { PickupData } from '@/stores/checkout';
 import { Fulfillment } from '@/adapters/fulfillmentAdapter';
-import { useState, useEffect } from 'react';
 
-interface PickupFormProps {
+type PickupWindow = { startsAt: string; endsAt: string; cutoffAt: string; capacity: number };
+type PickupLocation = { id: string; name: string; street: string; city: string; state: string; zip: string; instructions: string; windows: PickupWindow[] };
+interface Props {
   data: PickupData;
   onChange: (data: Partial<PickupData>) => void;
   errors?: Record<string, string>;
+  marketOnly?: boolean;
 }
+const easternDate = (value: string | Date) => new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York', weekday: 'short', month: 'short', day: 'numeric',
+  hour: 'numeric', minute: '2-digit',
+}).format(new Date(value));
 
-export default function PickupForm({ data, onChange, errors = {} }: PickupFormProps) {
-  const locations = Fulfillment.pickupLocations();
-  const [availableDates, setAvailableDates] = useState<Date[]>([]);
-  
+export default function PickupForm({ data, onChange, errors = {}, marketOnly = false }: Props) {
+  const [appointments, setAppointments] = useState<PickupLocation[]>([]);
+  const [loadError, setLoadError] = useState(false);
+  const markets = Fulfillment.pickupLocations();
+  const mode = marketOnly ? 'market' : (data.mode || 'appointment');
   useEffect(() => {
-    if (data.locationId) {
-      const dates = Fulfillment.marketCalendar(data.locationId);
-      setAvailableDates(dates);
-      
-      // Auto-select first date if none selected
-      if (!data.date && dates.length > 0) {
-        onChange({ date: dates[0] });
-      }
-    }
-  }, [data.locationId]);
-  
-  const selectedLocation = locations.find(loc => loc.id === data.locationId);
-  
+    let live = true;
+    fetch('/api/pickup-locations', { cache: 'no-store' })
+      .then(async response => {
+        if (!response.ok) throw new Error('Pickup options unavailable');
+        return response.json();
+      }).then(result => { if (live) setAppointments(result.locations || []); })
+      .catch(() => { if (live) setLoadError(true); });
+    return () => { live = false; };
+  }, []);
+  const location = appointments.find(item => item.id === data.locationId);
+  const market = markets.find(item => item.id === data.locationId);
+  const [marketDates, setMarketDates] = useState<Date[]>([]);
+  useEffect(() => {
+    if (mode !== 'market' || !data.locationId) return;
+    setMarketDates(Fulfillment.marketCalendar(data.locationId));
+  }, [mode, data.locationId]);
+
   return (
-    <motion.div
-      className="space-y-6"
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className="space-y-5">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Pickup Details</h3>
-        <p className="text-sm text-gray-600">
-          Select a market location and pickup date
-        </p>
+        <h3 className="text-lg font-semibold">Pickup details</h3>
+        <p className="text-sm text-gray-600">Choose an actual available location and appointment. We will send pickup instructions with your order confirmation.</p>
       </div>
-      
-      {/* Location Selector */}
-      <div>
-        <Label htmlFor="location" className="text-sm font-medium text-gray-700">
-          Pickup Location *
-        </Label>
-        <Select
-          value={data.locationId}
-          onValueChange={(value) => onChange({ locationId: value })}
-        >
-          <SelectTrigger
-            id="location"
-            className={`mt-1 ${errors.locationId ? 'border-red-500' : ''}`}
-          >
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-gray-500" />
-              <SelectValue placeholder="Choose a market location" />
-            </div>
-          </SelectTrigger>
-          <SelectContent>
-            {locations.map((location) => (
-              <SelectItem key={location.id} value={location.id}>
-                <div className="flex flex-col">
-                  <span className="font-medium">{location.name}</span>
-                  <span className="text-xs text-gray-500">{location.address}</span>
-                  <span className="text-xs text-emerald-600 mt-0.5">{location.hours}</span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.locationId && (
-          <p className="mt-1 text-xs text-red-500">{errors.locationId}</p>
-        )}
-        
-        {selectedLocation && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="mt-2 p-3 bg-emerald-50 rounded-lg border border-emerald-200"
-          >
-            <p className="text-sm text-emerald-800">
-              <span className="font-medium">📍 {selectedLocation.name}</span>
-            </p>
-            <p className="text-xs text-emerald-700 mt-1">{selectedLocation.address}</p>
-            <p className="text-xs text-emerald-600 mt-1">⏰ {selectedLocation.hours}</p>
-          </motion.div>
-        )}
-      </div>
-      
-      {/* Date Selector */}
-      {data.locationId && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <Label htmlFor="date" className="text-sm font-medium text-gray-700">
-            Pickup Date *
-          </Label>
-          <Select
-            value={data.date?.toISOString()}
-            onValueChange={(value) => onChange({ date: new Date(value) })}
-          >
-            <SelectTrigger
-              id="date"
-              className={`mt-1 ${errors.date ? 'border-red-500' : ''}`}
-            >
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-gray-500" />
-                <SelectValue placeholder="Choose pickup date" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {availableDates.map((date) => (
-                <SelectItem key={date.toISOString()} value={date.toISOString()}>
-                  {date.toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errors.date && (
-            <p className="mt-1 text-xs text-red-500">{errors.date}</p>
-          )}
-        </motion.div>
+      {!marketOnly && (
+        <fieldset className="flex flex-wrap gap-3" aria-label="Pickup type">
+          <label className="flex min-h-11 items-center gap-2 rounded-lg border p-3">
+            <input type="radio" name="pickup-type" checked={mode === 'appointment'} onChange={() => onChange({ mode: 'appointment', locationId: '', date: null })}/>
+            Scheduled pickup (no market)
+          </label>
+          <label className="flex min-h-11 items-center gap-2 rounded-lg border p-3">
+            <input type="radio" name="pickup-type" checked={mode === 'market'} onChange={() => onChange({ mode: 'market', locationId: '', date: null })}/>
+            Farmers market pickup
+          </label>
+        </fieldset>
       )}
-      
-      {/* Special Instructions */}
+      {marketOnly && <p className="rounded-lg bg-amber-50 p-3 text-sm">Your cart includes market-only items, so a market pickup is required.</p>}
+      {mode === 'appointment' && (
+        <>
+          {!appointments.length && <p role="status" className="rounded-lg bg-stone-50 p-4 text-sm text-gray-700">
+            {loadError ? 'Appointment pickup is temporarily unavailable.' : 'No non-market pickup appointments are currently available. You can check market pickup or local delivery.'}
+          </p>}
+          {appointments.length > 0 && (
+            <>
+              <div>
+                <Label htmlFor="appointment-location">Pickup location *</Label>
+                <Select value={data.locationId || ''} onValueChange={id => onChange({ mode: 'appointment', locationId: id, date: null })}>
+                  <SelectTrigger id="appointment-location" className="mt-1"><SelectValue placeholder="Choose an available pickup point"/></SelectTrigger>
+                  <SelectContent>{appointments.map(item => (
+                    <SelectItem key={item.id} value={item.id}>{item.name} — {item.city}, GA</SelectItem>
+                  ))}</SelectContent>
+                </Select>
+              </div>
+              {location && (
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm">
+                  <p className="font-semibold"><MapPin className="mr-1 inline h-4 w-4" />{location.name}</p>
+                  <p>{location.street}, {location.city}, GA {location.zip}</p>
+                  {location.instructions && <p className="mt-1">{location.instructions}</p>}
+                </div>
+              )}
+              {location && (
+                <div>
+                  <Label htmlFor="appointment-date">Choose an appointment *</Label>
+                  <Select value={data.date ? new Date(data.date).toISOString() : ''} onValueChange={date => onChange({ date: new Date(date) })}>
+                    <SelectTrigger id="appointment-date" className="mt-1"><Calendar className="mr-2 h-4 w-4" /><SelectValue placeholder="Choose an available time"/></SelectTrigger>
+                    <SelectContent>{location.windows.map(slot => (
+                      <SelectItem key={slot.startsAt} value={slot.startsAt}>{easternDate(slot.startsAt)} – {easternDate(slot.endsAt)} ET</SelectItem>
+                    ))}</SelectContent>
+                  </Select>
+                </div>
+              )}
+            </>
+          )}
+        </>
+      )}
+      {mode === 'market' && (
+        <>
+          <div>
+            <Label htmlFor="market-pickup-location">Market location *</Label>
+            <Select value={data.locationId || ''} onValueChange={id => onChange({ mode: 'market', locationId: id, date: null })}>
+              <SelectTrigger id="market-pickup-location" className="mt-1"><SelectValue placeholder="Choose a scheduled market"/></SelectTrigger>
+              <SelectContent>{markets.map(item => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}</SelectContent>
+            </Select>
+            {market && <p className="mt-2 text-sm text-gray-600">{market.address} · {market.hours}</p>}
+          </div>
+          {market && (
+            <div>
+              <Label htmlFor="market-pickup-date">Pickup date *</Label>
+              <Select value={data.date ? new Date(data.date).toISOString() : ''} onValueChange={date => onChange({ date: new Date(date) })}>
+                <SelectTrigger id="market-pickup-date" className="mt-1"><SelectValue placeholder="Choose an upcoming market date"/></SelectTrigger>
+                <SelectContent>{marketDates.map(date => <SelectItem key={date.toISOString()} value={date.toISOString()}>{date.toLocaleDateString('en-US',{ weekday:'long',month:'long',day:'numeric' })}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+          )}
+        </>
+      )}
+      {errors.locationId && <p role="alert" className="text-sm text-red-700">{errors.locationId}</p>}
+      {errors.date && <p role="alert" className="text-sm text-red-700">{errors.date}</p>}
       <div>
-        <Label htmlFor="instructions" className="text-sm font-medium text-gray-700">
-          Special Instructions <span className="text-gray-500">(Optional)</span>
-        </Label>
-        <div className="relative mt-1">
-          <Textarea
-            id="instructions"
-            value={data.instructions || ''}
-            onChange={(e) => onChange({ instructions: e.target.value })}
-            placeholder="Any special notes for pickup? (e.g., 'Please call when ready')"
-            rows={3}
-            className="resize-none"
-          />
-        </div>
+        <Label htmlFor="pickup-notes">Pickup instructions (optional)</Label>
+        <Textarea id="pickup-notes" maxLength={500} rows={2} className="mt-1" value={data.instructions || ''} onChange={e => onChange({ instructions: e.target.value })} placeholder="How can we help with your pickup?" />
       </div>
-    </motion.div>
+    </div>
   );
 }

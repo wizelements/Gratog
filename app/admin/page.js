@@ -253,6 +253,10 @@ export default function AdminDashboard() {
             </p>
             <Button asChild size="sm" variant="outline" className="mt-4">
               <Link href="/admin/markets">Manage markets</Link>
+              <span className="mx-2 text-muted-foreground">·</span>
+              <Link href="/admin/pickup-locations" className="underline">Manage non-market pickup</Link>
+              <span className="mx-2 text-muted-foreground">·</span>
+              <Link href="/admin/shipping-eligibility" className="underline">Review Georgia shipping</Link>
             </Button>
           </CardContent>
         </Card>
