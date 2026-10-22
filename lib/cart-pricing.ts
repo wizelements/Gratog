@@ -22,6 +22,7 @@
  *      genuinely says everything is free.
  */
 import { connectToDatabase } from './db-optimized';
+import { approvedUnitPriceCents, isApprovedBlueLotus } from './merchant-pricing';
 
 export interface CartLineInput {
   /** Anything the client gives us that might be a product key. */
@@ -193,11 +194,40 @@ function unitPriceCentsFromProduct(
   variationId: string | undefined | null
 ): number {
   const v = resolveVariation(product, variationId);
-  // Merchant-approved selling price for the *only* Blue Lotus SKU is $36.
-  // The legacy Square/Mongo catalog may still carry a $35 price until the
-  // credential-gated merchant catalog reconciliation is performed.
-  if (product.id === 'DSROEB4HMZK63V7IGBH6SSJH' &&
-      v?.id === 'QIX6D5PRQKX4TKEMTQUJPZUX') return 3600;
+  const approved = approvedUnitPriceCents(product);
+  // Never offer a retired Blue Lotus sample or charge for an ambiguous size.
+  if (isApprovedBlueLotus(product)) {
+    if (!v || (v.id !== 'QIX6D5PRQKX4TKEMTQUJPZUX' &&
+        !/^16\s*oz(?:\b|$)/i.test(String(v.name || '').trim()))) {
+      throw new CartPricingError(
+        'UNAPPROVED_PRODUCT_VARIATION',
+        'Blue Lotus is sold only as an approved 16 oz jar. Please refresh your cart.',
+        409, { productId: product.id }
+      );
+    }
+    return 3600;
+  }
+  if (approved !== null) {
+    // The listed prices are for the standard 16 oz SKU. Do not guess
+    // prices of old sample sizes, gallons or other unapproved variants.
+    if (v?.name && !/^(16\s*oz|regular|standard|market item)(?:\b|$)/i.test(v.name)) {
+      // Other gels can have an explicitly priced 2 oz sample. Blue Lotus
+      // is handled above and never permits one.
+      if ((String(product.name).toLowerCase().includes('gel') ||
+           /^floral[ -]tide$/i.test(String(product.name).trim()) ||
+           /\bgels?\b/i.test(String(product.category || ''))) &&
+          /^2\s*oz(?:\b|$)/i.test(v.name)) {
+        const cents = typeof v.priceCents === 'number' ? v.priceCents : toCents(v.price);
+        if (Number.isInteger(cents) && cents > 0) return cents;
+      }
+      throw new CartPricingError(
+        'UNAPPROVED_PRODUCT_VARIATION',
+        'Selected size needs a verified price. Please select the standard item.',
+        409, { productId: product.id }
+      );
+    }
+    return approved;
+  }
   if (v && typeof v.priceCents === 'number') return v.priceCents;
   if (v && typeof v.price === 'number') return toCents(v.price);
   if (typeof product.priceCents === 'number') return product.priceCents;

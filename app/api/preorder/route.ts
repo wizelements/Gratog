@@ -20,6 +20,7 @@ import { validatePreorderMinimum } from '@/lib/cart-engine';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 import { isMarketPreorderPermitted } from '@/lib/preorder/eligibility';
 import { createPaymentLink } from '@/lib/square-api';
+import { approvedUnitPriceCents, isApprovedBlueLotus } from '@/lib/merchant-pricing';
 
 const logger = createLogger('PreorderAPI');
 
@@ -120,7 +121,27 @@ async function resolvePreorderCartItems(submittedItems: any[]) {
       : Number.isFinite(variantPrice) && variantPrice > 0
         ? variantPrice
         : listedPrice;
-    const priceCents = Math.round(price * 100);
+    const approved = approvedUnitPriceCents(product);
+    const sampleGel = !isApprovedBlueLotus(product) &&
+      (/gel$/i.test(String(product.name || '').trim()) ||
+       /(?:^|[- ])floral[- ]tide(?:$|[- ])/i.test(String(product.slug || product.name || '')) ||
+       /\bgels?\b/i.test(String(product.category || ''))) &&
+      /^2\s*oz(?:\b|$)/i.test(String(variation?.name || '').trim());
+    if (approved !== null && variation?.name && !sampleGel &&
+        !/^(16\s*oz|regular|standard|market item)(?:\b|$)/i.test(String(variation.name).trim())) {
+      throw new Error(`${product.name}: selected size has not been approved for sale.`);
+    }
+    if (isApprovedBlueLotus(product) &&
+        (!variation || !/^16\s*oz(?:\b|$)/i.test(String(variation.name || '').trim()))) {
+      throw new Error('Blue Lotus is available only as a 16 oz jar.');
+    }
+    // A 2oz gel sample may be the first/default variation. In that case
+    // product.price is the 16oz jar price and MUST NOT be used for samples.
+    if (sampleGel && !(Number.isFinite(variantPrice) && variantPrice > 0)) {
+      throw new Error(`${product.name}: the sample size has no verified price.`);
+    }
+    const authorizedPrice = sampleGel ? variantPrice : approved === null ? price : approved / 100;
+    const priceCents = Math.round(authorizedPrice * 100);
     const quantity = Math.max(1, Math.min(99, Number(item.quantity) || 1));
 
     if (!Number.isFinite(price) || price <= 0) {
@@ -133,7 +154,7 @@ async function resolvePreorderCartItems(submittedItems: any[]) {
       slug: product.slug || product.id,
       variationId: variation?.id || product.variationId || product.catalogObjectId || product.id,
       catalogObjectId: product.catalogObjectId || product.variationId || variation?.id || product.id,
-      price,
+      price: authorizedPrice,
       priceCents,
       quantity,
       isPreorder: true,

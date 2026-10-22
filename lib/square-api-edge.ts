@@ -3,6 +3,8 @@
  * Lightweight version that works in Edge runtime (no Node.js APIs)
  */
 
+import { approvedUnitPriceCents } from './merchant-pricing';
+
 const SQUARE_VERSION = '2025-10-16';
 
 // Canonical Calm Waters Square item: CIEYXH3G7FHAST6DLWMCFYS5.
@@ -142,7 +144,8 @@ export async function getSquareCatalog(options: {
           description: item.description || item.description_plaintext,
           price: approvedBlueLotus
             ? approvedVariation ? 36 : 0
-            : priceMoney.amount ? parseInt(String(priceMoney.amount)) / 100 : 0,
+            : (approvedUnitPriceCents({ id: obj.id, name: item.name }) ??
+                (priceMoney.amount ? parseInt(String(priceMoney.amount)) : 0)) / 100,
           currency: priceMoney.currency || 'USD',
           imageUrl: item.image_ids?.[0] || item.imageIds?.[0]
             ? `${baseUrl}/v2/catalog/object/${item.image_ids?.[0] || item.imageIds?.[0]}` 

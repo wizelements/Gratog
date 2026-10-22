@@ -6,7 +6,7 @@ import {
 } from '@/lib/label-commerce';
 
 describe('label commerce', () => {
-  it('prefers live Square price and variation data over curated fallback price', () => {
+  it('preserves the approved price and live Square variation identity', () => {
     const result = resolveLabelProductFromCatalog('strawberry-bliss', [
       {
         id: 'SQUAREITEM123456789012345',
@@ -43,7 +43,7 @@ describe('label commerce', () => {
 
     expect(result.payable).toBe(true);
     expect(result.product?.slug).toBe('pineapple-mango-lemonade');
-    expect(result.product?.priceCents).toBe(900);
+    expect(result.product?.priceCents).toBe(1199); // owner-approved; Square's old $9 cannot win
   });
 
   it('allows a priced seasonal curated item even when it is not on the active weekly menu', () => {
@@ -74,6 +74,23 @@ describe('label commerce', () => {
     const result = resolveLabelProductFromCatalog('boba', []);
     expect(result.payable).toBe(false);
     expect(result.reason).toBe('inactive');
+  });
+
+  it('never sells a 2oz sample as a $36 16oz QR label purchase', () => {
+    const result = resolveLabelProductFromCatalog('floral-tide-gel', [{
+      id: 'SQUAREITEM123456789012345', slug: 'floral-tide', name: 'Floral Tide',
+      price: 11, priceCents: 1100, size: '2oz sample',
+      source: 'square_sync',
+      variationId: 'OLDSAMPLE12345678901234567',
+      variations: [
+        { id: 'OLDSAMPLE12345678901234567', name: '2oz sample', priceCents: 1100 },
+        { id: 'APPROVEDSIZE123456789012345', name: '16oz jar', priceCents: 3500 },
+      ],
+    }]);
+    expect(result.payable).toBe(true);
+    expect(result.product?.priceCents).toBe(3600);
+    expect(result.product?.size).toBe('16oz jar');
+    expect(result.product?.squareVariationId).toBe('APPROVEDSIZE123456789012345');
   });
 
   it('bounds label quantities for booth checkout', () => {

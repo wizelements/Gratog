@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 
+import { approvedUnitPriceCents, findApprovedOrderPriceMismatch } from '@/lib/merchant-pricing';
 import { logger } from '@/lib/logger';
 import { RequestContext } from '@/lib/request-context';
 import { NextRequest, NextResponse } from 'next/server';
@@ -567,6 +568,25 @@ export async function POST(request: NextRequest) {
     
     // FIX P1-1: Always use server-authoritative amount, ignore client
     // Any discrepancy indicates tampering or stale client state
+    // Old orders may predate a merchant price correction. The total stored
+    // on such an order is not sufficient evidence that its price is approved.
+    // Stop BEFORE contacting Square; the customer must create a fresh quote.
+    const staleLine = findApprovedOrderPriceMismatch(order.items);
+    if (staleLine) {
+      await db.collection('orders').updateOne(
+        { id: orderId },
+        { $set: { status: 'pending', paymentStatus: 'pending', updatedAt: new Date().toISOString() } }
+      );
+      logger.warn('API', 'Blocked obsolete merchant price before payment', {
+        traceId: ctx.traceId, orderId, item: staleLine.product,
+      });
+      return json({
+        success: false,
+        code: 'MERCHANT_PRICE_CHANGED',
+        error: 'Product pricing has been updated. Please return to the cart and create a new order.',
+      }, 409);
+    }
+
     let validatedAmountCents = expectedAmountCents;
     
     if (expectedAmountCents && expectedAmountCents > 0) {
@@ -728,7 +748,9 @@ export async function POST(request: NextRequest) {
                   ? it.catalogObjectId
                   : undefined;
               return {
-                catalogObjectId,
+                // A stale Square variation must never overwrite our approved
+                // cents value during Order creation. Use explicit pricing.
+                catalogObjectId: approvedUnitPriceCents(it) !== null ? undefined : catalogObjectId,
                 name: String(it.name || 'Item').slice(0, 255),
                 quantity: String(Number(it.quantity) || 1),
                 basePriceMoney: { amount: cents, currency },
