@@ -254,6 +254,10 @@ export default function AdminDashboard() {
             <Button asChild size="sm" variant="outline" className="mt-4">
               <Link href="/admin/markets">Manage markets</Link>
             </Button>
+            <div className="mt-3 flex flex-wrap gap-3 text-sm">
+              <Link href="/admin/pickup-locations" className="text-emerald-800 underline underline-offset-2">Manage non-market pickup</Link>
+              <Link href="/admin/shipping-eligibility" className="text-emerald-800 underline underline-offset-2">Review Georgia shipping</Link>
+            </div>
           </CardContent>
         </Card>
 

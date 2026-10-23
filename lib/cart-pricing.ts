@@ -57,6 +57,11 @@ export interface PricedLineItem {
   rewardPoints: number;
   isPreorder: boolean;
   marketExclusive: boolean;
+  shippingEligible: boolean;
+  shippingPackageWeightOz?: number;
+  shippingPackageLengthIn?: number;
+  shippingPackageWidthIn?: number;
+  shippingPackageHeightIn?: number;
   category?: string;
   size?: string;
   image?: string;
@@ -153,6 +158,20 @@ interface UnifiedProductDoc {
   preorderOnly?: boolean;
   marketExclusive?: boolean;
   marketPickupOnly?: boolean;
+  shippingEligible?: boolean;
+  shippingTemperatureClass?: 'ambient' | 'chilled' | 'frozen';
+  shippingApproval?: {
+    status?: 'approved' | 'revoked';
+    evidenceReference?: string;
+    regulatoryAuthority?: string;
+    approvedBy?: string;
+    effectiveAt?: string;
+    revokedAt?: string | null;
+  };
+  shippingPackageWeightOz?: number;
+  shippingPackageLengthIn?: number;
+  shippingPackageWidthIn?: number;
+  shippingPackageHeightIn?: number;
   fulfillmentType?: string;
   squareIsArchived?: boolean;
   squareEcomAvailable?: boolean;
@@ -483,6 +502,16 @@ export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
         product.fulfillmentType === 'market_pickup_only' ||
         item.marketExclusive
       ),
+      // Shipping is an explicit merchant approval, NEVER a cart assertion.
+      shippingEligible: product.shippingEligible === true && product.shippingTemperatureClass === 'ambient'
+        && product.shippingApproval?.status === 'approved'
+        && Boolean(product.shippingApproval?.evidenceReference && product.shippingApproval?.regulatoryAuthority)
+        && Boolean(product.shippingApproval?.approvedBy && product.shippingApproval?.effectiveAt)
+        && !product.shippingApproval?.revokedAt,
+      shippingPackageWeightOz: product.shippingPackageWeightOz,
+      shippingPackageLengthIn: product.shippingPackageLengthIn,
+      shippingPackageWidthIn: product.shippingPackageWidthIn,
+      shippingPackageHeightIn: product.shippingPackageHeightIn,
       category: item.category || product.category,
       size: item.size,
       image: item.image || product.image,

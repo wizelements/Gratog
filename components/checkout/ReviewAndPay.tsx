@@ -74,11 +74,15 @@ export default function ReviewAndPay({
   }, [fulfillment.pickup?.locationId]);
   const shippingMethod = useMemo(() => {
     if (!fulfillment.shipping?.methodId) return null;
-    return Fulfillment.shippingMethods().find((method) => method.id === fulfillment.shipping?.methodId) || null;
+    return fulfillment.shipping?.methodId ? {
+      name: fulfillment.shipping.methodLabel || 'Carrier shipping',
+      price: fulfillment.shipping.fee || 0,
+      estimatedDays: 'Carrier estimate',
+    } : null;
   }, [fulfillment.shipping?.methodId]);
   
   const validationResult = useMemo(() => {
-    const marketId = fulfillment.pickup?.locationId || fulfillment.type;
+    const marketId = fulfillment.pickup?.mode === 'appointment' ? 'pickup' : (fulfillment.pickup?.locationId || fulfillment.type);
     const fulfillmentCheck = validateCartForFulfillment(cart as any, fulfillment.type, marketId);
     if (!fulfillmentCheck.valid) return fulfillmentCheck;
     
@@ -285,9 +289,12 @@ export default function ReviewAndPay({
 
       // 🎯 CONVERSION PSYCHOLOGY: Market pickup → Live queue (immediate gratification loop)
       // This creates a dopamine hit: pay → see position → anticipation builds
-      const isMarketPickup = shouldUseQueue(fulfillment.type, { 
-        marketId: fulfillment.pickup?.locationId 
-      });
+      const isMarketPickup = fulfillment.type === 'pickup'
+        && fulfillment.pickup?.mode !== 'appointment'
+        && shouldUseQueue(fulfillment.type, {
+          marketId: fulfillment.pickup?.locationId,
+          mode: fulfillment.pickup?.mode
+        });
       
       if (isMarketPickup) {
         try {

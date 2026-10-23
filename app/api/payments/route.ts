@@ -20,6 +20,7 @@ import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { consumeInventoryForPaidOrder, checkInventoryForPayment } from '@/lib/custom-inventory';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';
 import { validateGeorgiaDestination } from '@/lib/georgia-orders';
+import { isUnpaidPickupLeaseCurrent, isPickupStillOperational } from '@/lib/pickup-locations';
 import {
   generateOrderAccessToken,
   verifyOrderAccessToken,
@@ -158,7 +159,8 @@ function buildSquareFulfillments(
           recipient,
           scheduleType: pickupAt ? 'SCHEDULED' : 'ASAP',
           pickupAt,
-          note: [pickup.locationId, pickup.instructions].filter(Boolean).join(' — ') || undefined,
+          note: [pickup.locationName, pickup.locationAddress?.street, pickup.locationAddress?.city,
+            pickup.arrivalInstructions, pickup.instructions].filter(Boolean).join(' — ') || undefined,
         },
       },
     ];
@@ -426,6 +428,26 @@ export async function POST(request: NextRequest) {
       });
     }
     
+    // A timed-out appointment must never become payable after another
+    // customer has acquired its released seat.
+    if (!isUnpaidPickupLeaseCurrent(order)) {
+      return json({
+        success: false, code: 'PICKUP_RESERVATION_EXPIRED',
+        error: 'Your pickup reservation expired. Please choose an available time and restart checkout.',
+        shouldRestart: true,
+      }, 409);
+    }
+
+    // Prevent checkout against a location closed/unpublished since selection.
+    // A DB read error is not an invitation to continue to Square.
+    if (!(await isPickupStillOperational(order))) {
+      return json({
+        success: false, code: 'PICKUP_LOCATION_CHANGED',
+        error: 'This pickup location or appointment changed. Restart checkout and select an available time.',
+        shouldRestart: true,
+      }, 409);
+    }
+
     // Enforce current service geography even for unpaid orders created before this policy.
     const paymentFulfillmentType = String(order.fulfillment?.type || order.fulfillmentType || '').toLowerCase();
     if (paymentFulfillmentType.includes('shipping') || paymentFulfillmentType.includes('delivery')) {

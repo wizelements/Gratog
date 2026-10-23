@@ -460,9 +460,26 @@ export default function OrdersPage() {
 
                     <div>
                       <p className="text-sm font-semibold mb-1">
-                        {order.fulfillmentType === 'delivery' ? 'Delivery Address' : 'Pickup Location'}
+                        {order.fulfillmentType === 'delivery' ? 'Delivery Address' :
+                          order.fulfillmentType === 'shipping' ? 'Georgia shipping' :
+                          order.pickup?.mode === 'appointment' ? 'Non-market appointment' : 'Market pickup'}
                       </p>
-                      {order.fulfillmentType === 'delivery' ? (
+                      {order.pickup?.mode === 'appointment' ? (
+                        <div className="text-sm text-muted-foreground">
+                          <p className="font-semibold">{order.pickup.locationName || 'Scheduled pickup point'}</p>
+                          {order.pickup.locationAddress && <p>
+                            {order.pickup.locationAddress.street}, {order.pickup.locationAddress.city}, GA {order.pickup.locationAddress.zip}
+                          </p>}
+                          <p className="text-xs">Location ID: {order.pickup.locationId || 'Unknown'}</p>
+                          {order.pickup.date && <p>Appointment: {new Date(order.pickup.date).toLocaleString('en-US', { timeZone: 'America/New_York', dateStyle: 'medium', timeStyle: 'short' })} ET</p>}
+                          {order.pickup.instructions && <p>Instructions: {order.pickup.instructions}</p>}
+                        </div>
+                      ) : order.fulfillmentType === 'shipping' ? (
+                        <div className="text-sm text-muted-foreground">
+                          <p>Carrier shipment</p>
+                          {order.shippingAddress?.street && <p>{order.shippingAddress.street}, {order.shippingAddress.city}, GA {order.shippingAddress.zip}</p>}
+                        </div>
+                      ) : order.fulfillmentType === 'delivery' ? (
                         order.deliveryInfo ? (
                           <>
                             <p className="text-sm text-muted-foreground">

@@ -178,6 +178,11 @@ export function validateCartForFulfillment(
     return { valid: false, error: 'Please select a fulfillment method', code: 'NO_FULFILLMENT' };
   }
   
+  // A non-market appointment is not a farmers market.
+  if (marketKey === 'pickup') {
+    const marketOnly = cart.some((item: any) => item.isPreorder || item.marketExclusive || isMarketExclusive(item));
+    return marketOnly ? { valid: false, code: 'MARKET_PICKUP_REQUIRED', error: 'This cart contains market-only items.' } : { valid: true };
+  }
   // @ts-ignore — type fix needed
   const market = MARKET_CONFIG[marketKey];
   

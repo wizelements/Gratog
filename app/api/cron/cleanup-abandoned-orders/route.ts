@@ -39,7 +39,15 @@ function verifyCronAuth(request: NextRequest) {
 }
 
 function baseUrl() {
-  return (process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop').replace(/\/$/, '');
+  const fallback = 'https://tasteofgratitude.shop';
+  const config = String(process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || fallback).trim();
+  if (/[\x00-\x1f\x7f]/.test(config)) return fallback;
+  try {
+    const parsed = new URL(config);
+    if (parsed.protocol === 'https:' &&
+      ['tasteofgratitude.shop','www.tasteofgratitude.shop'].includes(parsed.hostname)) return parsed.origin;
+  } catch { /* misconfigured URL */ }
+  return fallback;
 }
 
 function escapeHtml(value: unknown) {

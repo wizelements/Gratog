@@ -230,12 +230,15 @@ export async function createOrder(
   if (fulfillment.type === 'pickup' && fulfillment.pickup) {
     payload.pickup = {
       locationId: fulfillment.pickup.locationId,
+      mode: fulfillment.pickup.mode || 'market',
       date: fulfillment.pickup.date?.toISOString() || new Date().toISOString(),
       instructions: sanitizeString(fulfillment.pickup.instructions, 500)
     };
     
-    // Map locationId to fulfillment type if it's dunwoody (legacy: browns_mill)
-    if (fulfillment.pickup.locationId === 'browns_mill' || fulfillment.pickup.locationId === 'dunwoody') {
+    // Non-market appointments are not market orders.
+    if (fulfillment.pickup.mode === 'appointment') {
+      payload.fulfillmentType = 'pickup_appointment';
+    } else if (fulfillment.pickup.locationId === 'browns_mill' || fulfillment.pickup.locationId === 'dunwoody') {
       payload.fulfillmentType = 'pickup_dunwoody';
     } else {
       payload.fulfillmentType = 'pickup_market';

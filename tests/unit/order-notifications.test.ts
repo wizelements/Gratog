@@ -161,6 +161,31 @@ describe('Phase 1: Staff Notification Hotfix', () => {
     expect(payload.text).not.toContain('NEW DELIVERY ORDER');
   });
 
+  it('notifies staff with a real non-market appointment address and time', async () => {
+    const order = makeOrder({
+      fulfillmentType: 'pickup_appointment',
+      fulfillment: { type:'pickup', pickup: {
+        mode:'appointment', locationName:'Community & Pickup',
+        locationAddress:{street:'100 Cedar St',city:'Atlanta',state:'GA',zip:'30331'},
+        date:'2026-11-04T17:00:00.000Z',
+      } },
+    });
+    expect((await notifyStaffPickupOrder(order)).success).toBe(true);
+    const payload = vi.mocked(sendEmail).mock.calls.at(-1)?.[0] as any;
+    expect(payload.subject).toContain('NEW SCHEDULED PICKUP ORDER');
+    expect(payload.html).toContain('100 Cedar St');
+    expect(payload.html).toContain('Community &amp; Pickup');
+    expect(payload.html).toContain('November 4, 2026');
+    expect(payload.html).toContain('ET');
+  });
+  it('rejects an appointment missing a verified address', async () => {
+    const result = await notifyStaffPickupOrder(makeOrder({
+      fulfillmentType:'pickup_appointment',
+      fulfillment:{type:'pickup',pickup:{mode:'appointment',date:'2026-11-04T17:00:00.000Z'}},
+    }));
+    expect(result).toEqual({success:false,error:'MISSING_APPOINTMENT_DETAILS'});
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
   it('rejects unsupported fulfillment without notifying staff', async () => {
     const result = await notifyStaffPickupOrder(makeOrder({ fulfillmentType: 'mystery' }));
     expect(result).toEqual({ success: false, error: 'UNKNOWN_FULFILLMENT_TYPE' });
@@ -176,11 +201,11 @@ describe('Phase 1: Staff Notification Hotfix', () => {
   it('renders a real shipping address without defaulting to a made-up fee', async () => {
     const result = await notifyStaffPickupOrder(makeOrder({
       fulfillmentType: 'shipping',
-      deliveryAddress: { street: '123 Main', city: 'Atlanta', state: 'GA', zip: '30301' },
+      shippingAddress: { street: '123 Main', city: 'Atlanta', state: 'GA', zip: '30301' },
     }));
     expect(result.success).toBe(true);
     const payload = vi.mocked(sendEmail).mock.calls.at(-1)?.[0] as any;
-    expect(payload.subject).toContain('NEW DELIVERY ORDER');
+    expect(payload.subject).toContain('NEW GEORGIA SHIPMENT ORDER');
     expect(payload.html).not.toContain('undefined');
     expect(payload.html).toContain('Confirm fee in Square/admin dashboard');
     expect(payload.text).toContain('NEW DELIVERY ORDER');
