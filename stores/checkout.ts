@@ -21,6 +21,7 @@ export interface ContactInfo {
 }
 
 export interface PickupData {
+  mode?: 'market' | 'appointment';
   locationId: string;
   date: Date | null;
   instructions?: string;
@@ -51,6 +52,8 @@ export interface ShippingData {
     zip: string;
   };
   methodId: string;
+  fee?: number;
+  methodLabel?: string;
 }
 
 export interface FulfillmentData {
@@ -122,9 +125,9 @@ const initialContact: ContactInfo = {
 };
 
 const initialFulfillment: FulfillmentData = {
-  // New regular online shoppers start with the non-market option. The checkout
-  // automatically switches to pickup when preorder items are present.
-  type: 'shipping',
+  // Start with local delivery; customers outside the radius can check
+  // Georgia shipping for merchant-approved products or choose pickup.
+  type: 'delivery',
   shipping: {
     address: { street: '', city: '', state: 'GA', zip: '' },
     methodId: '',
@@ -282,10 +285,7 @@ export const useCheckoutStore = create<CheckoutState>((set, get) => {
       
       let shippingFee = 0;
       if (state.fulfillment.type === 'shipping' && state.fulfillment.shipping?.methodId) {
-        // Get shipping method price from imported function (safe for client bundle)
-        const methods = shippingMethods();
-        const method = methods.find((m: ShippingMethod) => m.id === state.fulfillment.shipping?.methodId);
-        shippingFee = method?.price || 0;
+        shippingFee = state.fulfillment.shipping?.fee || 0;
       }
       
       const totals = computeTotals({

@@ -22,12 +22,13 @@ interface DeliveryFormProps {
   subtotal: number;
   tip: number;
   onTipChange: (tip: number) => void;
+  onShippingAlternative?: () => void;
   errors?: Record<string, string>;
 }
 
 const TIP_PRESETS = [0, 2, 4, 6, 8];
 
-export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChange, errors = {} }: DeliveryFormProps) {
+export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChange, onShippingAlternative, errors = {} }: DeliveryFormProps) {
   // 🎯 ZIP VALIDATION: Only validate after user finishes typing (on blur)
   const [zipTouched, setZipTouched] = useState(false);
   const [zipValid, setZipValid] = useState<boolean | null>(null);
@@ -37,6 +38,7 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
   });
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [outsideArea, setOutsideArea] = useState(false);
   const quoteRevision = useRef(0);
   useEffect(() => { quoteRevision.current += 1; }, [subtotal]);
   
@@ -51,6 +53,7 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
     // Ignore a quote still in flight for a previous address.
     quoteRevision.current += 1;
     setQuoteError(null);
+    setOutsideArea(false);
     onChange({
       address: { ...data.address, ...addressUpdate },
       ...clearQuoteFields,
@@ -113,6 +116,7 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
       if (requestedRevision !== quoteRevision.current) return;
 
       if (!res.ok || !json.success) {
+        setOutsideArea(json.code === 'OUTSIDE_DELIVERY_AREA');
         setQuoteError(json.error || 'Unable to quote delivery for this address.');
         onChange(clearQuoteFields);
         return;
@@ -318,9 +322,14 @@ export default function DeliveryForm({ data, onChange, subtotal, tip, onTipChang
         )}
 
         {(quoteError || errors.deliveryFee) && (
-          <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">
-            {quoteError || errors.deliveryFee}
-          </p>
+          <div className="space-y-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            <p>{quoteError || errors.deliveryFee}</p>
+            {outsideArea && onShippingAlternative && (
+              <button type="button" onClick={onShippingAlternative} className="min-h-10 font-semibold text-emerald-800 underline">
+                Check Georgia shipping for eligible products instead
+              </button>
+            )}
+          </div>
         )}
       </div>
       

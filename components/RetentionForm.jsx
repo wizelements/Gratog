@@ -18,6 +18,7 @@ export default function RetentionForm({
   collectPhone = false,
   requireEmail = false,
   collectMessage = false,
+  collectEventDetails = false,
   collectMarket = false,
   marketOptions: marketOptionsProp = [],
   defaultMarket = '',
@@ -27,7 +28,11 @@ export default function RetentionForm({
   successDescription = "We'll send the next menu drop, reminder, or follow-up for this request.",
   onSuccess,
 }) {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '', website: '', marketId: defaultMarket || '' });
+  const freshForm = () => ({
+    name: '', email: '', phone: '', message: '', website: '', marketId: defaultMarket || '',
+    eventType: '', eventDate: '', eventLocation: '', guestCount: '',
+  });
+  const [form, setForm] = useState(freshForm);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -51,15 +56,32 @@ export default function RetentionForm({
     setError('');
 
     try {
+      const eventMetadata = collectEventDetails ? {
+        eventType: form.eventType,
+        eventDate: form.eventDate,
+        eventLocation: form.eventLocation.trim(),
+        guestCount: Number(form.guestCount),
+      } : {};
+      const eventMessage = collectEventDetails
+        ? [
+            `Event type: ${form.eventType}`,
+            `Date: ${form.eventDate}`,
+            `Location: ${form.eventLocation.trim()}`,
+            `Expected attendance: ${form.guestCount}`,
+            form.message.trim() ? `Additional details: ${form.message.trim()}` : '',
+          ].filter(Boolean).join('\n')
+        : form.message;
       const response = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          message: eventMessage,
           intent,
           source,
           metadata: {
             ...safeMetadata,
+            ...eventMetadata,
             marketId: form.marketId || safeMetadata.marketId || safeMetadata.landingMarketId || null,
             path: typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : undefined,
           },
@@ -79,7 +101,7 @@ export default function RetentionForm({
         ...safeMetadata,
       });
       setSuccess(true);
-      setForm({ name: '', email: '', phone: '', message: '', website: '', marketId: defaultMarket || '' });
+      setForm(freshForm());
       if (typeof onSuccess === 'function') onSuccess(data);
     } catch (err) {
       track('lead_capture_failed', {
@@ -142,6 +164,30 @@ export default function RetentionForm({
             ))}
           </select>
         )}
+        {collectEventDetails && (
+          <>
+            <label htmlFor="event-type" className="text-sm font-medium text-stone-800">Event type</label>
+            <select
+              id="event-type"
+              name="eventType"
+              value={form.eventType}
+              onChange={handleChange}
+              required
+              className="h-11 w-full rounded-md border border-stone-300 bg-white px-3 text-sm text-stone-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-700"
+            >
+              <option value="">Select your event type</option>
+              {['Golf or sports tournament', 'Corporate or employee event', 'Community festival', 'Wellness or fitness event', 'Private celebration', 'Vendor market or collaboration', 'Other'].map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+            <label htmlFor="event-date" className="text-sm font-medium text-stone-800">Event date</label>
+            <Input id="event-date" aria-label="Event date" name="eventDate" type="date" value={form.eventDate} onChange={handleChange} required />
+            <label htmlFor="event-location" className="text-sm font-medium text-stone-800">City and venue or general location</label>
+            <Input id="event-location" aria-label="Event location" name="eventLocation" value={form.eventLocation} onChange={handleChange} placeholder="City and venue (if known)" maxLength={160} required />
+            <label htmlFor="event-guests" className="text-sm font-medium text-stone-800">Estimated number of guests</label>
+            <Input id="event-guests" aria-label="Estimated guests" name="guestCount" type="number" min={1} max={100000} value={form.guestCount} onChange={handleChange} placeholder="For example, 75" required />
+          </>
+        )}
         {collectMessage && (
           <Textarea
             aria-label="Message"
@@ -149,6 +195,7 @@ export default function RetentionForm({
             value={form.message}
             onChange={handleChange}
             placeholder={messagePlaceholder}
+            maxLength={collectEventDetails ? 400 : 1000}
             rows={compact ? 3 : 4}
           />
         )}

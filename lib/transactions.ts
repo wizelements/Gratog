@@ -5,6 +5,7 @@
 
 import { Db, ClientSession } from 'mongodb';
 import { connectToDatabase } from './db-optimized';
+import { reservePickupSlotInOrderTransaction } from './pickup-locations';
 
 /**
  * Execute a function within a MongoDB transaction
@@ -34,6 +35,16 @@ export async function withTransaction<T>(
  */
 export async function createOrderAtomic(orderData: any) {
   return withTransaction(async (db, session) => {
+    // Serialize the final capacity decision with the order insert. Mongo's
+    // write conflict is retried by session.withTransaction; only the committed
+    // order consumes an appointment. This is the existing order store, not a
+    // parallel reservation database.
+    const pickup = orderData.fulfillment?.pickup || orderData.pickup;
+    if (pickup?.mode === 'appointment') {
+      await reservePickupSlotInOrderTransaction(
+        db, session, String(pickup.locationId || ''), String(pickup.date || '')
+      );
+    }
     // 1. Insert order
     const orderResult = await db.collection('orders').insertOne(orderData, { session });
     

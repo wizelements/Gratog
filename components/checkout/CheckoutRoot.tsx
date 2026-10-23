@@ -317,6 +317,7 @@ function CheckoutContent() {
                         <AnimatePresence mode="wait">
                           {fulfillment.type === 'pickup' && (
                             <PickupForm
+                              marketOnly={hasPreorderItems}
                               data={fulfillment.pickup || { locationId: '', date: null }}
                               onChange={(data) => setFulfillment({ pickup: { locationId: '', date: null, ...fulfillment.pickup, ...data } })}
                               errors={validation.fulfillment}
@@ -329,11 +330,19 @@ function CheckoutContent() {
                               subtotal={totals.subtotal}
                               tip={tip}
                               onTipChange={setTip}
+                              onShippingAlternative={() => {
+                                clearValidation();
+                                setFulfillment({ type: 'shipping', shipping: {
+                                  address: { ...fulfillment.delivery?.address, street: fulfillment.delivery?.address.street || '',
+                                    city: fulfillment.delivery?.address.city || '', state: 'GA', zip: fulfillment.delivery?.address.zip || '' },
+                                  methodId: '' } });
+                              }}
                               errors={validation.fulfillment}
                             />
                           )}
                           {fulfillment.type === 'shipping' && (
                             <ShippingForm
+                              items={cart}
                               data={fulfillment.shipping || { address: { street: '', city: '', state: 'GA', zip: '' }, methodId: '' }}
                               onChange={(data) => setFulfillment({ shipping: { address: { street: '', city: '', state: 'GA', zip: '' }, methodId: '', ...fulfillment.shipping, ...data } })}
                               errors={validation.fulfillment}

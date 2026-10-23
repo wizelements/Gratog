@@ -83,7 +83,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const { db } = await connectToDatabase();
-    await db.collection('lead_intents').updateOne(
+    // Event proposals are separate opportunities even when the same organizer
+    // returns with a second date. Never overwrite an earlier event inquiry.
+    if (document.intent === 'event_booking_inquiry') {
+      await db.collection('lead_intents').insertOne(document);
+    } else {
+      await db.collection('lead_intents').updateOne(
       {
         intent: document.intent,
         $or: [
@@ -93,7 +98,8 @@ export async function POST(request: NextRequest) {
       },
       { $set: document, $setOnInsert: { firstCapturedAt: now } },
       { upsert: true }
-    );
+      );
+    }
 
     if (document.email && intentRequiresEmail(document.intent)) {
       await db.collection('newsletter_subscribers').updateOne(

@@ -9,6 +9,8 @@ import {
 } from '@/lib/shipping-service';
 import { createLogger } from '@/lib/logger';
 import { validateGeorgiaDestination } from '@/lib/georgia-orders';
+import { priceCart } from '@/lib/cart-pricing';
+import { shippingMethodKey } from '@/lib/shipping-service';
 
 const logger = createLogger('ShippingRatesAPI');
 
@@ -46,13 +48,25 @@ export async function POST(request: NextRequest) {
     // Use normalized address if available
     const shippingAddress = addressValidation.normalized || address;
 
-    // Calculate package dimensions from cart items
-    const packageDimensions = items && items.length > 0
-      ? calculatePackageDimensions(items)
-      : undefined;
-
-    // Get shipping rates
-    const rates = await getShippingRates(shippingAddress, packageDimensions);
+    if (!Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ success: false, error: 'Cart is required to check shipping eligibility.' }, { status: 400 });
+    }
+    const pricedCart = await priceCart({ items, deliveryFeeCents: 0 });
+    const unapproved = pricedCart.items.filter(line => !line.shippingEligible || line.marketExclusive || line.isPreorder);
+    if (unapproved.length) {
+      return NextResponse.json({
+        success: false,
+        code: 'PRODUCT_NOT_APPROVED_FOR_SHIPPING',
+        error: 'Your cart contains products not yet approved for Georgia parcel shipping. Choose eligible local delivery or pickup.',
+        products: unapproved.map(item => item.name),
+      }, { status: 422 });
+    }
+    // Never use client-supplied weights or rates; authoritative product quantities only.
+    const packageDimensions = calculatePackageDimensions(pricedCart.items);
+    const rates = (await getShippingRates({ ...shippingAddress, street2: shippingAddress.suite || shippingAddress.street2 }, packageDimensions))
+      .filter(rate => Number.isFinite(rate.rate) && rate.rate > 0)
+      .map(rate => ({ ...rate, methodKey: shippingMethodKey(rate) }));
+    if (!rates.length) return NextResponse.json({ success: false, error: 'No carrier services are available for this cart.' }, { status: 503 });
 
     logger.info('Shipping rates retrieved', { 
       zip: address.zip, 
@@ -62,7 +76,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       address: shippingAddress,
-      rates: rates.sort((a, b) => a.rate - b.rate), // Sort by price
+      rates: rates.sort((a, b) => a.rate - b.rate), // Verified live quotes only
       packageWeight: packageDimensions?.weight
     });
   } catch (error) {
@@ -71,8 +85,8 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { error: 'Failed to calculate shipping rates' },
-      { status: 500 }
+      { success: false, code: 'SHIPPING_UNAVAILABLE', error: 'Verified carrier shipping rates are currently unavailable. Please choose delivery or pickup.' },
+      { status: 503 }
     );
   }
 }
