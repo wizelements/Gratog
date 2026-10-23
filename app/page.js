@@ -17,7 +17,7 @@ export const metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'Taste of Gratitude | Weekly Market Preorders',
+    title: 'Shop Taste of Gratitude | Georgia Drinks & Sea Moss',
     description: 'Taste of Gratitude makes small-batch market favorites for Georgia customers. Georgia orders only, with scheduled pickup and eligible delivery or shipping.',
     url: 'https://tasteofgratitude.shop',
     siteName: 'Taste of Gratitude',
@@ -26,7 +26,7 @@ export const metadata = {
   },
   twitter: {
     card: 'summary',
-    title: 'Taste of Gratitude | Weekly Market Preorders',
+    title: 'Shop Taste of Gratitude | Georgia Drinks & Sea Moss',
     description: 'Shop fresh sea moss and drinks for pickup at Georgia markets, with eligible in-state fulfillment. Georgia orders only.',
   },
 };
@@ -45,7 +45,7 @@ import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 import { logger } from '@/lib/logger';
 import { buildHomepageFaqSchema, buildHomepageOrganizationSchema } from '@/seo/schemas';
 import HomePageClient from '@/components/home/HomePageClient';
-import { getCurrentWeekRange } from '@/lib/menus/week-utils';
+import { selectHomepageCheckoutProducts } from '@/lib/homepage-merchandising';
 
 async function getHomepageCatalogData() {
   const snapshot = await getStorefrontCatalogSnapshot({});
@@ -56,18 +56,8 @@ async function getHomepageCatalogData() {
     });
   }
 
-  // 🎯 FILTER: Show all products that aren't explicitly unavailable
-  const availableProducts = snapshot.products.filter(product => {
-    if (product.available === false) return false;
-    if (product.purchaseStatus === 'sold_out') return false;
-    if (product.availability === 'sold_out') return false;
-    if (product.squareEcomAvailable === false) return false;
-    
-    return true;
-  });
-
   return {
-    featuredProducts: availableProducts
+    featuredProducts: selectHomepageCheckoutProducts(snapshot),
   };
 }
 
@@ -79,15 +69,12 @@ export default async function HomePage() {
 
   const organizationSchema = buildHomepageOrganizationSchema();
   const faqSchema = buildHomepageFaqSchema();
-  const { weekStart, weekEnd } = getCurrentWeekRange();
 
   return (
     <HomePageClient
       initialFeaturedProducts={featuredProducts}
       organizationSchema={organizationSchema}
       faqSchema={faqSchema}
-      weekStart={weekStart}
-      weekEnd={weekEnd}
     />
   );
 }

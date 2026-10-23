@@ -14,7 +14,7 @@ describe('regular Georgia customers can order without selecting a market', () =>
   it('gives standard shoppers a direct shopping route from the homepage and catalog', () => {
     const home = read('components/home/HomePageClient.jsx');
     const catalog = read('components/catalog/CatalogPageClient.jsx');
-    expect(home).toContain('<Link href="/catalog">Shop online in Georgia</Link>');
+    expect(home).toContain('<Link href="/catalog">Shop drinks & sea moss</Link>');
     expect(home).toContain('<Link href="/weekly-menu">Preorder for market pickup</Link>');
     expect(catalog).toContain('No market visit required for eligible orders');
     expect(catalog).toContain('Regular online orders can go through the cart above.');
