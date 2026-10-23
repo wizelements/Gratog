@@ -289,9 +289,12 @@ export default function ReviewAndPay({
 
       // 🎯 CONVERSION PSYCHOLOGY: Market pickup → Live queue (immediate gratification loop)
       // This creates a dopamine hit: pay → see position → anticipation builds
-      const isMarketPickup = shouldUseQueue(fulfillment.type, { 
-        marketId: fulfillment.pickup?.locationId 
-      });
+      const isMarketPickup = fulfillment.type === 'pickup'
+        && fulfillment.pickup?.mode !== 'appointment'
+        && shouldUseQueue(fulfillment.type, {
+          marketId: fulfillment.pickup?.locationId,
+          mode: fulfillment.pickup?.mode
+        });
       
       if (isMarketPickup) {
         try {
