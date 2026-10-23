@@ -39,7 +39,9 @@ function verifyCronAuth(request: NextRequest) {
 }
 
 function baseUrl() {
-  return (process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://tasteofgratitude.shop').replace(/\/$/, '');
+  // Merchant emails and RFC 8058 unsubscribe headers require a stable,
+  // canonical HTTPS origin, not unvalidated deployment environment strings.
+  return 'https://tasteofgratitude.shop';
 }
 
 function escapeHtml(value: unknown) {
