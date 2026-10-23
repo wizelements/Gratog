@@ -279,6 +279,11 @@ async function getEasyPostRates(
  */
 export async function validateAddress(address: ShippingAddress): Promise<AddressValidation> {
   logger.info('Validating address', { zip: address.zip });
+  // Validate the supplied postal format before geographical eligibility, so
+  // malformed addresses receive a useful field-specific error.
+  if (!address.zip || !/^\d{5}(-\d{4})?$/.test(address.zip)) {
+    return { valid: false, errors: ['Valid ZIP code is required'] };
+  }
   const eligibility = validateGeorgiaDestination(address);
   if (!eligibility.valid) return { valid: false, errors: [eligibility.message] };
 

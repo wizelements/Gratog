@@ -12,6 +12,7 @@ declare module '@/components/RetentionForm' {
     collectPhone?: boolean;
     requireEmail?: boolean;
     collectMessage?: boolean;
+    collectEventDetails?: boolean;
     collectMarket?: boolean;
     marketOptions?: Array<{ id: string; name: string }>;
     defaultMarket?: string;
