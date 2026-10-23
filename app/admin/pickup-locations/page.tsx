@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { adminFetch } from '@/lib/admin-fetch';
 import { easternDisplayInput, easternInputToUtc } from '@/lib/pickup-eastern-time';
+import { BROWNS_MILL_PICKUP, prepareBrownsMillMondayWindows } from '@/lib/browns-mill-pickup';
 
 type Window = { startsAt: string; endsAt: string; cutoffAt: string; capacity: number };
 type Location = { id?: string; name: string; street: string; city: string; state: 'GA'; zip: string; instructions: string; isActive: boolean; staffingConfirmed: boolean; addressVerified: boolean; windows: Window[] };
@@ -17,6 +18,8 @@ export default function PickupLocationSettings() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const [brownsMillCapacity, setBrownsMillCapacity] = useState('');
+  const [brownsMillCutoffHours, setBrownsMillCutoffHours] = useState('');
   const reload = useCallback(async () => {
     try {
       const response = await adminFetch<{locations: Location[]}>('/api/admin/pickup-locations', { skipCsrf: true });
@@ -31,6 +34,28 @@ export default function PickupLocationSettings() {
   const updateEasternTime = (index: number, key: 'startsAt'|'endsAt'|'cutoffAt', value: string) => {
     try { patchWindow(index,{[key]:toIso(value)}); setError(''); }
     catch (error) { setError(error instanceof Error ? error.message : 'Invalid Eastern time'); }
+  };
+
+  const applyBrownsMillDraft = () => {
+    setForm({
+      ...empty,
+      name: BROWNS_MILL_PICKUP.name,
+      city: BROWNS_MILL_PICKUP.city,
+    });
+    setError('');
+    setMessage('Browns Mill area and Monday hours prepared. A real authorized meeting address and capacity are still required before activation.');
+  };
+  const prepareMondayWindows = () => {
+    try {
+      const capacity = brownsMillCapacity.trim() ? Number(brownsMillCapacity) : NaN;
+      const cutoff = brownsMillCutoffHours.trim() ? Number(brownsMillCutoffHours) : NaN;
+      const windows = prepareBrownsMillMondayWindows(new Date(), capacity, cutoff);
+      setForm(previous => ({ ...previous, windows, isActive: false, staffingConfirmed: false }));
+      setError('');
+      setMessage('Four future Monday windows prepared for 12:00–5:00 PM Eastern. They remain unpublished until you verify the address, staffing and capacity.');
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Unable to prepare Monday windows');
+    }
   };
 
   const save = async (event: React.FormEvent) => {
@@ -66,6 +91,30 @@ export default function PickupLocationSettings() {
       </section>
       <form onSubmit={save} className="space-y-5 rounded-xl border bg-white p-5">
         <h2 className="text-xl font-semibold">{form.id ? 'Edit' : 'Create'} pickup location</h2>
+        {!form.id && (
+          <section aria-label="Browns Mill pickup plan" className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+            <p className="font-semibold">{BROWNS_MILL_PICKUP.name}</p>
+            <p className="mt-1 text-sm">{BROWNS_MILL_PICKUP.hoursLabel}. General service area only, not a confirmed address or golf course partnership.</p>
+            <p className="mt-1 text-sm">Booking remains closed until the exact authorized meeting point, staffing, capacity and cutoff are verified.</p>
+            <button type="button" onClick={applyBrownsMillDraft} className="mt-3 rounded-md border border-emerald-600 px-3 py-2 text-sm font-semibold">
+              Use Browns Mill area draft
+            </button>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <label className="text-sm font-medium">Verified maximum appointments per Monday
+                <input type="number" min={1} max={100} value={brownsMillCapacity} onChange={event => setBrownsMillCapacity(event.target.value)}
+                  placeholder="Enter actual capacity" className="mt-1 w-full rounded-md border p-2" />
+              </label>
+              <label className="text-sm font-medium">Order cutoff hours before pickup
+                <input type="number" min={1} max={168} value={brownsMillCutoffHours} onChange={event => setBrownsMillCutoffHours(event.target.value)}
+                  placeholder="Choose hours" className="mt-1 w-full rounded-md border p-2" />
+              </label>
+            </div>
+            <button type="button" onClick={prepareMondayWindows}
+              className="mt-3 rounded-md border border-emerald-600 px-3 py-2 text-sm font-semibold">
+              Prepare next four Monday windows (unpublished)
+            </button>
+          </section>
+        )}
         <div className="grid gap-3 sm:grid-cols-2">
           {([['name','Public location name'],['street','Verified street address'],['city','City'],['zip','Georgia ZIP']] as const).map(([key,label]) => (
             <label key={key} className="block text-sm font-medium">{label}

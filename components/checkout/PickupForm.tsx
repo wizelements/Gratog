@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { PickupData } from '@/stores/checkout';
 import { Fulfillment } from '@/adapters/fulfillmentAdapter';
+import { BROWNS_MILL_PICKUP } from '@/lib/browns-mill-pickup';
 
 type PickupWindow = { startsAt: string; endsAt: string; cutoffAt: string; capacity: number };
 type PickupLocation = { id: string; name: string; street: string; city: string; state: string; zip: string; instructions: string; windows: PickupWindow[] };
@@ -65,6 +66,12 @@ export default function PickupForm({ data, onChange, errors = {}, marketOnly = f
       {marketOnly && <p className="rounded-lg bg-amber-50 p-3 text-sm">Your cart includes market-only items, so a market pickup is required.</p>}
       {mode === 'appointment' && (
         <>
+          <aside aria-label="Browns Mill area pickup plan" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-gray-800">
+            <p className="font-semibold">{BROWNS_MILL_PICKUP.name}</p>
+            <p className="mt-1">{BROWNS_MILL_PICKUP.hoursLabel}</p>
+            <p className="mt-1">General pickup area only. The exact meeting point will be shown with a verified appointment. Booking opens once the location and staffed times are confirmed.</p>
+            <p className="mt-2 text-emerald-800">{BROWNS_MILL_PICKUP.golfNote}</p>
+          </aside>
           {!appointments.length && <p role="status" className="rounded-lg bg-stone-50 p-4 text-sm text-gray-700">
             {loadError ? 'Appointment pickup is temporarily unavailable.' : 'No non-market pickup appointments are currently available. You can check market pickup or local delivery.'}
           </p>}
