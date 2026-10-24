@@ -10,6 +10,9 @@ on:
       - 'tests/checkout-atomic-mongo-load.test.ts'
       - 'lib/idempotency.ts'
       - 'app/api/orders/create/route.js'
+      - 'lib/square/**'
+      - 'app/api/webhooks/square/**'
+      - 'tests/square-webhook-claims-real-mongo.test.ts'
       - '.github/workflows/preorder-real-mongo-load.yml'
   workflow_dispatch:
 
@@ -51,7 +54,7 @@ jobs:
           echo "Replica set did not elect a primary" >&2
           exit 1
       - name: Verify 1000 real Mongo checkout transactions
-        run: npx vitest run tests/preorder-real-mongo-load.test.ts tests/checkout-atomic-mongo-load.test.ts --reporter=verbose
+        run: npx vitest run tests/preorder-real-mongo-load.test.ts tests/checkout-atomic-mongo-load.test.ts tests/square-webhook-claims-real-mongo.test.ts --reporter=verbose
       - name: Stop isolated database
         if: always()
         run: docker rm -f cert-mongo || true

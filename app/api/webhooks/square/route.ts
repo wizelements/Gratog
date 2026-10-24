@@ -1,8 +1,9 @@
 export const dynamic = 'force-dynamic';
 
 import { logger } from '@/lib/logger';
+import { claimSquareWebhookEvent, finalizeSquareWebhookEvent } from '@/lib/square/webhook-claims';
+import { verifySquareWebhookHmac } from '@/lib/square/webhook-signature';
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { getSquareWebhookSignatureKey } from '@/lib/square';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
@@ -56,45 +57,15 @@ const STATUS_PRECEDENCE: Record<string, number> = {
 // Verify webhook signature for security
 function verifyWebhookSignature(signatureHeader: string, requestUrl: string, requestBody: string): boolean {
   let webhookKey: string;
-  try {
-    webhookKey = getSquareWebhookSignatureKey();
-  } catch {
-    logger.warn('Webhook', 'Webhook signature key not configured');
-    return false;
-  }
-  
-  if (!signatureHeader) {
-    logger.warn('Webhook', 'Missing signature header');
-    return false;
-  }
-  
-  try {
-    // Square signs notificationUrl + rawBody and sends the base64 signature directly.
-    const normalizedSignature = signatureHeader.trim();
-    if (!normalizedSignature) {
-      logger.error('Webhook', 'Empty signature header');
-      return false;
-    }
-
-    const stringToSign = requestUrl + requestBody;
-    
-    // Calculate HMAC
-    const hmac = crypto.createHmac('sha256', webhookKey);
-    hmac.update(stringToSign);
-    const calculatedSignature = hmac.digest('base64');
-
-    const calculatedBuffer = Buffer.from(calculatedSignature);
-    const providedBuffer = Buffer.from(normalizedSignature);
-    if (calculatedBuffer.length !== providedBuffer.length) {
-      return false;
-    }
-
-    // Compare signatures securely
-    return crypto.timingSafeEqual(calculatedBuffer, providedBuffer);
-  } catch (error) {
-    logger.error('Webhook', 'Webhook signature verification error:', error);
-    return false;
-  }
+  try { webhookKey = getSquareWebhookSignatureKey(); }
+  catch { logger.warn('Webhook', 'Webhook signature key not configured'); return false; }
+  // Verify against the immutable URL configured in Square, not a spoofed Host
+  // value. In existing deployments the canonical URL is the public webhook.
+  const configured = process.env.SQUARE_WEBHOOK_NOTIFICATION_URL ||
+    'https://tasteofgratitude.shop/api/webhooks/square';
+  // If webhook URL differs across certified Preview/Sandbox, it MUST be
+  // configured explicitly and protected by its matching Square signature key.
+  return verifySquareWebhookHmac(signatureHeader, configured, requestBody, webhookKey);
 }
 
 /**
@@ -247,7 +218,7 @@ async function updateOrderStatusSafe(
     
     // Apply update to orders collection
     const result = await db.collection('orders').updateOne(
-      { id: orderId },
+      { id: orderId, status: order.status },
       {
         $set: {
           status: newStatus,
@@ -478,7 +449,9 @@ export async function POST(request: NextRequest) {
     // Connect to database
     const { db } = await connectToDatabase();
     
-    // Event deduplication with retry safety
+    // The legacy ledger is retained for previously completed events. The
+    // new _id-based claim serializes live handlers even without a preexisting
+    // secondary index; duplicates cannot execute email/refund/inventory logic.
     const existingEvent = await db.collection('webhook_events_processed').findOne({ eventId });
     
     if (existingEvent) {
@@ -502,6 +475,18 @@ export async function POST(request: NextRequest) {
       });
     }
     
+    const webhookClaims = db.collection('square_webhook_claims');
+    const eventClaim = await claimSquareWebhookEvent(webhookClaims, eventId);
+    if (eventClaim === 'duplicate') {
+      return NextResponse.json({ received: true, eventId, eventType, cached: true });
+    }
+    if (eventClaim === 'busy') {
+      // In-progress or uncertain previous attempt: Square will retry, while
+      // an operator reconciles the authoritative state without re-sending.
+      return NextResponse.json({ error: 'Webhook event reconciliation pending' },
+        { status: 503, headers: { 'Retry-After': '10' } });
+    }
+
     // Process the event based on type
     let processingResult = { success: true, message: '' };
     
@@ -554,7 +539,8 @@ export async function POST(request: NextRequest) {
         },
         { upsert: true }
       );
-      
+      await finalizeSquareWebhookEvent(webhookClaims, eventId, true);
+
     } catch (eventError) {
       const errorMessage = eventError instanceof Error ? eventError.message : String(eventError);
       
@@ -569,7 +555,9 @@ export async function POST(request: NextRequest) {
         extra: { eventId }
       });
       
-      // Record failed processing (upsert, allows retry)
+      // A partial side effect may have happened. Do not automatically
+      // replay a non-idempotent action; retain evidence for reconciliation.
+      await finalizeSquareWebhookEvent(webhookClaims, eventId, false);
       await db.collection('webhook_events_processed').updateOne(
         { eventId },
         {
@@ -678,14 +666,14 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
   // Map Square payment status to our order status - FIXED: Use standardized status values
   const statusMap: Record<string, string> = {
     'COMPLETED': 'CONFIRMED',  // Was 'paid' - now uses order status value
-    'APPROVED': 'CONFIRMED',   // Was 'paid' - now uses order status value  
+    'APPROVED': 'payment_processing', // Authorized, NOT captured
     'PENDING': 'payment_processing',
     'CANCELED': 'payment_failed',
     'FAILED': 'payment_failed'
   };
   
   const newOrderStatus = statusMap[payment.status] || 'payment_processing';
-  const isCompleted = payment.status === 'COMPLETED' || payment.status === 'APPROVED';
+  const isCompleted = payment.status === 'COMPLETED';
   
   // Build update fields
   const updateFields: Record<string, any> = {
