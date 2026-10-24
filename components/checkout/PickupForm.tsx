@@ -6,6 +6,7 @@
  */
 
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { MapPin, Calendar } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -49,8 +50,11 @@ export default function PickupForm({ data, onChange, errors = {} }: PickupFormPr
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Pickup Details</h3>
         <p className="text-sm text-gray-600">
-          Select a market location and pickup date
+          This option is for participating farmers markets only. Browns Mill-area pickup outside a market is not available for online booking yet.
         </p>
+        <Link href="/contact?request=non-market-pickup" className="mt-2 inline-block text-sm font-semibold text-emerald-800 underline underline-offset-4">
+          Request a non-market pickup appointment
+        </Link>
       </div>
       
       {/* Location Selector */}
@@ -68,7 +72,7 @@ export default function PickupForm({ data, onChange, errors = {} }: PickupFormPr
           >
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-gray-500" />
-              <SelectValue placeholder="Choose a market location" />
+              <SelectValue placeholder="Choose a farmers market" />
             </div>
           </SelectTrigger>
           <SelectContent>

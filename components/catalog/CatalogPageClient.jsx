@@ -437,10 +437,10 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
               Georgia online shop • small-batch favorites
             </p>
             <h1 className="text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-stone-950 md:text-5xl">
-              Your favorites, wherever you are in Georgia.
+              Order for yourself. No market visit needed.
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-stone-700">
-              Explore sea moss gels, lemonades, fresh drinks and seasonal favorites. Shop eligible items for Georgia shipping or local delivery without visiting a market; market-only products are reserved for pickup.
+              Select your drinks or sea moss, add them to your cart, and check your full address for local delivery at checkout. Only eligible items and confirmed options can proceed to payment.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-2 text-sm font-medium text-emerald-900">
               <span className="rounded-full bg-white px-4 py-2 shadow-sm">Georgia orders only</span>
@@ -459,28 +459,16 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
               </Link>
             )}
             
-            {/* Quiz CTA */}
             {!infoMode && (
-              <Card className="mx-auto mt-8 max-w-2xl rounded-[1.5rem] border-emerald-900/10 bg-white shadow-sm shadow-emerald-950/5">
-                <CardContent className="p-5 sm:p-6">
-                  <div className="flex items-center justify-center gap-3 mb-4">
-                    <Sparkles className="w-6 h-6 text-emerald-600" aria-hidden="true" />
-                    <h3 className="text-xl font-semibold text-stone-950">Not sure where to start?</h3>
-                  </div>
-                  <p className="mb-5 text-stone-600">
-                    Take the 60-second wellness quiz for a more personal starting point.
-                  </p>
-                  <Button
-                    asChild
-                    className="h-11 rounded-full bg-emerald-700 px-6 hover:bg-emerald-800"
-                  >
-                    <Link href="/quiz">
-                      <Sparkles className="mr-2 h-4 w-4" aria-hidden="true" />
-                      Take the Quiz
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+              <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-emerald-200 bg-white p-5 text-left shadow-sm" aria-label="How to order for delivery">
+                <h2 className="text-xl font-semibold text-stone-950">Ordering for yourself? Here’s how.</h2>
+                <ol className="mt-3 grid gap-3 text-sm leading-6 text-stone-700 sm:grid-cols-3">
+                  <li><strong>1. Add your favorites.</strong> Select products and quantities below.</li>
+                  <li><strong>2. Check delivery.</strong> Enter your complete address in checkout; availability and fees are confirmed there.</li>
+                  <li><strong>3. Review and pay.</strong> Confirm the order and delivery details before paying.</li>
+                </ol>
+                <p className="mt-4 text-sm text-stone-600">Want Browns Mill-area Monday pickup instead? <Link href="/contact?request=non-market-pickup" className="font-semibold text-emerald-800 underline underline-offset-4">Ask about a non-market appointment</Link>. Online appointment booking is not open yet.</p>
+              </div>
             )}
             
             {/* Info Mode Banner */}
@@ -510,7 +498,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Weekly menu email</p>
               <h2 className="mt-2 text-2xl font-semibold text-stone-950">Prefer to pick up at a market?</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-                Regular online orders can go through the cart above. For market-only items, reserve ahead for pickup at a participating Georgia market. Subscribe for weekly menus and market news.
+                Market pickup is separate from your personal delivery order. Only choose this if you want to visit one of our participating Georgia markets.
               </p>
               <Button asChild variant="outline" className="mt-4 h-11 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
                 <Link
