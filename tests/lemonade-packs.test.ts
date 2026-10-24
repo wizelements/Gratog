@@ -21,6 +21,11 @@ describe('approved lemonade-only four- and six-pack policy', () => {
       discountCents: discount, fourPacks: four, sixPacks: six,
     });
   });
+  it('includes seasonal menu lemonades at the approved unit price', () => {
+    for (const name of ['Kissed by Gods', 'Gracious Roots', 'Melon Rita']) {
+      expect(isApprovedLemonadeLine(bottle(name, 4))).toBe(true);
+    }
+  });
   it('allows mix and match, including repeats', () => {
     expect(calculateLemonadePackDiscount([
       bottle('Strawberry Bliss', 2), bottle('Calm Waters'), bottle('Supplemint'),
@@ -29,6 +34,7 @@ describe('approved lemonade-only four- and six-pack policy', () => {
   it('excludes gels, shots, juices, unknown flavors and unapproved sizes and prices', () => {
     const excluded = [
       bottle('APG', 6, { category: 'juices' }),
+      bottle('Strawberry Bliss', 6, { category: 'juices' }),
       bottle('Blue Lotus Gel', 6, { category: 'gels' }),
       bottle('Elderberry Ginger Shot', 6, { category: 'shots' }),
       bottle('Unknown Lemonade', 6),

@@ -12,6 +12,7 @@ export const LEMONADE_PACKS = Object.freeze([
 const ALLOWED = new Set([
   'strawberry-bliss', 'pineapple-mango', 'pineapple-mango-lemonade',
   'pineapple-basil', 'calm-waters', 'supplemint', 'strawberry-rita',
+  'kissed-by-gods', 'gracious-roots', 'melon-rita',
 ]);
 
 const normalize = (v: unknown) => typeof v === 'string'
@@ -28,11 +29,14 @@ export function isApprovedLemonadeLine(line: PackLine): boolean {
   const ids = [line.curatedProductId, line.slug, line.name, line.id, line.productId]
     .map(normalize);
   const known = ids.some((id) => ALLOWED.has(id));
+  const category = normalize(line.category);
+  const isLemonadeCategory = !category || category === 'lemonade' || category === 'lemonades' ||
+    category.startsWith('lemonade-') || category.endsWith('-lemonades');
   const cents = typeof line.unitPriceCents === 'number' ? line.unitPriceCents
     : typeof line.priceCents === 'number' ? line.priceCents
     : typeof line.price === 'number' ? Math.round(line.price * 100) : null;
   const size = String(line.subtitle || line.variantLabel || line.size || '').trim();
-  return known && cents === LEMONADE_UNIT_CENTS &&
+  return known && isLemonadeCategory && cents === LEMONADE_UNIT_CENTS &&
     (!size || /^(16\s*oz|regular|standard|market item)(?:\b|$)/i.test(size));
 }
 
