@@ -25,7 +25,7 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import {
   createCapacityBoundPreorder, expandCapacityDemand, fingerprintPreorder,
   loadApprovedBundleRecipes, pickupDateKey, releaseCapacityAfterDefinitiveLinkFailure,
-  CapacityError, PREORDER_SLOT_SKU,
+  CapacityError, PREORDER_SLOT_SKU, claimPreorderPaymentLinkCreation,
 } from '@/lib/preorder/capacity';
 
 const logger = createLogger('PreorderAPI');
@@ -419,6 +419,18 @@ export async function POST(request: any) {
       }, { status: 409 });
     }
 
+    // Claim one provider creation attempt across all serverless workers.
+    // In-progress duplicates cannot generate second links or free capacity.
+    const claimedLink = await claimPreorderPaymentLinkCreation(db, canonicalOrderNumber);
+    if (!claimedLink) {
+      return NextResponse.json({
+        success: false,
+        code: 'PAYMENT_LINK_IN_PROGRESS',
+        error: 'Secure payment setup is already in progress. Please retry this order shortly; do not start another purchase.',
+        canonicalOrderNumber,
+      }, { status: 409, headers: { 'Retry-After': '3', 'Cache-Control': 'no-store' } });
+    }
+
     let payment: null | {
       provider: 'square';
       status: 'PENDING';
@@ -437,7 +449,9 @@ export async function POST(request: any) {
         basePriceMoney: { amount: Number(item.priceCents) || Math.round((Number(item.price) || 0) * 100), currency: 'USD' },
       }));
 
-      const paymentResult = await createPaymentLink({
+      let paymentResult: Awaited<ReturnType<typeof createPaymentLink>>;
+      try {
+        paymentResult = await createPaymentLink({
         referenceId: canonicalOrderNumber,
         lineItems: paymentLineItems,
         description: `Taste of Gratitude preorder ${canonicalOrderNumber}`,
@@ -451,7 +465,22 @@ export async function POST(request: any) {
           source: 'preorder_payment_link',
         },
         idempotencyKey: `preorder_link_${canonicalOrderNumber}`,
-      });
+        });
+      } catch (error: any) {
+        // Unknown provider outcome: it may have created a payable link.
+        // Do not release/charge again until an operator reconciles Square.
+        await updatePreorderPaymentFields(canonicalOrderNumber, {
+          paymentLinkState: 'needs_provider_reconciliation',
+          paymentReviewState: 'needs_provider_reconciliation',
+          paymentError: 'Payment provider outcome is uncertain',
+        });
+        logger.error('Ambiguous preorder payment link creation', { canonicalOrderNumber });
+        return NextResponse.json({
+          success: false, code: 'PAYMENT_PROVIDER_RECONCILIATION',
+          error: 'Payment status is being verified. Please contact support with your order number before attempting another payment.',
+          canonicalOrderNumber,
+        }, { status: 503 });
+      }
 
       const paymentLink = paymentResult.data?.paymentLink;
       if (!paymentResult.success || !paymentLink?.url) {
@@ -467,6 +496,8 @@ export async function POST(request: any) {
           paymentStatus: paymentResult.success === false && !paymentLink?.id
             ? 'FAILED' : 'PENDING',
           paymentReviewState: paymentResult.success === false && !paymentLink?.id
+            ? 'definitively_failed' : 'needs_provider_reconciliation',
+          paymentLinkState: paymentResult.success === false && !paymentLink?.id
             ? 'definitively_failed' : 'needs_provider_reconciliation',
           paymentError: detail,
           paymentProvider: 'square',
@@ -489,11 +520,12 @@ export async function POST(request: any) {
       await updatePreorderPaymentFields(canonicalOrderNumber, {
         paymentLinkId: paymentLink.id,
         paymentUrl: paymentLink.url,
+        paymentLinkState: 'ready',
         squareOrderId: paymentLink.orderId || null,
         paymentProvider: 'square',
-        paymentStatus: 'PENDING',
-        amountPaid: 0,
-        balanceDue: total,
+        // Never overwrite paymentStatus/amountPaid here: a signed Square
+        // webhook may already have marked the order PAID during this call.
+
       });
 
       payment = {

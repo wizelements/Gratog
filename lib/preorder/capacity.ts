@@ -169,11 +169,13 @@ export async function createCapacityBoundPreorder(input: {
     return { preorder: existing, replay: true };
   }
 
-  const session = client.startSession();
+  // Validate durable uniqueness before opening a session: on a missing index,
+  // creating a session first leaks resources during traffic spikes.
   const indexPresent = await db.collection('marketorders').indexExists('idx_marketorders_checkout_request');
   if (!indexPresent) {
     throw new CapacityError('PREORDER_IDEMPOTENCY_INDEX_MISSING', 'Preorder index has not been provisioned', 503);
   }
+  const session = client.startSession();
   let created: any;
   let wasReplay = false;
   try {
@@ -252,6 +254,25 @@ export async function createCapacityBoundPreorder(input: {
   } finally {
     await session.endSession();
   }
+}
+
+/**
+ * Single-flight Square payment link claim across browser retries and Vercel
+ * instances. A distinct checkout key already identifies the immutable order.
+ * An abandoned `creating` state is NOT automatically unlocked: the Square
+ * provider must first be reconciled for a link that may exist.
+ */
+export async function claimPreorderPaymentLinkCreation(db: Store, orderNumber: string) {
+  const claimed = await db.collection('marketorders').findOneAndUpdate(
+    {
+      orderNumber, paymentStatus: 'PENDING', capacityReservationStatus: 'held',
+      paymentLinkId: { $exists: false },
+      paymentLinkState: { $exists: false },
+    },
+    { $set: { paymentLinkState: 'creating', paymentLinkStartedAt: new Date() } },
+    { returnDocument: 'after' }
+  );
+  return Boolean(claimed);
 }
 
 /**
