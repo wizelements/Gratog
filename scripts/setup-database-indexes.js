@@ -164,6 +164,31 @@ const INDEXES = {
     { key: { template: 1, createdAt: -1 }, name: 'idx_email_sends_template_created' },
   ],
 
+  // Capacity-bounded market preorders: one stable checkout request ID,
+  // sortable production batches, and safe retry semantics.
+  marketorders: [
+    {
+      key: { checkoutRequestId: 1 },
+      unique: true,
+      partialFilterExpression: { checkoutRequestId: { $type: 'string' } },
+      name: 'idx_marketorders_checkout_request',
+    },
+    { key: { marketId: 1, capacityDateKey: 1, queuePosition: 1 },
+      name: 'idx_marketorders_market_date_queue_position' },
+    { key: { orderNumber: 1 }, unique: true, name: 'idx_marketorders_order_number' },
+  ],
+  preorder_capacity: [
+    { key: { marketId: 1, dateKey: 1, sku: 1 }, name: 'idx_preorder_capacity_batch' },
+  ],
+
+  // Waitlist is a no-charge customer opt-in, not paid reservation inventory.
+  preorder_waitlist_interests: [
+    { key: { marketId: 1, pickupDateKey: 1, status: 1, createdAt: 1, _id: 1 },
+      name: 'idx_preorder_waitlist_market_date' },
+    { key: { expiresAt: 1 }, expireAfterSeconds: 0,
+      name: 'idx_preorder_waitlist_retention_ttl' },
+  ],
+
   // Resend webhook delivery ledger / idempotency
   resend_webhook_events: [
     {

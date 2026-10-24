@@ -301,6 +301,10 @@ function PreorderPageContent() {
   const [cartReady, setCartReady] = useState(false);
   const submittingRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [waitlistAvailable, setWaitlistAvailable] = useState(false);
+  const [waitlistSubmitting, setWaitlistSubmitting] = useState(false);
+  const [waitlistConfirmed, setWaitlistConfirmed] = useState(false);
+  const [waitlistConsent, setWaitlistConsent] = useState(false);
   const [checkoutError, setCheckoutError] = useState('');
   const [waitlistNumber, setWaitlistNumber] = useState("");
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
@@ -532,6 +536,8 @@ function PreorderPageContent() {
     
     submittingRef.current = true;
     setCheckoutError('');
+    setWaitlistAvailable(false);
+    setWaitlistConfirmed(false);
     setIsSubmitting(true);
 
     try {
@@ -553,10 +559,26 @@ function PreorderPageContent() {
         };
       });
 
+      // This ID survives retries of the same checkout submission. Server
+      // prevents duplicate reserved capacity and duplicate queue entries.
+      const cartFingerprint = JSON.stringify({ marketId: selectedMarket.id,
+        items: orderItems.map(item => [item.id, item.variationId, item.quantity]) });
+      const attemptStorageKey = 'tog-market-preorder-attempt';
+      let checkoutRequestId = '';
+      try {
+        const stored = JSON.parse(sessionStorage.getItem(attemptStorageKey) || 'null');
+        checkoutRequestId = stored?.fingerprint === cartFingerprint ? stored.id : '';
+      } catch { /* treat corrupted session state as a fresh checkout */ }
+      if (!checkoutRequestId) {
+        checkoutRequestId = crypto.randomUUID();
+        sessionStorage.setItem(attemptStorageKey,
+          JSON.stringify({ id: checkoutRequestId, fingerprint: cartFingerprint }));
+      }
       const response = await fetch('/api/preorder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          checkoutRequestId,
           marketId: selectedMarket.id,
           customer,
           items: orderItems,
@@ -609,6 +631,7 @@ function PreorderPageContent() {
           error: data.error || 'unknown',
         });
         const paymentError = data.error || 'Could not start secure checkout. No payment was taken.';
+        setWaitlistAvailable(data.waitlistAvailable === true);
         setCheckoutError(paymentError);
         toast.error(paymentError);
       }
@@ -619,6 +642,32 @@ function PreorderPageContent() {
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);
+    }
+  };
+
+  const handleWaitlistRequest = async () => {
+    if (!selectedMarket || !waitlistAvailable || !waitlistConsent || waitlistSubmitting) return;
+    setWaitlistSubmitting(true);
+    try {
+      const items = Object.entries(cart).map(([id, quantity]) => ({ id, quantity }));
+      const response = await fetch('/api/preorder/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          marketId: selectedMarket.id,
+          customer: { ...customer, optInWaitlist: true },
+          items, consent: true,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || 'Unable to join the request list');
+      setWaitlistConfirmed(true);
+      setWaitlistAvailable(false);
+      toast.success('Added to the no-charge request list.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Request list temporarily unavailable');
+    } finally {
+      setWaitlistSubmitting(false);
     }
   };
 
@@ -1040,6 +1089,27 @@ function PreorderPageContent() {
           </CardContent>
         </Card>
 
+        {waitlistConfirmed && (
+          <div role="status" className="mb-5 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-4 text-emerald-950">
+            <p className="font-semibold">You’re on the request list.</p>
+            <p className="mt-1 text-sm">No payment was taken and this is not a confirmed preorder. We will contact you if a preparation slot opens.</p>
+          </div>
+        )}
+        {waitlistAvailable && !waitlistConfirmed && (
+          <div role="region" aria-label="Join a no-charge preorder waitlist" className="mb-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-4 text-stone-900">
+            <p className="font-semibold">This pickup batch is full.</p>
+            <p className="mt-1 text-sm">You can request a place on our no-charge waitlist. Your items are not reserved and we won’t charge you.</p>
+            <label className="mt-3 flex items-start gap-2 text-sm">
+              <input type="checkbox" className="mt-1 h-4 w-4" checked={waitlistConsent}
+                onChange={event => setWaitlistConsent(event.target.checked)} />
+              I agree to be contacted about this preorder request.
+            </label>
+            <Button type="button" className="mt-3 bg-emerald-700 text-white hover:bg-emerald-800"
+              disabled={!waitlistConsent || waitlistSubmitting} onClick={handleWaitlistRequest}>
+              {waitlistSubmitting ? 'Joining request list…' : 'Join no-charge waitlist'}
+            </Button>
+          </div>
+        )}
         {checkoutError && (
           <div role="alert" aria-live="assertive" className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
             <p className="font-semibold">Secure checkout is temporarily unavailable</p>
