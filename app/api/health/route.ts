@@ -17,6 +17,7 @@ interface HealthStatus {
   checks: {
     server: boolean;
     database: boolean;
+    databaseProvider: 'mongodb';
     memory: {
       used: number;
       total: number;
@@ -39,7 +40,7 @@ export async function GET() {
       await db.command({ ping: 1 });
       databaseHealthy = true;
     } catch (error) {
-      errors.push(`Database: ${error instanceof Error ? error.message : 'Connection failed'}`);
+      errors.push('Database connectivity check failed');
     }
     
     // Get memory usage
@@ -53,16 +54,15 @@ export async function GET() {
     const memoryPercentage = totalMemory > 0 ? Math.round((usedMemory / totalMemory) * 100) : 0;
 
     // Determine overall status
-    // Note: We use 'degraded' instead of 'unhealthy' for DB issues
-    // to allow smoke tests to pass while still reporting the problem
+    // A failed database dependency is a failed readiness check, never an HTTP 200.
     let status: HealthStatus['status'] = 'healthy';
     if (!databaseHealthy) {
-      status = 'degraded';
+      status = 'unhealthy';
     }
     // Flag only when heapUsed is a large fraction of the process RSS. This
     // is a more realistic signal of memory pressure than heapUsed/heapTotal.
     if (memoryPercentage > 85) {
-      status = 'degraded';
+      if (databaseHealthy) status = 'degraded';
       errors.push(`High memory usage: ${memoryPercentage}%`);
     }
     
@@ -74,6 +74,7 @@ export async function GET() {
       checks: {
         server: true,
         database: databaseHealthy,
+        databaseProvider: 'mongodb',
         memory: {
           used: Math.round(usedMemory / 1024 / 1024),
           total: Math.round(totalMemory / 1024 / 1024),
@@ -86,7 +87,7 @@ export async function GET() {
       health.errors = errors;
     }
     
-    const httpStatus = status === 'healthy' ? 200 : status === 'degraded' ? 200 : 503;
+    const httpStatus = status === 'healthy' ? 200 : 503;
     
     return NextResponse.json(health, {
       status: httpStatus,
@@ -96,15 +97,16 @@ export async function GET() {
       }
     });
   } catch (error) {
-    // If anything goes wrong, return degraded status
+    // A failed readiness handler must fail closed.
     const health: HealthStatus = {
-      status: 'degraded',
+      status: 'unhealthy',
       timestamp: new Date().toISOString(),
       version: process.env.npm_package_version || '2.0.0',
       uptime: process.uptime(),
       checks: {
         server: true,
         database: false,
+        databaseProvider: 'mongodb',
         memory: {
           used: 0,
           total: 0,
@@ -115,7 +117,7 @@ export async function GET() {
     };
     
     return NextResponse.json(health, {
-      status: 200,
+      status: 503,
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate'
       }
