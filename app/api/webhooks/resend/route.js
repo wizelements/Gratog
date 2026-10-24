@@ -4,19 +4,19 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import crypto from 'crypto';
+import { claimResendEvent } from '@/lib/email/resend-event-claim';
 const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET;
 const SVIX_TOLERANCE_SECONDS = 5 * 60;
 
 /**
  * Verify Resend webhook signature.
  * Resend signs webhooks with Svix headers: svix-id, svix-timestamp,
- * svix-signature. Keep a legacy HMAC fallback for any older test tooling that
- * still posts `resend-signature` as hex(payload, secret).
+ * svix-signature. Unsigned requests and missing credentials always fail closed.
  */
 function verifyWebhookSignature(payload, headers) {
   if (!RESEND_WEBHOOK_SECRET) {
     logger.warn('Webhook', 'RESEND_WEBHOOK_SECRET not configured');
-    return process.env.NODE_ENV !== 'production';
+    return false;
   }
 
   const svixId = headers.get('svix-id');
@@ -31,6 +31,9 @@ function verifyWebhookSignature(payload, headers) {
     });
   }
 
+  // Legacy fixture signatures must never be accepted in production builds.
+  if (process.env.NODE_ENV === 'production' ||
+      process.env.RESEND_ALLOW_LEGACY_TEST_WEBHOOKS !== 'true') return false;
   const legacySignature = headers.get('resend-signature');
   if (!legacySignature) return false;
 
@@ -162,32 +165,27 @@ export async function POST(request) {
     
     ({ db } = await connectToDatabase());
 
-    if (svixId) {
-      const existingEvent = await db.collection('resend_webhook_events').findOne(
-        { svixId },
-        { projection: { processedAt: 1 } }
-      );
+    // Signed Svix IDs are mandatory; without them no durable deduplication
+    // is possible. Index provisioning is a deployment dependency, not a soft
+    // warning to skip concurrency protection.
+    if (typeof svixId !== 'string' || !svixId.trim() || svixId.length > 256) {
+      return NextResponse.json({ error: 'Missing or invalid signed event ID' }, { status: 401 });
+    }
 
-      if (existingEvent?.processedAt) {
+    const claim = await claimResendEvent(
+      db.collection('resend_webhook_events'),
+      { svixId, type, emailId }
+    );
+    if (!claim.accepted) {
+      if (claim.complete) {
         return NextResponse.json({ received: true, duplicate: true });
       }
-
-      await db.collection('resend_webhook_events').updateOne(
-        { svixId },
-        {
-          $set: {
-            svixId,
-            type,
-            messageId: emailId,
-            status: 'processing',
-            lastReceivedAt: new Date(),
-          },
-          $setOnInsert: { createdAt: new Date() },
-        },
-        { upsert: true }
+      return NextResponse.json(
+        { error: 'Delivery event is still processing' },
+        { status: 503, headers: { 'Retry-After': String(claim.retryAfterSeconds || 30) } }
       );
     }
-    
+
     // Map Resend event types to our status
     const statusMap = {
       'email.sent': 'sent',

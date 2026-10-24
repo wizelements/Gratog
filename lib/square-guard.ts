@@ -6,8 +6,6 @@ const debug = (...args: unknown[]) => { if (DEBUG) console.log('[SQUARE-GUARD]',
  * Prevents fallback payments and provides clear error messages in production
  */
 
-const SQUARE_ENVIRONMENT = process.env.SQUARE_ENVIRONMENT || 'sandbox';
-const SQUARE_MOCK_MODE = process.env.SQUARE_MOCK_MODE === 'true';
 
 export interface SquareGuardConfig {
   allowFallback: boolean;
@@ -16,15 +14,19 @@ export interface SquareGuardConfig {
 }
 
 export function getSquareGuardConfig(): SquareGuardConfig {
-  const isProduction = SQUARE_ENVIRONMENT === 'production';
-  
-  // In production, never allow fallback mode
-  const allowFallback = !isProduction && SQUARE_MOCK_MODE;
-  
+  const squareEnvironment = process.env.SQUARE_ENVIRONMENT || 'sandbox';
+  const runtimeIsProduction = process.env.VERCEL_ENV === 'production';
+  const isProduction = squareEnvironment === 'production';
+  const mockMode = process.env.SQUARE_MOCK_MODE === 'true';
+
+  // Deployment target is authoritative for safety. A missing or mistyped
+  // Square mode must never silently re-enable mock charges on the live site.
+  const allowFallback = !runtimeIsProduction && !isProduction && mockMode;
+
   return {
     allowFallback,
     environment: isProduction ? 'production' : 'sandbox',
-    mockMode: SQUARE_MOCK_MODE
+    mockMode
   };
 }
 
@@ -88,8 +90,17 @@ export function validateProductionReadiness(): {
     issues.push('SQUARE_ACCESS_TOKEN appears to be Application ID - use Access Token instead');
   }
   
-  // Check production consistency
-  if (SQUARE_ENVIRONMENT === 'production') {
+  // Check production consistency against the actual deployment target,
+  // not just another environment variable supplied by the application.
+  const runtimeIsProduction = process.env.VERCEL_ENV === 'production';
+  const squareEnvironment = process.env.SQUARE_ENVIRONMENT || 'sandbox';
+  if (runtimeIsProduction && squareEnvironment !== 'production') {
+    issues.push('Production deployment is not configured for production Square');
+  }
+  if (runtimeIsProduction && process.env.SQUARE_MOCK_MODE === 'true') {
+    issues.push('Production deployment must disable Square mock mode');
+  }
+  if (squareEnvironment === 'production') {
     if (!appId.startsWith('sq0idp-')) {
       issues.push('Production environment requires production Application ID (sq0idp-)');
     }
