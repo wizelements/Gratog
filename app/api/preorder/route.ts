@@ -19,7 +19,7 @@ import { validateCustomerData } from '@/lib/validation/customer';
 import { validatePreorderMinimum } from '@/lib/cart-engine';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 import { isMarketPreorderPermitted } from '@/lib/preorder/eligibility';
-import { createPaymentLink } from '@/lib/square-api';
+import { createPaymentLink, isDefinitiveSquareLinkFailure } from '@/lib/square-api';
 import { approvedUnitPriceCents, isApprovedBlueLotus } from '@/lib/merchant-pricing';
 import { connectToDatabase } from '@/lib/db-optimized';
 import {
@@ -494,19 +494,17 @@ export async function POST(request: any) {
       if (!paymentResult.success || !paymentLink?.url) {
         // This branch is a definitive provider failure. A thrown timeout
         // is ambiguous and must retain capacity until provider reconciliation.
-        if (paymentResult.success === false && !paymentLink?.id) {
+        const definiteFailure = isDefinitiveSquareLinkFailure(paymentResult) && !paymentLink?.id;
+        if (definiteFailure) {
           await releaseCapacityAfterDefinitiveLinkFailure(db, client, canonicalOrderNumber);
         }
         // If Square returned a partially created link, keep the hold until
         // authoritative provider reconciliation; never sell these units twice.
         const detail = paymentResult.errors?.[0]?.detail || paymentResult.errors?.[0]?.code || 'Square payment link creation failed';
         await updatePreorderPaymentFields(canonicalOrderNumber, {
-          paymentStatus: paymentResult.success === false && !paymentLink?.id
-            ? 'FAILED' : 'PENDING',
-          paymentReviewState: paymentResult.success === false && !paymentLink?.id
-            ? 'definitively_failed' : 'needs_provider_reconciliation',
-          paymentLinkState: paymentResult.success === false && !paymentLink?.id
-            ? 'definitively_failed' : 'needs_provider_reconciliation',
+          paymentStatus: definiteFailure ? 'FAILED' : 'PENDING',
+          paymentReviewState: definiteFailure ? 'definitively_failed' : 'needs_provider_reconciliation',
+          paymentLinkState: definiteFailure ? 'definitively_failed' : 'needs_provider_reconciliation',
           paymentError: detail,
           paymentProvider: 'square',
           amountPaid: 0,

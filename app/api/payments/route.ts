@@ -1,3 +1,4 @@
+import { isDefinitiveSquarePaymentDecline } from '@/lib/square-api';
 export const dynamic = 'force-dynamic';
 
 import { approvedUnitPriceCents, findApprovedOrderPriceMismatch } from '@/lib/merchant-pricing';
@@ -245,31 +246,9 @@ export async function POST(request: NextRequest) {
         tags: { api: 'payments', stage: 'db_connect' }
       });
       
-      // FIX: Attempt to clear stuck payment_processing status even on connection failure
-      // This prevents orders from being locked indefinitely
-      try {
-        const fallbackDb = await connectToDatabase().catch(() => null);
-        if (fallbackDb?.db && orderId) {
-          await fallbackDb.db.collection('orders').updateOne(
-            { 
-              id: orderId,
-              status: 'payment_processing',
-              paymentStatus: 'processing'
-            },
-            { 
-              $set: { 
-                status: 'pending', 
-                paymentStatus: 'pending',
-                paymentError: 'DB_CONNECTION_FAILED',
-                updatedAt: new Date().toISOString() 
-              } 
-            }
-          );
-        }
-      } catch (clearError) {
-        logger.error('API', 'Failed to clear payment_processing status', { orderId, error: clearError });
-      }
-      
+      // A database outage does not establish that another worker's Square
+      // payment failed. Never unlock a possibly in-flight charge here.
+
       return json(
         { 
           success: false, 
@@ -544,18 +523,21 @@ export async function POST(request: NextRequest) {
           traceId: ctx.traceId,
           orderId
         });
-        
-        return json(
-          { 
-            success: false, 
-            error: 'Payment is currently being processed. Please wait a moment.',
-            code: 'PAYMENT_IN_PROGRESS'
-          },
-          409
-        );
+
+        return json({
+          success: false,
+          error: 'Payment is currently being processed. Please verify the result before retrying.',
+          code: 'PAYMENT_IN_PROGRESS'
+        }, 409);
       }
+      // A failed compare-and-set is never permission to charge. Unknown or
+      // inconsistent order state requires recovery rather than fallthrough.
+      return json({
+        success: false, code: 'PAYMENT_ADMISSION_REJECTED',
+        error: 'Order payment state could not be verified. Do not pay again until it is reconciled.'
+      }, 409);
     }
-    
+
     // Refresh order data after atomic update
     order = await db.collection('orders').findOne({ id: orderId });
     
@@ -574,7 +556,8 @@ export async function POST(request: NextRequest) {
     const staleLine = findApprovedOrderPriceMismatch(order.items);
     if (staleLine) {
       await db.collection('orders').updateOne(
-        { id: orderId },
+        { id: orderId, status: 'payment_processing', paymentStatus: 'processing',
+          squarePaymentId: { $exists: false } },
         { $set: { status: 'pending', paymentStatus: 'pending', updatedAt: new Date().toISOString() } }
       );
       logger.warn('API', 'Blocked obsolete merchant price before payment', {
@@ -645,7 +628,8 @@ export async function POST(request: NextRequest) {
         traceId: ctx.traceId, orderId
       });
       await db.collection('orders').updateOne(
-        { id: orderId },
+        { id: orderId, status: 'payment_processing', paymentStatus: 'processing',
+          squarePaymentId: { $exists: false } },
         { $set: { status: 'pending', paymentStatus: 'pending', updatedAt: new Date().toISOString() } }
       );
       return json({
@@ -718,7 +702,8 @@ export async function POST(request: NextRequest) {
       });
       
       await db.collection('orders').updateOne(
-        { id: orderId },
+        { id: orderId, status: 'payment_processing', paymentStatus: 'processing',
+          squarePaymentId: { $exists: false } },
         { $set: { status: 'pending', paymentStatus: 'pending', updatedAt: new Date().toISOString() } }
       );
       
@@ -832,7 +817,8 @@ export async function POST(request: NextRequest) {
       });
 
       await db.collection('orders').updateOne(
-        { id: orderId },
+        { id: orderId, status: 'payment_processing', paymentStatus: 'processing',
+          squarePaymentId: { $exists: false } },
         {
           $set: {
             status: 'pending',
@@ -881,6 +867,31 @@ export async function POST(request: NextRequest) {
     if (!paymentResult.success || !paymentResult.data?.payment) {
       const errorDetail = paymentResult.errors?.[0]?.detail || 'Payment processing failed';
       const errorCode = paymentResult.errors?.[0]?.code || 'UNKNOWN';
+      const definitiveDecline = isDefinitiveSquarePaymentDecline(paymentResult);
+
+      // A gateway timeout, lost HTTP response, throttle, or Square 5xx may
+      // hide a COMPLETED payment. Never rotate the key, reopen payment or
+      // return a card-decline 400 for an unverified provider outcome.
+      if (!definitiveDecline) {
+        await db.collection('orders').updateOne(
+          { id: orderId, paymentStatus: { $nin: ['PAID', 'COMPLETED', 'paid'] } },
+          { $set: {
+            paymentReconciliationState: 'needs_provider_reconciliation',
+            paymentReconciliationReason: errorCode,
+            paymentReviewAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          } }
+        );
+        logger.error('API', 'Square outcome uncertain; payment key retained', {
+          traceId: ctx.traceId, orderId, errorCode,
+        });
+        return json({
+          success: false,
+          code: 'PAYMENT_PROVIDER_RECONCILIATION',
+          error: 'Payment outcome is being verified. Do not attempt another charge until the order status is confirmed.',
+          orderId,
+        }, 503);
+      }
 
       logger.error('API', 'Square payment failed', {
         traceId: ctx.traceId,
@@ -890,9 +901,11 @@ export async function POST(request: NextRequest) {
       });
       
       await db.collection('orders').updateOne(
-        { id: orderId },
-        { 
-          $set: { 
+        // Signed webhook may already have marked this order paid.
+        { id: orderId, status: 'payment_processing',
+          paymentStatus: 'processing', squarePaymentId: { $exists: false } },
+        {
+          $set: {
             status: 'PENDING_PAYMENT',  // Standardized status
             paymentStatus: 'PENDING',    // Standardized payment status
             paymentError: errorDetail,
