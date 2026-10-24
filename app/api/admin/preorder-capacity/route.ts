@@ -32,9 +32,33 @@ export const GET = withAdminMiddleware(async (request) => {
       .find({ marketId, dateKey })
       .project({ _id: 0, sku: 1, limitUnits: 1, heldUnits: 1, active: 1, updatedAt: 1 })
       .sort({ sku: 1 }).limit(250).toArray();
+    // Operational visibility must not imply the feature is selling inventory.
+    // Independently inspect the actual Mongo index; a declaration in source
+    // control does not prove it exists on production or is truly unique.
+    const existingIndexes = await db.collection('marketorders').listIndexes().toArray();
+    const checkoutIndexReady = existingIndexes.some((index: any) =>
+      index.name === 'idx_marketorders_checkout_request' &&
+      index.unique === true &&
+      index.key?.checkoutRequestId === 1 &&
+      index.partialFilterExpression?.checkoutRequestId?.$type === 'string');
+    const slot = rows.find((row: any) => row.sku === 'preorder_slot');
+    const enabledSkus = rows.filter((row: any) =>
+      row.sku !== 'preorder_slot' && row.active === true &&
+      Number(row.limitUnits) > Number(row.heldUnits)).length;
+    const engineEnabled = process.env.PREORDER_CAPACITY_ENGINE_ENABLED === 'true';
+    const readiness = {
+      engineEnabled, checkoutIndexReady,
+      preparationCapacityConfigured: Boolean(slot?.active && slot?.limitUnits > slot?.heldUnits),
+      productCapacitiesConfigured: enabledSkus > 0,
+      configuredSkuCount: enabledSkus,
+      // Inventory and Square reconciliation are separate required production
+      // signoffs, not determinable from a static index and env key check.
+      acceptingCapacityBoundPreorders: engineEnabled && checkoutIndexReady &&
+        Boolean(slot?.active && slot?.limitUnits > slot?.heldUnits) && enabledSkus > 0,
+    };
     return NextResponse.json({
       success: true,
-      marketId, dateKey,
+      marketId, dateKey, readiness,
       rows: rows.map((row: any) => ({ ...row, remainingUnits: row.active
         ? Math.max(0, Number(row.limitUnits) - Number(row.heldUnits)) : 0 })),
     }, { headers: { 'Cache-Control': 'private, no-store' } });
