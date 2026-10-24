@@ -556,7 +556,8 @@ export async function POST(request: NextRequest) {
     const staleLine = findApprovedOrderPriceMismatch(order.items);
     if (staleLine) {
       await db.collection('orders').updateOne(
-        { id: orderId },
+        { id: orderId, status: 'payment_processing', paymentStatus: 'processing',
+          squarePaymentId: { $exists: false } },
         { $set: { status: 'pending', paymentStatus: 'pending', updatedAt: new Date().toISOString() } }
       );
       logger.warn('API', 'Blocked obsolete merchant price before payment', {
@@ -627,7 +628,8 @@ export async function POST(request: NextRequest) {
         traceId: ctx.traceId, orderId
       });
       await db.collection('orders').updateOne(
-        { id: orderId },
+        { id: orderId, status: 'payment_processing', paymentStatus: 'processing',
+          squarePaymentId: { $exists: false } },
         { $set: { status: 'pending', paymentStatus: 'pending', updatedAt: new Date().toISOString() } }
       );
       return json({
@@ -700,7 +702,8 @@ export async function POST(request: NextRequest) {
       });
       
       await db.collection('orders').updateOne(
-        { id: orderId },
+        { id: orderId, status: 'payment_processing', paymentStatus: 'processing',
+          squarePaymentId: { $exists: false } },
         { $set: { status: 'pending', paymentStatus: 'pending', updatedAt: new Date().toISOString() } }
       );
       
@@ -814,7 +817,8 @@ export async function POST(request: NextRequest) {
       });
 
       await db.collection('orders').updateOne(
-        { id: orderId },
+        { id: orderId, status: 'payment_processing', paymentStatus: 'processing',
+          squarePaymentId: { $exists: false } },
         {
           $set: {
             status: 'pending',

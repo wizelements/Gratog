@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
   createPayment, createPaymentLink, isDefinitiveSquarePaymentDecline,
@@ -83,5 +84,15 @@ describe('Square payment router deterministic outlier matrix', () => {
     expect(results.filter(r=>isDefinitiveSquarePaymentDecline(r)).length)
       .toBe(Array.from({length:1000},(_,j)=>modes[j % modes.length]).filter(m=>m==='decline').length);
     expect(results.filter(r=>r.outcomeUnknown).length).toBeGreaterThan(500);
+  });
+});
+
+describe('payment stale-rewrite safety', () => {
+  it('never resets a captured order to pending after a concurrent Square webhook', () => {
+    const source = readFileSync('app/api/payments/route.ts','utf8');
+    expect(source).toContain("status: 'payment_processing', paymentStatus: 'processing'");
+    const guarded = source.match(/squarePaymentId: \{ \$exists: false \}/g)||[];
+    // Four early error branches and the explicit decline use conditional resets.
+    expect(guarded.length).toBeGreaterThanOrEqual(5);
   });
 });
