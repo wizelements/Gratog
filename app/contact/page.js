@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,15 @@ export default function ContactPage() {
     subject: '',
     message: '',
   });
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('request') === 'non-market-pickup') {
+      setFormData((current) => ({
+        ...current,
+        subject: 'Browns Mill non-market pickup request',
+        message: 'I would like to ask about Monday pickup between 12 PM and 5 PM in the Browns Mill area. Please confirm the available appointment and meeting location before I order.',
+      }));
+    }
+  }, []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 

@@ -54,7 +54,7 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li>
                 <Link href="/catalog" className="text-muted-foreground hover:text-emerald-600 transition-colors">
-                  Shop Online in Georgia
+                  Order for Yourself
                 </Link>
               </li>
               <li>

@@ -10,7 +10,6 @@ import {
   Mail,
   MapPin,
   Package,
-  Repeat,
   ShoppingBag,
   Store,
   Truck,
@@ -34,10 +33,10 @@ import {
 } from '@/data/weeklyMenu';
 
 const ORDERING_STEPS = [
-  { icon: ShoppingBag, title: 'Explore the menu', text: 'Find a flavor you love in this week’s selection.' },
-  { icon: Store, title: 'Choose a pickup market', text: 'Select a participating market when placing your preorder.' },
-  { icon: Package, title: 'We prepare your order', text: 'We’ll have your confirmed order ready for your selected market pickup.' },
-  { icon: Repeat, title: 'Pick up and enjoy', text: 'Visit our booth during your pickup window and take home your favorites.' },
+  { icon: ShoppingBag, title: 'Choose your favorites', text: 'Browse the regular shop, choose your sizes, and add eligible items to your cart.' },
+  { icon: Truck, title: 'Check your delivery address', text: 'At checkout, enter your full Atlanta-area address. We confirm eligibility and available delivery options before payment.' },
+  { icon: Package, title: 'Review your order', text: 'Confirm the item prices, delivery fee, and available time before placing your order.' },
+  { icon: CheckCircle2, title: 'Receive confirmation', text: 'After successful payment, check your order confirmation for the confirmed fulfillment details.' },
 ];
 
 function availabilityLabel(product) {
@@ -139,41 +138,45 @@ export default function HomePageClient({
               Handcrafted in Atlanta • Georgia orders only
             </p>
             <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-              Fresh flavors. Made with gratitude.
+              Your favorite flavors. No market trip required.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90 sm:text-xl">
-              From bright lemonades and refreshing drinks to sea moss gels and shots, everything starts with thoughtful ingredients and small-batch preparation. Find us at the market or preorder your favorites.
+              Ordering drinks or sea moss just for yourself? Shop online for eligible Atlanta-area delivery. Market visits are optional, and non-market pickup requests are handled separately.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild className="h-14 rounded-full bg-white px-8 text-base font-bold text-emerald-950 hover:bg-emerald-50">
-                <Link href="/catalog">Shop online in Georgia</Link>
+                <Link href="/catalog">Shop for local delivery <ArrowRight className="ml-2 inline h-5 w-5" aria-hidden="true" /></Link>
               </Button>
               <Button asChild variant="outline" className="h-14 rounded-full border-white/30 bg-transparent px-8 text-base font-bold text-white hover:bg-white/10 hover:text-white">
-                <Link href="/weekly-menu">Preorder for market pickup</Link>
+                <Link href="/contact?request=non-market-pickup">Request non-market pickup</Link>
               </Button>
             </div>
             <p className="mt-4 text-sm leading-6 text-emerald-50/80">
-              Ordering from home? Options for eligible Georgia delivery or shipping depend on the product and address. Local delivery is limited to a 35-mile radius of Atlanta ZIP 30331 after a full-address check; shipping is offered only when explicitly available for your items at checkout. Market-only preorders remain pickup orders.
+              Delivery is confirmed from your full address and product eligibility at checkout; it is not guaranteed by ZIP code alone. Browns Mill-area Monday pickup (12–5) is being arranged and is not an online reservation yet. We confirm the meeting address before any pickup order.
             </p>
           </div>
 
           <div className="rounded-[2rem] border border-white/20 bg-white/95 p-6 text-stone-950 shadow-2xl shadow-emerald-950/40">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Find us at the market</p>
-            <h2 className="mt-3 text-3xl font-semibold">{weeklyMenu.title}</h2>
-            <p className="mt-3 leading-7 text-stone-600">
-              See where we’ll be and preorder ahead for a convenient market pickup.
-            </p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Start with how you want to get it</p>
+            <h2 className="mt-3 text-3xl font-semibold">Ordering for yourself?</h2>
+            <p className="mt-3 leading-7 text-stone-600">You do not have to visit a farmers market to shop with us.</p>
             <div className="mt-5 grid gap-3">
-              {MARKETS.slice(0, 3).map((market) => (
-                <div key={market.id} className="rounded-2xl bg-emerald-50 p-4">
-                  <p className="font-semibold text-emerald-950">{market.name}</p>
-                  <p className="mt-1 text-sm text-emerald-800">{market.pickupDays} • {market.hours}</p>
-                </div>
-              ))}
+              <div className="rounded-2xl bg-emerald-50 p-4">
+                <p className="flex items-center gap-2 font-semibold text-emerald-950"><Truck className="h-5 w-5" aria-hidden="true" /> Local delivery</p>
+                <p className="mt-1 text-sm text-stone-700">Browse products, add to cart, then enter your address to check available delivery and fees.</p>
+                <Link href="/catalog" className="mt-2 inline-flex min-h-10 items-center font-semibold text-emerald-800 underline underline-offset-4">Start a delivery order</Link>
+              </div>
+              <div className="rounded-2xl bg-stone-100 p-4">
+                <p className="flex items-center gap-2 font-semibold"><MapPin className="h-5 w-5" aria-hidden="true" /> Pickup without a market</p>
+                <p className="mt-1 text-sm text-stone-700">Browns Mill area, Mondays 12–5, is planned. Booking is not live; request an appointment and wait for location confirmation.</p>
+                <Link href="/contact?request=non-market-pickup" className="mt-2 inline-flex min-h-10 items-center font-semibold text-emerald-800 underline underline-offset-4">Ask about neighborhood pickup</Link>
+              </div>
+              <div className="rounded-2xl border border-stone-200 bg-white p-4">
+                <p className="flex items-center gap-2 font-semibold"><Store className="h-5 w-5" aria-hidden="true" /> Prefer a market?</p>
+                <p className="mt-1 text-sm text-stone-700">Market preorders are a separate option, not required for regular delivery orders.</p>
+                <Link href="/weekly-menu" className="mt-2 inline-flex min-h-10 items-center font-semibold text-emerald-800 underline underline-offset-4">Browse market preorders</Link>
+              </div>
             </div>
-            <Button asChild variant="outline" className="mt-5 h-11 w-full rounded-full border-emerald-300 text-emerald-900 hover:bg-emerald-100">
-              <Link href="/weekly-menu">See available products</Link>
-            </Button>
           </div>
         </div>
       </section>
@@ -182,10 +185,10 @@ export default function HomePageClient({
         <div className="container">
           <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Fresh from the weekly menu</p>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Browse the regular online shop</p>
               <h2 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Find your favorites.</h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">
-                Discover your next favorite. Shop eligible products online for Georgia fulfillment, or reserve market-only items for pickup.
+                Order for yourself without a market visit. Product availability and eligible delivery options are checked before payment. For market-only items, use the separate market preorder menu.
               </p>
             </div>
             <Button asChild className="h-12 rounded-full bg-emerald-700 px-6 text-white hover:bg-emerald-800">
@@ -209,8 +212,9 @@ export default function HomePageClient({
       <section className="border-y border-emerald-900/10 bg-white py-14">
         <div className="container">
           <div className="mb-8 text-center">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">How market preorder works</p>
-            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Your market pickup, made simple.</h2>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">How to order for yourself</p>
+            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">From your cart to your door.</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-stone-600">Choose eligible products for local delivery without selecting a farmers market.</p>
           </div>
           <div className="grid gap-4 md:grid-cols-4">
             {ORDERING_STEPS.map(({ icon: Icon, title, text }, index) => (
@@ -280,13 +284,16 @@ export default function HomePageClient({
             <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em] text-emerald-200">Interested in delivery?</p>
             <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Want Taste of Gratitude delivered?</h2>
             <p className="mt-4 max-w-2xl leading-8 text-emerald-50/90">
-              We’re exploring more Georgia delivery options, starting in the Atlanta area. Share your neighborhood and preferred day, and we’ll let you know if delivery becomes available near you.
+              You can begin an eligible Atlanta-area delivery order in our regular shop right now. Enter your full address during checkout to check service and any delivery fee. For routes we do not yet serve, leave your neighborhood so we can plan future service.
             </p>
+            <Button asChild className="mt-6 h-12 rounded-full bg-white px-7 font-bold text-emerald-950 hover:bg-emerald-50">
+              <Link href="/catalog">Shop for local delivery <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" /></Link>
+            </Button>
             <div className="mt-6 grid gap-3">
               {[
-                'Share your neighborhood or ZIP code',
-                'Tell us which day works best for you',
-                'We’ll share updates if service becomes available in your area',
+                'Choose products from the regular online shop',
+                'Enter your complete delivery address during checkout',
+                'Only pay after reviewing available fulfillment and fees',
               ].map((item) => (
                 <p key={item} className="flex items-start gap-3 text-sm text-emerald-50">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-200" aria-hidden="true" />
@@ -298,8 +305,8 @@ export default function HomePageClient({
           <RetentionForm
             intent="scheduled_delivery_interest"
             source="homepage_delivery"
-            title="Tell us where you’d like delivery"
-            description="Tell us your ZIP code and preferred delivery day. We’ll contact you if a route opens nearby."
+            title="Outside our current delivery area?"
+            description="Share your neighborhood or ZIP and preferred day to hear if a future route opens. This form is not an order."
             cta="Keep me updated"
             collectMessage
             messagePlaceholder="Neighborhood or ZIP + preferred delivery day/time"

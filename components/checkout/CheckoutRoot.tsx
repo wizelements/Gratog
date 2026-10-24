@@ -254,7 +254,7 @@ function CheckoutContent() {
                     exit={{ opacity: 0, x: 20 }}
                   >
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">Review your cart</h1>
-                    <p className="mb-6 text-base text-gray-600">Shopping without visiting a market? No problem. Eligible products can be ordered for Georgia delivery or shipping; choose market pickup only if you prefer it or your items require it.</p>
+                    <p className="mb-6 text-base text-gray-600">No market trip required for eligible local delivery. Add your favorites, then choose Delivery and enter your full address on the next step to check availability and fees. The Pickup option in this checkout currently means a participating market, not Browns Mill neighborhood pickup.</p>
                     <CartSummary
                       cart={cart}
                       totals={totals}

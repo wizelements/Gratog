@@ -17,7 +17,7 @@ interface FulfillmentTabsProps {
 }
 
 const TABS = [
-  { value: 'pickup' as FulfillmentType, label: 'Pickup', icon: MapPin, description: 'Georgia market pickup' },
+  { value: 'pickup' as FulfillmentType, label: 'Market pickup', icon: MapPin, description: 'At a participating market' },
   { value: 'delivery' as FulfillmentType, label: 'Delivery', icon: Truck, description: 'Atlanta-area only', disabledForPreorder: true },
   { value: 'shipping' as FulfillmentType, label: 'Shipping', icon: Package, description: 'Eligible Georgia addresses', disabledForPreorder: true },
 ];

@@ -7,17 +7,17 @@ const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8'
 describe('regular Georgia customers can order without selecting a market', () => {
   it('separates online shopping from market preorders in primary navigation', () => {
     const nav = read('components/Header.jsx');
-    expect(nav).toContain("{ href: '/catalog', label: 'Shop Online' }");
+    expect(nav).toContain("{ href: '/catalog', label: 'Order for Yourself' }");
     expect(nav).toContain("{ href: '/weekly-menu', label: 'Market Preorders' }");
   });
 
   it('gives standard shoppers a direct shopping route from the homepage and catalog', () => {
     const home = read('components/home/HomePageClient.jsx');
     const catalog = read('components/catalog/CatalogPageClient.jsx');
-    expect(home).toContain('<Link href="/catalog">Shop online in Georgia</Link>');
-    expect(home).toContain('<Link href="/weekly-menu">Preorder for market pickup</Link>');
+    expect(home).toContain('<Link href="/catalog">Shop for local delivery');
+    expect(home).toContain('<Link href="/weekly-menu"');
     expect(catalog).toContain('No market visit required for eligible orders');
-    expect(catalog).toContain('Regular online orders can go through the cart above.');
+    expect(catalog).toContain('Enter your complete address in checkout');
   });
 
   it('defaults new online checkouts to shipping without changing the separate pickup-only journey', () => {
@@ -48,8 +48,8 @@ describe('regular Georgia customers can order without selecting a market', () =>
   it('does not imply statewide shipping of every product', () => {
     const catalog = read('components/catalog/CatalogPageClient.jsx');
     const home = read('components/home/HomePageClient.jsx');
-    expect(catalog).toContain('market-only products are reserved for pickup');
-    expect(home).toContain('eligible Georgia delivery or shipping');
+    expect(catalog).toContain('Only eligible items and confirmed options can proceed to payment.');
+    expect(home).toContain('product eligibility at checkout');
     expect(catalog).not.toMatch(/nationwide shipping|all (?:products|items) ship/i);
   });
 });
