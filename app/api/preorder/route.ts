@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic';
  */
 
 import { NextResponse } from 'next/server';
-import { generatePreorderNumber, getEstimatedWaitTime } from '@/lib/preorder/waitlist';
-import { getNextWaitlistNumber, createPreorder, findPreorderByOrderNumber, updatePreorderPaymentFields } from '@/lib/preorder/repository';
+import { generatePreorderNumber } from '@/lib/preorder/waitlist';
+import { findPreorderByOrderNumber, updatePreorderPaymentFields } from '@/lib/preorder/repository';
 import { PREORDER_RULES } from '@/lib/preorder/rules';
 import { resolveActivePreorderMarket } from '@/lib/preorder/market-resolver';
 import { nextPreorderPickup, marketDisplayHours, marketWaitlistPrefix } from '@/lib/preorder/market-schedule';
@@ -21,6 +21,12 @@ import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 import { isMarketPreorderPermitted } from '@/lib/preorder/eligibility';
 import { createPaymentLink } from '@/lib/square-api';
 import { approvedUnitPriceCents, isApprovedBlueLotus } from '@/lib/merchant-pricing';
+import { connectToDatabase } from '@/lib/db-optimized';
+import {
+  createCapacityBoundPreorder, expandCapacityDemand, fingerprintPreorder,
+  loadApprovedBundleRecipes, pickupDateKey, releaseCapacityAfterDefinitiveLinkFailure,
+  CapacityError, PREORDER_SLOT_SKU,
+} from '@/lib/preorder/capacity';
 
 const logger = createLogger('PreorderAPI');
 
@@ -86,8 +92,16 @@ function isSquarePaymentConfigured() {
   return Boolean(process.env.SQUARE_ACCESS_TOKEN && process.env.SQUARE_LOCATION_ID);
 }
 
-function getAppBaseUrl(request: any) {
-  return (process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || new URL(request.url).origin).replace(/\/$/, '');
+function getAppBaseUrl(_request: any) {
+  // Redirect URLs must never derive from user-controlled Host / request origin.
+  const value = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://tasteofgratitude.shop';
+  const parsed = new URL(value);
+  if (!['https:', 'http:'].includes(parsed.protocol) || parsed.username || parsed.password ||
+      (process.env.VERCEL_ENV === 'production' &&
+       (parsed.protocol !== 'https:' || !['tasteofgratitude.shop', 'www.tasteofgratitude.shop'].includes(parsed.hostname)))) {
+    throw new Error('INVALID_CANONICAL_PREORDER_ORIGIN');
+  }
+  return parsed.origin;
 }
 
 async function resolvePreorderCartItems(submittedItems: any[]) {
@@ -142,7 +156,12 @@ async function resolvePreorderCartItems(submittedItems: any[]) {
     }
     const authorizedPrice = sampleGel ? variantPrice : approved === null ? price : approved / 100;
     const priceCents = Math.round(authorizedPrice * 100);
-    const quantity = Math.max(1, Math.min(99, Number(item.quantity) || 1));
+    // Never silently inflate 0/negative quantities or truncate attempted
+    // bulk orders. Invalid quantities receive a validation error.
+    const quantity = Number(item.quantity);
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99) {
+      throw new Error(`${product.name}: enter a whole quantity between 1 and 99.`);
+    }
 
     if (!Number.isFinite(price) || price <= 0) {
       throw new Error(`${product.name} is missing a valid preorder price.`);
@@ -158,6 +177,7 @@ async function resolvePreorderCartItems(submittedItems: any[]) {
       priceCents,
       quantity,
       isPreorder: true,
+      isBundle: Boolean(product.isBundle === true || product.productType === 'bundle' || product.category === 'bundles'),
       category: product.category || product.intelligentCategory || '',
       name: product.name,
       size: variation?.name || product.size || item.size || null,
@@ -174,7 +194,6 @@ export async function POST(request: any) {
     data = sanitizeObject(data, { preventSQL: true });
 
     logger.info('Preorder request received', {
-      customerName: data.customer?.name,
       marketId: data.marketId,
       itemCount: data.items?.length,
     });
@@ -210,7 +229,7 @@ export async function POST(request: any) {
       );
     }
 
-    if (!data.items || !Array.isArray(data.items) || data.items.length === 0) {
+    if (!data.items || !Array.isArray(data.items) || data.items.length === 0 || data.items.length > 30) {
       return NextResponse.json(
         { success: false, error: 'Your preorder is empty' },
         { status: 400 }
@@ -279,11 +298,32 @@ export async function POST(request: any) {
       year: 'numeric',
     });
 
-    // Atomic waitlist number from MongoDB
-    const { waitlistNumber, counter } = await getNextWaitlistNumber(
-      selectedMarket.id,
-      marketConfig.prefix,
-      pickupDate
+    // The checkout ID is stable across browser retries and is protected by a
+    // unique DB index. Queue number, persisted order and all physical stock
+    // components are reserved atomically in one MongoDB transaction.
+    const checkoutRequestId = String(data.checkoutRequestId || '').trim();
+    if (!/^[a-zA-Z0-9][a-zA-Z0-9:_-]{15,127}$/.test(checkoutRequestId)) {
+      return NextResponse.json({ success: false, code: 'CHECKOUT_REQUEST_ID_REQUIRED',
+        error: 'Refresh checkout to start a secure preorder attempt.' }, { status: 400 });
+    }
+    const { db, client } = await connectToDatabase();
+    const dateKey = pickupDateKey(pickupDate);
+    const demandItems = preorderCartItems.map((item: any) => ({
+      sku: String(item.variationId || item.productId), quantity: item.quantity,
+      isBundle: item.isBundle === true,
+    }));
+    const recipes = await loadApprovedBundleRecipes(db, demandItems);
+    // Approved recipe also identifies a bundle when the catalog flag is absent.
+    const verifiedDemandItems = demandItems.map((item: any) =>
+      ({ ...item, isBundle: item.isBundle || recipes.has(item.sku) }));
+    // Operational throughput is finite even when ingredients are plentiful.
+    // One configured preorder slot is held for every distinct accepted order.
+    const capacityRequirements = [
+      { sku: PREORDER_SLOT_SKU, quantity: 1 },
+      ...expandCapacityDemand(verifiedDemandItems, recipes),
+    ];
+    const preorderFingerprint = fingerprintPreorder(
+      selectedMarket.id, dateKey, verifiedDemandItems, String(data.customer.email || ''), Math.round(subtotal * 100)
     );
 
     const orderNumber = generatePreorderNumber();
@@ -302,9 +342,15 @@ export async function POST(request: any) {
     }));
 
     // Persist to MongoDB marketorders collection
-    const dbOrder = await createPreorder({
+    let admission;
+    try {
+      admission = await createCapacityBoundPreorder({
+        db, client,
+        marketId: selectedMarket.id, dateKey, prefix: marketConfig.prefix,
+        checkoutRequestId, demand: capacityRequirements,
+        order: {
       orderNumber,
-      waitlistNumber,
+      preorderFingerprint,
       marketId: selectedMarket.id,
       marketName: marketConfig.name,
       customerName: data.customer.name,
@@ -326,12 +372,52 @@ export async function POST(request: any) {
       source: preorderMetadata.source,
       utmSource: preorderMetadata.utmSource,
       utmCampaign: preorderMetadata.utmCampaign,
-      queuePosition: counter,
       pickupLocation: marketConfig.name,
       pickupDate: pickupDateStr,
       pickupDay: marketConfig.day,
       pickupHours: marketConfig.hours,
-    });
+        },
+      });
+    } catch (error: any) {
+      if (error instanceof CapacityError) {
+        return NextResponse.json({
+          success: false, code: error.code, error: error.message,
+          waitlistAvailable: error.code === 'PREORDER_CAPACITY_UNAVAILABLE',
+        }, { status: error.status });
+      }
+      throw error;
+    }
+    const dbOrder = admission.preorder;
+    const canonicalOrderNumber = dbOrder.orderNumber;
+    const waitlistNumber = dbOrder.waitlistNumber;
+    const counter = dbOrder.queuePosition;
+
+    // A replay already has an externally payable link: return it unchanged.
+    // Requests still setting up payment reuse the same Square idempotency key.
+    if (admission.replay && dbOrder.paymentUrl && dbOrder.paymentStatus === 'PENDING') {
+      return NextResponse.json({
+        success: true,
+        orderNumber: canonicalOrderNumber, waitlistNumber, waitlistPosition: counter,
+        preorder: {
+          orderNumber: canonicalOrderNumber, waitlistNumber, waitlistPosition: counter,
+          pickupLocation: marketConfig.name, pickupDate: pickupDateStr,
+          pickupHours: marketConfig.hours, estimatedTime: 'Pickup timing is confirmed after payment and staff preparation',
+          marketId: selectedMarket.id, paymentStatus: 'PENDING_PAYMENT',
+        },
+        payment: {
+          provider: 'square', status: 'PENDING',
+          url: dbOrder.paymentUrl, paymentLinkId: dbOrder.paymentLinkId,
+          squareOrderId: dbOrder.squareOrderId, amountDue: dbOrder.total,
+        },
+      });
+    }
+    if (admission.replay && (dbOrder.capacityReservationStatus !== 'held' ||
+        dbOrder.paymentStatus !== 'PENDING')) {
+      return NextResponse.json({
+        success: false, code: 'PREORDER_ATTEMPT_CLOSED',
+        error: 'This preorder attempt is no longer payable. Please start a new checkout.',
+      }, { status: 409 });
+    }
 
     let payment: null | {
       provider: 'square';
@@ -352,45 +438,55 @@ export async function POST(request: any) {
       }));
 
       const paymentResult = await createPaymentLink({
-        referenceId: orderNumber,
+        referenceId: canonicalOrderNumber,
         lineItems: paymentLineItems,
-        description: `Taste of Gratitude preorder ${orderNumber}`,
-        redirectUrl: `${appBaseUrl}/preorder/status?orderNumber=${encodeURIComponent(orderNumber)}&payment=return`,
+        description: `Taste of Gratitude preorder ${canonicalOrderNumber}`,
+        redirectUrl: `${appBaseUrl}/preorder/status?orderNumber=${encodeURIComponent(canonicalOrderNumber)}&payment=return`,
         buyerEmail: data.customer.email || undefined,
         buyerPhone: data.customer.phone || undefined,
         metadata: {
-          localOrderId: orderNumber,
-          orderNumber,
+          localOrderId: canonicalOrderNumber,
+          orderNumber: canonicalOrderNumber,
           waitlistNumber,
           source: 'preorder_payment_link',
         },
-        idempotencyKey: `preorder_link_${orderNumber}`,
+        idempotencyKey: `preorder_link_${canonicalOrderNumber}`,
       });
 
       const paymentLink = paymentResult.data?.paymentLink;
       if (!paymentResult.success || !paymentLink?.url) {
+        // This branch is a definitive provider failure. A thrown timeout
+        // is ambiguous and must retain capacity until provider reconciliation.
+        if (paymentResult.success === false && !paymentLink?.id) {
+          await releaseCapacityAfterDefinitiveLinkFailure(db, client, canonicalOrderNumber);
+        }
+        // If Square returned a partially created link, keep the hold until
+        // authoritative provider reconciliation; never sell these units twice.
         const detail = paymentResult.errors?.[0]?.detail || paymentResult.errors?.[0]?.code || 'Square payment link creation failed';
-        await updatePreorderPaymentFields(orderNumber, {
-          paymentStatus: 'FAILED',
+        await updatePreorderPaymentFields(canonicalOrderNumber, {
+          paymentStatus: paymentResult.success === false && !paymentLink?.id
+            ? 'FAILED' : 'PENDING',
+          paymentReviewState: paymentResult.success === false && !paymentLink?.id
+            ? 'definitively_failed' : 'needs_provider_reconciliation',
           paymentError: detail,
           paymentProvider: 'square',
           amountPaid: 0,
           balanceDue: total,
         });
 
-        logger.error('Preorder payment link creation failed', { orderNumber, detail });
+        logger.error('Preorder payment link creation failed', { canonicalOrderNumber, detail });
         return NextResponse.json(
           {
             success: false,
             error: 'Could not create secure payment link. Please try again or contact Taste of Gratitude.',
             code: 'PAYMENT_LINK_FAILED',
-            orderNumber,
+            canonicalOrderNumber,
           },
           { status: 502 }
         );
       }
 
-      await updatePreorderPaymentFields(orderNumber, {
+      await updatePreorderPaymentFields(canonicalOrderNumber, {
         paymentLinkId: paymentLink.id,
         paymentUrl: paymentLink.url,
         squareOrderId: paymentLink.orderId || null,
@@ -411,7 +507,7 @@ export async function POST(request: any) {
     }
 
     logger.info('Preorder persisted to MongoDB', {
-      orderNumber,
+      orderNumber: canonicalOrderNumber,
       waitlistNumber,
       marketId: selectedMarket.id,
       _id: dbOrder._id,
@@ -445,18 +541,18 @@ export async function POST(request: any) {
       success: true,
 
       // Backward-compatible top-level fields for current UI
-      orderNumber,
+      orderNumber: canonicalOrderNumber,
       waitlistNumber,
       waitlistPosition: counter,
 
       preorder: {
-        orderNumber,
+        orderNumber: canonicalOrderNumber,
         waitlistNumber,
         waitlistPosition: counter,
         pickupLocation: marketConfig.name,
         pickupDate: pickupDateStr,
         pickupHours: marketConfig.hours,
-        estimatedTime: getEstimatedWaitTime(counter),
+        estimatedTime: 'Pickup timing is confirmed after payment and staff preparation',
         marketId: selectedMarket.id,
         paymentStatus: 'PENDING_PAYMENT',
       },

@@ -5,6 +5,8 @@
  * Pure utility functions (parse, validate, estimate, generatePreorderNumber) kept as-is.
  */
 
+import { randomBytes } from 'node:crypto';
+
 const MARKET_PREFIXES: Record<string, string> = {
   'serenbe': 'S',
   'dunwoody': 'D',
@@ -67,7 +69,7 @@ export function parseWaitlistNumber(waitlistNumber: string) {
  */
 export function generatePreorderNumber() {
   const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+  const random = randomBytes(8).toString('hex').toUpperCase();
   return `PRE-${timestamp}-${random}`;
 }
 

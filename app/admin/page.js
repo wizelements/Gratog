@@ -360,6 +360,9 @@ export default function AdminDashboard() {
               <Button asChild variant="outline" size="sm">
                 <Link href="/admin/markets">Markets</Link>
               </Button>
+              <Button asChild variant="outline" size="sm" className="col-span-2">
+                <Link href="/admin/preorder-capacity">Preorder Capacity & Production Queue</Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
