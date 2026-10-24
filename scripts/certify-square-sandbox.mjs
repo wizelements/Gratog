@@ -48,7 +48,8 @@ async function square(path, { method = 'GET', body } = {}) {
   const data = await response.json().catch(() => ({}));
   return { status: response.status, ok: response.ok, data };
 }
-const key = (prefix) => `tog-sbx-${prefix}-${randomUUID()}`;
+// Payments API limits idempotency_key to 45 characters. 6 + 1 + UUID = 43.
+const key = (prefix) => `${prefix.slice(0, 6)}-${randomUUID()}`;
 let createdPaymentId = null;
 let authPaymentId = null;
 let refundSubmitted = false;
@@ -110,7 +111,10 @@ async function run() {
       note: 'Taste of Gratitude automated sandbox certification only',
     },
   });
-  note('Card decline rejected without payment', !decline.ok && decline.status >= 400 && decline.status < 500, {
+  note('Card decline rejected without payment',
+    !decline.ok && decline.status === 400 &&
+      decline.data.errors?.some(error => error.category === 'PAYMENT_METHOD_ERROR' &&
+        ['GENERIC_DECLINE', 'CARD_DECLINED'].includes(error.code)), {
     status: decline.status,
     code: decline.data.errors?.[0]?.code,
   });
