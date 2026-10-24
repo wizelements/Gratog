@@ -28,7 +28,7 @@ export function validateSquareEnvironment(): ValidationResult {
   const warnings: string[] = [];
   
   const config: Partial<SquareEnvConfig> = {
-    environment: (process.env.SQUARE_ENVIRONMENT === 'sandbox' ? 'sandbox' : 'production') as 'sandbox' | 'production',
+    environment: (process.env.SQUARE_ENVIRONMENT === 'production' ? 'production' : 'sandbox') as 'sandbox' | 'production',
     applicationId: process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || '',
     accessToken: process.env.SQUARE_ACCESS_TOKEN || '',
     locationId: process.env.SQUARE_LOCATION_ID || '',
@@ -37,6 +37,20 @@ export function validateSquareEnvironment(): ValidationResult {
     siteBaseUrl: process.env.NEXT_PUBLIC_BASE_URL || ''
   };
   
+  // Vercel's production target is the release authority; do not accept a
+  // sandbox payment configuration or fake-payment setting on that target.
+  if (process.env.VERCEL_ENV === 'production') {
+    if (process.env.SQUARE_ENVIRONMENT !== 'production') {
+      errors.push('Production deployment requires SQUARE_ENVIRONMENT=production');
+    }
+    if (process.env.SQUARE_MOCK_MODE === 'true') {
+      errors.push('Production deployment requires SQUARE_MOCK_MODE=false');
+    }
+    if (!config.webhookSignatureKey) {
+      errors.push('Production deployment requires a Square webhook signing key');
+    }
+  }
+
   // Critical validations
   if (!config.applicationId) {
     errors.push('SQUARE_APPLICATION_ID is required');
@@ -56,9 +70,8 @@ export function validateSquareEnvironment(): ValidationResult {
   
   // Token format validation
   if (config.accessToken) {
-    const tokenPrefix = config.accessToken.substring(0, 10);
     if (config.environment === 'production' && !config.accessToken.startsWith('EAAA') && !config.accessToken.startsWith('sq0')) {
-      warnings.push(`Production environment but token prefix is ${tokenPrefix} - verify token is for production`);
+      warnings.push('Production access token format is unexpected; verify credential ownership');
     }
     
     if (config.environment === 'sandbox' && !config.accessToken.startsWith('sandbox-')) {
@@ -84,7 +97,7 @@ export function validateSquareEnvironment(): ValidationResult {
   };
 }
 
-export function printSquareConfig(maskSecrets = true): void {
+export function printSquareConfig(_maskSecrets = true): void {
   const result = validateSquareEnvironment();
   
   debug('\n🔍 SQUARE CONFIGURATION VALIDATION');
@@ -98,8 +111,8 @@ export function printSquareConfig(maskSecrets = true): void {
   
   debug('\n📋 Configuration:');
   debug(`  Environment: ${result.config.environment}`);
-  debug(`  Application ID: ${maskSecrets ? maskString(result.config.applicationId || '') : result.config.applicationId}`);
-  debug(`  Access Token: ${maskSecrets ? maskString(result.config.accessToken || '') : result.config.accessToken}`);
+  debug(`  Application ID: ${result.config.applicationId ? '[CONFIGURED]' : '[MISSING]'}`);
+  debug(`  Access Token: ${result.config.accessToken ? '[CONFIGURED]' : '[MISSING]'}`);
   debug(`  Location ID: ${result.config.locationId}`);
   debug(`  Site Base URL: ${result.config.siteBaseUrl}`);
   debug(`  Allowed Origins: ${result.config.allowedOrigins?.join(', ') || 'none'}`);
@@ -120,11 +133,6 @@ export function printSquareConfig(maskSecrets = true): void {
   if (!result.valid) {
     throw new Error('Square configuration validation failed. Fix errors before proceeding.');
   }
-}
-
-function maskString(str: string): string {
-  if (!str || str.length < 8) return '***';
-  return str.substring(0, 6) + '...' + str.substring(str.length - 4);
 }
 
 export function getSquareConfig(): SquareEnvConfig {
