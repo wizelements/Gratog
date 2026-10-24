@@ -4,12 +4,18 @@ import { logger } from '@/lib/logger';
 import { releaseLock } from '@/lib/inventory-lock';
 import { RateLimit } from '@/lib/redis';
 import { NextRequest, NextResponse } from 'next/server';
+import { hasInventoryMutationAuthority } from '@/lib/inventory/internal-authority';
 
 /**
  * POST /api/inventory/release
  * Release inventory lock (called on cancel/abandon)
  */
 export async function POST(request: NextRequest) {
+  // Never let an anonymous browser reserve, release, or confirm anyone's stock.
+  // Rate limiting alone cannot authenticate a payment or protect inventory.
+  if (!hasInventoryMutationAuthority(request.headers)) {
+    return NextResponse.json({ error: 'Unauthorized inventory operation' }, { status: 403 });
+  }
   try {
     // Rate limiting
     const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
