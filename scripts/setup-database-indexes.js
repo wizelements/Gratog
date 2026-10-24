@@ -173,8 +173,8 @@ const INDEXES = {
       partialFilterExpression: { checkoutRequestId: { $type: 'string' } },
       name: 'idx_marketorders_checkout_request',
     },
-    { key: { marketId: 1, capacityDateKey: 1, orderNumber: 1 },
-      name: 'idx_marketorders_market_date_queue' },
+    { key: { marketId: 1, capacityDateKey: 1, queuePosition: 1 },
+      name: 'idx_marketorders_market_date_queue_position' },
     { key: { orderNumber: 1 }, unique: true, name: 'idx_marketorders_order_number' },
   ],
   preorder_capacity: [

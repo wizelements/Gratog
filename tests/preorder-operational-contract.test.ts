@@ -21,7 +21,7 @@ describe('preorder operations release invariants',()=>{
   it('requires actual unique indexes for idempotency and production manifest queries',()=>{
     const schema=read('scripts/setup-database-indexes.js');
     expect(schema).toContain("name: 'idx_marketorders_checkout_request'");
-    expect(schema).toContain("name: 'idx_marketorders_market_date_queue'");
+    expect(schema).toContain("name: 'idx_marketorders_market_date_queue_position'");
     expect(schema).toContain("name: 'idx_preorder_waitlist_retention_ttl'");
     const core=read('lib/preorder/capacity.ts');
     expect(core).toContain("indexExists('idx_marketorders_checkout_request')");

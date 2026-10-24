@@ -14,19 +14,19 @@ export const GET = withAdminMiddleware(async (request) => {
   const after = params.get('after') || '';
   if (!/^[a-zA-Z0-9][a-zA-Z0-9:_-]{0,127}$/.test(marketId) ||
       !/^\d{4}-\d{2}-\d{2}$/.test(dateKey) ||
-      (after && !/^PRE-[a-zA-Z0-9_-]{5,80}$/.test(after))) {
+      (after && (!/^\d{1,12}$/.test(after) || Number(after) > Number.MAX_SAFE_INTEGER))) {
     return NextResponse.json({ error: 'Valid market/date/order cursor required' }, { status: 400 });
   }
   try {
     const { db } = await connectToDatabase();
     const filter = { marketId, capacityDateKey: dateKey };
     const rawOrders = await db.collection('marketorders').find({
-      ...filter, ...(after ? { orderNumber: { $gt: after } } : {}),
+      ...filter, ...(after ? { queuePosition: { $gt: Number(after) } } : {}),
     }).project({
-      _id: 0, orderNumber: 1, waitlistNumber: 1, customerName: 1,
+      _id: 0, orderNumber: 1, queuePosition: 1, waitlistNumber: 1, customerName: 1,
       customerPhone: 1, items: 1, paymentStatus: 1, status: 1,
       total: 1, createdAt: 1, capacityReservationStatus: 1,
-    }).sort({ orderNumber: 1 }).limit(51).toArray();
+    }).sort({ queuePosition: 1, orderNumber: 1 }).limit(51).toArray();
     const hasMore = rawOrders.length > 50;
     const orders = rawOrders.slice(0, 50);
 
@@ -35,6 +35,7 @@ export const GET = withAdminMiddleware(async (request) => {
     const demand = await db.collection('marketorders').aggregate([
       { $match: { ...filter, capacityReservationStatus: { $in: ['held', 'confirmed'] } } },
       { $unwind: '$capacityRequirements' },
+      { $match: { 'capacityRequirements.sku': { $ne: 'preorder_slot' } } },
       { $group: {
         _id: { sku: '$capacityRequirements.sku', paymentStatus: '$paymentStatus' },
         units: { $sum: '$capacityRequirements.quantity' },
@@ -57,7 +58,7 @@ export const GET = withAdminMiddleware(async (request) => {
       .project({ _id: 0, sku: 1, limitUnits: 1, heldUnits: 1, active: 1 }).sort({ sku: 1 }).limit(250).toArray();
     return NextResponse.json({
       success: true, marketId, dateKey, summary, demand, capacity, orders, waitlistCount,
-      nextCursor: hasMore ? orders[orders.length - 1]?.orderNumber : null,
+      nextCursor: hasMore ? String(orders[orders.length - 1]?.queuePosition) : null,
     }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch {
     return NextResponse.json({ error: 'Preorder production manifest unavailable' }, { status: 503 });
