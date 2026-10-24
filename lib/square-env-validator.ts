@@ -37,6 +37,20 @@ export function validateSquareEnvironment(): ValidationResult {
     siteBaseUrl: process.env.NEXT_PUBLIC_BASE_URL || ''
   };
   
+  // Vercel's production target is the release authority; do not accept a
+  // sandbox payment configuration or fake-payment setting on that target.
+  if (process.env.VERCEL_ENV === 'production') {
+    if (process.env.SQUARE_ENVIRONMENT !== 'production') {
+      errors.push('Production deployment requires SQUARE_ENVIRONMENT=production');
+    }
+    if (process.env.SQUARE_MOCK_MODE === 'true') {
+      errors.push('Production deployment requires SQUARE_MOCK_MODE=false');
+    }
+    if (!config.webhookSignatureKey) {
+      errors.push('Production deployment requires a Square webhook signing key');
+    }
+  }
+
   // Critical validations
   if (!config.applicationId) {
     errors.push('SQUARE_APPLICATION_ID is required');
