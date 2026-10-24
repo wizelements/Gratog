@@ -47,7 +47,9 @@ export const GET = withAdminMiddleware(
       if (fulfillmentType) {
         const allowedTypes = ['pickup', 'delivery', 'shipping'];
         if (allowedTypes.includes(fulfillmentType)) {
-          query.fulfillmentType = fulfillmentType;
+          query.fulfillmentType = fulfillmentType === 'pickup'
+            ? { $regex: '^pickup(?:_|$)' }
+            : fulfillmentType;
         }
       }
       
@@ -112,6 +114,8 @@ export const GET = withAdminMiddleware(
         pickup: order.pickup || null,
         pickupDate: order.pickupDate || null,
         deliveryAddress: order.deliveryAddress || null,
+        shippingAddress: order.shippingAddress || null,
+        fulfillment: order.fulfillment || null,
         orderTiming: order.orderTiming || null,
         deliveryTimeSlot: order.deliveryTimeSlot || null,
         // Notification statuses

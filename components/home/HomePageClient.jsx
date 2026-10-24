@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -23,15 +22,7 @@ import { JsonLd } from '@/components/JsonLd';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { MARKETS } from '@/data/markets';
-import {
-  getCategoryLabel,
-  normalizeProductKey,
-  toStorefrontProduct,
-} from '@/data/products';
-import {
-  getWeeklyMenuProducts,
-  buildWeeklyMenu,
-} from '@/data/weeklyMenu';
+import { getCategoryLabel } from '@/data/products';
 
 const ORDERING_STEPS = [
   { icon: ShoppingBag, title: 'Explore the menu', text: 'Find a flavor you love in this week’s selection.' },
@@ -47,25 +38,22 @@ function availabilityLabel(product) {
   return 'Available this week';
 }
 
-function ProductMarketCard({ product, commerceProduct = null, priority = false }) {
-  const storefrontProduct = useMemo(
-    () => commerceProduct || toStorefrontProduct(product),
-    [commerceProduct, product]
-  );
-  const displayPrice = Number(storefrontProduct?.price ?? product.price ?? 0);
+function ProductMarketCard({ product, priority = false }) {
+  // Products arrive from the certified storefront snapshot, not from static
+  // weekly-menu data. Do not display a fallback price or fabricate a cart item.
+  const displayPrice = Number(product.price);
   const displaySize =
-    storefrontProduct?.size ||
-    storefrontProduct?.variantLabel ||
-    storefrontProduct?.variations?.[0]?.name ||
-    product.sizes?.[0] ||
+    product.size ||
+    product.variantLabel ||
+    product.variations?.[0]?.name ||
     '';
 
   return (
     <Card className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-emerald-900/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
-      <Link href={`/product/${product.slug}`} className="block">
+      <Link href={`/product/${product.slug || product.id}`} className="block">
         <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
           <ProductVisual
-            product={storefrontProduct || product}
+            product={product}
             priority={priority}
             sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 31vw"
           />
@@ -80,20 +68,20 @@ function ProductMarketCard({ product, commerceProduct = null, priority = false }
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
               {getCategoryLabel(product.category)}
             </p>
-            <Link href={`/product/${product.slug}`} className="mt-1 block text-xl font-semibold leading-tight text-stone-950 hover:text-emerald-800">
+            <Link href={`/product/${product.slug || product.id}`} className="mt-1 block text-xl font-semibold leading-tight text-stone-950 hover:text-emerald-800">
               {product.name}
             </Link>
           </div>
           <p className="shrink-0 text-lg font-bold text-emerald-800">
-            {displayPrice > 0 ? `$${displayPrice.toFixed(2)}` : 'See details'}
+            ${displayPrice.toFixed(2)}
             {displaySize ? <span className="ml-1 text-xs font-medium text-stone-500">· {displaySize}</span> : null}
           </p>
         </div>
-        <p className="mt-3 text-sm leading-6 text-stone-600">{product.shortDescription}</p>
+        {product.shortDescription ? <p className="mt-3 text-sm leading-6 text-stone-600">{product.shortDescription}</p> : null}
         <div className="mt-auto pt-5">
           <QuickAddButton
-            product={storefrontProduct}
-            selectedVariant={storefrontProduct?.variations?.[0]}
+            product={product}
+            selectedVariant={product.variations?.[0]}
             className="h-11 w-full rounded-full bg-emerald-700 text-white hover:bg-emerald-800"
           />
         </div>
@@ -106,26 +94,8 @@ export default function HomePageClient({
   initialFeaturedProducts = [],
   organizationSchema,
   faqSchema,
-  weekStart,
-  weekEnd,
 }) {
-  const weeklyMenu = useMemo(() => buildWeeklyMenu(weekStart, weekEnd), [weekStart, weekEnd]);
-  const weeklyProducts = useMemo(() => getWeeklyMenuProducts('all').slice(0, 6), []);
-  const commerceProductByKey = useMemo(() => {
-    const map = new Map();
-    (Array.isArray(initialFeaturedProducts) ? initialFeaturedProducts : []).forEach((product) => {
-      [product?.curatedProductId, product?.id, product?.slug, product?.name]
-        .map(normalizeProductKey)
-        .filter(Boolean)
-        .forEach((key) => map.set(key, product));
-    });
-    return map;
-  }, [initialFeaturedProducts]);
-  const getCommerceProduct = (product) =>
-    commerceProductByKey.get(normalizeProductKey(product.id)) ||
-    commerceProductByKey.get(normalizeProductKey(product.slug)) ||
-    commerceProductByKey.get(normalizeProductKey(product.name)) ||
-    null;
+  const featuredProducts = Array.isArray(initialFeaturedProducts) ? initialFeaturedProducts : [];
 
   return (
     <main className="min-h-screen bg-[#fbfaf5] text-stone-950">
@@ -142,38 +112,44 @@ export default function HomePageClient({
               Fresh flavors. Made with gratitude.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90 sm:text-xl">
-              From bright lemonades and refreshing drinks to sea moss gels and shots, everything starts with thoughtful ingredients and small-batch preparation. Find us at the market or preorder your favorites.
+              Explore our small-batch lemonades, refreshers, and sea moss favorites. See current products first, then choose an eligible ordering option without guessing what is available.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild className="h-14 rounded-full bg-white px-8 text-base font-bold text-emerald-950 hover:bg-emerald-50">
-                <Link href="/catalog">Shop online in Georgia</Link>
+                <Link href="/catalog">Shop drinks & sea moss</Link>
               </Button>
               <Button asChild variant="outline" className="h-14 rounded-full border-white/30 bg-transparent px-8 text-base font-bold text-white hover:bg-white/10 hover:text-white">
                 <Link href="/weekly-menu">Preorder for market pickup</Link>
               </Button>
             </div>
             <p className="mt-4 text-sm leading-6 text-emerald-50/80">
-              Ordering from home? Options for eligible Georgia delivery or shipping depend on the product and address. Local delivery is limited to a 35-mile radius of Atlanta ZIP 30331 after a full-address check; shipping is offered only when explicitly available for your items at checkout. Market-only preorders remain pickup orders.
+              Ordering from home? Options for eligible Georgia delivery or shipping depend on your products, address, and confirmed availability at checkout. Market-only preorders require a confirmed pickup market.
             </p>
           </div>
 
           <div className="rounded-[2rem] border border-white/20 bg-white/95 p-6 text-stone-950 shadow-2xl shadow-emerald-950/40">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Find us at the market</p>
-            <h2 className="mt-3 text-3xl font-semibold">{weeklyMenu.title}</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Start with what sounds good</p>
+            <h2 className="mt-3 text-3xl font-semibold">Find your next favorite.</h2>
             <p className="mt-3 leading-7 text-stone-600">
-              See where we’ll be and preorder ahead for a convenient market pickup.
+              Browse real product details, ingredients, prices, and current ordering options.
             </p>
             <div className="mt-5 grid gap-3">
-              {MARKETS.slice(0, 3).map((market) => (
-                <div key={market.id} className="rounded-2xl bg-emerald-50 p-4">
-                  <p className="font-semibold text-emerald-950">{market.name}</p>
-                  <p className="mt-1 text-sm text-emerald-800">{market.pickupDays} • {market.hours}</p>
-                </div>
+              {[
+                { label: 'Lemonades & refreshers', detail: 'Bright, handcrafted drinks', href: '/catalog' },
+                { label: 'Sea moss favorites', detail: 'Explore gels and small-batch blends', href: '/catalog' },
+                { label: 'Market preorders', detail: 'Reserve for a confirmed market', href: '/weekly-menu' },
+              ].map((option) => (
+                <Link key={option.label} href={option.href} className="group rounded-2xl bg-emerald-50 p-4 transition hover:bg-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-800">
+                  <span className="flex items-center justify-between gap-3 font-semibold text-emerald-950">
+                    {option.label}<ArrowRight className="h-4 w-4 shrink-0 transition group-hover:translate-x-1" aria-hidden="true" />
+                  </span>
+                  <span className="mt-1 block text-sm text-emerald-800">{option.detail}</span>
+                </Link>
               ))}
             </div>
-            <Button asChild variant="outline" className="mt-5 h-11 w-full rounded-full border-emerald-300 text-emerald-900 hover:bg-emerald-100">
-              <Link href="/weekly-menu">See available products</Link>
-            </Button>
+            <p className="mt-4 text-xs leading-5 text-stone-600">
+              Product availability and fulfillment are confirmed before payment.
+            </p>
           </div>
         </div>
       </section>
@@ -182,10 +158,10 @@ export default function HomePageClient({
         <div className="container">
           <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Fresh from the weekly menu</p>
-              <h2 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Find your favorites.</h2>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Shop our current collection</p>
+              <h2 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Shop what’s available.</h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">
-                Discover your next favorite. Shop eligible products online for Georgia fulfillment, or reserve market-only items for pickup.
+                Compare our current checkout-connected products. For market-only favorites, use the separate market preorder menu.
               </p>
             </div>
             <Button asChild className="h-12 rounded-full bg-emerald-700 px-6 text-white hover:bg-emerald-800">
@@ -193,16 +169,25 @@ export default function HomePageClient({
             </Button>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {weeklyProducts.map((product, index) => (
-              <ProductMarketCard
-                key={product.id}
-                product={product}
-                commerceProduct={getCommerceProduct(product)}
-                priority={index < 3}
-              />
-            ))}
-          </div>
+          {featuredProducts.length > 0 ? (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {featuredProducts.map((product, index) => (
+                <ProductMarketCard
+                  key={product.variationId || product.id}
+                  product={product}
+                  priority={index < 3}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-emerald-900/10 bg-white p-6 text-stone-700">
+              <p className="font-semibold text-stone-950">Explore the full menu</p>
+              <p className="mt-2">Online checkout products are being confirmed. Browse the menu for product details and current ordering options; no unavailable item will be added here.</p>
+              <Link href="/catalog" className="mt-4 inline-flex items-center gap-2 font-semibold text-emerald-800 underline underline-offset-4">
+                View the shop <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 

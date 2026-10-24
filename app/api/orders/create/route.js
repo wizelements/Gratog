@@ -2,7 +2,8 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { createOrderAtomic } from '@/lib/transactions';
-import { randomUUID } from 'crypto';
+import { connectToDatabase } from '@/lib/db-optimized';
+import { createHash, randomUUID } from 'crypto';
 import {
   getIdempotencyKeyFromHeaders,
   withIdempotency,
@@ -12,8 +13,9 @@ import { generateOrderAccessToken } from '@/lib/order-access-token';
 import { priceCart, CartPricingError } from '@/lib/cart-pricing';
 import { checkDeliveryRadius } from '@/lib/delivery-radius';
 import { calculateDistanceBasedDeliveryFee } from '@/lib/delivery-fees';
-import { shippingMethods } from '@/adapters/fulfillmentAdapter';
+import { getShippingRates, calculatePackageDimensions, shippingMethodKey } from '@/lib/shipping-service';
 import { validateGeorgiaDestination } from '@/lib/georgia-orders';
+import { assertPickupAppointment } from '@/lib/pickup-locations';
 
 // Order access token TTL — must outlive the longest realistic checkout session.
 // Payment route uses 30m; we use the same so the token survives until pay click.
@@ -65,6 +67,7 @@ export async function POST(request) {
     // -----------------------------------------------------------------------
     let pricing;
     let fulfillmentQuote = null;
+    let appointmentConfirmation = null;
     try {
       const couponCode =
         orderData.appliedCoupon?.code ||
@@ -92,7 +95,28 @@ export async function POST(request) {
         );
       }
 
-      fulfillmentQuote = await quoteServerFulfillment(orderData, basePricing.subtotal);
+      if (isPickupFulfillment(orderData.fulfillmentType) && orderData.pickup?.mode === 'appointment') {
+        if (basePricing.items.some(line => line.isPreorder || line.marketExclusive)) {
+          throw new CartPricingError('MARKET_PICKUP_REQUIRED', 'Your cart contains items restricted to market pickup.', 422);
+        }
+        const appointmentDate = orderData.pickup?.date;
+        const locationId = orderData.pickup?.locationId;
+        try {
+          const appointment = await assertPickupAppointment(locationId, appointmentDate);
+          appointmentConfirmation = {
+            name: appointment.location.name,
+            street: appointment.location.street,
+            city: appointment.location.city,
+            state: 'GA',
+            zip: appointment.location.zip,
+            endsAt: appointment.slot.endsAt,
+            instructions: appointment.location.instructions,
+          };
+        } catch (error) {
+          throw new CartPricingError('PICKUP_APPOINTMENT_UNAVAILABLE', error?.message || 'Pickup appointment is unavailable.', 409);
+        }
+      }
+      fulfillmentQuote = await quoteServerFulfillment(orderData, basePricing.subtotal, basePricing.items);
 
       pricing = await priceCart({
         items: orderData.cart,
@@ -125,12 +149,27 @@ export async function POST(request) {
       throw err;
     }
 
-    const orderId = randomUUID();
+    // Public pickup windows are previews only. Atomic capacity admission is
+    // performed by createOrderAtomic in the same transaction as order insertion.
+    // Enforce retry identity at the database's unique primary key, not only
+    // through a best-effort Redis or in-memory response cache.
+    const digest = idempotencyKey
+      ? createHash('sha256').update('tog-checkout-v1:' + idempotencyKey).digest('hex')
+      : null;
+    const orderId = digest
+      ? [digest.slice(0,8),digest.slice(8,12),'4'+digest.slice(13,16),
+          'a'+digest.slice(17,20),digest.slice(20,32)].join('-')
+      : randomUUID();
+    const checkoutRequestHash = idempotencyKey
+      ? createHash('sha256').update(JSON.stringify(orderData)).digest('hex')
+      : null;
     const timestamp = new Date();
-    const storedFulfillment = buildStoredFulfillment(orderData, fulfillmentQuote);
+    const storedFulfillment = buildStoredFulfillment(orderData, fulfillmentQuote, appointmentConfirmation);
 
     // Build order object — pricing comes from the server, not the client.
     const enhancedOrder = {
+      // Mongo _id is intrinsically unique even when idempotency-cache calls race.
+      ...(idempotencyKey ? { _id: orderId, checkoutRequestHash } : {}),
       id: orderId,
       customerId: orderData.customer?.email || null,
       customerEmail: orderData.customer?.email,
@@ -219,7 +258,23 @@ export async function POST(request) {
     // Wrap order creation in idempotency check
     const createOrder = async () => {
       try {
-        const order = await createOrderAtomic(enhancedOrder);
+        let order;
+        try {
+          order = await createOrderAtomic(enhancedOrder);
+        } catch (writeError) {
+          if (idempotencyKey && writeError?.code === 11000) {
+            const { db } = await connectToDatabase();
+            const existing = await db.collection('orders').findOne({ _id: orderId });
+            if (existing && existing.checkoutRequestHash === checkoutRequestHash) {
+              order = existing; // Same customer request, already committed.
+            } else {
+              throw new CartPricingError('IDEMPOTENCY_CONFLICT',
+                'Checkout details changed. Restart this order with a new attempt.',409);
+            }
+          } else {
+            throw writeError;
+          }
+        }
 
         // INTENTIONAL NO-OP: reward points used to be fired here in
         // parallel with /api/payments, which double-awarded every order.
@@ -260,6 +315,7 @@ export async function POST(request) {
           },
         };
       } catch (dbError) {
+        if (dbError instanceof CartPricingError) throw dbError;
         console.error('Atomic order creation failed:', dbError);
 
         if (dbError.code === 'ECONNREFUSED' || dbError.message?.includes('timeout')) {
@@ -280,6 +336,18 @@ export async function POST(request) {
     return NextResponse.json(result);
   } catch (error) {
     console.error('Create order error:', error);
+    if (error instanceof CartPricingError) {
+      return NextResponse.json({
+        success: false, code: error.code, error: error.message
+      }, { status: error.status });
+    }
+    if (/pickup appointment|pickup location|pickup cutoff/i.test(String(error?.message || ''))) {
+      return NextResponse.json({
+        success: false,
+        code: 'PICKUP_APPOINTMENT_UNAVAILABLE',
+        error: 'That pickup time is no longer available. Please choose another appointment.',
+      }, { status: 409 });
+    }
     return NextResponse.json(
       {
         success: false,
@@ -311,7 +379,7 @@ function isPickupFulfillment(type) {
   return value.includes('pickup') || value === 'preorder';
 }
 
-function buildStoredFulfillment(orderData, quote) {
+function buildStoredFulfillment(orderData, quote, appointment) {
   if (isShippingFulfillment(orderData.fulfillmentType)) {
     return {
       type: 'shipping',
@@ -341,6 +409,13 @@ function buildStoredFulfillment(orderData, quote) {
     return {
       type: 'pickup',
       pickup: {
+        mode: pickup.mode || 'market',
+        locationName: appointment?.name || null,
+        locationAddress: appointment ? {
+          street: appointment.street, city: appointment.city, state: appointment.state, zip: appointment.zip
+        } : null,
+        windowEndsAt: appointment?.endsAt || null,
+        arrivalInstructions: appointment?.instructions || null,
         locationId: pickup.locationId || orderData.pickupLocation || null,
         date: pickup.date || orderData.pickupDate || orderData.orderTiming?.requestedDate || null,
         instructions: pickup.instructions || orderData.pickupInstructions || null,
@@ -370,23 +445,31 @@ function orderError(message, status, code) {
   return err;
 }
 
-async function quoteServerFulfillment(orderData, subtotalDollars) {
+async function quoteServerFulfillment(orderData, subtotalDollars, pricedItems) {
   if (isShippingFulfillment(orderData.fulfillmentType)) {
     const address = orderData.shippingAddress;
     if (!address?.street || !address?.city || !address?.state || !address?.zip) {
       throw orderError('Shipping address is required', 400, 'SHIPPING_ADDRESS_REQUIRED');
     }
 
-    const method = shippingMethods().find((option) => option.id === orderData.shippingMethod);
-    if (!method) {
-      throw orderError('Shipping method is required', 400, 'SHIPPING_METHOD_REQUIRED');
+    if (!Array.isArray(pricedItems) || pricedItems.some(item => !item.shippingEligible || item.marketExclusive || item.isPreorder)) {
+      throw orderError('One or more products are not approved for Georgia parcel shipping.', 422, 'PRODUCT_NOT_APPROVED_FOR_SHIPPING');
     }
-
+    let rates;
+    try {
+      rates = await getShippingRates({ ...address, street2: address.suite || address.street2 }, calculatePackageDimensions(pricedItems));
+    } catch {
+      throw orderError('Carrier shipping is not available. Please choose another fulfillment option.', 503, 'SHIPPING_UNAVAILABLE');
+    }
+    const method = rates.find(rate => shippingMethodKey(rate) === orderData.shippingMethod);
+    if (!method || !Number.isFinite(method.rate) || method.rate <= 0) {
+      throw orderError('Shipping quote expired or is no longer available. Request a new quote.', 409, 'SHIPPING_QUOTE_EXPIRED');
+    }
     return {
-      feeCents: dollarsToCents(method.price),
-      fee: method.price,
-      shippingService: method.name,
-      message: `${method.name} selected — estimated ${method.estimatedDays}.`,
+      feeCents: dollarsToCents(method.rate),
+      fee: method.rate,
+      shippingService: `${method.carrier} ${method.serviceName}`,
+      message: `${method.carrier} ${method.serviceName} — current carrier quote.`,
     };
   }
 

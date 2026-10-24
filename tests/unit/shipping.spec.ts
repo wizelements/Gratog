@@ -1,209 +1,103 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { getShippingRates, validateAddress, createShipment, getTrackingInfo,
+  calculatePackageDimensions, isShippingApiConfigured, shippingMethodKey } from '@/lib/shipping-service';
 
-// No API keys set = flat rate mode
-vi.stubEnv('SHIPENGINE_API_KEY', '');
-vi.stubEnv('EASYPOST_API_KEY', '');
+afterEach(() => vi.unstubAllEnvs());
 
-describe('Shipping Service', () => {
-  describe('isShippingApiConfigured', () => {
-    it('should return false when no API key is set', async () => {
-      const { isShippingApiConfigured } = await import('@/lib/shipping-service');
+const georgia = { street: '123 Main Street', city: 'Atlanta', state: 'GA', zip: '30301' };
+const physical = { quantity: 1, shippingPackageWeightOz: 22,
+  shippingPackageLengthIn: 8, shippingPackageWidthIn: 6, shippingPackageHeightIn: 5 };
+
+describe('Shipping Service — verified fulfillment contract', () => {
+  describe('service activation', () => {
+    it('reports no provider when both credentials are absent', () => {
+      vi.stubEnv('SHIPENGINE_API_KEY', '');
+      vi.stubEnv('EASYPOST_API_KEY', '');
       expect(isShippingApiConfigured()).toBe(false);
     });
-  });
-
-  describe('getShippingRates (flat rate mode)', () => {
-    it('should return flat rates when API not configured', async () => {
-      const { getShippingRates } = await import('@/lib/shipping-service');
-      
-      const rates = await getShippingRates({
-        street: '123 Main St',
-        city: 'Atlanta',
-        state: 'GA',
-        zip: '30301'
-      });
-      
-      expect(rates).toHaveLength(3);
-      expect(rates[0].rate).toBe(6.99);
-      expect(rates[1].rate).toBe(12.99);
-      expect(rates[2].rate).toBe(24.99);
+    it('refuses rates until merchant operational and origin approval', async () => {
+      vi.stubEnv('GA_SHIPPING_OPERATIONAL_APPROVED', '');
+      vi.stubEnv('SHIPPING_ORIGIN_VERIFIED', '');
+      await expect(getShippingRates(georgia, calculatePackageDimensions([physical])))
+        .rejects.toThrow(/not certified/i);
     });
-
-    it('should include estimated delivery dates', async () => {
-      const { getShippingRates } = await import('@/lib/shipping-service');
-      
-      const rates = await getShippingRates({
-        street: '123 Main St',
-        city: 'Atlanta',
-        state: 'GA',
-        zip: '30301'
-      });
-      
-      rates.forEach(rate => {
-        expect(rate.deliveryDate).toBeDefined();
-        expect(rate.estimatedDays).toBeGreaterThan(0);
-      });
+    it('does not silently offer flat rates without a carrier', async () => {
+      vi.stubEnv('GA_SHIPPING_OPERATIONAL_APPROVED', 'true');
+      vi.stubEnv('SHIPPING_ORIGIN_VERIFIED', 'true');
+      vi.stubEnv('SHIPENGINE_API_KEY', '');
+      vi.stubEnv('EASYPOST_API_KEY', '');
+      await expect(getShippingRates(georgia, calculatePackageDimensions([physical])))
+        .rejects.toThrow(/dispatch address|not configured/i);
+    });
+    it('uses carrier/service identity rather than a browser-supplied price', () => {
+      expect(shippingMethodKey({ carrier: ' UPS ', service: ' Ground ' })).toBe('ups::ground');
+      expect(shippingMethodKey({ carrier: 'UPS', service: 'Next Day' })).not.toBe('ups::ground');
     });
   });
-
-  describe('validateAddress', () => {
-    it('should validate complete address', async () => {
-      const { validateAddress } = await import('@/lib/shipping-service');
-      
-      const result = await validateAddress({
-        street: '123 Main Street',
-        city: 'Atlanta',
-        state: 'GA',
-        zip: '30301'
-      });
-      
-      expect(result.valid).toBe(true);
+  describe('Georgia destinations', () => {
+    it('accepts a valid complete in-state address', async () => {
+      expect((await validateAddress(georgia)).valid).toBe(true);
     });
-
-    it('should reject missing street', async () => {
-      const { validateAddress } = await import('@/lib/shipping-service');
-      
-      const result = await validateAddress({
-        street: '',
-        city: 'Atlanta',
-        state: 'GA',
-        zip: '30301'
-      });
-      
+    it('rejects missing street', async () => {
+      const result = await validateAddress({...georgia, street: ''});
       expect(result.valid).toBe(false);
-      expect(result.errors?.some(e => e.includes('Street'))).toBe(true);
+      expect(result.errors?.some(v => /street/i.test(v))).toBe(true);
     });
-
-    it('should reject missing city', async () => {
-      const { validateAddress } = await import('@/lib/shipping-service');
-      
-      const result = await validateAddress({
-        street: '123 Main St',
-        city: '',
-        state: 'GA',
-        zip: '30301'
-      });
-      
+    it('rejects missing city', async () => {
+      const result = await validateAddress({...georgia, city: ''});
       expect(result.valid).toBe(false);
-      expect(result.errors?.some(e => e.includes('City'))).toBe(true);
+      expect(result.errors?.some(v => /city/i.test(v))).toBe(true);
     });
-
-    it('should reject invalid state code', async () => {
-      const { validateAddress } = await import('@/lib/shipping-service');
-      
-      const result = await validateAddress({
-        street: '123 Main St',
-        city: 'Atlanta',
-        state: 'Georgia', // Should be 2-letter code
-        zip: '30301'
-      });
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors?.some(e => e.includes('state'))).toBe(true);
+    it('rejects mismatched or non-Georgia destination', async () => {
+      expect((await validateAddress({...georgia, state:'FL'})).valid).toBe(false);
+      expect((await validateAddress({...georgia, zip:'10001'})).valid).toBe(false);
+      expect((await validateAddress({...georgia, state:'Georgia'})).valid).toBe(false);
     });
-
-    it('should reject invalid ZIP code', async () => {
-      const { validateAddress } = await import('@/lib/shipping-service');
-      
-      const result = await validateAddress({
-        street: '123 Main St',
-        city: 'Atlanta',
-        state: 'GA',
-        zip: 'invalid'
-      });
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors?.some(e => e.includes('ZIP'))).toBe(true);
+    it('rejects malformed ZIP', async () => {
+      expect((await validateAddress({...georgia, zip: 'invalid'})).valid).toBe(false);
     });
-
-    it('should accept ZIP+4 format', async () => {
-      const { validateAddress } = await import('@/lib/shipping-service');
-      
-      const result = await validateAddress({
-        street: '123 Main St',
-        city: 'Atlanta',
-        state: 'GA',
-        zip: '30301-1234'
-      });
-      
-      expect(result.valid).toBe(true);
+    it('accepts Georgia ZIP+4', async () => {
+      expect((await validateAddress({...georgia, zip: '30301-1234'})).valid).toBe(true);
     });
   });
-
-  describe('createShipment (flat rate mode)', () => {
-    it('should create shipment with mock tracking', async () => {
-      const { createShipment } = await import('@/lib/shipping-service');
-      
-      const result = await createShipment(
-        'order_123',
-        'flat_standard',
-        {
-          street: '123 Main St',
-          city: 'Atlanta',
-          state: 'GA',
-          zip: '30301'
-        }
-      );
-      
-      expect(result.trackingNumber).toBeDefined();
-      expect(result.trackingNumber).toContain('TOG');
-      expect(result.carrier).toBe('USPS');
+  describe('carrier label and tracking', () => {
+    it('never invents a shipment or synthetic tracking number', async () => {
+      vi.stubEnv('SHIPENGINE_API_KEY','');
+      await expect(createShipment('order_123', 'flat_standard', georgia))
+        .rejects.toThrow(/mock tracking identifiers are not permitted/i);
+    });
+    it('does not claim shipped when the carrier is unavailable', async () => {
+      vi.stubEnv('SHIPENGINE_API_KEY','');
+      await expect(createShipment('order_123', 'carrier_rate_123', georgia))
+        .rejects.toThrow(/label purchase failed/i);
+    });
+    it('never fabricates in-transit tracking', async () => {
+      vi.stubEnv('SHIPENGINE_API_KEY','');
+      await expect(getTrackingInfo('TOG123456'))
+        .rejects.toThrow(/not been verified/i);
     });
   });
-
-  describe('calculatePackageDimensions', () => {
-    it('should calculate package weight from items', async () => {
-      const { calculatePackageDimensions } = await import('@/lib/shipping-service');
-      
-      const dims = calculatePackageDimensions([
-        { weight: 8, quantity: 2 }, // 16oz
-        { weight: 16, quantity: 1 } // 16oz
-      ]);
-      
-      // 32oz items + 4oz packaging = 36oz
-      expect(dims.weight).toBe(36);
+  describe('physical packed dimensions', () => {
+    it('uses approved exact measured dimensions', () => {
+      expect(calculatePackageDimensions([physical])).toEqual({
+        weight:22, length:8, width:6, height:5
+      });
     });
-
-    it('should use default weight when not specified', async () => {
-      const { calculatePackageDimensions } = await import('@/lib/shipping-service');
-      
-      const dims = calculatePackageDimensions([
-        { quantity: 2 } // No weight specified, defaults to 8oz each
-      ]);
-      
-      // 16oz items + 4oz packaging = 20oz
-      expect(dims.weight).toBe(20);
+    it('rejects missing physical measurements instead of defaulting', () => {
+      expect(() => calculatePackageDimensions([{quantity:1}]))
+        .toThrow(/verified physical/i);
     });
-
-    it('should scale height with item count', async () => {
-      const { calculatePackageDimensions } = await import('@/lib/shipping-service');
-      
-      const smallOrder = calculatePackageDimensions([
-        { quantity: 1 }
-      ]);
-      
-      const largeOrder = calculatePackageDimensions([
-        { quantity: 1 },
-        { quantity: 1 },
-        { quantity: 1 },
-        { quantity: 1 },
-        { quantity: 1 },
-        { quantity: 1 }
-      ]);
-      
-      expect(largeOrder.height).toBeGreaterThan(smallOrder.height!);
+    it('rejects unsafe multi-product and multi-quantity parcel guesses', () => {
+      expect(() => calculatePackageDimensions([{...physical,quantity:2}]))
+        .toThrow(/multi-item/i);
+      expect(() => calculatePackageDimensions([physical,physical]))
+        .toThrow(/multi-item/i);
     });
-  });
-
-  describe('getTrackingInfo (mock mode)', () => {
-    it('should return mock tracking data', async () => {
-      const { getTrackingInfo } = await import('@/lib/shipping-service');
-      
-      const result = await getTrackingInfo('TOG123456');
-      
-      expect(result.trackingNumber).toBe('TOG123456');
-      expect(result.status).toBe('in_transit');
-      expect(result.events).toHaveLength(1);
+    it('rejects nonsensical weight and sizes', () => {
+      expect(() => calculatePackageDimensions([{...physical, shippingPackageWeightOz: 0}]))
+        .toThrow(/verified physical/i);
+      expect(() => calculatePackageDimensions([{...physical, shippingPackageLengthIn: -2}]))
+        .toThrow(/verified physical/i);
     });
   });
 });

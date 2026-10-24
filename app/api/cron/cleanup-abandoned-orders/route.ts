@@ -39,8 +39,7 @@ function verifyCronAuth(request: NextRequest) {
 }
 
 function baseUrl() {
-  // Merchant emails and RFC 8058 unsubscribe headers require a stable,
-  // canonical HTTPS origin, not unvalidated deployment environment strings.
+  // Canonical merchant host; avoid environment-origin injection into email headers.
   return 'https://tasteofgratitude.shop';
 }
 

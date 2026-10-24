@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import AnalyticsSystem from '@/lib/analytics';
 import { track } from '@/utils/analytics';
 import Link from 'next/link';
+import { BROWNS_MILL_PICKUP } from '@/lib/browns-mill-pickup';
 import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
@@ -447,6 +448,13 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
               <span className="rounded-full bg-white px-4 py-2 shadow-sm">No market visit required for eligible orders</span>
               <span className="rounded-full bg-white px-4 py-2 shadow-sm">Secure checkout</span>
             </div>
+            {!infoMode && (
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-stone-600">
+                Upcoming: {BROWNS_MILL_PICKUP.name}, {BROWNS_MILL_PICKUP.hoursLabel}.
+                <span className="ml-1 text-emerald-800">{BROWNS_MILL_PICKUP.golfNote}</span>
+                <span className="ml-1">Exact meetup point and booking details will be confirmed before appointments open.</span>
+              </p>
+            )}
             {!infoMode ? (
               <Link href="/catalog?mode=info" className="mt-6 inline-flex items-center text-sm font-semibold text-emerald-800 underline-offset-4 hover:underline">
                 <Info className="h-4 w-4 mr-2" aria-hidden="true" />

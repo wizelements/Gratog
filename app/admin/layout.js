@@ -32,6 +32,7 @@ const navigation = [
   { name: 'Markets', href: '/admin/markets', icon: MapPin },
   { name: 'Inventory', href: '/admin/inventory', icon: Warehouse },
   { name: 'Customers', href: '/admin/customers', icon: Users },
+  { name: 'Event Inquiries', href: '/admin/event-inquiries', icon: CalendarDays },
   { name: 'Email Health', href: '/admin/emails', icon: Mail },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];

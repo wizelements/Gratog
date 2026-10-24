@@ -1,0 +1,52 @@
+name: Full Commerce Candidate Regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'services/**'
+      - 'stores/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/full-commerce-candidate-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-commerce-regression-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  full-vitest:
+    name: Full Vitest and TypeScript (Node 22)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      NODE_ENV: test
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Run complete automated regression
+        run: npx vitest run --reporter=dot
+      - name: Static typecheck
+        run: npx tsc --noEmit --skipLibCheck
+
+# This CI gate has no secrets, cannot charge cards, and is NOT production approval.
+# Production deployment, signed provider E2E, recovery, merchant authorization,
+# and independent completion are tracked in issue #60.

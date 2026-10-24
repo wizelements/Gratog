@@ -14,16 +14,16 @@ describe('regular Georgia customers can order without selecting a market', () =>
   it('gives standard shoppers a direct shopping route from the homepage and catalog', () => {
     const home = read('components/home/HomePageClient.jsx');
     const catalog = read('components/catalog/CatalogPageClient.jsx');
-    expect(home).toContain('<Link href="/catalog">Shop online in Georgia</Link>');
+    expect(home).toContain('<Link href="/catalog">Shop drinks & sea moss</Link>');
     expect(home).toContain('<Link href="/weekly-menu">Preorder for market pickup</Link>');
     expect(catalog).toContain('No market visit required for eligible orders');
     expect(catalog).toContain('Regular online orders can go through the cart above.');
   });
 
-  it('defaults new online checkouts to shipping without changing the separate pickup-only journey', () => {
+  it('defaults new online checkouts to local delivery while keeping unavailable shipping opt-in', () => {
     const store = read('stores/checkout.ts');
     const checkout = read('components/checkout/CheckoutRoot.tsx');
-    expect(store).toMatch(/const initialFulfillment: FulfillmentData = \{\s*\/\/[^\n]*\n\s*\/\/[^\n]*\n\s*type: 'shipping'/);
+    expect(store).toMatch(/const initialFulfillment: FulfillmentData = \{\s*\/\/[^\n]*\n\s*\/\/[^\n]*\n\s*type: 'delivery'/);
     expect(checkout).toContain('item.isPreorder || item.marketExclusive');
     expect(checkout).toContain("type: 'pickup'");
     expect(checkout).toContain('<ShippingForm');

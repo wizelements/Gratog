@@ -94,7 +94,8 @@ export default function EventsPage() {
             collectPhone
             requireEmail
             collectMessage
-            messagePlaceholder="Event type, date, location, estimated attendance, setup/vendor details, and anything else we should know."
+            collectEventDetails
+            messagePlaceholder="Optional: desired menu, vendor setup, serving window, and other helpful details."
             successTitle="Event inquiry received."
             successDescription="We’ll review the details and follow up personally about availability, fit, and next steps."
           />
