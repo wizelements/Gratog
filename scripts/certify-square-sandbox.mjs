@@ -52,6 +52,8 @@ const key = (prefix) => `tog-sbx-${prefix}-${randomUUID()}`;
 let createdPaymentId = null;
 let authPaymentId = null;
 let refundSubmitted = false;
+let checkoutLinkId = null;
+let checkoutLinkRemoved = false;
 async function run() {
   if (!accessToken) {
     certification.blocker = 'No sandbox-capable Square credential supplied to the isolated certification runner.';
@@ -64,6 +66,39 @@ async function run() {
   note('Square sandbox credential authenticated', locations.ok && Array.isArray(locations.data.locations), { status: locations.status });
   const location = locations.data.locations.find(loc => loc.status === 'ACTIVE') || locations.data.locations[0];
   note('Sandbox location present', Boolean(location?.id));
+
+  // A small REAL Square-hosted preorder checkout sample verifies link
+  // creation, unchanged idempotency replay, and authoritative cancellation.
+  // No buyer opens the link and no payment is taken on it.
+  const linkRequest = {
+    idempotency_key: key('checkout-link'),
+    quick_pay: {
+      name: 'SANDBOX ONLY - Taste of Gratitude preorder route',
+      price_money: { amount: 1199, currency: 'USD' },
+      location_id: location.id,
+    },
+  };
+  const link = await square('/v2/online-checkout/payment-links', {
+    method: 'POST', body: linkRequest,
+  });
+  checkoutLinkId = link.data.payment_link?.id || null;
+  note('Real Square Sandbox hosted preorder link created',
+    link.ok && Boolean(checkoutLinkId) && Boolean(link.data.payment_link?.url),
+    { status: link.status });
+  const linkReplay = await square('/v2/online-checkout/payment-links', {
+    method: 'POST', body: linkRequest,
+  });
+  note('Preorder link idempotency replay produces same link',
+    linkReplay.ok && linkReplay.data.payment_link?.id === checkoutLinkId,
+    { status: linkReplay.status,
+      sameId: linkReplay.data.payment_link?.id === checkoutLinkId });
+  const removedLink = await square('/v2/online-checkout/payment-links/' +
+    encodeURIComponent(checkoutLinkId), { method: 'DELETE' });
+  checkoutLinkRemoved = removedLink.ok;
+  note('Unpaid Square Sandbox preorder link deleted and order canceled',
+    removedLink.ok && removedLink.data.id === checkoutLinkId &&
+      Boolean(removedLink.data.cancelled_order_id),
+    { status: removedLink.status });
 
   const decline = await square('/v2/payments', {
     method: 'POST',
@@ -193,8 +228,21 @@ try {
   certification.error = String(e?.message || e).slice(0,250);
 } finally {
   certification.finishedAt = new Date().toISOString();
+  // If a test aborted midway, clear the unpaid sandbox link best-effort so
+  // the certification run leaves no accidentally payable checkout artifact.
+  if (checkoutLinkId && !checkoutLinkRemoved && accessToken) {
+    try {
+      const cleanup = await square('/v2/online-checkout/payment-links/' +
+        encodeURIComponent(checkoutLinkId), { method: 'DELETE' });
+      checkoutLinkRemoved = cleanup.ok;
+    } catch { /* Evidence records incomplete sandbox cleanup. */ }
+  }
+  certification.sandboxLinkId = checkoutLinkId;
+  certification.checkoutLinkRemoved = checkoutLinkRemoved;
   certification.refundSubmitted = refundSubmitted;
-  certification.requiresManualSandboxCleanup = Boolean(createdPaymentId && !refundSubmitted);
+  certification.requiresManualSandboxCleanup =
+    Boolean((createdPaymentId && !refundSubmitted) ||
+      (checkoutLinkId && !checkoutLinkRemoved));
   mkdirSync('test-results', { recursive: true });
   writeFileSync('test-results/square-sandbox-certification.json', JSON.stringify(certification, null, 2));
   console.log('SANDBOX_CERT_RESULT', JSON.stringify({
