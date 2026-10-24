@@ -196,6 +196,8 @@ export async function POST(request) {
         : null,
       couponDiscount: pricing.discount,
       couponDiscountCents: pricing.discountCents,
+      lemonadePackDiscountCents: pricing.lemonadePackDiscountCents,
+      lemonadePackCounts: pricing.lemonadePackCounts,
 
       status: 'pending',
       paymentStatus: 'pending',
