@@ -240,25 +240,108 @@ export async function setIdempotentResponse(
 /**
  * Middleware wrapper for idempotent operations
  */
+export class IdempotencyAdmissionError extends Error {
+  code: string;
+  status: number;
+  constructor(code: string, message: string, status = 409) {
+    super(message);
+    this.name = 'IdempotencyAdmissionError';
+    this.code = code;
+    this.status = status;
+  }
+}
+
+/**
+ * Durable exactly-one order-creation admission across instances.
+ *
+ * Redis GET→SET and Mongo findOne→upsert are only caches: neither is a lock.
+ * Use Mongo's mandatory _id uniqueness for the claim and never fall back to
+ * process memory on a database outage. A possibly committed operation is left
+ * in `ambiguous` state for reconciliation rather than replayed blindly.
+ */
 export async function withIdempotency<T>(
   key: string,
   operation: () => Promise<T>,
-  ttlSeconds: number = 86400
+  ttlSeconds = 86400,
+  fingerprint?: string,
 ): Promise<T> {
-  // Check if we already have a response
-  const cachedResponse = await getIdempotentResponse(key);
-  if (cachedResponse !== null) {
-    debug(`Returning cached response for key: ${key}`);
-    return cachedResponse;
+  const collection = await getIdempotencyCollection();
+  return withAtomicIdempotencyClaim(collection, key, operation, ttlSeconds, fingerprint);
+}
+
+/** Extracted admission primitive permits real database contract tests without
+ * mocking the module loader or weakening production's distributed requirement. */
+export async function withAtomicIdempotencyClaim<T>(
+  collection: any,
+  key: string,
+  operation: () => Promise<T>,
+  ttlSeconds = 86400,
+  fingerprint?: string,
+): Promise<T> {
+  if (!isValidIdempotencyKey(key) || !/^[a-f0-9]{64}$/.test(fingerprint || '')) {
+    throw new IdempotencyAdmissionError(
+      'IDEMPOTENCY_REQUEST_INVALID', 'A valid, fingerprinted checkout request is required', 400
+    );
+  }
+  const claimId = 'checkout:' + key;
+
+  const readExisting = async () => {
+    const doc = await collection.findOne({ key });
+    if (!doc) return null;
+    if (doc.fingerprint && doc.fingerprint !== fingerprint) {
+      throw new IdempotencyAdmissionError(
+        'IDEMPOTENCY_CONFLICT', 'This checkout ID was already used for a different order'
+      );
+    }
+    if (doc.response?.success === true && doc.status !== 'ambiguous') return doc.response as T;
+    throw new IdempotencyAdmissionError(
+      'ORDER_ALREADY_PROCESSING',
+      'This order request is being verified. Do not submit a new charge.'
+    );
+  };
+  const existing = await readExisting();
+  if (existing !== null) return existing;
+
+  const now = new Date();
+  try {
+    await collection.insertOne({
+      _id: claimId,
+      key,
+      fingerprint,
+      status: 'processing',
+      createdAt: now,
+      updatedAt: now,
+      expiresAt: new Date(now.getTime() + ttlSeconds * 1000),
+    });
+  } catch (error: any) {
+    if (error?.code === 11000) {
+      const replay = await readExisting();
+      if (replay !== null) return replay;
+      throw new IdempotencyAdmissionError(
+        'ORDER_ALREADY_PROCESSING', 'Another order request is already processing'
+      );
+    }
+    throw error;
   }
 
-  // Execute the operation
-  const response = await operation();
-
-  // Cache the response
-  await setIdempotentResponse(key, response, ttlSeconds);
-
-  return response;
+  try {
+    const result = await operation();
+    const saved = await collection.updateOne(
+      { _id: claimId, status: 'processing' },
+      { $set: { status: 'completed', response: result, updatedAt: new Date() } }
+    );
+    if (saved.modifiedCount !== 1) {
+      throw new Error('Idempotency completion persistence unavailable');
+    }
+    return result;
+  } catch (error) {
+    // Commit ambiguity cannot be converted to permission for another payment.
+    await collection.updateOne(
+      { _id: claimId, status: 'processing' },
+      { $set: { status: 'ambiguous', updatedAt: new Date() } }
+    ).catch(() => undefined);
+    throw error;
+  }
 }
 
 /**

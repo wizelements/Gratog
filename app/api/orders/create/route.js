@@ -2,11 +2,12 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { createOrderAtomic } from '@/lib/transactions';
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import {
   getIdempotencyKeyFromHeaders,
   withIdempotency,
   isValidIdempotencyKey,
+  IdempotencyAdmissionError,
 } from '@/lib/idempotency';
 import { generateOrderAccessToken } from '@/lib/order-access-token';
 import { priceCart, CartPricingError } from '@/lib/cart-pricing';
@@ -25,9 +26,9 @@ export async function POST(request) {
 
     // Check for idempotency key
     const idempotencyKey = getIdempotencyKeyFromHeaders(request.headers);
-    if (idempotencyKey && !isValidIdempotencyKey(idempotencyKey)) {
+    if (!idempotencyKey || !isValidIdempotencyKey(idempotencyKey)) {
       return NextResponse.json(
-        { error: 'Invalid idempotency key format' },
+        { success: false, code: 'IDEMPOTENCY_KEY_REQUIRED', error: 'A secure order attempt ID is required. Please refresh checkout.' },
         { status: 400 }
       );
     }
@@ -269,16 +270,20 @@ export async function POST(request) {
       }
     };
 
-    // Execute with idempotency if key provided
-    let result;
-    if (idempotencyKey) {
-      result = await withIdempotency(idempotencyKey, createOrder, 86400); // 24h TTL
-    } else {
-      result = await createOrder();
-    }
-
+    // Immutable server fingerprint binds this retry ID to one customer's
+    // cart, fulfillment details and authoritative charged total.
+    const orderFingerprint = createHash('sha256')
+      .update(JSON.stringify({ orderData, totalCents: pricing.totalCents }))
+      .digest('hex');
+    const result = await withIdempotency(
+      idempotencyKey, createOrder, 86400, orderFingerprint
+    );
     return NextResponse.json(result);
   } catch (error) {
+    if (error instanceof IdempotencyAdmissionError) {
+      return NextResponse.json({ success: false, code: error.code, error: error.message },
+        { status: error.status, headers: { 'Retry-After': '2', 'Cache-Control': 'no-store' } });
+    }
     console.error('Create order error:', error);
     return NextResponse.json(
       {
