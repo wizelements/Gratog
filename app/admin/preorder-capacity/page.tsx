@@ -2,6 +2,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 type Cap = {sku:string;limitUnits:number;heldUnits:number;active:boolean};
+type Readiness = {
+  engineEnabled:boolean;checkoutIndexReady:boolean;
+  preparationCapacityConfigured:boolean;productCapacitiesConfigured:boolean;
+  configuredSkuCount:number;acceptingCapacityBoundPreorders:boolean;
+};
 type Order = {orderNumber:string;waitlistNumber?:string;customerName?:string;items?:Array<{quantity:number;name:string}>;paymentStatus?:string;status?:string};
 function dateNY() {
   const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
@@ -12,6 +17,7 @@ const getCsrf=()=>decodeURIComponent((document.cookie.split('; ').find(x=>x.star
 export default function PreorderCapacityPage(){
   const [marketId,M]=useState(''),[dateKey,D]=useState(dateNY),[sku,S]=useState('');
   const [limit,L]=useState('0'),[active,A]=useState(true),[caps,C]=useState<Cap[]>([]);
+  const [readiness,R]=useState<Readiness|null>(null);
   const [orders,O]=useState<Order[]>([]),[summary,U]=useState<Array<{_id:string;orders:number}>>([]);
   const [demand,G]=useState<Array<{_id:{sku:string;paymentStatus:string};units:number}>>([]);
   const [waitlist,W]=useState(0),[cursor,N]=useState<string|null>(null);
@@ -29,7 +35,7 @@ export default function PreorderCapacityPage(){
         fetch('/api/admin/preorder-operations?'+k,{cache:'no-store'})]);
       const [cd,od]=await Promise.all([c.json(),o.json()]);
       if(!c.ok||!o.ok)throw new Error(cd.error||od.error||'Batch unavailable');
-      C(cd.rows||[]);G(od.demand||[]);U(od.summary||[]);W(od.waitlistCount||0);
+      C(cd.rows||[]);R(cd.readiness||null);G(od.demand||[]);U(od.summary||[]);W(od.waitlistCount||0);
       O(prev=>more?prev.concat(od.orders||[]):od.orders||[]);N(od.nextCursor||null);E('');
     }catch(e){E(e instanceof Error?e.message:'Unavailable')}finally{B(false)}
   }
@@ -77,6 +83,17 @@ export default function PreorderCapacityPage(){
       <button disabled={busy} className="self-end rounded bg-emerald-700 p-3 text-white" onClick={()=>load()}>Load production batch</button>
     </section>
     {error&&<p role="status" className="rounded bg-amber-50 p-4">{error}</p>}
+    {readiness && <section aria-label="Preorder activation status" className="space-y-2 rounded-xl border border-amber-300 bg-amber-50 p-5">
+      <h2 className="text-xl font-bold">Reservation engine: {readiness.engineEnabled ? 'Configured ON' : 'Not activated'}</h2>
+      <p className="text-sm">The new engine cannot replace checkout until its actual database index, merchant production limits, Square settlement and recovery procedures are verified. This panel reports configuration only; it is not certification.</p>
+      <ul className="list-disc pl-5 text-sm">
+        <li>Real unique checkout index: {readiness.checkoutIndexReady?'Verified':'Not verified'}</li>
+        <li>Prepared orders/day limit: {readiness.preparationCapacityConfigured?'Configured':'Missing or full'}</li>
+        <li>Sellable SKU/component limits: {readiness.configuredSkuCount} available</li>
+        <li>Capacity-bound preorder admission: {readiness.acceptingCapacityBoundPreorders?'Configured to accept eligible orders':'Inactive for this market/day'}</li>
+      </ul>
+      <p className="text-sm font-medium">Changing limits does not turn on the new engine. An independently certified release activation is required.</p>
+    </section>}
     <section className="space-y-3 rounded-xl border bg-white p-5">
       <h2 className="text-xl font-bold">Daily capacity limits</h2>
       <p className="text-sm">Set <code>preorder_slot</code> to the daily number of orders staff can prepare, then configure every sellable SKU/component. Unconfigured means unavailable; never silently unlimited.</p>
