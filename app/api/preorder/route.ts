@@ -187,6 +187,14 @@ async function resolvePreorderCartItems(submittedItems: any[]) {
 }
 
 export async function POST(request: any) {
+  // Safe production rollout: PR capacity schema has no merchant-defined stock
+  // until ops provisions verified caps and Square settlement reconciliation.
+  // Default false preserves existing sales and customer checkout behavior.
+  // This is not evidence of unified production capacity certification.
+  if (process.env.PREORDER_CAPACITY_ENGINE_ENABLED !== 'true') {
+    const { POST: legacyPreorder } = await import('@/lib/preorder/legacy-route');
+    return legacyPreorder(request);
+  }
   try {
     let data = await request.json();
 
