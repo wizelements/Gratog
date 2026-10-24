@@ -18,6 +18,12 @@ import { isMarketPreorderPermitted } from '@/lib/preorder/eligibility';
  * and PII is available only through the protected staff manifest.
  */
 export async function POST(request: Request) {
+  // A waitlist makes sense only for enabled, merchant-configured capacity.
+  // Do not retain unrelated customer PII while the new system is dormant.
+  if (process.env.PREORDER_CAPACITY_ENGINE_ENABLED !== 'true') {
+    return NextResponse.json({ success: false, code: 'WAITLIST_NOT_ACTIVE',
+      error: 'This request list is not open yet.' }, { status: 503 });
+  }
   try {
     const source = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     if (!RateLimit.check('preorder_waitlist:' + source, 10, 60)) {

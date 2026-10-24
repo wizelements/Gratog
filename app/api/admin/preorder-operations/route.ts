@@ -30,8 +30,10 @@ export const GET = withAdminMiddleware(async (request) => {
     const hasMore = rawOrders.length > 50;
     const orders = rawOrders.slice(0, 50);
 
+    // A failed/unpayable checkout that released all reservations must not
+    // inflate the staff's committed production demand or ingredient manifest.
     const demand = await db.collection('marketorders').aggregate([
-      { $match: filter },
+      { $match: { ...filter, capacityReservationStatus: { $in: ['held', 'confirmed'] } } },
       { $unwind: '$capacityRequirements' },
       { $group: {
         _id: { sku: '$capacityRequirements.sku', paymentStatus: '$paymentStatus' },

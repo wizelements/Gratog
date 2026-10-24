@@ -9,6 +9,8 @@ describe('production-safe capacity engine rollout', () => {
     expect(legacy).toContain('export async function POST(');
     expect(legacy).toContain('createPreorder(');
     expect(legacy).toContain('createPaymentLink(');
+    const waitlist = readFileSync('app/api/preorder/waitlist/route.ts','utf8');
+    expect(waitlist).toContain("process.env.PREORDER_CAPACITY_ENGINE_ENABLED !== 'true'");
     expect(route.indexOf("PREORDER_CAPACITY_ENGINE_ENABLED !== 'true'"))
       .toBeLessThan(route.indexOf('const selectedMarket ='));
   });
