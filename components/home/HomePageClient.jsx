@@ -16,6 +16,7 @@ import {
   Users,
 } from 'lucide-react';
 import QuickAddButton from '@/components/QuickAddButton';
+import { LEMONADE_PACKS } from '@/lib/lemonade-packs';
 import ProductVisual from '@/components/ProductVisual';
 import RetentionForm from '@/components/RetentionForm';
 import { JsonLd } from '@/components/JsonLd';
@@ -147,6 +148,9 @@ export default function HomePageClient({
               <Button asChild className="h-14 rounded-full bg-white px-8 text-base font-bold text-emerald-950 hover:bg-emerald-50">
                 <Link href="/catalog">Shop for local delivery <ArrowRight className="ml-2 inline h-5 w-5" aria-hidden="true" /></Link>
               </Button>
+              <Button asChild className="h-14 rounded-full bg-amber-300 px-8 text-base font-bold text-stone-950 hover:bg-amber-200">
+                <Link href="/lemonade-packs">Shop lemonade packs</Link>
+              </Button>
               <Button asChild variant="outline" className="h-14 rounded-full border-white/30 bg-transparent px-8 text-base font-bold text-white hover:bg-white/10 hover:text-white">
                 <Link href="/contact?request=non-market-pickup">Request non-market pickup</Link>
               </Button>
@@ -178,6 +182,37 @@ export default function HomePageClient({
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section id="lemonade-packs" className="scroll-mt-24 border-b border-stone-200 bg-[#f5eee1] py-14 sm:py-20">
+        <div className="container">
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-widest text-emerald-800">New • Lemonade-only bundles</p>
+              <h2 className="mt-2 max-w-2xl text-3xl font-semibold tracking-tight sm:text-5xl">More to sip. More to share.</h2>
+              <p className="mt-4 max-w-2xl text-stone-700">Your choice of four or six handcrafted 16 oz lemonades. Mix and match available flavors, or stock up on one favorite.</p>
+            </div>
+            <p className="text-sm font-semibold text-stone-700">No juices, shots or sea moss gel in these offers.</p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-2">
+            {LEMONADE_PACKS.map((pack) => (
+              <article key={pack.size} className="flex flex-col rounded-[2rem] border border-emerald-900/10 bg-white p-7 shadow-md sm:p-8">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-800">{pack.size === 6 ? 'Best per-bottle value' : 'A little more to enjoy'}</p>
+                <h3 className="mt-2 text-3xl font-semibold">Lemonade {pack.size}-Pack</h3>
+                <div className="mt-5 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                  <strong className="text-4xl tabular-nums text-emerald-950">&#36;{(pack.priceCents / 100).toFixed(2)}</strong>
+                  <s className="text-xl text-stone-500">&#36;{(pack.regularCents / 100).toFixed(2)}</s>
+                </div>
+                <p className="mt-2 text-sm font-semibold text-emerald-800">Save &#36;{(pack.savingsCents / 100).toFixed(2)} on {pack.size} bottles</p>
+                <p className="mt-5 flex-1 text-stone-600">Choose {pack.size} eligible lemonades. Repeat flavors freely. Discount automatically applied when qualifying bottles are in your cart.</p>
+                <Button asChild className="mt-7 h-12 rounded-full bg-emerald-800 font-bold text-white hover:bg-emerald-900">
+                  <Link href={`/lemonade-packs?size=${pack.size}`}>Choose {pack.size} lemonades <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" /></Link>
+                </Button>
+              </article>
+            ))}
+          </div>
+          <p className="mt-4 text-xs text-stone-600">Pack prices exclude any fulfillment fees. Available flavors and delivery or pickup eligibility are verified at checkout. Pack and coupon discounts do not stack.</p>
         </div>
       </section>
 

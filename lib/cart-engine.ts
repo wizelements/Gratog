@@ -10,6 +10,7 @@
  */
 
 import { createLogger } from './logger';
+import { isApprovedLemonadeLine } from './lemonade-packs';
 
 // Type definitions
 export interface CartItem {
@@ -575,3 +576,52 @@ export function subscribeToCart(callback: (detail: { count: number }) => void): 
 
 // Export normalizeProduct as createCartItem for adapter compatibility
 export { normalizeProduct as createCartItem };
+
+/**
+ * One atomic local cart mutation for one selected lemonade pack.
+ * Reservation/payment stock controls remain server-authoritative at checkout.
+ */
+export function addLemonadePackToCart(
+  selections: Array<{ product: any; variation: any; quantity: number }>,
+  packSize: 4 | 6
+): { success: boolean; error?: string } {
+  try {
+    if (![4, 6].includes(packSize) || !Array.isArray(selections) ||
+      selections.reduce((sum, choice) => sum + choice.quantity, 0) !== packSize) {
+      return { success: false, error: 'Select exactly four or six lemonades.' };
+    }
+    const storage = getSafeLocalStorage();
+    if (!storage) return { success: false, error: 'Shopping cart storage is unavailable.' };
+    const cart = loadCart();
+    for (const choice of selections) {
+      const { product, variation, quantity } = choice;
+      if (!Number.isInteger(quantity) || quantity < 1 || product?.checkoutReady === false ||
+          !variation?.id || !isApprovedLemonadeLine({
+            ...product, unitPriceCents: Math.round(Number(variation?.price ?? product?.price) * 100),
+            subtitle: variation.name,
+          })) {
+        return { success: false, error: 'A selected flavor is unavailable at the approved lemonade price.' };
+      }
+      const currentQty = cart.reduce((sum, item) => sum +
+        (item.variationId === variation.id ? item.quantity : 0), 0);
+      if (product.stock != null && currentQty + quantity > Number(product.stock) &&
+          !product.isPreorder && !product.preorderOnly) {
+        return { success: false, error: `${product.name} does not have enough bottles available.` };
+      }
+      const line = normalizeProduct({
+        ...product, quantity, variationId: variation.id,
+        price: 11.99, priceCents: 1199, variantLabel: variation.name,
+        size: variation.name,
+      });
+      const match = cart.find((item) => item.variationId === line.variationId);
+      if (match) match.quantity += quantity;
+      else cart.push(line);
+    }
+    storage.setItem(CART_KEY, JSON.stringify(cart));
+    window.dispatchEvent(new Event('cart-updated'));
+    return { success: true };
+  } catch (error) {
+    logger.error('Failed to add lemonade pack', error);
+    return { success: false, error: 'Could not add the lemonade pack. Try again.' };
+  }
+}

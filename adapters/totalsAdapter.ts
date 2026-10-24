@@ -5,6 +5,7 @@
 
 import { CartItem } from './cartAdapter';
 import { getDeliveryConfig } from '@/lib/fulfillment';
+import { calculateLemonadePackDiscount } from '@/lib/lemonade-packs';
 
 /**
  * Tax is currently handled outside checkout pricing; keep client and server totals aligned.
@@ -17,6 +18,7 @@ export interface OrderTotals {
   tax: number;
   tip: number;
   couponDiscount: number;
+  lemonadePackDiscount: number;
   total: number;
   itemCount: number;
   freeDeliveryProgress?: {
@@ -57,15 +59,20 @@ export function computeTotals(input: TotalsInput): OrderTotals {
   const applicableTip = fulfillmentType === 'delivery' && Number.isFinite(tip)
     ? Math.max(0, tip)
     : 0;
+  const packSavings = calculateLemonadePackDiscount(cart).discountCents / 100;
+  // Informational checkout estimate; server selects best discount from canonical products.
+  const lemonadePackDiscount = packSavings > couponDiscount ? packSavings : 0;
+  const appliedDiscount = Math.max(couponDiscount, packSavings);
   const tax = subtotal * TAX_RATE;
-  const total = Math.max(0, subtotal - couponDiscount + deliveryFee + tax + applicableTip);
+  const total = Math.max(0, subtotal - appliedDiscount + deliveryFee + tax + applicableTip);
 
   return {
     subtotal,
     deliveryFee,
     tax,
     tip: applicableTip,
-    couponDiscount,
+    couponDiscount: lemonadePackDiscount > 0 ? 0 : couponDiscount,
+    lemonadePackDiscount,
     total,
     itemCount,
   };
