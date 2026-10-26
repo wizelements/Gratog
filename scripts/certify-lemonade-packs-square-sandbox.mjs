@@ -34,11 +34,12 @@ async function casePack(locationId,size,discountCents,expectedCents){
    idempotency_key:id('ord'),
    order:{
     location_id:locationId,
-    line_items:[{
-      name:'SANDBOX ONLY Taste of Gratitude approved lemonade',
-      quantity:String(size),
-      base_price_money:{amount:1199,currency:'USD'}
-    }],
+    line_items:[
+      { name:'SANDBOX ONLY Strawberry Bliss', quantity:String(size/2),
+        base_price_money:{amount:1199,currency:'USD'} },
+      { name:'SANDBOX ONLY SuppleMint', quantity:String(size/2),
+        base_price_money:{amount:1199,currency:'USD'} },
+    ],
     discounts:[{
       name:'Lemonade '+size+'-pack price',
       type:'FIXED_AMOUNT',scope:'ORDER',
