@@ -59,6 +59,21 @@ describe('server-authoritative pack checkout', () => {
     expect(order.totalCents).toBe(6194);
     expect(order.appliedCoupon?.code).toBe('TENOFF');
   });
+  it('rejects browser-forged lemonade category for a juice product', async () => {
+    ledger.documents.push({
+      id: 'unrelated-juice', name: 'Strawberry Bliss', category: 'juices',
+      price: 11.99, inStock: true,
+      variations: [{ id: 'juice-16oz', name: '16oz bottle', price: 11.99 }],
+    });
+    const order = await priceCart({ items: [{
+      productId: 'unrelated-juice', variationId: 'juice-16oz',
+      name: 'Strawberry Bliss', category: 'lemonades', quantity: 4,
+    }] });
+    expect(order.items[0].category).toBe('juices');
+    expect(order.lemonadePackDiscountCents).toBe(0);
+    expect(order.totalCents).toBe(4796);
+  });
+
   it('does not charge client-supplied promo price or count', async () => {
     const order = await priceCart({ items: [{
       productId: strawberry.id, variationId: 'strawberry-16oz', quantity: 4,
