@@ -246,6 +246,10 @@ export interface OrderFulfillment {
 export interface CreateOrderRequest {
   referenceId?: string;
   lineItems: OrderLineItem[];
+  discounts?: Array<{
+    name: string;
+    amountMoney: { amount: number; currency: string };
+  }>;
   customerId?: string;
   fulfillments?: OrderFulfillment[];
   metadata?: Record<string, string>;
@@ -342,6 +346,17 @@ export async function createOrder(req: CreateOrderRequest): Promise<SquareRespon
       reference_id: req.referenceId,
       customer_id: req.customerId,
       line_items: lineItems,
+      ...(req.discounts?.length ? {
+        discounts: req.discounts.map(discount => ({
+          name: discount.name,
+          type: 'FIXED_AMOUNT',
+          scope: 'ORDER',
+          amount_money: {
+            amount: discount.amountMoney.amount,
+            currency: discount.amountMoney.currency,
+          },
+        })),
+      } : {}),
       fulfillments,
       metadata: sanitizeMetadata(req.metadata)
     }
