@@ -5,6 +5,13 @@ on:
       - feat/lemonade-packs-20261024
     paths:
       - scripts/certify-lemonade-packs-square-sandbox.mjs
+      - lib/cart-pricing.ts
+      - lib/lemonade-packs.ts
+      - lib/merchant-pricing.ts
+      - lib/square-api.ts
+      - app/api/payments/route.ts
+      - app/api/orders/create/route.js
+      - data/bundles.ts
       - .github/workflows/lemonade-packs-square-sandbox.yml
   workflow_dispatch:
 permissions:
