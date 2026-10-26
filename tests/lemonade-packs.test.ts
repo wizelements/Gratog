@@ -17,9 +17,18 @@ describe('approved lemonade-only four- and six-pack policy', () => {
     [7, 895, 0, 1], [8, 895, 0, 1], [10, 1292, 1, 1],
     [12, 1790, 0, 2], [14, 1790, 0, 2],
   ])('optimizes %i qualified bottles without inventing 5-packs', (n, discount, four, six) => {
-    expect(calculateLemonadePackDiscount([bottle('Strawberry Bliss', n)])).toMatchObject({
+    expect(calculateLemonadePackDiscount([bottle('Strawberry Bliss', Math.floor(n / 2)), bottle('SuppleMint', n - Math.floor(n / 2))])).toMatchObject({
       discountCents: discount, fourPacks: four, sixPacks: six,
     });
+  });
+  it('does not give a bundle discount for four or six identical flavors', () => {
+    expect(calculateLemonadePackDiscount([bottle('Strawberry Bliss', 4)]).discountCents).toBe(0);
+    expect(calculateLemonadePackDiscount([bottle('Strawberry Bliss', 6)]).discountCents).toBe(0);
+  });
+  it('does not invent two mixed packs with only one second-flavor bottle', () => {
+    expect(calculateLemonadePackDiscount([
+      bottle('Strawberry Bliss', 9), bottle('SuppleMint', 1),
+    ])).toMatchObject({ discountCents: 895, fourPacks: 0, sixPacks: 1 });
   });
   it('includes seasonal menu lemonades at the approved unit price', () => {
     for (const name of ['Kissed by Gods', 'Gracious Roots', 'Melon Rita']) {
@@ -52,7 +61,7 @@ describe('approved lemonade-only four- and six-pack policy', () => {
   });
   it('client totals show the same pack price and choose one best discount (no stacking)', () => {
     const cart = Array.from({ length: 6 }, (_, i) => ({
-      ...bottle('Strawberry Bliss'), id: String(i),
+      ...bottle(i % 2 ? 'SuppleMint' : 'Strawberry Bliss'), id: String(i),
     })) as any;
     const result = computeTotals({ cart, fulfillmentType: 'pickup' });
     expect(result.subtotal).toBeCloseTo(71.94);
