@@ -159,8 +159,8 @@ describe('customer-facing content quality', () => {
       if (!pack) continue;
 
       expect(pack.regularCents - pack.priceCents).toBe(pack.savingsCents);
-      expect(bundle.savingsText).toContain(`${(pack.priceCents / 100).toFixed(2)}`);
-      expect(bundle.savingsText).toContain(`Save ${(pack.savingsCents / 100).toFixed(2)}`);
+      expect(bundle.savingsText).toContain(`$${(pack.priceCents / 100).toFixed(2)}`);
+      expect(bundle.savingsText).toContain(`Save $${(pack.savingsCents / 100).toFixed(2)}`);
       for (const productId of bundle.productsIncluded) {
         const product = PRODUCTS.find((item) => item.id === productId);
         expect(product?.category).toBe('lemonades');
