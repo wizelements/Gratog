@@ -7,7 +7,7 @@ export interface ProductBundle {
 export const BUNDLES: ProductBundle[] = [
   {
     id: 'lemonade-four-pack', slug: 'lemonade-four-pack', name: 'Lemonade 4-Pack',
-    productsIncluded: ['strawberry-bliss', 'pineapple-mango', 'pineapple-basil', 'calm-waters'],
+    productsIncluded: ['strawberry-bliss', 'supplemint', 'calm-waters', 'kissed-by-gods'],
     description: 'Choose any four eligible 16 oz lemonades. Mix flavors or repeat a favorite.',
     savingsText: '$43.99 · Save $3.97 compared with four $11.99 singles.',
     cta: 'Choose 4 lemonades',
@@ -17,7 +17,7 @@ export const BUNDLES: ProductBundle[] = [
   },
   {
     id: 'lemonade-six-pack', slug: 'lemonade-six-pack', name: 'Lemonade 6-Pack',
-    productsIncluded: ['strawberry-bliss', 'pineapple-mango', 'pineapple-basil', 'calm-waters', 'supplemint', 'strawberry-rita'],
+    productsIncluded: ['strawberry-bliss', 'supplemint', 'calm-waters', 'kissed-by-gods', 'peach-lemonade'],
     description: 'Choose any six eligible 16 oz lemonades. Greater savings per bottle.',
     savingsText: '$62.99 · Save $8.95 compared with six $11.99 singles.',
     cta: 'Choose 6 lemonades',
