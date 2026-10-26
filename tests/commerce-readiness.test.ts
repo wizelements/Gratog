@@ -17,6 +17,7 @@ const bottle = (name: string) => ({
 describe('fail-closed commerce readiness', () => {
   beforeEach(() => {
     vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.stubEnv('SQUARE_WEBHOOK_SIGNATURE_KEY', 'sandbox-test-signing-key-not-real');
     mocks.payment.mockReset();
     mocks.catalog.mockReset();
     mocks.payment.mockReturnValue({ ok: true, environment: 'sandbox' });
@@ -53,6 +54,14 @@ describe('fail-closed commerce readiness', () => {
     const response = await GET();
     expect(response.status).toBe(503);
     expect((await response.json()).checks.correctSquareEnvironment).toBe(false);
+  });
+
+  it('refuses production readiness when the Square webhook signing key is absent', async () => {
+    vi.stubEnv('SQUARE_WEBHOOK_SIGNATURE_KEY', '');
+    const response = await GET();
+    const body = await response.json();
+    expect(response.status).toBe(503);
+    expect(body.checks.signedWebhookConfigured).toBe(false);
   });
 
   it('rejects one-flavor carts and fake checkout variants even when Mongo responds', async () => {
