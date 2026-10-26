@@ -33,6 +33,7 @@ export async function GET() {
     const isPreview = process.env.VERCEL_ENV === 'preview';
     const checks = {
       squareConfiguration: payment.ok,
+      signedWebhookConfigured: Boolean(process.env.SQUARE_WEBHOOK_SIGNATURE_KEY?.trim()),
       correctSquareEnvironment: !isPreview || payment.environment === 'sandbox',
       liveCatalog: snapshot.isFallback === false && snapshot.source === 'unified_storefront',
       mixedPackAvailability: approvedFlavors.size >= 2,
