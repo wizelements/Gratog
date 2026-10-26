@@ -30,7 +30,7 @@ describe('Preview Square configuration and safe OAuth URL handling', () => {
   });
 
   it('strips newline and trailing slash from OAuth callback base URL', async () => {
-    vi.stubEnv('NEXT_PUBLIC_BASE_URL', 'https://tasteofgratitude.shop/\\n');
+    vi.stubEnv('NEXT_PUBLIC_BASE_URL', 'https://tasteofgratitude.shop/\n');
     vi.stubEnv('NEXT_PUBLIC_SQUARE_APPLICATION_ID', '');
     vi.stubEnv('NEXT_PUBLIC_SQUARE_SANDBOX_APPLICATION_ID', '');
     const { GET } = await import('@/app/api/oauth/square/status/route');
@@ -40,6 +40,6 @@ describe('Preview Square configuration and safe OAuth URL handling', () => {
     expect(body.redirectUrls.callback).toBe(
       'https://tasteofgratitude.shop/api/oauth/square/callback',
     );
-    expect(body.redirectUrls.callback).not.toContain('\\n');
+    expect(body.redirectUrls.callback).not.toContain('\n');
   });
 });
