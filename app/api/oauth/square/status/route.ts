@@ -8,8 +8,10 @@ import { NextResponse } from 'next/server';
  */
 export async function GET() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-    const callbackUrl = `${baseUrl}/api/oauth/square/callback`;
+    // Environment values may contain trailing newlines from secret provisioning.
+    // The OAuth redirect must be a canonical URL without embedded whitespace.
+    const baseUrl = String(process.env.NEXT_PUBLIC_BASE_URL || '').trim().replace(/\/+$/, '');
+    const callbackUrl = new URL('/api/oauth/square/callback', baseUrl).toString();
   
   // Get app IDs from environment
   const productionAppId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || process.env.NEXT_PUBLIC_SQUARE_APP_ID || 'NOT_CONFIGURED';
