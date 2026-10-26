@@ -48,15 +48,40 @@ export function isApprovedLemonadeLine(line: PackLine): boolean {
 export function calculateLemonadePackDiscount(lines: PackLine[]): {
   discountCents: number; fourPacks: number; sixPacks: number; eligibleBottles: number;
 } {
-  const eligibleBottles = lines.reduce((n, item) =>
-    n + (isApprovedLemonadeLine(item) && Number.isInteger(Number(item.quantity)) && Number(item.quantity) > 0
-      ? Number(item.quantity) : 0), 0);
+  const byFlavor = new Map<string, number>();
+  let eligibleBottles = 0;
+  for (const line of lines) {
+    const quantity = Number(line.quantity);
+    if (!isApprovedLemonadeLine(line) || !Number.isInteger(quantity) || quantity <= 0) continue;
+    const flavor = normalize(line.name || line.curatedProductId || line.slug ||
+      line.productId || line.id);
+    if (!flavor) continue;
+    eligibleBottles += quantity;
+    byFlavor.set(flavor, (byFlavor.get(flavor) || 0) + quantity);
+  }
+
   let best = { discountCents: 0, fourPacks: 0, sixPacks: 0, eligibleBottles };
+  if (byFlavor.size < 2) return best;
+
+  // Each pack needs at least two distinct flavors. The maximum that any
+  // single flavor can occupy in a selection of P packs and Q bottles is Q-P.
+  // Count only quantities we can actually allocate to mixed packs, not just
+  // total bottles. This also prevents 8 of A + 1 of B from becoming two
+  // fake mixed four-packs.
   for (let sixPacks = 0; sixPacks <= Math.floor(eligibleBottles / 6); sixPacks++) {
-    const fourPacks = Math.floor((eligibleBottles - 6 * sixPacks) / 4);
-    const discountCents = sixPacks * 895 + fourPacks * 397;
-    if (discountCents > best.discountCents) {
-      best = { discountCents, fourPacks, sixPacks, eligibleBottles };
+    for (let fourPacks = 0;
+      6 * sixPacks + 4 * fourPacks <= eligibleBottles; fourPacks++) {
+      const packCount = sixPacks + fourPacks;
+      if (packCount === 0) continue;
+      const packedBottles = 6 * sixPacks + 4 * fourPacks;
+      const maxFromOneFlavor = packedBottles - packCount;
+      const allocatable = [...byFlavor.values()].reduce((sum, count) =>
+        sum + Math.min(count, maxFromOneFlavor), 0);
+      if (allocatable < packedBottles) continue;
+      const discountCents = sixPacks * 895 + fourPacks * 397;
+      if (discountCents > best.discountCents) {
+        best = { discountCents, fourPacks, sixPacks, eligibleBottles };
+      }
     }
   }
   return best;
