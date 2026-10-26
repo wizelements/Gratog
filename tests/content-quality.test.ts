@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { NextRequest } from 'next/server';
 import { BUNDLES } from '@/data/bundles';
+import { LEMONADE_PACKS } from '@/lib/lemonade-packs';
 import { PRODUCTS } from '@/data/products';
 import { getWeeklyMenuProducts } from '@/data/weeklyMenu';
 import { generateCatalogMeta, generateHomeMeta, generateProductMeta } from '@/lib/seo/metadata';
@@ -146,14 +147,23 @@ describe('customer-facing content quality', () => {
     expect(new Set(PRODUCTS.map((product) => product.slug)).size).toBe(PRODUCTS.length);
   });
 
-  it('keeps every rendered bundle free of unsupported savings and roadmap copy', () => {
+  it('renders only mathematically supported lemonade 4- and 6-pack savings, without roadmap copy', () => {
     const renderedBundleCopy = BUNDLES.map(({ name, description, savingsText, cta }) => ({ name, description, savingsText, cta }));
 
+    expect(BUNDLES).toHaveLength(2);
     for (const bundle of BUNDLES) {
-      expect(bundle.savingsText).toMatch(/individual (?:item )?prices?/i);
-      expect(bundle.savingsText).not.toMatch(/\b(?:save|discount|deal|% off)\b/i);
+      const match = bundle.name.match(/\b(4|6)-Pack\b/);
+      expect(match).not.toBeNull();
+      const pack = LEMONADE_PACKS.find((item) => item.size === Number(match?.[1]));
+      expect(pack).toBeDefined();
+      if (!pack) continue;
+
+      expect(pack.regularCents - pack.priceCents).toBe(pack.savingsCents);
+      expect(bundle.savingsText).toContain(`${(pack.priceCents / 100).toFixed(2)}`);
+      expect(bundle.savingsText).toContain(`Save ${(pack.savingsCents / 100).toFixed(2)}`);
       for (const productId of bundle.productsIncluded) {
-        expect(PRODUCTS.some((product) => product.id === productId)).toBe(true);
+        const product = PRODUCTS.find((item) => item.id === productId);
+        expect(product?.category).toBe('lemonades');
       }
     }
     expect(flatten(renderedBundleCopy)).not.toMatch(/Square|SKU|placeholder|future automation|subscription/i);
