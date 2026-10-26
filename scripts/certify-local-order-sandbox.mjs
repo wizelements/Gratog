@@ -103,7 +103,7 @@ try {
     fulfillmentType: 'shipping',
     shippingAddress: { street: '123 Test Street', city: 'New York', state: 'NY', zip: '10001' },
     shippingMethod: 'standard',
-  });
+  }, { 'Idempotency-Key': 'tog-sbx-' + randomUUID() });
   check('Out-of-state shipping blocked before order', invalidGeorgia.status === 422 && invalidGeorgia.data.code === 'GEORGIA_ONLY',
     { status: invalidGeorgia.status });
 
@@ -113,7 +113,7 @@ try {
     fulfillmentType: 'shipping',
     shippingAddress: { street: '123 Example Street', city: 'Atlanta', state: 'GA', zip: '30303' },
     shippingMethod: 'standard',
-  });
+  }, { 'Idempotency-Key': 'tog-sbx-' + randomUUID() });
   check('Market pickup-only product cannot be shipped using forged client flags',
     restricted.status === 422 && restricted.data.code === 'MARKET_PICKUP_REQUIRED', { status: restricted.status });
 
@@ -130,7 +130,7 @@ try {
     fulfillmentType: 'shipping',
     shippingAddress: { street: '123 Example Street', city: 'Atlanta', state: 'GA', zip: '30303' },
     shippingMethod: 'standard',
-  });
+  }, { 'Idempotency-Key': 'tog-sbx-' + randomUUID() });
   check('Retired Blue Lotus sample size is rejected before order creation',
     sampleRequest.status === 422 && sampleRequest.data.code === 'VARIATION_NOT_FOUND',
     { status: sampleRequest.status, code: sampleRequest.data.code });
