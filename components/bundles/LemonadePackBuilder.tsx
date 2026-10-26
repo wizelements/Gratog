@@ -19,6 +19,7 @@ export default function LemonadePackBuilder({ products, initialSize = 4 }: { pro
   const [busy, setBusy] = useState(false);
   const pack = LEMONADE_PACKS.find((p) => p.size === size)!;
   const count = Object.values(counts).reduce((n, value) => n + value, 0);
+  const distinctFlavors = Object.values(counts).filter((value) => value > 0).length;
   const variations = useMemo(() => products.map((product) => ({
     product,
     variation: product.variations?.find((v) => isApprovedLemonadeLine({
@@ -38,7 +39,7 @@ export default function LemonadePackBuilder({ products, initialSize = 4 }: { pro
     setCounts({});
   };
   const addPack = () => {
-    if (count !== size || busy) return;
+    if (count !== size || distinctFlavors < 2 || busy) return;
     setBusy(true);
     const selections = variations.filter(({ product }) => (counts[product.id] || 0) > 0)
       .map(({ product, variation }) => ({ product, variation, quantity: counts[product.id] }));
@@ -60,7 +61,7 @@ export default function LemonadePackBuilder({ products, initialSize = 4 }: { pro
         <div className="container max-w-6xl py-12 sm:py-16">
           <p className="text-sm font-bold uppercase tracking-[0.16em] text-emerald-200">Mix and match • Lemonades only</p>
           <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">Choose your lemonade pack.</h1>
-          <p className="mt-4 max-w-2xl text-lg text-emerald-50/90">Four or six 16 oz lemonades. Pick different flavors or repeat your favorite. Juices, shots and sea moss gels are not included in these deals.</p>
+          <p className="mt-4 max-w-2xl text-lg text-emerald-50/90">Four or six 16 oz lemonades. Choose at least two different flavors. You can repeat flavors within a mixed pack. Juices, shots and sea moss gels are not included in these deals.</p>
         </div>
       </section>
       <div className="container max-w-6xl py-10 sm:py-14">
@@ -81,7 +82,7 @@ export default function LemonadePackBuilder({ products, initialSize = 4 }: { pro
         <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start">
           <section aria-labelledby="flavor-heading">
             <h2 id="flavor-heading" className="text-2xl font-semibold">Pick {size} bottles</h2>
-            <p className="mt-2 text-stone-600">Every flavor is counted by bottle. Only eligible, currently orderable 16 oz lemonades appear here.</p>
+            <p className="mt-2 text-stone-600">Choose at least two different flavors per pack. Each bottle counts toward your four or six; only currently orderable 16 oz lemonades appear here.</p>
             {variations.length === 0 ? (
               <div role="status" className="mt-5 rounded-2xl border border-amber-300 bg-amber-50 p-6">
                 <p className="font-semibold">Packs are not available for online checkout yet.</p>
@@ -120,9 +121,9 @@ export default function LemonadePackBuilder({ products, initialSize = 4 }: { pro
               </div>
               <div className="mt-5 flex justify-between text-sm"><span>Pack price</span><strong>${(pack.priceCents / 100).toFixed(2)}</strong></div>
               <p className="mt-2 text-sm font-semibold text-emerald-800">You save ${(pack.savingsCents / 100).toFixed(2)} vs. singles</p>
-              <Button type="button" disabled={count !== size || busy || variations.length === 0} onClick={addPack}
+              <Button type="button" disabled={count !== size || distinctFlavors < 2 || busy || variations.length < 2} onClick={addPack}
                 className="mt-6 h-12 w-full rounded-full bg-emerald-800 text-white hover:bg-emerald-900">
-                <ShoppingBag className="mr-2 h-5 w-5" /> {count === size ? 'Add pack to cart' : `Choose ${size - count} more`}
+                <ShoppingBag className="mr-2 h-5 w-5" /> {count === size && distinctFlavors < 2 ? 'Choose another flavor' : count === size ? 'Add pack to cart' : `Choose ${size - count} more`}
               </Button>
               <Link href="/checkout" className="mt-4 inline-flex min-h-11 w-full items-center justify-center font-semibold text-emerald-800">Review checkout <ArrowRight className="ml-2 h-4 w-4" /></Link>
               <p className="mt-3 text-xs leading-5 text-stone-600">Savings apply automatically to qualifying bottles in your cart. No promo code. Coupons do not stack. Availability, fulfillment fees and pickup or delivery options are confirmed at checkout.</p>
