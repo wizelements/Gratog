@@ -590,6 +590,11 @@ export function addLemonadePackToCart(
       selections.reduce((sum, choice) => sum + choice.quantity, 0) !== packSize) {
       return { success: false, error: 'Select exactly four or six lemonades.' };
     }
+    const distinctFlavors = new Set(selections.filter((s) => Number(s.quantity) > 0)
+      .map((s) => String(s.product?.id || s.product?.name || ''))).size;
+    if (distinctFlavors < 2) {
+      return { success: false, error: 'Choose at least two different lemonade flavors for a pack.' };
+    }
     const storage = getSafeLocalStorage();
     if (!storage) return { success: false, error: 'Shopping cart storage is unavailable.' };
     const cart = loadCart();
