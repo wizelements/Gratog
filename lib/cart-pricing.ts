@@ -486,7 +486,9 @@ export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
         product.fulfillmentType === 'market_pickup_only' ||
         item.marketExclusive
       ),
-      category: item.category || product.category,
+      // Only the database can establish the merchandise category. Browser
+      // category claims must never turn a juice or gel into a lemonade deal.
+      category: product.category,
       size: item.size,
       image: item.image || product.image,
       squareProductUrl: item.squareProductUrl,
