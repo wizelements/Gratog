@@ -5,6 +5,7 @@ on:
     paths:
       - scripts/certify-square-sandbox-catalog-readiness.mjs
       - .github/workflows/lemonade-square-catalog-readiness.yml
+      - tests/square-sandbox-readback.test.mjs
   workflow_dispatch:
 permissions:
   contents: read
@@ -23,9 +24,13 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
+      - name: Verify merchant and inventory guard regressions
+        run: node --test tests/square-sandbox-readback.test.mjs
       - name: Read-only Square Sandbox catalog readback
         env:
           SQUARE_SANDBOX_ACCESS_TOKEN: ${{ secrets.SQUARE_SANDBOX_ACCESS_TOKEN }}
+          SQUARE_SANDBOX_MERCHANT_ID: ${{ vars.SQUARE_SANDBOX_MERCHANT_ID }}
+          SQUARE_SANDBOX_LOCATION_ID: ${{ vars.SQUARE_SANDBOX_LOCATION_ID }}
         run: node scripts/certify-square-sandbox-catalog-readiness.mjs
       - name: Save provider readback evidence
         if: always()
