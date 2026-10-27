@@ -18,6 +18,8 @@ export const APPROVED_UNIT_PRICES_CENTS = Object.freeze({
   'kissed-by-gods': 1199,
   'gracious-roots': 1199,
   'melon-rita': 1199,
+  'passion-guava-pineapple-lemonade': 1199,
+  'passion-guava-pineapple': 1199,
   'blue-lotus': 3600,
   'blue-lotus-gel': 3600,
   'apg': 1299,
