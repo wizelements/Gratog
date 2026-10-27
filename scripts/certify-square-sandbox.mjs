@@ -116,7 +116,7 @@ async function run() {
       decline.data.errors?.some(error => error.category === 'PAYMENT_METHOD_ERROR' &&
         ['GENERIC_DECLINE', 'CARD_DECLINED'].includes(error.code)), {
     status: decline.status,
-    code: decline.data.errors?.[0]?.code,
+    code: declineCode,
   });
 
   // Actual Square order, then charged/captured against that order.
@@ -154,7 +154,7 @@ async function run() {
   createdPaymentId = captured.data.payment?.id || null;
   note('Real Square sandbox capture COMPLETED at $11.99',
     captured.ok && captured.data.payment?.status === 'COMPLETED' &&
-    Number(captured.data.payment?.amount_money?.amount) === 1199, { status: captured.status });
+    Number(captured.data.payment?.amount_money?.amount) === 1199, { status: captured.status, code: captured.data.errors?.[0]?.code });
   
   const replay = await square('/v2/payments', { method: 'POST', body: paymentBody });
   note('Identical idempotency key prevents double charge',

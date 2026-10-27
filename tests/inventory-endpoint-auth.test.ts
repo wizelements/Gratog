@@ -19,12 +19,12 @@ describe('inventory-mutation authorization',()=>{
     expect(hasInventoryMutationAuthority(new Headers({authorization:'Bearer wrong'}))).toBe(false);
     expect(hasInventoryMutationAuthority(new Headers({authorization:'Bearer minimum-length-test-worker-secret-over-32-charactersx'}))).toBe(false);
   });
-  it('enforces authorization BEFORE locking, releasing or confirming stock',()=>{
+  it('retires direct locking, releasing and confirming so callers cannot mutate stock',()=>{
     for(const action of ['lock','release','confirm']){
       const s=readFileSync('app/api/inventory/'+action+'/route.ts','utf8');
-      expect(s).toContain('hasInventoryMutationAuthority(request.headers)');
-      expect(s.indexOf('hasInventoryMutationAuthority(request.headers)'))
-        .toBeLessThan(s.indexOf('RateLimit.check('));
+      expect(s).toContain('LEGACY_INVENTORY_MUTATION_RETIRED');
+      expect(s).toContain('status: 410');
+      expect(s).not.toContain('from \'@/lib/inventory-lock\'');
     }
   });
 });

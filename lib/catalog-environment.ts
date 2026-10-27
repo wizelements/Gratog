@@ -22,8 +22,8 @@ export function merchantCatalogScopeFilter(): Record<string, unknown> {
   }
   return {
     $nor: [
-      { source: 'sandbox_sync' },
-      { id: { $regex: /^sandbox-/i } },
+      { source: { $in: ['sandbox_sync','qa_isolated_preview_only','qa_browser_certification_only','qa-isolated-sandbox'] } },
+      { id: { $regex: /^(?:sandbox-|cert-checkout-|cert-ui-)/i } },
       { squareId: { $regex: /^sandbox-/i } },
       { _squareSyncEnv: 'sandbox' },
     ],

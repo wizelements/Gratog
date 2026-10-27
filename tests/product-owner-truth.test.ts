@@ -53,17 +53,18 @@ describe('merchant-approved product truth — 11 October 2026', () => {
       catalogObjectId: 'obsolete-2oz',
       variations: [
         { id: 'obsolete-2oz', name: '2oz sample', priceCents: 1100 },
-        { id: 'approved-16oz', name: '16oz', priceCents: 3600 },
+        { id: 'QIX6D5PRQKX4TKEMTQUJPZUX', name: '16oz', priceCents: 3600 },
       ],
       checkoutReady: true,
+      stock: 2,
     });
     expect(live.curatedProductId).toBe('blue-lotus-gel');
     expect(live.slug).toBe('blue-lotus');
-    expect(live.variations).toEqual([{ id: 'approved-16oz', name: '16oz', priceCents: 3600 }]);
+    expect(live.variations).toEqual([{ id: 'QIX6D5PRQKX4TKEMTQUJPZUX', name: '16oz', priceCents: 3600 }]);
     expect(live.price).toBe(36);
     expect(live.priceCents).toBe(3600);
-    expect(live.variationId).toBe('approved-16oz');
-    expect(live.catalogObjectId).toBe('approved-16oz');
+    expect(live.variationId).toBe('QIX6D5PRQKX4TKEMTQUJPZUX');
+    expect(live.catalogObjectId).toBe('QIX6D5PRQKX4TKEMTQUJPZUX');
     expect(live.checkoutReady).toBe(true);
   });
 

@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { sendEmail } from '@/lib/resend-email';
 import { logger } from '@/lib/logger';
+import {updateMongoAdminSecurity} from '@/lib/auth/mongo-admin-session.mjs';
 import { SUPPORT_EMAIL } from '@/lib/site-config';
 
 /**
@@ -80,6 +81,8 @@ async function requestReset(email: string, origin: string) {
 
   await db.collection('admin_password_resets').insertOne({
     adminId: admin._id?.toString() || admin.id,
+    adminMongoId: admin._id ?? null,
+    adminBusinessId: admin._id == null ? admin.id : null,
     email: admin.email,
     tokenHash,
     expiresAt,
@@ -141,19 +144,16 @@ async function consumeReset(token: string, newPassword: string) {
     );
   }
 
+  // New reset links bind to the immutable identity. Legacy email-only reset
+  // records require a new link; email reassignment must never reset another user.
+  const adminIdentity = record.adminMongoId != null ? { _id: record.adminMongoId }
+    : typeof record.adminBusinessId === 'string' && record.adminBusinessId
+      ? { id: record.adminBusinessId } : null;
+  if (!adminIdentity) return NextResponse.json({ success: false, error: 'Request a new reset link' }, { status: 400 });
   const passwordHash = await bcrypt.hash(newPassword, 12);
-  await db.collection('admin_users').updateOne(
-    { email: record.email },
-    {
-      $set: {
-        passwordHash,
-        passwordUpdatedAt: new Date(),
-        // Force re-login by bumping a token version (if your JWT layer
-        // checks it; otherwise this is just an audit field).
-        tokenVersion: (Math.random() * 1e9) | 0,
-      },
-    }
-  );
+  await updateMongoAdminSecurity(db.collection('admin_users'), adminIdentity, {
+    passwordHash, passwordUpdatedAt: new Date(),
+  });
 
   logger.info('AdminReset', 'Password rotated via reset link', {
     email: record.email,

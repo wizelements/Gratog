@@ -49,7 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: path === '' ? 1 : path === '/catalog' ? 0.9 : 0.7,
   }));
 
-  // Fetch products for dynamic pages
+  // Only publish active entries exposed by the actual customer storefront.
   let productEntries: MetadataRoute.Sitemap = [];
   try {
     const res = await fetch(`${baseUrl}/api/products`, {
@@ -67,7 +67,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }));
     }
   } catch (error) {
-    console.error('Failed to fetch products for sitemap:', error);
+    console.error('Failed to fetch storefront products for sitemap:', error);
   }
 
   return [...staticEntries, ...productEntries];

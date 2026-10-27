@@ -165,9 +165,8 @@ export function validateCartForFulfillment(
     } else if (fulfillmentType.includes('serenbe') || fulfillmentType.includes('meetup')) {
       marketKey = 'serenbe';
     } else if (fulfillmentType.includes('pickup')) {
-      // Generic pickup - default to serenbe but log warning
-      marketKey = 'serenbe';
-      logger.warn('Generic pickup fulfillment type detected, defaulting to Serenbe', { fulfillmentType });
+      // A generic pickup request never authorizes an arbitrary market.
+      return { valid: false, error: 'Choose an eligible pickup market before checkout.', code: 'PICKUP_MARKET_REQUIRED' };
     } else if (fulfillmentType.includes('delivery')) {
       marketKey = 'delivery';
     } else if (fulfillmentType.includes('shipping')) {
@@ -318,8 +317,9 @@ export function addToCart(productOrItem: any, arg2?: any, arg3?: any): { success
 
     const storage = getSafeLocalStorage();
     if (!storage) {
-      logger.warn('No localStorage, using in-memory cart');
-      return { success: true };
+      // No persistent cart was written. Never tell the customer the item was added.
+      logger.warn('Cart storage is unavailable; refusing to report a successful add');
+      return { success: false, error: 'Your browser is blocking cart storage. Enable site storage or try another browser before ordering.' };
     }
 
     // Resolve the flexible call signatures into a normalized CartItem

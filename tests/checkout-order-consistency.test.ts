@@ -35,6 +35,20 @@ describe('checkout order integrity and recovery', () => {
     expect([...storage.values.values()].join('')).not.toContain('customer@example.test');
   });
 
+  it('shares one hashed attempt across independent tab memory using common origin storage', async () => {
+    const sharedLocalStorage = memoryStorage();
+    const request = { cart: [{ id: 'gel', quantity: 1 }], email: 'buyer@example.test' };
+    const firstTab = await checkoutOrderIdempotencyKey(request, sharedLocalStorage, 1000);
+    // Separate tab/module memory is absent; shared storage still owns the key.
+    clearCheckoutOrderAttempt(null);
+    const secondTab = await checkoutOrderIdempotencyKey(request, sharedLocalStorage, 2000);
+    expect(secondTab).toBe(firstTab);
+    const serialized = [...sharedLocalStorage.values.values()].join('');
+    expect(serialized).not.toContain('buyer@example.test');
+    expect(read('lib/checkout/order-attempt.ts')).toContain('window.localStorage');
+    expect(read('lib/checkout/order-attempt.ts')).toContain('navigator.locks?.request');
+  });
+
   it('expires old attempts rather than replaying an unrelated purchase', async () => {
     const storage = memoryStorage();
     const old = await checkoutOrderIdempotencyKey({ cart: ['gel'] }, storage, 1000);
@@ -70,6 +84,16 @@ describe('checkout order integrity and recovery', () => {
     expect(read('services/order.ts')).toContain("'Idempotency-Key': idempotencyKey");
     expect(read('components/checkout/ReviewAndPay.tsx')).toContain('if (orderRequestInFlight.current) return;');
     expect(read('components/checkout/ReviewAndPay.tsx')).toContain('clearCheckoutOrderAttempt();');
+  });
+
+  it('routes a replayed paid or processing order to verified status, not a second card form', () => {
+    const client = read('components/checkout/ReviewAndPay.tsx');
+    expect(client).toContain('const paidAlready =');
+    expect(client).toContain('const paymentUncertain =');
+    expect(client).toContain('const notPayable =');
+    expect(client).toContain('if (paidAlready || paymentUncertain || notPayable)');
+    expect(client).toContain('router.replace(`/order/success?${params.toString()}`)');
+    expect(client).not.toContain("params.set('paid', 'true')");
   });
 
   it('requires completed rather than merely approved payment and server-authoritative totals', () => {

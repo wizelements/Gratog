@@ -12,6 +12,8 @@ import { PERMISSIONS } from '@/lib/security';
 import { withAdminMiddlewareWithContext, AuthenticatedRequest } from '@/lib/middleware/admin';
 import { InventoryAdjustmentSchema, validateBody } from '@/lib/validation';
 import { logger } from '@/lib/logger';
+import { openTursoPreview, tursoPreviewSelected } from '@/lib/checkout/turso-preview-runtime.mjs';
+import { getTursoInventory, adjustTursoInventory } from '@/lib/inventory/turso-inventory.mjs';
 
 /**
  * GET /api/admin/inventory/[productId]
@@ -31,6 +33,11 @@ export const GET = withAdminMiddlewareWithContext(
         );
       }
       
+      if (tursoPreviewSelected()) {
+        const inventory = await getTursoInventory(await openTursoPreview(), productId);
+        if (!inventory) return NextResponse.json({ success: false, error: 'Inventory not found for this product' }, { status: 404 });
+        return NextResponse.json({ success: true, inventory }, { headers: { 'Cache-Control': 'no-store' } });
+      }
       const { db } = await connectToDatabase();
       
       // Get inventory with product info
@@ -77,7 +84,7 @@ export const GET = withAdminMiddlewareWithContext(
  * PATCH /api/admin/inventory/[productId]
  * Adjust inventory stock level
  * 
- * CRITICAL: This uses atomic MongoDB operations to prevent race conditions
+ * Turso uses an immediate transaction, expected version and durable retry key.
  */
 export const PATCH = withAdminMiddlewareWithContext(
   async (request: AuthenticatedRequest, context: { params: Promise<Record<string, string>> }) => {
@@ -115,6 +122,14 @@ export const PATCH = withAdminMiddlewareWithContext(
         );
       }
       
+      if (tursoPreviewSelected()) {
+        const result = await adjustTursoInventory(await openTursoPreview(), {
+          productId, adjustment, reason: reason || 'Manual adjustment',
+          actorId: admin.id, claim: admin, expectedVersion: validation.data.expectedVersion,
+          requestKey: request.headers.get('Idempotency-Key'),
+        });
+        return NextResponse.json(result, { headers: { 'Cache-Control': 'no-store' } });
+      }
       const { db } = await connectToDatabase();
       
       // ATOMIC OPERATION: Use findOneAndUpdate with $inc
@@ -223,11 +238,11 @@ export const PATCH = withAdminMiddlewareWithContext(
         previousStock: historyEntry.previousStock,
       });
       
-    } catch (error) {
+    } catch (error: any) {
       logger.error('INVENTORY', 'Failed to adjust inventory', { productId, error });
       return NextResponse.json(
-        { success: false, error: 'Failed to adjust inventory' },
-        { status: 500 }
+        { success: false, error: error?.code || 'Failed to adjust inventory' },
+        { status: tursoPreviewSelected() ? (error?.status || 503) : 500 }
       );
     }
   },

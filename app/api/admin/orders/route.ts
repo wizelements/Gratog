@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
+import {tursoPreviewSelected,openTursoPreview} from '@/lib/checkout/turso-preview-runtime.mjs';
 import { PERMISSIONS } from '@/lib/security';
 import { withAdminMiddleware, AuthenticatedRequest } from '@/lib/middleware/admin';
 import { logger } from '@/lib/logger';
@@ -25,6 +26,12 @@ export const GET = withAdminMiddleware(
     const skip = (page - 1) * limit;
     
     try {
+      if(tursoPreviewSelected()){
+        const {listTursoAdminOrders}=await import('@/lib/checkout/turso-admin-order-list.mjs');
+        return NextResponse.json(await listTursoAdminOrders(await openTursoPreview(),{
+          page,limit,status,startDate,endDate,search,fulfillmentType
+        }),{headers:{'Cache-Control':'no-store'}});
+      }
       const { db } = await connectToDatabase();
       
       // Build query
@@ -33,7 +40,7 @@ export const GET = withAdminMiddleware(
       // Status filter with whitelist
       if (status) {
         const allowedStatuses = [
-          'pending', 'payment_processing', 'confirmed', 'preparing', 'ready', 
+          'pending', 'paid', 'payment_processing', 'confirmed', 'preparing', 'ready',
           'delivered', 'picked_up', 'shipped', 'fulfilled', 'cancelled', 'refunded',
           // Legacy uppercase (backward compat)
           'CONFIRMED', 'COMPLETED', 'PENDING_PAYMENT'
@@ -203,6 +210,8 @@ export const GET = withAdminMiddleware(
 
 export const PATCH = withAdminMiddleware(
   async (request: AuthenticatedRequest) => {
+    if(tursoPreviewSelected())return NextResponse.json({success:false,code:'TURSO_BULK_ORDER_MUTATION_UNCERTIFIED'},
+      {status:503,headers:{'Cache-Control':'no-store'}});
     const admin = request.admin;
     
     try {

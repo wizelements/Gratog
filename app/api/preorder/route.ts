@@ -1,3 +1,6 @@
+import { generateOrderAccessToken } from '@/lib/order-access-token';
+import { preorderViewerHasPrivateAccess, publicPreorderStatus } from '@/lib/preorder/status-access';
+import { tursoPreviewSelected } from '@/lib/checkout/turso-preview-runtime.mjs';
 export const dynamic = 'force-dynamic';
 
 /**
@@ -187,6 +190,7 @@ async function resolvePreorderCartItems(submittedItems: any[]) {
 }
 
 export async function POST(request: any) {
+  if (tursoPreviewSelected()) return NextResponse.json({success:false,code:'TURSO_MARKET_CAPACITY_NOT_MIGRATED',error:'Market preorders are temporarily unavailable.'},{status:503});
   // Safe production rollout: PR capacity schema has no merchant-defined stock
   // until ops provisions verified caps and Square settlement reconciliation.
   // Default false preserves existing sales and customer checkout behavior.
@@ -397,6 +401,8 @@ export async function POST(request: any) {
     }
     const dbOrder = admission.preorder;
     const canonicalOrderNumber = dbOrder.orderNumber;
+    const preorderAccessToken = generateOrderAccessToken({orderId:canonicalOrderNumber,customerEmail:data.customer.email});
+    if (!preorderAccessToken) throw new Error('PREORDER_ACCESS_TOKEN_UNAVAILABLE');
     const waitlistNumber = dbOrder.waitlistNumber;
     const counter = dbOrder.queuePosition;
 
@@ -405,6 +411,7 @@ export async function POST(request: any) {
     if (admission.replay && dbOrder.paymentUrl && dbOrder.paymentStatus === 'PENDING') {
       return NextResponse.json({
         success: true,
+        preorderAccessToken,
         orderNumber: canonicalOrderNumber, waitlistNumber, waitlistPosition: counter,
         preorder: {
           orderNumber: canonicalOrderNumber, waitlistNumber, waitlistPosition: counter,
@@ -579,6 +586,7 @@ export async function POST(request: any) {
 
     return NextResponse.json({
       success: true,
+      preorderAccessToken,
 
       // Backward-compatible top-level fields for current UI
       orderNumber: canonicalOrderNumber,
@@ -640,9 +648,18 @@ export async function GET(request: any) {
       );
     }
 
+    const privateAccess = preorderViewerHasPrivateAccess(preorder, request.headers.get('x-order-access-token'));
+    if (!privateAccess) {
+      return NextResponse.json({
+        success: true,
+        preorder: publicPreorderStatus(preorder, getStatusMessage(preorder.status)),
+      }, { headers: { 'Cache-Control': 'no-store' } });
+    }
     return NextResponse.json({
       success: true,
       preorder: {
+        ...publicPreorderStatus(preorder, getStatusMessage(preorder.status)),
+        privateDetailsAvailable: true,
         orderNumber: preorder.orderNumber,
         waitlistNumber: preorder.waitlistNumber,
         status: preorder.status,
@@ -667,7 +684,7 @@ export async function GET(request: any) {
         },
         createdAt: preorder.createdAt,
       },
-    });
+    }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error: any) {
     logger.error('Preorder status error', { error: error.message });
 

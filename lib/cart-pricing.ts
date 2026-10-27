@@ -160,6 +160,14 @@ interface UnifiedProductDoc {
   fulfillmentType?: string;
   squareIsArchived?: boolean;
   squareEcomAvailable?: boolean;
+  squareEcomVisibility?: string;
+  soldOut?: boolean;
+  available?: boolean;
+  weeklyStatus?: string;
+  inventoryStatus?: string;
+  activeWeeklyMenu?: boolean;
+  currentStock?: number;
+  stock?: number;
   variations?: Array<{
     id: string;
     name?: string;
@@ -198,7 +206,15 @@ function unitPriceCentsFromProduct(
   variationId: string | undefined | null
 ): number {
   const v = resolveVariation(product, variationId);
+  if (product.id === 'F2YVC7OVRYJU575JXROKFHFT') {
+    throw new CartPricingError('CATALOG_IDENTITY_UNRECONCILED', 'This product is awaiting catalog confirmation.', 409);
+  }
   const approved = approvedUnitPriceCents(product);
+  const providerCents = typeof v?.priceCents === 'number' ? v.priceCents
+    : typeof v?.price === 'number' ? toCents(v.price) : null;
+  if (approved !== null && providerCents !== null && providerCents !== approved) {
+    throw new CartPricingError('CATALOG_PRICE_UNRECONCILED', 'This product is awaiting price confirmation.', 409);
+  }
   // Never offer a retired Blue Lotus sample or charge for an ambiguous size.
   if (isApprovedBlueLotus(product)) {
     if (!v || (v.id !== 'QIX6D5PRQKX4TKEMTQUJPZUX' &&
@@ -240,10 +256,22 @@ function unitPriceCentsFromProduct(
 }
 
 function isProductPurchasable(product: UnifiedProductDoc, isPreorder = false): boolean {
-  if (product.squareIsArchived === true) return false;
-  if (product.squareEcomAvailable === false) return false;
-  // Preorder items are made-to-order — inStock doesn't apply
-  if (!isPreorder && product.inStock === false) return false;
+  // These checks apply to every entry point, including forged cart payloads.
+  // Square Online ecom_available is not a restriction on this custom checkout.
+  // Market-only weekly availability does not disable ordinary Georgia shipping.
+  if (product.squareIsArchived === true ||
+      product.available === false || product.soldOut === true ||
+      (isPreorder && product.activeWeeklyMenu === false)) return false;
+  const weekly = String(product.weeklyStatus || '').toLowerCase();
+  const inventory = String(product.inventoryStatus || '').toLowerCase();
+  const squareVisibility = String(product.squareEcomVisibility || '').toUpperCase();
+  if (['inactive', 'sold_out'].includes(weekly) ||
+      ['inactive', 'sold_out'].includes(inventory) ||
+      ['HIDDEN', 'UNINDEXED'].includes(squareVisibility)) return false;
+  // Only catalog-authorized preorders can bypass immediate stock checks.
+  if (!isPreorder && (product.inStock === false ||
+      (Number.isFinite(product.currentStock) && Number(product.currentStock) <= 0) ||
+      (Number.isFinite(product.stock) && Number(product.stock) <= 0))) return false;
   return true;
 }
 
@@ -490,7 +518,7 @@ export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
       // Server-owned catalog flags take precedence over client-provided flags.
       // A customer must not be able to remove a pickup-only restriction by
       // editing a cart payload before creating an order.
-      isPreorder: Boolean(product.isPreorder || product.preorderOnly || item.isPreorder),
+      isPreorder: Boolean(product.isPreorder || product.preorderOnly),
       marketExclusive: Boolean(
         product.marketExclusive ||
         product.marketPickupOnly ||

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { approvedUnitPriceCents, findApprovedOrderPriceMismatch } from '@/lib/merchant-pricing';
 import { logger } from '@/lib/logger';
+import {tursoPreviewSelected,TursoPreviewRefusal} from '@/lib/checkout/turso-preview-runtime.mjs';
 import { RequestContext } from '@/lib/request-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { createPayment, getPayment as getSquarePayment, findOrCreateCustomer, createOrder as createSquareOrder, getOrder as getSquareOrder, getSquareConfig } from '@/lib/square-api';
@@ -18,6 +19,7 @@ import { rewardsSystem } from '@/lib/enhanced-rewards';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
 import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { consumeInventoryForPaidOrder, checkInventoryForPayment } from '@/lib/custom-inventory';
+import { reserveCheckoutInventory, releaseCheckoutInventory } from '@/lib/checkout/stock-reservation';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';
 import { validateGeorgiaDestination } from '@/lib/georgia-orders';
 import {
@@ -174,6 +176,19 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
+    if (tursoPreviewSelected()) {
+      try {
+        const {payTursoPreviewBuyerOrder}=await import('@/lib/checkout/turso-preview-buyer.mjs');
+        return json(await payTursoPreviewBuyerOrder(body));
+      } catch(error) {
+        const code=error instanceof TursoPreviewRefusal ? error.code :
+          'PAYMENT_RECONCILIATION_REQUIRED';
+        const status=error instanceof TursoPreviewRefusal ? error.status : 503;
+        // Never invite another charge when the provider outcome is ambiguous.
+        return json({success:false,code,
+          error:'Payment could not be confirmed. Please do not pay again until your order is checked.'},status);
+      }
+    }
     const { 
       sourceId,
       amountCents,
@@ -232,9 +247,11 @@ export async function POST(request: NextRequest) {
     // FIX P0-3: Clear any stuck payment_processing status on DB failure
     // ========================================================================
     let db;
+    let client;
     try {
       const dbConnection = await connectToDatabase();
       db = dbConnection.db;
+      client = dbConnection.client;
     } catch (dbConnError) {
       logger.error('API', 'Database connection failed - cannot process payment safely', {
         traceId: ctx.traceId,
@@ -245,31 +262,10 @@ export async function POST(request: NextRequest) {
         tags: { api: 'payments', stage: 'db_connect' }
       });
       
-      // FIX: Attempt to clear stuck payment_processing status even on connection failure
-      // This prevents orders from being locked indefinitely
-      try {
-        const fallbackDb = await connectToDatabase().catch(() => null);
-        if (fallbackDb?.db && orderId) {
-          await fallbackDb.db.collection('orders').updateOne(
-            { 
-              id: orderId,
-              status: 'payment_processing',
-              paymentStatus: 'processing'
-            },
-            { 
-              $set: { 
-                status: 'pending', 
-                paymentStatus: 'pending',
-                paymentError: 'DB_CONNECTION_FAILED',
-                updatedAt: new Date().toISOString() 
-              } 
-            }
-          );
-        }
-      } catch (clearError) {
-        logger.error('API', 'Failed to clear payment_processing status', { orderId, error: clearError });
-      }
-      
+      // A database connection failure does not prove the processor did not
+      // charge an order. Never clear somebody else's processing lock during
+      // an outage; this could admit a second payment attempt.
+
       return json(
         { 
           success: false, 
@@ -382,6 +378,13 @@ export async function POST(request: NextRequest) {
         }, 409);
       }
 
+      if (existingPayment && [order.status, order.paymentStatus].some(
+        (status) => ['REFUNDED', 'PARTIALLY_REFUNDED', 'CANCELLED', 'CANCELED']
+          .includes(String(status || '').toUpperCase())
+      )) {
+        return json({ success: false, code: 'ORDER_PAYMENT_ALREADY_RECONCILED',
+          error: 'This payment has already been refunded or the order is closed. Review your order status; no new charge was made.' }, 409);
+      }
       if (existingPayment) {
         logger.info('API', 'Returning existing successful payment (idempotency protection)', {
           traceId: ctx.traceId,
@@ -420,10 +423,15 @@ export async function POST(request: NextRequest) {
         });
       }
     } catch (paymentLookupError) {
-      // Non-blocking - continue with payment attempt
-      logger.warn('API', 'Payment lookup failed, continuing', {
+      // Fail closed: the database may already contain a captured payment.
+      // Charging when this lookup failed risks a duplicate Square transaction.
+      logger.error('API', 'Payment lookup failed - refusing to charge', {
+        traceId: ctx.traceId,
+        orderId: resolvedOrderId,
         error: paymentLookupError instanceof Error ? paymentLookupError.message : String(paymentLookupError)
       });
+      return json({ success: false, code: 'PAYMENT_RECONCILIATION_UNAVAILABLE',
+        error: 'We could not verify whether your order was already charged. Please check order status before retrying.' }, 503);
     }
     
     // Enforce current service geography even for unpaid orders created before this policy.
@@ -554,6 +562,9 @@ export async function POST(request: NextRequest) {
           409
         );
       }
+      // Never proceed to Square without owning the compare-and-set payment lock.
+      return json({ success: false, code: 'ORDER_NOT_PAYABLE',
+        error: 'Order payment status changed. Check your order before retrying.' }, 409);
     }
     
     // Refresh order data after atomic update
@@ -896,6 +907,30 @@ export async function POST(request: NextRequest) {
         error: 'The payment provider could not verify your final order price. Please retry checkout.',
       }, 409);
     }
+    // The one-order lock cannot prevent TWO different customers from paying
+    // for the final unit. Deduct stock and claim this order in one transaction
+    // BEFORE sending any charge to Square.
+    let stockClaim;
+    try {
+      stockClaim = await reserveCheckoutInventory(db, client, {
+        orderId, items: order.items || [],
+      });
+    } catch (stockError) {
+      logger.error('API', 'Could not safely commit stock claim', {
+        orderId, error: stockError instanceof Error ? stockError.message : String(stockError),
+      });
+      return json({ success: false, code: 'INVENTORY_RESERVATION_UNAVAILABLE',
+        error: 'Stock could not be reserved safely. Check the order before trying again.' }, 503);
+    }
+    if (!stockClaim.valid) {
+      await db.collection('orders').updateOne(
+        { id: orderId, status: 'payment_processing', paymentStatus: 'processing' },
+        { $set: { status: 'pending', paymentStatus: 'pending',
+          paymentError: stockClaim.code, updatedAt: new Date().toISOString() } },
+      );
+      return json({ success: false, code: stockClaim.code,
+        error: 'The requested quantity is no longer available. Please update your cart.' }, 409);
+    }
 
     // ========================================================================
     // PROCESS SQUARE PAYMENT
@@ -934,6 +969,31 @@ export async function POST(request: NextRequest) {
         errors: paymentResult.errors
       });
       
+      // Only a DEFINITE provider decline permits inventory release and a
+      // new Square idempotency key. Network timeouts or provider errors may
+      // have captured funds; keep the claim and reconcile, never retry blind.
+      const definiteDecline = new Set([
+        'CARD_DECLINED', 'GENERIC_DECLINE', 'INSUFFICIENT_FUNDS',
+        'CVV_FAILURE', 'ADDRESS_VERIFICATION_FAILURE', 'EXPIRED_CARD',
+        'INVALID_CARD', 'INVALID_EXPIRATION', 'INVALID_POSTAL_CODE',
+        'UNSUPPORTED_CARD_BRAND', 'INVALID_CARD_DATA',
+      ]).has(errorCode);
+      if (!definiteDecline) {
+        logger.error('API', 'Ambiguous Square result: stock claim retained pending reconciliation', {
+          orderId, errorCode,
+        });
+        return json({ success: false, code: 'PAYMENT_RECONCILIATION_REQUIRED',
+          error: 'We could not confirm your payment. Your order is held for verification; please do not pay again.' }, 503);
+      }
+      try {
+        await releaseCheckoutInventory(db, client, orderId, 'square_explicit_decline');
+      } catch (releaseError) {
+        logger.error('API', 'Stock release failed after confirmed decline', {
+          orderId, error: releaseError instanceof Error ? releaseError.message : String(releaseError),
+        });
+        return json({ success: false, code: 'INVENTORY_RELEASE_RECONCILIATION_REQUIRED',
+          error: 'Payment was declined but inventory could not be safely reopened. Contact support before retrying.' }, 503);
+      }
       await db.collection('orders').updateOne(
         { id: orderId },
         { 
@@ -965,6 +1025,25 @@ export async function POST(request: NextRequest) {
     }
 
     const payment = paymentResult.data.payment;
+    // A completed provider payment with an unexpected amount must never be
+    // recorded as a successful purchase or release the reserved stock.
+    // Keep the order in reconciliation state for staff/provider verification.
+    const capturedAmount = Number(payment.amountMoney?.amount);
+    const capturedCurrency = String(payment.amountMoney?.currency || '').toUpperCase();
+    if (payment.status === 'COMPLETED'
+        && (!Number.isSafeInteger(capturedAmount)
+          || capturedAmount !== validatedAmountCents
+          || capturedCurrency !== 'USD')) {
+      logger.error('API', 'CRITICAL: Captured Square payment does not match the order total', {
+        orderId, squarePaymentId: payment.id, expectedAmountCents: validatedAmountCents,
+        capturedAmountCents: capturedAmount,
+      });
+      Sentry.captureMessage('Square checkout payment amount mismatch after capture', {
+        level: 'error', extra: { orderId, squarePaymentId: payment.id },
+      });
+      return json({ success: false, code: 'CAPTURED_AMOUNT_RECONCILIATION_REQUIRED',
+        error: 'The payment requires manual verification. Please do not submit another payment.' }, 503);
+    }
     const isCompleted = payment.status === 'COMPLETED';
     
     logger.info('API', 'Square payment completed', {
@@ -1086,6 +1165,7 @@ export async function POST(request: NextRequest) {
           orderNumber: order.orderNumber,
           items: order.items || [],
           actor: 'payment_capture',
+          requireReservation: Boolean(order.checkoutAttemptKey),
         });
 
         logger.info('API', 'Inventory updated after payment', {
@@ -1117,6 +1197,7 @@ export async function POST(request: NextRequest) {
             orderNumber: order.orderNumber,
             items: order.items || [],
             actor: 'payment_capture_retry',
+            requireReservation: Boolean(order.checkoutAttemptKey),
           });
           logger.info('API', 'Inventory retry succeeded', { 
             orderId, 
@@ -1144,6 +1225,7 @@ export async function POST(request: NextRequest) {
         const emailClaim = await db.collection('orders').updateOne(
           { 
             id: orderId, 
+            customerNotificationRecoveryHold: { $ne: true },
             emailSentAt: { $exists: false } // Only if no email sent yet
           },
           { 
@@ -1421,7 +1503,7 @@ export async function POST(request: NextRequest) {
     return json(
       {
         success: false,
-        error: 'Payment processing failed. Please try again.',
+        error: 'The payment result could not be verified. Do not submit another payment; check your order status or contact support.',
         code: 'PAYMENT_PROCESSING_UNAVAILABLE'
       },
       500
@@ -1441,6 +1523,17 @@ export async function GET(request: NextRequest) {
     const paymentId = searchParams.get('paymentId');
     const orderId = searchParams.get('orderId');
     const orderAccessToken = searchParams.get('token');
+
+    if (tursoPreviewSelected()) {
+      try {
+        const {getTursoPreviewBuyerPaymentStatus}=await import('@/lib/checkout/turso-preview-buyer.mjs');
+        return json(await getTursoPreviewBuyerPaymentStatus({orderId,orderAccessToken}));
+      } catch(error) {
+        const code=error instanceof TursoPreviewRefusal ? error.code : 'TURSO_ORDER_STATUS_UNAVAILABLE';
+        const status=error instanceof TursoPreviewRefusal ? error.status : 503;
+        return json({success:false,code,error:'Order status is temporarily unavailable.'},status);
+      }
+    }
     
     if (!paymentId && !orderId) {
       return json({ error: 'Payment ID or Order ID is required' }, 400);

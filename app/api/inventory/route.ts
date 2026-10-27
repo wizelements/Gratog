@@ -5,6 +5,7 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import DailyInventory from '@/models/DailyInventory';
 import { getTodayDateString } from '@/lib/date-utils';
 import { AdminAuthError, requireAdminSession } from '@/lib/auth/unified-admin';
+import { tursoPreviewSelected } from '@/lib/checkout/turso-preview-runtime.mjs';
 
 export const runtime = 'nodejs';
 
@@ -16,6 +17,13 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const marketId = searchParams.get('marketId') || 'serenbe-farmers-market';
+
+    // Market-day physical inventory is a separate ledger. It has no migrated
+    // Turso schema and must never be presented as the global checkout stock.
+    if (tursoPreviewSelected()) return NextResponse.json({ success: false,
+      code: 'TURSO_DAILY_MARKET_INVENTORY_NOT_CERTIFIED',
+      error: 'Daily market inventory is awaiting migration certification.' },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } });
     
     await connectToDatabase();
     
@@ -69,6 +77,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const admin = await requireAdminSession(request);
+    if (tursoPreviewSelected()) return NextResponse.json({ success: false,
+      code: 'TURSO_DAILY_MARKET_INVENTORY_NOT_CERTIFIED',
+      error: 'Daily market inventory is awaiting migration certification.' },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } });
     const body = await request.json();
     const { marketId, items, action } = body;
     

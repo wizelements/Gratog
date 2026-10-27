@@ -1,0 +1,27 @@
+{
+  "kind": "ISOLATED_TURSO_INTEGRATION_ROUTING_AUDIT",
+  "sourceBaseSha": "8e21c66f33c5849d409f02b5635514dcabc34ed1",
+  "integratedDraftPRs": [
+    47,
+    48,
+    50
+  ],
+  "counts": {
+    "scannedSourceFiles": 750,
+    "apiRoutes": 142,
+    "pages": 93,
+    "serverComponentCandidates": 12,
+    "middleware": 1,
+    "mongoDependentEntries": 115,
+    "tursoReachableUncertified": 1,
+    "noStaticDatabaseProof": 132,
+    "unresolvedLocalImports": 116,
+    "cronJobs": 6
+  },
+  "releaseStatus": "NOT_CERTIFIED",
+  "productionCutoverAuthorized": false,
+  "limitations": [
+    "Static source reachability does not prove database routing, production data parity or authorization.",
+    "The historical detailed snapshot remains a baseline; rerun inventory for current candidate paths."
+  ]
+}

@@ -1,5 +1,5 @@
 import { getProductBySlugOrId, normalizeProductKey, toStorefrontProduct } from '@/data/products';
-import { approvedUnitPriceCents } from '@/lib/merchant-pricing';
+import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 
 export const LABEL_QUANTITY_MIN = 1;
 export const LABEL_QUANTITY_MAX = 6;
@@ -9,28 +9,28 @@ const LABEL_ALIASES: Record<string, string> = {
   'floral-tide-gel': 'floral-tide',
   'healing-harmony-gel': 'healing-harmony',
 };
-
-const LIVE_CATALOG_ORIGIN = (
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  process.env.SITE_URL ||
-  'https://tasteofgratitude.shop'
-).replace(/\/+$/, '');
+const UNRECONCILED_ITEM_IDS = new Set(['F2YVC7OVRYJU575JXROKFHFT']);
 
 export type LabelProductSnapshot = {
   slug: string;
   name: string;
   category: string;
-  price: number;
-  priceCents: number;
+  price: number | null;
+  priceCents: number | null;
+  priceVerified: boolean;
   size: string;
   ingredients: string[];
   squareVariationId?: string;
   source?: string;
 };
 
-export type LabelProductResolution =
-  | { payable: true; product: LabelProductSnapshot; reason: null }
-  | { payable: false; product: LabelProductSnapshot | null; reason: 'not_found' | 'no_price' | 'inactive' };
+export type LabelProductResolution = {
+  // A printed label is not an independently payable order.
+  payable: false;
+  product: LabelProductSnapshot | null;
+  productPath: string | null;
+  reason: 'canonical_checkout_required' | 'not_found' | 'inactive' | 'identity_unverified';
+};
 
 export function normalizeLabelQuantity(value: unknown): number {
   const parsed = Number.parseInt(String(value ?? '1'), 10);
@@ -38,132 +38,87 @@ export function normalizeLabelQuantity(value: unknown): number {
   return Math.min(LABEL_QUANTITY_MAX, Math.max(LABEL_QUANTITY_MIN, parsed));
 }
 
-function asIngredientNames(source: any): string[] {
-  if (!Array.isArray(source?.ingredients)) return [];
-  return source.ingredients
-    .map((ingredient: any) => typeof ingredient === 'string' ? ingredient : ingredient?.name)
-    .filter(Boolean)
-    .map(String);
-}
-
-function getPriceCents(source: any): number {
-  if (Number.isFinite(Number(source?.priceCents)) && Number(source.priceCents) > 0) {
-    return Math.round(Number(source.priceCents));
-  }
-
-  const price = Number(source?.price);
-  if (Number.isFinite(price) && price > 0) {
-    return Math.round(price * 100);
-  }
-
-  const firstVariation = Array.isArray(source?.variations) ? source.variations[0] : null;
-  if (Number.isFinite(Number(firstVariation?.priceCents)) && Number(firstVariation.priceCents) > 0) {
-    return Math.round(Number(firstVariation.priceCents));
-  }
-
-  const variationPrice = Number(firstVariation?.price);
-  return Number.isFinite(variationPrice) && variationPrice > 0
-    ? Math.round(variationPrice * 100)
-    : 0;
-}
-
-function getSquareVariationId(source: any): string | undefined {
-  const candidate =
-    source?.squareData?.variationId ||
-    source?.variationId ||
-    source?.catalogObjectId ||
-    source?.variations?.[0]?.id;
-
-  if (!candidate) return undefined;
-  const value = String(candidate);
-  if (value.startsWith('tog-')) return undefined;
-  return value.length > 20 && /^[A-Z0-9]+$/i.test(value) ? value : undefined;
+function priceCents(source: any): number | null {
+  const cents = source?.priceCents;
+  if (typeof cents === 'number' && Number.isSafeInteger(cents) && cents > 0) return cents;
+  const dollars = source?.price;
+  if (typeof dollars !== 'number' || !Number.isFinite(dollars) || dollars <= 0) return null;
+  const converted = Math.round(dollars * 100);
+  return Number.isSafeInteger(converted) ? converted : null;
 }
 
 function sourceMatchesLabel(source: any, key: string) {
-  const keys = [source?.slug, source?.id, source?.name, source?.curatedProductId]
-    .map(normalizeProductKey)
-    .filter(Boolean);
-  return keys.includes(key);
+  return [source?.slug, source?.id, source?.name, source?.curatedProductId]
+    .map(normalizeProductKey).filter(Boolean).includes(key);
 }
 
 export function resolveLabelProductFromCatalog(value: unknown, liveProducts: any[] = []): LabelProductResolution {
   const rawKey = normalizeProductKey(value);
   const key = LABEL_ALIASES[rawKey] || rawKey;
-  if (!key) return { payable: false, product: null, reason: 'not_found' };
+  const unavailable = (reason: 'not_found' | 'identity_unverified'): LabelProductResolution =>
+    ({ payable: false, product: null, productPath: null, reason });
+  if (!key || key.length > 120) return unavailable('not_found');
 
-  let source = liveProducts.find((product) => sourceMatchesLabel(product, key));
-
+  const matches = liveProducts.filter(product => sourceMatchesLabel(product, key));
+  // Name resemblance cannot collapse separate Square objects into one.
+  if (new Set(matches.map(product => product.id || product.slug)).size > 1) {
+    return unavailable('identity_unverified');
+  }
+  let source = matches[0];
+  const fromLiveCatalog = Boolean(source);
   if (!source) {
     const curated = getProductBySlugOrId(key);
     source = curated ? toStorefrontProduct(curated) : null;
   }
+  if (!source) return unavailable('not_found');
+  if (UNRECONCILED_ITEM_IDS.has(source.id) || UNRECONCILED_ITEM_IDS.has(source.squareId)) {
+    return unavailable('identity_unverified');
+  }
 
-  if (!source) return { payable: false, product: null, reason: 'not_found' };
-
-  const approvedPriceCents = approvedUnitPriceCents(source);
-  // The approved gel-jar price is not a 2oz sample price. When a source
-  // offers multiple sizes, deliberately select the full 16oz variation.
-  const approvedFullSize = approvedPriceCents !== null && Array.isArray(source.variations)
-    ? source.variations.find((variant: any) =>
-        /^16\s*oz(?:\b|$)/i.test(String(variant?.name || '').trim()))
-    : null;
-  const priceCents = approvedPriceCents ?? getPriceCents(source);
-  const price = priceCents / 100;
-  const slug = normalizeProductKey(source.slug || source.id || source.name || key);
-  const weeklyStatus = String(source.weeklyStatus || '').toLowerCase();
-  const inventoryStatus = String(source.inventoryStatus || '').toLowerCase();
+  const slug = normalizeProductKey(source.slug || source.id || source.name);
+  if (!slug || slug.length > 120) return unavailable('not_found');
   const category = String(source.category || source.categoryLabel || 'market');
+  const inactive = ['inactive', 'sold_out'].includes(String(source.weeklyStatus || '').toLowerCase()) ||
+    ['inactive', 'sold_out'].includes(String(source.inventoryStatus || '').toLowerCase()) ||
+    category.toLowerCase() === 'inactive' || source.squareIsArchived === true;
+  const variations = Array.isArray(source.variations) ? source.variations : [];
+  const requestedVariation = source.variationId || source.squareData?.variationId || source.catalogObjectId;
+  const variation = variations.find((v: any) => v.id === requestedVariation) || variations[0];
+  const variationId = typeof variation?.id === 'string' && /^[A-Z0-9]{20,}$/i.test(variation.id)
+    ? variation.id : undefined;
+  const cents = priceCents(source);
+  const stock = source.currentStock ?? source.stock;
+  const priceVerified = Boolean(fromLiveCatalog && !inactive && source.checkoutReady === true &&
+    source.inStock !== false && typeof stock === 'number' && Number.isSafeInteger(stock) && stock > 0 &&
+    variationId && cents !== null && priceCents(variation) === cents);
 
-  const product: LabelProductSnapshot = {
-    slug,
-    name: String(source.name || key),
-    category,
-    price,
-    priceCents,
-    size: String(approvedFullSize?.name || source.size || source.variations?.[0]?.name || source.sizes?.[0] || 'Market item'),
-    ingredients: asIngredientNames(source),
-    squareVariationId: getSquareVariationId(approvedFullSize
-      ? { ...source, squareData: undefined, variationId: approvedFullSize.id, catalogObjectId: approvedFullSize.id, variations: [approvedFullSize] }
-      : source),
-    source: source.source,
+  return {
+    payable: false,
+    product: {
+      slug, name: String(source.name || key), category,
+      price: priceVerified && cents !== null ? cents / 100 : null,
+      priceCents: priceVerified ? cents : null,
+      priceVerified,
+      size: String(source.size || variation?.name || source.sizes?.[0] || 'Market item'),
+      ingredients: Array.isArray(source.ingredients)
+        ? source.ingredients.map((ingredient: any) => typeof ingredient === 'string' ? ingredient : ingredient?.name)
+          .filter(Boolean).map(String) : [],
+      squareVariationId: variationId,
+      source: source.source,
+    },
+    productPath: inactive ? null : `/product/${encodeURIComponent(slug)}`,
+    reason: inactive ? 'inactive' : 'canonical_checkout_required',
   };
-
-  if (
-    weeklyStatus === 'inactive' ||
-    inventoryStatus === 'inactive' ||
-    category.toLowerCase() === 'inactive'
-  ) {
-    return { payable: false, product, reason: 'inactive' };
-  }
-
-  if (priceCents <= 0) {
-    return { payable: false, product, reason: 'no_price' };
-  }
-
-  // Physical-product checkout is intentionally independent from weekly-menu
-  // merchandising and inventory counters. If a customer has the item in hand,
-  // the label must stay payable. Live Square data wins whenever available.
-  return { payable: true, product, reason: null };
-}
-
-async function fetchLiveProducts(): Promise<any[]> {
-  try {
-    const response = await fetch(`${LIVE_CATALOG_ORIGIN}/api/products`, {
-      cache: 'no-store',
-      headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(3500),
-    });
-
-    if (!response.ok) return [];
-    const payload = await response.json();
-    return Array.isArray(payload?.products) ? payload.products : [];
-  } catch {
-    return [];
-  }
 }
 
 export async function resolveLabelProduct(value: unknown): Promise<LabelProductResolution> {
-  const liveProducts = await fetchLiveProducts();
-  return resolveLabelProductFromCatalog(value, liveProducts);
+  // This deployment's guarded catalog authority prevents Preview from reading
+  // production through a hard-coded public origin. Curated outage fallback
+  // can supply product copy only, never price or purchase eligibility.
+  let products: any[] = [];
+  try {
+    const snapshot = await getStorefrontCatalogSnapshot({});
+    products = Array.isArray(snapshot?.products) ? snapshot.products : [];
+  } catch { /* Curated product copy below is explicitly non-payable. */ }
+  return resolveLabelProductFromCatalog(value, products);
 }

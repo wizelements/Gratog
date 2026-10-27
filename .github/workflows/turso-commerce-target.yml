@@ -1,0 +1,36 @@
+name: Turso Commerce Target Readback
+on:
+  push:
+    branches: [feat/turso-lemonade-certification-20261027]
+    paths:
+      - scripts/verify-turso-commerce-target.mjs
+      - .github/workflows/turso-commerce-target.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  read-only-target:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: square-sandbox-certification
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install runtime dependencies without provider secrets
+        run: npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Read Turso staging schema; never open Mongo or mutate data
+        env:
+          TURSO_STAGING_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
+        run: node scripts/verify-turso-commerce-target.mjs
+      - name: Preserve sanitized proof
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: turso-commerce-target-${{ github.run_id }}
+          path: test-results/turso-commerce-target-readback.json
+          if-no-files-found: error
+          retention-days: 30

@@ -3,6 +3,8 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { earnFromPurchase } from '@/lib/gratitude/transactions';
+import { verifySquareWebhookSignature } from '@/lib/batches/square-webhook-auth';
+import { getIsolatedPreviewWebhookKey } from '@/lib/preview-square-webhook-key';
 
 export const runtime = 'nodejs';
 
@@ -14,26 +16,30 @@ export const runtime = 'nodejs';
  */
 export async function POST(request: NextRequest) {
   try {
-    const signature = request.headers.get('x-square-signature');
-    const body = await request.json();
-    
-    // Verify Square webhook signature
-    const signatureKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
-    if (signatureKey) {
-      const crypto = await import('crypto');
-      const rawBody = JSON.stringify(body);
-      const expectedSignature = crypto
-        .createHmac('sha256', signatureKey)
-        .update(rawBody)
-        .digest('base64');
-      if (signature !== expectedSignature) {
-        console.warn('Invalid webhook signature — rejecting');
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-      }
-    } else if (process.env.NODE_ENV === 'production') {
-      console.warn('SQUARE_WEBHOOK_SIGNATURE_KEY not set — webhook signature not verified');
+    // Square signs the PUBLIC notification URL followed by the exact raw body.
+    // Never reconstruct JSON, accept the legacy x-square-signature header,
+    // or skip signature verification due to absent credentials.
+    const rawBody = await request.text();
+    if (rawBody.length > 256000) {
+      return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
     }
-    
+    const signature = request.headers.get('x-square-hmacsha256-signature');
+    const signingUrl = process.env.SQUARE_GRATITUDE_WEBHOOK_URL || request.url;
+    const configuredKey = process.env.SQUARE_GRATITUDE_WEBHOOK_SIGNATURE_KEY ||
+      process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
+    const previewSandbox = process.env.VERCEL_ENV === 'preview' &&
+      process.env.SQUARE_ENVIRONMENT === 'sandbox';
+    const isolatedKey = previewSandbox ? await getIsolatedPreviewWebhookKey(signingUrl) : null;
+    const verified = previewSandbox
+      ? Boolean(isolatedKey) && verifySquareWebhookSignature(signature, rawBody, signingUrl, isolatedKey!)
+      : verifySquareWebhookSignature(signature, rawBody, signingUrl, configuredKey);
+    if (!verified) {
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    }
+    let body: any;
+    try { body = JSON.parse(rawBody); }
+    catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
+
     const { type, data } = body;
     
     // Only process payment.completed events
@@ -115,12 +121,7 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('Gratitude webhook error:', error);
-    // Return 200 so Square doesn't retry
-    return NextResponse.json({ 
-      received: true, 
-      processed: false,
-      // @ts-ignore — type fix needed
-      error: error.message 
-    });
+    // A failed reconciliation is NOT successful delivery. Allow Square to retry.
+    return NextResponse.json({ error: 'Webhook reconciliation failed' }, { status: 503 });
   }
 }

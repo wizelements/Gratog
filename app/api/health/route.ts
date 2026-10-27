@@ -5,6 +5,7 @@
 
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
+import { tursoPreviewSelected,openTursoPreview } from '@/lib/checkout/turso-preview-runtime.mjs';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -17,7 +18,7 @@ interface HealthStatus {
   checks: {
     server: boolean;
     database: boolean;
-    databaseProvider: 'mongodb';
+    databaseProvider: 'mongodb' | 'turso';
     memory: {
       used: number;
       total: number;
@@ -36,8 +37,14 @@ export async function GET() {
     // Check database connection
     let databaseHealthy = false;
     try {
-      const { db } = await connectToDatabase();
-      await db.command({ ping: 1 });
+      if (tursoPreviewSelected()) {
+        const db = await openTursoPreview();
+        const result = await db.get('SELECT 1 AS ready');
+        if (Number(result?.ready) !== 1) throw new Error('DATABASE_NOT_READY');
+      } else {
+        const { db } = await connectToDatabase();
+        await db.command({ ping: 1 });
+      }
       databaseHealthy = true;
     } catch (error) {
       errors.push('Database connectivity check failed');
@@ -74,7 +81,7 @@ export async function GET() {
       checks: {
         server: true,
         database: databaseHealthy,
-        databaseProvider: 'mongodb',
+        databaseProvider: tursoPreviewSelected() ? 'turso' : 'mongodb',
         memory: {
           used: Math.round(usedMemory / 1024 / 1024),
           total: Math.round(totalMemory / 1024 / 1024),
@@ -106,7 +113,7 @@ export async function GET() {
       checks: {
         server: true,
         database: false,
-        databaseProvider: 'mongodb',
+        databaseProvider: tursoPreviewSelected() ? 'turso' : 'mongodb',
         memory: {
           used: 0,
           total: 0,

@@ -1,9 +1,9 @@
 /**
  * Unified Admin Session Management
- * 
+ *
  * This is the SINGLE SOURCE OF TRUTH for admin authentication.
  * All admin API routes and middleware should use these helpers.
- * 
+ *
  * SECURITY: Never use client-side checks as the sole protection.
  * Always validate on the server using these helpers.
  */
@@ -11,6 +11,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose/jwt/verify';
 import { SignJWT } from 'jose/jwt/sign';
+import {getAdminSession as getVerifiedAdminSession} from '@/lib/auth/unified-admin';
+import {isSessionVersion} from '@/lib/auth/admin-session-policy.mjs';
 
 export type AdminRole = 'admin' | 'super_admin';
 
@@ -20,6 +22,7 @@ export interface AdminTokenPayload {
   email: string;
   role: AdminRole;
   name?: string;
+  sessionVersion: number;
   iat?: number;
   exp?: number;
 }
@@ -29,6 +32,7 @@ export interface AdminSession {
   email: string;
   role: AdminRole;
   name?: string;
+  sessionVersion: number;
 }
 
 // MEMORY FIX: Reuse TextEncoder instance instead of creating new one every time
@@ -37,7 +41,7 @@ const textEncoder = new TextEncoder();
 // Get JWT secret as Uint8Array for jose library
 function getJwtSecretKey(): Uint8Array {
   const secret = process.env.JWT_SECRET;
-  
+
   if (!secret) {
     const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
     if (isProd) {
@@ -47,12 +51,12 @@ function getJwtSecretKey(): Uint8Array {
     console.warn('⚠️ Using insecure development JWT secret');
     return textEncoder.encode('dev-only-insecure-secret-do-not-use-in-production');
   }
-  
+
   // Warn if secret is too short
   if (secret.length < 32) {
     console.warn('⚠️ JWT_SECRET should be at least 32 characters for security');
   }
-  
+
   return textEncoder.encode(secret);
 }
 
@@ -64,25 +68,28 @@ export async function verifyAdminToken(token: string): Promise<AdminTokenPayload
   try {
     const secretKey = getJwtSecretKey();
     const { payload } = await jwtVerify(token, secretKey);
-    
+
     // SECURITY: Must have a valid admin role. `super_admin` is a superset of
     // `admin` and is issued by lib/auth/unified-admin.ts for elevated users.
     if (payload.role !== 'admin' && payload.role !== 'super_admin') {
       return null;
     }
-    
+
     // Support both 'id' and 'userId' for backward compatibility
     const id = (payload.id || payload.userId) as string;
     const email = payload.email as string | undefined;
-    if (!id || !email) {
+    if (typeof id !== 'string' || !id || typeof email !== 'string' || !email.trim() || !isSessionVersion(payload.sessionVersion)) {
       return null;
     }
-    
+
     return {
       id,
       email,
       role: payload.role,
       name: payload.name as string | undefined,
+      sessionVersion: payload.sessionVersion as number,
+      iat: payload.iat,
+      exp: payload.exp,
     };
   } catch (error) {
     return null;
@@ -101,20 +108,23 @@ export async function generateAdminToken(admin: {
   email: string;
   role?: AdminRole;
   name?: string;
+  sessionVersion: number;
 }): Promise<string> {
+  if (!isSessionVersion(admin.sessionVersion)) throw new AdminAuthError('A current database session version is required', 401);
   const secretKey = getJwtSecretKey();
-  
+
   const token = await new SignJWT({
     id: admin.id,
     email: admin.email,
     role: admin.role || 'admin',
     name: admin.name,
+    sessionVersion: admin.sessionVersion,
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime(TOKEN_EXPIRY)
     .sign(secretKey);
-  
+
   return token;
 }
 
@@ -123,10 +133,10 @@ export async function generateAdminToken(admin: {
  */
 export function shouldRotateToken(payload: AdminTokenPayload): boolean {
   if (!payload.iat) return false;
-  
+
   const issuedAt = payload.iat * 1000; // Convert to milliseconds
   const age = Date.now() - issuedAt;
-  
+
   return age > TOKEN_ROTATION_THRESHOLD_MS;
 }
 
@@ -140,21 +150,24 @@ export async function refreshTokenIfNeeded(
 ): Promise<NextResponse> {
   const token = getAdminTokenFromRequest(request);
   if (!token) return response;
-  
+
   const payload = await verifyAdminToken(token);
-  if (!payload) return response;
-  
+  const session = await getAdminSession(request);
+  if (!payload || !session) return response;
+
   if (shouldRotateToken(payload)) {
     const newToken = await generateAdminToken({
       id: payload.id,
       email: payload.email,
-      name: payload.name,
+      name: session.name,
+      role: session.role,
+      sessionVersion: session.sessionVersion,
     });
-    
+
     // Set new token in response
     return setAdminCookie(response, newToken);
   }
-  
+
   return response;
 }
 
@@ -165,7 +178,7 @@ function getAdminTokenFromRequest(request: NextRequest | Request): string | null
   if ('cookies' in request && typeof request.cookies.get === 'function') {
     return (request as NextRequest).cookies.get('admin_token')?.value || null;
   }
-  
+
   // Fallback for standard Request object
   const cookieHeader = request.headers.get('cookie') || '';
   const match = cookieHeader.match(/admin_token=([^;]+)/);
@@ -177,28 +190,13 @@ function getAdminTokenFromRequest(request: NextRequest | Request): string | null
  * Use this for optional auth checks
  */
 export async function getAdminSession(request: NextRequest | Request): Promise<AdminSession | null> {
-  const token = getAdminTokenFromRequest(request);
-  if (!token) {
-    return null;
-  }
-  
-  const payload = await verifyAdminToken(token);
-  if (!payload) {
-    return null;
-  }
-  
-  return {
-    id: payload.id,
-    email: payload.email,
-    role: payload.role,
-    name: payload.name,
-  };
+  return await getVerifiedAdminSession(request) as AdminSession | null;
 }
 
 /**
  * Require admin authentication - throws if not authenticated
  * Use this for mandatory auth checks in API routes
- * 
+ *
  * @example
  * export async function GET(request: NextRequest) {
  *   const admin = await requireAdmin(request);
@@ -207,11 +205,11 @@ export async function getAdminSession(request: NextRequest | Request): Promise<A
  */
 export async function requireAdmin(request: NextRequest | Request): Promise<AdminSession> {
   const session = await getAdminSession(request);
-  
+
   if (!session) {
     throw new AdminAuthError('Unauthorized - Admin access required', 401);
   }
-  
+
   return session;
 }
 
@@ -220,7 +218,7 @@ export async function requireAdmin(request: NextRequest | Request): Promise<Admi
  */
 export class AdminAuthError extends Error {
   statusCode: number;
-  
+
   constructor(message: string, statusCode: number = 401) {
     super(message);
     this.name = 'AdminAuthError';
@@ -250,7 +248,7 @@ export function forbiddenResponse(message: string = 'Forbidden'): NextResponse {
 
 /**
  * Higher-order function to wrap API route handlers with admin auth
- * 
+ *
  * @example
  * export const GET = withAdminAuth(async (request, admin) => {
  *   // admin is guaranteed to be valid

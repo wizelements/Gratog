@@ -1,144 +1,21 @@
-import { randomUUID, timingSafeEqual } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
+import { AdminAuthError, requireAdminSession } from '@/lib/auth/unified-admin';
 
 export const dynamic = 'force-dynamic';
 
-const TARGETS = new Map([
-  ['pineapple basil', 35],
-  ['pineapple mango', 20],
-  ['strawberry bliss', 16],
-]);
-
-function safeEqual(a: string, b: string) {
-  const aa = Buffer.from(a);
-  const bb = Buffer.from(b);
-  return aa.length === bb.length && timingSafeEqual(aa, bb);
-}
-
-function baseUrl() {
-  return (process.env.SQUARE_ENVIRONMENT || 'sandbox').toLowerCase() === 'production'
-    ? 'https://connect.squareup.com'
-    : 'https://connect.squareupsandbox.com';
-}
-
-function squareHeaders(extra?: HeadersInit) {
-  const token = process.env.SQUARE_ACCESS_TOKEN;
-  if (!token) throw new Error('SQUARE_ACCESS_TOKEN missing');
-
-  const headers = new Headers(extra);
-  headers.set('Authorization', `Bearer ${token}`);
-  headers.set('Content-Type', 'application/json');
-  headers.set('Square-Version', '2025-10-16');
-  return headers;
-}
-
-async function square(path: string, init?: RequestInit) {
-  const res = await fetch(`${baseUrl()}${path}`, {
-    ...init,
-    headers: squareHeaders(init?.headers),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(JSON.stringify(data?.errors || data));
-  return data;
-}
-
-export async function GET() {
+// Retired: this endpoint replaced physical stock with hardcoded quantities.
+// A stock correction requires an observed count, location and durable audit.
+async function retired(request: NextRequest) {
   try {
-    const locationId = process.env.SQUARE_LOCATION_ID;
-    if (!locationId) return NextResponse.json({ error: 'SQUARE_LOCATION_ID missing' }, { status: 500 });
-
-    const catalog = await square('/v2/catalog/list?types=ITEM');
-    const matches: Array<{ product: string; variationId: string }> = [];
-
-    for (const obj of catalog.objects || []) {
-      const name = String(obj?.item_data?.name || '').trim().toLowerCase();
-      if (!TARGETS.has(name)) continue;
-      const variations = obj?.item_data?.variations || [];
-      if (variations.length !== 1) continue;
-      matches.push({ product: obj.item_data.name, variationId: variations[0].id });
-    }
-
-    const verify = await square('/v2/inventory/counts/batch-retrieve', {
-      method: 'POST',
-      body: JSON.stringify({ catalog_object_ids: matches.map(x => x.variationId), location_ids: [locationId], states: ['IN_STOCK'] }),
-    });
-
-    const counts = new Map<string, number>((verify.counts || []).map((c: any): [string, number] => [String(c.catalog_object_id), Number(c.quantity)]));
-    return NextResponse.json({ locationId, result: matches.map(x => ({ product: x.product, actual: counts.get(x.variationId) ?? 0 })) });
+    await requireAdminSession(request);
+    return NextResponse.json({ success: false, code: 'UNVERIFIED_STOCK_REPLACEMENT_RETIRED',
+      error: 'Record a verified physical count through the inventory reconciliation process.' },
+    { status: 410, headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Administrator authentication required' },
+      { status: error instanceof AdminAuthError ? error.statusCode : 503,
+        headers: { 'Cache-Control': 'no-store' } });
   }
 }
-
-export async function POST(req: NextRequest) {
-  const supplied = req.headers.get('x-admin-api-token') || req.headers.get('x-admin-api-key') || '';
-  const expectedToken = process.env.ADMIN_API_TOKEN || '';
-  const expectedKey = process.env.ADMIN_API_KEY || '';
-  const authorized = Boolean(supplied) && ((expectedToken && safeEqual(supplied, expectedToken)) || (expectedKey && safeEqual(supplied, expectedKey)));
-  if (!authorized) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const locationId = process.env.SQUARE_LOCATION_ID;
-  if (!locationId) return NextResponse.json({ error: 'SQUARE_LOCATION_ID missing' }, { status: 500 });
-
-  const catalog = await square('/v2/catalog/list?types=ITEM');
-  const matches: Array<{ product: string; itemId: string; variationId: string; quantity: number }> = [];
-
-  for (const obj of catalog.objects || []) {
-    const name = String(obj?.item_data?.name || '').trim().toLowerCase();
-    if (!TARGETS.has(name)) continue;
-    const variations = obj?.item_data?.variations || [];
-    if (variations.length !== 1) {
-      return NextResponse.json({ error: 'Ambiguous variation count', product: obj.item_data.name, variations: variations.map((v: any) => ({ id: v.id, name: v?.item_variation_data?.name })) }, { status: 409 });
-    }
-    matches.push({ product: obj.item_data.name, itemId: obj.id, variationId: variations[0].id, quantity: TARGETS.get(name)! });
-  }
-
-  if (matches.length !== TARGETS.size) {
-    return NextResponse.json({ error: 'Not all target products matched exactly', matched: matches.map(x => x.product), expected: [...TARGETS.keys()] }, { status: 409 });
-  }
-
-  const occurredAt = new Date().toISOString();
-  const changes = matches.map(x => ({
-    type: 'PHYSICAL_COUNT',
-    physical_count: {
-      catalog_object_id: x.variationId,
-      location_id: locationId,
-      state: 'IN_STOCK',
-      quantity: String(x.quantity),
-      occurred_at: occurredAt,
-    },
-  }));
-
-  await square('/v2/inventory/changes/batch-create', {
-    method: 'POST',
-    body: JSON.stringify({ idempotency_key: randomUUID(), changes, ignore_unchanged_counts: true }),
-  });
-
-  const verify = await square('/v2/inventory/counts/batch-retrieve', {
-    method: 'POST',
-    body: JSON.stringify({ catalog_object_ids: matches.map(x => x.variationId), location_ids: [locationId], states: ['IN_STOCK'] }),
-  });
-
-  const counts = new Map<string, number>(
-    (verify.counts || []).map(
-      (c: any): [string, number] => [String(c.catalog_object_id), Number(c.quantity)]
-    )
-  );
-  const result = matches.map((x) => {
-    const actual = counts.get(x.variationId) ?? null;
-    return {
-      product: x.product,
-      expected: x.quantity,
-      actual,
-      verified: actual === x.quantity,
-    };
-  });
-  const ok = result.every((x) => x.verified);
-  const total = result.reduce((sum, x) => sum + (x.actual ?? 0), 0);
-  return NextResponse.json(
-    { success: ok, locationId, total, result },
-    { status: ok ? 200 : 409 }
-  );
-}
+export const GET = retired;
+export const POST = retired;
