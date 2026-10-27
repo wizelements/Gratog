@@ -47,7 +47,7 @@ async function verifiedSquareInventory(
       let page = 0;
       do {
         if (++page > 25) throw new Error('Inventory pagination limit exceeded');
-        const result = await fetch(host + '/v2/inventory/counts/batch-retrieve', {
+        const result: Response = await fetch(host + '/v2/inventory/counts/batch-retrieve', {
           method: 'POST',
           cache: 'no-store',
           signal: AbortSignal.timeout(15000),
@@ -64,7 +64,16 @@ async function verifiedSquareInventory(
           }),
         });
         if (!result.ok) throw new Error('Square Inventory HTTP ' + result.status);
-        const body = await result.json();
+        const body: {
+          errors?: unknown[];
+          counts?: Array<{
+            location_id?: string;
+            catalog_object_id: string;
+            state: string;
+            quantity: string;
+          }>;
+          cursor?: string;
+        } = await result.json();
         if (Array.isArray(body.errors) && body.errors.length) {
           throw new Error('Square Inventory returned provider errors');
         }
