@@ -17,6 +17,9 @@ const bottle = (name: string) => ({
 describe('fail-closed commerce readiness', () => {
   beforeEach(() => {
     vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.stubEnv('PREVIEW_DB_ISOLATION_VERIFIED', 'true');
+    vi.stubEnv('PREVIEW_SANDBOX_CATALOG_ENABLED', 'true');
+    vi.stubEnv('SQUARE_ENVIRONMENT', 'sandbox');
     vi.stubEnv('SQUARE_WEBHOOK_SIGNATURE_KEY', 'sandbox-test-signing-key-not-real');
     mocks.payment.mockReset();
     mocks.catalog.mockReset();
@@ -35,6 +38,14 @@ describe('fail-closed commerce readiness', () => {
     expect(data.ready).toBe(true);
     expect(data.availableLemonadeFlavors).toBe(2);
     expect(response.headers.get('cache-control')).toBe('no-store');
+  });
+
+  it('rejects Preview payment even with stocked products when the database is not certified isolated', async () => {
+    vi.stubEnv('PREVIEW_DB_ISOLATION_VERIFIED', '');
+    const response = await GET();
+    const data = await response.json();
+    expect(response.status).toBe(503);
+    expect(data.checks.previewCatalogIsolation).toBe(false);
   });
 
   it('rejects the real Preview fallback catalog even if Square server credentials exist', async () => {
