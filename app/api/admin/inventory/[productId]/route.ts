@@ -130,7 +130,7 @@ export const PATCH = withAdminMiddlewareWithContext(
       // First, get current stock to include in history
       const current = await db.collection('inventory').findOne(
         { productId },
-        { projection: { currentStock: 1 } }
+        { projection: { currentStock: 1, stockVerified: 1, lastRestocked: 1 } }
       );
       
       if (!current) {
