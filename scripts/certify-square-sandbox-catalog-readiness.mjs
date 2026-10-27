@@ -12,12 +12,12 @@ const normalize = (value) => String(value || '').toLowerCase().trim().replace(/\
 const HOST = 'https://connect.squareupsandbox.com';
 const MAX_PAGES = 20;
 
-// POST is permitted only for the read-only Inventory batch query.
+// These POST endpoints are read-only provider queries.
 export function sandboxReader(token, fetchImpl = fetch) {
   return async (path, body) => {
     const allowed = body === undefined
       ? /^\/v2\/(?:merchants\/me|locations|catalog\/list\?types=ITEM(?:&cursor=[^&]+)?)$/.test(path)
-      : path === '/v2/inventory/counts/batch-retrieve';
+      : ['/v2/inventory/counts/batch-retrieve', '/oauth2/token/status'].includes(path);
     if (!allowed) throw Error('Read-only Sandbox API path rejected');
     let response;
     try {
@@ -58,7 +58,7 @@ function atLocation(object, locationId) {
     object.present_at_location_ids?.includes(locationId) === true;
 }
 
-export async function collectReadiness({ token, expectedMerchantId = '', expectedLocationId = '',
+export async function collectReadiness({ token, expectedMerchantId = '', expectedLocationId = '', expectedApplicationId = '',
   fetchImpl = fetch, now = () => new Date().toISOString() }) {
   const proof = { kind: 'square-sandbox-catalog-readiness', source: 'SANDBOX',
     startedAt: now(), pass: false, checks: [], matches: [],
@@ -92,6 +92,15 @@ export async function collectReadiness({ token, expectedMerchantId = '', expecte
     proof.scope.identityConfirmed = Boolean(expectedMerchantId && expectedLocationId);
     check(proof.scope.identityConfirmed, 'Intended merchant and location are explicitly pinned');
     check(location.currency === 'USD', 'Sandbox location uses USD');
+    if (expectedApplicationId) {
+      if (!expectedApplicationId.startsWith('sandbox-sq0idb-')) throw Error('Expected application must be a Sandbox application ID');
+      const status = await api('/oauth2/token/status', {});
+      proof.application = { clientId: status.client_id || null, merchantId: status.merchant_id || null };
+      if (status.client_id !== expectedApplicationId || status.merchant_id !== merchant.id) {
+        throw Error('Sandbox token application or merchant differs from pinned Preview configuration');
+      }
+      proof.applicationIdentityVerified = true;
+    }
 
     const items = await pages((cursor) => api('/v2/catalog/list?types=ITEM' +
       (cursor ? '&cursor=' + encodeURIComponent(cursor) : '')), 'objects');
@@ -100,6 +109,8 @@ export async function collectReadiness({ token, expectedMerchantId = '', expecte
       .update(JSON.stringify(items.map((i) => i.id).sort())).digest('hex');
 
     const approved = new Map(APPROVED_LEMONADES.map((name) => [normalize(name), name]));
+    proof.approvedCatalogItems = items.filter((i) => approved.has(normalize(i.item_data?.name)))
+      .map((i) => ({ name: approved.get(normalize(i.item_data.name)), itemId: i.id }));
     const candidates = [];
     for (const item of items) {
       const data = item.item_data;
@@ -155,7 +166,8 @@ export async function collectReadiness({ token, expectedMerchantId = '', expecte
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const proof = await collectReadiness({ token: process.env.SQUARE_SANDBOX_ACCESS_TOKEN || '',
     expectedMerchantId: process.env.SQUARE_SANDBOX_MERCHANT_ID || '',
-    expectedLocationId: process.env.SQUARE_SANDBOX_LOCATION_ID || '' });
+    expectedLocationId: process.env.SQUARE_SANDBOX_LOCATION_ID || '',
+    expectedApplicationId: process.env.SQUARE_SANDBOX_APPLICATION_ID || '' });
   mkdirSync('test-results', { recursive: true });
   writeFileSync('test-results/square-sandbox-catalog-readiness.json', JSON.stringify(proof, null, 2));
   console.log('SQUARE_SANDBOX_CATALOG_EVIDENCE ' + JSON.stringify(proof));
