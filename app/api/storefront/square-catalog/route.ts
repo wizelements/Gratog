@@ -23,6 +23,72 @@ const NO_STORE_HEADERS = {
   'Expires': '0'
 };
 
+/**
+ * Square Catalog includes merchandise definitions, NOT inventory.
+ * A missing count, revoked INVENTORY_READ, or unreachable provider must
+ * never become a made-up quantity or authorize checkout.
+ * The caller's Square token and location stay server-side.
+ */
+async function verifiedSquareInventory(
+  token: string,
+  environment: string,
+  locationId: string | undefined,
+  variationIds: string[]
+): Promise<{ counts: Map<string, number>; verified: boolean }> {
+  const counts = new Map<string, number>();
+  if (!locationId || variationIds.length === 0) return { counts, verified: false };
+  const host = environment === 'production'
+    ? 'https://connect.squareup.com'
+    : 'https://connect.squareupsandbox.com';
+  try {
+    for (let offset = 0; offset < variationIds.length; offset += 1000) {
+      const ids = variationIds.slice(offset, offset + 1000);
+      let cursor: string | undefined;
+      let page = 0;
+      do {
+        if (++page > 25) throw new Error('Inventory pagination limit exceeded');
+        const result = await fetch(host + '/v2/inventory/counts/batch-retrieve', {
+          method: 'POST',
+          cache: 'no-store',
+          signal: AbortSignal.timeout(15000),
+          headers: {
+            Authorization: 'Bearer ' + token,
+            'Square-Version': '2026-09-16',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            catalog_object_ids: ids,
+            location_ids: [locationId],
+            states: ['IN_STOCK'],
+            ...(cursor ? { cursor } : {}),
+          }),
+        });
+        if (!result.ok) throw new Error('Square Inventory HTTP ' + result.status);
+        const body = await result.json();
+        if (Array.isArray(body.errors) && body.errors.length) {
+          throw new Error('Square Inventory returned provider errors');
+        }
+        for (const entry of body.counts || []) {
+          if (entry.location_id !== locationId || entry.state !== 'IN_STOCK') continue;
+          if (!ids.includes(entry.catalog_object_id)) continue;
+          const quantity = Number(entry.quantity);
+          if (!Number.isFinite(quantity) || quantity < 0) {
+            throw new Error('Invalid Square inventory count');
+          }
+          counts.set(entry.catalog_object_id, (counts.get(entry.catalog_object_id) || 0) + quantity);
+        }
+        cursor = body.cursor || undefined;
+      } while (cursor);
+    }
+    return { counts, verified: true };
+  } catch (error) {
+    logger.warn('SquareStorefront', 'Unable to independently verify Square inventory', {
+      reason: error instanceof Error ? error.message : 'Unknown inventory failure',
+    });
+    return { counts: new Map(), verified: false };
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     // Check Square credentials
@@ -48,6 +114,14 @@ export async function GET(request: NextRequest) {
     const items = (catalogResult as any).data || (catalogResult as any).result?.objects || [];
 
     logger.info('SquareStorefront', `Fetched ${items.length} raw items from Square`);
+
+    // Resolve the exact server-authorized location rather than inventing stock.
+    const locationId = process.env.SQUARE_LOCATION_ID;
+    const variationIds = items.flatMap((item: any) =>
+      (item.itemData?.variations || []).map((v: any) => v.id).filter(Boolean));
+    const inventory = await verifiedSquareInventory(
+      squareToken, squareEnv, locationId, variationIds
+    );
 
     const rejected: string[] = [];
 
@@ -120,16 +194,24 @@ export async function GET(request: NextRequest) {
               rejected.push(summarizeRejection(vItem.name, vValidation.issues));
               return null;
             }
+            const stockQuantity = inventory.verified
+              ? inventory.counts.get(v.id) || 0
+              : 0;
             return {
               id: v.id,
               name: v.itemVariationData?.name || 'Default',
               price: vPriceCents / 100,
               priceCents: vPriceCents,
               currency: vPriceMoney.currency,
+              stockQuantity,
+              inStock: inventory.verified && stockQuantity > 0,
             };
           })
           .filter(Boolean);
 
+        const selectedStock = inventory.verified
+          ? (inventory.counts.get(primaryVariation.id) || 0)
+          : 0;
         return {
           id: item.id,
           name: data.name,
@@ -138,9 +220,10 @@ export async function GET(request: NextRequest) {
           priceCents,
           currency: priceMoney.currency,
           category,
-          available: true,
-          inStock: true,
-          stockQuantity: 99,
+          available: inventory.verified && selectedStock > 0,
+          inStock: inventory.verified && selectedStock > 0,
+          stockQuantity: selectedStock,
+          inventoryVerified: inventory.verified,
           image: imageUrl,
           images: imageIds.map((id: string) => `/api/square/image/${id}`),
           squareData: {
@@ -166,6 +249,8 @@ export async function GET(request: NextRequest) {
         invalidItems: rejected.length,
         invalidReasons: rejected,
         source: 'square_direct',
+        inventoryVerified: inventory.verified,
+        inventorySource: inventory.verified ? 'square_inventory_at_location' : 'unverified',
         timestamp: new Date().toISOString()
       },
       { headers: NO_STORE_HEADERS }
