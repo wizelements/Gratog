@@ -19,3 +19,10 @@ describe('database cutover must not silently mix providers', () => {
     expect(cached).toBeGreaterThan(guard);
   });
 });
+
+ it('never connects the Turso certification branch to Mongo when a provider override is missing or stale', () => {
+ for (const DATABASE_PROVIDER of [undefined, 'mongodb', 'turso']) {
+ expect(() => assertMongoCheckoutProvider({ DATABASE_PROVIDER, VERCEL_ENV: 'preview', VERCEL_GIT_COMMIT_REF: 'feat/turso-lemonade-certification-20261027' })).toThrow(/TURSO_APP_CUTOVER_BLOCKED/);
+ }
+ expect(() => assertMongoCheckoutProvider({ VERCEL_ENV: 'production', VERCEL_GIT_COMMIT_REF: 'main' })).not.toThrow();
+ });

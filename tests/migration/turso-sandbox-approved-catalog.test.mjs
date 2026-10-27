@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {priceTursoPreviewCart} from '../../lib/checkout/turso-preview-runtime.mjs';
+import {priceTursoPreviewCart,tursoPreviewSelected} from '../../lib/checkout/turso-preview-runtime.mjs';
 const offers=[
  ['DDM6ISOPLK3ZKP6JAVV36BQU','3YUSTFWEJBWIXDCVBIT2DNGN','Calm Waters'],
  ['V3EOGQA2DTWBN4EEC3TWZURN','BVBOOMCBBSAWKK4ZP42JGLOV','SuppleMint'],
@@ -27,4 +27,9 @@ test('legacy Production identities cannot authorize Sandbox checkout',async()=>{
  await assert.rejects(()=>priceTursoPreviewCart(db,body('KZXEV24XZ2UCQUJ64BH7ZUJP','HYODQWXIJJVAPRIZ66SVUYE5')),
   {code:'TURSO_CATALOG_AUTHORITY_UNCERTIFIED'});
  assert.equal(queried,false);
+});
+
+test('the Turso integration Preview selects Turso without relying on inherited provider config',()=>{
+for(const DATABASE_PROVIDER of [undefined,'mongodb','turso']) assert.equal(tursoPreviewSelected({DATABASE_PROVIDER,VERCEL_ENV:'preview',VERCEL_GIT_COMMIT_REF:'feat/turso-lemonade-certification-20261027'}),true);
+assert.equal(tursoPreviewSelected({VERCEL_ENV:'production',VERCEL_GIT_COMMIT_REF:'main'}),false);
 });
