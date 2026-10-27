@@ -5,7 +5,7 @@ import {assertTursoPreviewEnvironment,priceTursoPreviewCart,validateTursoPreview
 const env={
   VERCEL_ENV:'preview',VERCEL_GIT_COMMIT_REF:'feat/turso-checkout-recovery-20261017',
   SQUARE_ENVIRONMENT:'sandbox',SQUARE_ACCESS_TOKEN:'sandbox',
-  SQUARE_LOCATION_ID:'sandbox-location',JWT_SECRET:'test-secret',
+  SQUARE_LOCATION_ID:'LYSFJ7XXCPQG5',JWT_SECRET:'test-secret',
   TURSO_STAGING_DATABASE_URL:'libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io',
   TURSO_STAGING_AUTH_TOKEN:'x'.repeat(25),
 };
@@ -19,7 +19,7 @@ test('branch/production isolation is exact',()=>{
     {SQUARE_ENVIRONMENT:'production'},{SQUARE_MOCK_MODE:'true'},
     {TURSO_STAGING_DATABASE_URL:'libsql://tasteofgratitude-swatkins.aws-us-east-1.turso.io'},
     {TURSO_STAGING_DATABASE_URL:env.TURSO_STAGING_DATABASE_URL+'?prod=1'},
-    {TURSO_STAGING_AUTH_TOKEN:''},
+    {TURSO_STAGING_AUTH_TOKEN:''},{SQUARE_LOCATION_ID:'a-different-merchant-location'},
   ])assert.throws(()=>assertTursoPreviewEnvironment({...env,...changed}),TursoPreviewRefusal);
 });
 const strawberry={id:'DDM6ISOPLK3ZKP6JAVV36BQU',name:'Calm Waters',active:1,

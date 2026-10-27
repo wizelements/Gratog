@@ -8,7 +8,7 @@ import { tursoPreviewSelected } from '../checkout/turso-preview-runtime.mjs';
  * mean the application is using Turso, while it still charges via Mongo.
  */
 export function assertMongoCheckoutProvider(
-  environment: { DATABASE_PROVIDER?: string; VERCEL_ENV?: string; VERCEL_GIT_COMMIT_REF?: string } = process.env,
+  environment: Record<string, string | undefined> = process.env,
 ): void {
   const raw = (environment.DATABASE_PROVIDER || 'mongodb').trim().toLowerCase();
   if (tursoPreviewSelected(environment)) {

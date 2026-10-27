@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {priceTursoPreviewCart,tursoPreviewSelected} from '../../lib/checkout/turso-preview-runtime.mjs';
+import {priceTursoPreviewCart,tursoPreviewSelected,readTursoSandboxCatalogStatus} from '../../lib/checkout/turso-preview-runtime.mjs';
 const offers=[
  ['DDM6ISOPLK3ZKP6JAVV36BQU','3YUSTFWEJBWIXDCVBIT2DNGN','Calm Waters'],
  ['V3EOGQA2DTWBN4EEC3TWZURN','BVBOOMCBBSAWKK4ZP42JGLOV','SuppleMint'],
@@ -32,4 +32,14 @@ test('legacy Production identities cannot authorize Sandbox checkout',async()=>{
 test('the Turso integration Preview selects Turso without relying on inherited provider config',()=>{
 for(const DATABASE_PROVIDER of [undefined,'mongodb','turso']) assert.equal(tursoPreviewSelected({DATABASE_PROVIDER,VERCEL_ENV:'preview',VERCEL_GIT_COMMIT_REF:'feat/turso-lemonade-certification-20261027'}),true);
 assert.equal(tursoPreviewSelected({VERCEL_ENV:'production',VERCEL_GIT_COMMIT_REF:'main'}),false);
+});
+
+test('read-only catalog readiness requires all six exact offers and preserves zero stock',async()=>{
+ const records=new Map(offers.map(([p,v,name])=>[p+':'+v,{name,active:1,price_cents:1199,currency:'USD',variation_active:1,current_stock:0,stock_active:1}]));
+ const db={get:async(sql,p,v)=>records.get(p+':'+v)};
+ assert.deepEqual(await readTursoSandboxCatalogStatus(db),{catalogVerified:true,expectedProducts:6,verifiedProducts:6,stockedProducts:0});
+ records.get(offers[0][0]+':'+offers[0][1]).price_cents=1000;
+ assert.equal((await readTursoSandboxCatalogStatus(db)).catalogVerified,false);
+ records.delete(offers[1][0]+':'+offers[1][1]);
+ assert.equal((await readTursoSandboxCatalogStatus(db)).verifiedProducts,4);
 });

@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 import {NextResponse} from 'next/server';
 import {assertTursoPreviewEnvironment,openTursoPreview,
-  tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
+  tursoPreviewSelected,readTursoSandboxCatalogStatus} from '@/lib/checkout/turso-preview-runtime.mjs';
 
 const noCache={'Cache-Control':'no-store'};
 /**
@@ -22,20 +22,10 @@ export async function GET() {
     assertTursoPreviewEnvironment();
     step='turso_read';
     const db=await openTursoPreview();
-    const integrity=await db.get(
-      'SELECT COUNT(*) AS n FROM products WHERE active=1'
-    );
-    const priced=await db.get(
-      'SELECT v.price_cents,i.current_stock FROM products p '+
-      'JOIN product_variations v ON v.product_id=p.id '+
-      'JOIN inventory i ON i.product_id=p.id WHERE p.id=? AND v.id=?',
-      'KZXEV24XZ2UCQUJ64BH7ZUJP','HYODQWXIJJVAPRIZ66SVUYE5'
-    );
-    const isolatedRead=Number(integrity?.n)>0&&
-      Number(priced?.price_cents)===1199&&
-      Number(priced?.current_stock)>0;
-    if(!isolatedRead)return NextResponse.json({
-      ready:false,code:'TURSO_PREVIEW_CATALOG_NOT_CERTIFIED',
+    const catalog=await readTursoSandboxCatalogStatus(db);
+    if(!catalog.catalogVerified)return NextResponse.json({
+      ready:false,code:'TURSO_PREVIEW_CATALOG_NOT_CERTIFIED',...catalog,
+      buyerCheckoutCertified:false,productionCutoverAuthorized:false,
     },{status:503,headers:noCache});
     step='square_sandbox_read';
     const response=await fetch('https://connect.squareupsandbox.com/v2/locations',{
@@ -59,7 +49,9 @@ export async function GET() {
       ready:validSandboxLocation,
       commit:process.env.VERCEL_GIT_COMMIT_SHA || null,
       code:validSandboxLocation?'READ_ONLY_STAGING_READY':'SQUARE_SANDBOX_LOCATION_MISMATCH',
-      isolatedTursoRead:true,
+      stagingTursoRead:true,
+      credentialScopeCertified:false,
+      ...catalog,
       sandboxLocationVerified:validSandboxLocation,
       signedSquareWebhookDelivered:false,
       orderEmailDelivered:false,
