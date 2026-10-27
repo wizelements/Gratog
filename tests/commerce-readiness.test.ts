@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/payments/config', () => ({ getSquareHealthStatus: mocks.payment }));
 vi.mock('@/lib/storefront-products', () => ({ getStorefrontCatalogSnapshot: mocks.catalog }));
 import { GET } from '@/app/api/health/commerce/route';
+import { merchantCatalogScopeFilter } from '@/lib/catalog-environment';
 
 const bottle = (name: string) => ({
   name, slug: name.toLowerCase().replace(/\\s+/g, '-'), category: 'lemonades',
@@ -85,6 +86,17 @@ describe('fail-closed commerce readiness', () => {
     const response = await GET();
     expect(response.status).toBe(503);
     expect((await response.json()).availableLemonadeFlavors).toBe(1);
+  });
+
+  it('never exposes Sandbox catalog rows to production or unapproved Preview', () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    const production = merchantCatalogScopeFilter() as Record<string, any>;
+    expect(production.$nor).toContainEqual({ _squareSyncEnv: 'sandbox' });
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.stubEnv('PREVIEW_DB_ISOLATION_VERIFIED', '');
+    expect(merchantCatalogScopeFilter()).toEqual(production);
+    vi.stubEnv('PREVIEW_DB_ISOLATION_VERIFIED', 'true');
+    expect(merchantCatalogScopeFilter()).toEqual({ _squareSyncEnv: 'sandbox' });
   });
 
   it('returns only non-sensitive readiness data, never credentials', async () => {
