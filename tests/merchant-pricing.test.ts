@@ -8,6 +8,7 @@ import {
 describe('merchant-approved pricing cannot regress', () => {
   it.each([
     ['Strawberry Bliss', 1199],
+    ['Passion Guava Pineapple Lemonade', 1199],
     ['Supplemint', 1199],
     ['Calm Waters', 1199],
     ['Pineapple Mango', 1199],
@@ -15,9 +16,10 @@ describe('merchant-approved pricing cannot regress', () => {
     ['Pineapple Basil', 1199],
     ['Strawberry Rita', 1199],
     ['Blue Lotus', 3600],
-    ['APG', 1200],
-    ['Always Pursue Gratitude', 1200],
-    ['Herbal Vibe', 1499],
+    ['APG', 1299],
+    ['Always Pursue Gratitude', 1299],
+    ['Herbal Vibe', 1599],
+    ['Herbal Vibes', 1599],
     ['Elderberry Apple Gel', 3600],
     ['Floral Tide Gel', 3600],
     ['Soursop Chai Gel', 3600],

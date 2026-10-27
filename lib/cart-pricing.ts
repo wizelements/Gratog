@@ -22,7 +22,9 @@
  *      genuinely says everything is free.
  */
 import { connectToDatabase } from './db-optimized';
+import { merchantCatalogScopeFilter, isolatedSandboxPreviewEnabled } from './catalog-environment';
 import { approvedUnitPriceCents, isApprovedBlueLotus } from './merchant-pricing';
+import { calculateLemonadePackDiscount } from './lemonade-packs';
 
 export interface CartLineInput {
   /** Anything the client gives us that might be a product key. */
@@ -93,6 +95,8 @@ export interface PricedCart {
   total: number;
   currency: 'USD';
   appliedCoupon: AppliedCoupon | null;
+  lemonadePackDiscountCents: number;
+  lemonadePackCounts: { fourPacks: number; sixPacks: number };
   rewardPointsEarned: number;
 }
 
@@ -274,10 +278,15 @@ async function loadCatalog(
   const docs = (await db
     .collection('unified_products')
     .find({
-      $or: [
-        { id: { $in: productKeys } },
-        { squareId: { $in: productKeys } },
-        { 'variations.id': { $in: variationKeys } },
+      $and: [
+        merchantCatalogScopeFilter(),
+        {
+          $or: [
+            { id: { $in: productKeys } },
+            { squareId: { $in: productKeys } },
+            { 'variations.id': { $in: variationKeys } },
+          ],
+        },
       ],
     })
     .toArray()) as unknown as UnifiedProductDoc[];
@@ -372,6 +381,13 @@ async function loadAndValidateCoupon(
  * Throws `CartPricingError` on any tampering / validation failure.
  */
 export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
+  // An unverified Preview database may be shared with live customer records.
+  // Never initiate a Sandbox checkout against an unisolated merchant catalog.
+  if (process.env.VERCEL === '1' && process.env.VERCEL_ENV === 'preview' &&
+      !isolatedSandboxPreviewEnabled()) {
+    throw new CartPricingError('PREVIEW_CATALOG_NOT_ISOLATED',
+      'Preview commerce is awaiting independent database isolation verification.', 503);
+  }
   if (!input || !Array.isArray(input.items) || input.items.length === 0) {
     throw new CartPricingError('CART_EMPTY', 'Cart is empty');
   }
@@ -483,7 +499,9 @@ export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
         product.fulfillmentType === 'market_pickup_only' ||
         item.marketExclusive
       ),
-      category: item.category || product.category,
+      // Only the database can establish the merchandise category. Browser
+      // category claims must never turn a juice or gel into a lemonade deal.
+      category: product.category,
       size: item.size,
       image: item.image || product.image,
       squareProductUrl: item.squareProductUrl,
@@ -493,7 +511,10 @@ export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
   const appliedCoupon = input.couponCode
     ? await loadAndValidateCoupon(input.couponCode, subtotalCents)
     : null;
-  const discountCents = appliedCoupon?.discountCents ?? 0;
+  const packPromotion = calculateLemonadePackDiscount(pricedItems);
+  // Choose the better discount. A pack discount must never stack with a coupon.
+  const useCoupon = (appliedCoupon?.discountCents ?? 0) > packPromotion.discountCents;
+  const discountCents = useCoupon ? appliedCoupon!.discountCents : packPromotion.discountCents;
 
   const deliveryFeeCents = Math.max(0, Math.round(input.deliveryFeeCents ?? 0));
 
@@ -525,7 +546,9 @@ export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
     tax: toDollars(taxCents),
     total: toDollars(totalCents),
     currency: 'USD',
-    appliedCoupon,
+    appliedCoupon: useCoupon ? appliedCoupon : null,
+    lemonadePackDiscountCents: useCoupon ? 0 : packPromotion.discountCents,
+    lemonadePackCounts: useCoupon ? { fourPacks: 0, sixPacks: 0 } : { fourPacks: packPromotion.fourPacks, sixPacks: packPromotion.sixPacks },
     rewardPointsEarned,
   };
 }

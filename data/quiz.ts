@@ -29,12 +29,9 @@ const TYPE_TO_PRODUCT: Record<string, string> = {
 };
 
 const SUPPORT_TO_BUNDLE: Record<string, string> = {
-  'berry-forward': 'starter-box',
-  'tropical': 'weekly-wellness-box',
-  'green-fresh': 'starter-box',
-  'light-hydrating': 'hydration-refresh-box',
-  'warm-spiced': 'mineral-reset',
-  'first-timer-variety': 'weekly-wellness-box',
+  'berry-forward': 'lemonade-four-pack', 'tropical': 'lemonade-six-pack',
+  'green-fresh': 'lemonade-four-pack', 'light-hydrating': 'lemonade-four-pack',
+  'warm-spiced': 'lemonade-six-pack', 'first-timer-variety': 'lemonade-four-pack',
 };
 
 export const QUIZ_QUESTIONS = [

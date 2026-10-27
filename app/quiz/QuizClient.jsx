@@ -148,8 +148,8 @@ export default function QuizClient() {
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-800">Bundle suggestion</p>
               <h3 className="mt-2 font-semibold text-amber-950">{recommendation.bundle.name}</h3>
               <p className="mt-2 text-sm leading-6 text-amber-900">{recommendation.bundle.description}</p>
-              <Link href="/catalog" className="mt-4 inline-flex items-center text-sm font-bold text-amber-950 underline-offset-4 hover:underline">
-                Shop bundle products <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
+              <Link href="/lemonade-packs" className="mt-4 inline-flex items-center text-sm font-bold text-amber-950 underline-offset-4 hover:underline">
+                Explore lemonade packs <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
               </Link>
             </div>
           </div>

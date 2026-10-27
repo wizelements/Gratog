@@ -7,9 +7,9 @@ const db = {
     find: () => ({
       project: () => ({
         toArray: async () => [
-          { productId: 'OUT', currentStock: 0 },
-          { productId: 'OPTIN', currentStock: -2 },
-          { productId: 'READY', currentStock: 3 },
+          { productId: 'OUT', currentStock: 0, stockVerified: true },
+          { productId: 'OPTIN', currentStock: -2, stockVerified: true },
+          { productId: 'READY', currentStock: 3, stockVerified: true },
         ],
       }),
     }),
@@ -35,6 +35,16 @@ describe('merchant-controlled preorders', () => {
     const [item] = await applyInventorySnapshot(db, [{ id: 'READY', name: 'Available' }]);
     expect(item.isPreorder).toBe(false);
     expect(item.purchaseStatus).toBe('in_stock');
+  });
+
+  it('never assumes unknown stock is saleable from a storefront flag', async () => {
+    const emptyDb = { collection: () => ({ find: () => ({ project: () => ({ toArray: async () => [] }) }) }) };
+    const [item] = await applyInventorySnapshot(emptyDb, [{
+      id: 'MISSING', name: 'Unknown stock', inStock: true, checkoutReady: true,
+    }]);
+    expect(item.inStock).toBe(false);
+    expect(item.checkoutReady).toBe(false);
+    expect(item.stock).toBe(0);
   });
 
   it('does not convert a missing-inventory sold-out item into an automatic preorder', async () => {

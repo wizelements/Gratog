@@ -50,8 +50,12 @@ vi.mock('@/lib/db-optimized', () => ({
             find: (q: any) => ({
               toArray: async () =>
                 products.filter((p) => {
-                  const ids: string[] = q?.$or?.[0]?.id?.$in || [];
-                  const vids: string[] = q?.$or?.[2]?.['variations.id']?.$in || [];
+                  // New security policy wraps identifier matching in an
+                  // environment-scoped $and. This fake database honors the
+                  // identifier portion while policy is tested separately.
+                  const lookup = q?.$and?.find((clause: any) => Array.isArray(clause?.$or)) || q;
+                  const ids: string[] = lookup?.$or?.[0]?.id?.$in || [];
+                  const vids: string[] = lookup?.$or?.[2]?.['variations.id']?.$in || [];
                   return (
                     ids.includes(p.id) ||
                     (p.variations || []).some((v) => vids.includes(v.id))

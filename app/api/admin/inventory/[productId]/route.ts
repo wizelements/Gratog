@@ -130,7 +130,7 @@ export const PATCH = withAdminMiddlewareWithContext(
       // First, get current stock to include in history
       const current = await db.collection('inventory').findOne(
         { productId },
-        { projection: { currentStock: 1 } }
+        { projection: { currentStock: 1, stockVerified: 1, lastRestocked: 1 } }
       );
       
       if (!current) {
@@ -139,7 +139,13 @@ export const PATCH = withAdminMiddlewareWithContext(
           { status: 404 }
         );
       }
-      
+      if (current.stockVerified !== true) {
+        return NextResponse.json(
+          { success: false, error: 'Inventory requires an absolute verified merchant count before adjustments.' },
+          { status: 409 }
+        );
+      }
+
       historyEntry.previousStock = current.currentStock;
       
       // Calculate new stock
@@ -230,5 +236,95 @@ export const PATCH = withAdminMiddlewareWithContext(
     resource: 'inventory',
     action: 'adjust',
     rateLimit: { maxRequests: 30, windowSeconds: 60 },
+  }
+);
+
+/**
+ * PUT /api/admin/inventory/[productId]
+ * An authorized merchant can establish the FIRST physical count without
+ * inheriting old seed/demo defaults. This is an absolute, audited count,
+ * not an unverified increment.
+ */
+export const PUT = withAdminMiddlewareWithContext(
+  async (request: AuthenticatedRequest, context: { params: Promise<Record<string, string>> }) => {
+    const { productId } = await context.params;
+    if (!productId || typeof productId !== 'string' || productId.length > 128) {
+      return NextResponse.json({ success: false, error: 'Invalid product ID' }, { status: 400 });
+    }
+    try {
+      const body = await request.json();
+      const newStock = body?.currentStock;
+      const reason = body?.reason;
+      if (!Number.isSafeInteger(newStock) || newStock < 0 || newStock > 1000000 ||
+          typeof reason !== 'string' || reason.trim().length < 8 || reason.length > 500) {
+        return NextResponse.json({
+          success: false,
+          error: 'Enter an absolute nonnegative inventory count and an audit reason (8–500 characters).',
+        }, { status: 400 });
+      }
+      const { db } = await connectToDatabase();
+      const product = await db.collection('unified_products').findOne(
+        { id: productId }, { projection: { id: 1, name: 1 } }
+      );
+      if (!product) {
+        return NextResponse.json({ success: false, error: 'Product not found in merchant catalog.' },
+          { status: 404 });
+      }
+      const now = new Date();
+      const previous = await db.collection('inventory').findOne({ productId });
+      const update = await db.collection('inventory').findOneAndUpdate(
+        { productId },
+        {
+          $set: {
+            currentStock: newStock,
+            stockVerified: true,
+            stockSource: 'merchant_admin',
+            lastVerifiedAt: now,
+            verifiedBy: request.admin.email,
+            updatedAt: now,
+            updatedBy: request.admin.email,
+            productName: product.name,
+            isActive: true,
+          },
+          $setOnInsert: {
+            productId,
+            createdAt: now,
+            lowStockThreshold: 5,
+          },
+        },
+        { upsert: true, returnDocument: 'after' }
+      );
+      if (!update) throw new Error('Inventory verification did not persist');
+      await db.collection('inventory_events').insertOne({
+        type: 'merchant_count_verification',
+        productId,
+        oldStock: previous?.currentStock ?? null,
+        newStock,
+        reason: reason.trim(),
+        actor: request.admin.email,
+        createdAt: now,
+      });
+      await db.collection('unified_products').updateOne(
+        { id: productId },
+        { $set: { stock: newStock, inStock: newStock > 0, updatedAt: now } }
+      );
+      return NextResponse.json({
+        success: true,
+        productId,
+        currentStock: newStock,
+        stockVerified: true,
+        inventorySource: 'merchant_admin',
+      }, { headers: { 'Cache-Control': 'no-store' } });
+    } catch (error) {
+      logger.error('INVENTORY', 'Failed to verify absolute merchant inventory', { productId, error });
+      return NextResponse.json({ success: false, error: 'Inventory verification failed' },
+        { status: 500 });
+    }
+  },
+  {
+    permission: PERMISSIONS.INVENTORY_ADJUST,
+    resource: 'inventory',
+    action: 'verify_count',
+    rateLimit: { maxRequests: 20, windowSeconds: 60 },
   }
 );

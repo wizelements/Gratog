@@ -47,23 +47,34 @@ export default function InventoryPage() {
   };
 
   const handleAdjustStock = async () => {
-    if (!adjustingProduct || !adjustment) return;
+    if (!adjustingProduct || adjustment === '') return;
+    const count = Number(adjustment);
+    const firstVerification = adjustingProduct.stockVerified !== true;
+    if (!Number.isSafeInteger(count) ||
+        (firstVerification ? count < 0 || count > 1000000 : count === 0) ||
+        (firstVerification && reason.trim().length < 8)) {
+      toast.error(firstVerification
+        ? 'Enter the actual counted units and an audit reason (at least 8 characters).'
+        : 'Enter a nonzero whole-unit adjustment.');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
       const response = await adminFetch(`/api/admin/inventory/${adjustingProduct.id}`, {
-        method: 'PATCH',
+        method: firstVerification ? 'PUT' : 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          adjustment: parseInt(adjustment),
-          reason: reason || 'Manual adjustment'
-        })
+        body: firstVerification
+          ? JSON.stringify({ currentStock: count, reason: reason.trim() })
+          : JSON.stringify({ adjustment: count, reason: reason || 'Manual adjustment' })
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        toast.success(`Stock updated successfully! New stock: ${data.newStock}`);
+        toast.success(firstVerification
+          ? `Physical stock verified: ${data.currentStock} units`
+          : `Stock updated: ${data.newStock} units`);
         setAdjustingProduct(null);
         setAdjustment('');
         setReason('');
@@ -78,8 +89,9 @@ export default function InventoryPage() {
     }
   };
 
-  const lowStockProducts = products.filter(p => p.stock <= p.lowStockThreshold);
-  const outOfStockProducts = products.filter(p => p.stock === 0);
+  const lowStockProducts = products.filter(p => p.stockVerified === true && p.stock > 0 && p.stock <= p.lowStockThreshold);
+  const outOfStockProducts = products.filter(p => p.stockVerified === true && p.stock === 0);
+  const unverifiedProducts = products.filter(p => p.stockVerified !== true);
 
   return (
     <div className="space-y-6">
@@ -87,8 +99,13 @@ export default function InventoryPage() {
       <div>
         <h1 className="text-3xl font-bold">Inventory Management</h1>
         <p className="text-muted-foreground mt-1">
-          Track and manage product stock levels
+          Verify physical counts before admitting checkout. Old catalog estimates do not count as stock.
         </p>
+        {unverifiedProducts.length > 0 && (
+          <p className="text-sm text-amber-700 mt-2" role="status">
+            {unverifiedProducts.length} product(s) need an absolute verified count.
+          </p>
+        )}
       </div>
 
       {/* Stats */}
@@ -168,31 +185,35 @@ export default function InventoryPage() {
 
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <div className="text-2xl font-bold">{product.stock}</div>
+                      <div className="text-2xl font-bold">
+                        {product.stockVerified === true ? product.stock : '—'}
+                      </div>
                       <div className="text-xs text-muted-foreground">units</div>
                     </div>
 
                     <Badge
                       variant={
-                        product.stock === 0
+                        product.stockVerified !== true
+                          ? 'outline'
+                          : product.stock === 0
                           ? 'destructive'
                           : product.stock <= product.lowStockThreshold
                           ? 'default'
                           : 'secondary'
                       }
                       className={
-                        product.stock === 0
+                        product.stockVerified !== true
+                          ? ''
+                          : product.stock === 0
                           ? ''
                           : product.stock <= product.lowStockThreshold
                           ? 'bg-yellow-600'
                           : 'bg-green-600'
                       }
                     >
-                      {product.stock === 0
-                        ? 'Out of Stock'
-                        : product.stock <= product.lowStockThreshold
-                        ? 'Low Stock'
-                        : 'In Stock'}
+                      {product.stockVerified !== true ? 'Count Unverified'
+                        : product.stock === 0 ? 'Out of Stock'
+                        : product.stock <= product.lowStockThreshold ? 'Low Stock' : 'In Stock'}
                     </Badge>
 
                     <Dialog>
@@ -206,54 +227,66 @@ export default function InventoryPage() {
                             setReason('');
                           }}
                         >
-                          Adjust
+                          {product.stockVerified === true ? 'Adjust' : 'Verify Count'}
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
-                          <DialogTitle>Adjust Stock - {product.name}</DialogTitle>
+                          <DialogTitle>
+                            {adjustingProduct?.stockVerified === true ? 'Adjust Stock' : 'Verify Physical Count'} - {product.name}
+                          </DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">
                           <div>
                             <Label>Current Stock</Label>
-                            <div className="text-2xl font-bold mt-1">{product.stock} units</div>
+                            <div className="text-2xl font-bold mt-1">
+                              {product.stockVerified === true ? `${product.stock} units` : 'Unverified'}
+                            </div>
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor="adjustment">Adjustment Amount</Label>
+                            <Label htmlFor="adjustment">
+                              {product.stockVerified === true ? 'Adjustment Amount' : 'Absolute physical count'}
+                            </Label>
                             <div className="flex gap-2">
-                              <Button
+                              {product.stockVerified === true && <Button
                                 type="button"
                                 variant="outline"
                                 onClick={() => setAdjustment(prev => (parseInt(prev) || 0) - 10)}
                               >
                                 <Minus className="h-4 w-4" />
                                 10
-                              </Button>
+                              </Button>}
                               <Input
                                 id="adjustment"
                                 type="number"
-                                placeholder="0"
+                                placeholder={product.stockVerified === true ? 'e.g. +10 or -5' : 'Counted units'}
+                                min={product.stockVerified === true ? undefined : 0}
+                                step="1"
                                 value={adjustment}
                                 onChange={(e) => setAdjustment(e.target.value)}
                                 className="text-center text-lg font-bold"
                               />
-                              <Button
+                              {product.stockVerified === true && <Button
                                 type="button"
                                 variant="outline"
                                 onClick={() => setAdjustment(prev => (parseInt(prev) || 0) + 10)}
                               >
                                 <Plus className="h-4 w-4" />
                                 10
-                              </Button>
+                              </Button>}
                             </div>
                             <p className="text-xs text-muted-foreground">
-                              Use positive numbers to add stock, negative to remove
+                              {product.stockVerified === true
+                                ? 'Use positive numbers to add stock, negative to remove.'
+                                : 'Enter the independently counted quantity; do not use the previous estimated balance.'}
                             </p>
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor="reason">Reason (optional)</Label>
+                            <Label htmlFor="reason">
+                              {product.stockVerified === true ? 'Reason (optional)' : 'Count evidence / reason (required)'}
+                            </Label>
                             <Input
                               id="reason"
                               placeholder="e.g., New shipment, Damage, Sale"
@@ -267,7 +300,9 @@ export default function InventoryPage() {
                               <p className="text-sm font-medium">
                                 New stock will be:{' '}
                                 <span className="text-lg font-bold text-[#D4AF37]">
-                                  {product.stock + parseInt(adjustment || 0)} units
+                                  {product.stockVerified === true
+                                    ? product.stock + Number(adjustment || 0)
+                                    : Number(adjustment || 0)} units
                                 </span>
                               </p>
                             </div>
@@ -278,7 +313,8 @@ export default function InventoryPage() {
                             className="w-full bg-[#D4AF37] hover:bg-[#B8941F]"
                             disabled={!adjustment || isSubmitting}
                           >
-                            {isSubmitting ? 'Updating...' : 'Update Stock'}
+                            {isSubmitting ? 'Updating...' : product.stockVerified === true
+                              ? 'Update Stock' : 'Verify Actual Count'}
                           </Button>
                         </div>
                       </DialogContent>

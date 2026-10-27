@@ -154,12 +154,12 @@ export function validateSquareConfig(): ConfigValidationResult {
   const explicitEnv = process.env.SQUARE_ENVIRONMENT?.toLowerCase();
   const inferredEnv = appId.startsWith('sandbox-') ? 'sandbox' : 'production';
   
-  if (explicitEnv && explicitEnv !== inferredEnv) {
+  if (appId && explicitEnv && explicitEnv !== inferredEnv) {
     warnings.push(`SQUARE_ENVIRONMENT (${explicitEnv}) doesn't match application ID pattern (${inferredEnv})`);
   }
   
   // Add domain registration reminder for production
-  if (inferredEnv === 'production') {
+  if (appId && inferredEnv === 'production') {
     warnings.push('Ensure your domain is registered in Square Dashboard > Applications > Web Payments SDK');
   }
   

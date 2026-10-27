@@ -21,7 +21,7 @@ const MENU_ITEMS = {
       {
         title: 'Special',
         items: [
-          { label: 'Bundles & Discounts', href: '/catalog?type=bundle' },
+          { label: 'Lemonade 4 & 6 Packs', href: '/lemonade-packs' },
           { label: 'Bestsellers', href: '/catalog?sort=popular' },
           { label: 'New Arrivals', href: '/catalog?sort=newest' },
         ],

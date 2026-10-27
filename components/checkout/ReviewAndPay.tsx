@@ -451,6 +451,12 @@ export default function ReviewAndPay({
                     <span className="text-gray-600">Tax</span>
                     <span>{formatCurrency(totals.tax)}</span>
                   </div>
+                  {totals.lemonadePackDiscount > 0 && (
+                    <div className="flex justify-between text-sm text-emerald-700">
+                      <span>Lemonade pack savings</span>
+                      <span>-{formatCurrency(totals.lemonadePackDiscount)}</span>
+                    </div>
+                  )}
                   {totals.couponDiscount > 0 && (
                     <div className="flex justify-between text-sm text-emerald-600">
                       <span>Discount</span>

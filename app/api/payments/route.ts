@@ -4,7 +4,7 @@ import { approvedUnitPriceCents, findApprovedOrderPriceMismatch } from '@/lib/me
 import { logger } from '@/lib/logger';
 import { RequestContext } from '@/lib/request-context';
 import { NextRequest, NextResponse } from 'next/server';
-import { createPayment, getPayment as getSquarePayment, findOrCreateCustomer, createOrder as createSquareOrder, getSquareConfig } from '@/lib/square-api';
+import { createPayment, getPayment as getSquarePayment, findOrCreateCustomer, createOrder as createSquareOrder, getOrder as getSquareOrder, getSquareConfig } from '@/lib/square-api';
 import type { OrderFulfillment } from '@/lib/square-api';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { randomUUID } from 'crypto';
@@ -772,6 +772,26 @@ export async function POST(request: NextRequest) {
         });
       }
 
+      // The Square order MUST contain the same charge total as our authoritative
+      // server-priced order: gross items + fulfillment + tip - one chosen
+      // promotion/coupon. Otherwise Square can reject a captured payment.
+      const tipCents = Number(order.deliveryTipCents || 0);
+      if (Number.isSafeInteger(tipCents) && tipCents > 0) {
+        squareLineItems.push({
+          name: 'Delivery tip',
+          quantity: '1',
+          basePriceMoney: { amount: tipCents, currency },
+        });
+      }
+      const discountCents = Number(order.couponDiscountCents || 0);
+      const orderLevelDiscounts = Number.isSafeInteger(discountCents) && discountCents > 0
+        ? [{
+            name: Number(order.lemonadePackDiscountCents || 0) > 0
+              ? 'Lemonade pack savings' : 'Approved coupon discount',
+            amountMoney: { amount: discountCents, currency },
+          }]
+        : [];
+
       const customerDisplayName =
         customerInfo?.name ||
         order.customerName ||
@@ -785,6 +805,7 @@ export async function POST(request: NextRequest) {
           referenceId: orderId,
           customerId: squareCustomerId,
           lineItems: squareLineItems,
+          discounts: orderLevelDiscounts,
           fulfillments: squareFulfillments.length > 0 ? squareFulfillments : undefined,
           metadata: {
             localOrderId: orderId,
@@ -852,6 +873,30 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Square REST uses snake_case, whereas some SDK adapters use camelCase.
+    // Re-read the actual provider order to prove that its net total matches
+    // the amount authorized by our own server. Fail closed before charging.
+    const squareOrderReadback = await getSquareOrder(squareOrderId);
+    const providerOrder = squareOrderReadback.data?.order as any;
+    const providerAmount = providerOrder?.total_money?.amount ?? providerOrder?.totalMoney?.amount;
+    if (!squareOrderReadback.success || !Number.isSafeInteger(providerAmount) ||
+        providerAmount !== validatedAmountCents) {
+      logger.error('API', 'Square order/payment amount divergence blocked', {
+        traceId: ctx.traceId, orderId, squareOrderId,
+        providerAmount: typeof providerAmount === 'number' ? providerAmount : null,
+        expectedAmount: validatedAmountCents,
+      });
+      await db.collection('orders').updateOne(
+        { id: orderId },
+        { $set: { status: 'pending', paymentStatus: 'pending', updatedAt: new Date().toISOString() } }
+      );
+      return json({
+        success: false,
+        code: 'SQUARE_ORDER_TOTAL_MISMATCH',
+        error: 'The payment provider could not verify your final order price. Please retry checkout.',
+      }, 409);
+    }
+
     // ========================================================================
     // PROCESS SQUARE PAYMENT
     // ========================================================================

@@ -1,0 +1,87 @@
+name: Lemonade Packs Real HTTP Checkout (Isolated)
+on:
+  push:
+    branches:
+      - feat/lemonade-packs-20261024
+    paths:
+      - scripts/certify-local-order-sandbox.mjs
+      - .github/workflows/lemonade-packs-http-checkout.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - scripts/certify-local-order-sandbox.mjs
+      - .github/workflows/lemonade-packs-http-checkout.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-http-checkout:
+    name: Mixed 4/6 packs, pickup, shipping and inventory against real HTTP + isolated MongoDB
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout the reviewed source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install checkout runtime
+        run: npm ci --no-audit --no-fund
+      - name: Start disposable replica set
+        run: |
+          docker run -d --rm --name tog-isolated-mongo -p 27017:27017 mongo:7 --replSet rs0 --bind_ip_all
+          for n in $(seq 1 45); do
+            if docker exec tog-isolated-mongo mongosh --quiet --eval 'db.adminCommand({ping:1})' >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          docker exec tog-isolated-mongo mongosh --quiet --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"127.0.0.1:27017"}]})'
+          for n in $(seq 1 30); do
+            if docker exec tog-isolated-mongo mongosh --quiet --eval 'rs.status().ok' 2>/dev/null | grep -q 1; then break; fi
+            sleep 1
+          done
+      - name: Certify actual HTTP checkout and MongoDB persistence without any Square charge
+        env:
+          MONGODB_URI: mongodb://127.0.0.1:27017/tog_lemonade_http_cert?replicaSet=rs0
+          MONGO_URL: mongodb://127.0.0.1:27017/tog_lemonade_http_cert?replicaSet=rs0
+          JWT_SECRET: locally-isolated-qa-secret-not-for-production
+          ORDER_ACCESS_TOKEN_SECRET: locally-isolated-order-token-secret-not-for-production
+          ADMIN_API_KEY: local-integration-test-only
+          SQUARE_ENVIRONMENT: sandbox
+          BASE_URL: http://127.0.0.1:3333
+          NEXT_PUBLIC_BASE_URL: http://127.0.0.1:3333
+          NODE_ENV: development
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: |
+          mkdir -p test-results
+          npx next dev --port 3333 > test-results/isolated-server.log 2>&1 &
+          WEB_PID=$!
+          trap 'kill $WEB_PID 2>/dev/null || true' EXIT
+          ready=0
+          for n in $(seq 1 65); do
+            response=$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{"lines":[]}' http://127.0.0.1:3333/api/cart/price || true)
+            if [ "$response" = "400" ]; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" != 1 ]; then
+            echo 'Isolated checkout did not become ready'
+            tail -100 test-results/isolated-server.log
+            exit 1
+          fi
+          node scripts/certify-local-order-sandbox.mjs
+      - name: Save independent checkout evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: isolated-lemonade-http-checkout-${{ github.run_id }}
+          path: |
+            test-results/isolated-order-sandbox.json
+            test-results/isolated-server.log
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Destroy disposable database
+        if: always()
+        run: docker rm -f tog-isolated-mongo || true

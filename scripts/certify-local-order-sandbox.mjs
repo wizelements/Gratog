@@ -103,7 +103,7 @@ try {
     fulfillmentType: 'shipping',
     shippingAddress: { street: '123 Test Street', city: 'New York', state: 'NY', zip: '10001' },
     shippingMethod: 'standard',
-  });
+  }, { 'Idempotency-Key': 'tog-sbx-' + randomUUID() });
   check('Out-of-state shipping blocked before order', invalidGeorgia.status === 422 && invalidGeorgia.data.code === 'GEORGIA_ONLY',
     { status: invalidGeorgia.status });
 
@@ -113,7 +113,7 @@ try {
     fulfillmentType: 'shipping',
     shippingAddress: { street: '123 Example Street', city: 'Atlanta', state: 'GA', zip: '30303' },
     shippingMethod: 'standard',
-  });
+  }, { 'Idempotency-Key': 'tog-sbx-' + randomUUID() });
   check('Market pickup-only product cannot be shipped using forged client flags',
     restricted.status === 422 && restricted.data.code === 'MARKET_PICKUP_REQUIRED', { status: restricted.status });
 
@@ -130,7 +130,7 @@ try {
     fulfillmentType: 'shipping',
     shippingAddress: { street: '123 Example Street', city: 'Atlanta', state: 'GA', zip: '30303' },
     shippingMethod: 'standard',
-  });
+  }, { 'Idempotency-Key': 'tog-sbx-' + randomUUID() });
   check('Retired Blue Lotus sample size is rejected before order creation',
     sampleRequest.status === 422 && sampleRequest.data.code === 'VARIATION_NOT_FOUND',
     { status: sampleRequest.status, code: sampleRequest.data.code });
@@ -195,6 +195,108 @@ try {
   check('Blocked payment leaves order unpaid and without Square payment session',
     noCapturedPayment?.paymentStatus === 'pending' && !noCapturedPayment?.squarePaymentId,
     {status:noCapturedPayment?.paymentStatus});
+
+
+  // The bundle runs against the ACTUAL first-party HTTP routes and an isolated,
+  // disposable MongoDB replica set. Square capture/refund is certified in its
+  // separate protected provider workflow, never with production credentials.
+  await db.collection('unified_products').updateOne(
+    { id: 'qa-sbx-strawberry-bliss' },
+    { $set: { category: 'lemonades', squareEcomAvailable: true } }
+  );
+  await db.collection('unified_products').insertOne({
+    id: 'qa-sbx-supplemint', slug: 'supplemint', name: 'SuppleMint',
+    category: 'lemonades', source: 'qa-isolated-sandbox',
+    price: 11.99, priceCents: 1199,
+    inStock: true, squareEcomAvailable: true,
+    variations: [{ id: 'qa-sbx-supplemint-16oz', name: '16oz bottle',
+      price: 11.99, priceCents: 1199 }],
+  });
+
+  const mixedPack = (countPerFlavor) => [
+    { productId: 'qa-sbx-strawberry-bliss', variationId: 'qa-sbx-bliss-16oz',
+      quantity: countPerFlavor, name: 'Fake price from client', price: 0.01, category: 'juices' },
+    { productId: 'qa-sbx-supplemint', variationId: 'qa-sbx-supplemint-16oz',
+      quantity: countPerFlavor, price: 0.01 },
+  ];
+  const fourPrice = await post('/api/cart/price', {
+    lines: mixedPack(2).map(({ variationId, quantity }) => ({ variationId, qty: quantity })),
+  });
+  check('Actual HTTP cart pricing accepts two-flavor four-pack at $43.99',
+    fourPrice.status === 200 && fourPrice.data.pricing?.totalCents === 4399 &&
+    fourPrice.data.pricing?.subtotalCents === 4796,
+    { status: fourPrice.status, subtotalCents: fourPrice.data.pricing?.subtotalCents,
+      totalCents: fourPrice.data.pricing?.totalCents });
+
+  const sixPrice = await post('/api/cart/price', {
+    lines: mixedPack(3).map(({ variationId, quantity }) => ({ variationId, qty: quantity })),
+  });
+  check('Actual HTTP cart pricing accepts two-flavor six-pack at $62.99',
+    sixPrice.status === 200 && sixPrice.data.pricing?.totalCents === 6299 &&
+    sixPrice.data.pricing?.subtotalCents === 7194,
+    { status: sixPrice.status, subtotalCents: sixPrice.data.pricing?.subtotalCents,
+      totalCents: sixPrice.data.pricing?.totalCents });
+
+  const fourBody = {
+    customer: { name: 'Isolated Checkout QA', email: 'mixed-four@qa-sandbox.invalid' },
+    cart: mixedPack(2),
+    fulfillmentType: 'pickup',
+    pickup: { locationId: 'qa-market-location', date: '2026-10-31', instructions: 'QA ONLY' },
+    subtotal: 0.01, total: 0.01, couponDiscount: 9999,
+    source: 'qa-isolated-sandbox',
+  };
+  const fourIdem = 'tog-sbx-' + randomUUID();
+  const fourOrder = await post('/api/orders/create', fourBody, { 'Idempotency-Key': fourIdem });
+  check('Actual pickup checkout creates payable mixed four-pack at $43.99',
+    fourOrder.status === 200 && fourOrder.data.order?.pricing?.total === 43.99 &&
+    Boolean(fourOrder.data.order?.orderAccessToken),
+    { status: fourOrder.status, total: fourOrder.data.order?.pricing?.total });
+  const storedFour = await db.collection('orders').findOne({ id: fourOrder.data.order.id });
+  check('Pickup order stores exact discount and item count, unpaid without inventory debit',
+    storedFour?.subtotalCents === 4796 && storedFour?.couponDiscountCents === 397 &&
+    storedFour?.totalCents === 4399 && storedFour?.fulfillment?.type === 'pickup' &&
+    storedFour?.items?.reduce((n, x) => n + x.quantity, 0) === 4 &&
+    storedFour?.paymentStatus === 'pending' && !storedFour?.inventoryConsumedAt,
+    { subtotalCents: storedFour?.subtotalCents, discountCents: storedFour?.couponDiscountCents,
+      totalCents: storedFour?.totalCents });
+  const fourReplay = await post('/api/orders/create', fourBody, { 'Idempotency-Key': fourIdem });
+  check('Pickup checkout idempotency cannot create duplicate order',
+    fourReplay.status === 200 && fourReplay.data.order?.id === storedFour.id &&
+    (await db.collection('orders').countDocuments({ id: storedFour.id })) === 1,
+    { status: fourReplay.status });
+
+  const shippingBody = {
+    customer: { name: 'Isolated Checkout QA', email: 'mixed-six@qa-sandbox.invalid' },
+    cart: mixedPack(3),
+    fulfillmentType: 'shipping',
+    shippingAddress: { street: '123 Example Street', city: 'Atlanta', state: 'GA', zip: '30303' },
+    shippingMethod: 'standard', source: 'qa-isolated-sandbox', subtotal: 0.01, total: 0.01,
+  };
+  const sixOrder = await post('/api/orders/create', shippingBody, {
+    'Idempotency-Key': 'tog-sbx-' + randomUUID(),
+  });
+  check('Actual Georgia shipping checkout prices six-pack plus shipping correctly',
+    sixOrder.status === 200 && sixOrder.data.order?.pricing?.subtotal === 71.94 &&
+    sixOrder.data.order?.pricing?.total === 71.98,
+    { status: sixOrder.status, subtotal: sixOrder.data.order?.pricing?.subtotal,
+      total: sixOrder.data.order?.pricing?.total });
+  const storedSix = await db.collection('orders').findOne({ id: sixOrder.data.order.id });
+  check('Georgia order persists $8.95 discount and $8.99 shipping, still unpaid',
+    storedSix?.subtotalCents === 7194 && storedSix?.couponDiscountCents === 895 &&
+    storedSix?.deliveryFeeCents === 899 && storedSix?.totalCents === 7198 &&
+    storedSix?.fulfillment?.type === 'shipping' &&
+    storedSix?.paymentStatus === 'pending' && !storedSix?.inventoryConsumedAt,
+    { totalCents: storedSix?.totalCents, discountCents: storedSix?.couponDiscountCents,
+      shippingCents: storedSix?.deliveryFeeCents });
+
+  const rejectedPack = await post('/api/orders/create', {
+    ...shippingBody,
+    customer: { name: 'Isolated Checkout QA', email: 'bad-georgia@qa-sandbox.invalid' },
+    shippingAddress: { street: '123 Example Street', city: 'New York', state: 'NY', zip: '10001' },
+  }, { 'Idempotency-Key': 'tog-sbx-' + randomUUID() });
+  check('Actual mixed pack checkout rejects out-of-state destination before persistence',
+    rejectedPack.status === 422 && rejectedPack.data.code === 'GEORGIA_ONLY',
+    { status: rejectedPack.status, code: rejectedPack.data.code });
 
   evidence.pass = true;
 } catch (err) {
