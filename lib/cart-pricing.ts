@@ -22,7 +22,7 @@
  *      genuinely says everything is free.
  */
 import { connectToDatabase } from './db-optimized';
-import { merchantCatalogScopeFilter } from './catalog-environment';
+import { merchantCatalogScopeFilter, isolatedSandboxPreviewEnabled } from './catalog-environment';
 import { approvedUnitPriceCents, isApprovedBlueLotus } from './merchant-pricing';
 import { calculateLemonadePackDiscount } from './lemonade-packs';
 
@@ -381,6 +381,13 @@ async function loadAndValidateCoupon(
  * Throws `CartPricingError` on any tampering / validation failure.
  */
 export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
+  // An unverified Preview database may be shared with live customer records.
+  // Never initiate a Sandbox checkout against an unisolated merchant catalog.
+  if (process.env.VERCEL === '1' && process.env.VERCEL_ENV === 'preview' &&
+      !isolatedSandboxPreviewEnabled()) {
+    throw new CartPricingError('PREVIEW_CATALOG_NOT_ISOLATED',
+      'Preview commerce is awaiting independent database isolation verification.', 503);
+  }
   if (!input || !Array.isArray(input.items) || input.items.length === 0) {
     throw new CartPricingError('CART_EMPTY', 'Cart is empty');
   }
