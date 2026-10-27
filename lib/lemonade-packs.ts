@@ -13,6 +13,7 @@ const ALLOWED = new Set([
   'strawberry-bliss', 'pineapple-mango', 'pineapple-mango-lemonade',
   'pineapple-basil', 'calm-waters', 'supplemint', 'strawberry-rita',
   'kissed-by-gods', 'gracious-roots', 'melon-rita',
+  'passion-guava-pineapple-lemonade', 'passion-guava-pineapple',
 ]);
 
 const normalize = (v: unknown) => typeof v === 'string'
