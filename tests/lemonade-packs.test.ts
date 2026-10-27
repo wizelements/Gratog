@@ -31,7 +31,7 @@ describe('approved lemonade-only four- and six-pack policy', () => {
     ])).toMatchObject({ discountCents: 895, fourPacks: 0, sixPacks: 1 });
   });
   it('includes seasonal menu lemonades at the approved unit price', () => {
-    for (const name of ['Kissed by Gods', 'Gracious Roots', 'Melon Rita']) {
+    for (const name of ['Kissed by Gods', 'Gracious Roots', 'Melon Rita', 'Passion Guava Pineapple Lemonade']) {
       expect(isApprovedLemonadeLine(bottle(name, 4))).toBe(true);
     }
   });
