@@ -22,6 +22,7 @@
  *      genuinely says everything is free.
  */
 import { connectToDatabase } from './db-optimized';
+import { merchantCatalogScopeFilter } from './catalog-environment';
 import { approvedUnitPriceCents, isApprovedBlueLotus } from './merchant-pricing';
 import { calculateLemonadePackDiscount } from './lemonade-packs';
 
@@ -277,10 +278,15 @@ async function loadCatalog(
   const docs = (await db
     .collection('unified_products')
     .find({
-      $or: [
-        { id: { $in: productKeys } },
-        { squareId: { $in: productKeys } },
-        { 'variations.id': { $in: variationKeys } },
+      $and: [
+        merchantCatalogScopeFilter(),
+        {
+          $or: [
+            { id: { $in: productKeys } },
+            { squareId: { $in: productKeys } },
+            { 'variations.id': { $in: variationKeys } },
+          ],
+        },
       ],
     })
     .toArray()) as unknown as UnifiedProductDoc[];
