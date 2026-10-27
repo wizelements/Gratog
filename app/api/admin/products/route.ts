@@ -92,18 +92,23 @@ export const GET = withAdminMiddleware(
       // Transform to admin format with inventory data
       const adminProducts = products.map((product: any) => {
         const inv = inventoryMap.get(product.id) as { 
-          currentStock?: number; 
-          lowStockThreshold?: number; 
-          lastRestocked?: string | null 
+          currentStock?: number;
+          lowStockThreshold?: number;
+          lastRestocked?: string | null;
+          stockVerified?: boolean;
+          stockSource?: string
         } | undefined;
         
         // Determine stock status
-        let stockStatus = 'in_stock';
-        if (inv?.currentStock === 0) {
-          stockStatus = 'out_of_stock';
-        // @ts-ignore — possibly null
-        } else if (inv?.currentStock <= (inv?.lowStockThreshold || 5)) {
-          stockStatus = 'low_stock';
+        let stockStatus = 'unverified';
+        if (inv?.stockVerified === true) {
+          if (!Number.isFinite(Number(inv.currentStock)) || Number(inv.currentStock) <= 0) {
+            stockStatus = 'out_of_stock';
+          } else if (Number(inv.currentStock) <= (inv.lowStockThreshold ?? 5)) {
+            stockStatus = 'low_stock';
+          } else {
+            stockStatus = 'in_stock';
+          }
         }
         
         return {
@@ -115,14 +120,16 @@ export const GET = withAdminMiddleware(
           variations: product.variations || [],
           images: product.images || [],
           image: product.images?.[0] || product.image || '/images/sea-moss-default.svg',
-          inStock: product.inStock !== false,
+          inStock: inv?.stockVerified === true && Number(inv.currentStock) > 0 && product.inStock !== false,
           active: true,
           subtitle: product.benefitStory || (product.description ? product.description.substring(0, 100) : '') || 'Premium sea moss product',
           featured: product.featured || false,
           createdAt: product.createdAt,
           updatedAt: product.updatedAt,
           // Inventory data
-          stock: inv?.currentStock || 0,
+          stock: inv?.stockVerified === true ? Number(inv.currentStock) : 0,
+          stockVerified: inv?.stockVerified === true,
+          stockSource: inv?.stockVerified === true ? (inv.stockSource || 'verified') : 'unverified',
           lowStockThreshold: inv?.lowStockThreshold || 5,
           lastRestocked: inv?.lastRestocked || null,
           stockStatus,
@@ -135,7 +142,7 @@ export const GET = withAdminMiddleware(
       // Filter by stock status if requested
       let filteredProducts = adminProducts;
       if (stockStatus) {
-        const allowedStatuses = ['in_stock', 'low_stock', 'out_of_stock'];
+        const allowedStatuses = ['in_stock', 'low_stock', 'out_of_stock', 'unverified'];
         if (allowedStatuses.includes(stockStatus)) {
           filteredProducts = adminProducts.filter((p: any) => p.stockStatus === stockStatus);
         }
