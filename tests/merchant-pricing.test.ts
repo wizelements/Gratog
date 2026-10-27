@@ -8,6 +8,7 @@ import {
 describe('merchant-approved pricing cannot regress', () => {
   it.each([
     ['Strawberry Bliss', 1199],
+    ['Passion Guava Pineapple Lemonade', 1199],
     ['Supplemint', 1199],
     ['Calm Waters', 1199],
     ['Pineapple Mango', 1199],
