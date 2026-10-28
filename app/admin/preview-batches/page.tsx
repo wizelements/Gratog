@@ -22,7 +22,7 @@ type Selection=Record<string,4|8>;
 type Existing={product_id:string;planned_gallons:number;product_name:string;preorder_cap:number};
 export default function PreviewBatches(){
   const [pickupDate,setDate]=useState(upcomingSaturday);
-  const [selected,setSelected]=useState<Selection>({});
+  const [selected,setSelected]=useState<Selection>(()=>Object.fromEntries(FLAVORS.map(f=>[f.productId,4])) as Selection);
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
   const [previous,setPrevious]=useState<Existing[]>([]);
@@ -30,7 +30,7 @@ export default function PreviewBatches(){
   const slots=Object.values(selected).reduce((sum,g)=>sum+g/4,0);
   const gallons=Object.values(selected).reduce((sum,g)=>sum+g,0);
   const cap=gallons*4, theoretical=gallons*8, market=gallons*3;
-  const eligible=count>=4&&count<=5&&slots<=5;
+  const eligible=count===6&&slots===6;
   const csrf=()=>decodeURIComponent((document.cookie.split('; ').find(x=>x.startsWith('admin_csrf='))||'').split('=')[1]||'');
   async function load(){
     setBusy(true);setMessage('');
@@ -46,7 +46,7 @@ export default function PreviewBatches(){
     finally{setBusy(false);}
   }
   async function save(){
-    if(!eligible){setMessage('Choose four or five flavors within five production slots.');return;}
+    if(!eligible){setMessage('Use all six current flavors with one four-gallon batch each.');return;}
     setBusy(true);setMessage('');
     try{
       const token=csrf();if(!token)throw new Error('Please sign in to Admin before saving.');
@@ -67,38 +67,29 @@ export default function PreviewBatches(){
     <Link href="/admin" className="text-sm font-medium text-emerald-800 underline">← Admin</Link>
     <header className="space-y-2"><p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Taste of Gratitude • Preview only</p>
       <h1 className="text-3xl font-semibold">Weekly batch planner</h1>
-      <p className="max-w-2xl text-stone-600">Merchant-approved starting policy: 16 preorders per planned four-gallon lemonade batch. Select the actual four or five flavors being produced; do not assign capacity to unplanned flavors.</p>
+      <p className="max-w-2xl text-stone-600">Current six approved Square Sandbox lemonades are included by default, with 16 planned preorders per four-gallon batch. This is a proposed production plan, not an assertion of finished bottles.</p>
     </header>
     <section className="rounded-2xl border border-stone-200 bg-white p-5">
       <label className="block text-sm font-semibold">Saturday pickup date
         <input className="mt-2 block w-full max-w-xs rounded-lg border border-stone-300 p-3" type="date"
-          value={pickupDate} onChange={e=>{setDate(e.target.value);setSelected({});setPrevious([]);setMessage('');}}/>
+          value={pickupDate} onChange={e=>{setDate(e.target.value);setSelected(Object.fromEntries(FLAVORS.map(f=>[f.productId,4])) as Selection);setPrevious([]);setMessage('');}}/>
       </label><button onClick={load} disabled={busy} className="mt-3 rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium">Load previously saved plan</button>
     </section>
     <section className="space-y-3">
-      <h2 className="text-xl font-semibold">Select weekly flavors</h2>
-      <p className="text-sm text-stone-600">A four-gallon batch uses one production slot. An eight-gallon batch uses two slots. No more than five slots across the week.</p>
+      <h2 className="text-xl font-semibold">All six current lemonades</h2>
+      <p className="text-sm text-stone-600">One four-gallon production slot per flavor, six slots total. Larger batches require separately approved capacity.</p>
       <div className="grid gap-3 md:grid-cols-2">
         {FLAVORS.map(f=><div key={f.productId} className="rounded-2xl border border-stone-200 bg-white p-4">
-          <label className="flex items-center gap-3 font-medium">
-            <input type="checkbox" checked={Boolean(selected[f.productId])}
-              onChange={e=>setSelected(old=>{const next={...old};if(e.target.checked)next[f.productId]=4;else delete next[f.productId];return next;})}/>
-            {f.name}
-          </label><div className="mt-3 flex items-center justify-between gap-3 text-sm">
-            <span className="text-stone-600">Batch size</span>
-            <select aria-label={'Batch size for '+f.name} className="rounded-lg border border-stone-300 p-2"
-              disabled={!selected[f.productId]} value={selected[f.productId]||4}
-              onChange={e=>setSelected(old=>({...old,[f.productId]:Number(e.target.value) as 4|8}))}>
-              <option value={4}>4 gallons</option><option value={8}>8 gallons</option>
-            </select>
-          </div></div>)}
+          <p className="font-medium">{f.name}</p>
+          <p className="mt-2 text-sm text-stone-600">4 gallons planned · 16 preorder bottles maximum · 12-bottle market target</p>
+        </div>)}
       </div>
     </section>
     <section aria-label="Calculated production plan" className="rounded-2xl border border-stone-200 bg-stone-50 p-5">
       <h2 className="text-xl font-semibold">Proposed production allocation</h2>
       <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div><p className="text-sm text-stone-600">Flavors selected</p><p className="text-2xl font-bold">{count}</p></div>
-        <div><p className="text-sm text-stone-600">Container slots</p><p className="text-2xl font-bold">{slots} / 5</p></div>
+        <div><p className="text-sm text-stone-600">Container slots</p><p className="text-2xl font-bold">{slots} / 6</p></div>
         <div><p className="text-sm text-stone-600">Theoretical bottles</p><p className="text-2xl font-bold">{theoretical}</p></div>
         <div><p className="text-sm text-stone-600">Preorder plan</p><p className="text-2xl font-bold">{cap}</p></div>
       </div>
@@ -107,7 +98,7 @@ export default function PreviewBatches(){
       <button disabled={!eligible||busy} onClick={save} className="mt-5 rounded-xl bg-emerald-800 px-5 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">
         Save merchant-approved Preview batch plan
       </button>
-      {!eligible&&<p className="mt-2 text-sm text-amber-800">Select 4–5 distinct flavors and no more than five production slots.</p>}
+      {!eligible&&<p className="mt-2 text-sm text-amber-800">All six current flavors must be included in six four-gallon production slots.</p>}
       <p role="status" className="mt-3 text-sm" aria-live="polite">{message}</p>
       {previous.length>0&&<p className="mt-2 text-xs text-stone-500">Last retrieved or saved plan: {previous.length} flavor rows. Physical stock remains separate.</p>}
     </section>
