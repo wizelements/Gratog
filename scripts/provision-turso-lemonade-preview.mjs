@@ -194,12 +194,24 @@ export async function recover(sha) {
     say('Square Sandbox application, merchant, and location independently verified.');
     stage='configure_exact_preview_branch';
     const entries=previewEnvironment(handoff.SQUARE_ACCESS_TOKEN,token,randomBytes(32).toString('hex'),randomBytes(32).toString('hex'));
-    const bodyFile=join(work,'preview-environment.json');writeFileSync(bodyFile,JSON.stringify(entries),{mode:0o600});
     const unchanged=await ghJson('repos/'+scope.repo+'/branches/'+encodeURIComponent(scope.branch));
     if(unchanged.commit?.sha!==sha)throw Error('SOURCE_HEAD_CHANGED');
-    const applied=await vercelJson('/v10/projects/'+scope.project+'/env?teamId='+scope.team+'&upsert=true',bodyFile);
-    const listing=await vercelJson('/v10/projects/'+scope.project+'/env?teamId='+scope.team+'&gitBranch='+encodeURIComponent(scope.branch)+'&decrypt=false');
-    verifyAppliedOverrides(entries,applied,listing);
+    // Vercel CLI --input reliably accepts a single JSON object, not a top-level array.
+    // Write each Preview branch override independently; read back all 13 afterward.
+    for(const [index,entry] of entries.entries()) {
+      if(entry.gitBranch!==scope.branch||entry.target.length!==1||entry.target[0]!=='preview')
+        throw Error('PREVIEW_SCOPE_INVALID');
+      const bodyFile=join(work,'preview-environment-'+index+'.json');
+      writeFileSync(bodyFile,JSON.stringify(entry),{mode:0o600});
+      const applied=await vercelJson('/v10/projects/'+scope.project+'/env?teamId='+scope.team+'&upsert=true',bodyFile)
+        .catch(()=>{throw Error('PREVIEW_OVERRIDE_WRITE_FAILED');});
+      if(applied?.error||applied?.failed?.length||applied?.errors?.length)
+        throw Error('PREVIEW_OVERRIDE_WRITE_FAILED');
+    }
+    stage='verify_exact_preview_branch';
+    const listing=await vercelJson('/v10/projects/'+scope.project+'/env?teamId='+scope.team+'&gitBranch='+encodeURIComponent(scope.branch)+'&decrypt=false')
+      .catch(()=>{throw Error('PREVIEW_OVERRIDE_READBACK_FAILED');});
+    verifyAppliedOverrides(entries,{},listing);
     console.log(JSON.stringify({kind:'turso-lemonade-preview-owner-setup',pass:true,branch:scope.branch,sha,
       databaseSchemaReadable:true,squareSandboxScopeVerified:true,previewBranchConfigurationApplied:true,
       previewOverrideMetadataVerified:true,runtimeVerificationPending:true,
@@ -215,7 +227,8 @@ if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url) {
       'TURSO_DATABASE_URL_INVALID','TURSO_LOGIN_REQUIRED','TURSO_API_TOKEN_INVALID','TURSO_ACCESS_DENIED','TURSO_DATABASE_NOT_FOUND','TURSO_CLI_ACTION_FAILED',
       'TURSO_SCHEMA_READ_FAILED','SQUARE_TOKEN_READ_FAILED','SQUARE_LOCATION_READ_FAILED','SQUARE_APPLICATION_SCOPE_INVALID',
       'SQUARE_MERCHANT_SCOPE_INVALID','HANDOFF_SCOPE_INVALID','HANDOFF_FORMAT_INVALID','HANDOFF_CONTENT_INVALID',
-      'HANDOFF_RUN_AMBIGUOUS','HANDOFF_RUN_NOT_FOUND','HANDOFF_TOKEN_CHANGED','PREVIEW_OVERRIDE_UPDATE_FAILED','PREVIEW_OVERRIDE_READBACK_FAILED']);
+      'HANDOFF_RUN_AMBIGUOUS','HANDOFF_RUN_NOT_FOUND','HANDOFF_TOKEN_CHANGED','PREVIEW_SCOPE_INVALID',
+      'PREVIEW_OVERRIDE_WRITE_FAILED','PREVIEW_OVERRIDE_UPDATE_FAILED','PREVIEW_OVERRIDE_READBACK_FAILED']);
     const hints={
       TURSO_LOGIN_REQUIRED:'Run turso auth login in your terminal, then rerun this setup.',
       TURSO_API_TOKEN_INVALID:'The TURSO_API_TOKEN environment variable is invalid. Replace it, or unset it and run turso auth login, then rerun this setup.',

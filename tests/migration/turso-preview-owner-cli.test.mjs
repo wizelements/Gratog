@@ -5,7 +5,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, readdirSyn
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scope } from '../../scripts/provision-turso-lemonade-preview.mjs';
+import { scope, previewEnvironment } from '../../scripts/provision-turso-lemonade-preview.mjs';
 
 const setup=fileURLToPath(new URL('../../scripts/provision-turso-lemonade-preview.mjs',import.meta.url));
 const producer=fileURLToPath(new URL('../../scripts/certify-integrated-preview-provision.mjs',import.meta.url));
@@ -58,11 +58,16 @@ async function cliFixture() {
     if(args[0]==='api') {
       if(args[1].startsWith('/v9/projects/'))return output({id:config.scope.project,accountId:config.scope.team});
       if(args[1].startsWith('/v10/projects/')&&args.includes('--input')) {
-        const entries=JSON.parse(readFileSync(args[args.indexOf('--input')+1],'utf8'));
-        if(entries.some(e=>e.gitBranch!==config.scope.branch||e.target.length!==1||e.target[0]!=='preview'))throw Error('EXPANDED_PREVIEW_SCOPE');
-        log({source:'preview-configured',keys:entries.map(e=>e.key)});
-        writeFileSync(config.metadata,JSON.stringify({envs:entries.map(e=>({...e,value:e.type==='sensitive'?undefined:e.value}))}));
-        return output({});
+        const entry=JSON.parse(readFileSync(args[args.indexOf('--input')+1],'utf8'));
+        if(!entry||Array.isArray(entry)||entry.gitBranch!==config.scope.branch||
+          !Array.isArray(entry.target)||entry.target.length!==1||entry.target[0]!=='preview')
+          throw Error('EXPANDED_PREVIEW_SCOPE');
+        log({source:'preview-configured',key:entry.key});
+        const metadata=JSON.parse(readFileSync(config.metadata,'utf8'));
+        metadata.envs=metadata.envs.filter(e=>e.key!==entry.key);
+        metadata.envs.push({...entry,value:entry.type==='sensitive'?undefined:entry.value});
+        writeFileSync(config.metadata,JSON.stringify(metadata));
+        return output({created:[{key:entry.key}]});
       }
       if(args[1].startsWith('/v10/projects/'))return output(readFileSync(config.metadata,'utf8'));
     }
@@ -96,6 +101,7 @@ function run(overrides={}) {
       url:'https://'+scope.database+'-'+scope.organization+'.turso.io\n',
       events:join(root,'events.jsonl'),metadata:join(root,'metadata.json'),...overrides};
     writeFileSync(config.events,'');
+    writeFileSync(config.metadata,JSON.stringify({envs:[]}));
     const configFile=join(root,'config.json');writeFileSync(configFile,JSON.stringify(config));
     const imports="import {readFileSync,writeFileSync,appendFileSync,copyFileSync} from 'node:fs';\nimport {join,basename} from 'node:path';\nimport {spawnSync} from 'node:child_process';\n";
     for(const exe of ['gh','turso','vercel'])writeFileSync(join(bin,exe),'#!'+process.execPath+'\n'+imports+'await ('+cliFixture.toString()+')();\n',{mode:0o700});
@@ -122,7 +128,9 @@ test('standalone recovery validates the pinned schema before publishing a token 
   const schema=events.findIndex(e=>e.source==='fetch'&&e.host===scope.host);
   const publish=events.findIndex(e=>e.source==='secret-published');
   assert.ok(schema>=0&&publish>schema);
-  assert.equal(events.filter(e=>e.source==='preview-configured').length,1);
+  const writes=events.filter(e=>e.source==='preview-configured');
+  assert.equal(writes.length,previewEnvironment('private-square','private-turso','private-order','private-session').length);
+  assert.equal(new Set(writes.map(e=>e.key)).size,writes.length);
 });
 test('exit-zero login instructions fail with an actionable diagnostic before token or configuration writes',()=>{
   const {result,events,output}=run({url:'You are not logged in, please login with turso auth login. '+secret});
