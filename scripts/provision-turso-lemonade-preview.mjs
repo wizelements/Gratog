@@ -6,9 +6,10 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { stripVTControlCharacters } from 'node:util';
 
 export const scope = Object.freeze({ repo: 'wizelements/Gratog', branch: 'feat/turso-lemonade-certification-20261027',
-  environment: 'square-sandbox-certification', database: 'gratog-migration-cert-20261018',
+  environment: 'square-sandbox-certification', database: 'gratog-migration-cert-20261018', organization: 'swatkins',
   host: 'gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io',
   team: 'team_HLmyvqEhI158ahAD2U1p7MxM', project: 'prj_HnwKt5XyWC1Evcrv3mZLa3cdpDcG',
   merchant: 'MLQBBQPC574GR', location: 'LYSFJ7XXCPQG5', app: 'sandbox-sq0idb-yygbGJe58k9ZsmpZhJ6kjA' });
@@ -16,6 +17,31 @@ const requiredTables = ['products','product_variations','inventory','orders','or
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 let stage = 'preflight';
 const say = text => console.log('TURSO_PREVIEW_RECOVERY: ' + text);
+
+// Some Turso versions print a login instruction and exit successfully. Never treat
+// that text as a URL, or include raw CLI output (which may contain tokens) in errors.
+export function tursoCliFailure(stdout, stderr = '') {
+  const text = stripVTControlCharacters(stdout + '\n' + stderr);
+  if (/token in (?:the )?TURSO_API_TOKEN env var is invalid/i.test(text)) return 'TURSO_API_TOKEN_INVALID';
+  if (/not logged in|no user logged in|please log\s?in|unauthorized|\b401\b/i.test(text)) return 'TURSO_LOGIN_REQUIRED';
+  if (/forbidden|permission denied|\b403\b/i.test(text)) return 'TURSO_ACCESS_DENIED';
+  if (/database[^\n]*(?:not found|does not exist)|could not find database/i.test(text)) return 'TURSO_DATABASE_NOT_FOUND';
+  return 'TURSO_CLI_ACTION_FAILED';
+}
+export function verifyTursoDatabaseUrl(output) {
+  const text = stripVTControlCharacters(output).trim();
+  const failure = tursoCliFailure(text);
+  if (failure !== 'TURSO_CLI_ACTION_FAILED') throw Error(failure);
+  // Parse one bare endpoint only: credentials, ports, paths, queries, fragments,
+  // escaped hosts, and additional output must never expand the approved scope.
+  if (!/^(?:https|libsql|turso):\/\/[a-z0-9.-]+\/?$/i.test(text)) throw Error('TURSO_DATABASE_URL_INVALID');
+  const url = new URL(text);
+  const hosts = [scope.host, scope.database + '-' + scope.organization + '.turso.io'];
+  if (!hosts.includes(url.hostname.toLowerCase())) throw Error('TURSO_DATABASE_SCOPE_INVALID');
+  // The exact pinned runtime endpoint is independently probed before publication,
+  // including when the CLI reports the database's regionless endpoint instead.
+  return 'https://' + scope.host;
+}
 
 export function validateToken(token, now = Date.now()/1000) {
   if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token)) throw Error('TOKEN_FORMAT_INVALID');
@@ -64,13 +90,21 @@ function command(executable, args, input, timeout=120000) {
     const environment={...process.env,VERCEL_TELEMETRY_DISABLED:'1',NO_COLOR:'1',GH_PAGER:'cat'};
     delete environment.DEBUG;delete environment.VERCEL_DEBUG;delete environment.NODE_DEBUG;
     const child=spawn(executable,args,{env:environment,stdio:['pipe','pipe','pipe']});
-    const out=[];let bytes=0,settled=false;
-    const timer=setTimeout(()=>{child.kill('SIGTERM');reject(Error('CLI_TIMEOUT'));},timeout);
+    const out=[],err=[];let bytes=0,errorBytes=0,settled=false;
+    const timer=setTimeout(()=>{if(!settled){settled=true;child.kill('SIGTERM');reject(Error('CLI_TIMEOUT'));}},timeout);
     child.stdout.on('data',chunk=>{bytes+=chunk.length;if(bytes>8*1024*1024)child.kill('SIGTERM');else out.push(chunk);});
-    child.stderr.on('data',()=>{}); // Never forward raw provider or CLI errors containing request details.
+    child.stderr.on('data',chunk=>{ // Classify Turso errors privately; never forward raw output.
+      if(executable==='turso'&&errorBytes+chunk.length<=16384){errorBytes+=chunk.length;err.push(chunk);}
+    });
     child.on('error',()=>{clearTimeout(timer);if(!settled){settled=true;reject(Error('CLI_UNAVAILABLE'));}});
-    child.on('close',code=>{clearTimeout(timer);if(!settled){settled=true;code===0&&bytes<=8*1024*1024?
-      resolve(Buffer.concat(out).toString('utf8')):reject(Error('CLI_ACTION_FAILED'));}});
+    child.on('close',code=>{clearTimeout(timer);if(!settled){
+      settled=true;
+      const output=Buffer.concat(out).toString('utf8');
+      const failure=executable==='turso'?tursoCliFailure(output,Buffer.concat(err).toString('utf8')):'CLI_ACTION_FAILED';
+      const tursoDiagnostic=executable==='turso'&&failure!=='TURSO_CLI_ACTION_FAILED';
+      if(code!==0||bytes>8*1024*1024||tursoDiagnostic)reject(Error(failure));
+      else resolve(output);
+    }});
     child.stdin.on('error',()=>{});child.stdin.end(input||'');
   });
 }
@@ -125,14 +159,16 @@ export async function recover(sha) {
     stage='vercel_owner_access';await command('vercel',['whoami']);
     const project=await vercelJson('/v9/projects/'+scope.project+'?teamId='+scope.team);
     if(project.id!==scope.project||project.accountId!==scope.team)throw Error('VERCEL_PROJECT_SCOPE_INVALID');
-    stage='turso_database_scope';const url=(await command('turso',['db','show',scope.database,'--url'])).trim();
-    if(!['libsql://'+scope.host,'https://'+scope.host].includes(url))throw Error('TURSO_DATABASE_SCOPE_INVALID');
+    stage='turso_database_scope';
+    // --http-url is stable across the CLI's libsql:// and turso:// engine schemes.
+    verifyTursoDatabaseUrl(await command('turso',['db','show',scope.database,'--http-url']));
     stage='renew_turso_token';const token=(await command('turso',['db','tokens','create',scope.database,'--expiration','7d'])).trim();
     validateToken(token);
-    await command('gh',['secret','set','TURSO_STAGING_AUTH_TOKEN','--repo',scope.repo,'--env',scope.environment],token);
-    say('Certification database token renewed without printing it.');
     stage='verify_turso_schema';await verifyTursoSchema(token);
     say('The fixed Turso certification database is readable and contains the required commerce tables.');
+    stage='publish_certification_token';
+    await command('gh',['secret','set','TURSO_STAGING_AUTH_TOKEN','--repo',scope.repo,'--env',scope.environment],token);
+    say('Verified certification database token renewed without printing it.');
     stage='sealed_sandbox_handoff';
     const {publicKey,privateKey}=generateKeyPairSync('rsa',{modulusLength:3072});
     const publicB64=Buffer.from(publicKey.export({type:'spki',format:'pem'})).toString('base64');
@@ -176,10 +212,21 @@ if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url) {
   recover(process.argv[2]).catch(error=>{
     const allowed=new Set(['PINNED_SOURCE_SHA_REQUIRED','REPOSITORY_ADMIN_REQUIRED','SOURCE_HEAD_CHANGED','VERCEL_PROJECT_SCOPE_INVALID',
       'TURSO_DATABASE_SCOPE_INVALID','TOKEN_FORMAT_INVALID','TOKEN_EXPIRATION_INVALID','TURSO_READ_FAILED','TURSO_SCHEMA_INCOMPLETE',
+      'TURSO_DATABASE_URL_INVALID','TURSO_LOGIN_REQUIRED','TURSO_API_TOKEN_INVALID','TURSO_ACCESS_DENIED','TURSO_DATABASE_NOT_FOUND','TURSO_CLI_ACTION_FAILED',
       'TURSO_SCHEMA_READ_FAILED','SQUARE_TOKEN_READ_FAILED','SQUARE_LOCATION_READ_FAILED','SQUARE_APPLICATION_SCOPE_INVALID',
       'SQUARE_MERCHANT_SCOPE_INVALID','HANDOFF_SCOPE_INVALID','HANDOFF_FORMAT_INVALID','HANDOFF_CONTENT_INVALID',
       'HANDOFF_RUN_AMBIGUOUS','HANDOFF_RUN_NOT_FOUND','HANDOFF_TOKEN_CHANGED','PREVIEW_OVERRIDE_UPDATE_FAILED','PREVIEW_OVERRIDE_READBACK_FAILED']);
-    console.error('TURSO_PREVIEW_RECOVERY_FAILED '+JSON.stringify({stage,code:allowed.has(error.message)?error.message:'OWNER_ACCESS_OR_SETUP_REQUIRED',secretsPrinted:false}));
+    const hints={
+      TURSO_LOGIN_REQUIRED:'Run turso auth login in your terminal, then rerun this setup.',
+      TURSO_API_TOKEN_INVALID:'The TURSO_API_TOKEN environment variable is invalid. Replace it, or unset it and run turso auth login, then rerun this setup.',
+      TURSO_ACCESS_DENIED:'Use a Turso account authorized for organization '+scope.organization+' and database '+scope.database+'.',
+      TURSO_DATABASE_NOT_FOUND:'Select the existing organization with turso org switch '+scope.organization+', then rerun. Do not create a replacement database.',
+      TURSO_DATABASE_SCOPE_INVALID:'The CLI returned a different database endpoint. Use turso org switch '+scope.organization+' and verify turso db show '+scope.database+' --http-url.',
+      TURSO_DATABASE_URL_INVALID:'The CLI did not return one bare database URL. Check turso auth whoami and turso db show '+scope.database+' --http-url locally.',
+      TURSO_CLI_ACTION_FAILED:'Check Turso login, network access, and the selected organization locally. Raw CLI output was withheld.',
+    };
+    const code=allowed.has(error.message)?error.message:'OWNER_ACCESS_OR_SETUP_REQUIRED';
+    console.error('TURSO_PREVIEW_RECOVERY_FAILED '+JSON.stringify({stage,code,...(hints[code]?{hint:hints[code]}:{}),secretsPrinted:false}));
     process.exitCode=1;
   });
 }

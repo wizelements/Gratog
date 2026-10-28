@@ -6,10 +6,46 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { scope, previewEnvironment, validateToken, decodeHandoff, verifyAppliedOverrides } from '../../scripts/provision-turso-lemonade-preview.mjs';
+import { scope, previewEnvironment, validateToken, decodeHandoff, verifyAppliedOverrides, verifyTursoDatabaseUrl, tursoCliFailure } from '../../scripts/provision-turso-lemonade-preview.mjs';
 const producer=fileURLToPath(new URL('../../scripts/certify-integrated-preview-provision.mjs',import.meta.url));
 const sha='a'.repeat(40);
 const jwt=(exp)=>'header.'+Buffer.from(JSON.stringify({exp})).toString('base64url')+'.signature';
+
+test('Turso URL verification accepts only exact certification endpoints across CLI URL formats',()=>{
+  for(const host of [scope.host,scope.database+'-'+scope.organization+'.turso.io']) {
+    for(const protocol of ['https','libsql','turso']) {
+      for(const url of [protocol+'://'+host,protocol+'://'+host+'/',protocol.toUpperCase()+'://'+host.toUpperCase()]) {
+        assert.equal(verifyTursoDatabaseUrl('\u001b[32m'+url+'\u001b[0m\r\n'),'https://'+scope.host);
+      }
+    }
+  }
+});
+test('URL normalization cannot admit another database, organization, destination, or embedded secret',()=>{
+  const host=scope.host;
+  for(const url of [
+    'https://gratog-production-swatkins.aws-us-east-1.turso.io',
+    'https://'+host.replace('-swatkins.','-other.'),'https://'+host+'.attacker.example',
+    'https://'+host+'.','http://'+host,'file://'+host,'https://'+host+':443',
+    'https://private-token@'+host,'https://'+host+'/other/..','https://'+host+'?private-token',
+    'https://'+host+'#private-token','https://'+host.replace('gratog','%67ratog'),
+    'https://'+host+'\\@attacker.example','https://'+host+'\nhttps://'+host,
+    'status message\nhttps://'+host,'https://'+host+'/ private-token',
+  ]) assert.throws(()=>verifyTursoDatabaseUrl(url),/TURSO_DATABASE_(SCOPE|URL)_INVALID/);
+});
+test('Turso login text is not mistaken for a successful database URL and raw errors never become diagnostics',()=>{
+  const secret='private-provider-token-do-not-print';
+  for(const text of ['You are not logged in, please login with turso auth login before running other commands.','No user logged in.']) {
+    assert.throws(()=>verifyTursoDatabaseUrl('\u001b[31m'+text+'\u001b[0m'),/TURSO_LOGIN_REQUIRED/);
+  }
+  for(const [text,code] of [
+    ['token in TURSO_API_TOKEN env var is invalid','TURSO_API_TOKEN_INVALID'],
+    ['HTTP 401 unauthorized','TURSO_LOGIN_REQUIRED'],['HTTP 403 forbidden','TURSO_ACCESS_DENIED'],
+    ['database '+scope.database+' not found','TURSO_DATABASE_NOT_FOUND'],['unknown failure','TURSO_CLI_ACTION_FAILED'],
+  ]) {
+    assert.equal(tursoCliFailure('',text+' '+secret),code);
+    assert.equal(tursoCliFailure(text+' '+secret).includes(secret),false);
+  }
+});
 
 test('configuration restricts all keys to the exact Preview branch and keeps private values off public keys',()=>{
   const entries=previewEnvironment('private-square','private-turso','private-order','private-session');
