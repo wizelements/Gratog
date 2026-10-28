@@ -3,10 +3,11 @@
    GitHub runner cannot call Vercel and writes ciphertext only. */
 import {createPublicKey,publicEncrypt,randomBytes,createCipheriv,constants} from 'node:crypto';
 import {mkdirSync,writeFileSync} from 'node:fs';
-const BRANCH='feat/turso-completion-20261019';
 const env=process.env;
+const BRANCH=String(env.GITHUB_REF||'').replace(/^refs\/heads\//,'');
+const APPROVED_BRANCHES=new Set(['feat/turso-completion-20261019','feat/turso-lemonade-certification-20261027']);
 if(env.GITHUB_EVENT_NAME!=='workflow_dispatch'||
-  env.GITHUB_REF!=='refs/heads/'+BRANCH||
+  (!APPROVED_BRANCHES.has(BRANCH)||env.GITHUB_REF!=='refs/heads/'+BRANCH)||
   !/^[a-f0-9]{40}$/.test(env.GITHUB_SHA||'')||
   !env.SQUARE_SANDBOX_ACCESS_TOKEN||
   (env.TURSO_STAGING_AUTH_TOKEN||'').length<24||
