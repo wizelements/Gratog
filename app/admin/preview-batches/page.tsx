@@ -40,8 +40,8 @@ export default function PreviewBatches(){
       const selection:Selection={};
       for(const row of body.rows||[])if(FLAVORS.some(f=>f.productId===row.product_id)&&
         (row.planned_gallons===4||row.planned_gallons===8))selection[row.product_id]=row.planned_gallons;
-      setSelected(selection);setPrevious(body.rows||[]);
-      setMessage(body.schemaReady?'Saved plan loaded. Checkout remains disabled.':'No batch plan saved for this date.');
+      setSelected(Object.fromEntries(FLAVORS.map(f=>[f.productId,4])) as Selection);setPrevious(body.rows||[]);
+      setMessage(body.schemaReady?(body.rows?.length===6?'Existing six-flavor plan loaded. Checkout remains disabled.':'An older plan was found. Saving will replace it with the six-current-flavor plan; checkout remains disabled.'):'No plan saved for this date. All six flavors are ready to be planned.');
     }catch(e){setMessage(e instanceof Error?e.message:'Unable to load');}
     finally{setBusy(false);}
   }
