@@ -119,6 +119,6 @@ try {
     buyerCheckoutCertified:false,merchantCapacityApproved:false,
     squareInventoryWritten:false,productionChanged:false,secretsPrinted:false}));
 }finally{
-  if(typeof db.close==='function')await db.close().catch(()=>{});
+  try { if(typeof db.close==='function')await db.close(); }catch { /* no provider secrets in errors */ }
   delete process.env.TURSO_STAGING_AUTH_TOKEN;
 }
