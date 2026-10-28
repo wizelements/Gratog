@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 import { connectToDatabase } from '@/lib/db-optimized';
+import {openTursoPreview,tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {checkInTursoCustomer} from '@/lib/auth/turso-customer-accounts.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,6 +44,8 @@ export async function POST(request: NextRequest) {
     if (!decoded) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
+
+    if(tursoPreviewSelected())return NextResponse.json({success:true,...await checkInTursoCustomer(await openTursoPreview(),decoded.userId)});
 
     const { db } = await connectToDatabase();
     const userId = decoded.userId;
@@ -106,7 +110,8 @@ export async function POST(request: NextRequest) {
       milestoneReached: milestone?.label || null,
       streak: newStreak,
     });
-  } catch (error) {
+  } catch (error: any) {
+    if(error?.name==='TursoCustomerRefusal')return NextResponse.json({success:false,error:error.message},{status:error.status});
     console.error('Check-in error:', error);
     return NextResponse.json({ success: false, error: 'Failed to check in' }, { status: 500 });
   }

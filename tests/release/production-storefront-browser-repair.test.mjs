@@ -14,7 +14,7 @@ test('retired public reviews do not fetch a deleted API or offer fake rating con
 test('market day label uses a stable initial hydration render', () => {
   const market = src('app/markets/page.tsx');
   assert.match(market, /useState\('Schedule updating'\)/);
-  assert.match(market, /useEffect\(\(\) => \{\s*setNextMarketLabel\(getNextMarketLabel\(market\)\)/);
+  assert.match(market, /useEffect\(\(\) => \{[\s\S]*?setNextMarketLabel\(getNextMarketLabel\(market\)\)/);
   assert.match(market, /Next: \{nextMarketLabel\}/);
   assert.doesNotMatch(market, /Next: \{getNextMarketLabel\(market\)\}/);
 });

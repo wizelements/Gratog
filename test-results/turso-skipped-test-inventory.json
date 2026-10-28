@@ -1,0 +1,35 @@
+{
+  "kind": "KNOWN_SKIP_DISPOSITION",
+  "observedSkipCount": 5,
+  "baseline": 12,
+  "sourceInventoryOnly": true,
+  "tests": [
+    {
+      "suite": "tests/reviews-flow.test.ts",
+      "count": 0,
+      "activeReplacements": 7,
+      "status": "RETIRED_WITH_ACTIVE_REGRESSIONS",
+      "cause": "Public review APIs and page were already retired; product-page controls and false submission confirmation are now removed",
+      "requiredEvidence": "Run all seven active retirement regressions; preserve authenticated access to historical records"
+    },
+    {
+      "suite": "tests/integration/checkout-mongo-race.test.ts",
+      "count": 5,
+      "status": "BLOCKED",
+      "cause": "Real replica-set checkout proof requires an isolated Mongo URI named tog_checkout_race_ci",
+      "requiredEvidence": "Run on actual isolated Mongo replica set, including concurrent stock, refund, market link races"
+    },
+    {
+      "suite": "tests/hydration-issues.test.ts",
+      "count": 0,
+      "status": "VERIFIED_RETIRED",
+      "cause": "WhatsNewModal is absent and active application references are forbidden by a passing replacement test",
+      "requiredEvidence": "tests/hydration-issues.test.ts active-reference regression"
+    }
+  ],
+  "noUnknownSkips": true,
+  "releaseEligible": false,
+  "skipDeclarationFiles": [
+    "tests/integration/checkout-mongo-race.test.ts"
+  ]
+}

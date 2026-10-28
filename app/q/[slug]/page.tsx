@@ -1,42 +1,29 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { LABEL_QUANTITY_MAX, resolveLabelProduct } from '@/lib/label-commerce';
+import { resolveLabelProduct } from '@/lib/label-commerce';
 
 export const dynamic = 'force-dynamic';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export async function generateMetadata({ params }: Pick<PageProps, 'params'>) {
+export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
-  const resolved = await resolveLabelProduct(slug);
-  const product = resolved.product;
-
+  const { product } = await resolveLabelProduct(slug);
   return {
-    title: product ? `Pay for ${product.name} | Taste of Gratitude` : 'Scan & Pay | Taste of Gratitude',
-    description: product
-      ? `Securely pay for ${product.name} from Taste of Gratitude.`
-      : 'Secure scan-to-pay checkout for Taste of Gratitude market products.',
+    title: product ? `${product.name} | Taste of Gratitude` : 'Product Guide | Taste of Gratitude',
+    description: 'Explore product details and check current ordering availability with Taste of Gratitude.',
     robots: { index: false, follow: false },
   };
 }
 
-function firstParam(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-export default async function LabelPayPage({ params, searchParams }: PageProps) {
+export default async function LabelPayPage({ params }: PageProps) {
   const { slug } = await params;
-  const query = await searchParams;
   const resolved = await resolveLabelProduct(slug);
   if (!resolved.product) notFound();
-
   const product = resolved.product;
-  const paid = firstParam(query.paid) === '1';
-  const error = firstParam(query.error);
-  const market = firstParam(query.market) || '';
+  const productUrl = resolved.productPath ? `${resolved.productPath}?source=label` : null;
 
   return (
     <main className="min-h-screen bg-stone-50 px-4 py-8 text-stone-900">
@@ -45,95 +32,42 @@ export default async function LabelPayPage({ params, searchParams }: PageProps) 
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-200">
             Taste of Gratitude
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">Scan & Pay</h1>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">A closer look.</h1>
           <p className="mt-2 text-sm leading-6 text-emerald-100">
-            Market + pop-up checkout for the item in your hand.
+            Discover your product and check current ordering options.
           </p>
         </div>
 
         <div className="space-y-6 p-6">
-          {paid ? (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
-              <p className="text-sm font-semibold uppercase tracking-wide text-emerald-800">Returned from Square</p>
-              <h2 className="mt-1 text-2xl font-semibold">Thank you.</h2>
-              <p className="mt-2 text-sm leading-6 text-stone-700">
-                You returned from Square checkout. Your booth team can verify the approved payment in Square before handing off the order.
-              </p>
-              <p className="mt-3 text-xs text-stone-500">
-                Want another one? This same QR can be scanned again to start a brand-new Square checkout.
-              </p>
-            </div>
-          ) : null}
-
           <div>
             <p className="text-sm font-medium capitalize text-emerald-800">{product.category}</p>
             <h2 className="mt-1 text-3xl font-semibold tracking-tight">{product.name}</h2>
             <div className="mt-3 flex items-baseline justify-between gap-4">
               <span className="text-stone-600">{product.size}</span>
-              {resolved.payable ? (
+              {product.priceVerified && product.price !== null ? (
                 <span className="text-2xl font-semibold">${product.price.toFixed(2)}</span>
               ) : (
-                <span className="text-sm font-semibold text-amber-700">Price unavailable</span>
+                <span className="text-sm font-semibold text-amber-700">Check current availability</span>
               )}
             </div>
           </div>
 
-          {error === 'payment' ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-              Secure checkout could not be created. Please pay with the booth team or try again.
-            </div>
-          ) : null}
-
-          {error === 'unavailable' ? (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              This label is valid, but this item does not currently have an approved checkout price.
-            </div>
-          ) : null}
-
-          {resolved.payable ? (
-            <form action="/api/label-checkout" method="post" className="space-y-4">
-              <input type="hidden" name="slug" value={product.slug} />
-              <input type="hidden" name="market" value={market} />
-
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium">Quantity</span>
-                <select
-                  name="quantity"
-                  defaultValue="1"
-                  className="h-12 w-full rounded-xl border border-stone-300 bg-white px-4 text-base"
-                >
-                  {Array.from({ length: LABEL_QUANTITY_MAX }, (_, index) => index + 1).map((quantity) => (
-                    <option value={quantity} key={quantity}>
-                      {quantity}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <button
-                type="submit"
-                className="h-14 w-full rounded-2xl bg-emerald-950 px-5 text-base font-semibold text-white transition hover:bg-emerald-900 focus:outline-none focus:ring-4 focus:ring-emerald-200"
-              >
-                Pay securely with Square
-              </button>
-
-              <p className="text-center text-xs leading-5 text-stone-500">
-                A fresh Square checkout is created for every purchase. The QR on this label stays reusable.
-              </p>
-            </form>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-sm leading-6 text-stone-700">
-                This product is not enabled for label checkout yet. We will not guess or charge an unverified price.
-              </p>
-              <Link
-                href="/weekly-menu?source=label"
-                className="flex h-12 items-center justify-center rounded-xl border border-emerald-900 font-semibold text-emerald-950"
-              >
-                See current menu
-              </Link>
-            </div>
-          )}
+          <div className="space-y-3">
+            <p className="text-sm leading-6 text-stone-700">
+              {productUrl
+                ? 'Open the product page to review availability, choose your items, and select an available fulfillment option before payment.'
+                : 'This item is not currently available to order. Explore the current catalog or ask the booth team for help.'}
+            </p>
+            <Link
+              href={productUrl || '/catalog?source=label'}
+              className="flex min-h-14 items-center justify-center rounded-2xl bg-emerald-950 px-5 py-3 text-center text-base font-semibold text-white transition hover:bg-emerald-900 focus:outline-none focus:ring-4 focus:ring-emerald-200"
+            >
+              {productUrl ? 'View availability and order' : 'Explore the current catalog'}
+            </Link>
+            <p className="text-center text-xs leading-5 text-stone-500">
+              At a market with a product in hand? The booth team can help with your purchase.
+            </p>
+          </div>
 
           {product.ingredients.length > 0 ? (
             <div className="border-t border-stone-200 pt-5">

@@ -6,40 +6,16 @@
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
+import {tursoPreviewSelected,openTursoPreview} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {getTursoActiveMarkets,getTursoAllMarkets,getTursoMarketById,createTursoMarket,updateTursoMarket,archiveTursoMarket} from './turso-markets.mjs';
 import type { AdminMarket, MarketDocument, MarketLocation } from './types';
 
 const COLLECTION_NAME = 'markets';
 
-const LEGACY_BROWNS_MILL_PATTERN = /browns\s*mill/i;
-
-const DHA_DUNWOODY_MARKET: MarketLocation = {
-  name: 'DHA Dunwoody Farmers Market',
-  address: '4770 N Peachtree Rd',
-  city: 'Dunwoody',
-  state: 'GA',
-  zip: '30338',
-  lat: 33.9354,
-  lng: -84.2943,
-  hours: '09:00-12:00',
-  dayOfWeek: 6,
-  description:
-    'Community market hosted at Brook Run Park in Dunwoody with local wellness vendors and fresh seasonal goods.',
-  mapsUrl: 'https://maps.google.com/?q=Brook+Run+Park+4770+N+Peachtree+Rd+Dunwoody+GA+30338',
-};
-
-function normalizeLegacyMarketDocument(doc: MarketDocument): MarketDocument {
-  if (!LEGACY_BROWNS_MILL_PATTERN.test(doc.name || '')) {
-    return doc;
-  }
-
-  return {
-    ...doc,
-    ...DHA_DUNWOODY_MARKET,
-  };
-}
-
 function documentToAdminMarket(doc: MarketDocument): AdminMarket {
-  const normalized = normalizeLegacyMarketDocument(doc);
+  // Distinct locations must retain their recorded identities. A rename or
+  // relocation requires an explicit administrator edit, never read-time aliasing.
+  const normalized = doc;
 
   return {
     id: normalized._id.toString(),
@@ -67,6 +43,7 @@ function documentToAdminMarket(doc: MarketDocument): AdminMarket {
 
 export async function getAllMarkets(): Promise<AdminMarket[]> {
   try {
+    if (tursoPreviewSelected()) return await getTursoAllMarkets(await openTursoPreview()) as AdminMarket[];
     const { db } = await connectToDatabase();
     const docs = await db
       .collection(COLLECTION_NAME)
@@ -83,6 +60,11 @@ export async function getAllMarkets(): Promise<AdminMarket[]> {
 
 export async function getActiveMarkets(): Promise<AdminMarket[]> {
   try {
+    if (tursoPreviewSelected()) {
+      // Preview-only, fail closed: never read Mongo under Turso selection.
+      const db = await openTursoPreview();
+      return await getTursoActiveMarkets(db) as AdminMarket[];
+    }
     const { db } = await connectToDatabase();
     const docs = await db
       .collection(COLLECTION_NAME)
@@ -99,6 +81,7 @@ export async function getActiveMarkets(): Promise<AdminMarket[]> {
 
 export async function getMarketById(id: string): Promise<AdminMarket | null> {
   try {
+    if (tursoPreviewSelected()) return await getTursoMarketById(await openTursoPreview(),id) as AdminMarket | null;
     if (!ObjectId.isValid(id)) {
       return null;
     }
@@ -137,6 +120,7 @@ export type CreateMarketData = {
 
 export async function createMarket(data: CreateMarketData): Promise<AdminMarket> {
   try {
+    if (tursoPreviewSelected()) return await createTursoMarket(await openTursoPreview(),data) as AdminMarket;
     const { db } = await connectToDatabase();
     const now = new Date();
 
@@ -191,6 +175,7 @@ export async function updateMarket(
   data: UpdateMarketData
 ): Promise<AdminMarket | null> {
   try {
+    if (tursoPreviewSelected()) return await updateTursoMarket(await openTursoPreview(),id,data) as AdminMarket | null;
     if (!ObjectId.isValid(id)) {
       return null;
     }
@@ -248,6 +233,7 @@ export async function updateMarket(
 
 export async function deleteMarket(id: string): Promise<boolean> {
   try {
+    if (tursoPreviewSelected()) return await archiveTursoMarket(await openTursoPreview(),id);
     if (!ObjectId.isValid(id)) {
       return false;
     }
@@ -280,6 +266,8 @@ export async function toggleMarketStatus(
 
 export async function seedDefaultMarkets(): Promise<{ seeded: number }> {
   try {
+    // Seed fixtures are Mongo-only. Turso market state must come from verified migration.
+    if (tursoPreviewSelected()) throw new Error('TURSO_MARKET_SEED_REQUIRES_VERIFIED_MIGRATION');
     const { db } = await connectToDatabase();
     const count = await db.collection(COLLECTION_NAME).countDocuments();
 
@@ -365,6 +353,12 @@ export async function seedDefaultMarkets(): Promise<{ seeded: number }> {
 
 export async function ensureMarketIndexes(): Promise<void> {
   try {
+    if (tursoPreviewSelected()) {
+      const db=await openTursoPreview();
+      const index=await db.get("SELECT name FROM sqlite_master WHERE type='index' AND name='markets_active_name'");
+      if (!index) throw new Error('TURSO_MARKET_INDEX_MISSING');
+      return;
+    }
     const { db } = await connectToDatabase();
     const collection = db.collection(COLLECTION_NAME);
 

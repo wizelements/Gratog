@@ -28,6 +28,8 @@ export default function InventoryPage() {
   const [adjustment, setAdjustment] = useState('');
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [adjustmentKey, setAdjustmentKey] = useState(null);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     fetchProducts();
@@ -35,12 +37,14 @@ export default function InventoryPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await adminFetch('/api/admin/products');
+      const response = await adminFetch('/api/admin/inventory');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setProducts(data.products || []);
+      setLoadError('');
     } catch (error) {
       logger.error('Admin', 'Failed to fetch products', error);
+      setLoadError('Inventory could not be read. Refresh before changing stock.');
     } finally {
       setLoading(false);
     }
@@ -78,9 +82,14 @@ export default function InventoryPage() {
         setAdjustingProduct(null);
         setAdjustment('');
         setReason('');
+        setAdjustmentKey(null);
         fetchProducts();
       } else {
         toast.error(data.error || 'Failed to update stock');
+        if (response.status === 409) {
+          setAdjustingProduct(null);
+          fetchProducts();
+        }
       }
     } catch (error) {
       toast.error('Failed to update stock');
@@ -146,6 +155,7 @@ export default function InventoryPage() {
       </div>
 
       {/* Products List */}
+      {loadError && <p role="alert" className="text-red-600">{loadError}</p>}
       {loading ? (
         <Card>
           <CardContent className="text-center py-12">
@@ -225,6 +235,7 @@ export default function InventoryPage() {
                             setAdjustingProduct(product);
                             setAdjustment('');
                             setReason('');
+                            setAdjustmentKey(crypto.randomUUID());
                           }}
                         >
                           {product.stockVerified === true ? 'Adjust' : 'Verify Count'}
@@ -252,7 +263,7 @@ export default function InventoryPage() {
                               {product.stockVerified === true && <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => setAdjustment(prev => (parseInt(prev) || 0) - 10)}
+                                onClick={() => { setAdjustment(prev => String((Number(prev) || 0) - 10)); setAdjustmentKey(crypto.randomUUID()); }}
                               >
                                 <Minus className="h-4 w-4" />
                                 10
@@ -264,13 +275,14 @@ export default function InventoryPage() {
                                 min={product.stockVerified === true ? undefined : 0}
                                 step="1"
                                 value={adjustment}
-                                onChange={(e) => setAdjustment(e.target.value)}
+                                step="1"
+                                onChange={(e) => { setAdjustment(e.target.value); setAdjustmentKey(crypto.randomUUID()); }}
                                 className="text-center text-lg font-bold"
                               />
                               {product.stockVerified === true && <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => setAdjustment(prev => (parseInt(prev) || 0) + 10)}
+                                onClick={() => { setAdjustment(prev => String((Number(prev) || 0) + 10)); setAdjustmentKey(crypto.randomUUID()); }}
                               >
                                 <Plus className="h-4 w-4" />
                                 10
@@ -291,7 +303,7 @@ export default function InventoryPage() {
                               id="reason"
                               placeholder="e.g., New shipment, Damage, Sale"
                               value={reason}
-                              onChange={(e) => setReason(e.target.value)}
+                              onChange={(e) => { setReason(e.target.value); setAdjustmentKey(crypto.randomUUID()); }}
                             />
                           </div>
 
@@ -311,7 +323,7 @@ export default function InventoryPage() {
                           <Button
                             onClick={handleAdjustStock}
                             className="w-full bg-[#D4AF37] hover:bg-[#B8941F]"
-                            disabled={!adjustment || isSubmitting}
+                            disabled={!adjustment || !adjustmentKey || isSubmitting || Boolean(loadError)}
                           >
                             {isSubmitting ? 'Updating...' : product.stockVerified === true
                               ? 'Update Stock' : 'Verify Actual Count'}

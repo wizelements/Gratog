@@ -71,8 +71,8 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { error: 'Failed to calculate shipping rates' },
-      { status: 500 }
+      { success: false, error: 'Shipping is currently unavailable. Please choose another available fulfillment option.', code: 'SHIPPING_UNAVAILABLE' },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 import { findUserById } from '@/lib/db/users';
+import { tursoPreviewSelected, openTursoPreview } from '@/lib/checkout/turso-preview-runtime.mjs';
+import { getTursoCustomerSession } from '@/lib/auth/turso-customer-snapshot.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +19,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false });
     }
 
-    const user = await findUserById(payload.userId as string);
+    // Cryptographically verified JWT is revalidated against current Turso user state.
+    const user = tursoPreviewSelected()
+      ? await getTursoCustomerSession(await openTursoPreview(), payload)
+      : await findUserById(payload.userId as string);
     if (!user) {
       return NextResponse.json({ success: false });
     }

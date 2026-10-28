@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Preorder status API
- * GET  /api/preorder/status — Look up by orderNumber, waitlistNumber, or phone
+ * GET  /api/preorder/status — Public redacted status by orderNumber or waitlistNumber
  * POST /api/preorder/status — Staff status update (requires PREORDER_STAFF_KEY)
  *
  * Returns real MongoDB data. 404 if not found — NO mocks.
@@ -12,10 +12,10 @@ import { NextResponse } from 'next/server';
 import {
   findPreorderByOrderNumber,
   findPreorderByWaitlistNumber,
-  findPreorderByPhone,
   updatePreorderStatus,
 } from '@/lib/preorder/repository';
 import { createLogger } from '@/lib/logger';
+import { preorderViewerHasPrivateAccess, publicPreorderStatus } from '@/lib/preorder/status-access';
 
 const logger = createLogger('PreorderStatusAPI');
 
@@ -26,9 +26,14 @@ export async function GET(request: any) {
     const waitlistNumber = searchParams.get('waitlistNumber');
     const phone = searchParams.get('phone');
 
-    if (!orderNumber && !waitlistNumber && !phone) {
+    // Phone numbers cannot be used as unauthenticated order-discovery keys.
+    if (phone && !orderNumber && !waitlistNumber) {
+      return NextResponse.json({ success: false, error: 'Use your preorder or waitlist reference to check status.' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
+    }
+
+    if (!orderNumber && !waitlistNumber) {
       return NextResponse.json(
-        { success: false, error: 'Order number, waitlist number, or phone required' },
+        { success: false, error: 'Order number or waitlist number required' },
         { status: 400 }
       );
     }
@@ -39,8 +44,6 @@ export async function GET(request: any) {
       preorder = await findPreorderByOrderNumber(orderNumber);
     } else if (waitlistNumber) {
       preorder = await findPreorderByWaitlistNumber(waitlistNumber);
-    } else if (phone) {
-      preorder = await findPreorderByPhone(phone);
     }
 
     if (!preorder) {
@@ -50,9 +53,17 @@ export async function GET(request: any) {
       );
     }
 
+    const allowed = preorderViewerHasPrivateAccess(preorder, request.headers.get('x-order-access-token'));
+    const publicStatus = publicPreorderStatus(preorder, getStatusMessage(preorder.status), calculateReadyTime(preorder.queuePosition));
+    if (!allowed) {
+      return NextResponse.json({ success: true, preorder: publicStatus }, { headers: { 'Cache-Control': 'no-store' } });
+    }
+
     return NextResponse.json({
       success: true,
       preorder: {
+        ...publicStatus,
+        privateDetailsAvailable: true,
         orderNumber: preorder.orderNumber,
         waitlistNumber: preorder.waitlistNumber,
         status: preorder.status,
@@ -79,7 +90,7 @@ export async function GET(request: any) {
         },
         createdAt: preorder.createdAt,
       },
-    });
+    }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error: any) {
     logger.error('Preorder status error', { error: error.message });
 

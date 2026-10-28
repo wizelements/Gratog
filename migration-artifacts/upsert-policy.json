@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "policySource": "scripts/migrate/upsert-policy.mjs",
+  "rules": {
+    "schema_migrations": "INSERT_ONLY",
+    "migration_runs": "UPSERT_SELECTED_FIELDS",
+    "migration_checkpoints": "UPSERT_SELECTED_FIELDS",
+    "migration_source_records": "UPSERT_SELECTED_FIELDS",
+    "customers": "UPSERT_SELECTED_FIELDS",
+    "customer_addresses": "UPSERT_SELECTED_FIELDS",
+    "products": "UPSERT_SELECTED_FIELDS",
+    "product_variations": "UPSERT_SELECTED_FIELDS",
+    "markets": "UPSERT_SELECTED_FIELDS",
+    "orders": "UPSERT_SELECTED_FIELDS",
+    "order_items": "UPSERT_SELECTED_FIELDS",
+    "payments": "APPEND_ONLY",
+    "inventory": "UPSERT_SELECTED_FIELDS",
+    "inventory_variations": "INSERT_ONLY",
+    "inventory_events": "APPEND_ONLY",
+    "webhook_events": "APPEND_ONLY",
+    "idempotency_keys": "APPEND_ONLY",
+    "menus": "UPSERT_SELECTED_FIELDS",
+    "menu_products": "UPSERT_SELECTED_FIELDS",
+    "menu_tags": "INSERT_ONLY",
+    "reward_accounts": "UPSERT_SELECTED_FIELDS",
+    "reward_passports": "UPSERT_SELECTED_FIELDS",
+    "reward_stamps": "APPEND_ONLY",
+    "reward_transactions": "APPEND_ONLY",
+    "operational_records": "UPSERT_SELECTED_FIELDS"
+  },
+  "invariant": "No table uses unrestricted overwrite; immutable history conflicts are retained without mutation."
+}

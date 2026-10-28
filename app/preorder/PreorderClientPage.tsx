@@ -415,7 +415,7 @@ function PreorderPageContent() {
                 : Math.round(Number(defaultVariation?.price || (p.priceCents || 0) / 100) * 100),
               category,
               emoji,
-              available: p.stockQuantity ?? 99,
+              available: Number.isSafeInteger(p.stockQuantity) && p.stockQuantity >= 0 ? p.stockQuantity : 0,
               image: p.image,
               description: p.description,
               isPopular: p.isPopular || name.includes('original'),
@@ -602,7 +602,13 @@ function PreorderPageContent() {
         const nextWaitlistNumber = preorder.waitlistNumber || data.waitlistNumber || "";
         const nextPaymentUrl = data.payment?.url || "";
 
-        setOrderNumber(preorder.orderNumber || data.orderNumber || "");
+        const createdOrderNumber = preorder.orderNumber || data.orderNumber || "";
+        if (createdOrderNumber && data.preorderAccessToken) {
+          try { window.sessionStorage.setItem(
+            'tog_preorder_access_' + createdOrderNumber, data.preorderAccessToken
+          ); } catch { /* Public tracking stays redacted when storage is unavailable. */ }
+        }
+        setOrderNumber(createdOrderNumber);
         setWaitlistNumber(nextWaitlistNumber);
         setWaitlistPosition(preorder.waitlistPosition || data.waitlistPosition || null);
         setPaymentUrl(nextPaymentUrl);

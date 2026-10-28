@@ -1,4 +1,6 @@
 import mongoose, { Connection } from 'mongoose';
+import { assertPreviewDatabaseIsolation } from './preview-db-isolation';
+import { assertMongoCheckoutProvider } from './database/checkout-provider-guard';
 
 // Cache the connection to prevent multiple connections during hot reloads
 let _cachedConnection: Connection | null = null;
@@ -19,6 +21,11 @@ if (!global.mongoose) {
 }
 
 export async function connectToDatabase(): Promise<{ db: any; client: any }> {
+  assertMongoCheckoutProvider();
+  // Guard BEFORE returning a cached connection: a Preview may never use the
+  // Production database, even after a worker has established a connection.
+  const isolatedPreviewDb = assertPreviewDatabaseIsolation();
+
   if (cached.conn) {
     // Return the native MongoClient (not the mongoose Connection wrapper) so
     // callers can use `client.startSession()` / transactions correctly. The
@@ -35,6 +42,9 @@ export async function connectToDatabase(): Promise<{ db: any; client: any }> {
 
     const opts = {
       bufferCommands: false,
+      // Select the isolated test DB without changing the MongoDB credential
+      // URI, its authentication source, or any Production configuration.
+      ...(isolatedPreviewDb ? { dbName: isolatedPreviewDb } : {}),
     };
 
     cached.promise = mongoose.connect(uri, opts).then((mongoose) => {

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 import { findUserById } from '@/lib/db/users';
 import { connectToDatabase } from '@/lib/db-optimized';
+import {openTursoPreview,tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {getTursoCustomerStats} from '@/lib/auth/turso-customer-accounts.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,12 +27,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
     }
 
+    if(tursoPreviewSelected())return NextResponse.json({success:true,stats:await getTursoCustomerStats(await openTursoPreview(),decoded.userId)});
+
     const { db } = await connectToDatabase();
     const userId = decoded.userId;
 
     const [totalOrders, rewards, challenge] = await Promise.all([
       db.collection('marketorders').countDocuments({
-        $or: [{ userId }, { customerEmail: user.email }],
+        userId,
       }),
       db.collection('rewards').findOne({ userId }),
       db.collection('challenges').findOne({ userId }),
@@ -44,7 +48,8 @@ export async function GET(request: NextRequest) {
         streakDays: challenge?.streakDays || 0,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
+    if(error?.name==='TursoCustomerRefusal')return NextResponse.json({success:false,error:error.message},{status:error.status});
     console.error('Stats fetch error:', error);
     return NextResponse.json({ success: false, error: 'Failed to fetch stats' }, { status: 500 });
   }

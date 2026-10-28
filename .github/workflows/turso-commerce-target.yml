@@ -1,0 +1,80 @@
+name: Turso Commerce Target Readback
+on:
+  push:
+    branches: [feat/turso-lemonade-certification-20261027]
+    paths:
+      - scripts/verify-turso-commerce-target.mjs
+      - .github/workflows/turso-commerce-target.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  read-only-target:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: square-sandbox-certification
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install runtime dependencies without provider secrets
+        run: npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Read Turso staging schema; never open Mongo or mutate data
+        env:
+          TURSO_STAGING_AUTH_TOKEN: ${{ secrets.TURSO_STAGING_AUTH_TOKEN }}
+        run: node scripts/verify-turso-commerce-target.mjs
+      - name: Read exact Preview configuration metadata without exposing values
+        if: always()
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          const team='team_HLmyvqEhI158ahAD2U1p7MxM';
+          const project='prj_HnwKt5XyWC1Evcrv3mZLa3cdpDcG';
+          const branch='feat/turso-lemonade-certification-20261027';
+          const required=['DATABASE_PROVIDER','TURSO_STAGING_DATABASE_URL','TURSO_STAGING_AUTH_TOKEN',
+            'SQUARE_ENVIRONMENT','SQUARE_ACCESS_TOKEN','SQUARE_LOCATION_ID',
+            'SQUARE_APPLICATION_ID','NEXT_PUBLIC_SQUARE_APPLICATION_ID','ORDER_ACCESS_TOKEN_SECRET'];
+          const proof={kind:'turso-preview-configuration-readback',sha:process.env.GITHUB_SHA,
+            credentialPresent:Boolean(process.env.VERCEL_TOKEN),writesPerformed:false,pass:false};
+          const report=()=>console.log('TURSO_PREVIEW_CONFIGURATION_READBACK '+JSON.stringify(proof));
+          try {
+            if(!process.env.VERCEL_TOKEN)throw Error('CREDENTIAL_MISSING');
+            const read=async path=>{
+              const r=await fetch('https://api.vercel.com'+path,{
+                headers:{Authorization:'Bearer '+process.env.VERCEL_TOKEN},
+                redirect:'error',signal:AbortSignal.timeout(15000)});
+              return {status:r.status,data:await r.json().catch(()=>({}))};
+            };
+            const identity=await read('/v9/projects/'+project+'?teamId='+team);
+            proof.projectHttp=identity.status;
+            proof.projectIdentityVerified=identity.status===200 &&
+              identity.data.id===project && identity.data.accountId===team;
+            if(!proof.projectIdentityVerified)throw Error('PROJECT_IDENTITY_UNVERIFIED');
+            const listing=await read('/v10/projects/'+project+'/env?teamId='+team+
+              '&gitBranch='+encodeURIComponent(branch)+'&decrypt=false');
+            proof.environmentMetadataHttp=listing.status;
+            if(listing.status!==200)throw Error('ENVIRONMENT_METADATA_UNAVAILABLE');
+            const keys=new Set((listing.data.envs||[]).filter(v=>
+              v.gitBranch===branch && v.target?.includes('preview')).map(v=>v.key));
+            proof.presentBranchOverrides=required.filter(k=>keys.has(k));
+            proof.missingBranchOverrides=required.filter(k=>!keys.has(k));
+            proof.pass=proof.missingBranchOverrides.length===0;
+          }catch(error){
+            proof.errorCode=['CREDENTIAL_MISSING','PROJECT_IDENTITY_UNVERIFIED',
+              'ENVIRONMENT_METADATA_UNAVAILABLE'].includes(error.message)?error.message:'READBACK_FAILED';
+          }
+          report();
+          if(!proof.pass)process.exitCode=1;
+          NODE
+      - name: Preserve sanitized proof
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: turso-commerce-target-${{ github.run_id }}
+          path: test-results/turso-commerce-target-readback.json
+          if-no-files-found: error
+          retention-days: 30
