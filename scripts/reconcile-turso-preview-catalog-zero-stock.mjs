@@ -50,8 +50,8 @@ if(deployment.projectId!==scope.project||deployment.target==='production'||
   deployment.readyState!=='READY')
   throw Error('PREVIEW_COMMIT_OR_PROJECT_SCOPE_MISMATCH');
 
-const response=JSON.parse(await run('vercel',['curl','/api/storefront/square-catalog',
-  '--deployment',preview,'--silent','--show-error']));
+const response=JSON.parse(await run('vercel',['curl',preview+'/api/storefront/square-catalog',
+  '--silent','--show-error']));
 if(response.success!==true||response.source!=='square_direct'||response.inventoryVerified!==true||
   response.inventorySource!=='square_inventory_at_location'||!Array.isArray(response.products))
   throw Error('DIRECT_SQUARE_SANDBOX_READBACK_REQUIRED');
