@@ -5,7 +5,7 @@ import {randomUUID} from 'node:crypto';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {connect} from '@tursodatabase/serverless';
 const URL='libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io';
-const protectedBranches=new Set(['refs/heads/feat/turso-checkout-recovery-20261017','refs/heads/integration/turso-closure-candidate-20261018','refs/heads/feat/turso-completion-20261019']);
+const protectedBranches=new Set(['refs/heads/feat/turso-checkout-recovery-20261017','refs/heads/integration/turso-closure-candidate-20261018','refs/heads/feat/turso-completion-20261019','refs/heads/feat/turso-lemonade-certification-20261027']);
 const preview=process.env.PREVIEW_BASE_URL||'';
 if(process.env.GITHUB_EVENT_NAME!=='workflow_dispatch'||
    !protectedBranches.has(process.env.GITHUB_REF)||process.env.SQUARE_ENVIRONMENT!=='sandbox'||
@@ -62,10 +62,18 @@ async function run(){
  check('buyer storefront catalog authoritative price and stock',
    products.ok&&sku?.checkoutReady===true&&sku.priceCents===1199&&sku.stock>0);
  const receiptKey='cert_'+randomUUID().replaceAll('-','');
- // 16:00Z is 12 pm in Georgia, on Saturday October 24, 2026.
+ // Select the next Saturday after today in Atlanta. 16:00 UTC falls within
+// Serenbe's 9am-1pm local market window across EDT and EST.
+const ny=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',
+  year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+const part=type=>Number(ny.find(x=>x.type===type)?.value);
+const marketDate=new Date(Date.UTC(part('year'),part('month')-1,part('day'),16));
+const ahead=(6-marketDate.getUTCDay()+7)%7||7;
+marketDate.setUTCDate(marketDate.getUTCDate()+ahead);
+const pickupDate=marketDate.toISOString();
  const body={cart:[{productId,variationId,quantity:1,price:0,total:0}],
    customer:{name:'Preview Certification Buyer',email:'delivered@resend.dev'},
-   fulfillmentType:'pickup_market',pickup:{locationId:'serenbe',date:'2026-10-24T16:00:00.000Z'},
+   fulfillmentType:'pickup_market',pickup:{locationId:'serenbe',date:pickupDate},
    subtotal:0,total:0,source:'isolated_sandbox_certification'};
  const create=()=>http(preview+'/api/orders/create','POST',body,{'Idempotency-Key':receiptKey});
  const first=await create();
