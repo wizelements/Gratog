@@ -49,6 +49,16 @@ export function previewEnvironment(squareToken, tursoToken, orderSecret, session
   return Object.entries(values).map(([key,value])=>({key,value,type:sensitive.has(key)?'sensitive':'plain',
     target:['preview'],gitBranch:scope.branch,comment:'Isolated Turso lemonade certification Preview'}));
 }
+export function verifyAppliedOverrides(entries, response, metadata) {
+  if(response?.error||response?.failed?.length||response?.errors?.length)throw Error('PREVIEW_OVERRIDE_UPDATE_FAILED');
+  for(const entry of entries) {
+    const record=(metadata.envs||[]).find(v=>v.key===entry.key&&v.gitBranch===scope.branch&&
+      Array.isArray(v.target)&&v.target.length===1&&v.target[0]==='preview');
+    if(!record||(entry.type==='plain'&&record.value!==entry.value)||
+      (entry.type==='sensitive'&&!['sensitive','secret'].includes(record.type)))
+      throw Error('PREVIEW_OVERRIDE_READBACK_FAILED');
+  }
+}
 function command(executable, args, input, timeout=120000) {
   return new Promise((resolve,reject)=>{
     const environment={...process.env,VERCEL_TELEMETRY_DISABLED:'1',NO_COLOR:'1',GH_PAGER:'cat'};
@@ -151,12 +161,12 @@ export async function recover(sha) {
     const bodyFile=join(work,'preview-environment.json');writeFileSync(bodyFile,JSON.stringify(entries),{mode:0o600});
     const unchanged=await ghJson('repos/'+scope.repo+'/branches/'+encodeURIComponent(scope.branch));
     if(unchanged.commit?.sha!==sha)throw Error('SOURCE_HEAD_CHANGED');
-    await vercelJson('/v10/projects/'+scope.project+'/env?teamId='+scope.team+'&upsert=true',bodyFile);
+    const applied=await vercelJson('/v10/projects/'+scope.project+'/env?teamId='+scope.team+'&upsert=true',bodyFile);
     const listing=await vercelJson('/v10/projects/'+scope.project+'/env?teamId='+scope.team+'&gitBranch='+encodeURIComponent(scope.branch)+'&decrypt=false');
-    const present=new Set((listing.envs||[]).filter(v=>v.gitBranch===scope.branch&&v.target?.includes('preview')).map(v=>v.key));
-    if(entries.some(entry=>!present.has(entry.key)))throw Error('PREVIEW_OVERRIDE_READBACK_FAILED');
+    verifyAppliedOverrides(entries,applied,listing);
     console.log(JSON.stringify({kind:'turso-lemonade-preview-owner-setup',pass:true,branch:scope.branch,sha,
-      databaseSchemaReadable:true,squareSandboxScopeVerified:true,previewBranchConfigurationVerified:true,
+      databaseSchemaReadable:true,squareSandboxScopeVerified:true,previewBranchConfigurationApplied:true,
+      previewOverrideMetadataVerified:true,runtimeVerificationPending:true,
       configuredKeys:entries.map(e=>e.key),productionEnvironmentChanged:false,stockChanged:false,
       buyerCheckoutCertified:false,secretsPrinted:false}));
     say('Owner setup complete. Return this nonsecret result to ChatGPT for deployment and live certification.');
@@ -168,7 +178,7 @@ if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url) {
       'TURSO_DATABASE_SCOPE_INVALID','TOKEN_FORMAT_INVALID','TOKEN_EXPIRATION_INVALID','TURSO_READ_FAILED','TURSO_SCHEMA_INCOMPLETE',
       'TURSO_SCHEMA_READ_FAILED','SQUARE_TOKEN_READ_FAILED','SQUARE_LOCATION_READ_FAILED','SQUARE_APPLICATION_SCOPE_INVALID',
       'SQUARE_MERCHANT_SCOPE_INVALID','HANDOFF_SCOPE_INVALID','HANDOFF_FORMAT_INVALID','HANDOFF_CONTENT_INVALID',
-      'HANDOFF_RUN_AMBIGUOUS','HANDOFF_RUN_NOT_FOUND','HANDOFF_TOKEN_CHANGED','PREVIEW_OVERRIDE_READBACK_FAILED']);
+      'HANDOFF_RUN_AMBIGUOUS','HANDOFF_RUN_NOT_FOUND','HANDOFF_TOKEN_CHANGED','PREVIEW_OVERRIDE_UPDATE_FAILED','PREVIEW_OVERRIDE_READBACK_FAILED']);
     console.error('TURSO_PREVIEW_RECOVERY_FAILED '+JSON.stringify({stage,code:allowed.has(error.message)?error.message:'OWNER_ACCESS_OR_SETUP_REQUIRED',secretsPrinted:false}));
     process.exitCode=1;
   });

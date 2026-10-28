@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { scope, previewEnvironment, validateToken, decodeHandoff } from '../../scripts/provision-turso-lemonade-preview.mjs';
+import { scope, previewEnvironment, validateToken, decodeHandoff, verifyAppliedOverrides } from '../../scripts/provision-turso-lemonade-preview.mjs';
 const producer=fileURLToPath(new URL('../../scripts/certify-integrated-preview-provision.mjs',import.meta.url));
 const sha='a'.repeat(40);
 const jwt=(exp)=>'header.'+Buffer.from(JSON.stringify({exp})).toString('base64url')+'.signature';
@@ -24,6 +24,15 @@ test('configuration restricts all keys to the exact Preview branch and keeps pri
 test('only fresh bounded credentials may be installed',()=>{
   assert.doesNotThrow(()=>validateToken(jwt(7*86400+100),100));
   for(const token of [jwt(99),jwt(100+60),jwt(100+9*86400),'not-a-token'])assert.throws(()=>validateToken(token,100));
+});
+test('partial API failures, wrong public values, and expanded environment scopes cannot pass configuration readback',()=>{
+  const entries=previewEnvironment('private-square','private-turso','private-order','private-session');
+  const metadata={envs:entries.map(e=>({...e,...(e.type==='sensitive'?{value:undefined}:{})}))};
+  assert.doesNotThrow(()=>verifyAppliedOverrides(entries,{},metadata));
+  assert.throws(()=>verifyAppliedOverrides(entries,{failed:[{key:'DATABASE_PROVIDER'}]},metadata));
+  assert.throws(()=>verifyAppliedOverrides(entries,{}, {envs:metadata.envs.map(e=>e.key==='DATABASE_PROVIDER'?{...e,value:'mongodb'}:e)}));
+  assert.throws(()=>verifyAppliedOverrides(entries,{}, {envs:metadata.envs.map(e=>({...e,target:['preview','production']}))}));
+  assert.throws(()=>verifyAppliedOverrides(entries,{}, {envs:metadata.envs.map(e=>e.key==='SQUARE_ACCESS_TOKEN'?{...e,type:'plain'}:e)}));
 });
 
 function seal(branch=scope.branch){
