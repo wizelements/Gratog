@@ -49,6 +49,42 @@ describe('fail-closed commerce readiness', () => {
     expect(data.checks.previewCatalogIsolation).toBe(false);
   });
 
+  it('recognizes pinned Turso Preview isolation without legacy Mongo flags, but remains unavailable with zero stock', async () => {
+    vi.stubEnv('DATABASE_PROVIDER', 'turso');
+    vi.stubEnv('VERCEL_GIT_COMMIT_REF', 'feat/turso-lemonade-certification-20261027');
+    vi.stubEnv('PREVIEW_DB_ISOLATION_VERIFIED', '');
+    vi.stubEnv('PREVIEW_SANDBOX_CATALOG_ENABLED', '');
+    mocks.catalog.mockResolvedValue({
+      source: 'turso-isolated-preview', isFallback: false,
+      products: [bottle('Calm Waters'), bottle('SuppleMint')].map(x => ({
+        ...x, stock: 0, inStock: false, checkoutReady: false,
+      })),
+    });
+    const response = await GET();
+    const data = await response.json();
+    expect(response.status).toBe(503);
+    expect(data.checks.previewCatalogIsolation).toBe(true);
+    expect(data.checks.liveCatalog).toBe(true);
+    expect(data.checks.mixedPackAvailability).toBe(false);
+    expect(data.availableLemonadeFlavors).toBe(0);
+  });
+
+  it('does not recognize a disabled Turso Preview as isolated based on catalog source alone', async () => {
+    vi.stubEnv('DATABASE_PROVIDER', 'mongodb');
+    vi.stubEnv('VERCEL_GIT_COMMIT_REF', 'main');
+    vi.stubEnv('PREVIEW_DB_ISOLATION_VERIFIED', '');
+    vi.stubEnv('PREVIEW_SANDBOX_CATALOG_ENABLED', '');
+    mocks.catalog.mockResolvedValue({
+      source: 'turso-isolated-preview', isFallback: false,
+      products: [bottle('Calm Waters'), bottle('SuppleMint')],
+    });
+    const response = await GET();
+    const data = await response.json();
+    expect(response.status).toBe(503);
+    expect(data.checks.previewCatalogIsolation).toBe(false);
+    expect(data.checks.liveCatalog).toBe(false);
+  });
+
   it('rejects the real Preview fallback catalog even if Square server credentials exist', async () => {
     mocks.catalog.mockResolvedValue({
       source: 'curated_weekly_market_empty_unified', isFallback: true,
