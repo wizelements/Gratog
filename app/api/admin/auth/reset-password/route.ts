@@ -5,7 +5,7 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
-import { sendEmail } from '@/lib/resend-email';
+import { sendEmail, isRealEmail } from '@/lib/resend-email';
 import { logger } from '@/lib/logger';
 import { SUPPORT_EMAIL } from '@/lib/site-config';
 
@@ -60,7 +60,7 @@ function safeOk() {
   return NextResponse.json({
     success: true,
     message:
-      'If an admin account exists for that email, a reset link has been sent.',
+      'If a matching active admin account exists, check its inbox for a reset link. If no email arrives, contact site support.',
   });
 }
 
@@ -68,7 +68,7 @@ async function requestReset(email: string, origin: string) {
   const { db } = await connectToDatabase();
   const admin = await db
     .collection('admin_users')
-    .findOne({ email: email.toLowerCase() });
+    .findOne({ email: email.toLowerCase(), isActive: { $ne: false } });
 
   // Always return 200 — do not leak existence — but only generate a token
   // if the admin really exists.
@@ -91,7 +91,7 @@ async function requestReset(email: string, origin: string) {
     token
   )}`;
 
-  await sendEmail({
+  const delivery = await sendEmail({
     to: admin.email,
     subject: 'Reset your Taste of Gratitude admin password',
     html: `
@@ -107,6 +107,11 @@ async function requestReset(email: string, origin: string) {
     template: 'admin_password_reset',
     customerEmail: admin.email,
   });
+  // The adapter can report mock success or return a provider error without throwing.
+  if (!delivery?.success || delivery.provider !== 'resend') {
+    await db.collection('admin_password_resets').deleteOne({ tokenHash });
+    throw new Error('ADMIN_RESET_EMAIL_DELIVERY_FAILED');
+  }
 
   logger.info('AdminReset', 'Reset link issued', { email: admin.email });
 }
@@ -215,6 +220,11 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     // Same safe response so we don't leak whether the input was valid.
     return safeOk();
+  }
+
+  if (!process.env.MONGODB_URI || !isRealEmail()) {
+    logger.error('AdminReset', 'Reset mail delivery or admin database unavailable');
+    return NextResponse.json({ success: false, error: 'Password recovery is temporarily unavailable. Contact site support.' }, { status: 503 });
   }
 
   try {
