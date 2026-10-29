@@ -23,6 +23,48 @@ export default function SettingsPage() {
       .catch((error) => logger.error('Admin', 'Failed to fetch user', error));
   }, []);
 
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSaving, setPasswordSaving] = useState(false);
+
+  async function changePassword(event) {
+    event.preventDefault();
+    setPasswordError('');
+    if (newPassword.length < 12 || newPassword.length > 128) {
+      setPasswordError('Use a new password between 12 and 128 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New passwords do not match.');
+      return;
+    }
+    if (currentPassword === newPassword) {
+      setPasswordError('Choose a password different from your current password.');
+      return;
+    }
+    setPasswordSaving(true);
+    try {
+      const result = await adminFetch('/api/admin/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      if (!result.success) {
+        setPasswordError(result.error || 'Password update could not be completed.');
+        return;
+      }
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      window.location.assign('/admin/login?passwordChanged=1');
+    } catch {
+      setPasswordError('Connection error. Please try again.');
+    } finally {
+      setPasswordSaving(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -62,6 +104,44 @@ export default function SettingsPage() {
           ) : (
             <p className="text-muted-foreground">Loading...</p>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Change Password: self-service, no email delivery required */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Change Admin Password
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={changePassword} className="max-w-md space-y-4">
+            <p className="text-sm text-muted-foreground">Use your current password to set a new one. You will sign in again afterward.</p>
+            <label htmlFor="admin-current-password" className="block space-y-1 text-sm font-medium">
+              <span>Current password</span>
+              <input id="admin-current-password" type="password" autoComplete="current-password" required
+                className="w-full rounded-md border bg-background px-3 py-2"
+                value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
+            </label>
+            <label htmlFor="admin-new-password" className="block space-y-1 text-sm font-medium">
+              <span>New password (12 characters minimum)</span>
+              <input id="admin-new-password" type="password" autoComplete="new-password" minLength={12} maxLength={128} required
+                className="w-full rounded-md border bg-background px-3 py-2"
+                value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+            </label>
+            <label htmlFor="admin-confirm-password" className="block space-y-1 text-sm font-medium">
+              <span>Confirm new password</span>
+              <input id="admin-confirm-password" type="password" autoComplete="new-password" minLength={12} maxLength={128} required
+                className="w-full rounded-md border bg-background px-3 py-2"
+                value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+            </label>
+            {passwordError && <p role="alert" className="text-sm text-red-600">{passwordError}</p>}
+            <button type="submit" disabled={passwordSaving}
+              className="rounded-md bg-[#D4AF37] px-5 py-2 font-semibold text-black disabled:opacity-50">
+              {passwordSaving ? 'Updating password...' : 'Change password'}
+            </button>
+          </form>
         </CardContent>
       </Card>
 
