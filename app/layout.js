@@ -11,6 +11,7 @@ import { PWAPrompt } from '@/components/PWAPrompt';
 import { PWAUpdateNotifier } from '@/components/PWAUpdateNotifier';
 import { PWADiagnostics } from '@/components/PWADiagnostics';
 import { BottomNav } from '@/components/BottomNav';
+import OrderChatWidget from '@/components/OrderChatWidget';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -177,6 +178,7 @@ export default function RootLayout({ children }) {
             <CookieConsent />
           </Suspense>
           <BottomNav />
+          <OrderChatWidget />
           <Toaster position="top-right" richColors />
           </AnalyticsProvider>
         </AuthProvider>
