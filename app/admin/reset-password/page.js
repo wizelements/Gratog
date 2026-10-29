@@ -16,20 +16,19 @@ import { toast } from 'sonner';
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-  const email = searchParams.get('email');
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const isMissingParams = !token || !email;
+  const isMissingParams = !token;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (password.length < 8) {
-      toast.error('Password must be at least 8 characters.');
+    if (password.length < 12) {
+      toast.error('Password must be at least 12 characters.');
       return;
     }
 
@@ -44,7 +43,7 @@ function ResetPasswordForm() {
       const response = await fetch('/api/admin/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, email, password })
+        body: JSON.stringify({ token, newPassword: password })
       });
 
       const data = await response.json();

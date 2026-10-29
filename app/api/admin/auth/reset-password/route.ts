@@ -218,10 +218,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const origin =
-      request.headers.get('origin') ||
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      'https://gratog.com';
+    // Never build password-reset links from attacker-controlled Origin headers.
+    // Preview deployments should set NEXT_PUBLIC_BASE_URL to their own URL.
+    const origin = process.env.NEXT_PUBLIC_BASE_URL || 'https://tasteofgratitude.shop';
     await requestReset(parsed.data.email, origin);
   } catch (err) {
     logger.error('AdminReset', 'Reset request failed', {

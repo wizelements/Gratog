@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/admin-session';
 
 // Routes that the admin area exposes without authentication.
-const PUBLIC_ADMIN_ROUTES = ['/admin/login'];
+const PUBLIC_ADMIN_ROUTES = ['/admin/login', '/admin/forgot-password', '/admin/reset-password'];
 
 // API routes under /api/admin that the admin login flow itself must reach
 // before any session exists.
