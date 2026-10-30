@@ -170,6 +170,8 @@ export const PATCH = withAdminMiddlewareWithContext(
             lastRestocked: adjustment > 0 ? new Date() : current.lastRestocked,
             updatedAt: new Date(),
             updatedBy: admin.email,
+            stockSource: 'unverified',
+            stockVerifiedAt: null,
           },
           $push: {
             stockHistory: historyEntry,
