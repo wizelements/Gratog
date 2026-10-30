@@ -28,6 +28,21 @@ export default function InventoryPage() {
   const [adjustment, setAdjustment] = useState('');
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [squareAudit, setSquareAudit] = useState(null);
+  const [squareAuditLoading, setSquareAuditLoading] = useState(false);
+  const verifySquareMenu = async () => {
+    setSquareAuditLoading(true);
+    try {
+      const response = await adminFetch('/api/admin/square-menu-inventory', { cache: 'no-store' });
+      const data = await response.json();
+      if (!response.ok || data.success !== true) throw new Error(data.error || 'Square verification failed');
+      setSquareAudit(data);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to inspect Square inventory');
+    } finally {
+      setSquareAuditLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -90,6 +105,54 @@ export default function InventoryPage() {
           Track and manage product stock levels
         </p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Live Square inventory — verified counts only</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Check the six current lemonades and Soursop Chai gel at the configured Square location.
+            Unknown is not zero. Planned future batches are separate from on-hand inventory.
+          </p>
+          <Button type="button" disabled={squareAuditLoading} onClick={verifySquareMenu}>
+            {squareAuditLoading ? 'Checking Square…' : 'Check live Square inventory'}
+          </Button>
+          {squareAudit && (
+            <div className="space-y-3">
+              <p className="text-sm">
+                Environment: {squareAudit.environment}. Checked: {new Date(squareAudit.checkedAt).toLocaleString()}.
+                {squareAudit.fullyVerified ? ' All seven have reported counts.' : ' Some items need verification.'}
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b text-left">
+                    <th className="p-2">Current item</th><th className="p-2">Square status</th>
+                    <th className="p-2 text-right">On hand</th>
+                  </tr></thead>
+                  <tbody>
+                    {squareAudit.report?.map(item => (
+                      <tr key={item.slug} className="border-b">
+                        <td className="p-2">{item.name}</td>
+                        <td className="p-2">{item.status}</td>
+                        <td className="p-2 text-right">{item.countStatus === 'reported' ? item.onHand : 'Unknown'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-sm font-medium">Retired items still present in Square</p>
+              {squareAudit.retired?.length ? (
+                <ul className="text-sm list-disc pl-5">
+                  {squareAudit.retired.map(item => (
+                    <li key={item.itemId}>{item.name}: {item.archived ? 'Archived' : 'Needs archiving in Square'}</li>
+                  ))}
+                </ul>
+              ) : <p className="text-sm text-muted-foreground">No matching retired Square catalog items found.</p>}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
