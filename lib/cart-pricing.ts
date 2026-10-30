@@ -23,6 +23,7 @@
  */
 import { connectToDatabase } from './db-optimized';
 import { approvedUnitPriceCents, isApprovedBlueLotus } from './merchant-pricing';
+import { findUnapprovedCurrentMenuItem } from './order-admission';
 
 export interface CartLineInput {
   /** Anything the client gives us that might be a product key. */
@@ -413,6 +414,14 @@ export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
         404,
         { key }
       );
+    }
+    // Prevent payment for retired weekly flavors even when the Square/legacy
+    // catalog incorrectly still labels the item active.
+    const menuMismatch = findUnapprovedCurrentMenuItem([product]);
+    if (menuMismatch) {
+      throw new CartPricingError('PRODUCT_NOT_ON_CURRENT_MENU',
+        'This flavor is no longer on the current menu. Please update your cart.',
+        409, { productId: product.id });
     }
     // Only the authoritative catalog can mark a sold-out item as preorderable.
     // Client-supplied isPreorder must never bypass inventory restrictions.
