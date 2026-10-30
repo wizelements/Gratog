@@ -25,7 +25,7 @@ export default function PrivacyPage() {
             Your privacy is important to us. Learn how we protect your information.
           </p>
           <p className="text-sm text-muted-foreground">
-            Last updated: December 21, 2025
+            Last updated: October 30, 2026
           </p>
         </div>
 
@@ -41,6 +41,7 @@ export default function PrivacyPage() {
                 <li>Delivery or shipping address for orders that require fulfillment to an address</li>
                 <li>Payment information processed securely through Square</li>
                 <li>Order history and preferences</li>
+                <li>For guided order enquiries: your name, callback phone number, selected items and request details</li>
               </ul>
             </div>
             
@@ -64,7 +65,7 @@ export default function PrivacyPage() {
             <ul className="list-disc list-inside space-y-2 text-sm">
               <li>Process and fulfill your orders</li>
               <li>Send order confirmations and updates by email</li>
-              <li>Provide customer support and respond to inquiries</li>
+              <li>Provide customer support and respond to inquiries; route order enquiries to our two authorized team phones</li>
               <li>Improve our products and services</li>
               <li>Send promotional materials (with your consent)</li>
               <li>Prevent fraud and ensure security</li>
@@ -82,7 +83,7 @@ export default function PrivacyPage() {
               We do not sell, rent, or share your personal information with third parties except in the following circumstances:
             </p>
             <ul className="list-disc list-inside space-y-1 text-sm">
-              <li><strong>Service Providers:</strong> Square for payment processing and Resend for email</li>
+              <li><strong>Service Providers:</strong> Square for payment processing and Resend for email; an SMS delivery service processes guided order enquiries to our authorized staff numbers</li>
               <li><strong>Legal Requirements:</strong> When required by law or to protect our rights</li>
               <li><strong>Business Transfers:</strong> In the event of a merger or acquisition</li>
               <li><strong>With Your Consent:</strong> Any other sharing with your explicit permission</li>
@@ -168,7 +169,7 @@ export default function PrivacyPage() {
 
         <div className="text-center text-sm text-muted-foreground">
           <p>
-            This privacy policy is effective as of December 21, 2025 and may be updated periodically.
+            This privacy policy was updated October 30, 2026 and may be updated periodically.
             We will notify you of any significant changes.
           </p>
         </div>
