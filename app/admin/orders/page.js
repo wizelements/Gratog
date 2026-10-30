@@ -373,7 +373,7 @@ export default function OrdersPage() {
           </Card>
         ) : (
           filteredOrders.map(order => {
-            const nextStatus = getNextStatus(order.status, order.fulfillmentType);
+            const nextStatus = order.fulfillmentNeedsReview ? null : getNextStatus(order.status, order.fulfillmentType);
             
             return (
               <Card key={order._id} className="hover:shadow-md transition-shadow">
@@ -544,7 +544,7 @@ export default function OrdersPage() {
                                 updateOrderStatus(order._id, status.value);
                               }
                             }}
-                            disabled={order.status === status.value || updatingStatus}
+                            disabled={order.status === status.value || updatingStatus || Boolean(order.fulfillmentNeedsReview)}
                           >
                             {status.label}
                           </Button>
