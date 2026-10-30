@@ -154,6 +154,7 @@ export default function OrdersPage() {
   };
 
   const getNextStatus = (currentStatus, fulfillmentType) => {
+    if (!['pickup', 'delivery'].includes(fulfillmentType)) return null;
     const flow = fulfillmentType === 'delivery'
       ? ['pending', 'confirmed', 'preparing', 'out_for_delivery', 'delivered']
       : ['pending', 'confirmed', 'preparing', 'ready_for_pickup', 'picked_up'];
@@ -166,6 +167,7 @@ export default function OrdersPage() {
   };
 
   const filteredOrders = orders.filter(order => {
+    if (filter === 'needs_details' && !order.fulfillmentNeedsReview && !['unconfirmed', null, undefined, ''].includes(order.fulfillmentType)) return false;
     if (filter === 'pickup' && order.fulfillmentType !== 'pickup') return false;
     if (filter === 'delivery' && order.fulfillmentType !== 'delivery') return false;
     if (filter === 'today') {
@@ -185,6 +187,7 @@ export default function OrdersPage() {
   const stats = {
     total: orders.length,
     pickup: orders.filter(o => o.fulfillmentType === 'pickup').length,
+    needsDetails: orders.filter(o => o.fulfillmentNeedsReview || !o.fulfillmentType || o.fulfillmentType === 'unconfirmed').length,
     delivery: orders.filter(o => o.fulfillmentType === 'delivery').length,
     revenue: orders.reduce((sum, o) => sum + (o.total || 0), 0),
     pending: orders.filter(o => o.status === 'pending').length,
@@ -319,6 +322,7 @@ export default function OrdersPage() {
           <TabsList>
             <TabsTrigger value="all">All ({stats.total})</TabsTrigger>
             <TabsTrigger value="pickup">Pickup ({stats.pickup})</TabsTrigger>
+          <TabsTrigger value="needs_details">Needs details ({stats.needsDetails})</TabsTrigger>
             <TabsTrigger value="delivery">Delivery ({stats.delivery})</TabsTrigger>
             <TabsTrigger value="today">Today</TabsTrigger>
           </TabsList>
@@ -381,16 +385,14 @@ export default function OrdersPage() {
                           Order #{order.orderNumber || order._id?.slice(-6)}
                         </h3>
                         {getStatusBadge(order.status)}
-                        {order.fulfillmentType === 'delivery' ? (
-                          <Badge variant="outline" className="flex items-center gap-1">
-                            <Truck className="h-3 w-3" />
-                            Delivery
-                          </Badge>
+                        {(order.fulfillmentNeedsReview || !order.fulfillmentType || order.fulfillmentType === 'unconfirmed') ? (
+                          <Badge className="border-amber-400 bg-amber-100 text-amber-950">Fulfillment needs confirmation</Badge>
+                        ) : order.fulfillmentType === 'delivery' ? (
+                          <Badge variant="outline" className="flex items-center gap-1"><Truck className="h-3 w-3" />Delivery</Badge>
+                        ) : order.fulfillmentType === 'pickup' ? (
+                          <Badge variant="outline" className="flex items-center gap-1"><Package className="h-3 w-3" />Pickup</Badge>
                         ) : (
-                          <Badge variant="outline" className="flex items-center gap-1">
-                            <Package className="h-3 w-3" />
-                            Pickup
-                          </Badge>
+                          <Badge variant="outline">{order.fulfillmentType === 'shipping' ? 'Shipping' : 'Review fulfillment'}</Badge>
                         )}
                         {/* Notification badges */}
                         {order.staffNotifiedAt && (
@@ -460,9 +462,13 @@ export default function OrdersPage() {
 
                     <div>
                       <p className="text-sm font-semibold mb-1">
-                        {order.fulfillmentType === 'delivery' ? 'Delivery Address' : 'Pickup Location'}
+                        {order.fulfillmentType === 'delivery' ? 'Delivery Address' :
+                          order.fulfillmentType === 'shipping' ? 'Shipping Address' :
+                          order.fulfillmentType === 'pickup' ? 'Pickup Location' : 'Fulfillment not selected'}
                       </p>
-                      {order.fulfillmentType === 'delivery' ? (
+                      {(!order.fulfillmentType || order.fulfillmentType === 'unconfirmed') ? (
+                        <p className="text-sm font-semibold text-amber-800">Customer has not confirmed pickup or delivery. Contact customer before scheduling.</p>
+                      ) : (order.fulfillmentType === 'delivery' || order.fulfillmentType === 'shipping') ? (
                         order.deliveryInfo ? (
                           <>
                             <p className="text-sm text-muted-foreground">
@@ -486,7 +492,7 @@ export default function OrdersPage() {
                             {order.pickupInfo.readyTime ? `Ready ${order.pickupInfo.readyTime}` : 'Ready for pickup'}
                           </p>
                         ) : (
-                          <p className="text-sm text-muted-foreground">Standard pickup</p>
+                          <p className="text-sm text-muted-foreground">Pickup location and date not provided — confirm with customer.</p>
                         )
                       )}
                     </div>
