@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { validateCheckoutFulfillment, findUnapprovedCurrentMenuItem } from '../lib/order-admission';
+import { validateCheckoutFulfillment, findUnapprovedCurrentMenuItem, validateItemizedOrder } from '../lib/order-admission';
 import { approvedUnitPriceCents } from '../lib/merchant-pricing';
 
 const pickup = { fulfillmentType: 'pickup_market', pickup: { locationId: 'serenbe', date: '2026-11-07T09:00:00.000Z' } };
@@ -57,6 +57,13 @@ describe('fail-closed commerce and fulfillment', () => {
   });
   it('blocks stale square IDs even when the display title is changed', () => {
     expect(findUnapprovedCurrentMenuItem([{ productId: 'healing-harmony-gel', name: 'Available Gel' }])).not.toBeNull();
+  });
+  it('rejects missing product names, quantities and empty order lines before charging', () => {
+    expect(validateItemizedOrder([]).code).toBe('ORDER_ITEMS_REQUIRED');
+    expect(validateItemizedOrder([{ name: '', quantity: 1 }]).code).toBe('ORDER_ITEM_DETAILS_REQUIRED');
+    expect(validateItemizedOrder([{ name: 'SuppleMint', quantity: 0 }]).valid).toBe(false);
+    expect(validateItemizedOrder([{ name: 'SuppleMint', quantity: 1 }]).valid).toBe(true);
+    expect(read('app/api/payments/route.ts')).toContain('validateItemizedOrder(order.items)');
   });
   it('enforces independent admission at order creation, authoritative pricing, and payment', () => {
     expect(read('app/api/orders/create/route.js')).toContain('validateCheckoutFulfillment(orderData)');
