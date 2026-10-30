@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Check, Copy, MessageCircle, Send, ShoppingBag, Truck, X } from 'lucide-react';
-import { buildOrderRequest, getOrderContacts, makeSmsHref } from '@/lib/order-chat';
+import { MessageCircle, Send, X } from 'lucide-react';
+import { buildOrderRequest, normalizeUSPhone } from '@/lib/order-chat';
 
 const INTENTS = [
   { id: 'preorder', label: 'Preorder / special batch' },
@@ -13,23 +13,48 @@ const INTENTS = [
 ];
 
 export function OrderChatPanel({ embedded = false }) {
-  const contacts = useMemo(() => getOrderContacts(), []);
+  const requestAttempt = useRef(null);
   const [intent, setIntent] = useState('preorder');
   const [name, setName] = useState('');
   const [items, setItems] = useState('');
   const [desiredDate, setDesiredDate] = useState('');
   const [location, setLocation] = useState('');
   const [notes, setNotes] = useState('');
-  const [copied, setCopied] = useState(false);
-  const ready = name.trim().length > 0 && items.trim().length > 0;
+  const [phone, setPhone] = useState('');
+  const [contactConsent, setContactConsent] = useState(false);
+  const [website, setWebsite] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [response, setResponse] = useState(null);
+  const phoneValid = Boolean(normalizeUSPhone(phone));
+  const ready = name.trim().length > 0 && items.trim().length > 1 && phoneValid && contactConsent;
   const message = buildOrderRequest({ intent, name, items, desiredDate, location, notes });
 
-  const copyRequest = async () => {
+  const sendRequest = async (event) => {
+    event.preventDefault();
+    if (!ready || submitting || response?.success) return;
+    const fields = { intent, name: name.trim(), phone, items: items.trim(), desiredDate, location, notes, contactConsent, website };
+    const fingerprint = JSON.stringify(fields);
+    if (!requestAttempt.current || requestAttempt.current.fingerprint !== fingerprint) {
+      requestAttempt.current = { fingerprint, requestId: crypto.randomUUID() };
+    }
+    setSubmitting(true);
+    setResponse(null);
     try {
-      await navigator.clipboard.writeText(message);
-      setCopied(true);
+      const res = await fetch('/api/order-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...fields, requestId: requestAttempt.current.requestId }),
+      });
+      const result = await res.json();
+      if (res.ok && result.success === true) {
+        setResponse({ success: true, text: result.message, reference: result.reference });
+      } else {
+        setResponse({ success: false, text: result.error || 'We could not verify the request. Please use our contact page.' });
+      }
     } catch {
-      setCopied(false);
+      setResponse({ success: false, text: 'We could not verify your message submission. Do not resubmit immediately; use our contact page.' });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -41,9 +66,9 @@ export function OrderChatPanel({ embedded = false }) {
         <p className="mt-1 text-sm leading-6 text-emerald-50">We’ll help confirm what can be prepared, when, and how you can get it.</p>
       </div>
       <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm leading-6 text-stone-700">
-        This guided chat prepares a text message for our team. Your message is <strong>not sent</strong> until you tap a text button and send it in your phone’s Messages app.
+        Send one request here. Our website automatically notifies <strong>both Solomon and Jenneisha</strong> through our messaging service when it is available. We’ll follow up using your callback number. This is an enquiry, not a confirmed order.
       </div>
-      <form className="mt-5 space-y-4" onSubmit={(event) => event.preventDefault()}>
+      <form className="mt-5 space-y-4" onSubmit={sendRequest}>
         <fieldset>
           <legend className="mb-2 text-sm font-semibold text-stone-900">How can we help?</legend>
           <div className="grid gap-2 sm:grid-cols-3">
@@ -66,6 +91,10 @@ export function OrderChatPanel({ embedded = false }) {
             <input required maxLength={80} value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" placeholder="First name is fine" className="mt-1 block min-h-12 w-full rounded-xl border border-stone-300 px-4 text-base text-stone-950 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
           </label>
           <label className="block text-sm font-semibold text-stone-800">
+            Your callback number <span className="text-red-700">*</span>
+            <input required type="tel" maxLength={25} value={phone} onChange={(event) => setPhone(event.target.value)} autoComplete="tel" inputMode="tel" placeholder="(404) 555-0123" className="mt-1 block min-h-12 w-full rounded-xl border border-stone-300 px-4 text-base text-stone-950 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
+          </label>
+          <label className="block text-sm font-semibold text-stone-800">
             Preferred date (optional)
             <input maxLength={80} value={desiredDate} onChange={(event) => setDesiredDate(event.target.value)} placeholder="e.g. Saturday, Nov 7" className="mt-1 block min-h-12 w-full rounded-xl border border-stone-300 px-4 text-base text-stone-950 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
           </label>
@@ -86,29 +115,29 @@ export function OrderChatPanel({ embedded = false }) {
           <p className="text-sm font-bold text-stone-900">Message preview</p>
           <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words font-sans text-sm leading-6 text-stone-700">{message}</pre>
         </div>
-        {!ready && <p role="status" className="text-sm text-stone-600">Enter your name and what you want to enable the text message.</p>}
-        <div className="flex flex-wrap gap-2">
-          {contacts.map((contact) => {
-            const href = makeSmsHref(contact.number, message);
-            return ready && href ? (
-              <a key={contact.key} href={href} className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-emerald-800 px-5 text-center text-sm font-bold text-white hover:bg-emerald-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800">
-                <Send className="h-4 w-4" aria-hidden="true" /> Text {contact.name}
-              </a>
-            ) : (
-              <span key={contact.key} aria-disabled="true" className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-stone-200 px-5 text-sm font-bold text-stone-500">
-                <Send className="h-4 w-4" aria-hidden="true" /> Text {contact.name}
-              </span>
-            );
-          })}
-          <button type="button" onClick={copyRequest} disabled={!ready} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-emerald-800 px-5 text-sm font-bold text-emerald-900 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50">
-            {copied ? <Check className="h-4 w-4" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
-            {copied ? 'Copied' : 'Copy request'}
-          </button>
-        </div>
-        <p className="text-xs leading-5 text-stone-600" role="status">
-          A text opens your device’s SMS app. Standard carrier rates may apply. Delivery areas, stock, scheduling and charges are confirmed by our team; payment is only through an approved secure checkout link. Never send card details by text.
+        <label className="flex items-start gap-3 rounded-xl bg-emerald-50 p-4 text-sm leading-6 text-emerald-950">
+          <input required type="checkbox" checked={contactConsent} onChange={(event) => setContactConsent(event.target.checked)} className="mt-1 h-4 w-4 accent-emerald-700" />
+          <span>I agree to be contacted about this order enquiry at the number provided. This is not marketing signup.</span>
+        </label>
+        <label className="absolute -left-[10000px]" aria-hidden="true">
+          Leave this field blank
+          <input tabIndex={-1} autoComplete="off" value={website} onChange={(event) => setWebsite(event.target.value)} />
+        </label>
+        {!ready && <p role="status" className="text-sm text-stone-600">Enter your name, callback phone number and requested items, then agree to contact.</p>}
+        <button type="submit" disabled={!ready || submitting || Boolean(response?.success)} className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-emerald-800 px-6 text-base font-bold text-white hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50">
+          <Send className="h-5 w-5" aria-hidden="true" />
+          {submitting ? 'Sending your request…' : response?.success ? 'Request submitted' : 'Send request'}
+        </button>
+        {response && (
+          <div role="status" aria-live="polite" className={`rounded-xl border px-4 py-3 text-sm leading-6 ${response.success ? 'border-emerald-300 bg-emerald-50 text-emerald-950' : 'border-amber-300 bg-amber-50 text-stone-900'}`}>
+            {response.text}
+            {response.reference && <p className="mt-1 text-xs">Reference: {response.reference.slice(0, 8)}</p>}
+            {!response.success && <p className="mt-2"><Link href="/contact" className="font-bold underline underline-offset-2">Contact our team</Link></p>}
+          </div>
+        )}
+        <p className="text-xs leading-5 text-stone-600">
+          Your request is automatically routed to both team phones when the messaging provider accepts it. We cannot guarantee handset delivery. Stock, scheduling and fees are confirmed separately; pay only through approved Square checkout. Never include payment card details.
         </p>
-        {contacts.length === 1 && <p className="text-xs leading-5 text-stone-500">Currently connected for direct texting: Solomon. A second text contact will appear once configured.</p>}
       </form>
     </div>
   );
