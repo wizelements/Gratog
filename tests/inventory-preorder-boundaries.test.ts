@@ -9,7 +9,7 @@ const db = {
         toArray: async () => [
           { productId: 'OUT', currentStock: 0 },
           { productId: 'OPTIN', currentStock: -2 },
-          { productId: 'READY', currentStock: 3 },
+          { productId: 'READY', currentStock: 3, stockSource: 'square_inventory_rest', stockVerifiedAt: new Date() },
         ],
       }),
     }),
