@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { validateCheckoutFulfillment, findUnapprovedCurrentMenuItem } from '../lib/order-admission';
+import { approvedUnitPriceCents } from '../lib/merchant-pricing';
 
 const pickup = { fulfillmentType: 'pickup_market', pickup: { locationId: 'serenbe', date: '2026-11-07T09:00:00.000Z' } };
 const delivery = { fulfillmentType: 'delivery', deliveryAddress: { street: '123 Main St', city: 'Atlanta', state: 'GA', zip: '30331' }, deliveryTimeSlot: '12:00-14:00' };
@@ -46,6 +47,9 @@ describe('fail-closed commerce and fulfillment', () => {
   });
   it.each(['Calm Waters', 'SuppleMint', 'Gracious Roots', 'Kissed by Gods', 'Melon Rita', 'Passion Guava Pineapple Lemonade', 'Passion Fruit Guava Pineapple Lemon'])('permits six approved lemonade aliases %s', (name) => {
     expect(findUnapprovedCurrentMenuItem([{ name, category: 'lemonades' }])).toBeNull();
+  });
+  it.each(['Calm Waters', 'SuppleMint', 'Gracious Roots', 'Kissed by Gods', 'Melon Rita', 'Passion Guava Pineapple Lemonade'])('charges current 16oz lemonade %s at $11.99', (name) => {
+    expect(approvedUnitPriceCents({ name })).toBe(1199);
   });
   it('permits Soursop Chai gel and preserves separately approved juices', () => {
     expect(findUnapprovedCurrentMenuItem([{ name: 'Soursop Chai Gel', category: 'gels' }])).toBeNull();
