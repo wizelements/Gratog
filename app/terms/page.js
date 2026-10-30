@@ -24,7 +24,7 @@ export default function TermsPage() {
             Please read these terms carefully before using our services.
           </p>
           <p className="text-sm text-muted-foreground">
-            Last updated: December 21, 2025
+            Last updated: October 30, 2026
           </p>
         </div>
 
@@ -78,6 +78,7 @@ export default function TermsPage() {
               <h3 className="font-semibold mb-2">Order Process</h3>
               <ul className="list-disc list-inside space-y-1 text-sm">
                 <li>Orders are confirmed upon successful payment processing</li>
+                <li>Guided order enquiries are not orders, reservations or commitments to deliver. A team member must confirm availability, fulfillment and payment first.</li>
                 <li>We reserve the right to refuse or cancel any order for any reason</li>
                 <li>Order confirmations and available order updates will be sent by email</li>
                 <li>Changes to orders may not be possible once processing begins</li>
@@ -244,7 +245,7 @@ export default function TermsPage() {
 
         <div className="text-center text-sm text-muted-foreground">
           <p>
-            These terms are effective as of December 21, 2025 and may be updated periodically. 
+            These terms were updated October 30, 2026 and may be updated periodically. 
             Continued use of our services constitutes acceptance of any changes.
           </p>
         </div>
