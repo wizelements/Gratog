@@ -13,6 +13,16 @@ describe('fail-closed commerce and fulfillment', () => {
     expect(validateCheckoutFulfillment({ fulfillmentType: method }).valid).toBe(false);
     expect(validateCheckoutFulfillment({ fulfillmentType: method }).code).toBe('FULFILLMENT_SELECTION_REQUIRED');
   });
+  it('rejects contradictory customer fulfillment fields and accepts persisted pickup Date', () => {
+    expect(validateCheckoutFulfillment({
+      fulfillmentType: 'delivery',
+      fulfillment: { type: 'pickup', pickup: { locationId: 'market', date: '2026-11-07' } },
+    }).code).toBe('FULFILLMENT_CONFLICT');
+    expect(validateCheckoutFulfillment({
+      fulfillmentType: 'pickup_market',
+      fulfillment: { type: 'pickup', pickup: { locationId: 'market', date: new Date('2026-11-07') } },
+    }).valid).toBe(true);
+  });
   it('requires date and place for pickup; never assumes market pickup', () => {
     expect(validateCheckoutFulfillment({ fulfillmentType: 'pickup' }).code).toBe('PICKUP_DETAILS_REQUIRED');
     expect(validateCheckoutFulfillment({ ...pickup, pickup: { locationId: 'serenbe' } }).valid).toBe(false);
