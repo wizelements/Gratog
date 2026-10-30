@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
+import { findUnapprovedCurrentMenuItem } from '@/lib/order-admission';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -23,12 +24,17 @@ export async function GET(request: NextRequest) {
       category: searchParams.get('category') || undefined,
     });
 
+    // Retired weekly flavors must not appear as orderable just because a
+    // legacy Square snapshot still marks them active.
+    const currentProducts = snapshot.products.filter((product) =>
+      !findUnapprovedCurrentMenuItem([product]));
+
     return NextResponse.json(
       {
         success: true,
-        products: snapshot.products,
+        products: currentProducts,
         categories: snapshot.categories,
-        count: snapshot.products.length,
+        count: currentProducts.length,
         source: snapshot.source,
         isFallback: snapshot.isFallback,
         timestamp: new Date().toISOString()
