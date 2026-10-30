@@ -51,6 +51,10 @@ describe('fail-closed commerce and fulfillment', () => {
   it.each(['Calm Waters', 'SuppleMint', 'Gracious Roots', 'Kissed by Gods', 'Melon Rita', 'Passion Guava Pineapple Lemonade'])('charges current 16oz lemonade %s at $11.99', (name) => {
     expect(approvedUnitPriceCents({ name })).toBe(1199);
   });
+  it('hides legacy Square sea-moss catalog labels outside Soursop Chai', () => {
+    expect(findUnapprovedCurrentMenuItem([{name:'Blue Lotus',category:'sea-moss'}])).not.toBeNull();
+    expect(findUnapprovedCurrentMenuItem([{name:'Soursop Chai Gel',category:'sea-moss'}])).toBeNull();
+  });
   it('permits Soursop Chai gel and preserves separately approved juices', () => {
     expect(findUnapprovedCurrentMenuItem([{ name: 'Soursop Chai Gel', category: 'gels' }])).toBeNull();
     expect(findUnapprovedCurrentMenuItem([{ name: 'APG — Always Pursue Gratitude', category: 'juices' }])).toBeNull();
