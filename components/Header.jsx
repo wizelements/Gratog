@@ -17,17 +17,19 @@ export default function Header() {
   const isMobileActive = (path) => pathname === path || pathname?.startsWith(`${path}/`);
   const desktopNavItems = [
     { href: '/catalog', label: 'Order for Yourself' },
-    { href: '/weekly-menu', label: 'Market Preorders' },
+    { href: '/preorder', label: 'Market Pickup & Pay' },
+    { href: '/order-help', label: 'Chat to Order' },
     { href: '/markets', label: 'Markets' },
-    { href: '/#delivery', label: 'Delivery' },
+    { href: '/order-help', label: 'Delivery Help' },
     { href: '/events', label: 'Events' },
     { href: '/about', label: 'About' },
   ];
   const mobileNavItems = [
     { href: '/catalog', label: 'Order for Yourself' },
-    { href: '/weekly-menu', label: 'Market Preorders' },
+    { href: '/preorder', label: 'Market Pickup & Pay' },
+    { href: '/order-help', label: 'Chat to Order' },
     { href: '/markets', label: 'Markets' },
-    { href: '/#delivery', label: 'Scheduled Delivery' },
+    { href: '/order-help', label: 'Delivery Help' },
     { href: '/events', label: 'Book an Event' },
     { href: '/about', label: 'Our Story' },
     { href: '/wholesale', label: 'Wholesale / Partners' },

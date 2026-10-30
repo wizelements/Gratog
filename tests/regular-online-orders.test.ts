@@ -8,14 +8,16 @@ describe('regular Georgia customers can order without selecting a market', () =>
   it('separates online shopping from market preorders in primary navigation', () => {
     const nav = read('components/Header.jsx');
     expect(nav).toContain("{ href: '/catalog', label: 'Order for Yourself' }");
-    expect(nav).toContain("{ href: '/weekly-menu', label: 'Market Preorders' }");
+    expect(nav).toContain("{ href: '/preorder', label: 'Market Pickup & Pay' }");
+    expect(nav).toContain("{ href: '/order-help', label: 'Chat to Order' }");
   });
 
   it('gives standard shoppers a direct shopping route from the homepage and catalog', () => {
     const home = read('components/home/HomePageClient.jsx');
     const catalog = read('components/catalog/CatalogPageClient.jsx');
-    expect(home).toContain('<Link href="/catalog">Shop for local delivery');
-    expect(home).toContain('<Link href="/weekly-menu"');
+    expect(home).toContain('<Link href="/catalog">Browse the full shop</Link>');
+    expect(home).toContain('<Link href="/order-help">Chat about preorder or delivery</Link>');
+    expect(home).toContain('<Link href="/preorder">Market pickup &amp; pay');
     expect(catalog).toContain('No market visit required for eligible orders');
     expect(catalog).toContain('Enter your complete address in checkout');
   });
@@ -49,7 +51,7 @@ describe('regular Georgia customers can order without selecting a market', () =>
     const catalog = read('components/catalog/CatalogPageClient.jsx');
     const home = read('components/home/HomePageClient.jsx');
     expect(catalog).toContain('Only eligible items and confirmed options can proceed to payment.');
-    expect(home).toContain('product eligibility at checkout');
+    expect(home).toContain('delivery eligibility and fees must be confirmed before payment');
     expect(catalog).not.toMatch(/nationwide shipping|all (?:products|items) ship/i);
   });
 });
