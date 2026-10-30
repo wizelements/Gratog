@@ -3,6 +3,8 @@ import { buildOrderRequest, getOrderContacts, makeSmsHref, normalizeUSPhone } fr
 
 describe('Order handoff safety', () => {
   it('uses the approved primary number and only a valid distinct second number', () => {
+    expect(getOrderContacts().map((contact) => contact.number))
+      .toEqual(['+14047899960', '+14706633225']);
     expect(getOrderContacts('').map((contact) => contact.number)).toEqual(['+14047899960']);
     expect(getOrderContacts('4047899960')).toHaveLength(1);
     expect(getOrderContacts('404-555-0134').map((contact) => contact.number))
