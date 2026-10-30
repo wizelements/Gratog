@@ -21,6 +21,11 @@ const InquirySchema = z.object({
 const json = (value: Record<string, unknown>, status: number) =>
   NextResponse.json(value, { status, headers: { 'Cache-Control': 'no-store' } });
 
+// Nonsecret readiness helps the UI fail closed before asking for customer details.
+export async function GET() {
+  return json({ available: orderMessagingConfigured() }, 200);
+}
+
 export async function POST(request: NextRequest) {
   const origin = request.headers.get('origin');
   // Browser-only channel: avoid cross-site form posts.
