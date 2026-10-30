@@ -20,6 +20,7 @@ import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { consumeInventoryForPaidOrder, checkInventoryForPayment } from '@/lib/custom-inventory';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';
 import { validateGeorgiaDestination } from '@/lib/georgia-orders';
+import { validateCheckoutFulfillment, findUnapprovedCurrentMenuItem } from '@/lib/order-admission';
 import {
   generateOrderAccessToken,
   verifyOrderAccessToken,
@@ -426,6 +427,19 @@ export async function POST(request: NextRequest) {
       });
     }
     
+    // Recheck at the last payment gate, including unpaid legacy orders created
+    // before strict admission existed. No card charge on incomplete fulfillment.
+    const fulfillmentAdmission = validateCheckoutFulfillment(order);
+    if (!fulfillmentAdmission.valid) {
+      return json({ success: false, code: fulfillmentAdmission.code,
+        error: fulfillmentAdmission.message }, 422);
+    }
+    const staleMenuLine = findUnapprovedCurrentMenuItem(order.items);
+    if (staleMenuLine) {
+      return json({ success: false, code: 'PRODUCT_NOT_ON_CURRENT_MENU',
+        error: 'Some flavors are no longer offered. Please update your order before payment.' }, 409);
+    }
+
     // Enforce current service geography even for unpaid orders created before this policy.
     const paymentFulfillmentType = String(order.fulfillment?.type || order.fulfillmentType || '').toLowerCase();
     if (paymentFulfillmentType.includes('shipping') || paymentFulfillmentType.includes('delivery')) {
