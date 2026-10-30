@@ -36,7 +36,7 @@ describe('Blue Lotus genuine availability / Square catalog reconciliation', () =
       .toMatchObject({ valid:false,code:'INVENTORY_UNAVAILABLE' });
     expect(await checkInventoryForPayment(makeDb([]),lines))
       .toMatchObject({ valid:false,code:'INVENTORY_UNAVAILABLE' });
-    expect(await checkInventoryForPayment(makeDb([{productId:lines[0].productId,currentStock:2}]),lines))
+    expect(await checkInventoryForPayment(makeDb([{productId:lines[0].productId,currentStock:2,stockSource:'square_inventory_rest',stockVerifiedAt:new Date()}]),lines))
       .toEqual({valid:true});
     // Two order lines cannot evade the aggregate stock requirement.
     expect(await checkInventoryForPayment(makeDb([{productId:lines[0].productId,currentStock:1}]),[...lines,...lines]))
