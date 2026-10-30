@@ -34,6 +34,22 @@ const PAYMENT_STATUSES = [
   { value: 'processing', label: 'Processing', color: 'bg-yellow-600' }
 ];
 
+// Legacy Square records imported before the sync fix may already be mislabeled
+// pickup. Inspect actual fulfillment evidence, not just a stored label.
+function needsFulfillmentReview(order) {
+  if (order.fulfillmentNeedsReview) return true;
+  const type = order.fulfillmentType;
+  if (!type || type === 'unconfirmed') return true;
+  if (type === 'pickup') {
+    return !(order.pickupLocation || order.pickup?.locationId || order.pickupInfo?.boothNumber) ||
+      !(order.pickupDate || order.pickup?.date || order.pickupInfo?.readyTime);
+  }
+  if (type === 'delivery' || type === 'shipping') {
+    return !(order.deliveryInfo?.address || order.deliveryAddress?.street || order.shippingAddress?.street);
+  }
+  return true;
+}
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -167,7 +183,7 @@ export default function OrdersPage() {
   };
 
   const filteredOrders = orders.filter(order => {
-    if (filter === 'needs_details' && !order.fulfillmentNeedsReview && !['unconfirmed', null, undefined, ''].includes(order.fulfillmentType)) return false;
+    if (filter === 'needs_details' && !needsFulfillmentReview(order)) return false;
     if (filter === 'pickup' && order.fulfillmentType !== 'pickup') return false;
     if (filter === 'delivery' && order.fulfillmentType !== 'delivery') return false;
     if (filter === 'today') {
@@ -187,7 +203,7 @@ export default function OrdersPage() {
   const stats = {
     total: orders.length,
     pickup: orders.filter(o => o.fulfillmentType === 'pickup').length,
-    needsDetails: orders.filter(o => o.fulfillmentNeedsReview || !o.fulfillmentType || o.fulfillmentType === 'unconfirmed').length,
+    needsDetails: orders.filter(needsFulfillmentReview).length,
     delivery: orders.filter(o => o.fulfillmentType === 'delivery').length,
     revenue: orders.reduce((sum, o) => sum + (o.total || 0), 0),
     pending: orders.filter(o => o.status === 'pending').length,
@@ -373,7 +389,7 @@ export default function OrdersPage() {
           </Card>
         ) : (
           filteredOrders.map(order => {
-            const nextStatus = order.fulfillmentNeedsReview ? null : getNextStatus(order.status, order.fulfillmentType);
+            const nextStatus = needsFulfillmentReview(order) ? null : getNextStatus(order.status, order.fulfillmentType);
             
             return (
               <Card key={order._id} className="hover:shadow-md transition-shadow">
@@ -385,7 +401,7 @@ export default function OrdersPage() {
                           Order #{order.orderNumber || order._id?.slice(-6)}
                         </h3>
                         {getStatusBadge(order.status)}
-                        {(order.fulfillmentNeedsReview || !order.fulfillmentType || order.fulfillmentType === 'unconfirmed') ? (
+                        {needsFulfillmentReview(order) ? (
                           <Badge className="border-amber-400 bg-amber-100 text-amber-950">Fulfillment needs confirmation</Badge>
                         ) : order.fulfillmentType === 'delivery' ? (
                           <Badge variant="outline" className="flex items-center gap-1"><Truck className="h-3 w-3" />Delivery</Badge>
@@ -544,7 +560,7 @@ export default function OrdersPage() {
                                 updateOrderStatus(order._id, status.value);
                               }
                             }}
-                            disabled={order.status === status.value || updatingStatus || Boolean(order.fulfillmentNeedsReview)}
+                            disabled={order.status === status.value || updatingStatus || needsFulfillmentReview(order)}
                           >
                             {status.label}
                           </Button>
