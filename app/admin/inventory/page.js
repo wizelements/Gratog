@@ -30,6 +30,49 @@ export default function InventoryPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [squareAudit, setSquareAudit] = useState(null);
   const [squareAuditLoading, setSquareAuditLoading] = useState(false);
+  const [physicalCountTarget, setPhysicalCountTarget] = useState(null);
+  const [physicalCount, setPhysicalCount] = useState('');
+  const [physicalReason, setPhysicalReason] = useState('');
+  const [physicalConfirmed, setPhysicalConfirmed] = useState(false);
+  const [physicalSaving, setPhysicalSaving] = useState(false);
+  const [physicalVersion, setPhysicalVersion] = useState(null);
+  const openPhysicalCount = async product => {
+    try {
+      const response = await adminFetch('/api/admin/inventory/' + encodeURIComponent(product.id));
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || 'Unable to load inventory');
+      setPhysicalVersion(result.inventory?.updatedAt
+        ? new Date(result.inventory.updatedAt).toISOString() : 'missing');
+      setPhysicalCount('');
+      setPhysicalReason('');
+      setPhysicalConfirmed(false);
+      setPhysicalCountTarget(product);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to load inventory');
+    }
+  };
+  const savePhysicalCount = async () => {
+    if (!physicalCountTarget || !physicalConfirmed || !physicalReason.trim()) return;
+    setPhysicalSaving(true);
+    try {
+      const response = await adminFetch('/api/admin/inventory/' +
+        encodeURIComponent(physicalCountTarget.id), {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({countedUnits: Number(physicalCount),
+          confirmedPhysicalCount: physicalConfirmed, reason: physicalReason,
+          expectedUpdatedAt: physicalVersion}),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || 'Count verification failed');
+      toast.success('Physically verified: ' + result.verifiedCount + ' units');
+      setPhysicalCountTarget(null);
+      await fetchProducts();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Count verification failed');
+    } finally {
+      setPhysicalSaving(false);
+    }
+  };
   const verifySquareMenu = async () => {
     setSquareAuditLoading(true);
     try {
@@ -258,6 +301,9 @@ export default function InventoryPage() {
                         : 'In Stock'}
                     </Badge>
 
+                    <Button variant="outline" size="sm" onClick={() => openPhysicalCount(product)}>
+                      Verify count
+                    </Button>
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button
@@ -353,6 +399,36 @@ export default function InventoryPage() {
           </CardContent>
         </Card>
       )}
+      <Dialog open={Boolean(physicalCountTarget)} onOpenChange={open => {if(!open) setPhysicalCountTarget(null);}}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Verify actual bottles: {physicalCountTarget?.name}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Count bottles physically present and available for sale now. Do not include planned batches,
+              reserved preorders, market allocations, or estimated Square quantities.
+            </p>
+            <div>
+              <Label htmlFor="phys-count">Actual on-hand quantity</Label>
+              <Input id="phys-count" inputMode="numeric" type="number" min={0} max={10000} step={1}
+                value={physicalCount} onChange={event => setPhysicalCount(event.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="phys-reason">Count notes</Label>
+              <Input id="phys-reason" value={physicalReason} onChange={event => setPhysicalReason(event.target.value)}
+                placeholder="e.g. Counted 16oz bottles after Friday batch" />
+            </div>
+            <label className="flex gap-2 text-sm">
+              <input type="checkbox" checked={physicalConfirmed} onChange={event => setPhysicalConfirmed(event.target.checked)} />
+              I personally verified this physical count (not a projected batch).
+            </label>
+            <Button className="w-full" type="button" disabled={physicalSaving || !physicalConfirmed ||
+              !physicalReason.trim() || physicalCount === '' || !Number.isSafeInteger(Number(physicalCount)) ||
+              Number(physicalCount) < 0} onClick={savePhysicalCount}>
+              {physicalSaving ? 'Recording count…' : 'Save verified physical count'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
