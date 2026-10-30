@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { MessageCircle, Send, X } from 'lucide-react';
@@ -25,6 +25,15 @@ export function OrderChatPanel({ embedded = false }) {
   const [website, setWebsite] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [response, setResponse] = useState(null);
+  const [availability, setAvailability] = useState('checking');
+  useEffect(() => {
+    let active = true;
+    fetch('/api/order-chat', { cache: 'no-store' })
+      .then(async (res) => res.ok ? res.json() : { available: false })
+      .then(data => { if (active) setAvailability(data.available === true ? 'ready' : 'unavailable'); })
+      .catch(() => { if (active) setAvailability('unavailable'); });
+    return () => { active = false; };
+  }, []);
   const phoneValid = Boolean(normalizeUSPhone(phone));
   const ready = name.trim().length > 0 && items.trim().length > 1 && phoneValid && contactConsent;
   const message = buildOrderRequest({ intent, name, items, desiredDate, location, notes });
@@ -123,8 +132,13 @@ export function OrderChatPanel({ embedded = false }) {
           Leave this field blank
           <input tabIndex={-1} autoComplete="off" value={website} onChange={(event) => setWebsite(event.target.value)} />
         </label>
-        {!ready && <p role="status" className="text-sm text-stone-600">Enter your name, callback phone number and requested items, then agree to contact.</p>}
-        <button type="submit" disabled={!ready || submitting || Boolean(response?.success)} className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-emerald-800 px-6 text-base font-bold text-white hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50">
+        {availability !== 'ready' && (
+          <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-stone-900">
+            {availability === 'checking' ? 'Checking message delivery availability…' : <>Direct messaging is temporarily unavailable. <Link className="font-bold underline" href="/contact">Contact our team</Link> instead.</>}
+          </p>
+        )}
+        {availability === 'ready' && !ready && <p role="status" className="text-sm text-stone-600">Enter your name, callback phone number and requested items, then agree to contact.</p>}
+        <button type="submit" disabled={!ready || availability !== 'ready' || submitting || Boolean(response?.success)} className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-emerald-800 px-6 text-base font-bold text-white hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50">
           <Send className="h-5 w-5" aria-hidden="true" />
           {submitting ? 'Sending your request…' : response?.success ? 'Request submitted' : 'Send request'}
         </button>
