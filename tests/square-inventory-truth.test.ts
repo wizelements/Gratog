@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { readSquareLiveInventory, inventoryForVariation } from '../lib/square-live-inventory';
+import { readApprovedSquareMenuStock, CURRENT_MENU } from '../lib/square-menu-stock';
 
 const environment = { SQUARE_ACCESS_TOKEN: 'fake-test-token', SQUARE_LOCATION_ID: 'LOC_1', SQUARE_ENVIRONMENT: 'sandbox' };
 const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf-8');
@@ -42,6 +43,26 @@ describe('Square inventory is real, location-scoped and never invented', () => {
     await expect(readSquareLiveInventory(['A'],{env:environment,fetcher:vi.fn(async()=>({ok:false}))})).rejects.toThrow('SQUARE_INVENTORY_READ_FAILED');
   });
 
+  it('audits seven approved menu items and flags a retired Square item without inventing stock', async()=>{
+    const objects = CURRENT_MENU.map((target,index)=>({
+      type:'ITEM',id:'ITEM_'+index,item_data:{name:target.aliases[0],variations:[{
+        id:'VAR_'+index,item_variation_data:{name:'16 oz bottle',track_inventory:true}
+      }]}
+    }));
+    objects.push({type:'ITEM',id:'RETIRED',item_data:{name:'Peach Lemonade',variations:[]}} as any);
+    const fetcher = vi.fn(async (url:string) => {
+      if(url.includes('/v2/catalog/list')) return {ok:true,json:async()=>({objects})};
+      return {ok:true,json:async()=>({counts:[{
+        catalog_object_id:'VAR_0',location_id:'LOC_1',state:'IN_STOCK',quantity:'0'
+      }]})};
+    });
+    const audit = await readApprovedSquareMenuStock({env:environment,fetcher});
+    expect(audit.report).toHaveLength(7);
+    expect(audit.report[0]).toMatchObject({status:'found',onHand:0,countStatus:'reported'});
+    expect(audit.report[1]).toMatchObject({status:'unverified',onHand:null,countStatus:'unknown'});
+    expect(audit.retired).toContainEqual({itemId:'RETIRED',name:'Peach Lemonade',archived:false});
+    expect(audit.fullyVerified).toBe(false);
+  });
   it('removes artificial 99-unit and 25-unit stock from checkout paths',()=>{
     const direct=read('app/api/storefront/square-catalog/route.ts');
     const inventory=read('lib/custom-inventory.js');
