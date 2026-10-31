@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
+import { sendOwnerAlert } from '@/lib/owner-alerts';
 import crypto from 'crypto';
 const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET;
 const SVIX_TOLERANCE_SECONDS = 5 * 60;
@@ -194,6 +195,7 @@ export async function POST(request) {
       'email.delivered': 'delivered',
       'email.delivery_delayed': 'delayed',
       'email.failed': 'failed',
+      'email.suppressed': 'suppressed',
       'email.complained': 'complained',
       'email.bounced': 'bounced',
       'email.opened': 'opened',
@@ -253,6 +255,39 @@ export async function POST(request) {
       );
     }
     
+    // Correlate signed provider callbacks to preorder customer contact.
+    // Never confuse a provider send acknowledgement with inbox delivery.
+    if (emailId && status) {
+      const target = await db.collection('preorder_requests').findOne({
+        'customerContact.email.messageId': emailId,
+      }, { projection: { _id: 1, productName: 1 } });
+      if (target) {
+        await db.collection('preorder_requests').updateOne({ _id: target._id }, {
+          $set: {
+            'customerContact.email.status': status,
+            'customerContact.email.deliveryVerified': status === 'delivered',
+            'customerContact.email.lastEventAt': new Date(),
+          },
+        });
+        if (['failed', 'bounced', 'complained', 'suppressed'].includes(status)) {
+          try {
+            await sendOwnerAlert({
+              sourceEventId: `preorder-contact:${emailId}:${status}`,
+              category: 'fresh_batch', severity: 'warning',
+              title: 'Preorder customer email not delivered',
+              body: `Customer acknowledgement for preorder ${String(target._id).slice(-12)} was ${status}. Manual follow-up is required.`,
+              actionUrl: 'https://tasteofgratitude.shop/admin/fresh-batches',
+              channel: 'all', eventAt: new Date().toISOString(),
+              metadata: { requestId: String(target._id), emailStatus: status },
+            });
+          } catch (alertError) {
+            logger.warn('Webhook', 'Could not send follow-up alert for failed preorder email',
+              { error: alertError instanceof Error ? alertError.message : String(alertError) });
+          }
+        }
+      }
+    }
+
     // Also update email_logs for individual emails
     if (emailId) {
       await db.collection('email_logs').updateOne(
@@ -321,6 +356,6 @@ export async function GET() {
   return NextResponse.json({ 
     status: 'ok',
     message: 'Resend webhook endpoint active',
-    events: ['email.sent', 'email.delivered', 'email.delivery_delayed', 'email.bounced', 'email.complained', 'email.opened', 'email.clicked']
+    events: ['email.sent', 'email.delivered', 'email.delivery_delayed', 'email.bounced', 'email.suppressed', 'email.complained', 'email.opened', 'email.clicked']
   });
 }
