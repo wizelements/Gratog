@@ -72,6 +72,11 @@ vi.mock('@/lib/db-optimized', () => ({
   }),
 }));
 
+// These are isolated pricing/inventory/coupon tests with intentionally fictional
+// catalog rows and prices. Current-menu enforcement has its own integration
+// and admission regression suite; do not short-circuit these independent tests.
+vi.mock('@/lib/order-admission', () => ({ findUnapprovedCurrentMenuItem: () => null }));
+
 import { priceCart, CartPricingError } from '../../lib/cart-pricing';
 
 beforeEach(() => {
