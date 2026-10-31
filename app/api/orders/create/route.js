@@ -138,10 +138,8 @@ export async function POST(request) {
     // in-stock merchandise. Record customer consent only after a server-owned
     // catalog confirms which line items really are preorders.
     const preorderTerms = validatePreorderAcknowledgement({
-      items: pricing.items,
-      preorderAcknowledged: orderData.preorderAcknowledged,
-      preorderTermsVersion: orderData.preorderTermsVersion,
       ...orderData,
+      items: pricing.items,
     });
     if (!preorderTerms.valid) {
       return NextResponse.json({
