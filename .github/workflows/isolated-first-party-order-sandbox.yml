@@ -48,6 +48,7 @@ jobs:
           ORDER_ACCESS_TOKEN_SECRET: locally-isolated-order-token-secret-not-for-production
           ADMIN_API_KEY: local-integration-test-only
           SQUARE_ENVIRONMENT: sandbox
+          RESEND_WEBHOOK_SECRET: ci-isolated-resend-signature-secret-for-qa
           BASE_URL: http://127.0.0.1:3333
           NEXT_PUBLIC_BASE_URL: http://127.0.0.1:3333
           NODE_ENV: development
