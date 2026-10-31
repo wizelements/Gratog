@@ -21,13 +21,16 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { getActiveMarketPickups } from '@/data/markets';
 
-// Market configurations
-const MARKETS = [
-  { id: 'serenbe-farmers-market', name: 'Serenbe Farmers Market', day: 'Saturday', hours: '9AM-1PM' },
-  { id: 'dunwoody-farmers-market', name: 'Dunwoody Farmers Market (DHA)', day: 'Saturday', hours: '8AM-12PM' },
-  { id: 'sandy-springs-market', name: 'Sandy Springs Market', day: 'Saturday', hours: '8AM-12PM' },
-];
+// Use the same active market identity and schedule as the QR page.
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MARKETS = getActiveMarketPickups().map(market => ({
+  id: market.id,
+  name: market.name,
+  day: DAY_NAMES[market.dayOfWeek],
+  hours: market.hours,
+}));
 
 interface Product {
   id: string;
@@ -74,9 +77,9 @@ export default function MarketSetupPage() {
         next.delete(productId);
       } else {
         next.add(productId);
-        // Default quantity of 20 if not set
-        if (!quantities[productId]) {
-          setQuantities(q => ({ ...q, [productId]: 20 }));
+        // Never fabricate twenty sellable units for a newly selected item.
+        if (quantities[productId] === undefined) {
+          setQuantities(q => ({ ...q, [productId]: 0 }));
         }
       }
       return next;
@@ -107,9 +110,15 @@ export default function MarketSetupPage() {
         name: product?.name || 'Unknown',
         price: product?.price || 0,
         category: product?.category || 'General',
-        quantity: quantities[productId] || 20,
+        quantity: quantities[productId] ?? 0,
       };
     });
+
+    if (items.some(item => !Number.isInteger(item.quantity) || item.quantity <= 0 || item.quantity > 500)) {
+      toast.error('Enter a confirmed quantity from 1 to 500 for every selected product.');
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/inventory', {
@@ -228,7 +237,7 @@ export default function MarketSetupPage() {
                                 <Input
                                   type="number"
                                   min="0"
-                                  value={quantities[product.id] || 20}
+                                  value={quantities[product.id] ?? 0}
                                   onChange={(e) => updateQuantity(product.id, parseInt(e.target.value) || 0)}
                                   className="w-20"
                                 />
@@ -281,7 +290,7 @@ export default function MarketSetupPage() {
               {selectedItems.map(item => (
                 <div key={item.id} className="flex justify-between text-sm">
                   <span>{item.name}</span>
-                  <span className="text-muted-foreground">Qty: {quantities[item.id] || 20}</span>
+                  <span className="text-muted-foreground">Qty: {quantities[item.id] ?? 0}</span>
                 </div>
               ))}
             </div>
@@ -359,6 +368,10 @@ export default function MarketSetupPage() {
                   }
                   if (step === 2 && selectedProducts.size === 0) {
                     toast.error('Please select at least one product');
+                    return;
+                  }
+                  if (step === 2 && Array.from(selectedProducts).some(id => !Number.isInteger(quantities[id]) || quantities[id] <= 0 || quantities[id] > 500)) {
+                    toast.error('Enter a real, confirmed quantity for every selected product.');
                     return;
                   }
                   setStep(step + 1);
