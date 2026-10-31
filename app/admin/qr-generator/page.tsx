@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Copy, ExternalLink, Printer, QrCode } from 'lucide-react';
+import { Copy, ExternalLink, Printer } from 'lucide-react';
 import { getActiveMarketPickups } from '@/data/markets';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
