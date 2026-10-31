@@ -62,6 +62,10 @@ export async function GET(request: NextRequest) {
 
     // Transform Square items to storefront format and reject invalid records.
     const products = items
+      // Keep the actual canonical Square Calm Waters item. The old duplicate
+      // must remain in Square for historical paid orders, but cannot appear
+      // on website ordering feeds. Merchant-channel archival is separate.
+      .filter((item: any) => item.id !== 'NOD76PUJZP7QRJ2YTHY7S3K5')
       .filter((item: any) => !findUnapprovedCurrentMenuItem([{
         id: item.id, name: item.itemData?.name, category: 'square-catalog',
       }]))

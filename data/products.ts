@@ -81,6 +81,97 @@ function archivedProduct(slug: string, name: string, reason: string): MarketProd
 }
 
 export const PRODUCTS: MarketProduct[] = [
+  // Approved current drinks absent from the older curated data library.
+  // These are catalog descriptions only; real sellable units require current
+  // Square variation identity AND verified physical stock / approved capacity.
+  {
+    id: 'gracious-roots',
+    slug: 'gracious-roots',
+    name: 'Gracious Roots',
+    category: 'lemonades',
+    weeklyStatus: 'active',
+    price: 11.99,
+    sizes: ['16oz bottle'],
+    ingredients: ['Beet', 'Apple', 'Lemon', 'Ginger', 'Parsley', 'Pineapple', 'Sea Moss Gel', 'Agave', 'Alkaline Water'],
+    shortDescription: 'Beet, apple, pineapple, parsley, ginger, and lemon in a vibrant bottled lemonade.',
+    fullDescription: 'A bright and earthy small-batch lemonade with beet, apple, pineapple, parsley, ginger, lemon, and our signature sea moss blend.',
+    flavorNotes: 'Earthy beet, sweet apple and pineapple, fresh lemon, and ginger.',
+    wellnessSupport: ['Fruity and earthy flavor', 'Fresh ginger', 'Chilled 16oz drink'],
+    recommendedUse: 'Keep refrigerated and enjoy chilled.',
+    allergens: [],
+    pickupAvailability: 'Confirm the current batch and pickup window before ordering.',
+    shippingAvailability: 'Georgia availability depends on verified fulfillment eligibility.',
+    inventoryStatus: 'preorder',
+    featured: true,
+    seasonal: false,
+    image: FALLBACK_IMAGE,
+    seoTitle: 'Gracious Roots Beet Lemonade | Taste of Gratitude',
+    seoDescription: 'Gracious Roots beet, apple, pineapple, and ginger lemonade. Confirm fresh-batch availability before ordering.',
+    activeWeeklyMenu: true,
+    soldOut: false,
+    preorderOnly: false,
+    marketPickupOnly: true,
+    tags: ['beet', 'apple', 'pineapple', 'ginger', 'current-menu'],
+  },
+  {
+    id: 'melon-rita',
+    slug: 'melon-rita',
+    name: 'Melon Rita',
+    category: 'lemonades',
+    weeklyStatus: 'limited',
+    price: 11.99,
+    sizes: ['16oz bottle'],
+    ingredients: ['Melon', 'Watermelon', 'Strawberry', 'Celtic Sea Salt', 'Lemon', 'Ginger', 'Lime', 'Sea Moss Gel', 'Agave', 'Alkaline Water'],
+    shortDescription: 'Limited melon, watermelon, strawberry, lemon, ginger, and lime lemonade.',
+    fullDescription: 'A limited small-batch fruity lemonade combining melon, watermelon, strawberry, citrus, and warming ginger with a pinch of Celtic sea salt.',
+    flavorNotes: 'Juicy melons and strawberry, bright lime, and a gentle ginger finish.',
+    wellnessSupport: ['Juicy melon flavor', 'Bright citrus', 'Chilled 16oz drink'],
+    recommendedUse: 'Keep refrigerated and enjoy chilled.',
+    allergens: [],
+    pickupAvailability: 'Limited batch; availability subject to real Square inventory and pickup confirmation.',
+    shippingAvailability: 'Georgia availability depends on verified fulfillment eligibility.',
+    inventoryStatus: 'limited',
+    featured: true,
+    seasonal: true,
+    image: FALLBACK_IMAGE,
+    seoTitle: 'Melon Rita Lemonade | Taste of Gratitude',
+    seoDescription: 'Melon Rita limited melon, watermelon, strawberry, and lime lemonade for Atlanta markets.',
+    activeWeeklyMenu: true,
+    soldOut: false,
+    preorderOnly: false,
+    marketPickupOnly: true,
+    tags: ['melon', 'watermelon', 'strawberry', 'lime', 'current-menu'],
+  },
+  {
+    id: 'passion-guava-pineapple',
+    slug: 'passion-guava-pineapple',
+    name: 'Passion Guava Pineapple Lemonade',
+    category: 'lemonades',
+    weeklyStatus: 'active',
+    price: 11.99,
+    sizes: ['16oz bottle'],
+    // Owner confirmed: no sea moss and NO ginger in this flavor.
+    ingredients: ['Passion Fruit', 'Guava', 'Pineapple', 'Lemon', 'Agave', 'Alkaline Water'],
+    shortDescription: 'Tropical passion fruit, guava, pineapple, and lemon in a refreshing bottled lemonade.',
+    fullDescription: 'A bright, tropical lemonade with passion fruit, guava, pineapple, lemon, agave, and alkaline water. This flavor contains no sea moss and no ginger.',
+    flavorNotes: 'Tropical passion fruit and guava balanced with pineapple and fresh lemon.',
+    wellnessSupport: ['Tropical fruit flavor', 'Bright lemon finish', 'Chilled 16oz drink'],
+    recommendedUse: 'Keep refrigerated and enjoy chilled.',
+    allergens: [],
+    pickupAvailability: 'Confirm the current batch and pickup window before ordering.',
+    shippingAvailability: 'Georgia availability depends on verified fulfillment eligibility.',
+    inventoryStatus: 'preorder',
+    featured: true,
+    seasonal: false,
+    image: FALLBACK_IMAGE,
+    seoTitle: 'Passion Guava Pineapple Lemonade | Taste of Gratitude',
+    seoDescription: 'Passion fruit, guava, pineapple, and lemon bottled lemonade, without ginger or sea moss.',
+    activeWeeklyMenu: true,
+    soldOut: false,
+    preorderOnly: false,
+    marketPickupOnly: true,
+    tags: ['passion-fruit', 'guava', 'pineapple', 'lemon', 'current-menu'],
+  },
   {
     id: 'kissed-by-gods',
     slug: 'kissed-by-gods',
@@ -930,7 +1021,9 @@ export function toStorefrontProduct(product: MarketProduct, index = 0) {
   const categoryLabel = getCategoryLabel(product.category);
   const taxonomyCategoryLabel = getTaxonomyCategoryLabel(product.category);
   const categoryIcon = getCategoryIcon(product.category);
-  const stock = product.inventoryStatus === 'sold_out' || product.soldOut ? 0 : product.inventoryStatus === 'limited' ? 4 : 20;
+  // Curated marketing entries do not prove physical stock. A live, source-
+  // verified inventory snapshot is the only authority for sellable quantity.
+  const stock = product.soldOut ? 0 : null;
 
   return applyMerchantPrice({
     ...product,
@@ -960,7 +1053,8 @@ export function toStorefrontProduct(product: MarketProduct, index = 0) {
     images: [product.image].filter(Boolean),
     imageAlt: `${product.name} from Taste of Gratitude`,
     stock,
-    inStock: stock > 0,
+    inStock: false,
+    inventoryVerified: false,
     isPreorder: product.preorderOnly || product.inventoryStatus === 'preorder',
     marketExclusive: product.marketPickupOnly,
     activeWeeklyMenu: product.activeWeeklyMenu,
