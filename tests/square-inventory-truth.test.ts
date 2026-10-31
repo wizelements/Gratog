@@ -38,6 +38,19 @@ describe('Square inventory is real, location-scoped and never invented', () => {
     expect(fetcher).toHaveBeenCalledTimes(2);
   });
 
+  it('quarantines negative and invalid Square counts without making the full menu fail', async () => {
+    const fetcher = vi.fn(async () => ({ ok: true, json: async () => ({ counts: [
+      {catalog_object_id:'OVERSOLD',location_id:'LOC_1',state:'IN_STOCK',quantity:'-6'},
+      {catalog_object_id:'MALFORMED',location_id:'LOC_1',state:'IN_STOCK',quantity:'not-a-number'},
+      {catalog_object_id:'GOOD',location_id:'LOC_1',state:'IN_STOCK',quantity:'12'},
+    ]})}));
+    const counts=await readSquareLiveInventory(['OVERSOLD','MALFORMED','GOOD'],{env:environment,fetcher});
+    expect(inventoryForVariation(counts,{id:'OVERSOLD'})).toMatchObject({quantity:0,countStatus:'negative_on_hand'});
+    expect(inventoryForVariation(counts,{id:'MALFORMED'})).toMatchObject({quantity:null,countStatus:'invalid'});
+    expect(inventoryForVariation(counts,{id:'GOOD'})).toMatchObject({quantity:12,countStatus:'reported'});
+    expect(counts.size).toBe(3);
+  });
+
   it('never claims stock on Square errors or missing configuration',async()=>{
     await expect(readSquareLiveInventory(['A'],{env:{},fetcher:vi.fn()})).rejects.toThrow('SQUARE_INVENTORY_CONFIGURATION_REQUIRED');
     await expect(readSquareLiveInventory(['A'],{env:environment,fetcher:vi.fn(async()=>({ok:false}))})).rejects.toThrow('SQUARE_INVENTORY_READ_FAILED');
