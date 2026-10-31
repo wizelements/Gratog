@@ -67,7 +67,9 @@ export default function ReviewAndPay({
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
   const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(null);
-  const hasPreorderItems = useMemo(() => cart.some((item) => item.isPreorder || item.marketExclusive), [cart]);
+  const [preorderAcknowledged, setPreorderAcknowledged] = useState(false);
+  const hasPreorderItems = useMemo(() => cart.some((item) => item.isPreorder), [cart]);
+  const hasMarketExclusiveItems = useMemo(() => cart.some((item) => item.marketExclusive), [cart]);
   const pickupLocation = useMemo(() => {
     if (!fulfillment.pickup?.locationId) return null;
     return Fulfillment.pickupLocations().find((location) => location.id === fulfillment.pickup?.locationId) || null;
@@ -78,7 +80,10 @@ export default function ReviewAndPay({
   }, [fulfillment.shipping?.methodId]);
   
   const validationResult = useMemo(() => {
-    const marketId = fulfillment.pickup?.locationId || fulfillment.type;
+    // A remembered pickup market must never override the active delivery/
+    // shipping selection when validating market-only items.
+    const marketId = fulfillment.type === 'pickup'
+      ? fulfillment.pickup?.locationId : fulfillment.type;
     const fulfillmentCheck = validateCartForFulfillment(cart as any, fulfillment.type, marketId);
     if (!fulfillmentCheck.valid) return fulfillmentCheck;
     
@@ -86,11 +91,13 @@ export default function ReviewAndPay({
   }, [cart, fulfillment]);
 
   const fulfillmentReadiness = useMemo<FulfillmentReadiness>(() => {
-    if (hasPreorderItems && fulfillment.type !== 'pickup') {
+    // A future-batch preorder is not inherently market-only. True
+    // market-exclusive products still require pickup.
+    if (hasMarketExclusiveItems && fulfillment.type !== 'pickup') {
       return {
         valid: false,
-        code: 'PREORDER_PICKUP_REQUIRED',
-        error: 'Preorder items must be picked up at a selected market.',
+        code: 'MARKET_PICKUP_REQUIRED',
+        error: 'Market-exclusive items must be picked up at a selected market.',
       };
     }
 
@@ -164,7 +171,7 @@ export default function ReviewAndPay({
 
     return { valid: true };
   }, [
-    hasPreorderItems,
+    hasMarketExclusiveItems,
     fulfillment.type,
     fulfillment.pickup?.locationId,
     fulfillment.pickup?.date,
@@ -176,7 +183,8 @@ export default function ReviewAndPay({
     fulfillment.shipping?.methodId,
   ]);
 
-  const canProceedToPayment = validationResult.valid && fulfillmentReadiness.valid;
+  const canProceedToPayment = validationResult.valid && fulfillmentReadiness.valid
+    && (!hasPreorderItems || preorderAcknowledged);
   
   const handleProceedToPayment = async () => {
     // Also lock synchronously; React's disabled button cannot protect against
@@ -203,6 +211,11 @@ export default function ReviewAndPay({
       return;
     }
     
+    if (hasPreorderItems && !preorderAcknowledged) {
+      setOrderError('Please acknowledge that these items are preorders before payment.');
+      return;
+    }
+
     orderRequestInFlight.current = true;
     setIsCreatingOrder(true);
     setOrderError(null);
@@ -217,7 +230,8 @@ export default function ReviewAndPay({
         tip,
         couponCode,
         totals.couponDiscount, // couponDiscount is already in dollars from totalsAdapter
-        totals.deliveryFee
+        totals.deliveryFee,
+        hasPreorderItems && preorderAcknowledged
       );
       
       setOrderId(orderResponse.order.id);
@@ -475,14 +489,33 @@ export default function ReviewAndPay({
                   <div>
                     <h4 className="font-medium text-amber-800">Preorder items in your cart</h4>
                     <p className="text-sm text-amber-700 mt-1">
-                      These items will be freshly prepared for your selected pickup date. 
-                      We&apos;ll email your confirmation and any available order updates.
+                      These items are PREORDERS and are not guaranteed to be on hand.
+                      The requested pickup, market pickup, delivery, or eligible Georgia shipping details
+                      are reviewed before payment. Preparation and availability depend on confirmed
+                      batch capacity. You will receive order updates by email.
                     </p>
                   </div>
                 </div>
               </div>
             )}
             
+            {hasPreorderItems && (
+              <label className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+                <input
+                  type="checkbox"
+                  checked={preorderAcknowledged}
+                  onChange={(event) => setPreorderAcknowledged(event.target.checked)}
+                  className="mt-1 h-4 w-4 shrink-0 accent-emerald-700"
+                  aria-label="I acknowledge this is a preorder and confirm my fulfillment selection"
+                />
+                <span>
+                  <strong>I understand these items are preorders, not in-stock purchases.</strong>
+                  {' '}I confirm my selected fulfillment method and requested details.
+                  Fulfillment timing and batch availability must be confirmed before payment.
+                </span>
+              </label>
+            )}
+
             {/* Fulfillment Details */}
             <div className="bg-gray-50 rounded-lg p-4">
               <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">

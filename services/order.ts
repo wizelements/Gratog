@@ -173,7 +173,8 @@ export async function createOrder(
   tip: number = 0,
   couponCode?: string,
   couponDiscountDollars: number = 0,
-  deliveryFeeDollars: number = 0
+  deliveryFeeDollars: number = 0,
+  preorderAcknowledged: boolean = false
 ): Promise<OrderResponse> {
   // Client-side validation (fail fast before network call)
   validateContact(contact);
@@ -216,6 +217,8 @@ export async function createOrder(
     couponCode: couponCode?.trim() || undefined,
     couponDiscount: sanitizedDiscount, // API expects dollars, not cents
     source: 'checkout_v2',
+    preorderAcknowledged: preorderAcknowledged === true,
+    preorderTermsVersion: preorderAcknowledged === true ? '2026-10-31' : null,
     
     // Order timing - default to 'asap'; pickup with a date uses 'scheduled'
     orderTiming: (fulfillment.type === 'pickup' && fulfillment.pickup?.date)

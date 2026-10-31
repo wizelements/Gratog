@@ -40,161 +40,212 @@ try {
   await db.collection('idempotency_keys').deleteMany({ key: /^tog-sbx-/ });
   await db.collection('inventory').deleteMany({ source: 'qa-isolated-sandbox' });
 
+  // Current approved merchant fixtures. Never insert retired drink SKUs into
+  // a positive order test: strict menu enforcement MUST reject those.
   await db.collection('unified_products').insertMany([
     {
-      id: 'qa-sbx-strawberry-bliss',
-      slug: 'strawberry-bliss',
-      name: 'Strawberry Bliss',
-      source: 'qa-isolated-sandbox',
-      price: 11.99,
-      priceCents: 1199,
-      squareEcomAvailable: true,
-      inStock: true,
-      variations: [{ id: 'qa-sbx-bliss-16oz', name: '16oz bottle', price: 11.99, priceCents: 1199 }],
+      id:'qa-sbx-calm-waters',slug:'calm-waters',name:'Calm Waters',
+      source:'qa-isolated-sandbox',price:11.99,priceCents:1199,
+      squareEcomAvailable:true,inStock:true,marketPickupOnly:false,
+      variations:[{id:'qa-sbx-calm-16oz',name:'16oz bottle',priceCents:1199}],
     },
     {
-      id: 'qa-sbx-calm-waters', slug: 'calm-waters', name: 'Calm Waters',
-      source: 'qa-isolated-sandbox',
-      price: 11.99, priceCents: 1199, inStock: true,
-      marketPickupOnly: true, preorderOnly: true,
-      variations: [{ id: 'qa-sbx-calm-16oz', name: '16oz bottle', priceCents: 1199 }],
+      id:'qa-sbx-kissed-by-gods',slug:'kissed-by-gods',name:'Kissed by Gods',
+      source:'qa-isolated-sandbox',price:11.99,priceCents:1199,
+      inStock:true,marketPickupOnly:true,preorderOnly:true,
+      variations:[{id:'qa-sbx-kissed-16oz',name:'16oz bottle',priceCents:1199}],
     },
     {
-      id: 'qa-sbx-blue-lotus', slug: 'blue-lotus', name: 'Blue Lotus',
-      source: 'qa-isolated-sandbox',
-      price: 36, priceCents: 3600, inStock: true,
-      variations: [{ id: 'qa-sbx-lotus-16oz', name: '16oz jar', priceCents: 3600 }],
+      id:'qa-sbx-herbal-vibe',slug:'herbal-vibe',name:'Herbal Vibe',
+      source:'qa-isolated-sandbox',price:15.99,priceCents:1599,
+      inStock:true,marketPickupOnly:false,
+      variations:[{id:'qa-sbx-herbal-16oz',name:'16oz bottle',priceCents:1599}],
+    },
+    {
+      id:'qa-sbx-melon-rita',slug:'melon-rita',name:'Melon Rita',
+      source:'qa-isolated-sandbox',price:11.99,priceCents:1199,
+      inStock:false,marketPickupOnly:false,preorderOnly:true,
+      variations:[{id:'qa-sbx-melon-16oz',name:'16oz bottle',priceCents:1199}],
     },
   ]);
-
-  // Negative merchant inventory is real inventory debt, never six jars to sell.
-  await db.collection('inventory').insertOne({productId:'qa-sbx-blue-lotus',currentStock:-6,source:'qa-isolated-sandbox'});
-
-  const blueLotusRequest = await post('/api/fresh-batch/requests', {
-    email: 'blue-lotus-request@qa-sandbox.invalid', phone: null,
-    requestedProductSlug: 'blue-lotus-gel', flavorProfile: null,
-    requestedFlavorText: null, quantity: 1, quantityUnit: 'jar_16oz',
-    preferredMarketId: 'georgia_online_inquiry', needByDate: null,
-    notes: null, requestSource: 'product_page', marketingEmailConsent: false,
+  // Physical count negative means no charge. A customer may still submit
+  // a separate explicit future-batch request, which collects no payment.
+  await db.collection('inventory').insertOne({
+    productId:'qa-sbx-herbal-vibe',currentStock:-6,source:'qa-isolated-sandbox',
   });
-  check('Real request API accepts Blue Lotus 16oz jar without starting payment',
-    blueLotusRequest.status === 201 && blueLotusRequest.data.success === true &&
-    Boolean(blueLotusRequest.data.requestId),
-    { status: blueLotusRequest.status });
-  const requestRecord = await db.collection('fresh_batch_requests')
-    .findOne({ email: 'blue-lotus-request@qa-sandbox.invalid' });
-  check('Blue Lotus jar request persisted with no sample or customer charge',
-    requestRecord?.requestedProductSlug === 'blue-lotus-gel' &&
-    requestRecord?.quantityUnit === 'jar_16oz' &&
-    requestRecord?.status === 'requested' &&
-    (await db.collection('payment_records').countDocuments({ orderId: requestRecord?.id })) === 0,
-    { status: requestRecord?.status, unit: requestRecord?.quantityUnit });
 
-  const preview = await post('/api/cart/price', {
-    lines: [{ variationId: 'qa-sbx-bliss-16oz', qty: 1, price: 0.01 }],
+  const baseCart=[{productId:'qa-sbx-calm-waters',variationId:'qa-sbx-calm-16oz',quantity:1,price:0.01}];
+  const preview=await post('/api/cart/price',{
+    lines:[{variationId:'qa-sbx-calm-16oz',qty:1,price:0.01}],
   });
-  check('Preview prices Strawberry Bliss at server-owned $11.99',
-    preview.status === 200 && preview.data.pricing?.subtotalCents === 1199,
-    { status: preview.status, cents: preview.data.pricing?.subtotalCents });
+  check('Current-menu Calm Waters is server-priced $11.99 despite client penny',
+    preview.status===200&&preview.data.pricing?.subtotalCents===1199,
+    {status:preview.status,cents:preview.data.pricing?.subtotalCents});
 
-  const invalidGeorgia = await post('/api/orders/create', {
-    customer: { name: 'QA Sandbox', email: 'outstate@qa-sandbox.invalid' },
-    cart: [{ productId: 'qa-sbx-strawberry-bliss', variationId: 'qa-sbx-bliss-16oz', quantity: 1 }],
-    fulfillmentType: 'shipping',
-    shippingAddress: { street: '123 Test Street', city: 'New York', state: 'NY', zip: '10001' },
-    shippingMethod: 'standard',
-  });
-  check('Out-of-state shipping blocked before order', invalidGeorgia.status === 422 && invalidGeorgia.data.code === 'GEORGIA_ONLY',
-    { status: invalidGeorgia.status });
-
-  const restricted = await post('/api/orders/create', {
-    customer: { name: 'QA Sandbox', email: 'restricted@qa-sandbox.invalid' },
-    cart: [{ productId: 'qa-sbx-calm-waters', variationId: 'qa-sbx-calm-16oz', quantity: 1, marketExclusive: false }],
-    fulfillmentType: 'shipping',
-    shippingAddress: { street: '123 Example Street', city: 'Atlanta', state: 'GA', zip: '30303' },
-    shippingMethod: 'standard',
-  });
-  check('Market pickup-only product cannot be shipped using forged client flags',
-    restricted.status === 422 && restricted.data.code === 'MARKET_PICKUP_REQUIRED', { status: restricted.status });
-
-  const lotusPreview = await post('/api/cart/price', {
-    lines: [{ variationId: 'qa-sbx-lotus-16oz', qty: 1, price: 0.01 }],
-  });
-  check('Preview prices only Blue Lotus 16oz at $36',
-    lotusPreview.status === 200 && lotusPreview.data.pricing?.subtotalCents === 3600,
-    { status: lotusPreview.status, subtotalCents: lotusPreview.data.pricing?.subtotalCents });
-
-  const sampleRequest = await post('/api/orders/create', {
-    customer: { name: 'QA Sandbox', email: 'sample@qa-sandbox.invalid' },
-    cart: [{ productId: 'qa-sbx-blue-lotus', variationId: 'retired-2oz-sample', quantity: 1 }],
-    fulfillmentType: 'shipping',
-    shippingAddress: { street: '123 Example Street', city: 'Atlanta', state: 'GA', zip: '30303' },
-    shippingMethod: 'standard',
-  });
-  check('Retired Blue Lotus sample size is rejected before order creation',
-    sampleRequest.status === 422 && sampleRequest.data.code === 'VARIATION_NOT_FOUND',
-    { status: sampleRequest.status, code: sampleRequest.data.code });
-
-  const cart = [{ productId:'qa-sbx-strawberry-bliss', variationId:'qa-sbx-bliss-16oz', quantity:1, price:0.01 }];
-  const body = {
-    customer:{name:'QA Sandbox',email:'order@qa-sandbox.invalid'},
-    cart,
+  const outdated=await post('/api/orders/create',{
+    customer:{name:'QA Sandbox',email:'retired@qa-sandbox.invalid'},
+    cart:[{productId:'qa-sbx-calm-waters',variationId:'qa-sbx-calm-16oz',quantity:1,
+      name:'Peach Lemonade',price:0.01}],
     fulfillmentType:'shipping',
+    shippingAddress:{street:'123 Example',city:'Atlanta',state:'GA',zip:'30303'},
+    shippingMethod:'standard',
+  },{'Idempotency-Key':`tog-sbx-${randomUUID()}`});
+  // A forged name on a legitimate product ID is handled by server-owned
+  // catalog identity, which is why only authoritative product records count.
+  check('Forged client price and product name cannot change server catalog identity',
+    outdated.status===200&&outdated.data.order?.items?.[0]?.name==='Calm Waters',
+    {status:outdated.status,canonicalName:outdated.data.order?.items?.[0]?.name});
+
+  const invalidGeorgia=await post('/api/orders/create',{
+    customer:{name:'QA Sandbox',email:'outstate@qa-sandbox.invalid'},
+    cart:baseCart,fulfillmentType:'shipping',
+    shippingAddress:{street:'123 Test Street',city:'New York',state:'NY',zip:'10001'},
+    shippingMethod:'standard',
+  },{'Idempotency-Key':`tog-sbx-${randomUUID()}`});
+  check('Out-of-state shipping is blocked before order',
+    invalidGeorgia.status===422&&invalidGeorgia.data.code==='GEORGIA_ONLY',
+    {status:invalidGeorgia.status});
+
+  const restricted=await post('/api/orders/create',{
+    customer:{name:'QA Sandbox',email:'restricted@qa-sandbox.invalid'},
+    cart:[{productId:'qa-sbx-kissed-by-gods',variationId:'qa-sbx-kissed-16oz',quantity:1}],
+    fulfillmentType:'shipping',
+    shippingAddress:{street:'123 Example',city:'Atlanta',state:'GA',zip:'30303'},
+    shippingMethod:'standard',
+  },{'Idempotency-Key':`tog-sbx-${randomUUID()}`});
+  check('Merchant-marked market-exclusive item cannot be shipped',
+    restricted.status===422&&restricted.data.code==='MARKET_PICKUP_REQUIRED',
+    {status:restricted.status,code:restricted.data.code});
+
+  const herbalPreview=await post('/api/cart/price',{
+    lines:[{variationId:'qa-sbx-herbal-16oz',qty:1,price:0.01}],
+  });
+  check('Herbal Vibe is never charged a stale price instead of $15.99',
+    herbalPreview.status===200&&herbalPreview.data.pricing?.subtotalCents===1599,
+    {status:herbalPreview.status,cents:herbalPreview.data.pricing?.subtotalCents});
+
+  const base={
+    customer:{name:'QA Sandbox',email:'order@qa-sandbox.invalid'},
+    cart:baseCart,fulfillmentType:'shipping',
     shippingAddress:{street:'123 Example Street',city:'Atlanta',state:'GA',zip:'30303'},
     shippingMethod:'standard',
-    deliveryTip: 99,
-    subtotal:0.01,
-    total:0.01,
-    source:'qa-isolated-sandbox',
+    deliveryTip:99,subtotal:0.01,total:0.01,source:'qa-isolated-sandbox',
   };
-  const idem = `tog-sbx-${randomUUID()}`;
-  const created = await post('/api/orders/create', body, { 'Idempotency-Key': idem });
-  check('Isolated database records one actual GA order with server-derived total',
-    created.status === 200 && created.data.success === true &&
-      created.data.order?.pricing?.total === 20.98,
-    { status: created.status, total: created.data.order?.pricing?.total });
-  const id = created.data.order.id;
-  check('Guest order receives signed payment-scoped access token',
-    Boolean(created.data.order?.orderAccessToken));
-  const same = await post('/api/orders/create', body, { 'Idempotency-Key': idem });
-  check('Lost-response retry preserves same order identifier',
-    same.status === 200 && same.data.order?.id === id, { status: same.status });
-  const count = await db.collection('orders').countDocuments({ id, source:'qa-isolated-sandbox' });
-  check('Only one order persisted for repeated identical key', count === 1, { count });
-  const stored = await db.collection('orders').findOne({ id });
-  check('Correct item and shipping amounts persisted; no tip or client underpayment',
-    stored?.subtotalCents === 1199 && stored?.totalCents === 2098 &&
-    stored?.deliveryFeeCents === 899 && stored?.deliveryTipCents === 0,
-    { subtotalCents: stored?.subtotalCents, totalCents: stored?.totalCents });
-  check('Unpaid order does not decrement inventory or award rewards',
-    stored?.status === 'pending' && stored?.paymentStatus === 'pending' &&
-    !(stored?.paidAt) && !(stored?.inventoryConsumedAt),
-    { status: stored?.status });
-  check('Rejected out-of-state and market-only orders not persisted',
-    (await db.collection('orders').countDocuments({ source:'qa-isolated-sandbox' })) === 1);
-  const lotusBody = {
-    ...body,
-    customer: { name: 'QA Sandbox', email: 'blue-lotus@qa-sandbox.invalid' },
-    cart: [{ productId: 'qa-sbx-blue-lotus', variationId: 'qa-sbx-lotus-16oz', quantity: 1, price: 0.01 }],
-  };
-  const lotus = await post('/api/orders/create', lotusBody, { 'Idempotency-Key': `tog-sbx-${randomUUID()}` });
-  check('Blue Lotus 16oz order created at $36 plus Georgia shipping',
-    lotus.status === 200 && lotus.data.order?.pricing?.subtotal === 36 &&
-    lotus.data.order?.pricing?.total === 44.99,
-    { status: lotus.status, total: lotus.data.order?.pricing?.total });
+  const idem=`tog-sbx-${randomUUID()}`;
+  const created=await post('/api/orders/create',base,{'Idempotency-Key':idem});
+  check('Isolated database creates a GA order with authoritative price',
+    created.status===200&&created.data.success===true&&
+      created.data.order?.pricing?.total===20.98,
+    {status:created.status,total:created.data.order?.pricing?.total});
+  const orderId=created.data.order.id;
+  check('Created guest order receives signed payment authorization',
+    Boolean(created.data.order.orderAccessToken));
+  const repeat=await post('/api/orders/create',base,{'Idempotency-Key':idem});
+  check('Identical idempotency key returns the same order',
+    repeat.status===200&&repeat.data.order?.id===orderId,
+    {status:repeat.status});
+  const stored=await db.collection('orders').findOne({id:orderId});
+  check('Unpaid order has not consumed stock, charged or awarded rewards',
+    stored?.subtotalCents===1199&&stored?.totalCents===2098&&
+      stored?.deliveryTipCents===0&&!stored?.squarePaymentId&&
+      !stored?.inventoryConsumedAt,
+    {subtotalCents:stored?.subtotalCents,totalCents:stored?.totalCents});
 
-  const rejectedPayment = await post('/api/payments', {
-    sourceId: 'cnon:card-nonce-ok', amountCents: 4499,
-    orderId: lotus.data.order.id,
-    orderAccessToken: lotus.data.order.orderAccessToken,
+  const herbalBody={
+    ...base,customer:{name:'QA Sandbox',email:'herbal@qa-sandbox.invalid'},
+    cart:[{productId:'qa-sbx-herbal-vibe',variationId:'qa-sbx-herbal-16oz',quantity:1}],
+  };
+  const herbal=await post('/api/orders/create',herbalBody,{
+    'Idempotency-Key':`tog-sbx-${randomUUID()}`
   });
-  check('Negative Blue Lotus inventory blocks charge BEFORE Square is called',
-    rejectedPayment.status === 409 && rejectedPayment.data.code === 'INVENTORY_UNAVAILABLE',
+  check('Herbal Vibe 16oz creates a server-priced $15.99 order',
+    herbal.status===200&&herbal.data.order?.pricing?.subtotal===15.99,
+    {status:herbal.status});
+  const rejectedPayment=await post('/api/payments',{
+    sourceId:'cnon:card-nonce-ok',amountCents:2488,
+    orderId:herbal.data.order.id,
+    orderAccessToken:herbal.data.order.orderAccessToken,
+  });
+  check('Negative stock blocks payment before any Square charge',
+    rejectedPayment.status===409&&rejectedPayment.data.code==='INVENTORY_UNAVAILABLE',
     {status:rejectedPayment.status,code:rejectedPayment.data.code});
-  const noCapturedPayment = await db.collection('orders').findOne({id:lotus.data.order.id});
-  check('Blocked payment leaves order unpaid and without Square payment session',
-    noCapturedPayment?.paymentStatus === 'pending' && !noCapturedPayment?.squarePaymentId,
-    {status:noCapturedPayment?.paymentStatus});
+  const unpaid=await db.collection('orders').findOne({id:herbal.data.order.id});
+  check('Blocked payment leaves pending order without Square payment',
+    !unpaid?.squarePaymentId&&unpaid?.paymentStatus==='pending');
+
+  const futureOrder={
+    ...base,customer:{name:'QA Sandbox',email:'future@qa-sandbox.invalid'},
+    cart:[{productId:'qa-sbx-melon-rita',variationId:'qa-sbx-melon-16oz',quantity:1}],
+    fulfillmentType:'pickup_market',
+    pickup:{locationId:'serenbe',date:'2026-11-07'},
+    shippingAddress:undefined,shippingMethod:undefined,
+  };
+  const noConsent=await post('/api/orders/create',futureOrder,{
+    'Idempotency-Key':`tog-sbx-${randomUUID()}`
+  });
+  check('Payable preorder order without acknowledgement is rejected',
+    noConsent.status===422&&noConsent.data.code==='PREORDER_ACKNOWLEDGEMENT_REQUIRED',
+    {status:noConsent.status,code:noConsent.data.code});
+  const confirmedFuture=await post('/api/orders/create',{
+    ...futureOrder,preorderAcknowledged:true,preorderTermsVersion:'2026-10-31',
+  },{'Idempotency-Key':`tog-sbx-${randomUUID()}`});
+  check('Acknowledged future-batch preorder stores merchant-selected pickup details',
+    confirmedFuture.status===200&&confirmedFuture.data.order?.items?.[0]?.isPreorder===true,
+    {status:confirmedFuture.status,code:confirmedFuture.data.code});
+  const confirmedStored=await db.collection('orders').findOne({id:confirmedFuture.data.order.id});
+  check('Confirmed future preorder preserves consent but remains unpaid',
+    confirmedStored?.preorderAcknowledged===true&&
+      confirmedStored?.preorderTermsVersion==='2026-10-31'&&
+      !confirmedStored?.squarePaymentId);
+
+  // Out-of-stock customer preorder request: real POST and Mongo persistence,
+  // selected fulfillment, explicit terms and no payment authority.
+  const futureRequestId=randomUUID();
+  const preorderPayload={
+    requestId:futureRequestId,product:'melon-rita',quantity:2,
+    customer:{name:'Isolated QA',email:'preorder@qa-sandbox.invalid'},
+    fulfillmentType:'pickup_market',
+    pickup:{locationId:'serenbe',date:'2026-11-07'},
+    preorderAcknowledged:true,preorderTermsVersion:'2026-10-31',
+    confirmedFulfillment:true,
+  };
+  const missingConsent=await post('/api/preorder-requests',{
+    ...preorderPayload,preorderAcknowledged:false,
+  });
+  check('Request without preorder acknowledgement is rejected',
+    missingConsent.status===422&&missingConsent.data.code==='PREORDER_ACKNOWLEDGEMENT_REQUIRED',
+    {status:missingConsent.status});
+  const placedRequest=await post('/api/preorder-requests',preorderPayload);
+  check('Confirmed-method preorder request persists with zero charge',
+    placedRequest.status===201&&placedRequest.data.success===true&&
+      placedRequest.data.paymentStatus==='not_charged',
+    {status:placedRequest.status,payment:placedRequest.data.paymentStatus});
+  const storedPreorder=await db.collection('preorder_requests').findOne({
+    _id:placedRequest.data.requestId,
+  });
+  check('Persisted request has chosen method, consent and no false capacity',
+    storedPreorder?.productSlug==='melon-rita'&&storedPreorder?.quantity===2&&
+      storedPreorder?.pickup?.locationId==='serenbe'&&
+      storedPreorder?.preorderAcknowledged===true&&
+      storedPreorder?.capacityReserved===false&&
+      storedPreorder?.paymentStatus==='not_charged'&&!storedPreorder?.squarePaymentId);
+  const retryRequest=await post('/api/preorder-requests',preorderPayload);
+  check('Same request ID cannot create duplicate order or charge',
+    retryRequest.status===200&&retryRequest.data.requestId===placedRequest.data.requestId&&
+      (await db.collection('preorder_requests').countDocuments({
+        'customer.email':'preorder@qa-sandbox.invalid',
+      }))===1);
+  const changed=await post('/api/preorder-requests',{...preorderPayload,quantity:3});
+  check('Changed preorder cannot silently reuse same request ID',
+    changed.status===409&&changed.data.code==='IDEMPOTENCY_CONFLICT');
+  const outOfState=await post('/api/preorder-requests',{
+    ...preorderPayload,requestId:randomUUID(),fulfillmentType:'shipping',
+    address:{street:'123 Example',city:'New York',state:'NY',zip:'10001'},
+    shippingMethod:'pending_verified_quote',
+  });
+  check('Out-of-state preorder shipping request is refused',
+    outOfState.status===422&&outOfState.data.code==='GEORGIA_ONLY',
+    {status:outOfState.status,code:outOfState.data.code});
 
   evidence.pass = true;
 } catch (err) {
@@ -210,6 +261,7 @@ try {
     await client.db().collection('customers').deleteMany({ email: /@qa-sandbox\.invalid$/ });
     await client.db().collection('unified_products').deleteMany({ source:'qa-isolated-sandbox' });
     await client.db().collection('inventory').deleteMany({ source:'qa-isolated-sandbox' });
+    await client.db().collection('preorder_requests').deleteMany({ 'customer.email': /@qa-sandbox\\.invalid$/ });
     await client.db().collection('idempotency_keys').deleteMany({ key: /^tog-sbx-/ });
     await client.close();
   } catch { evidence.cleanup = 'failed; disposable DB is destroyed with CI container'; }

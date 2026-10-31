@@ -1,0 +1,57 @@
+name: Taste Of Gratitude Current Commerce Scope Audit
+
+# No secrets, no Square writes, and no customer payment side effects.
+# A successful audit run means the evidence was collected, NOT that live
+# checkout is certified. The JSON artifact says certified:false until
+# full authorized E2E is demonstrated by a separate release gate.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/current-commerce-scope-audit.mjs'
+      - 'tests/release/current-commerce-scope.test.mjs'
+      - 'ops/reconciliation/2026-10-31-merchant-bottle-counts.json'
+      - '.github/workflows/current-commerce-scope-audit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/current-commerce-scope-audit.mjs'
+      - 'tests/release/current-commerce-scope.test.mjs'
+      - 'ops/reconciliation/2026-10-31-merchant-bottle-counts.json'
+      - '.github/workflows/current-commerce-scope-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  safe-scope-audit:
+    name: Live read-only Square / storefront reconciliation and blockers
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Verify audit logic fails closed
+        run: node --test tests/release/current-commerce-scope.test.mjs
+      - name: Run production GET-only Square and storefront audit
+        run: node scripts/current-commerce-scope-audit.mjs --live
+      - name: Summarize certification status accurately
+        if: always()
+        run: |
+          if test -f test-results/current-commerce-scope.json; then
+            node -e 'const r=require("./test-results/current-commerce-scope.json");console.log("AUDIT_STATUS="+r.result+" CERTIFIED="+r.certified+" BLOCKED="+(r.summary?.blocked ?? "unknown"))'
+          fi
+          echo "A successful audit job does NOT constitute checkout, refund, inventory write, or webhook certification." >> "$GITHUB_STEP_SUMMARY"
+      - name: Retain live read-only audit evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: live-commerce-scope-${{ github.run_id }}
+          path: test-results/current-commerce-scope.json
+          retention-days: 30
+          if-no-files-found: warn

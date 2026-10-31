@@ -197,15 +197,10 @@ export function validateCartForFulfillment(
     }
   }
   
-  // Check for preorder items (only allowed if market supports it)
-  const preorderItems = cart.filter((item: any) => item.isPreorder);
-  if (preorderItems.length > 0 && market && !market.allowsPreorder) {
-    return {
-      valid: false,
-      error: 'Preorder items are only available for market pickup',
-      code: 'PREORDER_NOT_ALLOWED'
-    };
-  }
+  // Availability timing (preorder) and fulfillment channel are separate
+  // decisions. Product-specific market restrictions are enforced above.
+  // Delivery and eligible Georgia shipping remain subject to backend
+  // address, quote, merchant capacity, and payment validation.
   
   // All checks passed
   return { valid: true };

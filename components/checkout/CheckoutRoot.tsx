@@ -51,7 +51,7 @@ function CheckoutContent() {
   } = useCheckoutStore();
 
   const hasTrackedStartRef = useRef(false);
-  const hasPreorderItems = cart.some(item => item.isPreorder || item.marketExclusive);
+  const hasMarketExclusiveItems = cart.some(item => item.marketExclusive);
 
   useEffect(() => {
     // Subscribe before hydration so subsequent card/catalog edits remain live.
@@ -67,14 +67,14 @@ function CheckoutContent() {
   }, [stage]);
 
   useEffect(() => {
-    if (hasPreorderItems && fulfillment.type !== 'pickup') {
+    if (hasMarketExclusiveItems && fulfillment.type !== 'pickup') {
       clearValidation();
       setFulfillment({
         type: 'pickup',
         pickup: fulfillment.pickup || { locationId: '', date: null },
       });
     }
-  }, [hasPreorderItems, fulfillment.type, fulfillment.pickup, clearValidation, setFulfillment]);
+  }, [hasMarketExclusiveItems, fulfillment.type, fulfillment.pickup, clearValidation, setFulfillment]);
 
   useEffect(() => {
     if (!hydrated || hasTrackedStartRef.current) return;
@@ -303,7 +303,7 @@ function CheckoutContent() {
                       </p>
                       <FulfillmentTabs
                         selected={fulfillment.type}
-                        hasPreorderItems={hasPreorderItems}
+                        hasMarketExclusiveItems={hasMarketExclusiveItems}
                         onChange={(type) => {
                           // FIX P1-4: Clear ALL validation when switching fulfillment types
                           // Prevents stale validation errors from previous fulfillment type

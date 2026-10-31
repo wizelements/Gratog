@@ -483,7 +483,7 @@ export async function priceCart(input: PriceCartInput): Promise<PricedCart> {
       // Server-owned catalog flags take precedence over client-provided flags.
       // A customer must not be able to remove a pickup-only restriction by
       // editing a cart payload before creating an order.
-      isPreorder: Boolean(product.isPreorder || product.preorderOnly || item.isPreorder),
+      isPreorder: Boolean(product.isPreorder || product.preorderOnly),
       marketExclusive: Boolean(
         product.marketExclusive ||
         product.marketPickupOnly ||

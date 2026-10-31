@@ -15,7 +15,7 @@ import { checkDeliveryRadius } from '@/lib/delivery-radius';
 import { calculateDistanceBasedDeliveryFee } from '@/lib/delivery-fees';
 import { shippingMethods } from '@/adapters/fulfillmentAdapter';
 import { validateGeorgiaDestination } from '@/lib/georgia-orders';
-import { validateCheckoutFulfillment } from '@/lib/order-admission';
+import { validateCheckoutFulfillment, validatePreorderAcknowledgement } from '@/lib/order-admission';
 
 // Order access token TTL — must outlive the longest realistic checkout session.
 // Payment route uses 30m; we use the same so the token survives until pay click.
@@ -93,7 +93,7 @@ export async function POST(request) {
       // Product pickup restrictions are enforced from server-priced catalog
       // lines. The client cannot turn a market-only product into a shippable one.
       if ((isShippingFulfillment(orderData.fulfillmentType) || isDeliveryFulfillment(orderData.fulfillmentType))
-          && basePricing.items.some((line) => line.isPreorder || line.marketExclusive)) {
+          && basePricing.items.some((line) => line.marketExclusive)) {
         throw new CartPricingError(
           'MARKET_PICKUP_REQUIRED',
           'One or more items in your cart are available for market pickup only. Choose pickup or remove those items before requesting Georgia delivery or shipping.',
@@ -134,6 +134,19 @@ export async function POST(request) {
       throw err;
     }
 
+    // The merchant offers out-of-stock drinks as explicit preorders, never as
+    // in-stock merchandise. Record customer consent only after a server-owned
+    // catalog confirms which line items really are preorders.
+    const preorderTerms = validatePreorderAcknowledgement({
+      ...orderData,
+      items: pricing.items,
+    });
+    if (!preorderTerms.valid) {
+      return NextResponse.json({
+        success: false, code: preorderTerms.code, error: preorderTerms.message,
+      }, { status: 422 });
+    }
+
     const orderId = randomUUID();
     const timestamp = new Date();
     const storedFulfillment = buildStoredFulfillment(orderData, fulfillmentQuote);
@@ -166,6 +179,13 @@ export async function POST(request) {
         marketExclusive: line.marketExclusive,
         squareProductUrl: line.squareProductUrl,
       })),
+
+      // Persist the acknowledgement for independent payment revalidation.
+      preorderAcknowledged: pricing.items.some(line => line.isPreorder)
+        ? orderData.preorderAcknowledged === true : false,
+      preorderTermsVersion: pricing.items.some(line => line.isPreorder)
+        ? '2026-10-31' : null,
+      preorderOrder: pricing.items.some(line => line.isPreorder),
 
       subtotal: pricing.subtotal,
       subtotalCents: pricing.subtotalCents,

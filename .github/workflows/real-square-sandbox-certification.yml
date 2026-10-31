@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/certify-square-sandbox.mjs'
+      - 'scripts/current-commerce-scope-audit.mjs'
       - '.github/workflows/real-square-sandbox-certification.yml'
   workflow_dispatch:
 
