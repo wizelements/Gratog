@@ -216,15 +216,14 @@ export async function getSquareProduct(id: string): Promise<CatalogItem | null> 
       description: item.description || item.description_plaintext,
       price: approvedBlueLotus
         ? approvedVariation ? 36 : 0
-        : priceMoney.amount ? parseInt(String(priceMoney.amount)) / 100 : 0,
+        : (approvedUnitPriceCents({ id: obj.id, name: item.name }) ??
+          (priceMoney.amount ? parseInt(String(priceMoney.amount)) : 0)) / 100,
       currency: priceMoney.currency || 'USD',
       imageUrl: item.image_ids?.[0] || item.imageIds?.[0]
         ? `${baseUrl}/v2/catalog/object/${item.image_ids?.[0] || item.imageIds?.[0]}` 
         : undefined,
       category: item.category_id || item.categoryId,
-      available: (!approvedBlueLotus || Boolean(approvedVariation)) &&
-        item.is_archived !== true && item.isArchived !== true &&
-        obj.is_deleted !== true && obj.isDeleted !== true,
+      available: false, // No inventory evidence in this catalog-only API
     };
 
     setCached(cacheKey, product, 60);
