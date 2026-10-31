@@ -33,7 +33,7 @@ export const POST=withAdminMiddleware(async(request)=>{
     const square=await readApprovedSquareMenuStock();
     const row=square.report.find(x=>x.slug===slug);
     if(!row||row.status!=='found'||row.countStatus!=='reported'||
-      !row.variationId||!Number.isSafeInteger(row.onHand)||row.onHand<approvedUnits)
+      !row.variationId||typeof row.onHand !== 'number'||!Number.isSafeInteger(row.onHand)||row.onHand<approvedUnits)
       return fail('SQUARE_RECONCILIATION_REQUIRED',409);
     const checkedAt=new Date(square.checkedAt);
     if(Date.now()-checkedAt.getTime()>2*60_000)return fail('SQUARE_READBACK_STALE',409);
