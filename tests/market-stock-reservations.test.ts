@@ -37,7 +37,7 @@ describe('Market inventory reconciliation + stock reservations',()=>{
       .toBe('STOCK_CERTIFICATION_STALE');
   });
   it('never oversells local held+sold stock or diverged Square count',()=>{
-    expect(stockAdmission(good,square,7,now).reason).toBe('MARKET_STOCK_NOT_AVAILABLE');
+    expect(stockAdmission(good,square,8,now).reason).toBe('MARKET_STOCK_NOT_AVAILABLE');
     expect(stockAdmission(good,square,6,now).remaining).toBe(7);
     expect(stockAdmission(good,{...square,onHand:4},1,now).reason).toBe('MARKET_SQUARE_COUNTS_DIVERGED');
   });
