@@ -59,6 +59,16 @@ describe('fail-closed commerce and fulfillment', () => {
     expect(findUnapprovedCurrentMenuItem([{ name: 'Soursop Chai Gel', category: 'gels' }])).toBeNull();
     expect(findUnapprovedCurrentMenuItem([{ name: 'APG — Always Pursue Gratitude', category: 'juices' }])).toBeNull();
   });
+  it.each(['Berry Zinger', 'Desert Glow', 'Peach Refresher', 'Rejuvenate', 'Vitamin Sea', 'Blue Lotus', 'Gratitude Defense', 'Golden Glow Gel'])('blocks unapproved Square specials %s', (name) => {
+    expect(findUnapprovedCurrentMenuItem([{ name, category: 'specials' }])).not.toBeNull();
+  });
+  it.each(['Always Pursue Gratitude', 'APG — Always Pursue Gratitude', 'Herbal Vibe', 'Herbal Vibes', 'Soursop Chai Gel'])('accepts approved juices and gel %s', (name) => {
+    expect(findUnapprovedCurrentMenuItem([{ name, category: 'specials' }])).toBeNull();
+  });
+  it('enforces approved bottled juice prices', () => {
+    expect(approvedUnitPriceCents({ name: 'Always Pursue Gratitude' })).toBe(1299);
+    expect(approvedUnitPriceCents({ name: 'Herbal Vibe' })).toBe(1599);
+  });
   it('blocks stale square IDs even when the display title is changed', () => {
     expect(findUnapprovedCurrentMenuItem([{ productId: 'healing-harmony-gel', name: 'Available Gel' }])).not.toBeNull();
   });
