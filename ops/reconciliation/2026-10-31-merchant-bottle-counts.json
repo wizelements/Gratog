@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-10-31",
+  "source": "merchant_reported_physical_bottle_count_in_chat",
+  "locationScope": "owner_designated_square_production_location_id_not_independently_verified",
+  "verificationStatus": "merchant_reported_not_square_verified",
+  "countsAreCheckoutAuthorization": false,
+  "countUnits": "finished_sellable_16_oz_bottles",
+  "caution": "Snapshot only: may be stale after sales, waste, or transfers. Do not seed live stock, publish as real-time inventory, or use to authorize payment. Recount at time of Square inventory reconciliation and verify location/variation.",
+  "items": [
+    {
+      "slug": "calm-waters",
+      "name": "Calm Waters",
+      "reportedQuantity": 12
+    },
+    {
+      "slug": "supplemint",
+      "name": "SuppleMint",
+      "reportedQuantity": 28
+    },
+    {
+      "slug": "gracious-roots",
+      "name": "Gracious Roots",
+      "reportedQuantity": 1
+    },
+    {
+      "slug": "kissed-by-gods",
+      "name": "Kissed by Gods",
+      "reportedQuantity": 11
+    },
+    {
+      "slug": "melon-rita",
+      "name": "Melon Rita",
+      "reportedQuantity": 4
+    },
+    {
+      "slug": "passion-guava-pineapple",
+      "name": "Passion Guava Pineapple Lemonade",
+      "reportedQuantity": 11
+    },
+    {
+      "slug": "herbal-vibe",
+      "name": "Herbal Vibe",
+      "reportedQuantity": 12
+    }
+  ],
+  "uncounted": [
+    "apg",
+    "soursop-chai-gel"
+  ],
+  "squareNote": "As of initial 2026-10-31 public website Square feed, Melon Rita reported 9 while merchant reported 4; five Square variations returned negative_on_hand including Herbal Vibe; Gracious Roots and Passion Guava had no production Square catalog items. Those Square values are a point-in-time prior snapshot, not current truth."
+}
