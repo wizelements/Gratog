@@ -4,6 +4,7 @@
  */
 
 import { approvedUnitPriceCents } from './merchant-pricing';
+import { findUnapprovedCurrentMenuItem } from './order-admission';
 
 const SQUARE_VERSION = '2025-10-16';
 
@@ -128,7 +129,8 @@ export async function getSquareCatalog(options: {
         obj.is_deleted !== true &&
         obj.isDeleted !== true &&
         obj.item_data?.is_archived !== true &&
-        obj.itemData?.isArchived !== true
+        obj.itemData?.isArchived !== true &&
+        !findUnapprovedCurrentMenuItem([{ id: obj.id, name: obj.item_data?.name || obj.itemData?.name }])
       )
       .map((obj: any) => {
         const item = obj.item_data || obj.itemData || {};
@@ -151,9 +153,9 @@ export async function getSquareCatalog(options: {
             ? `${baseUrl}/v2/catalog/object/${item.image_ids?.[0] || item.imageIds?.[0]}` 
             : undefined,
           category: item.category_id || item.categoryId,
-          available: (!approvedBlueLotus || Boolean(approvedVariation)) &&
-            item.is_archived !== true && item.isArchived !== true &&
-            obj.is_deleted !== true && obj.isDeleted !== true,
+          // This edge endpoint reads Square catalog, NOT location stock counts.
+          // Do not advertise sellable inventory without a verified count.
+          available: false,
         };
       })
       .filter((item: CatalogItem) => {
@@ -199,6 +201,7 @@ export async function getSquareProduct(id: string): Promise<CatalogItem | null> 
     const obj = data.object;
     
     if (!obj || obj.id === LEGACY_DUPLICATE_CALM_WATERS_ID || obj.type !== 'ITEM' || obj.is_deleted === true || obj.isDeleted === true || obj.item_data?.is_archived === true || obj.itemData?.isArchived === true) return null;
+    if (findUnapprovedCurrentMenuItem([{ id: obj.id, name: obj.item_data?.name || obj.itemData?.name }])) return null;
 
     const item = obj.item_data || obj.itemData || {};
     const variations = item.variations || [];
@@ -213,15 +216,14 @@ export async function getSquareProduct(id: string): Promise<CatalogItem | null> 
       description: item.description || item.description_plaintext,
       price: approvedBlueLotus
         ? approvedVariation ? 36 : 0
-        : priceMoney.amount ? parseInt(String(priceMoney.amount)) / 100 : 0,
+        : (approvedUnitPriceCents({ id: obj.id, name: item.name }) ??
+          (priceMoney.amount ? parseInt(String(priceMoney.amount)) : 0)) / 100,
       currency: priceMoney.currency || 'USD',
       imageUrl: item.image_ids?.[0] || item.imageIds?.[0]
         ? `${baseUrl}/v2/catalog/object/${item.image_ids?.[0] || item.imageIds?.[0]}` 
         : undefined,
       category: item.category_id || item.categoryId,
-      available: (!approvedBlueLotus || Boolean(approvedVariation)) &&
-        item.is_archived !== true && item.isArchived !== true &&
-        obj.is_deleted !== true && obj.isDeleted !== true,
+      available: false, // No inventory evidence in this catalog-only API
     };
 
     setCached(cacheKey, product, 60);

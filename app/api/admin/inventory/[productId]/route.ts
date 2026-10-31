@@ -170,6 +170,8 @@ export const PATCH = withAdminMiddlewareWithContext(
             lastRestocked: adjustment > 0 ? new Date() : current.lastRestocked,
             updatedAt: new Date(),
             updatedBy: admin.email,
+            stockSource: 'unverified',
+            stockVerifiedAt: null,
           },
           $push: {
             stockHistory: historyEntry,
@@ -231,4 +233,68 @@ export const PATCH = withAdminMiddlewareWithContext(
     action: 'adjust',
     rateLimit: { maxRequests: 30, windowSeconds: 60 },
   }
+);
+
+
+/**
+ * PUT /api/admin/inventory/[productId]
+ * Record an owner-confirmed, ABSOLUTE physical count. This is intentionally
+ * different from the legacy +/- adjustment API, which is not stock evidence.
+ */
+export const PUT = withAdminMiddlewareWithContext(
+  async (request: AuthenticatedRequest, context: { params: Promise<Record<string, string>> }) => {
+    const { productId } = await context.params;
+    if (!productId || !/^[a-zA-Z0-9:_-]{1,128}$/.test(productId)) {
+      return NextResponse.json({ success:false, error:'Invalid product' }, { status:400 });
+    }
+    try {
+      const input = await request.json();
+      const count = input?.countedUnits;
+      if (!Number.isSafeInteger(count) || count < 0 || count > 10000 ||
+          input.confirmedPhysicalCount !== true ||
+          typeof input.expectedUpdatedAt !== 'string' ||
+          input.expectedUpdatedAt.length < 10 ||
+          typeof input.reason !== 'string' || input.reason.trim().length < 3) {
+        return NextResponse.json({ success:false,
+          error:'Enter the physically counted units, a reason, and confirm that you counted them.' },
+          { status:422 });
+      }
+      const { db } = await connectToDatabase();
+      const collection = db.collection('inventory');
+      const current = await collection.findOne({ productId });
+      if (!current) return NextResponse.json({success:false,error:'Product inventory record not found'},
+        {status:404});
+      const previousTime = current.updatedAt ? new Date(current.updatedAt).toISOString() : 'missing';
+      if (input.expectedUpdatedAt !== previousTime) {
+        return NextResponse.json({success:false,code:'COUNT_CHANGED',
+          error:'Inventory changed. Refresh the count before submitting.'},{status:409});
+      }
+      const now = new Date();
+      const previousCount = Number(current.currentStock);
+      const filter: Record<string, unknown> = {productId};
+      filter.updatedAt = current.updatedAt || {$exists:false};
+      const updated = await collection.findOneAndUpdate(filter,{
+        $set:{
+          currentStock:count, stockSource:'merchant_physical_count',
+          stockVerifiedAt:now, updatedAt:now, updatedBy:request.admin.email,
+          lastRestocked:count > previousCount ? now : current.lastRestocked,
+        },
+        $push:{stockHistory:{date:now, adjustment:count-previousCount,
+          reason:'Physically verified: '+input.reason.trim().slice(0,200),
+          adjustedBy:request.admin.email, previousStock:previousCount}},
+      },{returnDocument:'after'});
+      if (!updated) return NextResponse.json({success:false,code:'COUNT_CONFLICT',
+        error:'Inventory changed during verification. Refresh and retry.'},{status:409});
+      await db.collection('unified_products').updateOne({id:productId},{
+        $set:{inStock:count>0,stock:count,updatedAt:now}
+      });
+      return NextResponse.json({success:true,productId,verifiedCount:count,
+        verifiedAt:now.toISOString(),source:'merchant_physical_count'});
+    } catch {
+      return NextResponse.json({success:false,error:'Unable to verify this physical count'},
+        {status:500});
+    }
+  },
+  {permission:PERMISSIONS.INVENTORY_ADJUST,resource:'inventory',action:'physical_count',
+   rateLimit:{maxRequests:20,windowSeconds:60}}
 );

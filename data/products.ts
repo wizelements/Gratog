@@ -1,4 +1,5 @@
 import { applyMerchantPrice } from '@/lib/merchant-pricing';
+import { findUnapprovedCurrentMenuItem } from '@/lib/order-admission';
 
 export type ProductCategory =
   | 'lemonades'
@@ -841,12 +842,13 @@ export function getAllProducts() {
 }
 
 export function getActiveProducts() {
-  return PRODUCTS.filter((product) => product.weeklyStatus !== 'inactive');
+  return PRODUCTS.filter((product) => product.weeklyStatus !== 'inactive' &&
+    !findUnapprovedCurrentMenuItem([product]));
 }
 
 export function getActiveWeeklyProducts({ includeSoldOut = true } = {}) {
   return PRODUCTS.filter((product) => {
-    if (!product.activeWeeklyMenu) return false;
+    if (!product.activeWeeklyMenu || findUnapprovedCurrentMenuItem([product])) return false;
     if (!includeSoldOut && product.soldOut) return false;
     return product.weeklyStatus !== 'inactive';
   });
@@ -858,7 +860,8 @@ export function getFeaturedProducts() {
 
 export function getBestSellerProducts() {
   const ids = ['kissed-by-gods', 'supplemint', 'strawberry-bliss', 'black-minerals'];
-  return ids.map((id) => getProductBySlugOrId(id)).filter(Boolean) as MarketProduct[];
+  return ids.map((id) => getProductBySlugOrId(id))
+    .filter((product): product is MarketProduct => Boolean(product && !findUnapprovedCurrentMenuItem([product])));
 }
 
 export function getInactiveProducts() {

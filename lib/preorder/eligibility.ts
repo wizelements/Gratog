@@ -1,4 +1,5 @@
 import { getProductBySlugOrId } from '@/data/products';
+import { findUnapprovedCurrentMenuItem } from '@/lib/order-admission';
 
 /**
  * Shared client/server eligibility for market preorders.
@@ -7,6 +8,7 @@ import { getProductBySlugOrId } from '@/data/products';
  * Never permit archived, disabled or unconnected Square items.
  */
 export function isMarketPreorderPermitted(product: any): boolean {
+  if (findUnapprovedCurrentMenuItem([product])) return false;
   if (!product || product.available === false || product.soldOut === true ||
       product.squareIsArchived === true || product.isArchived === true ||
       product.inventoryStatus === 'sold_out' || product.inventoryStatus === 'inactive' ||

@@ -15,6 +15,7 @@ import { checkDeliveryRadius } from '@/lib/delivery-radius';
 import { calculateDistanceBasedDeliveryFee } from '@/lib/delivery-fees';
 import { shippingMethods } from '@/adapters/fulfillmentAdapter';
 import { validateGeorgiaDestination } from '@/lib/georgia-orders';
+import { validateCheckoutFulfillment } from '@/lib/order-admission';
 
 // Order access token TTL — must outlive the longest realistic checkout session.
 // Payment route uses 30m; we use the same so the token survives until pay click.
@@ -46,6 +47,13 @@ export async function POST(request) {
         },
         { status: 400 }
       );
+    }
+
+    // No unclassified order can be created or charged. Never default to pickup.
+    const fulfillmentAdmission = validateCheckoutFulfillment(orderData);
+    if (!fulfillmentAdmission.valid) {
+      return NextResponse.json({ success: false, code: fulfillmentAdmission.code,
+        error: fulfillmentAdmission.message }, { status: 422 });
     }
 
     // Fulfillment restrictions must be checked before creating a payable order.
@@ -353,7 +361,8 @@ function buildStoredFulfillment(orderData, quote) {
     };
   }
 
-  return { type: orderData.fulfillmentType || 'pickup' };
+  // Unknown methods are rejected above; never synthesize a pickup method.
+  throw orderError('Choose a fulfillment method before payment.', 422, 'FULFILLMENT_SELECTION_REQUIRED');
 }
 
 function formatDeliveryAddress(address) {

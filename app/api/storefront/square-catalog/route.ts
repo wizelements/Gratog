@@ -12,6 +12,9 @@ import {
   type StorefrontItem,
 } from '@/lib/square-price-serializer';
 import { logger } from '@/lib/logger';
+import { readSquareLiveInventory, inventoryForVariation } from '@/lib/square-live-inventory';
+import { findUnapprovedCurrentMenuItem } from '@/lib/order-admission';
+import { approvedUnitPriceCents } from '@/lib/merchant-pricing';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -48,20 +51,32 @@ export async function GET(request: NextRequest) {
     const items = (catalogResult as any).data || (catalogResult as any).result?.objects || [];
 
     logger.info('SquareStorefront', `Fetched ${items.length} raw items from Square`);
+    // This endpoint must NEVER return the historic hardcoded 99-unit inventory.
+    // Inventory is looked up by real Square variation at the configured location.
+    const variationIds = items.flatMap((item: any) =>
+      (item.itemData?.variations || []).map((variation: any) => variation.id).filter(Boolean));
+    const squareCounts = await readSquareLiveInventory(variationIds);
+
 
     const rejected: string[] = [];
 
     // Transform Square items to storefront format and reject invalid records.
     const products = items
+      .filter((item: any) => !findUnapprovedCurrentMenuItem([{
+        id: item.id, name: item.itemData?.name, category: 'square-catalog',
+      }]))
       .map((item: any) => {
         const data = item.itemData || {};
+        if (item.isArchived === true || data.isArchived === true || item.isDeleted === true) return null;
         const variations = data.variations || [];
         const primaryVariation = variations[0] || {};
         const variationData = primaryVariation.itemVariationData || {};
+        const primaryInventory = inventoryForVariation(squareCounts, primaryVariation);
 
         // Get price in cents (Square returns BigInt; convert explicitly to Number for JSON)
         const priceMoney = variationData.priceMoney || {};
-        const { cents: priceCents, status: amountStatus } = safeSquareCents(priceMoney.amount);
+        const { cents: sourcePriceCents } = safeSquareCents(priceMoney.amount);
+        const priceCents = approvedUnitPriceCents({ name: data.name }) ?? sourcePriceCents;
 
         // Determine category
         let category = 'specials';
@@ -91,8 +106,6 @@ export async function GET(request: NextRequest) {
           currency: priceMoney.currency,
           variationId: primaryVariation.id,
           itemType: item.type,
-          available: true,
-          inStock: true,
         };
 
         const validation = validateStorefrontItem(storefrontItem);
@@ -104,7 +117,13 @@ export async function GET(request: NextRequest) {
         const validVariations = variations
           .map((v: any) => {
             const vPriceMoney = v.itemVariationData?.priceMoney || {};
-            const { cents: vPriceCents } = safeSquareCents(vPriceMoney.amount);
+            const liveStock = inventoryForVariation(squareCounts, v);
+            const { cents: squareVariationPriceCents } = safeSquareCents(vPriceMoney.amount);
+            const approved = approvedUnitPriceCents({ name: data.name });
+            const variationName = String(v.itemVariationData?.name || '');
+            const vPriceCents = approved !== null &&
+              (!variationName || /^(16\s*oz|regular|standard|market item)(?:\b|$)/i.test(variationName))
+              ? approved : squareVariationPriceCents;
             const vItem: StorefrontItem = {
               id: v.id,
               name: v.itemVariationData?.name || data.name || 'Default',
@@ -112,8 +131,6 @@ export async function GET(request: NextRequest) {
               currency: vPriceMoney.currency,
               variationId: v.id,
               itemType: v.type,
-              available: true,
-              inStock: true,
             };
             const vValidation = validateStorefrontItem(vItem);
             if (!vValidation.valid) {
@@ -126,6 +143,9 @@ export async function GET(request: NextRequest) {
               price: vPriceCents / 100,
               priceCents: vPriceCents,
               currency: vPriceMoney.currency,
+              stockQuantity: liveStock.quantity,
+              countStatus: liveStock.countStatus,
+              inventoryCalculatedAt: liveStock.calculatedAt || null,
             };
           })
           .filter(Boolean);
@@ -138,9 +158,13 @@ export async function GET(request: NextRequest) {
           priceCents,
           currency: priceMoney.currency,
           category,
-          available: true,
-          inStock: true,
-          stockQuantity: 99,
+          available: primaryInventory.quantity !== null && primaryInventory.quantity > 0,
+          inStock: primaryInventory.quantity !== null && primaryInventory.quantity > 0,
+          stockQuantity: primaryInventory.quantity,
+          countStatus: primaryInventory.countStatus,
+          inventoryCalculatedAt: primaryInventory.calculatedAt || null,
+          inventorySource: 'square_location_variation',
+          checkoutReady: primaryInventory.quantity !== null && primaryInventory.quantity > 0,
           image: imageUrl,
           images: imageIds.map((id: string) => `/api/square/image/${id}`),
           squareData: {
@@ -163,6 +187,9 @@ export async function GET(request: NextRequest) {
         success: true,
         products,
         count: products.length,
+        inventoryUnknownVariations: products.reduce((total: number, product: any) =>
+          total + (product.variations || []).filter((v: any) => v.countStatus !== 'reported').length, 0),
+        inventoryVerifiedFrom: 'square_location_variations',
         invalidItems: rejected.length,
         invalidReasons: rejected,
         source: 'square_direct',

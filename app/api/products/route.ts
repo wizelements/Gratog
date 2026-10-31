@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
+import { findUnapprovedCurrentMenuItem } from '@/lib/order-admission';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      products: snapshot.products,
+      products: snapshot.products.filter(product => !findUnapprovedCurrentMenuItem([product])),
       categories: snapshot.categories,
       marketId: marketId || null,
       timestamp: Date.now()

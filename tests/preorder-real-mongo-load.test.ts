@@ -116,14 +116,19 @@ suite('real replica-set preorder load certification', () => {
   }, 180000);
 
   it('replays the same request without double-reserving and rejects changed payload', async () => {
-    const replay = await place(0);
+    const admitted = await db.collection('marketorders').findOne({
+      capacityReservationStatus: 'held', paymentStatus: 'PENDING',
+    });
+    expect(admitted?.checkoutRequestId).toBeTruthy();
+    const suffix = String(admitted.checkoutRequestId).replace('checkout-cert-real-', '');
+    const replay = await place(Number(suffix), undefined, suffix);
     expect(replay.replay).toBe(true);
     const slotBefore = await db.collection('preorder_capacity').findOne({ _id: key('preorder_slot') });
     expect(slotBefore.heldUnits).toBe(CAPPED);
     const altered = [
       { sku: 'preorder_slot', quantity: 1 }, { sku: 'pineapple', quantity: 1 },
     ];
-    await expect(place(0, altered)).rejects.toMatchObject({ code: 'IDEMPOTENCY_CONFLICT' });
+    await expect(place(Number(suffix), altered, suffix)).rejects.toMatchObject({ code: 'IDEMPOTENCY_CONFLICT' });
   }, 30000);
 
   it('rolls back a component shortage without retaining a partial slot', async () => {
@@ -137,11 +142,18 @@ suite('real replica-set preorder load certification', () => {
   });
 
   it('allows only one payment-link creator across 100 concurrent API retries', async () => {
+    // The 1,000 concurrent contenders admit exactly 125 orders, but there is
+    // no guarantee a specific numbered request won the available capacity.
+    const eligible = await db.collection('marketorders').findOne({
+      paymentStatus: 'PENDING', capacityReservationStatus: 'held',
+      paymentLinkState: { $exists: false },
+    });
+    expect(eligible?.orderNumber).toBeTruthy();
     const claims = await Promise.all(Array.from({ length: 100 }, () =>
-      claimPreorderPaymentLinkCreation(db, 'PRE-REAL-00001')));
+      claimPreorderPaymentLinkCreation(db, eligible.orderNumber)));
     expect(claims.filter(Boolean)).toHaveLength(1);
     const stored = await db.collection('marketorders').findOne({
-      orderNumber: 'PRE-REAL-00001',
+      orderNumber: eligible.orderNumber,
     });
     expect(stored.paymentLinkState).toBe('creating');
     // Payment status remains untouched, and incomplete provider results are
@@ -150,7 +162,12 @@ suite('real replica-set preorder load certification', () => {
   }, 30000);
 
   it('can safely release an unpayable attempt exactly once under concurrent retries', async () => {
-    const order = await db.collection('marketorders').findOne({ checkoutRequestId: 'checkout-cert-real-00000' });
+    // Select an actual admitted order, not a contender that may have lost.
+    const order = await db.collection('marketorders').findOne({
+      paymentStatus: 'PENDING', capacityReservationStatus: 'held',
+      paymentLinkState: { $exists: false },
+    });
+    expect(order).toBeTruthy();
     const results = await Promise.allSettled([
       releaseCapacityAfterDefinitiveLinkFailure(db, client, order.orderNumber),
       releaseCapacityAfterDefinitiveLinkFailure(db, client, order.orderNumber),

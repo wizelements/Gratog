@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   getProductBySlugOrId,
   getCuratedStorefrontProducts,
+  toStorefrontProduct,
   mergeWithCuratedProduct,
 } from '@/data/products';
 import { standardGallonPriceCents } from '@/lib/batches/pricing';
@@ -36,7 +37,10 @@ describe('merchant-approved product truth — 11 October 2026', () => {
     const item = getProductBySlugOrId('blue-lotus-gel');
     expect(item?.sizes).toEqual(['16oz jar']);
     expect(item?.price).toBe(36);
-    const storefront = getCuratedStorefrontProducts().find(x => x.slug === 'blue-lotus-gel');
+    // Historical approved size/price remains intact, but Blue Lotus is not
+    // on the six-lemonade + Soursop Chai current ordering menu.
+    expect(getCuratedStorefrontProducts().some(x => x.slug === 'blue-lotus-gel')).toBe(false);
+    const storefront = toStorefrontProduct(item!, 0);
     expect(storefront?.variations).toHaveLength(1);
     expect(storefront?.variations[0].priceCents).toBe(3600);
   });

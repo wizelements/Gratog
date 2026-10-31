@@ -72,6 +72,11 @@ vi.mock('@/lib/db-optimized', () => ({
   }),
 }));
 
+// These are isolated pricing/inventory/coupon tests with intentionally fictional
+// catalog rows and prices. Current-menu enforcement has its own integration
+// and admission regression suite; do not short-circuit these independent tests.
+vi.mock('@/lib/order-admission', () => ({ findUnapprovedCurrentMenuItem: () => null }));
+
 import { priceCart, CartPricingError } from '../../lib/cart-pricing';
 
 beforeEach(() => {
@@ -254,7 +259,7 @@ describe('catalog-owned preorder and fulfillment security', () => {
   });
 
   it('allows sold-out preorder products only when the server catalog explicitly enables preorder', async () => {
-    products.push({ id: 'MADE_TO_ORDER', name: 'Reserved Gel', priceCents: 3600, inStock: false, preorderOnly: true });
+    products.push({ id: 'MADE_TO_ORDER', name: 'Reserved Juice', category: 'juices', priceCents: 3600, inStock: false, preorderOnly: true });
     const priced = await priceCart({ items: [
       { productId: 'MADE_TO_ORDER', quantity: 1, isPreorder: false },
     ] });
