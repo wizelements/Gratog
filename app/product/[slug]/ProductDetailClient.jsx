@@ -39,7 +39,7 @@ export default function ProductDetailClient({ product, slug }) {
   const preorderSource = encodeURIComponent(product?.slug || product?.id || slug || 'product_detail');
   const isBlueLotus = product?.slug === 'blue-lotus' || product?.slug === 'blue-lotus-gel';
   const preorderHref = !checkoutReady
-    ? `/preorder-request?product=${preorderSource}`
+    ? `/order-request?product=${preorderSource}`
     : isBlueLotus
       ? '/request-a-flavor?product=blue-lotus-gel'
       : `/preorder?utm_source=product_${preorderSource}&utm_campaign=weekly_menu_drop`;
