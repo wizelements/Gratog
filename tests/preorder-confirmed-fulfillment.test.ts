@@ -76,9 +76,11 @@ describe('customer-confirmed future-batch preorders',()=>{
     expect(route).toContain("paymentStatus: 'not_charged'");
     expect(route).not.toContain('createPayment(');
     expect(route).not.toContain('SQUARE_ACCESS_TOKEN');
-    expect(page).toContain('No charge is made now');
-    expect(page).toContain('confirmedFulfillment:ack');
-    expect(quick).toContain('/preorder-request?product=');
-    expect(detail).toContain('/preorder-request?product=');
+    expect(page).toContain('/order-request');
+    const unified=read('app/order-request/page.tsx');
+    expect(unified).toContain('No charge is made now');
+    expect(unified).toContain('confirmedFulfillment:consent');
+    expect(quick).toContain('/order-request?product=');
+    expect(detail).toContain('/order-request?product=');
   });
 });

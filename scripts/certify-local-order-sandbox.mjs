@@ -335,6 +335,59 @@ try {
     }))===1);
 
 
+
+  // Unified NON-MARKET request: actual HTTP, two products, persisted Mongo
+  // order, no Square payment or capacity claim.
+  const nonmarketRequest={
+    requestId:randomUUID(),
+    items:[{slug:'calm-waters',quantity:2,priceCents:1},
+      {slug:'herbal-vibe',quantity:1,priceCents:1}],
+    customer:{name:'Isolated QA',email:'multi@qa-sandbox.invalid'},
+    fulfillmentType:'pickup',pickup:{locationId:'browns-mill',date:'2026-11-02'},
+    preorderAcknowledged:true,preorderTermsVersion:'2026-10-31',confirmedFulfillment:true,
+  };
+  const nonmarketNoAck=await post('/api/order-requests',{...nonmarketRequest,preorderAcknowledged:false});
+  check('Nonmarket order requests require explicit customer acknowledgement',
+    nonmarketNoAck.status===422&&nonmarketNoAck.data.code==='ACKNOWLEDGEMENT_REQUIRED');
+  const multi=await post('/api/order-requests',nonmarketRequest);
+  check('Saved 2-product nonmarket request stays unpaid',
+    multi.status===201&&multi.data.success===true&&multi.data.paymentStatus==='not_charged'&&
+      multi.data.merchandiseTotalCents===3997,
+    {status:multi.status,total:multi.data.merchandiseTotalCents});
+  const multiRecord=await db.collection('nonmarket_order_requests').findOne({_id:multi.data.requestId});
+  check('Nonmarket Mongo record includes all merchant-priced cart lines and prevents phantom reservation',
+    multiRecord?.items?.length===2&&multiRecord?.items?.[0]?.unitPriceCents===1199&&
+      multiRecord?.items?.[1]?.unitPriceCents===1599&&multiRecord?.capacityReserved===false&&
+      multiRecord?.paymentStatus==='not_charged'&&!multiRecord?.squarePaymentId);
+  check('No unconfigured Square Text Us page is represented as verified',
+    multi.data.squareTextUsPage===null);
+  const multiDuplicate=await post('/api/order-requests',nonmarketRequest);
+  check('Idempotent nonmarket retry returns original request without a second email',
+    multiDuplicate.status===200&&multiDuplicate.data.requestId===multi.data.requestId&&
+    (await db.collection('nonmarket_order_requests').countDocuments({_id:multi.data.requestId}))===1&&
+    (await db.collection('email_sends').countDocuments({'metadata.preorderRequestId':multi.data.requestId}))===1);
+  const multiChanged=await post('/api/order-requests',{
+    ...nonmarketRequest,items:[{slug:'calm-waters',quantity:3}],
+  });
+  check('Changed cart cannot silently reuse existing request ID',
+    multiChanged.status===409&&multiChanged.data.code==='IDEMPOTENCY_CONFLICT');
+  const multiMarket=await post('/api/order-requests',{
+    ...nonmarketRequest,requestId:randomUUID(),pickup:{locationId:'serenbe',date:'2026-11-02'},
+  });
+  check('Market pickup is rejected from nonmarket Square Messages pathway',
+    multiMarket.status===422&&multiMarket.data.code==='MARKET_FLOW_REQUIRED');
+  const multiRetired=await post('/api/order-requests',{
+    ...nonmarketRequest,requestId:randomUUID(),items:[{slug:'peach-lemonade',quantity:1}],
+  });
+  check('Retired items cannot be submitted into Square Messages cart',
+    multiRetired.status===422&&multiRetired.data.code==='ITEM_NOT_APPROVED');
+  const multiFlorida=await post('/api/order-requests',{
+    ...nonmarketRequest,requestId:randomUUID(),fulfillmentType:'delivery',
+    address:{street:'123 Example',city:'Miami',state:'FL',zip:'33101'},deliveryTimeSlot:'12-15',
+  });
+  check('Nonmarket delivery requests refuse out-of-Georgia destinations',
+    multiFlorida.status===422&&multiFlorida.data.code==='GEORGIA_ONLY');
+
   evidence.pass = true;
 } catch (err) {
   evidence.error = String(err?.message || err).slice(0,250);
@@ -349,6 +402,7 @@ try {
     await client.db().collection('customers').deleteMany({ email: /@qa-sandbox\.invalid$/ });
     await client.db().collection('unified_products').deleteMany({ source:'qa-isolated-sandbox' });
     await client.db().collection('inventory').deleteMany({ source:'qa-isolated-sandbox' });
+    await client.db().collection('nonmarket_order_requests').deleteMany({ 'customer.email': /@qa-sandbox\\.invalid$/ });
     await client.db().collection('preorder_requests').deleteMany({ 'customer.email': /@qa-sandbox\\.invalid$/ });
     await client.db().collection('email_sends').deleteMany({ customerEmail: 'preorder@qa-sandbox.invalid' });
     await client.db().collection('idempotency_keys').deleteMany({ key: /^tog-sbx-/ });

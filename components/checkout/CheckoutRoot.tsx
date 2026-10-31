@@ -16,7 +16,7 @@ import FulfillmentTabs from './FulfillmentTabs';
 import PickupForm from './PickupForm';
 import DeliveryForm from './DeliveryForm';
 import ShippingForm from './ShippingForm';
-import ReviewAndPay from './ReviewAndPay';
+import SquareMessagesReview from './SquareMessagesReview';
 import CheckoutErrorBoundary from './CheckoutErrorBoundary';
 import Link from 'next/link';
 
@@ -254,7 +254,7 @@ function CheckoutContent() {
                     exit={{ opacity: 0, x: 20 }}
                   >
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">Review your cart</h1>
-                    <p className="mb-6 text-base text-gray-600">No market trip required for eligible local delivery. Add your favorites, then choose Delivery and enter your full address on the next step to check availability and fees. The Pickup option in this checkout currently means a participating market, not Browns Mill neighborhood pickup.</p>
+                    <p className="mb-6 text-base text-gray-600">Choose bottled products, then request local delivery, Browns Mill-area Monday pickup, or eligible Georgia shipping. No payment is taken on this website for regular orders. After our team confirms availability, we'll send a Square payment link.</p>
                     <CartSummary
                       cart={cart}
                       totals={totals}
@@ -299,7 +299,7 @@ function CheckoutContent() {
                     <div className="border-t pt-8">
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">How would you like your order?</h3>
                       <p className="mb-4 text-base text-gray-600">
-                        Choose shipping for eligible Georgia addresses or delivery in supported local areas. You don't need to choose a market unless your products are pickup-only. Final options and fees are shown before payment.
+                        Choose Georgia shipping review, local delivery or Browns Mill-area scheduled pickup. We'll confirm your requested date, available stock and all fees before sending payment instructions.
                       </p>
                       <FulfillmentTabs
                         selected={fulfillment.type}
@@ -353,14 +353,11 @@ function CheckoutContent() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
                   >
-                    <h1 className="text-2xl font-bold text-gray-900 mb-6">Review & Pay</h1>
-                    <ReviewAndPay
+                    <h1 className="text-2xl font-bold text-gray-900 mb-6">Review your order request</h1>
+                    <SquareMessagesReview
                       cart={cart}
-                      totals={totals}
                       contact={contact}
                       fulfillment={fulfillment}
-                      tip={tip}
-                      couponCode={couponCode}
                       onBack={() => setStage('details')}
                     />
                   </motion.div>

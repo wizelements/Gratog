@@ -10,6 +10,7 @@ type ContactRequest = {
   _id: string;
   productName: string;
   quantity: number;
+  items?: Array<{name: string; quantity: number}>;
   customer: { email: string; name: string };
   fulfillmentType: string;
   pickup?: { locationId?: string; date?: string };
@@ -28,12 +29,15 @@ export function preorderAcknowledgementCopy(r: ContactRequest) {
     shipping: 'Georgia shipping eligibility review',
   };
   const fulfillment = methodLabels[r.fulfillmentType] || 'fulfillment review';
-  const subject = `Taste of Gratitude preorder request received — ${reference}`;
+  const subject = `Taste of Gratitude ${Array.isArray(r.items) && r.items.length ? 'order' : 'preorder'} request received — ${reference}`;
+  const itemLines = Array.isArray(r.items) && r.items.length > 0
+    ? r.items.map(item => `${item.quantity} × ${item.name}`).join('; ')
+    : `${r.quantity} × ${r.productName}`;
   const text = [
-    'Taste of Gratitude — PREORDER REQUEST RECEIVED',
+    'Taste of Gratitude — ORDER REQUEST RECEIVED',
     '',
     `Reference: ${reference}`,
-    `Requested: ${r.quantity} × ${r.productName}`,
+    `Requested: ${itemLines}`,
     `Selected method: ${fulfillment}`,
     '',
     'This is a REQUEST, not confirmed in-stock inventory or a reserved batch.',

@@ -10,6 +10,11 @@ on:
     paths:
       - 'scripts/certify-local-order-sandbox.mjs'
       - 'app/api/preorder-requests/route.ts'
+      - 'app/api/order-requests/route.ts'
+      - 'lib/commerce/nonmarket-order-request.ts'
+      - 'lib/commerce/market-stock-reservations.ts'
+      - 'tests/integration/market-reservation-mongo.test.ts'
+      - 'components/checkout/SquareMessagesReview.tsx'
       - '.github/workflows/isolated-first-party-order-sandbox.yml'
   workflow_dispatch:
 
@@ -69,6 +74,7 @@ jobs:
             exit 1
           fi
           node scripts/certify-local-order-sandbox.mjs
+          npx vitest run tests/integration/market-reservation-mongo.test.ts --reporter=verbose
       - name: Archive isolated sandbox results
         if: always()
         uses: actions/upload-artifact@v4
