@@ -38,9 +38,11 @@ export default function ProductDetailClient({ product, slug }) {
   const canAddToCart = Boolean(product) && checkoutReady && !isMarketOnly;
   const preorderSource = encodeURIComponent(product?.slug || product?.id || slug || 'product_detail');
   const isBlueLotus = product?.slug === 'blue-lotus' || product?.slug === 'blue-lotus-gel';
-  const preorderHref = isBlueLotus
-    ? '/request-a-flavor?product=blue-lotus-gel'
-    : `/preorder?utm_source=product_${preorderSource}&utm_campaign=weekly_menu_drop`;
+  const preorderHref = !checkoutReady
+    ? `/preorder-request?product=${preorderSource}`
+    : isBlueLotus
+      ? '/request-a-flavor?product=blue-lotus-gel'
+      : `/preorder?utm_source=product_${preorderSource}&utm_campaign=weekly_menu_drop`;
   const productCategoryLabel = product?.categoryLabel || product?.displayCategory || product?.category || product?.intelligentCategory || 'Weekly market item';
 
   // Set default variation on mount
