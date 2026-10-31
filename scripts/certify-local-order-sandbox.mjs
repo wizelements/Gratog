@@ -5,7 +5,7 @@
  * payments. Tests true HTTP route/server persistence, not mocked API calls.
  */
 import { MongoClient } from 'mongodb';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHmac } from 'node:crypto';
 import { writeFileSync, mkdirSync } from 'node:fs';
 
 const url = process.env.BASE_URL || 'http://127.0.0.1:3333';
@@ -264,6 +264,71 @@ try {
   check('Out-of-state preorder shipping request is refused',
     outOfState.status===422&&outOfState.data.code==='GEORGIA_ONLY',
     {status:outOfState.status,code:outOfState.data.code});
+
+  // SIGNED Resend webhook integration, disposable DB and no external email.
+  // Test both provider delivery and failure escalation; never accept unsigned
+  // callbacks or promote 'sent_to_provider' to delivered without real evidence.
+  const webhookMockId='qa-provider-'+randomUUID();
+  await db.collection('preorder_requests').insertOne({
+    _id:'preorder_request_qa_webhook_'+randomUUID(),
+    customer:{email:'preorder@qa-sandbox.invalid'},
+    productSlug:'melon-rita',
+    productName:'Melon Rita',
+    customerContact:{email:{status:'sent_to_provider',messageId:webhookMockId,deliveryVerified:false}},
+    paymentStatus:'not_charged',
+  });
+  const eventPayload=JSON.stringify({
+    type:'email.delivered',data:{email_id:webhookMockId,to:'preorder@qa-sandbox.invalid'},
+  });
+  const sig=createHmac('sha256',process.env.RESEND_WEBHOOK_SECRET||'not-configured')
+    .update(eventPayload).digest('hex');
+  const fakeEvent=await fetch(url+'/api/webhooks/resend',{
+    method:'POST',headers:{'Content-Type':'application/json',
+      'resend-signature':'bogus','svix-id':'qa-unsigned-'+randomUUID()},
+    body:eventPayload,
+  });
+  check('Webhook without a correct signature is rejected before modifying customer records',
+    fakeEvent.status===401,{status:fakeEvent.status});
+  const eventKey='qa-delivery-'+randomUUID();
+  const acceptedEvent=await fetch(url+'/api/webhooks/resend',{
+    method:'POST',headers:{'Content-Type':'application/json',
+      'resend-signature':sig,'svix-id':eventKey},body:eventPayload,
+  });
+  check('Valid signed provider delivery event is accepted',
+    acceptedEvent.status===200,{status:acceptedEvent.status});
+  const deliveredRecord=await db.collection('preorder_requests').findOne({
+    'customerContact.email.messageId':webhookMockId,
+  });
+  check('Signed provider delivery changes preorder status to delivered',
+    deliveredRecord?.customerContact?.email?.status==='delivered'&&
+      deliveredRecord?.customerContact?.email?.deliveryVerified===true,
+    {status:deliveredRecord?.customerContact?.email?.status});
+  const duplicate=await fetch(url+'/api/webhooks/resend',{
+    method:'POST',headers:{'Content-Type':'application/json',
+      'resend-signature':sig,'svix-id':eventKey},body:eventPayload,
+  });
+  const duplicateResult=await duplicate.json();
+  check('Webhook replay is deduplicated without a second status mutation',
+    duplicate.status===200&&duplicateResult.duplicate===true,
+    {status:duplicate.status});
+  const bounceBody=JSON.stringify({
+    type:'email.bounced',data:{email_id:webhookMockId,to:'preorder@qa-sandbox.invalid'},
+  });
+  const bounceSig=createHmac('sha256',process.env.RESEND_WEBHOOK_SECRET||'not-configured')
+    .update(bounceBody).digest('hex');
+  const bounced=await fetch(url+'/api/webhooks/resend',{
+    method:'POST',headers:{'Content-Type':'application/json',
+      'resend-signature':bounceSig,'svix-id':'qa-bounce-'+randomUUID()},body:bounceBody,
+  });
+  check('Signed bounce event is accepted and flagged as non-delivery',
+    bounced.status===200,{status:bounced.status});
+  const bouncedRecord=await db.collection('preorder_requests').findOne({
+    'customerContact.email.messageId':webhookMockId,
+  });
+  check('Bounce supersedes delivered state and requires merchant follow-up',
+    bouncedRecord?.customerContact?.email?.status==='bounced'&&
+      bouncedRecord?.customerContact?.email?.deliveryVerified===false,
+    {status:bouncedRecord?.customerContact?.email?.status});
 
   evidence.pass = true;
 } catch (err) {
