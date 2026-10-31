@@ -76,8 +76,7 @@ export function buildMarketQrMenu(products: any[]): MarketQrItem[] {
     const cents = approvedUnitPriceCents({ slug: target.slug, name: target.name });
     if (cents === null) throw new Error('MARKET_PRICE_APPROVAL_MISSING: ' + target.slug);
     const sourceIngredients = cleanIngredients(live?.ingredients);
-    const ingredients = sourceIngredients.length
-      ? sourceIngredients : fallbackIngredients[target.slug] || [];
+    const ingredients = fallbackIngredients[target.slug] || sourceIngredients;
     const allergens = Array.isArray(live?.allergens)
       ? live.allergens.filter((x: unknown): x is string => typeof x === 'string').slice(0, 12)
       : [];
@@ -102,5 +101,5 @@ export function buildMarketQrMenu(products: any[]): MarketQrItem[] {
  * cart or purchase endpoint in this read-only QR release.
  */
 export function canPurchaseFromMarketQr(item: Pick<MarketQrItem, 'digitalPurchaseEnabled'>): boolean {
-  return item.digitalPurchaseEnabled === (true as never);
+  return false;
 }
