@@ -62,6 +62,9 @@ export async function GET(request: NextRequest) {
 
     // Transform Square items to storefront format and reject invalid records.
     const products = items
+      .filter((item: any) => !findUnapprovedCurrentMenuItem([{
+        id: item.id, name: item.itemData?.name, category: 'square-catalog',
+      }]))
       .map((item: any) => {
         const data = item.itemData || {};
         if (item.isArchived === true || data.isArchived === true || item.isDeleted === true) return null;
@@ -119,7 +122,7 @@ export async function GET(request: NextRequest) {
             const approved = approvedUnitPriceCents({ name: data.name });
             const variationName = String(v.itemVariationData?.name || '');
             const vPriceCents = approved !== null &&
-              (!variationName || /^(16\\s*oz|regular|standard|market item)(?:\\b|$)/i.test(variationName))
+              (!variationName || /^(16\s*oz|regular|standard|market item)(?:\b|$)/i.test(variationName))
               ? approved : squareVariationPriceCents;
             const vItem: StorefrontItem = {
               id: v.id,
