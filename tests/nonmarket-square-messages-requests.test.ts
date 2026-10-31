@@ -64,6 +64,17 @@ describe('Nonmarket Square Messages request: server-owned invariants', () => {
     }
     expect(verifiedSquareTextUsPage(undefined)).toBeNull();
   });
+  it('merchant requests inbox is authorized and cannot mark an unpaid request paid',()=>{
+    const route=readFileSync('app/api/admin/nonmarket-order-requests/route.ts','utf8');
+    const page=readFileSync('app/admin/nonmarket-orders/page.tsx','utf8');
+    expect(route).toContain('withAdminMiddleware');
+    expect(route).toContain('PERMISSIONS.ORDERS_VIEW');
+    expect(route).toContain('PERMISSIONS.ORDERS_UPDATE_STATUS');
+    expect(route).toContain('STATUS_REQUIRES_PAYMENT_VERIFICATION');
+    expect(route).not.toContain('createPayment(');
+    expect(page).toContain('customerContact?.email?.status');
+    expect(page).toContain('No');
+  });
   it('site checkout uses no-charge request API and cannot auto-charge a nonmarket cart',()=>{
     const root=readFileSync('components/checkout/CheckoutRoot.tsx','utf8');
     const form=readFileSync('components/checkout/SquareMessagesReview.tsx','utf8');
