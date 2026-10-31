@@ -5,6 +5,12 @@ on:
     branches:
       - fix/product-truth-and-square-sandbox-20261011
       - fix/blue-lotus-availability-square-catalog-20261011
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/certify-local-order-sandbox.mjs'
+      - 'app/api/preorder-requests/route.ts'
+      - '.github/workflows/isolated-first-party-order-sandbox.yml'
   workflow_dispatch:
 
 permissions:
