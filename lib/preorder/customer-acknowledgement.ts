@@ -29,7 +29,7 @@ export function preorderAcknowledgementCopy(r: ContactRequest) {
     shipping: 'Georgia shipping eligibility review',
   };
   const fulfillment = methodLabels[r.fulfillmentType] || 'fulfillment review';
-  const subject = `Taste of Gratitude order request received — ${reference}`;
+  const subject = `Taste of Gratitude ${Array.isArray(r.items) && r.items.length ? 'order' : 'preorder'} request received — ${reference}`;
   const itemLines = Array.isArray(r.items) && r.items.length > 0
     ? r.items.map(item => `${item.quantity} × ${item.name}`).join('; ')
     : `${r.quantity} × ${r.productName}`;
