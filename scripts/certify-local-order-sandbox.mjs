@@ -220,6 +220,9 @@ try {
     placedRequest.status===201&&placedRequest.data.success===true&&
       placedRequest.data.paymentStatus==='not_charged',
     {status:placedRequest.status,payment:placedRequest.data.paymentStatus});
+  check('No mock or absent email provider is represented as a delivered customer acknowledgement',
+    placedRequest.data.customerEmailStatus==='unavailable',
+    {customerEmailStatus:placedRequest.data.customerEmailStatus});
   const storedPreorder=await db.collection('preorder_requests').findOne({
     _id:placedRequest.data.requestId,
   });
@@ -229,12 +232,27 @@ try {
       storedPreorder?.preorderAcknowledged===true&&
       storedPreorder?.capacityReserved===false&&
       storedPreorder?.paymentStatus==='not_charged'&&!storedPreorder?.squarePaymentId);
+  check('Contact attempt status is persisted and never marked delivered without a provider',
+    storedPreorder?.customerContact?.email?.status==='unavailable' &&
+    storedPreorder?.customerContact?.email?.deliveryVerified===false &&
+    !storedPreorder?.customerContact?.email?.messageId,
+    {customerEmailStatus:storedPreorder?.customerContact?.email?.status});
+  const outboundRows=await db.collection('email_sends').find({
+    'metadata.preorderRequestId':placedRequest.data.requestId,
+  }).toArray();
+  check('Acknowledgement email attempt is traced to request without sending mock email externally',
+    outboundRows.length===1 && outboundRows[0].provider==='mock',
+    {emails:outboundRows.length,provider:outboundRows[0]?.provider});
   const retryRequest=await post('/api/preorder-requests',preorderPayload);
   check('Same request ID cannot create duplicate order or charge',
     retryRequest.status===200&&retryRequest.data.requestId===placedRequest.data.requestId&&
       (await db.collection('preorder_requests').countDocuments({
         'customer.email':'preorder@qa-sandbox.invalid',
       }))===1);
+  check('Idempotency retry does not send duplicate customer acknowledgements',
+    (await db.collection('email_sends').countDocuments({
+      'metadata.preorderRequestId':placedRequest.data.requestId,
+    }))===1);
   const changed=await post('/api/preorder-requests',{...preorderPayload,quantity:3});
   check('Changed preorder cannot silently reuse same request ID',
     changed.status===409&&changed.data.code==='IDEMPOTENCY_CONFLICT');
@@ -262,6 +280,7 @@ try {
     await client.db().collection('unified_products').deleteMany({ source:'qa-isolated-sandbox' });
     await client.db().collection('inventory').deleteMany({ source:'qa-isolated-sandbox' });
     await client.db().collection('preorder_requests').deleteMany({ 'customer.email': /@qa-sandbox\\.invalid$/ });
+    await client.db().collection('email_sends').deleteMany({ 'metadata.preorderRequestId': placedRequest?.data?.requestId || 'no-match' });
     await client.db().collection('idempotency_keys').deleteMany({ key: /^tog-sbx-/ });
     await client.close();
   } catch { evidence.cleanup = 'failed; disposable DB is destroyed with CI container'; }
