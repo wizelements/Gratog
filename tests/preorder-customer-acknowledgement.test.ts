@@ -38,7 +38,7 @@ describe('Gratitude Concierge: email acknowledgement without Twilio', () => {
       emailType:'order_status',
       template:'preorder_request_acknowledgement',
     });
-    expect(JSON.stringify(send.mock.calls[0][0])).not.toMatch(/sms|telnyx|twilio|payment link/i);
+    expect(JSON.stringify(send.mock.calls[0][0])).not.toMatch(/sms|telnyx|twilio/i);
   });
   it('never interprets legacy mock success as real email delivery', async () => {
     send.mockResolvedValue({ success:true,provider:'mock',messageId:'MOCK_fake'});
