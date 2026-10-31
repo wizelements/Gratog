@@ -56,7 +56,7 @@ describe('Square inventory is real, location-scoped and never invented', () => {
     await expect(readSquareLiveInventory(['A'],{env:environment,fetcher:vi.fn(async()=>({ok:false}))})).rejects.toThrow('SQUARE_INVENTORY_READ_FAILED');
   });
 
-  it('audits seven approved menu items and flags a retired Square item without inventing stock', async()=>{
+  it('audits all nine approved menu items, including juices, without inventing stock', async()=>{
     const objects = CURRENT_MENU.map((target,index)=>({
       type:'ITEM',id:'ITEM_'+index,item_data:{name:target.aliases[0],variations:[{
         id:'VAR_'+index,item_variation_data:{name:'16 oz bottle',track_inventory:true}
@@ -70,12 +70,39 @@ describe('Square inventory is real, location-scoped and never invented', () => {
       }]})};
     });
     const audit = await readApprovedSquareMenuStock({env:environment,fetcher});
-    expect(audit.report).toHaveLength(7);
+    expect(audit.report).toHaveLength(9);
     expect(audit.report[0]).toMatchObject({status:'found',onHand:0,countStatus:'reported'});
     expect(audit.report[1]).toMatchObject({status:'unverified',onHand:null,countStatus:'unknown'});
     expect(audit.retired).toContainEqual({itemId:'RETIRED',name:'Peach Lemonade',archived:false});
     expect(audit.fullyVerified).toBe(false);
   });
+  it('preserves all seven merchant-reported 16oz counts for reconciliation, never for checkout', () => {
+    const snapshot = JSON.parse(read('ops/reconciliation/2026-10-31-merchant-bottle-counts.json'));
+    const counted = Object.fromEntries(snapshot.items.map((item: any) => [item.slug, item.reportedQuantity]));
+    expect(counted).toEqual({
+      'calm-waters': 12,
+      supplemint: 28,
+      'gracious-roots': 1,
+      'kissed-by-gods': 11,
+      'melon-rita': 4,
+      'passion-guava-pineapple': 11,
+      'herbal-vibe': 12,
+    });
+    expect(snapshot.verificationStatus).toBe('merchant_reported_not_square_verified');
+    expect(snapshot.countsAreCheckoutAuthorization).toBe(false);
+    expect(snapshot.uncounted).toContain('apg');
+    expect(CURRENT_MENU.some(item => item.slug === 'herbal-vibe')).toBe(true);
+    expect(CURRENT_MENU.some(item => item.slug === 'apg')).toBe(true);
+    const route = read('app/api/admin/square-menu-inventory/route.ts');
+    expect(route).toContain("withAdminMiddleware");
+    expect(route).toContain("checkoutAuthorization: false");
+    expect(route).toContain("item.countStatus === 'reported'");
+    // Reported counts are audit-only; never imported by checkout or stock
+    // seeding code.
+    expect(read('lib/custom-inventory.js')).not.toContain('merchant-bottle-counts.json');
+    expect(read('app/api/payments/route.ts')).not.toContain('merchant-bottle-counts.json');
+  });
+
   it('removes artificial 99-unit and 25-unit stock from checkout paths',()=>{
     const direct=read('app/api/storefront/square-catalog/route.ts');
     const inventory=read('lib/custom-inventory.js');
