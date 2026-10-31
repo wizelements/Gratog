@@ -196,6 +196,64 @@ try {
     noCapturedPayment?.paymentStatus === 'pending' && !noCapturedPayment?.squarePaymentId,
     {status:noCapturedPayment?.paymentStatus});
 
+  // End-to-end HTTP + real disposable database proof that a customer can
+  // submit an out-of-stock preorder, choose fulfillment, explicitly consent
+  // and receive a durable no-charge request before any Square payment.
+  const futureRequestId = randomUUID();
+  const preorderPayload = {
+    requestId:futureRequestId,product:'melon-rita',quantity:2,
+    customer:{name:'Isolated QA',email:'preorder@qa-sandbox.invalid'},
+    fulfillmentType:'pickup_market',
+    pickup:{locationId:'serenbe',date:'2026-11-07'},
+    preorderAcknowledged:true,preorderTermsVersion:'2026-10-31',
+    confirmedFulfillment:true,
+  };
+  const missingConsent = await post('/api/preorder-requests',{
+    ...preorderPayload,preorderAcknowledged:false,
+  });
+  check('Preorder request with no acknowledgement is rejected before persistence',
+    missingConsent.status===422 && missingConsent.data.code==='PREORDER_ACKNOWLEDGEMENT_REQUIRED',
+    {status:missingConsent.status,code:missingConsent.data.code});
+  const placedRequest = await post('/api/preorder-requests',preorderPayload);
+  check('Preorder request with confirmed market pickup persists without charging',
+    placedRequest.status===201 && placedRequest.data.success===true &&
+      placedRequest.data.paymentStatus==='not_charged',
+    {status:placedRequest.status,payment:placedRequest.data.paymentStatus});
+  const storedPreorder = await db.collection('preorder_requests').findOne({
+    _id:placedRequest.data.requestId,
+  });
+  check('Persisted preorder retains choice, acknowledgement and no capacity promise',
+    storedPreorder?.productSlug==='melon-rita' && storedPreorder?.quantity===2 &&
+      storedPreorder?.pickup?.locationId==='serenbe' &&
+      storedPreorder?.preorderAcknowledged===true &&
+      storedPreorder?.capacityReserved===false &&
+      storedPreorder?.paymentStatus==='not_charged' && !storedPreorder?.squarePaymentId,
+    {status:storedPreorder?.status});
+  const retryPreorder = await post('/api/preorder-requests',preorderPayload);
+  check('Retry creates no duplicate preorder request or charge',
+    retryPreorder.status===200 &&
+      retryPreorder.data.requestId===placedRequest.data.requestId &&
+      (await db.collection('preorder_requests').countDocuments({
+        'customer.email':'preorder@qa-sandbox.invalid',
+      }))===1,
+    {status:retryPreorder.status});
+  const changedPreorder = await post('/api/preorder-requests',{
+    ...preorderPayload,quantity:3,
+  });
+  check('Changed preorder cannot reuse an existing idempotency ID',
+    changedPreorder.status===409 &&
+      changedPreorder.data.code==='IDEMPOTENCY_CONFLICT',
+    {status:changedPreorder.status,code:changedPreorder.data.code});
+  const shippingElsewhere = await post('/api/preorder-requests',{
+    ...preorderPayload,requestId:randomUUID(),
+    fulfillmentType:'shipping',
+    address:{street:'123 Example St',city:'New York',state:'NY',zip:'10001'},
+    shippingMethod:'pending_verified_quote',
+  });
+  check('Preorder request cannot select out-of-Georgia shipping',
+    shippingElsewhere.status===422 && shippingElsewhere.data.code==='GEORGIA_ONLY',
+    {status:shippingElsewhere.status,code:shippingElsewhere.data.code});
+
   evidence.pass = true;
 } catch (err) {
   evidence.error = String(err?.message || err).slice(0,250);
@@ -210,6 +268,7 @@ try {
     await client.db().collection('customers').deleteMany({ email: /@qa-sandbox\.invalid$/ });
     await client.db().collection('unified_products').deleteMany({ source:'qa-isolated-sandbox' });
     await client.db().collection('inventory').deleteMany({ source:'qa-isolated-sandbox' });
+    await client.db().collection('preorder_requests').deleteMany({ 'customer.email': /@qa-sandbox\\.invalid$/ });
     await client.db().collection('idempotency_keys').deleteMany({ key: /^tog-sbx-/ });
     await client.close();
   } catch { evidence.cleanup = 'failed; disposable DB is destroyed with CI container'; }
