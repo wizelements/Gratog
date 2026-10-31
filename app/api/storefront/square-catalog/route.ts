@@ -168,7 +168,12 @@ export async function GET(request: NextRequest) {
           countStatus: primaryInventory.countStatus,
           inventoryCalculatedAt: primaryInventory.calculatedAt || null,
           inventorySource: 'square_location_variation',
-          checkoutReady: primaryInventory.quantity !== null && primaryInventory.quantity > 0,
+          // Square quantity alone is insufficient proof of sellable stock:
+          // merchant physical counts currently disagree with Square.
+          // Market reservation & provider payment certification are required
+          // before any purchase channel may set checkoutReady to true.
+          checkoutReady: false,
+          checkoutUnavailableReason: 'Square inventory and merchant physical stock must be reconciled before checkout. Submit a no-charge order request.',
           image: imageUrl,
           images: imageIds.map((id: string) => `/api/square/image/${id}`),
           squareData: {
