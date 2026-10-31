@@ -100,7 +100,7 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
     // confirms a safe capacity and a fulfillment method.
     const approved = product && !findUnapprovedCurrentMenuItem([product]);
     const requestKey = product?.curatedProductId || product?.slug || product?.name || product?.id;
-    const requestHref = `/preorder-request?product=${encodeURIComponent(requestKey || '')}`;
+    const requestHref = `/order-request?product=${encodeURIComponent(requestKey || '')}`;
     return (
       <Button asChild variant={variant} className={`relative ${className}`}>
         <Link href={approved ? requestHref : productHref}>
