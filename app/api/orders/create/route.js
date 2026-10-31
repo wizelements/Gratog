@@ -93,7 +93,7 @@ export async function POST(request) {
       // Product pickup restrictions are enforced from server-priced catalog
       // lines. The client cannot turn a market-only product into a shippable one.
       if ((isShippingFulfillment(orderData.fulfillmentType) || isDeliveryFulfillment(orderData.fulfillmentType))
-          && basePricing.items.some((line) => line.isPreorder || line.marketExclusive)) {
+          && basePricing.items.some((line) => line.marketExclusive)) {
         throw new CartPricingError(
           'MARKET_PICKUP_REQUIRED',
           'One or more items in your cart are available for market pickup only. Choose pickup or remove those items before requesting Georgia delivery or shipping.',
