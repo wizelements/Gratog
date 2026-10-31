@@ -39,7 +39,7 @@ export function validatedRequest(input: any) {
     'ITEMS_REQUIRED', 'Choose between 1 and 20 different menu items.');
   const seen = new Set<string>();
   let totalUnits = 0;
-  const items = input.items.map((raw: any) => {
+  const items: Array<{slug:string;name:string;kind:string;quantity:number;unitPriceCents:number;extendedPriceCents:number}> = input.items.map((raw: any) => {
     const product = catalog.get(itemKey(raw?.slug || raw?.product));
     requireValid(Boolean(product), 'ITEM_NOT_APPROVED', 'An item is not on the approved current menu.');
     requireValid(!seen.has(product!.slug), 'DUPLICATE_ITEM', 'Combine duplicate products before continuing.');
