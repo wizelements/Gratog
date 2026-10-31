@@ -21,7 +21,10 @@ type Method = 'pickup_market' | 'pickup' | 'delivery' | 'shipping';
 function PreorderForm() {
   const query = useSearchParams();
   const requested = query.get('product') || '';
-  const initial = ITEMS.some(x=>x.slug===requested) ? requested : ITEMS[0].slug;
+  const requestedAlias = requested === 'always-pursue-gratitude' ? 'apg'
+    : requested === 'passion-guava-pineapple-lemonade' ? 'passion-guava-pineapple'
+    : requested === 'soursop-chai' ? 'soursop-chai-gel' : requested;
+  const initial = ITEMS.some(x=>x.slug===requestedAlias) ? requestedAlias : ITEMS[0].slug;
   const [product,setProduct] = useState(initial);
   const [quantity,setQuantity] = useState(1);
   const [method,setMethod] = useState<Method>('pickup_market');
