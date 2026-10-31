@@ -79,6 +79,12 @@ describe('fail-closed commerce and fulfillment', () => {
     expect(validateItemizedOrder([{ name: 'SuppleMint', quantity: 1 }]).valid).toBe(true);
     expect(read('app/api/payments/route.ts')).toContain('validateItemizedOrder(order.items)');
   });
+  it('blocks stale specials through shared homepage catalog AND direct Square API', () => {
+    expect(read('lib/storefront-products.js')).toContain('preparedProducts.filter(product =>');
+    expect(read('lib/storefront-products.js')).toContain('!findUnapprovedCurrentMenuItem([product])');
+    expect(read('app/api/storefront/square-catalog/route.ts')).toContain('.filter((item: any) => !findUnapprovedCurrentMenuItem([');
+    expect(read('app/api/storefront/square-catalog/route.ts')).not.toContain('stockQuantity: 99');
+  });
   it('enforces independent admission at order creation, authoritative pricing, and payment', () => {
     expect(read('app/api/orders/create/route.js')).toContain('validateCheckoutFulfillment(orderData)');
     expect(read('app/api/payments/route.ts')).toContain('validateCheckoutFulfillment(order)');
