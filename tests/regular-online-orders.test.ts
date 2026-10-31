@@ -24,7 +24,8 @@ describe('regular Georgia customers can order without selecting a market', () =>
     const store = read('stores/checkout.ts');
     const checkout = read('components/checkout/CheckoutRoot.tsx');
     expect(store).toMatch(/const initialFulfillment: FulfillmentData = \{\s*\/\/[^\n]*\n\s*\/\/[^\n]*\n\s*type: 'shipping'/);
-    expect(checkout).toContain('item.isPreorder || item.marketExclusive');
+    expect(checkout).toContain('cart.some(item => item.marketExclusive)');
+    expect(checkout).toContain('hasMarketExclusiveItems={hasMarketExclusiveItems}');
     expect(checkout).toContain("type: 'pickup'");
     expect(checkout).toContain('<ShippingForm');
     expect(checkout).toContain('<DeliveryForm');
@@ -38,7 +39,7 @@ describe('regular Georgia customers can order without selecting a market', () =>
     expect(pricing).toContain('product.marketPickupOnly');
     expect(pricing).toContain('product.preorderOnly');
     expect(orderRoute).toContain('MARKET_PICKUP_REQUIRED');
-    expect(orderRoute).toContain('basePricing.items.some((line) => line.isPreorder || line.marketExclusive)');
+    expect(orderRoute).toContain('basePricing.items.some((line) => line.marketExclusive)');
     expect(orderRoute).toContain('validateGeorgiaDestination');
     const cartEngine = read('lib/cart-engine.ts');
     expect(cartEngine).toContain('product.marketPickupOnly === true');
