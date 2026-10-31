@@ -7,6 +7,7 @@ import { validateGeorgiaDestination } from '@/lib/georgia-orders';
 import { approvedUnitPriceCents } from '@/lib/merchant-pricing';
 import { CURRENT_MENU } from '@/lib/square-menu-stock';
 import { sendOwnerAlert } from '@/lib/owner-alerts';
+import { sendPreorderRequestAcknowledgement } from '@/lib/preorder/customer-acknowledgement';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -142,15 +143,43 @@ export async function POST(request: NextRequest) {
         { headers: HEADERS });
     }
     await db.collection('preorder_requests').insertOne(record);
+
+    // Record contact attempt against the request. A provider acceptance is
+    // not the same as inbox delivery, and MOCK is not a real message.
+    let customerContactStatus: 'unavailable' | 'sent_to_provider' = 'unavailable';
+    try {
+      const emailAttempt = await sendPreorderRequestAcknowledgement(record);
+      customerContactStatus = emailAttempt.status;
+      await db.collection('preorder_requests').updateOne(
+        { _id: id },
+        { $set: {
+          'customerContact.email.status': emailAttempt.status,
+          'customerContact.email.provider': emailAttempt.provider,
+          'customerContact.email.messageId': emailAttempt.status === 'sent_to_provider'
+            ? emailAttempt.messageId : null,
+          'customerContact.email.attemptedAt': new Date(),
+          'customerContact.email.deliveryVerified': false,
+        } }
+      );
+    } catch {
+      await db.collection('preorder_requests').updateOne({ _id: id }, {
+        $set: { 'customerContact.email.status': 'unavailable',
+          'customerContact.email.attemptedAt': new Date() },
+      }).catch(() => undefined);
+    }
+
     // Owner notification is best effort. A failed notification cannot result
     // in falsely telling the customer their order is paid or confirmed.
     try {
       await sendOwnerAlert({
         sourceEventId: id, category: 'fresh_batch', severity: 'info',
-        title: 'New confirmed-method preorder request: ' + product.name,
+        title: (customerContactStatus === 'unavailable'
+          ? 'CUSTOMER ACKNOWLEDGEMENT NEEDS ATTENTION: '
+          : 'New confirmed-method preorder request: ') + product.name,
         body: count + ' × ' + product.name + ' / ' + fulfillmentType +
-          ' (requested only; no payment or capacity authorization)',
-        actionUrl: '/admin/fresh-batches',
+          ' (requested only; no payment or capacity authorization)' +
+          (customerContactStatus === 'unavailable' ? ' / automated customer email unavailable' : ''),
+        actionUrl: 'https://tasteofgratitude.shop/admin/fresh-batches',
         channel: 'all', eventAt: new Date().toISOString(),
         metadata: { requestId: id, productSlug: product.slug, quantity: count, fulfillmentType },
       });
@@ -162,7 +191,10 @@ export async function POST(request: NextRequest) {
       merchandiseTotalCents: record.merchandiseTotalCents,
       status: record.status,
       paymentStatus: 'not_charged',
-      message: 'Preorder request received. We will confirm batch capacity, eligibility and fulfillment timing before sending payment instructions. No payment was taken.',
+      customerEmailStatus: customerContactStatus,
+      message: customerContactStatus === 'sent_to_provider'
+        ? 'Preorder request received. We sent your acknowledgement to our email provider, but delivery is not yet confirmed. Batch capacity, eligibility and timing are subject to merchant confirmation. No payment was taken.'
+        : 'Preorder request received; automatic email acknowledgement was unavailable. Keep your request reference and contact Taste of Gratitude support if you need an immediate response. No payment was taken.',
     }, { status: 201, headers: HEADERS });
   } catch {
     return fail('PREORDER_STORAGE_UNAVAILABLE', 'Could not save your preorder request. Please try again.', 503);
