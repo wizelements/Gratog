@@ -17,7 +17,7 @@ const fail = (code: string, error: string, status = 422) =>
   NextResponse.json({success:false, code, error}, {status, headers});
 
 export async function POST(request: NextRequest) {
-  const throttle = await rateLimitByIp(request, 6);
+  const throttle = await rateLimitByIp(request, 18);
   if (!throttle.ok) return fail('RATE_LIMITED', 'Too many requests. Please wait and try again.', 429);
 
   let body: unknown;
