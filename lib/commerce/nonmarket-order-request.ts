@@ -91,6 +91,10 @@ export function validatedRequest(input: any) {
     requireValid(/^\d{4}-\d{2}-\d{2}$/.test(pickup.date) &&
       Number.isFinite(Date.parse(pickup.date + 'T12:00:00Z')),
       'PICKUP_DATE_REQUIRED', 'Select a valid scheduled pickup date.');
+    const pickupAt = new Date(pickup.date + 'T12:00:00Z');
+    requireValid(pickupAt.getTime() >= Date.now() - 24*60*60_000 &&
+      pickupAt.getTime() <= Date.now() + 60*24*60*60_000,
+      'PICKUP_DATE_OUT_OF_RANGE', 'Choose an upcoming Monday within the next 60 days.');
     // Mondays only, without asserting a slot or staffing guarantee.
     requireValid(new Date(pickup.date + 'T12:00:00Z').getUTCDay() === 1,
       'PICKUP_DAY_REQUIRED', 'Browns Mill pickup requests are available on Mondays.');
