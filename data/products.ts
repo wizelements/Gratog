@@ -1021,7 +1021,9 @@ export function toStorefrontProduct(product: MarketProduct, index = 0) {
   const categoryLabel = getCategoryLabel(product.category);
   const taxonomyCategoryLabel = getTaxonomyCategoryLabel(product.category);
   const categoryIcon = getCategoryIcon(product.category);
-  const stock = product.inventoryStatus === 'sold_out' || product.soldOut ? 0 : product.inventoryStatus === 'limited' ? 4 : 20;
+  // Curated marketing entries do not prove physical stock. A live, source-
+  // verified inventory snapshot is the only authority for sellable quantity.
+  const stock = product.soldOut ? 0 : null;
 
   return applyMerchantPrice({
     ...product,
@@ -1051,7 +1053,8 @@ export function toStorefrontProduct(product: MarketProduct, index = 0) {
     images: [product.image].filter(Boolean),
     imageAlt: `${product.name} from Taste of Gratitude`,
     stock,
-    inStock: stock > 0,
+    inStock: false,
+    inventoryVerified: false,
     isPreorder: product.preorderOnly || product.inventoryStatus === 'preorder',
     marketExclusive: product.marketPickupOnly,
     activeWeeklyMenu: product.activeWeeklyMenu,
