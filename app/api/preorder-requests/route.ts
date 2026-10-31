@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     shippingMethod,
   };
   const fulfillment = validateCheckoutFulfillment(order);
-  if (!fulfillment.valid) return fail(fulfillment.code, fulfillment.message);
+  if (!fulfillment.valid) return fail(fulfillment.code || 'FULFILLMENT_SELECTION_REQUIRED', fulfillment.message || 'Select complete fulfillment details.');
   if (fulfillmentType === 'shipping' || fulfillmentType === 'delivery') {
     const geo = validateGeorgiaDestination(address);
     if (!geo.valid) return fail(geo.code || 'GEORGIA_ONLY', geo.message || 'Georgia fulfillment only.');
