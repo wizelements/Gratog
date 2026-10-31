@@ -280,7 +280,7 @@ try {
     await client.db().collection('unified_products').deleteMany({ source:'qa-isolated-sandbox' });
     await client.db().collection('inventory').deleteMany({ source:'qa-isolated-sandbox' });
     await client.db().collection('preorder_requests').deleteMany({ 'customer.email': /@qa-sandbox\\.invalid$/ });
-    await client.db().collection('email_sends').deleteMany({ 'metadata.preorderRequestId': placedRequest?.data?.requestId || 'no-match' });
+    await client.db().collection('email_sends').deleteMany({ customerEmail: 'preorder@qa-sandbox.invalid' });
     await client.db().collection('idempotency_keys').deleteMany({ key: /^tog-sbx-/ });
     await client.close();
   } catch { evidence.cleanup = 'failed; disposable DB is destroyed with CI container'; }
