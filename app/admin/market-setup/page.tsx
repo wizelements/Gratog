@@ -21,13 +21,16 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { getActiveMarketPickups } from '@/data/markets';
 
-// Market configurations
-const MARKETS = [
-  { id: 'serenbe-farmers-market', name: 'Serenbe Farmers Market', day: 'Saturday', hours: '9AM-1PM' },
-  { id: 'dunwoody-farmers-market', name: 'Dunwoody Farmers Market (DHA)', day: 'Saturday', hours: '8AM-12PM' },
-  { id: 'sandy-springs-market', name: 'Sandy Springs Market', day: 'Saturday', hours: '8AM-12PM' },
-];
+// Use the same active market identity and schedule as the QR page.
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MARKETS = getActiveMarketPickups().map(market => ({
+  id: market.id,
+  name: market.name,
+  day: DAY_NAMES[market.dayOfWeek],
+  hours: market.hours,
+}));
 
 interface Product {
   id: string;
