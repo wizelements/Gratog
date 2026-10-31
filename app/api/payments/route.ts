@@ -20,7 +20,7 @@ import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { consumeInventoryForPaidOrder, checkInventoryForPayment } from '@/lib/custom-inventory';
 import { verifyRequestAuthentication } from '@/lib/rewards-security';
 import { validateGeorgiaDestination } from '@/lib/georgia-orders';
-import { validateCheckoutFulfillment, findUnapprovedCurrentMenuItem, validateItemizedOrder } from '@/lib/order-admission';
+import { validateCheckoutFulfillment, validatePreorderAcknowledgement, findUnapprovedCurrentMenuItem, validateItemizedOrder } from '@/lib/order-admission';
 import {
   generateOrderAccessToken,
   verifyOrderAccessToken,
@@ -433,6 +433,13 @@ export async function POST(request: NextRequest) {
     if (!fulfillmentAdmission.valid) {
       return json({ success: false, code: fulfillmentAdmission.code,
         error: fulfillmentAdmission.message }, 422);
+    }
+    const preorderAdmission = validatePreorderAcknowledgement(order);
+    if (!preorderAdmission.valid) {
+      return json({
+        success: false, code: preorderAdmission.code,
+        error: preorderAdmission.message,
+      }, 422);
     }
     const itemization = validateItemizedOrder(order.items);
     if (!itemization.valid) {
