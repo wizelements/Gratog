@@ -36,6 +36,6 @@ describe('indexable storefront integrity', () => {
     const root = read('components/checkout/CheckoutRoot.tsx');
     expect(root).toContain('<h1 className="text-2xl font-bold text-gray-900 mb-2">Review your cart</h1>');
     expect(root).toContain('<h1 className="text-2xl font-bold text-gray-900">Contact and fulfillment</h1>');
-    expect(root).toContain('<h1 className="text-2xl font-bold text-gray-900 mb-6">Review & Pay</h1>');
+    expect(root).toContain('<h1 className="text-2xl font-bold text-gray-900 mb-6">Review your order request</h1>');
   });
 });

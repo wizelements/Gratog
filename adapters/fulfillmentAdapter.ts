@@ -25,16 +25,10 @@ export interface PickupLocation {
 
 const PICKUP_LOCATIONS: PickupLocation[] = [
   {
-    id: 'serenbe',
-    name: 'Serenbe Farmers Market',
-    address: '10950 Hutcheson Ferry Rd, Palmetto, GA 30268 (Booth #12)',
-    hours: 'Sat 9am-1pm'
-  },
-  {
-    id: 'dunwoody',
-    name: 'DHA Dunwoody Farmers Market',
-    address: '4770 N Peachtree Rd, Dunwoody, GA 30338 (Brook Run Park)',
-    hours: 'Sat 9am-12pm'
+    id: 'browns-mill',
+    name: 'Browns Mill Area — Scheduled Pickup',
+    address: 'Exact meetup location confirmed with your order',
+    hours: 'Monday 12:00–5:00 PM · Request only',
   }
 ];
 
@@ -128,7 +122,7 @@ export function marketCalendar(locationId: string): Date[] {
   
   // Parse hours to determine available days
   const availableDays: number[] = [];
-  if (location.hours.includes('Sat')) availableDays.push(6); // Saturday
+  if (location.hours.includes('Mon')) availableDays.push(1); // Monday\n  if (location.hours.includes('Sat')) availableDays.push(6); // Saturday
   if (location.hours.includes('Sun')) availableDays.push(0); // Sunday
   
   // Find next 4 available dates

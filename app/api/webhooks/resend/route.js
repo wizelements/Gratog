@@ -255,14 +255,17 @@ export async function POST(request) {
       );
     }
     
-    // Correlate signed provider callbacks to preorder customer contact.
-    // Never confuse a provider send acknowledgement with inbox delivery.
+    // Signed provider evidence correlates to both market preorder requests
+    // and regular multi-item requests. Never equate provider acceptance with
+    // inbox delivery; bounces require an owner response.
     if (emailId && status) {
-      const target = await db.collection('preorder_requests').findOne({
-        'customerContact.email.messageId': emailId,
-      }, { projection: { _id: 1, productName: 1 } });
-      if (target) {
-        await db.collection('preorder_requests').updateOne({ _id: target._id }, {
+      for (const collectionName of ['preorder_requests', 'nonmarket_order_requests']) {
+        const collection = db.collection(collectionName);
+        const target = await collection.findOne({
+          'customerContact.email.messageId': emailId,
+        }, { projection: { _id: 1 } });
+        if (!target) continue;
+        await collection.updateOne({ _id: target._id }, {
           $set: {
             'customerContact.email.status': status,
             'customerContact.email.deliveryVerified': status === 'delivered',
@@ -274,17 +277,18 @@ export async function POST(request) {
             await sendOwnerAlert({
               sourceEventId: `preorder-contact:${emailId}:${status}`,
               category: 'fresh_batch', severity: 'warning',
-              title: 'Preorder customer email not delivered',
-              body: `Customer acknowledgement for preorder ${String(target._id).slice(-12)} was ${status}. Manual follow-up is required.`,
-              actionUrl: 'https://tasteofgratitude.shop/admin/fresh-batches',
+              title: 'Order request customer email not delivered',
+              body: `Customer acknowledgement for request ${String(target._id).slice(-12)} was ${status}. Manual follow-up is required.`,
+              actionUrl: 'https://tasteofgratitude.shop/admin',
               channel: 'all', eventAt: new Date().toISOString(),
               metadata: { requestId: String(target._id), emailStatus: status },
             });
           } catch (alertError) {
-            logger.warn('Webhook', 'Could not send follow-up alert for failed preorder email',
+            logger.warn('Webhook', 'Could not send order request contact escalation',
               { error: alertError instanceof Error ? alertError.message : String(alertError) });
           }
         }
+        break;
       }
     }
 
