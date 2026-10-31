@@ -10,6 +10,9 @@ on:
     paths:
       - 'scripts/certify-local-order-sandbox.mjs'
       - 'app/api/preorder-requests/route.ts'
+      - 'app/api/order-requests/route.ts'
+      - 'lib/commerce/nonmarket-order-request.ts'
+      - 'components/checkout/SquareMessagesReview.tsx'
       - '.github/workflows/isolated-first-party-order-sandbox.yml'
   workflow_dispatch:
 
