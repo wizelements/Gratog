@@ -4,6 +4,7 @@ import { PERMISSIONS } from '@/lib/security';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { readApprovedSquareMenuStock } from '@/lib/square-menu-stock';
 import { getActiveMarketPickups } from '@/data/markets';
+import { approvedUnitPriceCents } from '@/lib/merchant-pricing';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -62,11 +63,7 @@ export const POST=withAdminMiddleware(async(request)=>{
       separatelyAllocatedFromOtherChannels:false,
       paymentCertification:'not_verified',
       sessionStatus:'unpublished',
-      priceCents:({
-        'calm-waters':1199,supplemint:1199,'gracious-roots':1199,
-        'kissed-by-gods':1199,'melon-rita':1199,'passion-guava-pineapple':1199,
-        apg:1299,'herbal-vibe':1599,'soursop-chai-gel':3600,
-      } as Record<string,number>)[slug],
+      priceCents:approvedUnitPriceCents({slug}) || 0,
       approvedBy:request.admin.email,
       lastReconciledAt:new Date(),
     };
