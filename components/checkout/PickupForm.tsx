@@ -50,10 +50,10 @@ export default function PickupForm({ data, onChange, errors = {} }: PickupFormPr
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Pickup Details</h3>
         <p className="text-sm text-gray-600">
-          This option is for participating farmers markets only. Browns Mill-area pickup outside a market is not available for online booking yet.
+          Request a Monday 12–5 PM pickup in the Browns Mill area. The exact location and time will be confirmed by our team before you pay.
         </p>
-        <Link href="/contact?request=non-market-pickup" className="mt-2 inline-block text-sm font-semibold text-emerald-800 underline underline-offset-4">
-          Request a non-market pickup appointment
+        <Link href="/preorder" className="mt-2 inline-block text-sm font-semibold text-emerald-800 underline underline-offset-4">
+          Market preorder pickup is a separate process
         </Link>
       </div>
       
@@ -72,7 +72,7 @@ export default function PickupForm({ data, onChange, errors = {} }: PickupFormPr
           >
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-gray-500" />
-              <SelectValue placeholder="Choose a farmers market" />
+              <SelectValue placeholder="Choose scheduled pickup area" />
             </div>
           </SelectTrigger>
           <SelectContent>
@@ -101,7 +101,7 @@ export default function PickupForm({ data, onChange, errors = {} }: PickupFormPr
               <span className="font-medium">📍 {selectedLocation.name}</span>
             </p>
             <p className="text-xs text-emerald-700 mt-1">{selectedLocation.address}</p>
-            <p className="text-xs text-emerald-600 mt-1">⏰ {selectedLocation.hours}</p>
+            <p className="text-xs text-emerald-600 mt-1">{selectedLocation.hours}</p>
           </motion.div>
         )}
       </div>
