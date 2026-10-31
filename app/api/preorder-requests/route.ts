@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
   if (!fulfillment.valid) return fail(fulfillment.code, fulfillment.message);
   if (fulfillmentType === 'shipping' || fulfillmentType === 'delivery') {
     const geo = validateGeorgiaDestination(address);
-    if (!geo.valid) return fail(geo.code, geo.message);
+    if (!geo.valid) return fail(geo.code || 'GEORGIA_ONLY', geo.message || 'Georgia fulfillment only.');
   }
   // These are requests for a future batch, NOT evidence that scheduled
   // pickup, shipping eligibility or delivery capacity has been approved.
