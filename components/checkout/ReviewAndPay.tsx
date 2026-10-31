@@ -80,7 +80,10 @@ export default function ReviewAndPay({
   }, [fulfillment.shipping?.methodId]);
   
   const validationResult = useMemo(() => {
-    const marketId = fulfillment.pickup?.locationId || fulfillment.type;
+    // A remembered pickup market must never override the active delivery/
+    // shipping selection when validating market-only items.
+    const marketId = fulfillment.type === 'pickup'
+      ? fulfillment.pickup?.locationId : fulfillment.type;
     const fulfillmentCheck = validateCartForFulfillment(cart as any, fulfillment.type, marketId);
     if (!fulfillmentCheck.valid) return fulfillmentCheck;
     
