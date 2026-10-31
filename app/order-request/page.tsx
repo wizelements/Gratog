@@ -23,9 +23,10 @@ function Form() {
   const requested=query.get('product')||'';
   const initialSlug=requested==='always-pursue-gratitude'?'apg'
     :requested.startsWith('passion-guava')?'passion-guava-pineapple'
-    :requested==='soursop-chai'?'soursop-chai-gel':requested;
+    :requested==='soursop-chai'||requested==='soursop-chai-sea-moss-gel'?'soursop-chai-gel'
+    :requested==='herbal-vibes'?'herbal-vibe':requested;
   const [quantities,setQuantities]=useState<Record<string,number>>(
-    MENU.some(item=>item.slug===initialSlug)?{[initialSlug]:1}:{'calm-waters':1});
+    MENU.some(item=>item.slug===initialSlug)?{[initialSlug]:1}:{});
   const [method,setMethod]=useState<Method>('pickup');
   const [name,setName]=useState('');
   const [email,setEmail]=useState('');
