@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { addToCart } from '@/lib/cart-engine';
 import { getAddToCartLabel, getAddedToCartMessage } from '@/lib/purchase-status';
+import { findUnapprovedCurrentMenuItem } from '@/lib/order-admission';
 
 /**
  * ⚡ Quick Add Button - Enhanced with global loading states
@@ -94,9 +95,17 @@ export default function QuickAddButton({ product, selectedVariant, variant = 'de
   if (!checkoutReady) {
     const productHref = product?.slug || product?.id ? `/product/${product.slug || product.id}` : '/catalog';
 
+    // Out-of-stock approved items remain requestable as explicitly acknowledged
+    // future-batch preorders; no Square charge occurs until the merchant
+    // confirms a safe capacity and a fulfillment method.
+    const approved = product && !findUnapprovedCurrentMenuItem([product]);
+    const requestKey = product?.curatedProductId || product?.slug || product?.name || product?.id;
+    const requestHref = `/preorder-request?product=${encodeURIComponent(requestKey || '')}`;
     return (
       <Button asChild variant={variant} className={`relative ${className}`}>
-        <Link href={productHref}>{outOfStock ? 'Currently unavailable' : 'View details'}</Link>
+        <Link href={approved ? requestHref : productHref}>
+          {approved ? 'Request preorder — no charge' : 'View details'}
+        </Link>
       </Button>
     );
   }
