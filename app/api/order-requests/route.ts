@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
           : 'New multi-item website order request',
         body:'Request ' + id.slice(-12) + ' / ' + draft.items.map(x => `${x.quantity} × ${x.name}`).join(', ') +
           ' / ' + draft.fulfillmentType + ' / not charged. Confirm capacity and exact fees, then contact customer in Square Messages.',
-        actionUrl:'https://tasteofgratitude.shop/admin',
+        actionUrl:'https://tasteofgratitude.shop/admin/nonmarket-orders',
         channel:'all',
         eventAt:new Date().toISOString(),
         metadata:{requestId:id,fulfillmentType:draft.fulfillmentType,items:draft.items.length},
