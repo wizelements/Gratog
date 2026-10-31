@@ -13,20 +13,20 @@ import { FulfillmentType } from '@/stores/checkout';
 interface FulfillmentTabsProps {
   selected: FulfillmentType;
   onChange: (type: FulfillmentType) => void;
-  hasPreorderItems?: boolean;
+  hasMarketExclusiveItems?: boolean;
 }
 
 const TABS = [
   { value: 'pickup' as FulfillmentType, label: 'Market pickup', icon: MapPin, description: 'At a participating market' },
-  { value: 'delivery' as FulfillmentType, label: 'Delivery', icon: Truck, description: 'Atlanta-area only', disabledForPreorder: true },
-  { value: 'shipping' as FulfillmentType, label: 'Shipping', icon: Package, description: 'Eligible Georgia addresses', disabledForPreorder: true },
+  { value: 'delivery' as FulfillmentType, label: 'Delivery', icon: Truck, description: 'Atlanta-area only', disabledForMarketOnly: true },
+  { value: 'shipping' as FulfillmentType, label: 'Shipping', icon: Package, description: 'Eligible Georgia addresses', disabledForMarketOnly: true },
 ];
 
-export default function FulfillmentTabs({ selected, onChange, hasPreorderItems = false }: FulfillmentTabsProps) {
+export default function FulfillmentTabs({ selected, onChange, hasMarketExclusiveItems = false }: FulfillmentTabsProps) {
   return (
     <div className="space-y-3">
       {/* Preorder explanation banner */}
-      {hasPreorderItems && (
+      {hasMarketExclusiveItems && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 animate-in fade-in">
           <div>
             <p className="text-sm font-medium text-amber-900">
@@ -43,8 +43,8 @@ export default function FulfillmentTabs({ selected, onChange, hasPreorderItems =
       {TABS.map((tab) => {
         const Icon = tab.icon;
         const isSelected = selected === tab.value;
-        // CRITICAL FIX: Disable non-pickup tabs when preorder items present
-        const isDisabled = hasPreorderItems && tab.disabledForPreorder;
+        // CRITICAL FIX: Disable non-pickup tabs when market-only items present
+        const isDisabled = hasMarketExclusiveItems && tab.disabledForMarketOnly;
         
         return (
           <button
@@ -90,7 +90,7 @@ export default function FulfillmentTabs({ selected, onChange, hasPreorderItems =
       })}
     </div>
 
-    {hasPreorderItems && selected !== 'pickup' && (
+    {hasMarketExclusiveItems && selected !== 'pickup' && (
       <div className="bg-red-50 border border-red-200 rounded-lg p-3">
         <p className="text-xs text-red-700 font-medium">
           Your cart includes market-only items. Please select &quot;Pickup&quot; to continue.
