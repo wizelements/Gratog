@@ -329,6 +329,11 @@ try {
     bouncedRecord?.customerContact?.email?.status==='bounced'&&
       bouncedRecord?.customerContact?.email?.deliveryVerified===false,
     {status:bouncedRecord?.customerContact?.email?.status});
+  check('Undeliverable preorder email creates a durable merchant follow-up alert',
+    (await db.collection('owner_alert_queue').countDocuments({
+      sourceEventId:`preorder-contact:${webhookMockId}:bounced`,
+    }))===1);
+
 
   evidence.pass = true;
 } catch (err) {
