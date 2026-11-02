@@ -3,6 +3,7 @@
 import { Suspense, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import OrderRequestMessage from '@/components/checkout/OrderRequestMessage';
 
 const MENU = [
   {slug:'calm-waters',name:'Calm Waters',price:11.99},
@@ -92,6 +93,7 @@ function Form() {
             className="font-semibold underline">contact us</Link> with the reference above.
             We don't promise an immediate human response.
           </p>}
+      <OrderRequestMessage requestId={result.requestId} email={email} />
       <button type="button" onClick={()=>navigator.clipboard?.writeText(reference)}
         className="text-sm font-semibold text-emerald-800 underline">Copy request reference</button>
     </section>;
