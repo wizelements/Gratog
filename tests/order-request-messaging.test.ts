@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
+import { verifiedSquareSmsNumber, verifiedSquareSmsHref } from '@/lib/square-messages-contact';
 import { readFileSync } from 'node:fs';
 
 const fakes = vi.hoisted(() => ({
@@ -106,6 +107,18 @@ describe('Custom-site customer message handoff: durable, no fake SMS', () => {
     const response = await POST(req(valid));
     expect(response.status).toBe(201);
     expect(fakes.updateOne).toHaveBeenCalledTimes(1);
+  });
+
+  it('never exposes a Text Us action without verified Square toll-free identity', () => {
+    const number = '+1 (800) 234-5678';
+    expect(verifiedSquareSmsNumber(number, undefined)).toBeNull();
+    expect(verifiedSquareSmsHref(number, 'false')).toBeNull();
+    expect(verifiedSquareSmsHref('+1 404 234 5678', 'true')).toBeNull();
+    expect(verifiedSquareSmsHref('sms:+18002345678', 'true')).toBeNull();
+    expect(verifiedSquareSmsHref(number, 'true', 'abcdef123456'))
+      .toBe('sms:+18002345678?body=Taste%20of%20Gratitude%20order%20request%20abcdef123456');
+    expect(verifiedSquareSmsHref(number, 'true', '../../inject'))
+      .toBe('sms:+18002345678');
   });
 
   it('website button and merchant inbox never claim a Square SMS was sent', () => {
