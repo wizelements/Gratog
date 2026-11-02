@@ -361,6 +361,35 @@ try {
       multiRecord?.paymentStatus==='not_charged'&&!multiRecord?.squarePaymentId);
   check('No unconfigured Square Text Us page is represented as verified',
     multi.data.squareTextUsPage===null);
+  const websiteMessage={
+    requestId:multi.data.requestId,messageId:randomUUID(),
+    email:'multi@qa-sandbox.invalid',
+    message:'Can you confirm how Browns Mill pickup works for this order?',
+  };
+  const messageHeaders={'x-forwarded-for':'192.0.2.92'};
+  const firstMessage=await post('/api/order-requests/message',websiteMessage,messageHeaders);
+  check('Customer website message is stored against the saved order reference',
+    firstMessage.status===201&&firstMessage.data.success===true&&
+      firstMessage.data.delivery==='merchant_inbox'&&firstMessage.data.squareSmsSent===false,
+    {status:firstMessage.status,delivery:firstMessage.data.delivery});
+  const savedMessage=await db.collection('nonmarket_order_requests')
+    .findOne({_id:multi.data.requestId});
+  check('Real MongoDB readback shows message without any paid or reserved state',
+    savedMessage?.customerMessages?.length===1&&
+      savedMessage.customerMessages[0].message===websiteMessage.message&&
+      savedMessage.paymentStatus==='not_charged'&&savedMessage.capacityReserved===false);
+  const messageRetry=await post('/api/order-requests/message',websiteMessage,messageHeaders);
+  check('Repeating website message ID is idempotent and does not notify twice',
+    messageRetry.status===200&&messageRetry.data.duplicate===true&&
+      (await db.collection('nonmarket_order_requests')
+        .findOne({_id:multi.data.requestId}))?.customerMessages?.length===1);
+  const forgedCustomer=await post('/api/order-requests/message',{
+    ...websiteMessage,messageId:randomUUID(),email:'not-customer@qa-sandbox.invalid',
+  },messageHeaders);
+  check('Wrong email cannot append message to another customer order',
+    forgedCustomer.status===404&&
+      (await db.collection('nonmarket_order_requests')
+        .findOne({_id:multi.data.requestId}))?.customerMessages?.length===1);
   const multiDuplicate=await post('/api/order-requests',nonmarketRequest);
   check('Idempotent nonmarket retry returns original request without a second email',
     multiDuplicate.status===200&&multiDuplicate.data.requestId===multi.data.requestId&&

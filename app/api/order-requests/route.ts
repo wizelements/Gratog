@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { rateLimitByIp } from '@/lib/rate-limit';
 import { sendOwnerAlert } from '@/lib/owner-alerts';
+import { verifiedSquareSmsHref } from '@/lib/square-messages-contact';
 import { sendPreorderRequestAcknowledgement } from '@/lib/preorder/customer-acknowledgement';
 import {
   OrderRequestValidationError,
@@ -56,6 +57,8 @@ export async function POST(request: NextRequest) {
         success:true, requestId:id, status:existing.status,
         paymentStatus: 'not_charged',
         squareTextUsPage:verifiedSquareTextUsPage(process.env.SQUARE_TEXT_US_HOSTED_URL),
+        squareSmsHref:verifiedSquareSmsHref(process.env.SQUARE_MESSAGES_DEDICATED_NUMBER,
+          process.env.SQUARE_MESSAGES_NUMBER_VERIFIED, id.slice(-12)),
         message:'This order request was already received. No charge was made.',
       }, {headers});
     }
@@ -69,6 +72,8 @@ export async function POST(request: NextRequest) {
         success:true, requestId:id, status:collision.status,
         paymentStatus:'not_charged',
         squareTextUsPage:verifiedSquareTextUsPage(process.env.SQUARE_TEXT_US_HOSTED_URL),
+        squareSmsHref:verifiedSquareSmsHref(process.env.SQUARE_MESSAGES_DEDICATED_NUMBER,
+          process.env.SQUARE_MESSAGES_NUMBER_VERIFIED, id.slice(-12)),
         message:'This order request was already received. No charge was made.',
       }, {headers});
     }
@@ -122,6 +127,8 @@ export async function POST(request: NextRequest) {
       paymentStatus:'not_charged',
       emailStatus,
       squareTextUsPage:verifiedSquareTextUsPage(process.env.SQUARE_TEXT_US_HOSTED_URL),
+        squareSmsHref:verifiedSquareSmsHref(process.env.SQUARE_MESSAGES_DEDICATED_NUMBER,
+          process.env.SQUARE_MESSAGES_NUMBER_VERIFIED, id.slice(-12)),
       message:'Your request is saved, not paid or reserved. Taste of Gratitude will confirm stock, scheduling and final charges before providing a Square payment link.',
     }, {status:201,headers});
   } catch {

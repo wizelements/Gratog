@@ -13,6 +13,8 @@ import { PWADiagnostics } from '@/components/PWADiagnostics';
 import { BottomNav } from '@/components/BottomNav';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import WebsiteMessageButton from '@/components/WebsiteMessageButton';
+import { verifiedSquareSmsHref } from '@/lib/square-messages-contact';
 
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AnalyticsProvider } from '@/components/analytics/WebVitals';
@@ -177,6 +179,10 @@ export default function RootLayout({ children }) {
             <CookieConsent />
           </Suspense>
           <BottomNav />
+          <WebsiteMessageButton smsHref={verifiedSquareSmsHref(
+            process.env.SQUARE_MESSAGES_DEDICATED_NUMBER,
+            process.env.SQUARE_MESSAGES_NUMBER_VERIFIED,
+          )} />
           <Toaster position="top-right" richColors />
           </AnalyticsProvider>
         </AuthProvider>
