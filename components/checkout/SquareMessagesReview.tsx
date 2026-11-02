@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import OrderRequestMessage from '@/components/checkout/OrderRequestMessage';
 import type { CartItem } from '@/adapters/cartAdapter';
 import type { ContactInfo, FulfillmentData } from '@/stores/checkout';
 import { Button } from '@/components/ui/button';
@@ -91,7 +92,7 @@ export default function SquareMessagesReview({cart,contact,fulfillment,onBack}: 
           Reference <strong>{reference}</strong>. No payment has been collected, and no inventory
           or pickup/delivery window has been reserved.
         </p>
-        <h3 className="font-semibold">Next: Square Messages</h3>
+        <h3 className="font-semibold">Next: confirm your order with our team</h3>
         <p className="text-sm leading-6 text-stone-700">
           Please quote <strong>{reference}</strong> when contacting Taste of Gratitude.
           We'll verify the products, timing and final delivery/shipping fees before sending a
@@ -110,6 +111,7 @@ export default function SquareMessagesReview({cart,contact,fulfillment,onBack}: 
             {' '}with the reference above. No response time is guaranteed.
           </div>
         )}
+        <OrderRequestMessage requestId={result.requestId} email={contact.email} />
         <button type="button" className="text-sm font-semibold text-emerald-900 underline"
           onClick={() => navigator.clipboard?.writeText(reference)}>Copy reference</button>
         <p className="text-xs text-stone-600">Request status: awaiting merchant review · Payment status: unpaid.</p>
