@@ -34,7 +34,7 @@ const req = (body: unknown) => new NextRequest('http://localhost/api/order-reque
 
 describe('Custom-site customer message handoff: durable, no fake SMS', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
     fakes.rateLimit.mockResolvedValue({ ok: true });
     fakes.findOne.mockResolvedValue({
       _id: orderId, customer: { email, name: 'Test Customer' }, customerMessages: [],
