@@ -12,6 +12,7 @@ type RequestRow={
   shippingAddress?:{street:string;city:string;state:string;zip:string};
   deliveryTimeSlot?:string;
   customerContact?:{email?:{status?:string;deliveryVerified?:boolean}};
+  customerMessages?:Array<{messageId:string;message:string;createdAt:string;source:'website_form';squareSmsSent:false}>;
 };
 
 const statuses=[
@@ -92,6 +93,29 @@ export default function MerchantOrderRequestsPage(){
             {(row.deliveryAddress||row.shippingAddress)?.street}, {(row.deliveryAddress||row.shippingAddress)?.city},
             {' '}{(row.deliveryAddress||row.shippingAddress)?.state} {(row.deliveryAddress||row.shippingAddress)?.zip}
           </p>}
+          {Array.isArray(row.customerMessages) && row.customerMessages.length > 0 && (
+            <section aria-label="Customer website messages" className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <h3 className="font-semibold text-emerald-950">Customer website messages ({row.customerMessages.length})</h3>
+              <p className="mt-1 text-xs leading-5 text-emerald-950">
+                Saved on this order request, not delivered by Square SMS.
+                Reply using the customer's authorized contact email.
+              </p>
+              <ul className="mt-3 space-y-3">
+                {row.customerMessages.map(message => (
+                  <li key={message.messageId} className="rounded-lg border border-emerald-100 bg-white p-3">
+                    <p className="whitespace-pre-wrap break-words text-sm text-stone-900">{message.message}</p>
+                    <p className="mt-2 text-xs text-stone-600">
+                      {message.createdAt ? new Date(message.createdAt).toLocaleString() : 'Recently'} · Website inbox
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <a className="mt-3 inline-block rounded-lg bg-emerald-800 px-4 py-2 text-sm font-semibold text-white"
+                href={`mailto:${encodeURIComponent(row.customer.email)}?subject=${encodeURIComponent('Taste of Gratitude request ' + row._id.slice(-12))}`}>
+                Reply by email
+              </a>
+            </section>
+          )}
           <div className="mt-4 flex flex-wrap gap-2">
             {statuses.map(choice=><button type="button" key={choice.value}
               onClick={()=>setStatus(row._id,choice.value)}
