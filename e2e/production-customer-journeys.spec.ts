@@ -85,6 +85,7 @@ test.describe('Real Georgia customer journeys — no charges, accounts or submit
         customer: { name: 'Site QA', email: 'no-order@example.invalid' },
         cart: [{ id: 'qa-nonexistent-product', quantity: 1 }],
         fulfillmentType: 'shipping',
+        shippingMethod: 'standard',
         shippingAddress: { street: '123 Test Street', city: 'New York', state: 'NY', zip: '10001' },
       },
     });
