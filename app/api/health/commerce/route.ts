@@ -5,6 +5,7 @@ import { getSquareHealthStatus } from '@/lib/payments/config';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
 import { isApprovedLemonadeLine } from '@/lib/lemonade-packs';
 import { isolatedSandboxPreviewEnabled } from '@/lib/catalog-environment';
+import { tursoPreviewSelected } from '@/lib/checkout/turso-preview-runtime.mjs';
 
 /**
  * Non-sensitive commerce readiness signal.
@@ -32,12 +33,17 @@ export async function GET() {
       if (hasApprovedVariation) approvedFlavors.add(String(product.slug || product.name || product.id));
     }
     const isPreview = process.env.VERCEL_ENV === 'preview';
+    // The Turso storefront has its own pinned Preview-only isolation guard.
+    // Do not require legacy Mongo-specific Preview feature flags for Turso.
+    const isolatedTursoCatalog = isPreview && tursoPreviewSelected() &&
+      snapshot.source === 'turso-isolated-preview' && snapshot.isFallback === false;
     const checks = {
       squareConfiguration: payment.ok,
       signedWebhookConfigured: Boolean(process.env.SQUARE_WEBHOOK_SIGNATURE_KEY?.trim()),
       correctSquareEnvironment: !isPreview || payment.environment === 'sandbox',
-      previewCatalogIsolation: !isPreview || isolatedSandboxPreviewEnabled(),
-      liveCatalog: snapshot.isFallback === false && snapshot.source === 'unified_storefront',
+      previewCatalogIsolation: !isPreview || isolatedTursoCatalog || isolatedSandboxPreviewEnabled(),
+      liveCatalog: snapshot.isFallback === false &&
+        (snapshot.source === 'unified_storefront' || isolatedTursoCatalog),
       mixedPackAvailability: approvedFlavors.size >= 2,
     };
     const ready = Object.values(checks).every(Boolean);

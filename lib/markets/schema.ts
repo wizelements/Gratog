@@ -52,6 +52,11 @@ export const baseMarketSchema = z.object({
     .url('Must be a valid URL')
     .optional()
     .or(z.literal('')),
+  // These fields are edited by the market owner and must survive Mongo -> SQL.
+  pickupDays: z.string().max(200).optional(),
+  preorderCutoff: z.string().max(300).optional(),
+  parkingNotes: z.string().max(500).optional(),
+  recurrence: z.enum(['weekly','first_third']).optional(),
   isActive: z.boolean().default(true),
   featured: z.boolean().default(false),
 });

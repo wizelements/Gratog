@@ -4,8 +4,17 @@ import { logger } from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
+import { consumeInventoryForPaidOrder } from '@/lib/custom-inventory';
+import { releaseCheckoutInventory } from '@/lib/checkout/stock-reservation';
+import { reconcileCapturedSquareRefund } from '@/lib/checkout/square-refund-ledger';
+import { assertExactCapturedPayment } from '@/lib/checkout/provider-payment-amount';
 import { getSquareWebhookSignatureKey } from '@/lib/square';
+import { verifySquareWebhookSignature } from '@/lib/batches/square-webhook-auth';
+import {tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
+import { getIsolatedPreviewWebhookKey } from '@/lib/preview-square-webhook-key';
+import { reconcileSquareBatchReservation } from '@/lib/batches/reconcile-square-reservation';
 import { sendOrderConfirmationEmail } from '@/lib/resend-email';
+import { notifySquareTeam } from '@/lib/preorder/square-notifications';
 import { claimAndNotifyStaffOrder } from '@/lib/staff-notifications';
 import { syncSingleCatalogItem } from '@/lib/square/syncSingleItem';
 import { revalidatePath } from 'next/cache';
@@ -421,11 +430,17 @@ export async function POST(request: NextRequest) {
     }
 
     if (!skipVerification && signatureHeader) {
-      const isSignatureValid = verifyWebhookSignature(
-        signatureHeader,
-        requestUrl,
-        requestBody
-      );
+      // Preview uses a distinct, active Sandbox subscription and its own
+      // Square signing key. Production keeps the existing configured key.
+      const isPreviewSandbox =
+        process.env.VERCEL_ENV === 'preview' &&
+        process.env.SQUARE_ENVIRONMENT === 'sandbox';
+      const previewKey = isPreviewSandbox
+        ? await getIsolatedPreviewWebhookKey(requestUrl) : null;
+      const isSignatureValid = isPreviewSandbox
+        ? Boolean(previewKey) &&
+          verifySquareWebhookSignature(signatureHeader, requestBody, requestUrl, previewKey!)
+        : verifyWebhookSignature(signatureHeader, requestUrl, requestBody);
       
       if (!isSignatureValid) {
         logger.error('Webhook', 'Invalid webhook signature - rejecting');
@@ -475,6 +490,25 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Isolated Turso buyer Preview does not touch the Mongo connector.
+    // Signature was validated above against the exact active Square Sandbox
+    // subscription key and public notification URL.
+    if (tursoPreviewSelected()) {
+      try {
+        const {reconcileTursoPreviewSignedWebhook}=await import(
+          '@/lib/checkout/turso-preview-webhook.mjs'
+        );
+        const reconciliation=await reconcileTursoPreviewSignedWebhook(webhookEvent);
+        return NextResponse.json(reconciliation);
+      } catch(error) {
+        logger.error('Webhook','Isolated Turso reconciliation requires retry', {
+          eventId,eventType,
+          code:error instanceof Error ? error.name : 'Unknown',
+        });
+        return NextResponse.json({received:false,error:'Reconciliation pending'}, {status:503});
+      }
+    }
+
     // Connect to database
     const { db } = await connectToDatabase();
     
@@ -635,6 +669,9 @@ export async function POST(request: NextRequest) {
 
 async function handlePaymentCreated(db: any, payment: any): Promise<{ success: boolean; message: string }> {
   logger.debug('Webhook', 'Payment created', { paymentId: payment.id, status: payment.status });
+  const batch = await reconcileSquareBatchReservation(db, payment);
+  if (batch.matched) return { success: true, message: 'Fresh-batch payment event reconciled' };
+
   
   const order = await findLocalOrder(db, payment);
   
@@ -642,6 +679,10 @@ async function handlePaymentCreated(db: any, payment: any): Promise<{ success: b
     return { success: false, message: 'Order not found for payment' };
   }
   
+  if (payment.status === 'COMPLETED') {
+    return handlePaymentUpdated(db, payment);
+  }
+
   // Only update if not already at a higher status
   await updateOrderStatusSafe(db, order.id, 'payment_processing', {
     squarePaymentId: payment.id,
@@ -658,6 +699,9 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
     referenceId: payment.reference_id
   });
   
+  const batch = await reconcileSquareBatchReservation(db, payment);
+  if (batch.matched) return { success: true, message: 'Fresh-batch payment event reconciled' };
+
   const order = await findLocalOrder(db, payment);
   
   if (!order) {
@@ -678,14 +722,14 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
   // Map Square payment status to our order status - FIXED: Use standardized status values
   const statusMap: Record<string, string> = {
     'COMPLETED': 'CONFIRMED',  // Was 'paid' - now uses order status value
-    'APPROVED': 'CONFIRMED',   // Was 'paid' - now uses order status value  
+    'APPROVED': 'payment_processing', // Authorization is not settled payment
     'PENDING': 'payment_processing',
     'CANCELED': 'payment_failed',
     'FAILED': 'payment_failed'
   };
   
   const newOrderStatus = statusMap[payment.status] || 'payment_processing';
-  const isCompleted = payment.status === 'COMPLETED' || payment.status === 'APPROVED';
+  const isCompleted = payment.status === 'COMPLETED';
   
   // Build update fields
   const updateFields: Record<string, any> = {
@@ -704,6 +748,24 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
     updateFields.balanceDue = 0;
   }
   
+  // Both regular web checkout and Square-hosted market preorders must match
+  // their own server-priced order total. A signed webhook alone is not proof
+  // of full payment. Wrong/partial amounts stay pending for reconciliation.
+  if (isCompleted) assertExactCapturedPayment(order, payment);
+
+  // Square may notify us before /api/payments finishes. Commit the SAME
+  // bounded prepayment stock claim from either channel, at most once.
+  if (order.checkoutAttemptKey && isCompleted) {
+    await consumeInventoryForPaidOrder(db, {
+      orderId: order.id, orderNumber: order.orderNumber || order.id,
+      items: order.items || [], actor: 'square_verified_webhook',
+      requireReservation: true,
+    });
+  } else if (order.checkoutAttemptKey && ['CANCELED', 'FAILED'].includes(payment.status)) {
+    const { client } = await connectToDatabase();
+    await releaseCheckoutInventory(db, client, order.id, 'square_verified_webhook_failure');
+  }
+
   // Update with precedence check
   const updated = await updateOrderStatusSafe(db, order.id, newOrderStatus, updateFields);
   
@@ -725,43 +787,128 @@ async function handlePaymentUpdated(db: any, payment: any): Promise<{ success: b
     );
   }
   
-  // Send confirmation email if newly paid and not already sent
-  if (isCompleted && updated && !order.emailSentAt && order.customer?.email) {
+  // Both regular shop and Mongo/Mongoose market preorders need one
+  // customer receipt. Claim before sending, using the correct collection;
+  // otherwise concurrent payment callbacks send duplicate emails.
+  const isMarketPreorder = Boolean(order.marketId && order.customerEmail && order._id);
+  const buyerEmail = order.customer?.email || order.customerEmail;
+  if (isCompleted && updated && buyerEmail) {
+    const confirmationCollection = db.collection(isMarketPreorder ? 'marketorders' : 'orders');
+    const confirmationFilter = isMarketPreorder ? { _id: order._id } : { id: order.id };
+    let emailClaimed = false;
     try {
-      const emailResult = await sendOrderConfirmationEmail({
-        id: order.id,
-        orderNumber: order.orderNumber || order.id,
-        customer: {
-          email: order.customer.email,
-          name: order.customer.name || 'Customer',
-          phone: order.customer.phone
-        },
-        items: order.items || [],
-        pricing: order.pricing || { subtotal: 0, total: 0, deliveryFee: 0, tax: 0 },
-        fulfillment: order.fulfillment || { type: 'pickup' },
-        payment: {
-          receiptUrl: payment.receipt_url,
-          cardBrand: payment.card_details?.card?.card_brand,
-          cardLast4: payment.card_details?.card?.last_4
+      const claim = await confirmationCollection.updateOne({
+        ...confirmationFilter,
+        customerNotificationRecoveryHold: { $ne: true },
+        emailSentAt: { $exists: false },
+        confirmationEmailClaimedAt: { $exists: false },
+      }, { $set: {
+        confirmationEmailClaimedAt: new Date(),
+        confirmationEmailDeliveryStatus: 'sending',
+      } });
+      emailClaimed = claim.modifiedCount === 1;
+      if (emailClaimed) {
+        const emailResult = await sendOrderConfirmationEmail({
+          id: order.id || String(order._id),
+          orderNumber: order.orderNumber || order.id,
+          customer: {
+            email: buyerEmail,
+            name: order.customer?.name || order.customerName || 'Customer',
+            phone: order.customer?.phone || order.customerPhone,
+          },
+          items: order.items || [],
+          pricing: order.pricing || {
+            subtotal: order.subtotal || 0,
+            total: order.total || 0,
+            deliveryFee: 0,
+            tax: order.tax || 0,
+          },
+          fulfillment: order.fulfillment || {
+            type: 'pickup',
+            pickup: {
+              locationId: order.marketId || null,
+              date: order.pickupDate || null,
+            },
+          },
+          payment: {
+            receiptUrl: payment.receipt_url,
+            cardBrand: payment.card_details?.card?.card_brand,
+            cardLast4: payment.card_details?.card?.last_4,
+          },
+        });
+        if (emailResult && 'success' in emailResult && emailResult.success === true) {
+          await confirmationCollection.updateOne(confirmationFilter, {
+            $set: {
+              emailSentAt: new Date().toISOString(),
+              confirmationEmailDeliveryStatus: 'sent',
+            },
+          });
+          logger.info('Webhook', 'Customer confirmation delivered', {
+            orderNumber: order.orderNumber, isMarketPreorder,
+          });
+        } else {
+          await confirmationCollection.updateOne(confirmationFilter, {
+            $set: { confirmationEmailDeliveryStatus: 'failed' },
+          });
+          logger.warn('Webhook', 'Customer confirmation failed; staff resend required', {
+            orderNumber: order.orderNumber, isMarketPreorder,
+          });
         }
-      });
-      
-      // @ts-ignore — type fix needed
-      if (emailResult.success) {
-        await db.collection('orders').updateOne(
-          { id: order.id },
-          { $set: { emailSentAt: new Date().toISOString() } }
-        );
-        logger.info('Webhook', 'Confirmation email sent via webhook', { orderId: order.id });
       }
     } catch (emailError) {
-      logger.warn('Webhook', 'Failed to send confirmation email', { 
-        orderId: order.id,
-        error: emailError instanceof Error ? emailError.message : String(emailError)
+      if (emailClaimed) {
+        await confirmationCollection.updateOne(confirmationFilter, {
+          $set: { confirmationEmailDeliveryStatus: 'failed' },
+        }).catch(() => null);
+      }
+      logger.warn('Webhook', 'Customer confirmation could not be delivered', {
+        orderNumber: order.orderNumber,
+        error: emailError instanceof Error ? emailError.message : String(emailError),
       });
     }
   }
-  
+
+  // Market preorders used to bypass the post-payment staff alert because
+  // their hosted Square-link creation bypasses /api/payments. Only captured,
+  // verified orders may notify production staff of work to fulfill.
+  if (isCompleted && updated && isMarketPreorder) {
+    try {
+      const claims = db.collection('marketorders');
+      const claim = await claims.updateOne({
+        _id: order._id,
+        staffNotifiedAt: { $exists: false },
+        staffNotificationClaimedAt: { $exists: false },
+      }, { $set: { staffNotificationClaimedAt: new Date(),
+        staffNotificationStatus: 'sending' } });
+      if (claim.modifiedCount === 1) {
+        const notify = await notifySquareTeam({
+          orderNumber: order.orderNumber,
+          waitlistNumber: order.waitlistNumber || order.orderNumber,
+          customer: {
+            name: order.customerName || 'Customer',
+            phone: order.customerPhone || '',
+            email: order.customerEmail || '',
+          },
+          items: order.items || [],
+          pickupLocation: order.pickupLocation || order.marketName || 'Market pickup',
+          pickupDate: order.pickupDate || 'Scheduled market day',
+          pickupHours: order.pickupHours || '',
+          notes: order.notes,
+        });
+        await claims.updateOne({ _id: order._id }, {
+          $set: notify.success
+            ? { staffNotifiedAt: new Date(), staffNotificationStatus: 'sent' }
+            : { staffNotificationStatus: 'failed' },
+        });
+      }
+    } catch (staffError) {
+      logger.error('Webhook', 'Paid market preorder staff notification failed', {
+        orderNumber: order.orderNumber,
+        error: staffError instanceof Error ? staffError.message : String(staffError),
+      });
+    }
+  }
+
   return { success: true, message: `Payment ${payment.status} processed` };
 }
 
@@ -774,14 +921,16 @@ async function handleRefundEvent(db: any, refund: any): Promise<{ success: boole
   
   // Find order via payment ID in orders collection
   let order = await db.collection('orders').findOne({ squarePaymentId: refund.payment_id });
+  let isMarketOrder = false;
   
   // If not found, try MarketOrder
   if (!order) {
     try {
       const MarketOrder = (await import('@/models/MarketOrder')).default;
-      const marketOrder = await MarketOrder.findOne({ squareOrderId: refund.payment_id });
+      const marketOrder = await MarketOrder.findOne({ squarePaymentId: refund.payment_id });
       if (marketOrder) {
         order = marketOrder;
+        isMarketOrder = true;
       }
     } catch (e) {
       // MarketOrder not found, continue
@@ -789,44 +938,68 @@ async function handleRefundEvent(db: any, refund: any): Promise<{ success: boole
   }
   
   if (!order) {
-    return { success: false, message: 'Order not found for refund' };
+    // Do not acknowledge a refund as processed if its local order is missing.
+    // Throw so webhook dedup records an error and Square can retry delivery.
+    throw new Error('Square refund received without a matching local payment order');
   }
   
   if (refund.status === 'COMPLETED') {
-    // Check if this is a MarketOrder (has _id but no id field)
-    if (order._id && !order.id) {
-      // It's a MarketOrder
+    // A Mongoose MarketOrder also has a virtual .id. Trust the lookup path,
+    // not an unreliable .id absence check, when choosing the order database.
+    if (isMarketOrder) {
+      // Market and regular orders share the exact same refund ledger and
+      // cumulative partial/full classification. Order ID is namespaced.
       const MarketOrder = (await import('@/models/MarketOrder')).default;
-      await MarketOrder.findByIdAndUpdate(order._id, {
-        status: 'REFUNDED',
-        paymentStatus: 'REFUNDED'
+      const { refundedCents, fullyRefunded } = await reconcileCapturedSquareRefund(db, {
+        orderId: 'market:' + String(order._id),
+        paymentId: refund.payment_id,
+        refundId: refund.id,
+        amountCents: Number(refund.amount_money?.amount),
+        paidCents: Math.round(Number(order.total) * 100),
+        currency: refund.amount_money?.currency,
       });
-      logger.info('Webhook', 'MarketOrder marked as refunded', { orderId: order._id.toString(), refundId: refund.id });
+      const values: Record<string, any> = {
+        paymentStatus: fullyRefunded ? 'REFUNDED' : 'PARTIALLY_REFUNDED',
+        refundedAmountCents: refundedCents,
+        updatedAt: new Date(),
+      };
+      if (fullyRefunded) values.status = 'REFUNDED';
+      await MarketOrder.findOneAndUpdate({
+        _id: order._id,
+        ...(fullyRefunded ? {} : { paymentStatus: { $ne: 'REFUNDED' } }),
+      }, { $set: values }, { runValidators: true });
+      logger.info('Webhook', 'Market order refund reconciled', {
+        orderId: String(order._id), refundId: refund.id, refundedCents, fullyRefunded,
+      });
     } else {
-      // It's a regular order in orders collection
-      await db.collection('orders').updateOne(
-        { id: order.id },
-        {
-          $set: {
-            status: 'refunded',
-            paymentStatus: 'refunded',
-            refundId: refund.id,
-            refundedAt: new Date().toISOString(),
-            refundAmount: refund.amount_money?.amount,
-            updatedAt: new Date().toISOString()
-          },
-          $push: {
-            timeline: {
-              status: 'refunded',
-              timestamp: new Date().toISOString(),
-              message: 'Order refunded via Square',
-              actor: 'square_webhook',
-              refundId: refund.id
-            }
-          }
-        }
-      );
-      logger.info('Webhook', 'Order marked as refunded', { orderId: order.id, refundId: refund.id });
+      const { refundedCents, paidCents, fullyRefunded, paymentStatus } =
+        await reconcileCapturedSquareRefund(db, {
+          orderId: order.id,
+          paymentId: refund.payment_id,
+          refundId: refund.id,
+          amountCents: Number(refund.amount_money?.amount),
+          paidCents: Number(order.totalCents ?? Math.round(Number(order.total) * 100)),
+          currency: refund.amount_money?.currency,
+        });
+      const updateFilter = fullyRefunded
+        ? { id: order.id }
+        : { id: order.id, paymentStatus: { $nin: ['refunded', 'REFUNDED'] } };
+      const updateFields = {
+        paymentStatus,
+        refundAmount: refundedCents,
+        refundId: refund.id,
+        refundedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      if (fullyRefunded) (updateFields as any).status = 'refunded';
+      await db.collection('orders').updateOne(updateFilter, {
+        $set: updateFields,
+        $max: { refundAmountCents: refundedCents },
+      });
+      logger.info('Webhook', 'Order refund reconciled', {
+        orderId: order.id, refundId: refund.id, refundedCents,
+        paidCents, fullyRefunded,
+      });
     }
   }
   
@@ -857,7 +1030,7 @@ async function handleOrderEvent(db: any, squareOrder: any, eventType: string): P
     order.status === 'paid'
     || order.paymentStatus === 'paid'
     || order.paymentStatus === 'COMPLETED'
-    || order.paymentStatus === 'APPROVED';
+    || order.paymentStatus === 'PAID';
 
   if (isPaid && !order.staffNotifiedAt) {
     try {
@@ -919,7 +1092,12 @@ async function reconcileStorefrontStock(db: any, variationId: string) {
     0
   );
 
-  const inStock = currentStock > 0;
+  // Square's stock snapshot may arrive while a buyer's atomic prepayment
+  // reservation is outstanding. Never overwrite the first-party local stock
+  // balance and silently resell reserved units. Store upstream observations
+  // separately; explicit reconciliation can approve a restock adjustment.
+  const ledger = await db.collection('inventory').findOne({ productId: product.id });
+  const inStock = Number(ledger ? ledger.currentStock : currentStock) > 0;
   const now = new Date();
 
   const slug = product.name
@@ -937,13 +1115,14 @@ async function reconcileStorefrontStock(db: any, variationId: string) {
         productSlug: slug || null,
         squareId: product.id,
         variationIds,
-        currentStock,
+        squareReportedStock: currentStock,
         isActive: true,
         updatedAt: now,
         lastCatalogSyncAt: now,
       },
       $setOnInsert: {
         productId: product.id,
+        currentStock,
         createdAt: now,
         source: 'square_webhook',
         lowStockThreshold: 5,

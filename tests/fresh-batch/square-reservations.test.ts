@@ -48,6 +48,8 @@ describe('fresh-batch Square reservations', () => {
       quantityUnit: 'gallon',
       gallonEquivalent: 1,
       finalPriceCents: 12300,
+      depositCents: 6150,
+      balanceDueCents: 6150,
       setupFeeCents: 3500,
       marketId: 'serenbe',
     },
@@ -78,9 +80,51 @@ describe('fresh-batch Square reservations', () => {
 
     const call = vi.mocked(createPaymentLink).mock.calls[0][0];
     expect(call.lineItems).toHaveLength(1);
-    expect(call.lineItems[0].basePriceMoney?.amount).toBe(12300);
+    expect(call.lineItems[0].basePriceMoney?.amount).toBe(6150);
+    expect(call.lineItems[0].quantity).toBe('1');
     expect(call.lineItems[0].name).toContain('Kissed by Gods');
     expect(call.idempotencyKey).toBe('freshbatch_reservation_res-123');
+  });
+
+  it('does not multiply the complete reservation total when several units are ordered', async () => {
+    vi.mocked(createPaymentLink).mockResolvedValue({
+      success: true, data: { paymentLink: { id: 'multi', url: 'https://square.link/multi' } },
+    });
+    const result = await createReservationPaymentLink({
+      ...input,
+      reservation: {
+        ...input.reservation,
+        quantity: 3,
+        finalPriceCents: 36900,
+        depositCents: 18450,
+        balanceDueCents: 18450,
+      },
+    });
+    expect(result.success).toBe(true);
+    const item = vi.mocked(createPaymentLink).mock.calls[0][0].lineItems[0];
+    expect(item.quantity).toBe('1');
+    expect(item.basePriceMoney?.amount).toBe(18450);
+    expect(item.name).toContain('3 gallons');
+  });
+
+  it('charges the full approved price when no deposit is required', async () => {
+    vi.mocked(createPaymentLink).mockResolvedValue({
+      success: true, data: { paymentLink: { id: 'full', url: 'https://square.link/full' } },
+    });
+    await createReservationPaymentLink({
+      ...input,
+      reservation: { ...input.reservation, depositCents: 0, balanceDueCents: 12300 },
+    });
+    expect(vi.mocked(createPaymentLink).mock.calls[0][0].lineItems[0].basePriceMoney?.amount).toBe(12300);
+  });
+
+  it('rejects inconsistent totals without calling Square', async () => {
+    const result = await createReservationPaymentLink({
+      ...input,
+      reservation: { ...input.reservation, balanceDueCents: 1 },
+    });
+    expect(result.success).toBe(false);
+    expect(createPaymentLink).not.toHaveBeenCalled();
   });
 
   it('rejects a $0 reservation', async () => {

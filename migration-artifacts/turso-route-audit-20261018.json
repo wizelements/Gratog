@@ -1,0 +1,2997 @@
+{
+  "schemaVersion": 1,
+  "repoCommit": "8e21c66f33c5849d409f02b5635514dcabc34ed1",
+  "counts": {
+    "scannedSourceFiles": 748,
+    "apiRoutes": 142,
+    "pages": 93,
+    "serverComponentCandidates": 12,
+    "middleware": 1,
+    "mongoDependentEntries": 115,
+    "tursoReachableUncertified": 1,
+    "noStaticDatabaseProof": 132,
+    "unresolvedLocalImports": 116,
+    "cronJobs": 6
+  },
+  "releaseStatus": "NOT_CERTIFIED",
+  "productionCutoverAuthorized": false,
+  "limitations": [
+    "Static source-based audit only; dynamic imports, reflection, runtime conditional branches, external services, remote processes and scripts invoked outside Next.js may escape this report.",
+    "Mongo dependency means an import path can reach a Mongo operation, not necessarily that it executes on every request. No static database proof is NOT proof of Turso routing.",
+    "Turso reachable is NOT proof of complete Turso-only routing, authorization, correct transaction semantics or deployed behavior.",
+    "Cron metadata may omit out-of-band schedulers. All cron, webhook and operational jobs require independent behavioral tests."
+  ],
+  "cronRoutes": [
+    {
+      "path": "/api/admin/menus/archive",
+      "schedule": "0 6 * * 1",
+      "sourceRoute": "app/api/admin/menus/archive/route.ts"
+    },
+    {
+      "path": "/api/cron/cleanup-abandoned-orders",
+      "schedule": "15 * * * *",
+      "sourceRoute": "app/api/cron/cleanup-abandoned-orders/route.ts"
+    },
+    {
+      "path": "/api/cron/daily-report",
+      "schedule": "0 14 * * 1-5",
+      "sourceRoute": "app/api/cron/daily-report/route.ts"
+    },
+    {
+      "path": "/api/markets/warm",
+      "schedule": "0 18 * * 3",
+      "sourceRoute": "app/api/markets/warm/route.ts"
+    },
+    {
+      "path": "/api/retention/winback",
+      "schedule": "0 14 * * 0",
+      "sourceRoute": "app/api/retention/winback/route.ts"
+    },
+    {
+      "path": "/api/cron/owner-alerts",
+      "schedule": "*/5 * * * *",
+      "sourceRoute": "app/api/cron/owner-alerts/route.ts"
+    }
+  ],
+  "entries": [
+    {
+      "path": "app/(site)/community/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/(site)/instagram/[slug]/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "components/Header.jsx -> @/contexts/AuthContext"
+      ],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/about/layout.js",
+      "kind": "SERVER_COMPONENT_CANDIDATE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/about/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 3
+    },
+    {
+      "path": "app/account/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/account/page.tsx -> @/contexts/AuthContext"
+      ],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/account/subscriptions/[id]/page.js",
+      "kind": "PAGE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/account/subscriptions/[id]/page.js",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/account/subscriptions/page.js",
+      "kind": "PAGE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/account/subscriptions/page.js",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/admin/analytics/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/admin/campaigns/new/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 14
+    },
+    {
+      "path": "app/admin/campaigns/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/admin/coupons/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 12
+    },
+    {
+      "path": "app/admin/customers/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/admin/emails/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/admin/errors/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/admin/forgot-password/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/admin/fresh-batches/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/admin/fresh-batches/planner/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/admin/interactions/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/admin/inventory/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 11
+    },
+    {
+      "path": "app/admin/layout.js",
+      "kind": "SERVER_COMPONENT_CANDIDATE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/admin/login/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/admin/market-day/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 13
+    },
+    {
+      "path": "app/admin/market-setup/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/admin/markets/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 16
+    },
+    {
+      "path": "app/admin/menus/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 16
+    },
+    {
+      "path": "app/admin/orders/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 11
+    },
+    {
+      "path": "app/admin/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/admin/products/[id]/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/admin/products/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/admin/qr-generator/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/admin/queue/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/admin/reset-password/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/admin/reviews/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/admin/settings/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/admin/setup/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/admin/square-oauth/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/admin/waitlist/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/api/admin/analytics/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/analytics/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/security/index.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/api/admin/auth/csrf/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/security/index.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/api/admin/auth/login/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/auth/login/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/api/admin/auth/logout/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/auth/logout/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/api/admin/auth/me/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/api/admin/auth/reset-password/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/auth/reset-password/route.ts",
+        "lib/db-optimized.ts",
+        "lib/resend-email.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/api/admin/campaigns/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/campaigns/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/security/index.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/api/admin/campaigns/send/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/campaigns/send/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/email/service.js",
+        "lib/security/index.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 13
+    },
+    {
+      "path": "app/api/admin/coupons/[id]/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/coupons/[id]/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/security/index.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/api/admin/coupons/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/coupons/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/security/index.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/api/admin/customers/[id]/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/customers/[id]/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/security/index.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/api/admin/customers/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/customers/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/security/index.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/api/admin/emails/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/emails/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/security/index.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/api/admin/emergency-init/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/emergency-init/route.ts",
+        "lib/db-admin.js",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/admin/fresh-batch/requests/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/fresh-batch/requests/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/batches/audit-log.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "lib/batches/types.ts -> @/data/products"
+      ],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/api/admin/fresh-batch/reservations/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/fresh-batch/reservations/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/batches/audit-log.ts",
+        "lib/batches/repository.ts",
+        "lib/db-optimized.ts",
+        "lib/resend-email.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "lib/batches/pricing.ts -> @/data/products",
+        "lib/batches/types.ts -> @/data/products"
+      ],
+      "reachableFiles": 19
+    },
+    {
+      "path": "app/api/admin/inventory/[productId]/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/inventory/[productId]/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/security/index.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/api/admin/markets/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/markets/repository.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/api/admin/markets/seed/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/markets/repository.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/api/admin/menus/archive/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/menus/archive/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/admin/menus/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/menus/repository.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/api/admin/notifications/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/notifications/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/push-notifications.ts",
+        "lib/resend-email.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 11
+    },
+    {
+      "path": "app/api/admin/ops/square-inventory-replace/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/api/admin/orders/[id]/refund/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/admin/orders/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/orders/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/security/index.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/api/admin/orders/sync/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/security/index.ts",
+        "lib/square-orders-sync.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/api/admin/products/[id]/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/products/[id]/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/security/index.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/api/admin/products/[id]/sync/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/products/[id]/sync/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/api/admin/products/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/products/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/security/index.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/api/admin/reviews/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/reviews/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts",
+        "lib/security/index.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/api/admin/setup/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/admin/setup/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/api/analytics/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts",
+        "lib/unified-analytics.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/api/analytics/route.ts -> @/models/MarketOrder"
+      ],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/api/analytics/web-vitals/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/auth/forgot-password/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/auth/forgot-password/route.ts",
+        "lib/db-client.js",
+        "lib/db-optimized.ts",
+        "lib/db/users.js",
+        "lib/email/service.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 11
+    },
+    {
+      "path": "app/api/auth/login/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-client.js",
+        "lib/db-optimized.ts",
+        "lib/db/users.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/auth/logout/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/auth/register/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/auth/register/route.ts",
+        "lib/db-client.js",
+        "lib/db-optimized.ts",
+        "lib/db/users.js",
+        "lib/email/service.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 13
+    },
+    {
+      "path": "app/api/auth/reset-password/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/auth/reset-password/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/api/auth/session/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-client.js",
+        "lib/db-optimized.ts",
+        "lib/db/users.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/cart/price/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/cart-pricing.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [
+        "app/api/cart/price/route.ts"
+      ],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/api/cart/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 3
+    },
+    {
+      "path": "app/api/catalog/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 2
+    },
+    {
+      "path": "app/api/certification/preview-ready/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/api/certification/run/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/certification/run/route.ts",
+        "app/api/orders/create/route.js",
+        "app/api/payments/route.ts",
+        "lib/batches/audit-log.ts",
+        "lib/batches/reconcile-square-reservation.ts",
+        "lib/cart-pricing.ts",
+        "lib/checkout/stock-reservation.ts",
+        "lib/custom-inventory.js",
+        "lib/db-optimized.ts",
+        "lib/enhanced-rewards.js",
+        "lib/event-queue.ts",
+        "lib/idempotency.ts",
+        "lib/resend-email.js",
+        "lib/staff-notifications.js",
+        "lib/transactions.ts"
+      ],
+      "tursoDependencies": [
+        "app/api/orders/create/route.js",
+        "app/api/payments/route.ts",
+        "lib/checkout/turso-preview-buyer.mjs",
+        "lib/checkout/turso-preview-ownership.mjs",
+        "lib/checkout/turso-preview-webhook.mjs"
+      ],
+      "unresolvedImports": [
+        "app/api/orders/create/route.js -> @/adapters/fulfillmentAdapter",
+        "lib/batches/types.ts -> @/data/products"
+      ],
+      "reachableFiles": 49
+    },
+    {
+      "path": "app/api/certification/turso-ready/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "TURSO_REACHABLE_UNCERTIFIED",
+      "mongoDependencies": [],
+      "tursoDependencies": [
+        "app/api/certification/turso-ready/route.ts"
+      ],
+      "unresolvedImports": [],
+      "reachableFiles": 2
+    },
+    {
+      "path": "app/api/checkout/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/contact/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/contact/route.ts",
+        "lib/db-optimized.ts",
+        "lib/resend-email.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/api/coupons/validate/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/coupons/validate/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/api/create-checkout/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/cron/cleanup-abandoned-orders/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/cron/cleanup-abandoned-orders/route.ts",
+        "lib/db-optimized.ts",
+        "lib/email/service.js",
+        "lib/resend-email.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 13
+    },
+    {
+      "path": "app/api/cron/cleanup-locks/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/cron/cleanup-locks/route.ts",
+        "lib/cache.ts",
+        "lib/db-optimized.ts",
+        "lib/inventory-lock.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/api/cron/daily-report/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts",
+        "lib/event-queue.ts",
+        "lib/resend-email.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/api/cron/daily-report/route.ts -> @/models/DailyInventory",
+        "app/api/cron/daily-report/route.ts -> @/models/MarketOrder"
+      ],
+      "reachableFiles": 11
+    },
+    {
+      "path": "app/api/cron/owner-alerts/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts",
+        "lib/event-queue.ts",
+        "lib/resend-email.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 11
+    },
+    {
+      "path": "app/api/csp-report/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/customer/profile/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/debug/square/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/delivery/quote/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/errors/list/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/api/errors/summary/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/api/fresh-batch/requests/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/batches/repository.ts",
+        "lib/db-optimized.ts",
+        "lib/event-queue.ts",
+        "lib/resend-email.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "lib/batches/pricing.ts -> @/data/products",
+        "lib/batches/types.ts -> @/data/products"
+      ],
+      "reachableFiles": 18
+    },
+    {
+      "path": "app/api/gratitude/account/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-admin.js",
+        "lib/db-optimized.ts",
+        "lib/gratitude/accounts.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/api/gratitude/earn/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-admin.js",
+        "lib/db-optimized.ts",
+        "lib/gratitude/accounts.js",
+        "lib/gratitude/transactions.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/api/gratitude/redeem/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-admin.js",
+        "lib/db-optimized.ts",
+        "lib/gratitude/accounts.js",
+        "lib/gratitude/rewards-catalog.js",
+        "lib/gratitude/transactions.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/api/gratitude/referral/code/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-admin.js",
+        "lib/db-optimized.ts",
+        "lib/gratitude/accounts.js",
+        "lib/gratitude/referrals.js",
+        "lib/gratitude/transactions.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/api/gratitude/referral/track/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-admin.js",
+        "lib/db-optimized.ts",
+        "lib/gratitude/accounts.js",
+        "lib/gratitude/referrals.js",
+        "lib/gratitude/transactions.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/api/gratitude/rewards/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-admin.js",
+        "lib/db-optimized.ts",
+        "lib/gratitude/accounts.js",
+        "lib/gratitude/rewards-catalog.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/api/gratitude/transactions/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-admin.js",
+        "lib/db-optimized.ts",
+        "lib/gratitude/accounts.js",
+        "lib/gratitude/transactions.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 9
+    },
+    {
+      "path": "app/api/gratitude/webhook/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/gratitude/webhook/route.ts",
+        "lib/db-admin.js",
+        "lib/db-optimized.ts",
+        "lib/gratitude/accounts.js",
+        "lib/gratitude/transactions.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 11
+    },
+    {
+      "path": "app/api/health/payments/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 2
+    },
+    {
+      "path": "app/api/health/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/api/ics/market-route/route.js",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/instagram/post/[slug]/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/instagram/post/[slug]/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/api/instagram/posts/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/instagram/posts/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/api/instagram/sync/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/instagram/sync/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/api/integrations/opee/studio-checkout/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/integrations/opee/studio-receipt/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/inventory/confirm/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/inventory/lock/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/inventory/release/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/inventory/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/api/inventory/route.ts -> @/models/DailyInventory"
+      ],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/label-checkout/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/checkout/stock-reservation.ts",
+        "lib/custom-inventory.js",
+        "lib/db-optimized.ts",
+        "lib/product-sync-engine.js"
+      ],
+      "tursoDependencies": [
+        "lib/storefront-products.js"
+      ],
+      "unresolvedImports": [
+        "lib/label-commerce.ts -> @/data/products",
+        "lib/storefront-catalog-eligibility.js -> @/data/products",
+        "lib/storefront-products.js -> @/data/products"
+      ],
+      "reachableFiles": 19
+    },
+    {
+      "path": "app/api/lead/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/lead/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/api/market/today/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 3
+    },
+    {
+      "path": "app/api/markets/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts",
+        "lib/markets/repository.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/api/markets/warm/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/markets/warm/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/api/markets/warm/route.ts -> @/data/markets",
+        "app/api/markets/warm/route.ts -> @/data/weeklyMenu"
+      ],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/menus/current/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts",
+        "lib/menus/repository.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/api/menus/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts",
+        "lib/menus/repository.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/api/newsletter/subscribe/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/newsletter/subscribe/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/api/notifications/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/notifications/route.ts",
+        "lib/db-optimized.ts",
+        "lib/push-notifications.ts",
+        "lib/resend-email.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 11
+    },
+    {
+      "path": "app/api/oauth/square/authorize/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 2
+    },
+    {
+      "path": "app/api/oauth/square/callback/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 2
+    },
+    {
+      "path": "app/api/oauth/square/status/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/ops/inventory-readback/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/orders/[id]/status/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/orders/[id]/status/route.ts",
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [
+        "app/api/orders/[id]/status/route.ts",
+        "lib/checkout/turso-order-read.mjs"
+      ],
+      "unresolvedImports": [],
+      "reachableFiles": 11
+    },
+    {
+      "path": "app/api/orders/by-ref/route.js",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/orders/by-ref/route.js",
+        "lib/db-optimized.ts",
+        "lib/enhanced-order-tracking.js",
+        "lib/enhanced-rewards.js"
+      ],
+      "tursoDependencies": [
+        "app/api/orders/by-ref/route.js",
+        "lib/checkout/turso-order-read.mjs"
+      ],
+      "unresolvedImports": [
+        "app/api/orders/by-ref/route.js -> @/models/MarketOrder"
+      ],
+      "reachableFiles": 14
+    },
+    {
+      "path": "app/api/orders/create/route.js",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/orders/create/route.js",
+        "lib/cart-pricing.ts",
+        "lib/db-optimized.ts",
+        "lib/idempotency.ts",
+        "lib/transactions.ts"
+      ],
+      "tursoDependencies": [
+        "app/api/orders/create/route.js",
+        "lib/checkout/turso-preview-buyer.mjs",
+        "lib/checkout/turso-preview-ownership.mjs",
+        "lib/checkout/turso-preview-webhook.mjs"
+      ],
+      "unresolvedImports": [
+        "app/api/orders/create/route.js -> @/adapters/fulfillmentAdapter"
+      ],
+      "reachableFiles": 24
+    },
+    {
+      "path": "app/api/orders/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/api/orders/route.ts -> @/models/MarketOrder"
+      ],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/api/orders/search/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/api/orders/search/route.ts -> @/models/MarketOrder"
+      ],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/api/pay/process/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/payments/refund/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/auth/unified-admin.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/payments/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/payments/route.ts",
+        "lib/checkout/stock-reservation.ts",
+        "lib/custom-inventory.js",
+        "lib/db-optimized.ts",
+        "lib/enhanced-rewards.js",
+        "lib/event-queue.ts",
+        "lib/resend-email.js",
+        "lib/staff-notifications.js"
+      ],
+      "tursoDependencies": [
+        "app/api/payments/route.ts",
+        "lib/checkout/turso-preview-buyer.mjs",
+        "lib/checkout/turso-preview-ownership.mjs",
+        "lib/checkout/turso-preview-webhook.mjs"
+      ],
+      "unresolvedImports": [],
+      "reachableFiles": 32
+    },
+    {
+      "path": "app/api/payments/square/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/preorder/cancel/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts",
+        "lib/preorder/repository.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/preorder/confirm/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts",
+        "lib/preorder/repository.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/preorder/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/checkout/stock-reservation.ts",
+        "lib/custom-inventory.js",
+        "lib/db-optimized.ts",
+        "lib/event-queue.ts",
+        "lib/idempotency.ts",
+        "lib/markets/repository.ts",
+        "lib/preorder/repository.ts",
+        "lib/preorder/single-attempt.ts",
+        "lib/product-sync-engine.js",
+        "lib/resend-email.js"
+      ],
+      "tursoDependencies": [
+        "lib/storefront-products.js"
+      ],
+      "unresolvedImports": [
+        "lib/preorder/eligibility.ts -> @/data/products",
+        "lib/storefront-catalog-eligibility.js -> @/data/products",
+        "lib/storefront-products.js -> @/data/products"
+      ],
+      "reachableFiles": 43
+    },
+    {
+      "path": "app/api/preorder/status/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts",
+        "lib/preorder/repository.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/api/products/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/checkout/stock-reservation.ts",
+        "lib/custom-inventory.js",
+        "lib/db-optimized.ts",
+        "lib/product-sync-engine.js"
+      ],
+      "tursoDependencies": [
+        "lib/storefront-products.js"
+      ],
+      "unresolvedImports": [
+        "lib/storefront-catalog-eligibility.js -> @/data/products",
+        "lib/storefront-products.js -> @/data/products"
+      ],
+      "reachableFiles": 18
+    },
+    {
+      "path": "app/api/queue/active/route.js",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/queue/active/route.js",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/api/queue/join/route.js",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts",
+        "lib/models/QueuePosition.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/api/queue/position/[id]/route.js",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts",
+        "lib/models/QueuePosition.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/api/queue/update/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/queue/update/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/api/quiz/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/quiz/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/api/quiz/route.ts -> @/data/quiz"
+      ],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/api/reports/daily/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/api/reports/daily/route.ts -> @/models/DailyInventory",
+        "app/api/reports/daily/route.ts -> @/models/MarketOrder"
+      ],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/api/retention/winback/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/retention/winback/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/api/returns/create/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/returns/create/route.ts",
+        "lib/db-optimized.ts",
+        "lib/resend-email.js",
+        "lib/returns.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 11
+    },
+    {
+      "path": "app/api/rewards/add-points/route.js",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts",
+        "lib/enhanced-rewards.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/rewards/passport/route.js",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/rewards/passport/route.js",
+        "lib/db-optimized.ts",
+        "lib/enhanced-rewards.js",
+        "lib/rewards-secure.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/api/search/enhanced/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/search/enhanced/route.ts",
+        "lib/cache.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/api/seo/analyze/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 2
+    },
+    {
+      "path": "app/api/shipping/rates/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/api/square/config/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 2
+    },
+    {
+      "path": "app/api/square/diagnose/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/api/square/locations/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/api/square/test-rest/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 3
+    },
+    {
+      "path": "app/api/square/validate-token/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/api/startup/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/api/storefront/catalog/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/checkout/stock-reservation.ts",
+        "lib/custom-inventory.js",
+        "lib/db-optimized.ts",
+        "lib/product-sync-engine.js"
+      ],
+      "tursoDependencies": [
+        "lib/storefront-products.js"
+      ],
+      "unresolvedImports": [
+        "lib/storefront-catalog-eligibility.js -> @/data/products",
+        "lib/storefront-products.js -> @/data/products"
+      ],
+      "reachableFiles": 18
+    },
+    {
+      "path": "app/api/storefront/square-catalog/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 3
+    },
+    {
+      "path": "app/api/subscriptions/gratitude-box/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/subscriptions/gratitude-box/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/api/subscriptions/gratitude-box/route.ts -> @/data/bundles"
+      ],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/subscriptions/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/subscriptions/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/api/unsubscribe/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/unsubscribe/route.ts",
+        "lib/db-optimized.ts",
+        "lib/email/service.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/api/user/challenge/checkin/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/user/challenge/checkin/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/api/user/challenge/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/user/challenge/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/api/user/email-preferences/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/user/email-preferences/route.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/api/user/favorites/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/user/favorites/route.ts",
+        "lib/db-client.js",
+        "lib/db-optimized.ts",
+        "lib/db/users.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/user/orders/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/user/orders/route.ts",
+        "lib/db-client.js",
+        "lib/db-optimized.ts",
+        "lib/db/users.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/user/profile/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-client.js",
+        "lib/db-optimized.ts",
+        "lib/db/users.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/user/rewards/route.js",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/user/rewards/route.js",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/api/user/stats/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/user/stats/route.ts",
+        "lib/db-client.js",
+        "lib/db-optimized.ts",
+        "lib/db/users.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/webhooks/resend/route.js",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/webhooks/resend/route.js",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [
+        "app/api/webhooks/resend/route.js"
+      ],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/api/webhooks/square/payment/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/batches/audit-log.ts",
+        "lib/batches/reconcile-square-reservation.ts",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "lib/batches/types.ts -> @/data/products"
+      ],
+      "reachableFiles": 11
+    },
+    {
+      "path": "app/api/webhooks/square/route.ts",
+      "kind": "API_ROUTE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/api/webhooks/square/route.ts",
+        "lib/batches/audit-log.ts",
+        "lib/batches/reconcile-square-reservation.ts",
+        "lib/checkout/square-refund-ledger.ts",
+        "lib/checkout/stock-reservation.ts",
+        "lib/custom-inventory.js",
+        "lib/db-optimized.ts",
+        "lib/event-queue.ts",
+        "lib/resend-email.js",
+        "lib/square/syncSingleItem.js",
+        "lib/square/syncToUnified.js",
+        "lib/staff-notifications.js"
+      ],
+      "tursoDependencies": [
+        "app/api/webhooks/square/route.ts",
+        "lib/checkout/turso-preview-ownership.mjs",
+        "lib/checkout/turso-preview-webhook.mjs"
+      ],
+      "unresolvedImports": [
+        "app/api/webhooks/square/route.ts -> @/models/MarketOrder",
+        "lib/batches/types.ts -> @/data/products"
+      ],
+      "reachableFiles": 35
+    },
+    {
+      "path": "app/cart/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/catalog/page.js",
+      "kind": "PAGE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/checkout/stock-reservation.ts",
+        "lib/custom-inventory.js",
+        "lib/db-optimized.ts",
+        "lib/product-sync-engine.js"
+      ],
+      "tursoDependencies": [
+        "lib/storefront-products.js"
+      ],
+      "unresolvedImports": [
+        "components/RetentionForm.jsx -> @/utils/analytics",
+        "components/catalog/CatalogPageClient.jsx -> @/utils/analytics",
+        "lib/storefront-catalog-eligibility.js -> @/data/products",
+        "lib/storefront-products.js -> @/data/products"
+      ],
+      "reachableFiles": 39
+    },
+    {
+      "path": "app/checkout/layout.js",
+      "kind": "SERVER_COMPONENT_CANDIDATE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/checkout/page.tsx",
+      "kind": "PAGE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/db-optimized.ts",
+        "lib/queue-integration.js"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "components/checkout/CartSummary.tsx -> @/adapters/cartAdapter",
+        "components/checkout/CartSummary.tsx -> @/adapters/totalsAdapter",
+        "components/checkout/CheckoutProgress.tsx -> @/stores/checkout",
+        "components/checkout/CheckoutRoot.tsx -> @/adapters/cartAdapter",
+        "components/checkout/CheckoutRoot.tsx -> @/adapters/fulfillmentAdapter",
+        "components/checkout/CheckoutRoot.tsx -> @/stores/checkout",
+        "components/checkout/CheckoutRoot.tsx -> @/utils/analytics",
+        "components/checkout/ContactForm.tsx -> @/stores/checkout",
+        "components/checkout/DeliveryForm.tsx -> @/adapters/fulfillmentAdapter",
+        "components/checkout/DeliveryForm.tsx -> @/stores/checkout",
+        "components/checkout/FulfillmentTabs.tsx -> @/stores/checkout",
+        "components/checkout/PickupForm.tsx -> @/adapters/fulfillmentAdapter",
+        "components/checkout/PickupForm.tsx -> @/stores/checkout",
+        "components/checkout/ReviewAndPay.tsx -> @/adapters/cartAdapter",
+        "components/checkout/ReviewAndPay.tsx -> @/adapters/fulfillmentAdapter",
+        "components/checkout/ReviewAndPay.tsx -> @/adapters/totalsAdapter",
+        "components/checkout/ReviewAndPay.tsx -> @/services/order",
+        "components/checkout/ReviewAndPay.tsx -> @/stores/checkout",
+        "components/checkout/ReviewAndPay.tsx -> @/utils/analytics",
+        "components/checkout/ShippingForm.tsx -> @/adapters/fulfillmentAdapter",
+        "components/checkout/ShippingForm.tsx -> @/stores/checkout",
+        "components/checkout/SquarePaymentForm.tsx -> @/adapters/totalsAdapter",
+        "components/checkout/SquarePaymentForm.tsx -> @/types/square"
+      ],
+      "reachableFiles": 28
+    },
+    {
+      "path": "app/checkout/square/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/checkout/success/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/contact/layout.js",
+      "kind": "SERVER_COMPONENT_CANDIDATE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/contact/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/events/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "components/RetentionForm.jsx -> @/utils/analytics"
+      ],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/explore/ingredients/[slug]/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/explore/ingredients/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 14
+    },
+    {
+      "path": "app/explore/layout.js",
+      "kind": "SERVER_COMPONENT_CANDIDATE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 3
+    },
+    {
+      "path": "app/explore/learn/[slug]/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/explore/learn/[slug]/Client.js -> @/contexts/AuthContext"
+      ],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/explore/learn/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/explore/learn/Client.jsx -> @/contexts/AuthContext"
+      ],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/explore/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/faq/layout.js",
+      "kind": "SERVER_COMPONENT_CANDIDATE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/faq/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/forgot-password/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/gratitude/page.jsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 2
+    },
+    {
+      "path": "app/gratitude/rewards/page.jsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/info-board/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 11
+    },
+    {
+      "path": "app/layout.js",
+      "kind": "SERVER_COMPONENT_CANDIDATE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/layout.js -> ./globals.css",
+        "app/layout.js -> ./styles/desktop-responsive.css",
+        "app/layout.js -> ./styles/mobile-touch.css",
+        "app/layout.js -> @/contexts/AuthContext",
+        "components/Header.jsx -> @/contexts/AuthContext"
+      ],
+      "reachableFiles": 23
+    },
+    {
+      "path": "app/login/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/login/page.js -> @/contexts/AuthContext"
+      ],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/market/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/market/page.tsx -> @/data/products",
+        "app/market/page.tsx -> @/data/weeklyMenu"
+      ],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/markets/layout.js",
+      "kind": "SERVER_COMPONENT_CANDIDATE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/markets/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/markets/page.tsx -> @/data/markets",
+        "app/markets/page.tsx -> @/utils/analytics",
+        "components/RetentionForm.jsx -> @/utils/analytics"
+      ],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/menu/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/offline/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 3
+    },
+    {
+      "path": "app/order/[id]/page.tsx",
+      "kind": "PAGE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/order/[id]/page.tsx",
+        "lib/db-optimized.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/order/[id]/queue/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/order/checkout/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/order/complete/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/order/layout.js",
+      "kind": "SERVER_COMPONENT_CANDIDATE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/order/menu/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/order/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/order/start/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/order/status/[id]/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/order/success/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/page.js",
+      "kind": "PAGE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/checkout/stock-reservation.ts",
+        "lib/custom-inventory.js",
+        "lib/db-optimized.ts",
+        "lib/product-sync-engine.js"
+      ],
+      "tursoDependencies": [
+        "lib/storefront-products.js"
+      ],
+      "unresolvedImports": [
+        "app/page.js -> @/seo/schemas",
+        "components/RetentionForm.jsx -> @/utils/analytics",
+        "components/home/HomePageClient.jsx -> @/data/markets",
+        "components/home/HomePageClient.jsx -> @/data/products",
+        "components/home/HomePageClient.jsx -> @/data/weeklyMenu",
+        "lib/storefront-catalog-eligibility.js -> @/data/products",
+        "lib/storefront-products.js -> @/data/products"
+      ],
+      "reachableFiles": 33
+    },
+    {
+      "path": "app/policies/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 3
+    },
+    {
+      "path": "app/preorder/layout.tsx",
+      "kind": "SERVER_COMPONENT_CANDIDATE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/preorder/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/preorder/PreorderClientPage.tsx -> @/utils/analytics",
+        "components/RetentionForm.jsx -> @/utils/analytics",
+        "components/preorder/BundleSuggestions.tsx -> @/data/bundles",
+        "components/preorder/BundleSuggestions.tsx -> @/utils/analytics",
+        "lib/preorder/eligibility.ts -> @/data/products"
+      ],
+      "reachableFiles": 17
+    },
+    {
+      "path": "app/preorder/status/layout.tsx",
+      "kind": "SERVER_COMPONENT_CANDIDATE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/preorder/status/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/preorder/status/page.tsx -> @/utils/analytics"
+      ],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/privacy/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/product/[slug]/page.jsx",
+      "kind": "PAGE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "app/product/[slug]/page.jsx",
+        "lib/db-optimized.ts",
+        "lib/product-sync-engine.js"
+      ],
+      "tursoDependencies": [
+        "app/product/[slug]/page.jsx"
+      ],
+      "unresolvedImports": [
+        "app/product/[slug]/ProductDetailClient.jsx -> @/data/products",
+        "app/product/[slug]/ProductDetailClient.jsx -> @/utils/analytics",
+        "app/product/[slug]/page.jsx -> @/data/products",
+        "components/RetentionForm.jsx -> @/utils/analytics"
+      ],
+      "reachableFiles": 23
+    },
+    {
+      "path": "app/profile/challenge/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/profile/layout.js",
+      "kind": "SERVER_COMPONENT_CANDIDATE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/profile/layout.js -> @/contexts/AuthContext"
+      ],
+      "reachableFiles": 5
+    },
+    {
+      "path": "app/profile/orders/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/profile/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/profile/ProfileClient.js -> @/contexts/AuthContext"
+      ],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/profile/rewards/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/profile/settings/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/profile/settings/Client.js -> @/contexts/AuthContext"
+      ],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/q/[slug]/page.tsx",
+      "kind": "PAGE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "lib/checkout/stock-reservation.ts",
+        "lib/custom-inventory.js",
+        "lib/db-optimized.ts",
+        "lib/product-sync-engine.js"
+      ],
+      "tursoDependencies": [
+        "lib/storefront-products.js"
+      ],
+      "unresolvedImports": [
+        "lib/label-commerce.ts -> @/data/products",
+        "lib/storefront-catalog-eligibility.js -> @/data/products",
+        "lib/storefront-products.js -> @/data/products"
+      ],
+      "reachableFiles": 19
+    },
+    {
+      "path": "app/quiz/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/quiz/QuizClient.jsx -> @/data/products",
+        "app/quiz/QuizClient.jsx -> @/data/quiz"
+      ],
+      "reachableFiles": 10
+    },
+    {
+      "path": "app/register/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/register/page.js -> @/contexts/AuthContext"
+      ],
+      "reachableFiles": 8
+    },
+    {
+      "path": "app/request-a-flavor/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/request-a-flavor/RequestFlavorClient.tsx -> @/data/products",
+        "app/request-a-flavor/RequestFlavorClient.tsx -> @/utils/analytics"
+      ],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/reset-password/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/reviews/page.jsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/rewards/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/share/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 2
+    },
+    {
+      "path": "app/subscriptions/gratitude-box/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/subscriptions/gratitude-box/page.tsx -> @/data/bundles",
+        "app/subscriptions/gratitude-box/page.tsx -> @/data/markets",
+        "components/subscriptions/GratitudeBoxPage.tsx -> @/utils/analytics"
+      ],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/subscriptions/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 1
+    },
+    {
+      "path": "app/telegram-alerts/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/telegram-alerts/page.tsx -> @/data/markets",
+        "components/RetentionForm.jsx -> @/utils/analytics"
+      ],
+      "reachableFiles": 7
+    },
+    {
+      "path": "app/terms/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/unsubscribe/page.js",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 4
+    },
+    {
+      "path": "app/vendor/queue/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 6
+    },
+    {
+      "path": "app/weekly-menu/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/weekly-menu/page.tsx -> @/data/markets",
+        "app/weekly-menu/page.tsx -> @/data/weeklyMenu",
+        "components/RetentionForm.jsx -> @/utils/analytics",
+        "components/weekly-menu/WeeklyMenuPage.tsx -> @/utils/analytics"
+      ],
+      "reachableFiles": 11
+    },
+    {
+      "path": "app/wholesale/page.tsx",
+      "kind": "PAGE",
+      "classification": "NO_STATIC_DATABASE_PROOF",
+      "mongoDependencies": [],
+      "tursoDependencies": [],
+      "unresolvedImports": [
+        "app/wholesale/page.tsx -> @/data/bundles",
+        "components/RetentionForm.jsx -> @/utils/analytics"
+      ],
+      "reachableFiles": 6
+    },
+    {
+      "path": "middleware.ts",
+      "kind": "MIDDLEWARE",
+      "classification": "MONGO_DEPENDENCY",
+      "mongoDependencies": [
+        "middleware.ts"
+      ],
+      "tursoDependencies": [],
+      "unresolvedImports": [],
+      "reachableFiles": 2
+    }
+  ]
+}

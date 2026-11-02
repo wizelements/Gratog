@@ -1,6 +1,6 @@
 /**
  * Unified Security Module
- * 
+ *
  * Centralized security utilities for the admin system:
  * - RBAC (Role-Based Access Control)
  * - Audit logging
@@ -12,10 +12,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
+import {tursoPreviewSelected,openTursoPreview} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {persistTursoAdminAudit,readTursoAdminAudit} from '@/lib/auth/turso-admin-audit.mjs';
 
 // Re-export from unified auth
-export { 
-  getAdminSession, 
+export {
+  getAdminSession,
   requireAdminSession,
   type AdminSession,
   type AdminUser,
@@ -42,49 +44,49 @@ const ROLE_HIERARCHY: Role[] = [ROLES.VIEWER, ROLES.EDITOR, ROLES.ADMIN, ROLES.S
 export const PERMISSIONS = {
   // Dashboard
   DASHBOARD_VIEW: 'dashboard:view',
-  
+
   // Products
   PRODUCTS_VIEW: 'products:view',
   PRODUCTS_CREATE: 'products:create',
   PRODUCTS_UPDATE: 'products:update',
   PRODUCTS_DELETE: 'products:delete',
   PRODUCTS_SYNC: 'products:sync',
-  
+
   // Inventory
   INVENTORY_VIEW: 'inventory:view',
   INVENTORY_ADJUST: 'inventory:adjust',
-  
+
   // Orders
   ORDERS_VIEW: 'orders:view',
   ORDERS_UPDATE_STATUS: 'orders:update_status',
   ORDERS_REFUND: 'orders:refund',
-  
+
   // Customers
   CUSTOMERS_VIEW: 'customers:view',
   CUSTOMERS_EXPORT: 'customers:export',
-  
+
   // Campaigns
   CAMPAIGNS_VIEW: 'campaigns:view',
   CAMPAIGNS_CREATE: 'campaigns:create',
   CAMPAIGNS_SEND: 'campaigns:send',
   CAMPAIGNS_DELETE: 'campaigns:delete',
-  
+
   // Reviews
   REVIEWS_VIEW: 'reviews:view',
   REVIEWS_MODERATE: 'reviews:moderate',
-  
+
   // Coupons
   COUPONS_VIEW: 'coupons:view',
   COUPONS_CREATE: 'coupons:create',
   COUPONS_DELETE: 'coupons:delete',
-  
+
   // Analytics
   ANALYTICS_VIEW: 'analytics:view',
-  
+
   // Settings
   SETTINGS_VIEW: 'settings:view',
   SETTINGS_UPDATE: 'settings:update',
-  
+
   // Admin Management (Super Admin only)
   ADMINS_MANAGE: 'admins:manage',
   AUDIT_LOGS_VIEW: 'audit_logs:view',
@@ -229,7 +231,7 @@ export async function logAdminAction(
   } = {}
 ): Promise<void> {
   const { resourceId, success = true, errorMessage } = options;
-  
+
   const entry: AuditLogEntry = {
     timestamp: new Date(),
     adminId: admin.id,
@@ -252,12 +254,17 @@ export async function logAdminAction(
     ip: entry.ipAddress,
   });
 
-  // Persist to database (async, don't wait)
+  // Await durable evidence on the selected provider; never fall back to Mongo.
   try {
+    if(tursoPreviewSelected()){
+      await persistTursoAdminAudit(await openTursoPreview(),entry);
+      return;
+    }
     const { db } = await connectToDatabase();
     await db.collection('audit_logs').insertOne(entry);
   } catch (error) {
-    logger.error('AUDIT', 'Failed to persist audit log to MongoDB', error);
+    logger.error('AUDIT', 'Failed to persist administrator audit evidence', error);
+    throw Object.assign(new Error('Administrator audit persistence unavailable'), {name:'AdminAuditError',statusCode:503,code:'ADMIN_AUDIT_UNAVAILABLE'});
   }
 }
 
@@ -280,6 +287,7 @@ export async function getAuditLogs(
 ): Promise<{ logs: AuditLogEntry[]; total: number; page: number; pages: number }> {
   const { page = 1, limit = 50 } = pagination;
   const skip = (page - 1) * limit;
+  if(tursoPreviewSelected()) return await readTursoAdminAudit(await openTursoPreview(),filters,{page,limit});
 
   const query: Record<string, unknown> = {};
 
@@ -287,7 +295,7 @@ export async function getAuditLogs(
   if (filters.action) query.action = filters.action;
   if (filters.resource) query.resource = filters.resource;
   if (filters.success !== undefined) query.success = filters.success;
-  
+
   if (filters.startDate || filters.endDate) {
     query.timestamp = {};
     if (filters.startDate) (query.timestamp as Record<string, Date>).$gte = filters.startDate;
@@ -296,7 +304,7 @@ export async function getAuditLogs(
 
   try {
     const { db } = await connectToDatabase();
-    
+
     const [logs, total] = await Promise.all([
       (db.collection('audit_logs') as any)
         .find(query)
@@ -344,9 +352,9 @@ export function checkRateLimit(
 ): { allowed: boolean; remaining: number; resetAt: number } {
   const now = Date.now();
   const windowMs = windowSeconds * 1000;
-  
+
   const entry = rateLimitStore.get(key);
-  
+
   if (!entry || now > entry.resetAt) {
     // New window or expired
     rateLimitStore.set(key, {
@@ -355,11 +363,11 @@ export function checkRateLimit(
     });
     return { allowed: true, remaining: maxRequests - 1, resetAt: now + windowMs };
   }
-  
+
   if (entry.count >= maxRequests) {
     return { allowed: false, remaining: 0, resetAt: entry.resetAt };
   }
-  
+
   entry.count++;
   return { allowed: true, remaining: maxRequests - entry.count, resetAt: entry.resetAt };
 }
@@ -384,12 +392,12 @@ export function getClientIp(request: NextRequest): string {
   if (forwarded) {
     return forwarded.split(',')[0].trim();
   }
-  
+
   const realIp = request.headers.get('x-real-ip');
   if (realIp) {
     return realIp;
   }
-  
+
   return 'unknown';
 }
 
@@ -399,7 +407,7 @@ export function getClientIp(request: NextRequest): string {
 function sanitizeForLogging(data: Record<string, unknown>): Record<string, unknown> {
   const sensitiveFields = ['password', 'passwordHash', 'token', 'secret', 'apiKey', 'creditCard'];
   const sanitized: Record<string, unknown> = {};
-  
+
   for (const [key, value] of Object.entries(data)) {
     if (sensitiveFields.includes(key.toLowerCase())) {
       sanitized[key] = '[REDACTED]';
@@ -409,7 +417,7 @@ function sanitizeForLogging(data: Record<string, unknown>): Record<string, unkno
       sanitized[key] = value;
     }
   }
-  
+
   return sanitized;
 }
 
@@ -422,20 +430,20 @@ export function createErrorResponse(
   code?: string
 ): NextResponse {
   const isDev = process.env.NODE_ENV === 'development';
-  
+
   const body: Record<string, unknown> = {
     success: false,
     error: message,
   };
-  
+
   if (code) {
     body.code = code;
   }
-  
+
   if (isDev) {
     body.stack = new Error().stack;
   }
-  
+
   return NextResponse.json(body, { status });
 }
 

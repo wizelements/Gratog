@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 import { connectToDatabase } from '@/lib/db-optimized';
+import {openTursoPreview,tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {readTursoEmailPreferences,updateTursoEmailPreferences} from '@/lib/auth/turso-customer-accounts.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +28,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
+    if(tursoPreviewSelected())return NextResponse.json({success:true,preferences:await readTursoEmailPreferences(await openTursoPreview(),decoded.userId)});
     const { db } = await connectToDatabase();
     const prefs = await db.collection('user_preferences').findOne({ userId: decoded.userId });
 
@@ -38,7 +41,8 @@ export async function GET(request: NextRequest) {
         challenges: prefs?.challenges ?? DEFAULT_PREFERENCES.challenges,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
+    if(error?.name==='TursoCustomerRefusal')return NextResponse.json({success:false,error:error.message},{status:error.status});
     console.error('Email preferences fetch error:', error);
     return NextResponse.json({ success: false, error: 'Failed to fetch preferences' }, { status: 500 });
   }
@@ -57,6 +61,8 @@ export async function PUT(request: NextRequest) {
     if (!preferences || typeof preferences !== 'object') {
       return NextResponse.json({ success: false, error: 'Invalid preferences' }, { status: 400 });
     }
+
+    if(tursoPreviewSelected())return NextResponse.json({success:true,preferences:await updateTursoEmailPreferences(await openTursoPreview(),decoded.userId,preferences)});
 
     const update: Record<string, unknown> = { updatedAt: new Date() };
     for (const key of ['marketing', 'orderUpdates', 'rewards', 'challenges']) {
@@ -83,7 +89,8 @@ export async function PUT(request: NextRequest) {
         challenges: saved?.challenges ?? DEFAULT_PREFERENCES.challenges,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
+    if(error?.name==='TursoCustomerRefusal')return NextResponse.json({success:false,error:error.message},{status:error.status});
     console.error('Email preferences update error:', error);
     return NextResponse.json({ success: false, error: 'Failed to update preferences' }, { status: 500 });
   }

@@ -1,0 +1,264 @@
+{
+  "kind": "CONSISTENT_SOURCE_NORMALIZATION_SQLITE",
+  "pass": true,
+  "sourceReadOnly": true,
+  "remoteDatabaseWritten": false,
+  "sourceArchiveSha256": "d4e86858ca57846a1c4d05b99bcd4562b4efbeddfdfd74ead4c48e08cd5762c5",
+  "sourceSnapshotClusterTime": "{\"$timestamp\":{\"t\":1792357864,\"i\":13}}",
+  "sourceCollections": 59,
+  "sourceDocuments": 7919,
+  "activeCollectionCount": 39,
+  "collections": [
+    {
+      "name": "markets",
+      "sourceCount": 3,
+      "targetRows": 3,
+      "rejected": 0
+    },
+    {
+      "name": "customers",
+      "sourceCount": 7,
+      "targetRows": 21,
+      "rejected": 0
+    },
+    {
+      "name": "unified_products",
+      "sourceCount": 40,
+      "targetRows": 84,
+      "rejected": 0
+    },
+    {
+      "name": "menus",
+      "sourceCount": 1,
+      "targetRows": 14,
+      "rejected": 0
+    },
+    {
+      "name": "orders",
+      "sourceCount": 854,
+      "targetRows": 3024,
+      "rejected": 0
+    },
+    {
+      "name": "marketorders",
+      "sourceCount": 10,
+      "targetRows": 45,
+      "rejected": 0
+    },
+    {
+      "name": "payment_records",
+      "sourceCount": 3,
+      "targetRows": 3,
+      "rejected": 0
+    },
+    {
+      "name": "payments",
+      "sourceCount": 3,
+      "targetRows": 3,
+      "rejected": 0
+    },
+    {
+      "name": "inventory",
+      "sourceCount": 40,
+      "targetRows": 84,
+      "rejected": 0
+    },
+    {
+      "name": "admin_users",
+      "sourceCount": 1,
+      "targetRows": 1,
+      "rejected": 0
+    },
+    {
+      "name": "audit_log",
+      "sourceCount": 197,
+      "targetRows": 197,
+      "rejected": 0
+    },
+    {
+      "name": "audit_logs",
+      "sourceCount": 26,
+      "targetRows": 26,
+      "rejected": 0
+    },
+    {
+      "name": "challenges",
+      "sourceCount": 3,
+      "targetRows": 3,
+      "rejected": 0
+    },
+    {
+      "name": "contact_messages",
+      "sourceCount": 19,
+      "targetRows": 19,
+      "rejected": 0
+    },
+    {
+      "name": "coupons",
+      "sourceCount": 0,
+      "targetRows": 0,
+      "rejected": 0
+    },
+    {
+      "name": "customer_passports",
+      "sourceCount": 9,
+      "targetRows": 9,
+      "rejected": 0
+    },
+    {
+      "name": "email_logs",
+      "sourceCount": 13,
+      "targetRows": 13,
+      "rejected": 0
+    },
+    {
+      "name": "email_sends",
+      "sourceCount": 361,
+      "targetRows": 361,
+      "rejected": 0
+    },
+    {
+      "name": "gratitude_accounts",
+      "sourceCount": 1,
+      "targetRows": 1,
+      "rejected": 0
+    },
+    {
+      "name": "idempotency_keys",
+      "sourceCount": 24,
+      "targetRows": 24,
+      "rejected": 0
+    },
+    {
+      "name": "inventory_events",
+      "sourceCount": 856,
+      "targetRows": 856,
+      "rejected": 0
+    },
+    {
+      "name": "lead_intents",
+      "sourceCount": 15,
+      "targetRows": 15,
+      "rejected": 0
+    },
+    {
+      "name": "learning_enrollments",
+      "sourceCount": 0,
+      "targetRows": 0,
+      "rejected": 0
+    },
+    {
+      "name": "learning_modules",
+      "sourceCount": 6,
+      "targetRows": 6,
+      "rejected": 0
+    },
+    {
+      "name": "market_audit_log",
+      "sourceCount": 1,
+      "targetRows": 1,
+      "rejected": 0
+    },
+    {
+      "name": "market_counters",
+      "sourceCount": 3,
+      "targetRows": 3,
+      "rejected": 0
+    },
+    {
+      "name": "market_schedules",
+      "sourceCount": 0,
+      "targetRows": 0,
+      "rejected": 0
+    },
+    {
+      "name": "menu_audit_log",
+      "sourceCount": 1,
+      "targetRows": 1,
+      "rejected": 0
+    },
+    {
+      "name": "newsletter_subscribers",
+      "sourceCount": 34,
+      "targetRows": 34,
+      "rejected": 0
+    },
+    {
+      "name": "passport_idempotency",
+      "sourceCount": 1,
+      "targetRows": 1,
+      "rejected": 0
+    },
+    {
+      "name": "passports",
+      "sourceCount": 109,
+      "targetRows": 109,
+      "rejected": 0
+    },
+    {
+      "name": "product_reviews",
+      "sourceCount": 6,
+      "targetRows": 6,
+      "rejected": 0
+    },
+    {
+      "name": "products",
+      "sourceCount": 0,
+      "targetRows": 0,
+      "rejected": 0
+    },
+    {
+      "name": "quiz_results",
+      "sourceCount": 19,
+      "targetRows": 19,
+      "rejected": 0
+    },
+    {
+      "name": "reward_transactions",
+      "sourceCount": 1,
+      "targetRows": 1,
+      "rejected": 0
+    },
+    {
+      "name": "rewards",
+      "sourceCount": 3,
+      "targetRows": 3,
+      "rejected": 0
+    },
+    {
+      "name": "scheduled_emails",
+      "sourceCount": 4,
+      "targetRows": 4,
+      "rejected": 0
+    },
+    {
+      "name": "square_sync_metadata",
+      "sourceCount": 2,
+      "targetRows": 2,
+      "rejected": 0
+    },
+    {
+      "name": "users",
+      "sourceCount": 4,
+      "targetRows": 4,
+      "rejected": 0
+    },
+    {
+      "name": "webhook_events_processed",
+      "sourceCount": 1,
+      "targetRows": 1,
+      "rejected": 0
+    }
+  ],
+  "rejections": [],
+  "productionCutoverAuthorized": false,
+  "foreignKeyViolations": 0,
+  "customerFacingOrderReferences": 88,
+  "customerBusinessReferences": 7,
+  "linkedHistoricalPayments": 3,
+  "unlinkedHistoricalPayments": 0,
+  "expectedCustomerFacingOrderReferences": 88,
+  "expectedHistoricalPayments": 3,
+  "normalizedStagingFileSha256": "080f5785634f087fa75d5e648b06773064d1f8ad66058900dc44a14566cd377d",
+  "normalizedStagingFileCreated": true
+}

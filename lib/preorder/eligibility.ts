@@ -1,4 +1,5 @@
 import { getProductBySlugOrId } from '@/data/products';
+import { resolveProductAvailability } from '@/lib/product-availability';
 
 /**
  * Shared client/server eligibility for market preorders.
@@ -7,11 +8,7 @@ import { getProductBySlugOrId } from '@/data/products';
  * Never permit archived, disabled or unconnected Square items.
  */
 export function isMarketPreorderPermitted(product: any): boolean {
-  if (!product || product.available === false || product.soldOut === true ||
-      product.squareIsArchived === true || product.isArchived === true ||
-      product.inventoryStatus === 'sold_out' || product.inventoryStatus === 'inactive' ||
-      product.weeklyStatus === 'inactive' || product.weeklyStatus === 'sold_out' ||
-      product.checkoutReady === false) return false;
+  if (!resolveProductAvailability(product).canOrder) return false;
 
   const curated = getProductBySlugOrId(
     product.curatedProductId || product.slug || product.id || ''
@@ -20,7 +17,7 @@ export function isMarketPreorderPermitted(product: any): boolean {
     curated?.preorderOnly &&
     curated?.marketPickupOnly &&
     curated?.activeWeeklyMenu &&
-    curated?.weeklyStatus === 'active' &&
+    (curated?.weeklyStatus === 'active' || curated?.weeklyStatus === 'limited') &&
     curated?.soldOut !== true &&
     curated?.inventoryStatus !== 'sold_out' &&
     curated?.inventoryStatus !== 'inactive'

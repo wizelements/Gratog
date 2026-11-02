@@ -927,7 +927,8 @@ export function toStorefrontProduct(product: MarketProduct, index = 0) {
   const categoryLabel = getCategoryLabel(product.category);
   const taxonomyCategoryLabel = getTaxonomyCategoryLabel(product.category);
   const categoryIcon = getCategoryIcon(product.category);
-  const stock = product.inventoryStatus === 'sold_out' || product.soldOut ? 0 : product.inventoryStatus === 'limited' ? 4 : 20;
+  // Curated copy describes the menu, not a physical inventory ledger.
+  const stock = product.inventoryStatus === 'sold_out' || product.soldOut ? 0 : null;
 
   return applyMerchantPrice({
     ...product,
@@ -957,7 +958,7 @@ export function toStorefrontProduct(product: MarketProduct, index = 0) {
     images: [product.image].filter(Boolean),
     imageAlt: `${product.name} from Taste of Gratitude`,
     stock,
-    inStock: stock > 0,
+    inStock: false,
     isPreorder: product.preorderOnly || product.inventoryStatus === 'preorder',
     marketExclusive: product.marketPickupOnly,
     activeWeeklyMenu: product.activeWeeklyMenu,
@@ -1000,11 +1001,19 @@ export function toStorefrontProduct(product: MarketProduct, index = 0) {
 }
 
 export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProduct: T, index = 0) {
+  if (liveProduct.id === 'F2YVC7OVRYJU575JXROKFHFT') {
+    return {
+      ...liveProduct,
+      checkoutReady: false,
+      inStock: false,
+      checkoutUnavailableReason: 'This selection is awaiting catalog identity confirmation.',
+    };
+  }
   // Square's live "Blue Lotus" is the very same 16 oz sea moss gel as the
   // older curated "Blue Lotus Gel". Merge by merchant-approved alias to avoid
   // showing the obsolete 2 oz sample or a second uncheckoutable product.
   const isBlueLotusSquareGel =
-    normalizeProductKey(liveProduct.name) === 'blue-lotus' &&
+    liveProduct.id === 'DSROEB4HMZK63V7IGBH6SSJH' &&
     liveProduct.source === 'square_sync';
   const curated =
     getProductBySlugOrId(liveProduct.slug || liveProduct.id) ||
@@ -1024,9 +1033,11 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
     ? liveProduct.images
     : curatedProduct.images;
   const liveImage = liveProduct.image || liveProduct.displayImage || curatedProduct.image;
-  // Merchant-approved 16 oz Blue Lotus is $36. Never inherit the obsolete
-  // Square 35-dollar default or surface a second sample variation.
-  const livePrice = isBlueLotusSquareGel ? curatedProduct.price
+  const selectedPriceCents = typeof liveVariations[0]?.priceCents === 'number'
+    ? liveVariations[0].priceCents
+    : typeof liveVariations[0]?.price === 'number' ? Math.round(liveVariations[0].price * 100) : null;
+  const livePrice = isBlueLotusSquareGel && selectedPriceCents !== null
+    ? selectedPriceCents / 100
     : typeof liveProduct.price === 'number' && liveProduct.price > 0
     ? liveProduct.price
     : curatedProduct.price;
@@ -1039,13 +1050,17 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
       liveProduct.squareData?.variationId ||
       firstLiveVariationId ||
       null;
-  const blueLotusNoStock = isBlueLotusSquareGel &&
-    (Number(liveProduct.stock) <= 0 || liveProduct.inStock === false);
-  const checkoutReady = isBlueLotusSquareGel
-    ? !blueLotusNoStock && Boolean(firstLiveVariationId && !String(firstLiveVariationId).startsWith('tog-'))
-    : liveProduct.checkoutReady === true || Boolean(
-        resolvedLiveVariationId && !String(resolvedLiveVariationId).startsWith('tog-')
-      );
+  const rawStock = liveProduct.currentStock ?? liveProduct.stock;
+  const verifiedStock = typeof rawStock === 'number' && Number.isSafeInteger(rawStock) ? rawStock : null;
+  const hasStock = verifiedStock !== null && verifiedStock > 0 && liveProduct.inStock !== false;
+  const blueLotusNoStock = isBlueLotusSquareGel && !hasStock;
+  const knownCatalogMismatch = liveProduct.id === 'F2YVC7OVRYJU575JXROKFHFT' ||
+    (isBlueLotusSquareGel && (firstLiveVariationId !== 'QIX6D5PRQKX4TKEMTQUJPZUX' || selectedPriceCents !== 3600)) ||
+    (liveProduct.id === 'KZXEV24XZ2UCQUJ64BH7ZUJP' && selectedPriceCents !== 1199);
+  const checkoutReady = !knownCatalogMismatch && !curated.soldOut && hasStock &&
+    liveProduct.checkoutReady !== false && Boolean(
+      resolvedLiveVariationId && !String(resolvedLiveVariationId).startsWith('tog-')
+    );
 
   return applyMerchantPrice({
     ...liveProduct,
@@ -1088,7 +1103,9 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
     variationId: resolvedLiveVariationId || curatedProduct.variationId,
     catalogObjectId: isBlueLotusSquareGel ? resolvedLiveVariationId : liveProduct.catalogObjectId || resolvedLiveVariationId || curatedProduct.catalogObjectId,
     checkoutReady,
-    checkoutUnavailableReason: checkoutReady ? undefined : blueLotusNoStock
+    checkoutUnavailableReason: checkoutReady ? undefined : knownCatalogMismatch
+      ? 'This selection is awaiting catalog confirmation. It cannot be purchased until its identity and price are verified.'
+      : blueLotusNoStock
       ? 'Blue Lotus 16 oz is awaiting its next confirmed batch. Request availability—no charge until the batch and pickup or Georgia delivery eligibility are confirmed.'
       : curatedProduct.checkoutUnavailableReason,
     activeWeeklyMenu: curated.activeWeeklyMenu,
@@ -1096,8 +1113,8 @@ export function mergeWithCuratedProduct<T extends Record<string, any>>(liveProdu
     preorderOnly: curated.preorderOnly,
     marketPickupOnly: curated.marketPickupOnly,
     seasonal: curated.seasonal,
-    stock: curated.soldOut ? 0 : liveProduct.stock ?? curatedProduct.stock,
-    inStock: curated.soldOut ? false : liveProduct.inStock ?? curatedProduct.inStock,
+    stock: curated.soldOut ? 0 : verifiedStock === null ? null : Math.max(0, verifiedStock),
+    inStock: checkoutReady,
     isPreorder: blueLotusNoStock ? false : (liveProduct.isPreorder ?? curatedProduct.isPreorder),
     marketExclusive: liveProduct.marketExclusive ?? curated.marketPickupOnly,
     seoTitle: curated.seoTitle,

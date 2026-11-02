@@ -1,0 +1,643 @@
+{
+  "count": 37,
+  "genericFinalTransformers": 0,
+  "transformers": [
+    {
+      "sourceCollection": "admin_users",
+      "classification": "TRANSFORM",
+      "criticality": "HIGH",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "admin_users"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: admin_users"
+    },
+    {
+      "sourceCollection": "audit_log",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "audit_log"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: audit_log"
+    },
+    {
+      "sourceCollection": "audit_logs",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "audit_logs"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: audit_logs"
+    },
+    {
+      "sourceCollection": "challenges",
+      "classification": "TRANSFORM",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "challenges"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: challenges"
+    },
+    {
+      "sourceCollection": "contact_messages",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "contact_messages"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: contact_messages"
+    },
+    {
+      "sourceCollection": "coupons",
+      "classification": "TRANSFORM",
+      "criticality": "HIGH",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "coupons"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: coupons"
+    },
+    {
+      "sourceCollection": "customer_passports",
+      "classification": "TRANSFORM",
+      "criticality": "HIGH",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "reward_passports",
+        "reward_stamps"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: customer_passports"
+    },
+    {
+      "sourceCollection": "customers",
+      "classification": "TRANSFORM",
+      "criticality": "CRITICAL",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "customers",
+        "customer_addresses"
+      ],
+      "cardinality": "1 source -> 1 customers + length(addresses) customer_addresses + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "totalSpent dollars -> exact integer cents",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT_RELATIONSHIP_BUSINESS_AGGREGATE",
+      "implementation": "explicit handler: customers"
+    },
+    {
+      "sourceCollection": "email_logs",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "email_logs"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: email_logs"
+    },
+    {
+      "sourceCollection": "email_sends",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "email_sends"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: email_sends"
+    },
+    {
+      "sourceCollection": "gratitude_accounts",
+      "classification": "TRANSFORM",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "gratitude_accounts"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: gratitude_accounts"
+    },
+    {
+      "sourceCollection": "idempotency_keys",
+      "classification": "MIGRATE",
+      "criticality": "HIGH",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "idempotency_keys"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: idempotency_keys"
+    },
+    {
+      "sourceCollection": "inventory",
+      "classification": "TRANSFORM",
+      "criticality": "CRITICAL",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "inventory",
+        "inventory_variations"
+      ],
+      "cardinality": "1 source -> 1 inventory + length(variationIds) inventory_variations + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT_RELATIONSHIP_BUSINESS_AGGREGATE",
+      "implementation": "explicit handler: inventory"
+    },
+    {
+      "sourceCollection": "inventory_events",
+      "classification": "TRANSFORM",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "inventory_events"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: inventory_events"
+    },
+    {
+      "sourceCollection": "lead_intents",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "lead_intents"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: lead_intents"
+    },
+    {
+      "sourceCollection": "learning_enrollments",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "learning_enrollments"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: learning_enrollments"
+    },
+    {
+      "sourceCollection": "learning_modules",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "learning_modules"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: learning_modules"
+    },
+    {
+      "sourceCollection": "market_counters",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "market_counters"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: market_counters"
+    },
+    {
+      "sourceCollection": "market_schedules",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "market_schedules"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: market_schedules"
+    },
+    {
+      "sourceCollection": "marketorders",
+      "classification": "TRANSFORM",
+      "criticality": "CRITICAL",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "orders",
+        "order_items"
+      ],
+      "cardinality": "1 source -> 1 orders + length(items) order_items + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "legacy dollar fields -> exact integer cents; *Cents fields preserved",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT_RELATIONSHIP_BUSINESS_AGGREGATE",
+      "implementation": "explicit handler: marketorders"
+    },
+    {
+      "sourceCollection": "markets",
+      "classification": "TRANSFORM",
+      "criticality": "HIGH",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "markets"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: markets"
+    },
+    {
+      "sourceCollection": "menus",
+      "classification": "TRANSFORM",
+      "criticality": "HIGH",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "menus",
+        "menu_products",
+        "menu_tags"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: menus"
+    },
+    {
+      "sourceCollection": "newsletter_subscribers",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "newsletter_subscribers"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: newsletter_subscribers"
+    },
+    {
+      "sourceCollection": "orders",
+      "classification": "TRANSFORM",
+      "criticality": "CRITICAL",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "orders",
+        "order_items"
+      ],
+      "cardinality": "1 source -> 1 orders + length(items) order_items + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "legacy dollar fields -> exact integer cents; *Cents fields preserved",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT_RELATIONSHIP_BUSINESS_AGGREGATE",
+      "implementation": "explicit handler: orders"
+    },
+    {
+      "sourceCollection": "passport_idempotency",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "passport_idempotency"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: passport_idempotency"
+    },
+    {
+      "sourceCollection": "passports",
+      "classification": "TRANSFORM",
+      "criticality": "HIGH",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "reward_passports",
+        "reward_stamps"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: passports"
+    },
+    {
+      "sourceCollection": "payment_records",
+      "classification": "TRANSFORM",
+      "criticality": "CRITICAL",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "payments"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "provider minor-unit amount preserved; legacy records without amount retained operationally",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT_RELATIONSHIP_BUSINESS_AGGREGATE",
+      "implementation": "explicit handler: payment_records"
+    },
+    {
+      "sourceCollection": "payments",
+      "classification": "TRANSFORM",
+      "criticality": "CRITICAL",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "payments"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "provider minor-unit amount preserved; legacy records without amount retained operationally",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT_RELATIONSHIP_BUSINESS_AGGREGATE",
+      "implementation": "explicit handler: payments"
+    },
+    {
+      "sourceCollection": "product_reviews",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "product_reviews"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: product_reviews"
+    },
+    {
+      "sourceCollection": "products",
+      "classification": "TRANSFORM",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "products"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: products"
+    },
+    {
+      "sourceCollection": "quiz_results",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "quiz_results"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: quiz_results"
+    },
+    {
+      "sourceCollection": "reward_transactions",
+      "classification": "TRANSFORM",
+      "criticality": "HIGH",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "reward_transactions"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: reward_transactions"
+    },
+    {
+      "sourceCollection": "rewards",
+      "classification": "TRANSFORM",
+      "criticality": "HIGH",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "reward_accounts"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: rewards"
+    },
+    {
+      "sourceCollection": "scheduled_emails",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "scheduled_emails"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: scheduled_emails"
+    },
+    {
+      "sourceCollection": "square_sync_metadata",
+      "classification": "MIGRATE",
+      "criticality": "MEDIUM",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "square_sync_metadata"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: square_sync_metadata"
+    },
+    {
+      "sourceCollection": "users",
+      "classification": "TRANSFORM",
+      "criticality": "HIGH",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "users"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_SELECTED_FIELDS",
+      "parity": "COUNT_ID_FINGERPRINT",
+      "implementation": "explicit handler: users"
+    },
+    {
+      "sourceCollection": "webhook_events_processed",
+      "classification": "MIGRATE",
+      "criticality": "CRITICAL",
+      "sourcePrimaryId": "_id (BSON type preserved in checkpoint; string form retained as target identity)",
+      "targetTables": [
+        "webhook_events"
+      ],
+      "cardinality": "1 source -> 1 semantic/operational row + 1 provenance",
+      "idRule": "preserve source _id string; preserve external IDs without remapping",
+      "moneyRule": "no authoritative money transformation",
+      "timestampRule": "ISO-8601 UTC text; missing operational timestamp remains null; required core timestamp uses documented epoch fallback pending source rule",
+      "nullRule": "preserve explicit null; optional missing -> null; required identifiers reject",
+      "writeBehavior": "UPSERT_IMMUTABLE_KEY",
+      "parity": "COUNT_ID_FINGERPRINT_RELATIONSHIP_BUSINESS_AGGREGATE",
+      "implementation": "explicit handler: webhook_events_processed"
+    }
+  ]
+}

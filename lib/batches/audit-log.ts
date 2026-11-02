@@ -8,6 +8,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { connectToDatabase } from '@/lib/db-optimized';
+import type { ReservationPaymentStatus } from './types';
 
 const AUDIT_LOG_COLLECTION = 'batch_audit_log';
 
@@ -197,7 +198,7 @@ export async function logPaymentReceived(
   reservationId: string,
   squarePaymentId: string,
   amountCents: number,
-  status: 'deposit_paid' | 'paid' | 'fully_paid' | 'failed'
+  status: ReservationPaymentStatus | 'paid'
 ): Promise<AuditLogEvent> {
   return appendAuditLogEvent({
     actor: 'square_webhook',

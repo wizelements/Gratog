@@ -117,10 +117,8 @@ describe('Navigation Coherence', () => {
     expect(header).toContain("href: '/events'");
   });
 
-  it('review submission UX includes a non-blocking signup prompt for guest reviewers', () => {
-    const productReviews = tryRead('components/ProductReviews.jsx');
-
-    expect(productReviews).toContain('Create Free Account');
-    expect(productReviews).toContain('setSignupPrompt');
+  it('old review signup links cannot falsely claim a review was submitted', () => {
+    const register = tryRead('app/register/page.js');
+    expect(register).not.toContain('Your review was submitted successfully');
   });
 });

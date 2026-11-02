@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
+import { isServerVerifiedPaidOrder } from '@/lib/checkout/order-confirmation';
 
 const MAX_ORDER_FETCH_ATTEMPTS = 12;
 const PENDING_ORDER_STATUSES = new Set(['DRAFT', 'PENDING', 'pending', 'payment_processing', 'processing']);
@@ -22,8 +23,7 @@ export default function OrderSuccessPage() {
   const searchParams = useSearchParams();
   const orderRef = searchParams.get('orderRef') || searchParams.get('orderId');
   const orderAccessToken = searchParams.get('token');
-  const isPaidFromUrl = searchParams.get('paid') === 'true';
-  const amountFromUrl = searchParams.get('amount') ? parseInt(searchParams.get('amount'), 10) : null;
+  // paid=true and amount in the URL are untrusted claims, not payment evidence.
   
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -71,6 +71,10 @@ export default function OrderSuccessPage() {
         const nextAttempt = attempt + 1;
         setPollAttempts(nextAttempt);
         setOrder(data);
+        // Show a clearly UNPAID receipt immediately while the capture settles.
+        // Do not spin on "Finalizing" for the full retry window.
+        setError(null);
+        setLoading(false);
         setTimeout(() => fetchOrderDetails(nextAttempt), getRetryDelayMs(nextAttempt));
         return;
       }
@@ -128,7 +132,7 @@ export default function OrderSuccessPage() {
             <div>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Link Expired for Security</h1>
               <p className="text-gray-600">
-                Your order was placed successfully! For your protection, order links expire after 7 days.
+                This link is no longer valid. We cannot verify whether payment completed. Checkout security links expire after 30 minutes. Contact us before trying to pay again.
               </p>
             </div>
             
@@ -173,53 +177,6 @@ export default function OrderSuccessPage() {
   }
 
   if (error || !order) {
-    if (isPaidFromUrl) {
-      return (
-        <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-12">
-          <div className="container max-w-4xl">
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
-                <CheckCircle className="w-12 h-12 text-green-600" />
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Received! ✓</h1>
-              <p className="text-gray-600">
-                Your payment{amountFromUrl ? ` of $${(amountFromUrl / 100).toFixed(2)}` : ''} was confirmed.
-              </p>
-              <p className="text-gray-500 text-sm mt-2">
-                Your order details are being finalized. You&apos;ll receive a confirmation email shortly.
-              </p>
-            </div>
-            <Card className="max-w-md mx-auto">
-              <CardContent className="p-8 text-center space-y-4">
-                {orderRef && (
-                  <p className="text-xs text-gray-400 font-mono">
-                    Ref: {orderRef}
-                  </p>
-                )}
-                <Button
-                  onClick={() => {
-                    setLoading(true);
-                    setError(null);
-                    setPollAttempts(0);
-                    fetchOrderDetails(0);
-                  }}
-                  variant="outline"
-                  className="w-full"
-                >
-                  🔄 Check Order Status
-                </Button>
-                <Link href="/catalog">
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
-                    Continue Shopping
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      );
-    }
-
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-emerald-50 to-white">
         <Card className="max-w-md mx-auto">
@@ -227,8 +184,9 @@ export default function OrderSuccessPage() {
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">❌</span>
             </div>
-            <h1 className="text-2xl font-bold mb-2">Order Not Found</h1>
+            <h1 className="text-2xl font-bold mb-2">Unable to verify your order</h1>
             <p className="text-gray-600 mb-2">{error}</p>
+            <p className="text-gray-600 mb-2">We cannot confirm payment was received. Check your order or contact us before retrying a charge.</p>
             {orderRef && (
               <p className="text-xs text-gray-400 mb-6 font-mono">
                 Ref: {orderRef}
@@ -261,8 +219,9 @@ export default function OrderSuccessPage() {
 
   const formatPrice = (price) => `$${parseFloat(price || 0).toFixed(2)}`;
   
-  const displayTotal = order?.pricing?.total || (amountFromUrl ? amountFromUrl / 100 : 0);
-  const displaySubtotal = order?.pricing?.subtotal || displayTotal;
+  const isVerifiedPaid = isServerVerifiedPaidOrder(order);
+  const displayTotal = order?.pricing?.total ?? order?.total ?? 0;
+  const displaySubtotal = order?.pricing?.subtotal ?? displayTotal;
   const orderTiming = order?.orderTiming || order?.fulfillment?.timing;
   const requestedPreOrderDate = orderTiming?.requestedDate;
   const scheduledFulfillmentAt = order?.fulfillment?.scheduledFulfillmentAt || order?.fulfillment?.pickupDate;
@@ -277,17 +236,19 @@ export default function OrderSuccessPage() {
             <CheckCircle className="w-12 h-12 text-emerald-600" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {isPreOrder ? 'Pre-Order Confirmed!' : 'Order Confirmed!'}
+            {isVerifiedPaid ? (isPreOrder ? 'Pre-Order Confirmed!' : 'Order Confirmed!') : 'Payment Not Yet Verified'}
           </h1>
           <p className="text-gray-600">
             Thank you{order?.customer?.firstName ? `, ${order.customer.firstName}` : ''}! 
-            {isPreOrder 
-              ? " We've received your pre-order and will prepare it for your selected date."
-              : " We've received your order and are preparing it with gratitude."}
+            {isVerifiedPaid
+              ? (isPreOrder
+                  ? " We've received your pre-order and will prepare it for your selected date."
+                  : " We've received your order and are preparing it with gratitude.")
+              : " We found your order record, but cannot yet confirm payment. Check status before attempting to pay again."}
           </p>
           
           {/* 🎯 CONVERSION PSYCHOLOGY: Clear next steps */}
-          {order?.fulfillment?.type?.includes('pickup') && (
+          {isVerifiedPaid && order?.fulfillment?.type?.includes('pickup') && (
             <div className="mt-4 inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-4 py-2">
               <Clock className="w-4 h-4 text-amber-600" />
               <span className="text-sm text-amber-800">
@@ -300,7 +261,7 @@ export default function OrderSuccessPage() {
         </div>
 
         {/* Fulfillment-specific instruction card */}
-        {order?.fulfillment?.type?.includes('pickup') && (
+        {isVerifiedPaid && order?.fulfillment?.type?.includes('pickup') && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 mb-6">
             <h2 className="font-semibold text-amber-900">Pickup instructions</h2>
             <ul className="mt-3 space-y-2 text-sm text-amber-800">
@@ -310,7 +271,7 @@ export default function OrderSuccessPage() {
             </ul>
           </div>
         )}
-        {order?.fulfillment?.type === 'shipping' && (
+        {isVerifiedPaid && order?.fulfillment?.type === 'shipping' && (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 mb-6">
             <h2 className="font-semibold text-emerald-900">Shipping expectations</h2>
             <p className="mt-2 text-sm text-emerald-800">
@@ -318,7 +279,7 @@ export default function OrderSuccessPage() {
             </p>
           </div>
         )}
-        {order?.fulfillment?.type === 'delivery' && (
+        {isVerifiedPaid && order?.fulfillment?.type === 'delivery' && (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 mb-6">
             <h2 className="font-semibold text-emerald-900">Delivery expectations</h2>
             <p className="mt-2 text-sm text-emerald-800">
@@ -343,7 +304,7 @@ export default function OrderSuccessPage() {
                     <p className="text-sm text-gray-500">Order Reference</p>
                     <p className="text-lg font-mono font-semibold">{order.id?.slice(-6).toUpperCase()}</p>
                   </div>
-                  <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>
+                  <Badge variant={isVerifiedPaid ? 'default' : 'secondary'}>
                     {order.status}
                   </Badge>
                 </div>
@@ -427,12 +388,12 @@ export default function OrderSuccessPage() {
                     )}
                     
                     {/* 🎯 CONVERSION PSYCHOLOGY: Queue CTA for pickup orders */}
-                    <Link href={`/order/${order.id}/queue`}>
+                    {isVerifiedPaid && <Link href={`/order/${order.id}/queue`}>
                       <Button className="mt-4 w-full bg-amber-500 hover:bg-amber-600 text-white">
                         <Clock className="w-4 h-4 mr-2" />
                         Check Live Queue Position
                       </Button>
-                    </Link>
+                    </Link>}
                   </div>
                 )}
 

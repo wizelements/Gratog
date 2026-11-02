@@ -1,0 +1,16 @@
+{
+  "concurrency": 1,
+  "defaultBatchSize": 100,
+  "order": [
+    { "domain": "reference", "collections": ["markets", "menus"] },
+    { "domain": "identity", "collections": ["customers", "users", "admin_users"] },
+    { "domain": "catalog", "collections": ["square_catalog_categories", "square_catalog_items", "unified_products", "products"] },
+    { "domain": "commerce", "collections": ["orders", "marketorders", "payments", "payment_records"] },
+    { "domain": "inventory", "collections": ["inventory", "inventory_events", "square_inventory"] },
+    { "domain": "loyalty", "collections": ["rewards", "passports", "customer_passports", "reward_transactions"] },
+    { "domain": "idempotency", "collections": ["idempotency_keys", "passport_idempotency", "webhook_events_processed"] },
+    { "domain": "operations", "collections": ["audit_log", "audit_logs", "contact_messages", "email_logs", "email_sends", "newsletter_subscribers", "quiz_results", "scheduled_emails"] },
+    { "domain": "derived", "collections": ["unified_analytics", "unified_metrics", "product_sync_log", "square_sync_metadata"] }
+  ],
+  "excludedFromTarget": ["_verification_test", "dailyinventories", "email_queue", "owner_alert_queue", "password_resets", "pending_customers", "pre_orders", "products_unified", "queuepositions", "sessions", "square_sync_queue", "staff_notifications", "webhook_logs"]
+}

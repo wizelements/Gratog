@@ -6,6 +6,8 @@
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
+import {tursoPreviewSelected,openTursoPreview} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {listTursoMenus,getTursoMenuById,createTursoMenu,updateTursoMenu,archiveTursoMenu,activateTursoMenu} from './turso-menus.mjs';
 import type { AdminMenu, MenuDocument } from './types';
 import type { CreateMenuInput, UpdateMenuInput } from './schema';
 
@@ -33,6 +35,7 @@ function documentToAdminMenu(doc: MenuDocument): AdminMenu {
 }
 
 export async function getAllMenus(): Promise<AdminMenu[]> {
+  if(tursoPreviewSelected())return listTursoMenus(await openTursoPreview(),'all');
   try {
     const { db } = await connectToDatabase();
     const docs = await db
@@ -49,6 +52,7 @@ export async function getAllMenus(): Promise<AdminMenu[]> {
 }
 
 export async function getActiveMenus(): Promise<AdminMenu[]> {
+  if(tursoPreviewSelected())return listTursoMenus(await openTursoPreview(),'active');
   try {
     const { db } = await connectToDatabase();
     const docs = await db
@@ -65,6 +69,7 @@ export async function getActiveMenus(): Promise<AdminMenu[]> {
 }
 
 export async function getPublicMenus(): Promise<AdminMenu[]> {
+  if(tursoPreviewSelected())return listTursoMenus(await openTursoPreview(),'public');
   try {
     const { db } = await connectToDatabase();
     const docs = await db
@@ -86,6 +91,7 @@ export async function getPublicMenus(): Promise<AdminMenu[]> {
 }
 
 export async function getActiveMenu(): Promise<AdminMenu | null> {
+  if(tursoPreviewSelected())return (await listTursoMenus(await openTursoPreview(),'active'))[0]||null;
   try {
     const { db } = await connectToDatabase();
     const doc = await db
@@ -100,6 +106,7 @@ export async function getActiveMenu(): Promise<AdminMenu | null> {
 }
 
 export async function getMenuById(id: string): Promise<AdminMenu | null> {
+  if(tursoPreviewSelected())return getTursoMenuById(await openTursoPreview(),id);
   try {
     if (!ObjectId.isValid(id)) {
       return null;
@@ -120,6 +127,7 @@ export async function getMenuById(id: string): Promise<AdminMenu | null> {
 export type CreateMenuData = CreateMenuInput;
 
 export async function createMenu(data: CreateMenuData): Promise<AdminMenu> {
+  if(tursoPreviewSelected())return createTursoMenu(await openTursoPreview(),data);
   try {
     const { db } = await connectToDatabase();
     const now = new Date();
@@ -179,6 +187,7 @@ export async function updateMenu(
   id: string,
   data: UpdateMenuData
 ): Promise<AdminMenu | null> {
+  if(tursoPreviewSelected())return updateTursoMenu(await openTursoPreview(),id,data);
   try {
     if (!ObjectId.isValid(id)) {
       return null;
@@ -238,6 +247,7 @@ export async function updateMenu(
 }
 
 export async function deleteMenu(id: string): Promise<boolean> {
+  if(tursoPreviewSelected())return archiveTursoMenu(await openTursoPreview(),id);
   try {
     if (!ObjectId.isValid(id)) {
       return false;
@@ -263,6 +273,7 @@ export async function deleteMenu(id: string): Promise<boolean> {
 }
 
 export async function setActiveMenu(id: string): Promise<AdminMenu | null> {
+  if(tursoPreviewSelected())return activateTursoMenu(await openTursoPreview(),id);
   try {
     if (!ObjectId.isValid(id)) {
       return null;
@@ -298,6 +309,7 @@ export async function setActiveMenu(id: string): Promise<AdminMenu | null> {
 }
 
 export async function ensureMenuIndexes(): Promise<void> {
+  if(tursoPreviewSelected()){await openTursoPreview();return;} // schema migrations own SQL indexes
   try {
     const { db } = await connectToDatabase();
     const collection = db.collection(COLLECTION_NAME);

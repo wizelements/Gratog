@@ -1,0 +1,16 @@
+{
+  "commit": "617a6f1f183acb297409b04924643647d961c63c",
+  "previewHost": "gratog-crs83gtis-theangelsilvers-projects.vercel.app",
+  "created": false,
+  "reusedAndRetargeted": true,
+  "subscriptionId": "wbhk_099a94c46e684cc6ac7c37418d9eb813",
+  "disabledOlderCertificationSubscriptions": 1,
+  "signatureKeyReturned": true,
+  "providerEnabled": true,
+  "providerUrlMatches": true,
+  "providerEventsMatch": true,
+  "subscriptionListHttp": 200,
+  "activeSubscriptionCount": 2,
+  "providerFailure": null,
+  "totalSubscriptionCount": 3
+}

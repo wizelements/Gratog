@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import QuickAddButton from './QuickAddButton';
+import { resolveProductAvailability } from '@/lib/product-availability';
 import VariantSelector from './VariantSelector';
 import ProductVisual from './ProductVisual';
 import { getCanonicalProductCategoryIcon, getCanonicalProductCategoryLabel } from '@/lib/storefront-query';
@@ -25,16 +26,7 @@ export default function ProductCard({ product }) {
     || product.size
     || '';
 
-  const lowStockThreshold = product.lowStockThreshold || 5;
-  const availabilityLabel = product.soldOut || product.inventoryStatus === 'sold_out'
-    ? 'Sold out'
-    : product.preorderOnly || product.isPreorder
-      ? 'Preorder for market pickup'
-      : product.stock !== null && product.stock !== undefined && product.stock <= 0
-        ? 'Preorder for Saturday pickup'
-        : product.stock !== null && product.stock !== undefined && product.stock <= lowStockThreshold
-          ? `Limited stock (${product.stock} left)`
-          : null;
+  const availabilityLabel = resolveProductAvailability(product).label;
 
   return (
     <Card

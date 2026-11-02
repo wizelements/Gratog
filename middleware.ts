@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // "Dynamic Code Evaluation not allowed in Edge Runtime". Both modules sign
 // with the same JWT_SECRET / HS256, so verifying tokens with admin-session
 // is fully interoperable with tokens issued by unified-admin.
-import { verifyAdminToken } from '@/lib/admin-session';
+import { verifyAdminCookieToken as verifyAdminToken } from '@/lib/admin-token';
 
 // Routes that the admin area exposes without authentication.
 const PUBLIC_ADMIN_ROUTES = ['/admin/login'];

@@ -1,0 +1,41 @@
+name: Turso routing source audit (non-release)
+on:
+  pull_request:
+    branches:
+      - feat/turso-checkout-recovery-20261017
+    paths:
+      - 'scripts/release/inventory-turso-routing.mjs'
+      - 'tests/release/turso-routing-inventory.test.mjs'
+      - 'docs/architecture/turso-runtime-routing-audit-20261018.md'
+      - 'migration-artifacts/turso-route-audit-20261018.json'
+      - '.github/workflows/turso-routing-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  routing-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Syntax and governance checks (no provider secrets)
+        run: |
+          node --check scripts/release/inventory-turso-routing.mjs
+          node --test tests/release/turso-routing-inventory.test.mjs tests/release/turso-cutover-gates.test.mjs
+      - name: Verify that incomplete migration remains release-blocked
+        shell: bash
+        run: |
+          set +e
+          node scripts/release/inventory-turso-routing.mjs --strict > /tmp/gratog-routing-summary.json
+          result=$?
+          set -e
+          if [ "$result" -ne 2 ]; then
+            echo "::error::Routing inventory did not return the expected blocked result. Review the full source graph and release authority before updating this check."
+            exit 1
+          fi
+          echo "Routing source gate is blocking cutover as intended."

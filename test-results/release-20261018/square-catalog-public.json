@@ -1,0 +1,1615 @@
+{
+  "evidenceType": "read_only_public_endpoint",
+  "observedVia": "authenticated_GratitudePC_Desktop_Commander",
+  "independentMongoReadback": false,
+  "independentSquareAdminReadback": false,
+  "url": "https://tasteofgratitude.shop/api/storefront/square-catalog",
+  "observedAt": "2026-10-18T04:57:15.6072047Z",
+  "source": "square_direct",
+  "success": true,
+  "count": 69,
+  "products": [
+    {
+      "id": "OAMZ3IUIU75QRNH7WJETSPX6",
+      "name": "Kissed by Gods",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "24IR66LLZDKD2NMM3FI4JKPG",
+          "name": "16oz",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        },
+        {
+          "id": "VSZHBA37GKBBUNT5ESKGGBW2",
+          "name": "64oz",
+          "price": 47.96,
+          "priceCents": 4796,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Ingredients:\nBasil, Chlorophyll, Ginger, Lemon, Sea Moss, Agave\n\nBENEFITS:\nâ¢ Supports liver & immune health\nâ¢ Promotes natural detox & hydration\nâ¢ Boosts energy & circulation\nâ¢ Reduces inflammation & fatigue"
+    },
+    {
+      "id": "DOBEU7ZFRXWQB6VSECMNLMXL",
+      "name": "Always Pursue Gratitude",
+      "slug": null,
+      "price": 12.99,
+      "priceCents": 1299,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "WFUWO7VQM4BDOYPEBPENPAMP",
+          "name": "Regular",
+          "price": 12.99,
+          "priceCents": 1299,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Apple, pineapple, ginger, lemon, sea moss\nâ Aids digestion, boosts immunity, supports skin health"
+    },
+    {
+      "id": "BF6RUOUX2DOOYPDWBJK4UKA7",
+      "name": "Berry Zinger",
+      "slug": null,
+      "price": 12.99,
+      "priceCents": 1299,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "JHMQDVEWFPTU25PR3T5D27SN",
+          "name": "Regular",
+          "price": 12.99,
+          "priceCents": 1299,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "VQ3PGYYJYAC5DEZPDZO5IAKT",
+      "name": "Desert Glow",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "K4JKQGL6MCZRUTW4Q6IVUIMC",
+          "name": "Regular",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "A refreshing blend of prickly pear, ginger, sea moss, lemon, agave, and alkaline water, crafted with natural ingredients. Perfect for hydration and supporting overall wellness."
+    },
+    {
+      "id": "677FQMNVB622QS33PSGSG7FM",
+      "name": "Rejuvenate",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "6O5PPMQYIXGZSW7RRLPF2TXM",
+          "name": "16oz",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Grapefruit, orange, turmeric, key lime, cayenne, ginger, chia seeds, sea moss. maple, alkaline water\nâ Full-body cleanse, metabolism booster, joint and immune support"
+    },
+    {
+      "id": "2HRYSJY3KPNYKWJXP5FUAYKR",
+      "name": "Elderberry Moss",
+      "slug": null,
+      "price": 35,
+      "priceCents": 3500,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "NISN4GAH5SBPGKHLU5VTDYLR",
+          "name": "16oz",
+          "price": 35,
+          "priceCents": 3500,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Elderberry Moss Gels combine the natural benefits of sea moss and elderberry to support immune health with ease. This nutrient-rich gel is made with natural ingredients and is simple to incorporate into your daily routine."
+    },
+    {
+      "id": "BS6VUA5YSOINBLAWSXSBXBZF",
+      "name": "Golden Glow Gel",
+      "slug": null,
+      "price": 35,
+      "priceCents": 3500,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "MLQ3AWX6G7CUAMMRRT7N5BDN",
+          "name": "16oz",
+          "price": 35,
+          "priceCents": 3500,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Ingredients: Pineapple, Orange, Turmeric, Ginger, Local Honey, Alkaline Water\n\nBENEFITS\nâ¢ Reduces inflammation & joint pain\nâ¢ Supports immunity & digestion\nâ¢ Promotes radiant skin & circulation\nâ¢ Aids recovery & natural detox"
+    },
+    {
+      "id": "PNVAADP63DYUZYD32DAUUHHQ",
+      "name": "Floral Tide",
+      "slug": null,
+      "price": 35,
+      "priceCents": 3500,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "7H53HMPV3LMZZZDVSV2VEZPT",
+          "name": "16oz",
+          "price": 35,
+          "priceCents": 3500,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Ingredients: Hibiscus, Cranberry, Pineapple, Orange, Turmeric, Ginger, Lemon, Agave, Alkaline Water, Bee Pollen\n\nBENEFITS\nâ¢ Promotes circulation & heart health\nâ¢ Supports immune & liver function\nâ¢ Reduces inflammation & fatigue\nâ¢ Rich in antioxidants & nutrients"
+    },
+    {
+      "id": "GFSY4S76P5X5UV6EH5ZYC7W7",
+      "name": "Pineapple Mango Lemonade",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "6SSWAUSIEJIMPMXODY3DKKMI",
+          "name": "Regular",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "A tropical blend of pineapple, mango, turmeric and lemon with ginger, sea moss, agave, and alkaline water â Packed with Vitamin C, digestive enzymes, and 92+ essential minerals, this tropical blend supports immunity, gut health, energy, hydration, and inflammation relief â all in one refreshing sip."
+    },
+    {
+      "id": "YZ3UZVLXBZXBECFGQJLPC4Z4",
+      "name": "Pineapple Basil",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "DQBEZLKFX6LCTPJRED7OCO4C",
+          "name": "16oz",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        },
+        {
+          "id": "CK5KKPVKNSAH2GN2MC2FS2HP",
+          "name": "64oz",
+          "price": 47.96,
+          "priceCents": 4796,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Pineapple Basil Lemonade: Pineapple Basil , lemons, alkaline water, agave."
+    },
+    {
+      "id": "KZXEV24XZ2UCQUJ64BH7ZUJP",
+      "name": "Strawberry Bliss",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "HYODQWXIJJVAPRIZ66SVUYE5",
+          "name": "Regular",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Enjoy the refreshing blend of tangy strawberry lemonade combined with the wellness benefits of nutrient-rich sea moss and invigorating ginger. This thoughtfully crafted drink is perfect for hydration and supporting your daily wellness routine."
+    },
+    {
+      "id": "CN4ZZMMCI2ZTIMU56X7DFHNJ",
+      "name": "SuppleMint",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "XHR54S6JWGZJC5HDPGSGSK2L",
+          "name": "Regular",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Mint, ginger, agave, sea moss, alkaline water\nâ Refreshing detox, aids digestion, reduces nausea, clears sinuses"
+    },
+    {
+      "id": "DSROEB4HMZK63V7IGBH6SSJH",
+      "name": "Blue Lotus",
+      "slug": null,
+      "price": 35,
+      "priceCents": 3500,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "QIX6D5PRQKX4TKEMTQUJPZUX",
+          "name": "16oz",
+          "price": 35,
+          "priceCents": 3500,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Ingredients: Blue Spirulina, Horny Goat Weed, Ashwagandha, Maca Root, Ginger, Agave\n\nBENEFITS\nâ¢ Supports hormonal balance & libido\nâ¢ Promotes focus & calm energy\nâ¢ Reduces stress & anxiety naturally\nâ¢ Boosts endurance & overall vitality"
+    },
+    {
+      "id": "H4C33DOZSINJKLDYVPYDUC3Q",
+      "name": "Grateful Greens",
+      "slug": null,
+      "price": 35,
+      "priceCents": 3500,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "URH7FGAVE46T3X2LY6NRJ77S",
+          "name": "Default",
+          "price": 35,
+          "priceCents": 3500,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Holy Basil, Spirulina, Chlorophyll, Chlorella, Local Honey\n\nHoly Basil, Spirulina, Chlorophyll, Chlorella, Local Honey\nAlkalizing greens Â· Hormonal balance Â· Cellular rejuvenation"
+    },
+    {
+      "id": "KSPUCD2YC4JWLSKPZ4LVY64M",
+      "name": "Strawberry T",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "7GNVZL5YLTJ5LBG4ULVUZUXS",
+          "name": "Regular",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Strawberry Pineapple Orange Sea Moss Ginger Lemonade combines refreshing fruity flavors with nutrient-rich sea moss and zesty ginger for a wellness boost. Packed with immune-supporting ingredients, it's a revitalizing drink perfect for any time of day."
+    },
+    {
+      "id": "64KB3MMEF47VXGWT3MBHNNCD",
+      "name": "Grateful Guardian",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "LMZ55MRWO2MTCO2V6OTAYBNK",
+          "name": "Regular",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "A tangy-immune powerhouse of elderberry, cranberry, apple, ginger, lemon, echinacea, sea moss, and alkaline water honeyâ designed to boost immunity, fight inflammation, support digestion, and deliver 92+ minerals in every sip."
+    },
+    {
+      "id": "J4XT6CVM6L2FRLW6IZNSIPBH",
+      "name": "Pineapple Melon",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "PBK3HMMCOW26WT5NWF63B57Y",
+          "name": "Regular",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Pineapple, yellow watermelon, ginger, lemon, sea moss\nâ Anti-inflammatory, supports digestion, naturally hydrating"
+    },
+    {
+      "id": "XZBLCZKU2AW3FUBPYD2IE2O5",
+      "name": "Rooted in Gratitude",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "4QEYUKKHVUDNRSYYUIK6FPYF",
+          "name": "Regular",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Beet, pineapple, parsley, celery, lemon, ginger, apples, sea moss, agave, alkaline water \nâ Promotes circulation, liver detox, hydration, and inflammation relief"
+    },
+    {
+      "id": "CRH72FI2JOGIOCZBWGD5YBWK",
+      "name": "Peach Lemonade",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "NGUVDKZZZMSK6N6VRXRG37HJ",
+          "name": "Regular",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Peach, ginger, lemon, lemon balm, agave, sea moss, alkaline water\nâ Calms the nervous system, supports digestion, relieves bloating"
+    },
+    {
+      "id": "U72YRTLGGBVTAXGS7NEDRXOC",
+      "name": "Blueberry Lemonade",
+      "slug": null,
+      "price": 10,
+      "priceCents": 1000,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "NCYJB3NGWOEUYVZ6FVVMHSQS",
+          "name": "Regular",
+          "price": 10,
+          "priceCents": 1000,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Blueberry, ginger, lemon, agave, sea moss, alkaline water\nâ Brain-boosting, antioxidant-rich, helps fight inflammation"
+    },
+    {
+      "id": "KIJASOFCHSOG4B3GJPOQ7OQB",
+      "name": "Herbal Vibe",
+      "slug": null,
+      "price": 14.99,
+      "priceCents": 1499,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "AS4OJS33FJEHZMJ5W24IJ6TV",
+          "name": "Regular",
+          "price": 14.99,
+          "priceCents": 1499,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Herbal Vibe is a bold blend featuring pineapple, apple, ginger, oregano, mint, and lemon, thoughtfully crafted to invigorate your senses. Enjoy a refreshing mix designed to energize, purify, and support your daily wellness routine."
+    },
+    {
+      "id": "VLVSJPJB2OJNLJW7HOE4EJTB",
+      "name": "Apple Cranberry",
+      "slug": null,
+      "price": 12.99,
+      "priceCents": 1299,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "INQLOCKPVYIETZVT3PE63HPU",
+          "name": "Default",
+          "price": 12.99,
+          "priceCents": 1299,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "A refreshing fusion of apple, pineapple, cranberry, lime, lemon, ginger, and mineral-rich sea moss. This blend supports digestion, boosts immunity, aids detox, and delivers natural energy. Packed with antioxidants and 92 essential minerals, itâs a crisp, tangy, and nourishing sip for daily wellness."
+    },
+    {
+      "id": "QDZ5VIFHYIP243KIH4I5YW5R",
+      "name": "Spicy Bloom",
+      "slug": null,
+      "price": 5.5,
+      "priceCents": 550,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "JRH3GPIUTSPNTTKCEHGRRZET",
+          "name": "Regular",
+          "price": 5.5,
+          "priceCents": 550,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Hibiscus, Pineapple, Orange, Cranberry, Lemon, JalapeÃ±o, Sea Moss, Agave, Alkaline Water"
+    },
+    {
+      "id": "SSATSEXDDPFEFDU6HCVDUPHQ",
+      "name": "Gratitude Defense",
+      "slug": null,
+      "price": 6,
+      "priceCents": 600,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "KXSSG4AGO73322YJQJOKR2VG",
+          "name": "Default",
+          "price": 6,
+          "priceCents": 600,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Elderberry, Cranberry, Apple, Ginger, Lemon, Echinacea, Sea Moss\nStrong immune defense, digestive support, 92+ essential minerals"
+    },
+    {
+      "id": "YJ7KN2IT34JVXBOI5UHRSHZ4",
+      "name": "Healing Harmony",
+      "slug": null,
+      "price": 35,
+      "priceCents": 3500,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "JIYUFU7SUN3WUDK2FJ7CG7ZR",
+          "name": "Default",
+          "price": 35,
+          "priceCents": 3500,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Ingredients\n\nSea Moss\nSoursop (Graviola)\nChai Tea\nCardamom\nFennel\nBlack Peppercorn\nGinger\nLocal Honey\nAlkaline Water\n\nSupports Digestive Health\nRich in Antioxidants\nWarming Herbal Blend\nSupports Immune Health\nMineral-Rich Nourishment\nSupports Overall Wellness"
+    },
+    {
+      "id": "4JAQVGZ6YYGT2TSK7ETQCUUC",
+      "name": "Horchata",
+      "slug": null,
+      "price": 5,
+      "priceCents": 500,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "SZC72EPUIGPN5IB6MMXHNPAJ",
+          "name": "Regular",
+          "price": 5,
+          "priceCents": 500,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Horchata"
+    },
+    {
+      "id": "JKS2NISHAQPGESRRATITKMTT",
+      "name": "Sweet Potato Chai",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "SMRJDMQVIWJUMZ3NUNADKYDO",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Chai tea blended with real sweet potato and milk. Smooth and spiced."
+    },
+    {
+      "id": "QZG2GHCF64WIWEO6KWNOSYWB",
+      "name": "Homemade Apple Cider",
+      "slug": null,
+      "price": 6,
+      "priceCents": 600,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "X7ISEZVIJVYU5DUCPXGGKZQ3",
+          "name": "Regular",
+          "price": 6,
+          "priceCents": 600,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Crafted from slow-simmered apples and infused with our signature A.P.G. blend of pineapple and ginger for a bright, uplifting twist. Lightly spiced and naturally sweet, this cider energizes the senses and supports immunity with every sip."
+    },
+    {
+      "id": "M2YWBEQGL73SJLAKVYDSFORC",
+      "name": "Black Minerals",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "RZ5E2KMKDEXFJLEOHYRUQRTV",
+          "name": "Regular",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Activated Charcoal Â· Chia Seeds Â· Psyllium Husk Â· Lemon Â· Cayenne Â· Oregano Oil Â· Maple Â· Alkaline Water\nFocus: Bowel regularity"
+    },
+    {
+      "id": "GGFFU35UI5TCMORHXHU56ZZ7",
+      "name": "Golden Glow",
+      "slug": null,
+      "price": 12.99,
+      "priceCents": 1299,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "KZR54XNQOXDMY74UXOHRH242",
+          "name": "Regular",
+          "price": 12.99,
+          "priceCents": 1299,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Golden\nCarrot Â· Orange Â· Pineapple Â· Ginger Â· Turmeric Â· Cayenne Â· Lemon\nFocus: Circulation support"
+    },
+    {
+      "id": "CIEYXH3G7FHAST6DLWMCFYS5",
+      "name": "Calm Waters",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "H2DTZPLPJRMKYZIOAUWENWIR",
+          "name": "Regular",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Blue Spirulina Â· Lemon Â· Ashwagandha Â· Celtic Salt Â· Agave\nFocus: Stress response support"
+    },
+    {
+      "id": "WWGWZ5BMAKS2IW6LGAWMBBNR",
+      "name": "Taro",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "QA43U75KWINEWR7LUDNPTHQB",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Creamy taro milk tea made with jasmine tea and milk. Smooth and lightly sweet."
+    },
+    {
+      "id": "4Y3FIR4O6R5UE2WTQMIOSSQD",
+      "name": "Strawberry Matcha",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "AHH2BDQXWIWSKXHUZ4VTCVWI",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Real strawberry + ceremonial-style matcha\nFresh â¢ creamy â¢ lightly sweet"
+    },
+    {
+      "id": "JRCM5Y24NKELIT4SQHJD2APC",
+      "name": "Strawberry Milk Tea",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "OGMHH6NVS2MOAGZH4BFJ6HD2",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Real strawberry + jasmine \nCreamy â¢ smooth â¢ naturally sweet"
+    },
+    {
+      "id": "CZSNPKEFYVWMVLOGVQFTKYV6",
+      "name": "Boba",
+      "slug": null,
+      "price": 1,
+      "priceCents": 100,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "HKQWIZKTUX6WTOPW626B5KE5",
+          "name": "Regular",
+          "price": 1,
+          "priceCents": 100,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Boba"
+    },
+    {
+      "id": "GT6ZON74JWO2CIDSUKLIFGL6",
+      "name": "(a) Cream Topping",
+      "slug": null,
+      "price": 1,
+      "priceCents": 100,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "OMHBPAH5WACLXCHKYNBZGA5V",
+          "name": "Regular",
+          "price": 1,
+          "priceCents": 100,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "F2YVC7OVRYJU575JXROKFHFT",
+      "name": "Vitamin Sea",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "4YFOIFCPUXTDKDA5DU2LLQ2G",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Pineapple, jasmine tea, lemonade, and blue spirulina. Includes mango popping pearls Sparkling water"
+    },
+    {
+      "id": "C4JJID2WE3IUAS6DQJVW2Z3M",
+      "name": "(a)  LG Milk Tea ",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "UU4TTM37N6UITRFECQR2YNCG",
+          "name": "Regular",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "7I3YYV2OVJP2KA7AXJXONY45",
+      "name": "Strawberry Rose",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "NUZPJLLXN2CW5HHXZJEO2IC2",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Strawberry, jasmine tea, lemonade, and rose. Includes strawberry popping pearls. Sparkling water"
+    },
+    {
+      "id": "FMQGQQSY6VUTJCIMRSDKQUFQ",
+      "name": "CrÃ¨me BrÃ»lÃ©e",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "3H6FJQGTM2E4TLK7GHI2D6AS",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Rich milk tea with brÃ»lÃ©e flavor, topped with cheese foam for a caramelized finish."
+    },
+    {
+      "id": "CADMOUDFCNZP23H3J6LRM272",
+      "name": "Black Sesame",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "JJDUQFU4AX72TDHOIMOTBI5S",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Nutty black sesame milk tea with oolong tea. Dairy-free, contains peanuts."
+    },
+    {
+      "id": "7HOQ5WJR6Q7NLFBM3YA655X4",
+      "name": "Strawberry Milk",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "WGF4IR33TOE22XZ37I64ZXS5",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Fresh strawberry purÃ©e with milk. Smooth, sweet, and refreshing."
+    },
+    {
+      "id": "A5Q6ZR5GEKB3VZAUSYK3JSF7",
+      "name": "Mango Matcha",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "R5JL46FPCW2RWEGHLLCPWQGZ",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Mango purÃ©e layered with matcha and milk. Smooth, earthy, and lightly sweet."
+    },
+    {
+      "id": "Y3IM4R5YLLZ3FBONT6YIMSW7",
+      "name": "(a)  Sm Milk Tea ",
+      "slug": null,
+      "price": 9.99,
+      "priceCents": 999,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "FVIWLAJAANGZLKC25HBYCBJ7",
+          "name": "Regular",
+          "price": 9.99,
+          "priceCents": 999,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Light, refreshing aloe pieces (best with refreshers)"
+    },
+    {
+      "id": "UO2JUDN5DSXE6Y4NXG5QIQCM",
+      "name": "Lychee ",
+      "slug": null,
+      "price": 1,
+      "priceCents": 100,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "XTSB2OXSSJLYMNFOQPTCUUCY",
+          "name": "Regular",
+          "price": 1,
+          "priceCents": 100,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Sweet, floral jelly topping"
+    },
+    {
+      "id": "XKZXOZBGODJVNB5VKRQ3GYAT",
+      "name": "Lemonade",
+      "slug": null,
+      "price": 12.47,
+      "priceCents": 1247,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "IVWGUJH4IRI3X3LQATMQCLPY",
+          "name": "Regular",
+          "price": 12.47,
+          "priceCents": 1247,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "QW7AMSCF6WKT7OO2DMP5HC64",
+      "name": "Juice",
+      "slug": null,
+      "price": 12.99,
+      "priceCents": 1299,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "YPYILKAEWRE44ATC6LRF4STH",
+          "name": "Regular",
+          "price": 12.99,
+          "priceCents": 1299,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "YBS6LGXSQXEWSSJ6KMYNO4GA",
+      "name": "Sea moss",
+      "slug": null,
+      "price": 35.99,
+      "priceCents": 3599,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "GJJBDU5F7TXTWETH5STKJU7A",
+          "name": "Regular",
+          "price": 35.99,
+          "priceCents": 3599,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "NS5APGM7G2QC326BK7I55QJC",
+      "name": "Pineapple Mango Sorbet ",
+      "slug": null,
+      "price": 10,
+      "priceCents": 1000,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "RATBNFO442EVGACHLC4Y3QKX",
+          "name": "Regular",
+          "price": 10,
+          "priceCents": 1000,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "NOD76PUJZP7QRJ2YTHY7S3K5",
+      "name": "Calm waters ",
+      "slug": null,
+      "price": 11.99,
+      "priceCents": 1199,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "UA5MS44OB3ZCNVSEN2JKSG72",
+          "name": "Regular",
+          "price": 11.99,
+          "priceCents": 1199,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Blue Spirulina â¢ Ashwagandha â¢ Sea Moss â¢ Lemon\n\n RELAXATION\n â¢ MENTAL CLARITY\n â¢ ADRENAL HEALTH\n â¢ RECOVERY"
+    },
+    {
+      "id": "SIO6C24GTCLHGBOCJNRHPBF7",
+      "name": "Peach Black Tea",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "34GXW6YFEVGBDZCRJ2OZYWIT",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Description\nFresh brewed black tea with peach, lemonade, and cane sugar. Served over ice."
+    },
+    {
+      "id": "JJEDTLPGJ4Y52ZVNKBCTYANK",
+      "name": "Cucumber Mint Refresher",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "UMUH5T33KILQME2FO72ZSM4O",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Cucumber, mint, ginger, sea moss, agave, and alkaline water. Topped with sparkling water."
+    },
+    {
+      "id": "QCU7NPCZFOVVX27GHTXTIGRJ",
+      "name": "Vitamin Sea Refresher",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "I4GD26NQ5ZUTRLCAUYHDS55L",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Blue spirulina, lemon, sea moss, agave, and alkaline water. Topped with sparkling water."
+    },
+    {
+      "id": "2RLEAM747KGQ6ZULYV3U5P4C",
+      "name": "Red, White & Blueberry",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "XGOBNOAGFSZ27CQSBUVSUIDK",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Caffeine Free. Strawberry purÃ©e, blueberry purÃ©e, almond milk, and fruit syrup. Includes your choice of coconut cream or cold foam."
+    },
+    {
+      "id": "42H3W4ILORABBGGWGBWM7QTS",
+      "name": "Melon Rita ",
+      "slug": null,
+      "price": 11,
+      "priceCents": 1100,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "4ZCIPISYL4VOKAEBVOTYAJOJ",
+          "name": "Regular",
+          "price": 11,
+          "priceCents": 1100,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Watermelon â¢ Strawberry â¢ Lime â¢ Lemon â¢ Agave\n\nâ¢ Hydration â¢ Vitamin C â¢ Antioxidants"
+    },
+    {
+      "id": "F3OXKMV7DFQEWRJI35BRXPRZ",
+      "name": "(a) Tapioca Pearls",
+      "slug": null,
+      "price": 1,
+      "priceCents": 100,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "ZQBYWYSCZMNYB5UG4EYA3XZM",
+          "name": "Regular",
+          "price": 1,
+          "priceCents": 100,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "K5JQEMGJQLJFDB6VYWJJP365",
+      "name": "Thai Tea ",
+      "slug": null,
+      "price": 0.01,
+      "priceCents": 1,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "E5KK52XYOZ7MASKDXIK5D23Y",
+          "name": "Regular",
+          "price": 0.01,
+          "priceCents": 1,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": "Bold, aromatic Thai tea blended with creamy coconut condensed milk for a rich, smooth, lightly spiced finish. Dairy-free."
+    },
+    {
+      "id": "LUGH4ICAEJ6BRC4U3MAJGX7C",
+      "name": "(a) Sm Tea Refresher",
+      "slug": null,
+      "price": 8.99,
+      "priceCents": 899,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "YJR5NBQAIPL4TLH5SS6T4JZ5",
+          "name": "Regular",
+          "price": 8.99,
+          "priceCents": 899,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "W35DXUWTH7URNBW6ZFSDAHNG",
+      "name": "(a) Lg Tea Refresher ",
+      "slug": null,
+      "price": 10.99,
+      "priceCents": 1099,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "WFU7ZP3GMZTJPSXGRJINPGTO",
+          "name": "Regular",
+          "price": 10.99,
+          "priceCents": 1099,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "GGK2ZVKARUOSHABEVPJPXHPQ",
+      "name": "(b) Strawberry Fruit",
+      "slug": null,
+      "price": 0.5,
+      "priceCents": 50,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "KFHFKOJVYKWCN6XUGNESI5DT",
+          "name": "Regular",
+          "price": 0.5,
+          "priceCents": 50,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "NCC7UJPB2AZ5TUEDFMEBIQLU",
+      "name": "(b) Blueberry Fruit",
+      "slug": null,
+      "price": 0.5,
+      "priceCents": 50,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "CUM74FL7PEBS2S7MK4245WGZ",
+          "name": "Regular",
+          "price": 0.5,
+          "priceCents": 50,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "HY4JZLDF7P2TFNXTYKTP45FU",
+      "name": "(b) Kiwi Fruit",
+      "slug": null,
+      "price": 0.5,
+      "priceCents": 50,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "UHWABTH7BEDH56OPBX2FPCU2",
+          "name": "Regular",
+          "price": 0.5,
+          "priceCents": 50,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "XUEOA3GWSGVUH5DPQQFSLEFC",
+      "name": "(b)  Pineapple Fruit",
+      "slug": null,
+      "price": 0.5,
+      "priceCents": 50,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "WL6QSXZGG2JAC47EWMINJD6L",
+          "name": "Regular",
+          "price": 0.5,
+          "priceCents": 50,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "4GVWGZVYYLMQ5ANNEKBVUAMU",
+      "name": "(b) Peach Fruit",
+      "slug": null,
+      "price": 0.5,
+      "priceCents": 50,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "ADZ7EAPU4IZEC3HGCLJTZCJO",
+          "name": "Regular",
+          "price": 0.5,
+          "priceCents": 50,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "U55F7IHXK7GWOGDFR5SQ6XQ2",
+      "name": "(a) Strawberry Pearls",
+      "slug": null,
+      "price": 0.5,
+      "priceCents": 50,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "A46S3BTTPREZWBO54ONGGWZK",
+          "name": "Regular",
+          "price": 0.5,
+          "priceCents": 50,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "CM5KC7WTFTGV4QRYG5ZAZ3HO",
+      "name": "Mango Pearls",
+      "slug": null,
+      "price": 0.5,
+      "priceCents": 50,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "AW265IJMIFNUCH4577IGSQ4A",
+          "name": "Regular",
+          "price": 0.5,
+          "priceCents": 50,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "INJDQ3EX442GM7UZM6QRA3MA",
+      "name": "(a) Add Lemonade",
+      "slug": null,
+      "price": 1,
+      "priceCents": 100,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "TF7EPIXFAPGIHG6BMGIBP7LS",
+          "name": "Regular",
+          "price": 1,
+          "priceCents": 100,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "XY2QUSN37ZPPI5SUTBP2XWKW",
+      "name": "(a) Sm Sweet Tea ",
+      "slug": null,
+      "price": 4.99,
+      "priceCents": 499,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "FDXC7JKZJFIAS5X5EOXT6Y7B",
+          "name": "Regular",
+          "price": 4.99,
+          "priceCents": 499,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    },
+    {
+      "id": "LAIYYTKX6QZA46U2TMEGP6HL",
+      "name": "(a) Lg Sweet Tea ",
+      "slug": null,
+      "price": 6.99,
+      "priceCents": 699,
+      "checkoutReady": null,
+      "inStock": true,
+      "stock": null,
+      "currentStock": null,
+      "variationId": null,
+      "variations": [
+        {
+          "id": "736NHB7EW6XAF44A763G73AI",
+          "name": "Regular",
+          "price": 6.99,
+          "priceCents": 699,
+          "currency": "USD"
+        }
+      ],
+      "ingredients": null,
+      "description": null
+    }
+  ],
+  "markets": null
+}

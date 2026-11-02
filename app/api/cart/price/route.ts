@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { priceCart, CartPricingError } from '@/lib/cart-pricing';
+import {tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
 
 /**
  * Read-only price preview. Uses the same authoritative Mongo catalog pricing
@@ -38,6 +39,28 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if(tursoPreviewSelected()) {
+    try {
+      const {openTursoPreview,priceTursoPreviewVariations}=await import(
+        '@/lib/checkout/turso-preview-runtime.mjs'
+      );
+      const db=await openTursoPreview();
+      const priced=await priceTursoPreviewVariations(db,lines);
+      return NextResponse.json({
+        success:true,
+        pricing:{subtotalCents:priced.subtotalCents,taxCents:0,
+          totalCents:priced.totalCents,currency:'USD'},
+        lines:priced.items.map(item=>({
+          variationId:item.variationId,name:item.name,qty:item.quantity,
+          pricePerItemCents:item.unitPriceCents,lineTotalCents:item.lineTotalCents,
+        })),
+        message:'Prices verified against isolated Turso Preview catalog.',
+      });
+    } catch {
+      return NextResponse.json({success:false,code:'TURSO_PRICE_NOT_CERTIFIED',
+        error:'Catalog price or stock could not be verified.'},{status:503});
+    }
+  }
   try {
     const priced = await priceCart({
       items: lines.map((line) => ({

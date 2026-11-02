@@ -1,0 +1,131 @@
+✔ clone executor rejects production, remote, credentials and mismatched namespace (1.59801ms)
+✔ full and partial refund fixture has one deterministic inventory chain (2.225802ms)
+✔ inventory mismatch, duplicate debit, or unsupported restock blocks before replay (1.03871ms)
+✔ ambiguous dates, duplicate payment, and refund identity corruption block replay (0.670857ms)
+✔ notification evidence cannot be erased or labelled delivered without identity (0.384688ms)
+✔ webhook carryover requires processed provider-object binding and unique event IDs (0.468544ms)
+✔ recovery holds never fabricate a send time for pending or ambiguous notifications (4.836484ms)
+✔ actual source submission time is preserved without becoming a delivery claim (0.21963ms)
+✔ accepted outbox does not fabricate delivery before signed evidence exists (12.94423ms)
+✔ adapter refuses unverified event metadata and invalid provider identity without writes (10.355172ms)
+✔ email.sent means acceptance and never means delivered (9.905257ms)
+✔ delivery binds only to accepted provider identity and preserves the paid order and outbox claim (9.745847ms)
+✔ exact signed-event replay is durable and does not duplicate notification or delivery rows (10.938388ms)
+✔ reusing an event ID with a changed message, recipient, type, time or payload is rejected (15.60046ms)
+✔ event before send acknowledgement is retained and later reconciled by exact message ID (10.216333ms)
+✔ provider retry after acceptance resolves earlier unmatched delivery without sending anything (10.172468ms)
+✔ an uncertain outbox is not promoted or resent by a delivery event (11.007352ms)
+✔ out-of-order acceptance, delay and failure cannot downgrade recorded delivery (9.243763ms)
+✔ bounce and complaint facts remain durable even when delivery or older events arrive later (10.339929ms)
+✔ recipient outcomes remain separate for a staff message (9.65448ms)
+✔ engagement and unsupported event types never fabricate delivery or acceptance (9.959057ms)
+✔ ambiguous multi-recipient and malformed recipient payloads are refused (9.853889ms)
+✔ database constraints forbid one provider message belonging to multiple orders or later rebinding (10.348332ms)
+✔ failure between event receipt and state update rolls back atomically; retry safely completes (15.238446ms)
+✔ canonical payload fingerprint tolerates object-key ordering but not changed content (10.991247ms)
+✔ migration refuses duplicate historical provider bindings rather than silently relabeling them (9.744305ms)
+✔ reads the canonical pickup snapshot by exact ID and stored number without Mongo (15.555793ms)
+✔ unknown order does not become a fallback record and DB failure propagates (9.665928ms)
+✔ paid order without a unique matching capture cannot show payment confirmation (15.047179ms)
+✔ refund state must match the exact payment and cumulative completed refund ledger (9.61467ms)
+✔ malformed prices, hidden fees, corrupt snapshots and ambiguous order numbers block display (53.686551ms)
+(node:28) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+✔ curated copy cannot manufacture inventory or in-stock availability (8.597653ms)
+✔ Blue Lotus $35 provider conflict stays unavailable without hidden repricing (0.615014ms)
+✔ Blue Lotus requires approved variation, matching price, and verified stock (1.035345ms)
+✔ known Pineapple Mango / Vitamin Sea identity conflict cannot become payable (0.133841ms)
+✔ server cart rejects conflicting Blue Lotus price before payment (22.042025ms)
+✔ server cart accepts the approved $36 variant after actual catalog parity (8.65268ms)
+✔ server cart rejects obsolete $10 Strawberry Bliss price (7.172818ms)
+✔ market resolver rejects empty, failed, inactive and guessed location matches (10.701612ms)
+✔ market resolver accepts the exact active operational record (2.235528ms)
+✔ market feed does not advertise fallback pickup locations on database failure (3.372716ms)
+✔ missing provider credentials cannot report notification success (9.266236ms)
+(node:29) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ provider acceptance is recorded separately from confirmed delivery (18.206344ms)
+✔ missing provider acknowledgement cannot mark an email as accepted (7.978393ms)
+✔ provider rejection remains a durable failed attempt (12.491651ms)
+(node:30) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+✔ label POST resolves product identity and redirects to canonical purchase entry with no provider call (75.613873ms)
+✔ caller-controlled redirects and unknown slugs cannot leave the canonical site (14.064013ms)
+✔ malformed forms cannot create charges or require any catalog access (33.86432ms)
+✔ curated or disconnected catalog cannot quote a current sale or allow a payment (12.332492ms)
+✔ label quote requires matching variation cents and verified positive stock (20.153068ms)
+✔ known Vitamin Sea identity conflict cannot redirect to a misnamed payable product (10.761853ms)
+✔ QR page offers canonical discovery without a separate payment form or URL-based paid confirmation (2.095162ms)
+(node:31) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+✔ private order search authenticates before database access (42.714272ms)
+✔ staff search requires explicit market and treats regex syntax literally without empty phone search (2.571161ms)
+✔ Turso search never queries a Mongo fallback (1.946613ms)
+✔ retired hardcoded stock replacement never calls Square, even for an administrator (5.305169ms)
+✔ uncertified refund request cannot change provider, order, or inventory state (4.375792ms)
+✔ missing operational shipping configuration cannot fabricate rates, labels or tracking (10.202113ms)
+✔ configured provider failure still cannot become a flat rate or invented shipment (4.257324ms)
+(node:88) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/364e0b770ed2/Gratog/lib/order-access-token.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /workspace/scratch/364e0b770ed2/Gratog/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ valid scoped token authorizes only its canonical order and customer (2.229339ms)
+✔ identical secret cannot authenticate Preview token in Production or another Preview (0.634212ms)
+✔ Production token does not authorize development or another project (0.53911ms)
+✔ legacy unscoped signature, invalid TTL and unknown environment are rejected (0.491328ms)
+(node:95) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/364e0b770ed2/Gratog/lib/order-access-token.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /workspace/scratch/364e0b770ed2/Gratog/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:95) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(node:95) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+✔ anonymous and malformed-token polling disclose no order data and do not query orders (49.442026ms)
+✔ guest header and signed-link query tokens preserve authorized status polling (7.279132ms)
+✔ a valid credential for another order or email never grants access (6.793092ms)
+✔ a signed owner session grants access but an unrelated JWT with userId admin does not (3.385215ms)
+✔ active administrator reads work and unavailable revalidation returns 503 without order data (5.348302ms)
+✔ a valid guest token does not depend on the Mongo-backed admin service (5.21975ms)
+✔ Turso reads, misses and integrity failures never fall back to Mongo (2.999746ms)
+✔ legacy market tokens bind to stored identities and email rather than URL text alone (2.535599ms)
+✔ both update methods require an active administrator before any write (2.032964ms)
+✔ administrators cannot directly assign or erase payment/refund state through status updates (5.510125ms)
+✔ verified staff can still update every fulfillment status used by the market dashboard (3.254518ms)
+✔ Turso status writes fail closed before either Mongo authentication or order access (2.0104ms)
+✔ malformed payloads and estimated times are rejected without mutation (2.3034ms)
+✔ administrator sessions support both active schemas and refresh the current DB role/email (4.877746ms)
+✔ revoked, missing and downgraded administrator records invalidate an otherwise signed session (2.497781ms)
+✔ administrator verification fails closed with an explicit 503 on database failure (2.794317ms)
+✔ invalid or non-admin JWTs are rejected without looking up administrator records (2.313234ms)
+✔ guest UI sends an access header without putting credentials in polling URLs, and manual-paid controls are removed (0.355844ms)
+✔ legacy staff and customer claims honor persisted recovery holds atomically (3.017171ms)
+✔ legacy owner alert and SMS cannot bypass a persisted staff recovery hold (0.936506ms)
+✔ inline payment and Square webhook customer claims also exclude recovery-held orders (1.95744ms)
+(node:109) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ staff notifications cannot invent an operational recipient (8.470281ms)
+✔ invalid staff routing fails before provider submission (4.775272ms)
+✔ pickup type alone cannot invent a location or Saturday schedule (7.26405ms)
+✔ delivery notification cannot promise unconfigured 24-hour preparation (4.514681ms)
+(node:111) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ authorized Turso receipt reads one canonical record and never touches Mongo (5.726491ms)
+✔ unauthenticated receipt never retrieves private customer data (3.187307ms)
+✔ invalid token cannot return a found order (1.528666ms)
+✔ missing and unavailable Turso orders never fall back to Mongo or disclose errors (6.036827ms)
+✔ authenticated owner can use the same Turso receipt without a guest token (1.934375ms)
+✔ a missing real release attestation ALWAYS blocks production cutover (1.273092ms)
+✔ historical Square provider-only proof cannot substitute for website webhook or email delivery (1.161565ms)
+✔ rejects stale snapshot and a mismatch with the exact promoted source commit (0.2931ms)
+✔ catalog conflict, no real restore drill, or incomplete native application blocks promotion (0.222684ms)
+✔ only a fully evidenced exact SHA with fresh attestation can satisfy the mechanical preflight (0.154292ms)
+ℹ tests 98
+ℹ suites 0
+ℹ pass 98
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 416.328761

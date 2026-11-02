@@ -1,4 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+beforeEach(() => vi.stubEnv('STAFF_EMAIL', 'staff-unit@example.invalid'));
+afterEach(() => vi.unstubAllEnvs());
 
 // ============================================================================
 // Mock setup — must be before imports

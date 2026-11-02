@@ -68,6 +68,7 @@ export const ProductCreateSchema = z.object({
 export const InventoryAdjustmentSchema = z.object({
   adjustment: z.number().int().min(-10000).max(10000),
   reason: z.string().min(1).max(500).optional(),
+  expectedVersion: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER).optional(),
 }).strict();
 
 // ============================================================================

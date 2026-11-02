@@ -249,7 +249,7 @@ export default function RegisterPage() {
           <CardContent>
             {fromReview && (
               <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900">
-                Your review was submitted successfully. Create your account to manage rewards and future reviews.
+                Create an optional account to access your orders. Product review submissions are currently unavailable.
               </div>
             )}
             <form onSubmit={handleSubmit} className="space-y-4">

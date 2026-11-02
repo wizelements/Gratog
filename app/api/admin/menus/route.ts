@@ -6,9 +6,9 @@ export const dynamic = 'force-dynamic';
  */
 
 import { NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin-session';
 import { requireAdminSession } from '@/lib/auth/unified-admin';
 import { logger } from '@/lib/logger';
+import {tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
 import {
   getAllMenus,
   createMenu,
@@ -20,6 +20,7 @@ import {
   createMenuSchema,
   updateMenuSchema,
   deleteMenuSchema,
+  setActiveMenuSchema,
 } from '@/lib/menus/schema';
 
 /**
@@ -27,11 +28,8 @@ import {
  * Fetch all menus for admin dashboard
  */
 export async function GET(request: any) {
-  const session = await requireAdminSession(request);
-  if (!session) return new Response('Unauthorized', { status: 401 });
-
   try {
-    const admin = await requireAdmin(request);
+    const admin = await requireAdminSession(request);
 
     const menus = await getAllMenus();
 
@@ -46,6 +44,7 @@ export async function GET(request: any) {
       count: menus.length,
     });
   } catch (error: any) {
+    if(error.name === 'TursoMenuError')return NextResponse.json({success:false,error:error.code},{status:error.status});
     if (error.name === 'AdminAuthError') {
       return NextResponse.json(
         { success: false, error: error.message },
@@ -66,16 +65,15 @@ export async function GET(request: any) {
  * Create a new menu OR set active menu
  */
 export async function POST(request: any) {
-  const session = await requireAdminSession(request);
-  if (!session) return new Response('Unauthorized', { status: 401 });
-
   try {
-    const admin = await requireAdmin(request);
+    const admin = await requireAdminSession(request);
     const json = await request.json();
 
     // Handle "set active" action
-    if (json.action === 'setActive' && json.menuId) {
-      const menu = await setActiveMenu(json.menuId);
+    if (json.action === 'setActive') {
+      const selection=setActiveMenuSchema.safeParse(json);
+      if(!selection.success)return NextResponse.json({success:false,error:'Invalid menu selection'},{status:400});
+      const menu = await setActiveMenu(selection.data.menuId);
       if (!menu) {
         return NextResponse.json(
           { success: false, error: 'Menu not found' },
@@ -111,7 +109,7 @@ export async function POST(request: any) {
     const menu = await createMenu(parsed.data);
 
     // Enforce single-active: deactivate others when creating an active menu
-    if (parsed.data.isActive) {
+    if (parsed.data.isActive && !tursoPreviewSelected()) {
       await setActiveMenu(menu.id);
     }
 
@@ -126,6 +124,7 @@ export async function POST(request: any) {
       menu,
     });
   } catch (error: any) {
+    if(error.name === 'TursoMenuError')return NextResponse.json({success:false,error:error.code},{status:error.status});
     if (error.name === 'AdminAuthError') {
       return NextResponse.json(
         { success: false, error: error.message },
@@ -146,11 +145,8 @@ export async function POST(request: any) {
  * Update an existing menu
  */
 export async function PUT(request: any) {
-  const session = await requireAdminSession(request);
-  if (!session) return new Response('Unauthorized', { status: 401 });
-
   try {
-    const admin = await requireAdmin(request);
+    const admin = await requireAdminSession(request);
     const json = await request.json();
 
     const parsed = updateMenuSchema.safeParse(json);
@@ -171,7 +167,7 @@ export async function PUT(request: any) {
     const menu = await updateMenu(menuId, updateData);
 
     // Enforce single-active: deactivate others when setting a menu active
-    if (updateData.isActive && menu) {
+    if (updateData.isActive && menu && !tursoPreviewSelected()) {
       await setActiveMenu(menuId);
     }
 
@@ -193,6 +189,7 @@ export async function PUT(request: any) {
       message: 'Menu updated successfully',
     });
   } catch (error: any) {
+    if(error.name === 'TursoMenuError')return NextResponse.json({success:false,error:error.code},{status:error.status});
     if (error.name === 'AdminAuthError') {
       return NextResponse.json(
         { success: false, error: error.message },
@@ -213,11 +210,8 @@ export async function PUT(request: any) {
  * Delete a menu
  */
 export async function DELETE(request: any) {
-  const session = await requireAdminSession(request);
-  if (!session) return new Response('Unauthorized', { status: 401 });
-
   try {
-    const admin = await requireAdmin(request);
+    const admin = await requireAdminSession(request);
     const json = await request.json();
 
     const parsed = deleteMenuSchema.safeParse(json);
@@ -251,9 +245,10 @@ export async function DELETE(request: any) {
 
     return NextResponse.json({
       success: true,
-      message: 'Menu deleted successfully',
+      message: tursoPreviewSelected() ? 'Menu archived; history preserved' : 'Menu deleted successfully',
     });
   } catch (error: any) {
+    if(error.name === 'TursoMenuError')return NextResponse.json({success:false,error:error.code},{status:error.status});
     if (error.name === 'AdminAuthError') {
       return NextResponse.json(
         { success: false, error: error.message },

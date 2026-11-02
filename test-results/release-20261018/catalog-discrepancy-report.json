@@ -1,0 +1,5771 @@
+{
+  "kind": "product-level-current-discrepancy-dispositions",
+  "generatedAt": "2026-10-18T05:01:52.248565+00:00",
+  "codeBaseline": "941c904cec3a76869d95fc1ac66a838e81e92603",
+  "sourceEvidence": [
+    "catalog-production.json",
+    "square-catalog-public.json",
+    "turso-catalog.json"
+  ],
+  "sourceTimestamps": {
+    "production": "2026-10-18T04:57:10.5811257Z",
+    "squarePublic": "2026-10-18T04:57:15.6072047Z",
+    "turso": "2026-10-18"
+  },
+  "limitations": [
+    "Production API is a storefront projection, not independent raw Mongo readback.",
+    "Square-direct API output is from the deployed adapter, not independently authenticated Square administrator readback; pagination and environment identity are not certified.",
+    "Public product text was returned via Windows PowerShell; non-ASCII description text can contain encoding artifacts and is not certified here.",
+    "Turso is isolated staging; a difference from production stock is not alone evidence of a production stock loss.",
+    "No approval for unknown products, sizes, stock, markets or fees was inferred from these snapshots.",
+    "No catalog or stock mutation was performed. No product is production-certified by this comparison.",
+    "Required release dispositions are gate decisions, not claims that each blocked item is already unavailable in the live deployment."
+  ],
+  "counts": {
+    "productionProducts": 33,
+    "squarePublicItems": 69,
+    "tursoProducts": 40,
+    "tursoVariationRows": 44,
+    "unionProductIds": 83,
+    "productsWithFindings": 46,
+    "findingsByType": {
+      "VARIATION_PRICE_MISMATCH": 25,
+      "NEGATIVE_TURSO_STAGING_STOCK": 8,
+      "SQUARE_PLACEHOLDER_PRICE": 15,
+      "NO_SQUARE_ITEM_IN_PUBLIC_SNAPSHOT": 12,
+      "TURSO_IDENTITY_ABSENT_FROM_PUBLIC_SQUARE_SNAPSHOT": 3,
+      "VARIATION_NOT_IN_SQUARE_PUBLIC_SNAPSHOT": 2,
+      "NEGATIVE_PRODUCTION_STOREFRONT_STOCK": 5,
+      "MERCHANT_PRICE_NOT_RECONCILED_WITH_SQUARE": 1,
+      "ITEM_NAME_IDENTITY_CONFLICT": 1,
+      "ITEM_NAME_DIVERGENCE_REQUIRES_REVIEW": 3
+    }
+  },
+  "releaseSafe": false,
+  "products": [
+    {
+      "productId": "2HRYSJY3KPNYKWJXP5FUAYKR",
+      "name": "Elderberry Moss",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "2HRYSJY3KPNYKWJXP5FUAYKR",
+        "name": "Elderberry Moss",
+        "slug": null,
+        "price": 35,
+        "priceCents": 3500,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "NISN4GAH5SBPGKHLU5VTDYLR",
+            "name": "16oz",
+            "price": 35,
+            "priceCents": 3500,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Elderberry Moss Gels combine the natural benefits of sea moss and elderberry to support immune health with ease. This nutrient-rich gel is made with natural ingredients and is simple to incorporate into your daily routine."
+      },
+      "tursoStaging": [
+        {
+          "id": "2HRYSJY3KPNYKWJXP5FUAYKR",
+          "name": "Elderberry Moss",
+          "squareItemId": "2HRYSJY3KPNYKWJXP5FUAYKR",
+          "active": 1,
+          "variationId": "NISN4GAH5SBPGKHLU5VTDYLR",
+          "squareVariationId": "NISN4GAH5SBPGKHLU5VTDYLR",
+          "size": "16oz",
+          "priceCents": 3600,
+          "currency": "USD",
+          "stock": -2,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "NISN4GAH5SBPGKHLU5VTDYLR",
+          "sourceCents": 3600,
+          "squarePublicCents": 3500
+        },
+        {
+          "code": "NEGATIVE_TURSO_STAGING_STOCK",
+          "stock": -2
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "2RLEAM747KGQ6ZULYV3U5P4C",
+      "name": "Red, White & Blueberry",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "2RLEAM747KGQ6ZULYV3U5P4C",
+        "name": "Red, White & Blueberry",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "XGOBNOAGFSZ27CQSBUVSUIDK",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Caffeine Free. Strawberry pur\u00c3\u00a9e, blueberry pur\u00c3\u00a9e, almond milk, and fruit syrup. Includes your choice of coconut cream or cold foam."
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "42H3W4ILORABBGGWGBWM7QTS",
+      "name": "Melon Rita ",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "42H3W4ILORABBGGWGBWM7QTS",
+        "name": "Melon Rita ",
+        "slug": null,
+        "price": 11,
+        "priceCents": 1100,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "4ZCIPISYL4VOKAEBVOTYAJOJ",
+            "name": "Regular",
+            "price": 11,
+            "priceCents": 1100,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Watermelon \u00e2\u0080\u00a2 Strawberry \u00e2\u0080\u00a2 Lime \u00e2\u0080\u00a2 Lemon \u00e2\u0080\u00a2 Agave\n\n\u00e2\u0080\u00a2 Hydration \u00e2\u0080\u00a2 Vitamin C \u00e2\u0080\u00a2 Antioxidants"
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "4GVWGZVYYLMQ5ANNEKBVUAMU",
+      "name": "(b) Peach Fruit",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "4GVWGZVYYLMQ5ANNEKBVUAMU",
+        "name": "(b) Peach Fruit",
+        "slug": null,
+        "price": 0.5,
+        "priceCents": 50,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "ADZ7EAPU4IZEC3HGCLJTZCJO",
+            "name": "Regular",
+            "price": 0.5,
+            "priceCents": 50,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "4JAQVGZ6YYGT2TSK7ETQCUUC",
+      "name": "Horchata",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "4JAQVGZ6YYGT2TSK7ETQCUUC",
+        "name": "Horchata",
+        "slug": null,
+        "price": 5,
+        "priceCents": 500,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "SZC72EPUIGPN5IB6MMXHNPAJ",
+            "name": "Regular",
+            "price": 5,
+            "priceCents": 500,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Horchata"
+      },
+      "tursoStaging": [
+        {
+          "id": "4JAQVGZ6YYGT2TSK7ETQCUUC",
+          "name": "Horchata ",
+          "squareItemId": "4JAQVGZ6YYGT2TSK7ETQCUUC",
+          "active": 1,
+          "variationId": "SZC72EPUIGPN5IB6MMXHNPAJ",
+          "squareVariationId": "SZC72EPUIGPN5IB6MMXHNPAJ",
+          "size": "Regular",
+          "priceCents": 500,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "SNAPSHOT_PARITY_ONLY_NOT_PRODUCTION_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "4Y3FIR4O6R5UE2WTQMIOSSQD",
+      "name": "Strawberry Matcha",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "4Y3FIR4O6R5UE2WTQMIOSSQD",
+        "name": "Strawberry Matcha",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "AHH2BDQXWIWSKXHUZ4VTCVWI",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Real strawberry + ceremonial-style matcha\nFresh \u00e2\u0080\u00a2 creamy \u00e2\u0080\u00a2 lightly sweet"
+      },
+      "tursoStaging": [
+        {
+          "id": "4Y3FIR4O6R5UE2WTQMIOSSQD",
+          "name": "Strawberry Matcha",
+          "squareItemId": "4Y3FIR4O6R5UE2WTQMIOSSQD",
+          "active": 1,
+          "variationId": "AHH2BDQXWIWSKXHUZ4VTCVWI",
+          "squareVariationId": "AHH2BDQXWIWSKXHUZ4VTCVWI",
+          "size": "Regular",
+          "priceCents": 975,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "AHH2BDQXWIWSKXHUZ4VTCVWI",
+          "sourceCents": 975,
+          "squarePublicCents": 1
+        },
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "64KB3MMEF47VXGWT3MBHNNCD",
+      "name": "Grateful Guardian",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "64KB3MMEF47VXGWT3MBHNNCD",
+        "name": "Grateful Guardian",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "LMZ55MRWO2MTCO2V6OTAYBNK",
+            "name": "Regular",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "A tangy-immune powerhouse of elderberry, cranberry, apple, ginger, lemon, echinacea, sea moss, and alkaline water honey\u00e2\u0080\u0094 designed to boost immunity, fight inflammation, support digestion, and deliver 92+ minerals in every sip."
+      },
+      "tursoStaging": [
+        {
+          "id": "64KB3MMEF47VXGWT3MBHNNCD",
+          "name": "Grateful Guardian",
+          "squareItemId": "64KB3MMEF47VXGWT3MBHNNCD",
+          "active": 1,
+          "variationId": "LMZ55MRWO2MTCO2V6OTAYBNK",
+          "squareVariationId": "LMZ55MRWO2MTCO2V6OTAYBNK",
+          "size": "Regular",
+          "priceCents": 1199,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "SNAPSHOT_PARITY_ONLY_NOT_PRODUCTION_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "656N3Q4B7FX25MKSVPJ6XWEE",
+      "name": "Strawberry Rose Lemonade",
+      "sources": [
+        "production",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "656N3Q4B7FX25MKSVPJ6XWEE",
+        "name": "Strawberry Rose Lemonade",
+        "slug": "strawberry-rose-lemonade",
+        "price": 9,
+        "priceCents": 900,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": 0,
+        "currentStock": 0,
+        "variationId": "RBACXLQMEPFZVLHMCNUUSOR3",
+        "variations": [
+          {
+            "id": "RBACXLQMEPFZVLHMCNUUSOR3",
+            "name": "Regular",
+            "sku": "6415368",
+            "price": 9,
+            "priceCents": 900,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "lemon",
+            "icon": "\u00f0\u009f\u008d\u008b",
+            "benefits": [
+              "vitamin C",
+              "alkalizing"
+            ]
+          },
+          {
+            "name": "lemonade",
+            "icon": "\u00f0\u009f\u008d\u008b",
+            "benefits": [
+              "hydration",
+              "refreshing",
+              "vitamin C"
+            ]
+          },
+          {
+            "name": "strawberry",
+            "icon": "\u00f0\u009f\u008d\u0093",
+            "benefits": [
+              "vitamin C",
+              "heart health",
+              "antioxidants"
+            ]
+          }
+        ],
+        "description": "Premium Strawberry Rose Lemonade"
+      },
+      "squarePublicReadback": null,
+      "tursoStaging": [
+        {
+          "id": "656N3Q4B7FX25MKSVPJ6XWEE",
+          "name": "Strawberry Rose Lemonade ",
+          "squareItemId": "656N3Q4B7FX25MKSVPJ6XWEE",
+          "active": 1,
+          "variationId": "RBACXLQMEPFZVLHMCNUUSOR3",
+          "squareVariationId": "RBACXLQMEPFZVLHMCNUUSOR3",
+          "size": "Regular",
+          "priceCents": 900,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NO_SQUARE_ITEM_IN_PUBLIC_SNAPSHOT",
+          "checkoutReady": true,
+          "inStock": false,
+          "stock": 0
+        },
+        {
+          "code": "TURSO_IDENTITY_ABSENT_FROM_PUBLIC_SQUARE_SNAPSHOT"
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "677FQMNVB622QS33PSGSG7FM",
+      "name": "Rejuvenate",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "677FQMNVB622QS33PSGSG7FM",
+        "name": "Rejuvenate",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "6O5PPMQYIXGZSW7RRLPF2TXM",
+            "name": "16oz",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Grapefruit, orange, turmeric, key lime, cayenne, ginger, chia seeds, sea moss. maple, alkaline water\n\u00e2\u0086\u0092 Full-body cleanse, metabolism booster, joint and immune support"
+      },
+      "tursoStaging": [
+        {
+          "id": "677FQMNVB622QS33PSGSG7FM",
+          "name": "Rejuvenate",
+          "squareItemId": "677FQMNVB622QS33PSGSG7FM",
+          "active": 1,
+          "variationId": "6O5PPMQYIXGZSW7RRLPF2TXM",
+          "squareVariationId": "6O5PPMQYIXGZSW7RRLPF2TXM",
+          "size": "16oz",
+          "priceCents": 1199,
+          "currency": "USD",
+          "stock": 2,
+          "stockActive": 1
+        },
+        {
+          "id": "677FQMNVB622QS33PSGSG7FM",
+          "name": "Rejuvenate",
+          "squareItemId": "677FQMNVB622QS33PSGSG7FM",
+          "active": 1,
+          "variationId": "AAKLBQK34WOTK3GQ34ZOUBGY",
+          "squareVariationId": "AAKLBQK34WOTK3GQ34ZOUBGY",
+          "size": "128oz",
+          "priceCents": 0,
+          "currency": "USD",
+          "stock": 2,
+          "stockActive": 1
+        },
+        {
+          "id": "677FQMNVB622QS33PSGSG7FM",
+          "name": "Rejuvenate",
+          "squareItemId": "677FQMNVB622QS33PSGSG7FM",
+          "active": 1,
+          "variationId": "YG5L2VW6NHL4XAMK6WKFBSDK",
+          "squareVariationId": "YG5L2VW6NHL4XAMK6WKFBSDK",
+          "size": "64oz",
+          "priceCents": 0,
+          "currency": "USD",
+          "stock": 2,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "VARIATION_NOT_IN_SQUARE_PUBLIC_SNAPSHOT",
+          "source": "tursoStaging",
+          "variationId": "AAKLBQK34WOTK3GQ34ZOUBGY"
+        },
+        {
+          "code": "VARIATION_NOT_IN_SQUARE_PUBLIC_SNAPSHOT",
+          "source": "tursoStaging",
+          "variationId": "YG5L2VW6NHL4XAMK6WKFBSDK"
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "7HOQ5WJR6Q7NLFBM3YA655X4",
+      "name": "Strawberry Milk",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "7HOQ5WJR6Q7NLFBM3YA655X4",
+        "name": "Strawberry Milk",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "WGF4IR33TOE22XZ37I64ZXS5",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Fresh strawberry pur\u00c3\u00a9e with milk. Smooth, sweet, and refreshing."
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "7I3YYV2OVJP2KA7AXJXONY45",
+      "name": "Strawberry Rose",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "7I3YYV2OVJP2KA7AXJXONY45",
+        "name": "Strawberry Rose",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "NUZPJLLXN2CW5HHXZJEO2IC2",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Strawberry, jasmine tea, lemonade, and rose. Includes strawberry popping pearls. Sparkling water"
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "A5Q6ZR5GEKB3VZAUSYK3JSF7",
+      "name": "Mango Matcha",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "A5Q6ZR5GEKB3VZAUSYK3JSF7",
+        "name": "Mango Matcha",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "R5JL46FPCW2RWEGHLLCPWQGZ",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Mango pur\u00c3\u00a9e layered with matcha and milk. Smooth, earthy, and lightly sweet."
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "BF6RUOUX2DOOYPDWBJK4UKA7",
+      "name": "Berry Zinger",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "BF6RUOUX2DOOYPDWBJK4UKA7",
+        "name": "Berry Zinger",
+        "slug": null,
+        "price": 12.99,
+        "priceCents": 1299,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "JHMQDVEWFPTU25PR3T5D27SN",
+            "name": "Regular",
+            "price": 12.99,
+            "priceCents": 1299,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [
+        {
+          "id": "BF6RUOUX2DOOYPDWBJK4UKA7",
+          "name": "Berry Zinger ",
+          "squareItemId": "BF6RUOUX2DOOYPDWBJK4UKA7",
+          "active": 1,
+          "variationId": "JHMQDVEWFPTU25PR3T5D27SN",
+          "squareVariationId": "JHMQDVEWFPTU25PR3T5D27SN",
+          "size": "Regular",
+          "priceCents": 1299,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "SNAPSHOT_PARITY_ONLY_NOT_PRODUCTION_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "BS6VUA5YSOINBLAWSXSBXBZF",
+      "name": "Golden Glow Gel",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "BS6VUA5YSOINBLAWSXSBXBZF",
+        "name": "Golden Glow Gel",
+        "slug": "golden-glow-gel",
+        "price": 36,
+        "priceCents": 3600,
+        "checkoutReady": true,
+        "inStock": true,
+        "stock": 2,
+        "currentStock": 2,
+        "variationId": "MLQ3AWX6G7CUAMMRRT7N5BDN",
+        "variations": [
+          {
+            "id": "MLQ3AWX6G7CUAMMRRT7N5BDN",
+            "name": "16oz",
+            "sku": "289527X",
+            "price": 36,
+            "priceCents": 3600,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Sea Moss",
+            "benefits": []
+          },
+          {
+            "name": "Pineapple",
+            "benefits": []
+          },
+          {
+            "name": "Orange",
+            "benefits": []
+          },
+          {
+            "name": "Turmeric",
+            "benefits": []
+          },
+          {
+            "name": "Ginger",
+            "benefits": []
+          },
+          {
+            "name": "Local Honey",
+            "benefits": []
+          },
+          {
+            "name": "Alkaline Water",
+            "benefits": []
+          }
+        ],
+        "description": "Pineapple, orange, turmeric, ginger, honey, and sea moss in a golden gel."
+      },
+      "squarePublicReadback": {
+        "id": "BS6VUA5YSOINBLAWSXSBXBZF",
+        "name": "Golden Glow Gel",
+        "slug": null,
+        "price": 35,
+        "priceCents": 3500,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "MLQ3AWX6G7CUAMMRRT7N5BDN",
+            "name": "16oz",
+            "price": 35,
+            "priceCents": 3500,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Ingredients: Pineapple, Orange, Turmeric, Ginger, Local Honey, Alkaline Water\n\nBENEFITS\n\u00e2\u0080\u00a2 Reduces inflammation & joint pain\n\u00e2\u0080\u00a2 Supports immunity & digestion\n\u00e2\u0080\u00a2 Promotes radiant skin & circulation\n\u00e2\u0080\u00a2 Aids recovery & natural detox"
+      },
+      "tursoStaging": [
+        {
+          "id": "BS6VUA5YSOINBLAWSXSBXBZF",
+          "name": "Golden Glow Gel",
+          "squareItemId": "BS6VUA5YSOINBLAWSXSBXBZF",
+          "active": 1,
+          "variationId": "MLQ3AWX6G7CUAMMRRT7N5BDN",
+          "squareVariationId": "MLQ3AWX6G7CUAMMRRT7N5BDN",
+          "size": "16oz",
+          "priceCents": 3600,
+          "currency": "USD",
+          "stock": 2,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "production",
+          "variationId": "MLQ3AWX6G7CUAMMRRT7N5BDN",
+          "sourceCents": 3600,
+          "squarePublicCents": 3500
+        },
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "MLQ3AWX6G7CUAMMRRT7N5BDN",
+          "sourceCents": 3600,
+          "squarePublicCents": 3500
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "C4JJID2WE3IUAS6DQJVW2Z3M",
+      "name": "(a)  LG Milk Tea ",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "C4JJID2WE3IUAS6DQJVW2Z3M",
+        "name": "(a)  LG Milk Tea ",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "UU4TTM37N6UITRFECQR2YNCG",
+            "name": "Regular",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "CADMOUDFCNZP23H3J6LRM272",
+      "name": "Black Sesame",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "CADMOUDFCNZP23H3J6LRM272",
+        "name": "Black Sesame",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "JJDUQFU4AX72TDHOIMOTBI5S",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Nutty black sesame milk tea with oolong tea. Dairy-free, contains peanuts."
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "CIEYXH3G7FHAST6DLWMCFYS5",
+      "name": "Calm Waters",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "CIEYXH3G7FHAST6DLWMCFYS5",
+        "name": "Calm Waters",
+        "slug": "calm-waters",
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": true,
+        "inStock": true,
+        "stock": 30,
+        "currentStock": 30,
+        "variationId": "H2DTZPLPJRMKYZIOAUWENWIR",
+        "variations": [
+          {
+            "id": "H2DTZPLPJRMKYZIOAUWENWIR",
+            "name": "Regular",
+            "sku": "6876012",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Blue Spirulina",
+            "benefits": []
+          },
+          {
+            "name": "Lemon",
+            "benefits": []
+          },
+          {
+            "name": "Ashwagandha",
+            "benefits": []
+          },
+          {
+            "name": "Celtic Salt",
+            "benefits": []
+          },
+          {
+            "name": "Agave",
+            "benefits": []
+          }
+        ],
+        "description": "Blue spirulina, lemon, ashwagandha, Celtic salt, and agave in a bright botanical lemonade."
+      },
+      "squarePublicReadback": {
+        "id": "CIEYXH3G7FHAST6DLWMCFYS5",
+        "name": "Calm Waters",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "H2DTZPLPJRMKYZIOAUWENWIR",
+            "name": "Regular",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Blue Spirulina \u00c2\u00b7 Lemon \u00c2\u00b7 Ashwagandha \u00c2\u00b7 Celtic Salt \u00c2\u00b7 Agave\nFocus: Stress response support"
+      },
+      "tursoStaging": [
+        {
+          "id": "CIEYXH3G7FHAST6DLWMCFYS5",
+          "name": "Calm Waters",
+          "squareItemId": "CIEYXH3G7FHAST6DLWMCFYS5",
+          "active": 1,
+          "variationId": "H2DTZPLPJRMKYZIOAUWENWIR",
+          "squareVariationId": "H2DTZPLPJRMKYZIOAUWENWIR",
+          "size": "Regular",
+          "priceCents": 1199,
+          "currency": "USD",
+          "stock": 30,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": {
+        "name": "Calm Waters",
+        "ingredients": [
+          "Blue Spirulina",
+          "Lemon",
+          "Ashwagandha",
+          "Celtic Salt",
+          "Agave"
+        ]
+      },
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "SNAPSHOT_PARITY_ONLY_NOT_PRODUCTION_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "CM5KC7WTFTGV4QRYG5ZAZ3HO",
+      "name": "Mango Pearls",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "CM5KC7WTFTGV4QRYG5ZAZ3HO",
+        "name": "Mango Pearls",
+        "slug": null,
+        "price": 0.5,
+        "priceCents": 50,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "AW265IJMIFNUCH4577IGSQ4A",
+            "name": "Regular",
+            "price": 0.5,
+            "priceCents": 50,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "CN4ZZMMCI2ZTIMU56X7DFHNJ",
+      "name": "Supplemint",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "CN4ZZMMCI2ZTIMU56X7DFHNJ",
+        "name": "Supplemint",
+        "slug": "supplemint",
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": true,
+        "inStock": true,
+        "stock": 36,
+        "currentStock": 36,
+        "variationId": "XHR54S6JWGZJC5HDPGSGSK2L",
+        "variations": [
+          {
+            "id": "XHR54S6JWGZJC5HDPGSGSK2L",
+            "name": "Regular",
+            "sku": "7506544",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Mint",
+            "benefits": []
+          },
+          {
+            "name": "Ginger",
+            "benefits": []
+          },
+          {
+            "name": "Sea Moss",
+            "benefits": []
+          },
+          {
+            "name": "Agave",
+            "benefits": []
+          },
+          {
+            "name": "Alkaline Water",
+            "benefits": []
+          }
+        ],
+        "description": "Cool mint, ginger, sea moss, agave, and alkaline water in a crisp weekly lemonade."
+      },
+      "squarePublicReadback": {
+        "id": "CN4ZZMMCI2ZTIMU56X7DFHNJ",
+        "name": "SuppleMint",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "XHR54S6JWGZJC5HDPGSGSK2L",
+            "name": "Regular",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Mint, ginger, agave, sea moss, alkaline water\n\u00e2\u0086\u0092 Refreshing detox, aids digestion, reduces nausea, clears sinuses"
+      },
+      "tursoStaging": [
+        {
+          "id": "CN4ZZMMCI2ZTIMU56X7DFHNJ",
+          "name": "SuppleMint",
+          "squareItemId": "CN4ZZMMCI2ZTIMU56X7DFHNJ",
+          "active": 1,
+          "variationId": "XHR54S6JWGZJC5HDPGSGSK2L",
+          "squareVariationId": "XHR54S6JWGZJC5HDPGSGSK2L",
+          "size": "Regular",
+          "priceCents": 1199,
+          "currency": "USD",
+          "stock": 36,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "SNAPSHOT_PARITY_ONLY_NOT_PRODUCTION_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "CRH72FI2JOGIOCZBWGD5YBWK",
+      "name": "Peach Lemonade",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "CRH72FI2JOGIOCZBWGD5YBWK",
+        "name": "Peach Lemonade",
+        "slug": "peach-lemonade",
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": -1,
+        "currentStock": -1,
+        "variationId": "NGUVDKZZZMSK6N6VRXRG37HJ",
+        "variations": [
+          {
+            "id": "NGUVDKZZZMSK6N6VRXRG37HJ",
+            "name": "Regular",
+            "sku": "3618231",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Peach",
+            "benefits": []
+          },
+          {
+            "name": "Lemon",
+            "benefits": []
+          },
+          {
+            "name": "Ginger",
+            "benefits": []
+          },
+          {
+            "name": "Sea Moss",
+            "benefits": []
+          },
+          {
+            "name": "Agave",
+            "benefits": []
+          },
+          {
+            "name": "Alkaline Water",
+            "benefits": []
+          }
+        ],
+        "description": "Georgia peach, lemon, ginger, sea moss, and agave in a seasonal lemonade."
+      },
+      "squarePublicReadback": {
+        "id": "CRH72FI2JOGIOCZBWGD5YBWK",
+        "name": "Peach Lemonade",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "NGUVDKZZZMSK6N6VRXRG37HJ",
+            "name": "Regular",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Peach, ginger, lemon, lemon balm, agave, sea moss, alkaline water\n\u00e2\u0086\u0092 Calms the nervous system, supports digestion, relieves bloating"
+      },
+      "tursoStaging": [
+        {
+          "id": "CRH72FI2JOGIOCZBWGD5YBWK",
+          "name": "Peach Lemonade",
+          "squareItemId": "CRH72FI2JOGIOCZBWGD5YBWK",
+          "active": 1,
+          "variationId": "NGUVDKZZZMSK6N6VRXRG37HJ",
+          "squareVariationId": "NGUVDKZZZMSK6N6VRXRG37HJ",
+          "size": "Regular",
+          "priceCents": 1199,
+          "currency": "USD",
+          "stock": -1,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NEGATIVE_PRODUCTION_STOREFRONT_STOCK",
+          "stock": -1
+        },
+        {
+          "code": "NEGATIVE_TURSO_STAGING_STOCK",
+          "stock": -1
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "CZSNPKEFYVWMVLOGVQFTKYV6",
+      "name": "Boba",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "CZSNPKEFYVWMVLOGVQFTKYV6",
+        "name": "Boba",
+        "slug": null,
+        "price": 1,
+        "priceCents": 100,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "HKQWIZKTUX6WTOPW626B5KE5",
+            "name": "Regular",
+            "price": 1,
+            "priceCents": 100,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Boba"
+      },
+      "tursoStaging": [
+        {
+          "id": "CZSNPKEFYVWMVLOGVQFTKYV6",
+          "name": "Boba",
+          "squareItemId": "CZSNPKEFYVWMVLOGVQFTKYV6",
+          "active": 1,
+          "variationId": "HKQWIZKTUX6WTOPW626B5KE5",
+          "squareVariationId": "HKQWIZKTUX6WTOPW626B5KE5",
+          "size": "Regular",
+          "priceCents": 150,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "HKQWIZKTUX6WTOPW626B5KE5",
+          "sourceCents": 150,
+          "squarePublicCents": 100
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "DOBEU7ZFRXWQB6VSECMNLMXL",
+      "name": "Always Pursue Gratitude",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "DOBEU7ZFRXWQB6VSECMNLMXL",
+        "name": "Always Pursue Gratitude",
+        "slug": "always-pursue-gratitude",
+        "price": 13.99,
+        "priceCents": 1399,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": 0,
+        "currentStock": 0,
+        "variationId": "WFUWO7VQM4BDOYPEBPENPAMP",
+        "variations": [
+          {
+            "id": "WFUWO7VQM4BDOYPEBPENPAMP",
+            "name": "Regular",
+            "sku": null,
+            "price": 13.99,
+            "priceCents": 1399,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "sea moss",
+            "icon": "\u00f0\u009f\u008c\u008a",
+            "benefits": [
+              "92 essential minerals"
+            ]
+          },
+          {
+            "name": "pineapple",
+            "icon": "\u00f0\u009f\u008d\u008d",
+            "benefits": [
+              "vitamin C",
+              "digestion"
+            ]
+          },
+          {
+            "name": "ginger",
+            "icon": "\u00f0\u009f\u00ab\u009a",
+            "benefits": [
+              "digestion",
+              "nausea relief",
+              "immunity"
+            ]
+          },
+          {
+            "name": "lemon",
+            "icon": "\u00f0\u009f\u008d\u008b",
+            "benefits": [
+              "vitamin C",
+              "alkalizing"
+            ]
+          },
+          {
+            "name": "apple",
+            "icon": "\u00f0\u009f\u008d\u008e",
+            "benefits": [
+              "fiber",
+              "heart health",
+              "hydration"
+            ]
+          }
+        ],
+        "description": "Apple, pineapple, ginger, lemon, sea moss\n\u00e2\u0086\u0092 Aids digestion, boosts immunity, supports skin health"
+      },
+      "squarePublicReadback": {
+        "id": "DOBEU7ZFRXWQB6VSECMNLMXL",
+        "name": "Always Pursue Gratitude",
+        "slug": null,
+        "price": 12.99,
+        "priceCents": 1299,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "WFUWO7VQM4BDOYPEBPENPAMP",
+            "name": "Regular",
+            "price": 12.99,
+            "priceCents": 1299,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Apple, pineapple, ginger, lemon, sea moss\n\u00e2\u0086\u0092 Aids digestion, boosts immunity, supports skin health"
+      },
+      "tursoStaging": [
+        {
+          "id": "DOBEU7ZFRXWQB6VSECMNLMXL",
+          "name": "Always Pursue Gratitude ",
+          "squareItemId": "DOBEU7ZFRXWQB6VSECMNLMXL",
+          "active": 1,
+          "variationId": "WFUWO7VQM4BDOYPEBPENPAMP",
+          "squareVariationId": "WFUWO7VQM4BDOYPEBPENPAMP",
+          "size": "Regular",
+          "priceCents": 1399,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "production",
+          "variationId": "WFUWO7VQM4BDOYPEBPENPAMP",
+          "sourceCents": 1399,
+          "squarePublicCents": 1299
+        },
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "WFUWO7VQM4BDOYPEBPENPAMP",
+          "sourceCents": 1399,
+          "squarePublicCents": 1299
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "DSROEB4HMZK63V7IGBH6SSJH",
+      "name": "Blue Lotus",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "DSROEB4HMZK63V7IGBH6SSJH",
+        "name": "Blue Lotus",
+        "slug": "blue-lotus",
+        "price": 36,
+        "priceCents": 3600,
+        "checkoutReady": false,
+        "inStock": false,
+        "stock": -6,
+        "currentStock": -6,
+        "variationId": "QIX6D5PRQKX4TKEMTQUJPZUX",
+        "variations": [
+          {
+            "id": "QIX6D5PRQKX4TKEMTQUJPZUX",
+            "name": "16oz",
+            "sku": "W744075",
+            "price": 36,
+            "priceCents": 3600,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Sea Moss",
+            "benefits": []
+          },
+          {
+            "name": "Blue Spirulina",
+            "benefits": []
+          },
+          {
+            "name": "Blue Lotus",
+            "benefits": []
+          },
+          {
+            "name": "Ashwagandha",
+            "benefits": []
+          },
+          {
+            "name": "Maca Root",
+            "benefits": []
+          },
+          {
+            "name": "Ginger",
+            "benefits": []
+          },
+          {
+            "name": "Agave",
+            "benefits": []
+          },
+          {
+            "name": "Alkaline Water",
+            "benefits": []
+          }
+        ],
+        "description": "A blue sea moss gel with blue spirulina, blue lotus, ginger, agave, and root ingredients."
+      },
+      "squarePublicReadback": {
+        "id": "DSROEB4HMZK63V7IGBH6SSJH",
+        "name": "Blue Lotus",
+        "slug": null,
+        "price": 35,
+        "priceCents": 3500,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "QIX6D5PRQKX4TKEMTQUJPZUX",
+            "name": "16oz",
+            "price": 35,
+            "priceCents": 3500,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Ingredients: Blue Spirulina, Horny Goat Weed, Ashwagandha, Maca Root, Ginger, Agave\n\nBENEFITS\n\u00e2\u0080\u00a2 Supports hormonal balance & libido\n\u00e2\u0080\u00a2 Promotes focus & calm energy\n\u00e2\u0080\u00a2 Reduces stress & anxiety naturally\n\u00e2\u0080\u00a2 Boosts endurance & overall vitality"
+      },
+      "tursoStaging": [
+        {
+          "id": "DSROEB4HMZK63V7IGBH6SSJH",
+          "name": "Blue Lotus",
+          "squareItemId": "DSROEB4HMZK63V7IGBH6SSJH",
+          "active": 1,
+          "variationId": "QIX6D5PRQKX4TKEMTQUJPZUX",
+          "squareVariationId": "QIX6D5PRQKX4TKEMTQUJPZUX",
+          "size": "16oz",
+          "priceCents": 3600,
+          "currency": "USD",
+          "stock": -6,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": {
+        "name": "Blue Lotus",
+        "priceCents": 3600,
+        "sizes": [
+          "16oz"
+        ]
+      },
+      "findings": [
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "production",
+          "variationId": "QIX6D5PRQKX4TKEMTQUJPZUX",
+          "sourceCents": 3600,
+          "squarePublicCents": 3500
+        },
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "QIX6D5PRQKX4TKEMTQUJPZUX",
+          "sourceCents": 3600,
+          "squarePublicCents": 3500
+        },
+        {
+          "code": "NEGATIVE_PRODUCTION_STOREFRONT_STOCK",
+          "stock": -6
+        },
+        {
+          "code": "NEGATIVE_TURSO_STAGING_STOCK",
+          "stock": -6
+        },
+        {
+          "code": "MERCHANT_PRICE_NOT_RECONCILED_WITH_SQUARE",
+          "approvedCents": 3600
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "F2YVC7OVRYJU575JXROKFHFT",
+      "name": "Pineapple Mango Lemonade",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "F2YVC7OVRYJU575JXROKFHFT",
+        "name": "Pineapple Mango Lemonade",
+        "slug": "pineapple-mango-lemonade",
+        "price": 9,
+        "priceCents": 900,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": 0,
+        "currentStock": 0,
+        "variationId": "4YFOIFCPUXTDKDA5DU2LLQ2G",
+        "variations": [
+          {
+            "id": "4YFOIFCPUXTDKDA5DU2LLQ2G",
+            "name": "Regular",
+            "sku": "5504418",
+            "price": 9,
+            "priceCents": 900,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "pineapple",
+            "icon": "\u00f0\u009f\u008d\u008d",
+            "benefits": [
+              "vitamin C",
+              "digestion"
+            ]
+          },
+          {
+            "name": "lemon",
+            "icon": "\u00f0\u009f\u008d\u008b",
+            "benefits": [
+              "vitamin C",
+              "alkalizing"
+            ]
+          },
+          {
+            "name": "lemonade",
+            "icon": "\u00f0\u009f\u008d\u008b",
+            "benefits": [
+              "hydration",
+              "refreshing",
+              "vitamin C"
+            ]
+          },
+          {
+            "name": "mango",
+            "icon": "\u00f0\u009f\u00a5\u00ad",
+            "benefits": [
+              "vitamin C",
+              "digestion",
+              "immunity"
+            ]
+          },
+          {
+            "name": "apple",
+            "icon": "\u00f0\u009f\u008d\u008e",
+            "benefits": [
+              "fiber",
+              "heart health",
+              "hydration"
+            ]
+          }
+        ],
+        "description": "Premium Pineapple Mango Lemonade"
+      },
+      "squarePublicReadback": {
+        "id": "F2YVC7OVRYJU575JXROKFHFT",
+        "name": "Vitamin Sea",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "4YFOIFCPUXTDKDA5DU2LLQ2G",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Pineapple, jasmine tea, lemonade, and blue spirulina. Includes mango popping pearls Sparkling water"
+      },
+      "tursoStaging": [
+        {
+          "id": "F2YVC7OVRYJU575JXROKFHFT",
+          "name": "Pineapple Mango Lemonade ",
+          "squareItemId": "F2YVC7OVRYJU575JXROKFHFT",
+          "active": 1,
+          "variationId": "4YFOIFCPUXTDKDA5DU2LLQ2G",
+          "squareVariationId": "4YFOIFCPUXTDKDA5DU2LLQ2G",
+          "size": "Regular",
+          "priceCents": 900,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "ITEM_NAME_IDENTITY_CONFLICT",
+          "values": {
+            "production": "pineapple mango lemonade",
+            "squarePublic": "vitamin sea",
+            "tursoStaging": "pineapple mango lemonade"
+          }
+        },
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "production",
+          "variationId": "4YFOIFCPUXTDKDA5DU2LLQ2G",
+          "sourceCents": 900,
+          "squarePublicCents": 1
+        },
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "4YFOIFCPUXTDKDA5DU2LLQ2G",
+          "sourceCents": 900,
+          "squarePublicCents": 1
+        },
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_IDENTITY_CONFLICT_DO_NOT_MERGE_BY_NAME",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "F3OXKMV7DFQEWRJI35BRXPRZ",
+      "name": "(a) Tapioca Pearls",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "F3OXKMV7DFQEWRJI35BRXPRZ",
+        "name": "(a) Tapioca Pearls",
+        "slug": null,
+        "price": 1,
+        "priceCents": 100,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "ZQBYWYSCZMNYB5UG4EYA3XZM",
+            "name": "Regular",
+            "price": 1,
+            "priceCents": 100,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "FMQGQQSY6VUTJCIMRSDKQUFQ",
+      "name": "Cr\u00c3\u00a8me Br\u00c3\u00bbl\u00c3\u00a9e",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "FMQGQQSY6VUTJCIMRSDKQUFQ",
+        "name": "Cr\u00c3\u00a8me Br\u00c3\u00bbl\u00c3\u00a9e",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "3H6FJQGTM2E4TLK7GHI2D6AS",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Rich milk tea with br\u00c3\u00bbl\u00c3\u00a9e flavor, topped with cheese foam for a caramelized finish."
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "GFSY4S76P5X5UV6EH5ZYC7W7",
+      "name": "Pineapple Mango Lemonade",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "GFSY4S76P5X5UV6EH5ZYC7W7",
+        "name": "Pineapple Mango Lemonade",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "6SSWAUSIEJIMPMXODY3DKKMI",
+            "name": "Regular",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "A tropical blend of pineapple, mango, turmeric and lemon with ginger, sea moss, agave, and alkaline water \u00e2\u0080\u0094 Packed with Vitamin C, digestive enzymes, and 92+ essential minerals, this tropical blend supports immunity, gut health, energy, hydration, and inflammation relief \u00e2\u0080\u0094 all in one refreshing sip."
+      },
+      "tursoStaging": [
+        {
+          "id": "GFSY4S76P5X5UV6EH5ZYC7W7",
+          "name": "Pineapple Mango Lemonade",
+          "squareItemId": "GFSY4S76P5X5UV6EH5ZYC7W7",
+          "active": 1,
+          "variationId": "6SSWAUSIEJIMPMXODY3DKKMI",
+          "squareVariationId": "6SSWAUSIEJIMPMXODY3DKKMI",
+          "size": "Regular",
+          "priceCents": 1199,
+          "currency": "USD",
+          "stock": 5,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "SNAPSHOT_PARITY_ONLY_NOT_PRODUCTION_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "GGFFU35UI5TCMORHXHU56ZZ7",
+      "name": "Golden Glow",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "GGFFU35UI5TCMORHXHU56ZZ7",
+        "name": "Golden Glow",
+        "slug": "golden-glow",
+        "price": 12.99,
+        "priceCents": 1299,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": 0,
+        "currentStock": 0,
+        "variationId": "KZR54XNQOXDMY74UXOHRH242",
+        "variations": [
+          {
+            "id": "KZR54XNQOXDMY74UXOHRH242",
+            "name": "Regular",
+            "sku": "1356784",
+            "price": 12.99,
+            "priceCents": 1299,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "pineapple",
+            "icon": "\u00f0\u009f\u008d\u008d",
+            "benefits": [
+              "vitamin C",
+              "digestion"
+            ]
+          },
+          {
+            "name": "turmeric",
+            "icon": "\u00f0\u009f\u008c\u009f",
+            "benefits": [
+              "antioxidants",
+              "brain health"
+            ]
+          },
+          {
+            "name": "ginger",
+            "icon": "\u00f0\u009f\u00ab\u009a",
+            "benefits": [
+              "digestion",
+              "nausea relief",
+              "immunity"
+            ]
+          },
+          {
+            "name": "lemon",
+            "icon": "\u00f0\u009f\u008d\u008b",
+            "benefits": [
+              "vitamin C",
+              "alkalizing"
+            ]
+          },
+          {
+            "name": "cayenne",
+            "icon": "\u00f0\u009f\u008c\u00b6\u00ef\u00b8\u008f",
+            "benefits": [
+              "metabolism",
+              "circulation",
+              "pain relief"
+            ]
+          },
+          {
+            "name": "apple",
+            "icon": "\u00f0\u009f\u008d\u008e",
+            "benefits": [
+              "fiber",
+              "heart health",
+              "hydration"
+            ]
+          },
+          {
+            "name": "orange",
+            "icon": "\u00f0\u009f\u008d\u008a",
+            "benefits": [
+              "vitamin C",
+              "immunity",
+              "hydration"
+            ]
+          }
+        ],
+        "description": "Golden\nCarrot \u00c2\u00b7 Orange \u00c2\u00b7 Pineapple \u00c2\u00b7 Ginger \u00c2\u00b7 Turmeric \u00c2\u00b7 Cayenne \u00c2\u00b7 Lemon\nFocus: Circulation support"
+      },
+      "squarePublicReadback": {
+        "id": "GGFFU35UI5TCMORHXHU56ZZ7",
+        "name": "Golden Glow",
+        "slug": null,
+        "price": 12.99,
+        "priceCents": 1299,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "KZR54XNQOXDMY74UXOHRH242",
+            "name": "Regular",
+            "price": 12.99,
+            "priceCents": 1299,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Golden\nCarrot \u00c2\u00b7 Orange \u00c2\u00b7 Pineapple \u00c2\u00b7 Ginger \u00c2\u00b7 Turmeric \u00c2\u00b7 Cayenne \u00c2\u00b7 Lemon\nFocus: Circulation support"
+      },
+      "tursoStaging": [
+        {
+          "id": "GGFFU35UI5TCMORHXHU56ZZ7",
+          "name": "Golden Glow",
+          "squareItemId": "GGFFU35UI5TCMORHXHU56ZZ7",
+          "active": 1,
+          "variationId": "KZR54XNQOXDMY74UXOHRH242",
+          "squareVariationId": "KZR54XNQOXDMY74UXOHRH242",
+          "size": "Regular",
+          "priceCents": 1299,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "UNAVAILABLE_NO_PREORDER_CAPACITY_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "GGK2ZVKARUOSHABEVPJPXHPQ",
+      "name": "(b) Strawberry Fruit",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "GGK2ZVKARUOSHABEVPJPXHPQ",
+        "name": "(b) Strawberry Fruit",
+        "slug": null,
+        "price": 0.5,
+        "priceCents": 50,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "KFHFKOJVYKWCN6XUGNESI5DT",
+            "name": "Regular",
+            "price": 0.5,
+            "priceCents": 50,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "GT6ZON74JWO2CIDSUKLIFGL6",
+      "name": "(a) Cream Topping",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "GT6ZON74JWO2CIDSUKLIFGL6",
+        "name": "(a) Cream Topping",
+        "slug": null,
+        "price": 1,
+        "priceCents": 100,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "OMHBPAH5WACLXCHKYNBZGA5V",
+            "name": "Regular",
+            "price": 1,
+            "priceCents": 100,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [
+        {
+          "id": "GT6ZON74JWO2CIDSUKLIFGL6",
+          "name": "Cream Topping",
+          "squareItemId": "GT6ZON74JWO2CIDSUKLIFGL6",
+          "active": 1,
+          "variationId": "OMHBPAH5WACLXCHKYNBZGA5V",
+          "squareVariationId": "OMHBPAH5WACLXCHKYNBZGA5V",
+          "size": "Regular",
+          "priceCents": 175,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "ITEM_NAME_DIVERGENCE_REQUIRES_REVIEW",
+          "values": {
+            "squarePublic": "(a) cream topping",
+            "tursoStaging": "cream topping"
+          }
+        },
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "OMHBPAH5WACLXCHKYNBZGA5V",
+          "sourceCents": 175,
+          "squarePublicCents": 100
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "H4C33DOZSINJKLDYVPYDUC3Q",
+      "name": "Grateful Greens",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "H4C33DOZSINJKLDYVPYDUC3Q",
+        "name": "Grateful Greens",
+        "slug": "grateful-greens",
+        "price": 36,
+        "priceCents": 3600,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": 0,
+        "currentStock": 0,
+        "variationId": "URH7FGAVE46T3X2LY6NRJ77S",
+        "variations": [
+          {
+            "id": "URH7FGAVE46T3X2LY6NRJ77S",
+            "name": "",
+            "sku": null,
+            "price": 36,
+            "priceCents": 3600,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "basil",
+            "icon": "\u00f0\u009f\u008c\u00bf",
+            "benefits": [
+              "stress relief",
+              "antioxidants",
+              "digestion"
+            ]
+          },
+          {
+            "name": "chlorophyll",
+            "icon": "\u00f0\u009f\u0092\u009a",
+            "benefits": [
+              "oxygen boost",
+              "skin health"
+            ]
+          },
+          {
+            "name": "honey",
+            "icon": "\u00f0\u009f\u008d\u00af",
+            "benefits": [
+              "natural antibacterial",
+              "soothing",
+              "energy"
+            ]
+          }
+        ],
+        "description": "Holy Basil, Spirulina, Chlorophyll, Chlorella, Local Honey\n\nHoly Basil, Spirulina, Chlorophyll, Chlorella, Local Honey\nAlkalizing greens \u00c2\u00b7 Hormonal balance \u00c2\u00b7 Cellular rejuvenation"
+      },
+      "squarePublicReadback": {
+        "id": "H4C33DOZSINJKLDYVPYDUC3Q",
+        "name": "Grateful Greens",
+        "slug": null,
+        "price": 35,
+        "priceCents": 3500,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "URH7FGAVE46T3X2LY6NRJ77S",
+            "name": "Default",
+            "price": 35,
+            "priceCents": 3500,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Holy Basil, Spirulina, Chlorophyll, Chlorella, Local Honey\n\nHoly Basil, Spirulina, Chlorophyll, Chlorella, Local Honey\nAlkalizing greens \u00c2\u00b7 Hormonal balance \u00c2\u00b7 Cellular rejuvenation"
+      },
+      "tursoStaging": [
+        {
+          "id": "H4C33DOZSINJKLDYVPYDUC3Q",
+          "name": "Grateful Greens",
+          "squareItemId": "H4C33DOZSINJKLDYVPYDUC3Q",
+          "active": 1,
+          "variationId": "URH7FGAVE46T3X2LY6NRJ77S",
+          "squareVariationId": "URH7FGAVE46T3X2LY6NRJ77S",
+          "size": "",
+          "priceCents": 3600,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "production",
+          "variationId": "URH7FGAVE46T3X2LY6NRJ77S",
+          "sourceCents": 3600,
+          "squarePublicCents": 3500
+        },
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "URH7FGAVE46T3X2LY6NRJ77S",
+          "sourceCents": 3600,
+          "squarePublicCents": 3500
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "HY4JZLDF7P2TFNXTYKTP45FU",
+      "name": "(b) Kiwi Fruit",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "HY4JZLDF7P2TFNXTYKTP45FU",
+        "name": "(b) Kiwi Fruit",
+        "slug": null,
+        "price": 0.5,
+        "priceCents": 50,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "UHWABTH7BEDH56OPBX2FPCU2",
+            "name": "Regular",
+            "price": 0.5,
+            "priceCents": 50,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "INJDQ3EX442GM7UZM6QRA3MA",
+      "name": "(a) Add Lemonade",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "INJDQ3EX442GM7UZM6QRA3MA",
+        "name": "(a) Add Lemonade",
+        "slug": null,
+        "price": 1,
+        "priceCents": 100,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "TF7EPIXFAPGIHG6BMGIBP7LS",
+            "name": "Regular",
+            "price": 1,
+            "priceCents": 100,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "J4XT6CVM6L2FRLW6IZNSIPBH",
+      "name": "Pineapple Melon",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "J4XT6CVM6L2FRLW6IZNSIPBH",
+        "name": "Pineapple Melon",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "PBK3HMMCOW26WT5NWF63B57Y",
+            "name": "Regular",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Pineapple, yellow watermelon, ginger, lemon, sea moss\n\u00e2\u0086\u0092 Anti-inflammatory, supports digestion, naturally hydrating"
+      },
+      "tursoStaging": [
+        {
+          "id": "J4XT6CVM6L2FRLW6IZNSIPBH",
+          "name": "Pineapple Melon",
+          "squareItemId": "J4XT6CVM6L2FRLW6IZNSIPBH",
+          "active": 1,
+          "variationId": "PBK3HMMCOW26WT5NWF63B57Y",
+          "squareVariationId": "PBK3HMMCOW26WT5NWF63B57Y",
+          "size": "Regular",
+          "priceCents": 1199,
+          "currency": "USD",
+          "stock": -15,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NEGATIVE_TURSO_STAGING_STOCK",
+          "stock": -15
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "JJEDTLPGJ4Y52ZVNKBCTYANK",
+      "name": "Cucumber Mint Refresher",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "JJEDTLPGJ4Y52ZVNKBCTYANK",
+        "name": "Cucumber Mint Refresher",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "UMUH5T33KILQME2FO72ZSM4O",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Cucumber, mint, ginger, sea moss, agave, and alkaline water. Topped with sparkling water."
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "JKS2NISHAQPGESRRATITKMTT",
+      "name": "Sweet Potato Chai",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "JKS2NISHAQPGESRRATITKMTT",
+        "name": "Sweet Potato Chai",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "SMRJDMQVIWJUMZ3NUNADKYDO",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Chai tea blended with real sweet potato and milk. Smooth and spiced."
+      },
+      "tursoStaging": [
+        {
+          "id": "JKS2NISHAQPGESRRATITKMTT",
+          "name": "Sweet Potato Chai Latte ",
+          "squareItemId": "JKS2NISHAQPGESRRATITKMTT",
+          "active": 1,
+          "variationId": "SMRJDMQVIWJUMZ3NUNADKYDO",
+          "squareVariationId": "SMRJDMQVIWJUMZ3NUNADKYDO",
+          "size": "Regular",
+          "priceCents": 975,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "ITEM_NAME_DIVERGENCE_REQUIRES_REVIEW",
+          "values": {
+            "squarePublic": "sweet potato chai",
+            "tursoStaging": "sweet potato chai latte"
+          }
+        },
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "SMRJDMQVIWJUMZ3NUNADKYDO",
+          "sourceCents": 975,
+          "squarePublicCents": 1
+        },
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "JRCM5Y24NKELIT4SQHJD2APC",
+      "name": "Strawberry Milk Tea",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "JRCM5Y24NKELIT4SQHJD2APC",
+        "name": "Strawberry Milk Tea",
+        "slug": "strawberry-milk-tea",
+        "price": 9.75,
+        "priceCents": 975,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": 0,
+        "currentStock": 0,
+        "variationId": "OGMHH6NVS2MOAGZH4BFJ6HD2",
+        "variations": [
+          {
+            "id": "OGMHH6NVS2MOAGZH4BFJ6HD2",
+            "name": "Regular",
+            "sku": "7091271",
+            "price": 9.75,
+            "priceCents": 975,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "strawberry",
+            "icon": "\u00f0\u009f\u008d\u0093",
+            "benefits": [
+              "vitamin C",
+              "heart health",
+              "antioxidants"
+            ]
+          },
+          {
+            "name": "milk tea",
+            "icon": "\u00f0\u009f\u00a5\u009b",
+            "benefits": [
+              "antioxidants",
+              "energy",
+              "soothing"
+            ]
+          }
+        ],
+        "description": "Real strawberry + jasmine \nCreamy \u00e2\u0080\u00a2 smooth \u00e2\u0080\u00a2 naturally sweet"
+      },
+      "squarePublicReadback": {
+        "id": "JRCM5Y24NKELIT4SQHJD2APC",
+        "name": "Strawberry Milk Tea",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "OGMHH6NVS2MOAGZH4BFJ6HD2",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Real strawberry + jasmine \nCreamy \u00e2\u0080\u00a2 smooth \u00e2\u0080\u00a2 naturally sweet"
+      },
+      "tursoStaging": [
+        {
+          "id": "JRCM5Y24NKELIT4SQHJD2APC",
+          "name": "Strawberry Milk Tea",
+          "squareItemId": "JRCM5Y24NKELIT4SQHJD2APC",
+          "active": 1,
+          "variationId": "OGMHH6NVS2MOAGZH4BFJ6HD2",
+          "squareVariationId": "OGMHH6NVS2MOAGZH4BFJ6HD2",
+          "size": "Regular",
+          "priceCents": 975,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "production",
+          "variationId": "OGMHH6NVS2MOAGZH4BFJ6HD2",
+          "sourceCents": 975,
+          "squarePublicCents": 1
+        },
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "OGMHH6NVS2MOAGZH4BFJ6HD2",
+          "sourceCents": 975,
+          "squarePublicCents": 1
+        },
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "K5JQEMGJQLJFDB6VYWJJP365",
+      "name": "Thai Tea ",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "K5JQEMGJQLJFDB6VYWJJP365",
+        "name": "Thai Tea ",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "E5KK52XYOZ7MASKDXIK5D23Y",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Bold, aromatic Thai tea blended with creamy coconut condensed milk for a rich, smooth, lightly spiced finish. Dairy-free."
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "KIJASOFCHSOG4B3GJPOQ7OQB",
+      "name": "Herbal Vibe",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "KIJASOFCHSOG4B3GJPOQ7OQB",
+        "name": "Herbal Vibe",
+        "slug": "herbal-vibe",
+        "price": 14.99,
+        "priceCents": 1499,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": -1,
+        "currentStock": -1,
+        "variationId": "AS4OJS33FJEHZMJ5W24IJ6TV",
+        "variations": [
+          {
+            "id": "AS4OJS33FJEHZMJ5W24IJ6TV",
+            "name": "Regular",
+            "sku": "W491082",
+            "price": 14.99,
+            "priceCents": 1499,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "pineapple",
+            "icon": "\u00f0\u009f\u008d\u008d",
+            "benefits": [
+              "vitamin C",
+              "digestion"
+            ]
+          },
+          {
+            "name": "ginger",
+            "icon": "\u00f0\u009f\u00ab\u009a",
+            "benefits": [
+              "digestion",
+              "nausea relief",
+              "immunity"
+            ]
+          },
+          {
+            "name": "lemon",
+            "icon": "\u00f0\u009f\u008d\u008b",
+            "benefits": [
+              "vitamin C",
+              "alkalizing"
+            ]
+          },
+          {
+            "name": "apple",
+            "icon": "\u00f0\u009f\u008d\u008e",
+            "benefits": [
+              "fiber",
+              "heart health",
+              "hydration"
+            ]
+          }
+        ],
+        "description": "Herbal Vibe is a bold blend featuring pineapple, apple, ginger, oregano, mint, and lemon, thoughtfully crafted to invigorate your senses. Enjoy a refreshing mix designed to energize, purify, and support your daily wellness routine."
+      },
+      "squarePublicReadback": {
+        "id": "KIJASOFCHSOG4B3GJPOQ7OQB",
+        "name": "Herbal Vibe",
+        "slug": null,
+        "price": 14.99,
+        "priceCents": 1499,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "AS4OJS33FJEHZMJ5W24IJ6TV",
+            "name": "Regular",
+            "price": 14.99,
+            "priceCents": 1499,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Herbal Vibe is a bold blend featuring pineapple, apple, ginger, oregano, mint, and lemon, thoughtfully crafted to invigorate your senses. Enjoy a refreshing mix designed to energize, purify, and support your daily wellness routine."
+      },
+      "tursoStaging": [
+        {
+          "id": "KIJASOFCHSOG4B3GJPOQ7OQB",
+          "name": "Herbal Vibe",
+          "squareItemId": "KIJASOFCHSOG4B3GJPOQ7OQB",
+          "active": 1,
+          "variationId": "AS4OJS33FJEHZMJ5W24IJ6TV",
+          "squareVariationId": "AS4OJS33FJEHZMJ5W24IJ6TV",
+          "size": "Regular",
+          "priceCents": 1499,
+          "currency": "USD",
+          "stock": -1,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NEGATIVE_PRODUCTION_STOREFRONT_STOCK",
+          "stock": -1
+        },
+        {
+          "code": "NEGATIVE_TURSO_STAGING_STOCK",
+          "stock": -1
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "KSPUCD2YC4JWLSKPZ4LVY64M",
+      "name": "Strawberry T",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "KSPUCD2YC4JWLSKPZ4LVY64M",
+        "name": "Strawberry T",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "7GNVZL5YLTJ5LBG4ULVUZUXS",
+            "name": "Regular",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Strawberry Pineapple Orange Sea Moss Ginger Lemonade combines refreshing fruity flavors with nutrient-rich sea moss and zesty ginger for a wellness boost. Packed with immune-supporting ingredients, it's a revitalizing drink perfect for any time of day."
+      },
+      "tursoStaging": [
+        {
+          "id": "KSPUCD2YC4JWLSKPZ4LVY64M",
+          "name": "Strawberry T",
+          "squareItemId": "KSPUCD2YC4JWLSKPZ4LVY64M",
+          "active": 1,
+          "variationId": "7GNVZL5YLTJ5LBG4ULVUZUXS",
+          "squareVariationId": "7GNVZL5YLTJ5LBG4ULVUZUXS",
+          "size": "Regular",
+          "priceCents": 1199,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "SNAPSHOT_PARITY_ONLY_NOT_PRODUCTION_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "KZXEV24XZ2UCQUJ64BH7ZUJP",
+      "name": "Strawberry Bliss",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "KZXEV24XZ2UCQUJ64BH7ZUJP",
+        "name": "Strawberry Bliss",
+        "slug": "strawberry-bliss",
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": true,
+        "inStock": true,
+        "stock": 36,
+        "currentStock": 36,
+        "variationId": "HYODQWXIJJVAPRIZ66SVUYE5",
+        "variations": [
+          {
+            "id": "HYODQWXIJJVAPRIZ66SVUYE5",
+            "name": "Regular",
+            "sku": "3832062",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Strawberry",
+            "benefits": []
+          },
+          {
+            "name": "Lemon",
+            "benefits": []
+          },
+          {
+            "name": "Ginger",
+            "benefits": []
+          },
+          {
+            "name": "Sea Moss",
+            "benefits": []
+          },
+          {
+            "name": "Agave",
+            "benefits": []
+          },
+          {
+            "name": "Alkaline Water",
+            "benefits": []
+          }
+        ],
+        "description": "A strawberry ginger lemonade with sea moss and a bright market-fresh finish."
+      },
+      "squarePublicReadback": {
+        "id": "KZXEV24XZ2UCQUJ64BH7ZUJP",
+        "name": "Strawberry Bliss",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "HYODQWXIJJVAPRIZ66SVUYE5",
+            "name": "Regular",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Enjoy the refreshing blend of tangy strawberry lemonade combined with the wellness benefits of nutrient-rich sea moss and invigorating ginger. This thoughtfully crafted drink is perfect for hydration and supporting your daily wellness routine."
+      },
+      "tursoStaging": [
+        {
+          "id": "KZXEV24XZ2UCQUJ64BH7ZUJP",
+          "name": "Strawberry Bliss",
+          "squareItemId": "KZXEV24XZ2UCQUJ64BH7ZUJP",
+          "active": 1,
+          "variationId": "HYODQWXIJJVAPRIZ66SVUYE5",
+          "squareVariationId": "HYODQWXIJJVAPRIZ66SVUYE5",
+          "size": "Regular",
+          "priceCents": 1199,
+          "currency": "USD",
+          "stock": 34,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": {
+        "name": "Strawberry Bliss",
+        "priceCents": 1199
+      },
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "SNAPSHOT_PARITY_ONLY_NOT_PRODUCTION_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "LAIYYTKX6QZA46U2TMEGP6HL",
+      "name": "(a) Lg Sweet Tea ",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "LAIYYTKX6QZA46U2TMEGP6HL",
+        "name": "(a) Lg Sweet Tea ",
+        "slug": null,
+        "price": 6.99,
+        "priceCents": 699,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "736NHB7EW6XAF44A763G73AI",
+            "name": "Regular",
+            "price": 6.99,
+            "priceCents": 699,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "LUGH4ICAEJ6BRC4U3MAJGX7C",
+      "name": "(a) Sm Tea Refresher",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "LUGH4ICAEJ6BRC4U3MAJGX7C",
+        "name": "(a) Sm Tea Refresher",
+        "slug": null,
+        "price": 8.99,
+        "priceCents": 899,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "YJR5NBQAIPL4TLH5SS6T4JZ5",
+            "name": "Regular",
+            "price": 8.99,
+            "priceCents": 899,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "M2YWBEQGL73SJLAKVYDSFORC",
+      "name": "Black Minerals",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "M2YWBEQGL73SJLAKVYDSFORC",
+        "name": "Black Minerals",
+        "slug": "black-minerals",
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": -2,
+        "currentStock": -2,
+        "variationId": "RZ5E2KMKDEXFJLEOHYRUQRTV",
+        "variations": [
+          {
+            "id": "RZ5E2KMKDEXFJLEOHYRUQRTV",
+            "name": "Regular",
+            "sku": "7664502",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Lemon",
+            "benefits": []
+          },
+          {
+            "name": "Ginger",
+            "benefits": []
+          },
+          {
+            "name": "Sea Moss",
+            "benefits": []
+          },
+          {
+            "name": "Trace Mineral Blend",
+            "benefits": []
+          },
+          {
+            "name": "Agave",
+            "benefits": []
+          },
+          {
+            "name": "Alkaline Water",
+            "benefits": []
+          }
+        ],
+        "description": "A dark lemon and ginger drink with sea moss and a trace mineral blend."
+      },
+      "squarePublicReadback": {
+        "id": "M2YWBEQGL73SJLAKVYDSFORC",
+        "name": "Black Minerals",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "RZ5E2KMKDEXFJLEOHYRUQRTV",
+            "name": "Regular",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Activated Charcoal \u00c2\u00b7 Chia Seeds \u00c2\u00b7 Psyllium Husk \u00c2\u00b7 Lemon \u00c2\u00b7 Cayenne \u00c2\u00b7 Oregano Oil \u00c2\u00b7 Maple \u00c2\u00b7 Alkaline Water\nFocus: Bowel regularity"
+      },
+      "tursoStaging": [
+        {
+          "id": "M2YWBEQGL73SJLAKVYDSFORC",
+          "name": "Black Minerals",
+          "squareItemId": "M2YWBEQGL73SJLAKVYDSFORC",
+          "active": 1,
+          "variationId": "RZ5E2KMKDEXFJLEOHYRUQRTV",
+          "squareVariationId": "RZ5E2KMKDEXFJLEOHYRUQRTV",
+          "size": "Regular",
+          "priceCents": 1199,
+          "currency": "USD",
+          "stock": -2,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NEGATIVE_PRODUCTION_STOREFRONT_STOCK",
+          "stock": -2
+        },
+        {
+          "code": "NEGATIVE_TURSO_STAGING_STOCK",
+          "stock": -2
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "NCC7UJPB2AZ5TUEDFMEBIQLU",
+      "name": "(b) Blueberry Fruit",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "NCC7UJPB2AZ5TUEDFMEBIQLU",
+        "name": "(b) Blueberry Fruit",
+        "slug": null,
+        "price": 0.5,
+        "priceCents": 50,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "CUM74FL7PEBS2S7MK4245WGZ",
+            "name": "Regular",
+            "price": 0.5,
+            "priceCents": 50,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "NOD76PUJZP7QRJ2YTHY7S3K5",
+      "name": "Calm waters ",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "NOD76PUJZP7QRJ2YTHY7S3K5",
+        "name": "Calm waters ",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "UA5MS44OB3ZCNVSEN2JKSG72",
+            "name": "Regular",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Blue Spirulina \u00e2\u0080\u00a2 Ashwagandha \u00e2\u0080\u00a2 Sea Moss \u00e2\u0080\u00a2 Lemon\n\n RELAXATION\n \u00e2\u0080\u00a2 MENTAL CLARITY\n \u00e2\u0080\u00a2 ADRENAL HEALTH\n \u00e2\u0080\u00a2 RECOVERY"
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "KEEP_HISTORY_EXCLUDE_RETIRED_DUPLICATE_FROM_CHECKOUT",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "NS5APGM7G2QC326BK7I55QJC",
+      "name": "Pineapple Mango Sorbet ",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "NS5APGM7G2QC326BK7I55QJC",
+        "name": "Pineapple Mango Sorbet ",
+        "slug": null,
+        "price": 10,
+        "priceCents": 1000,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "RATBNFO442EVGACHLC4Y3QKX",
+            "name": "Regular",
+            "price": 10,
+            "priceCents": 1000,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "OAMZ3IUIU75QRNH7WJETSPX6",
+      "name": "Kissed by Gods",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "OAMZ3IUIU75QRNH7WJETSPX6",
+        "name": "Kissed by Gods",
+        "slug": "kissed-by-gods",
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": 0,
+        "currentStock": 0,
+        "variationId": "24IR66LLZDKD2NMM3FI4JKPG",
+        "variations": [
+          {
+            "id": "24IR66LLZDKD2NMM3FI4JKPG",
+            "name": "16oz",
+            "sku": null,
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          },
+          {
+            "id": "VSZHBA37GKBBUNT5ESKGGBW2",
+            "name": "64oz",
+            "sku": "Z670993",
+            "price": 47.96,
+            "priceCents": 4796,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Basil",
+            "benefits": []
+          },
+          {
+            "name": "Chlorophyll",
+            "benefits": []
+          },
+          {
+            "name": "Ginger",
+            "benefits": []
+          },
+          {
+            "name": "Lemon",
+            "benefits": []
+          },
+          {
+            "name": "Sea Moss",
+            "benefits": []
+          },
+          {
+            "name": "Agave",
+            "benefits": []
+          },
+          {
+            "name": "Alkaline Water",
+            "benefits": []
+          }
+        ],
+        "description": "A bright green lemonade with basil, ginger, lemon, chlorophyll, and sea moss."
+      },
+      "squarePublicReadback": {
+        "id": "OAMZ3IUIU75QRNH7WJETSPX6",
+        "name": "Kissed by Gods",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "24IR66LLZDKD2NMM3FI4JKPG",
+            "name": "16oz",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          },
+          {
+            "id": "VSZHBA37GKBBUNT5ESKGGBW2",
+            "name": "64oz",
+            "price": 47.96,
+            "priceCents": 4796,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Ingredients:\nBasil, Chlorophyll, Ginger, Lemon, Sea Moss, Agave\n\nBENEFITS:\n\u00e2\u0080\u00a2 Supports liver & immune health\n\u00e2\u0080\u00a2 Promotes natural detox & hydration\n\u00e2\u0080\u00a2 Boosts energy & circulation\n\u00e2\u0080\u00a2 Reduces inflammation & fatigue"
+      },
+      "tursoStaging": [
+        {
+          "id": "OAMZ3IUIU75QRNH7WJETSPX6",
+          "name": "Kissed by Gods",
+          "squareItemId": "OAMZ3IUIU75QRNH7WJETSPX6",
+          "active": 1,
+          "variationId": "24IR66LLZDKD2NMM3FI4JKPG",
+          "squareVariationId": "24IR66LLZDKD2NMM3FI4JKPG",
+          "size": "16oz",
+          "priceCents": 1199,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        },
+        {
+          "id": "OAMZ3IUIU75QRNH7WJETSPX6",
+          "name": "Kissed by Gods",
+          "squareItemId": "OAMZ3IUIU75QRNH7WJETSPX6",
+          "active": 1,
+          "variationId": "VSZHBA37GKBBUNT5ESKGGBW2",
+          "squareVariationId": "VSZHBA37GKBBUNT5ESKGGBW2",
+          "size": "64oz",
+          "priceCents": 4796,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "UNAVAILABLE_NO_PREORDER_CAPACITY_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "ONY43R4HTNIBUIBHZCJWAAN5",
+      "name": "Matcha Cream",
+      "sources": [
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": null,
+      "tursoStaging": [
+        {
+          "id": "ONY43R4HTNIBUIBHZCJWAAN5",
+          "name": "Matcha Cream",
+          "squareItemId": "ONY43R4HTNIBUIBHZCJWAAN5",
+          "active": 1,
+          "variationId": "CB2CQPC3AEQSXT2SI4PDFESU",
+          "squareVariationId": "CB2CQPC3AEQSXT2SI4PDFESU",
+          "size": "Regular",
+          "priceCents": 0,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "TURSO_IDENTITY_ABSENT_FROM_PUBLIC_SQUARE_SNAPSHOT"
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "PHMZCFPKGWUEGORKCENNE2ZU",
+      "name": "Taro Cream",
+      "sources": [
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": null,
+      "tursoStaging": [
+        {
+          "id": "PHMZCFPKGWUEGORKCENNE2ZU",
+          "name": "Taro Cream",
+          "squareItemId": "PHMZCFPKGWUEGORKCENNE2ZU",
+          "active": 1,
+          "variationId": "ZVLCWDTEQTP4UACJS75VDJSS",
+          "squareVariationId": "ZVLCWDTEQTP4UACJS75VDJSS",
+          "size": "Regular",
+          "priceCents": 175,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "TURSO_IDENTITY_ABSENT_FROM_PUBLIC_SQUARE_SNAPSHOT"
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "PNVAADP63DYUZYD32DAUUHHQ",
+      "name": "Floral Tide",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "PNVAADP63DYUZYD32DAUUHHQ",
+        "name": "Floral Tide",
+        "slug": "floral-tide",
+        "price": 36,
+        "priceCents": 3600,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": -3,
+        "currentStock": -3,
+        "variationId": "7H53HMPV3LMZZZDVSV2VEZPT",
+        "variations": [
+          {
+            "id": "7H53HMPV3LMZZZDVSV2VEZPT",
+            "name": "16oz",
+            "sku": "1420560",
+            "price": 36,
+            "priceCents": 3600,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "pineapple",
+            "icon": "\u00f0\u009f\u008d\u008d",
+            "benefits": [
+              "vitamin C",
+              "digestion"
+            ]
+          },
+          {
+            "name": "turmeric",
+            "icon": "\u00f0\u009f\u008c\u009f",
+            "benefits": [
+              "antioxidants",
+              "brain health"
+            ]
+          },
+          {
+            "name": "ginger",
+            "icon": "\u00f0\u009f\u00ab\u009a",
+            "benefits": [
+              "digestion",
+              "nausea relief",
+              "immunity"
+            ]
+          },
+          {
+            "name": "lemon",
+            "icon": "\u00f0\u009f\u008d\u008b",
+            "benefits": [
+              "vitamin C",
+              "alkalizing"
+            ]
+          },
+          {
+            "name": "agave",
+            "icon": "\u00f0\u009f\u008d\u00af",
+            "benefits": [
+              "natural sweetener",
+              "low glycemic",
+              "energy"
+            ]
+          },
+          {
+            "name": "cranberry",
+            "icon": "\u00f0\u009f\u00ab\u0090",
+            "benefits": [
+              "urinary health",
+              "antioxidants",
+              "vitamin C"
+            ]
+          },
+          {
+            "name": "apple",
+            "icon": "\u00f0\u009f\u008d\u008e",
+            "benefits": [
+              "fiber",
+              "heart health",
+              "hydration"
+            ]
+          },
+          {
+            "name": "orange",
+            "icon": "\u00f0\u009f\u008d\u008a",
+            "benefits": [
+              "vitamin C",
+              "immunity",
+              "hydration"
+            ]
+          }
+        ],
+        "description": "Ingredients: Hibiscus, Cranberry, Pineapple, Orange, Turmeric, Ginger, Lemon, Agave, Alkaline Water, Bee Pollen\n\nBENEFITS\n\u00e2\u0080\u00a2 Promotes circulation & heart health\n\u00e2\u0080\u00a2 Supports immune & liver function\n\u00e2\u0080\u00a2 Reduces inflammation & fatigue\n\u00e2\u0080\u00a2 Rich in antioxidants & nutrients"
+      },
+      "squarePublicReadback": {
+        "id": "PNVAADP63DYUZYD32DAUUHHQ",
+        "name": "Floral Tide",
+        "slug": null,
+        "price": 35,
+        "priceCents": 3500,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "7H53HMPV3LMZZZDVSV2VEZPT",
+            "name": "16oz",
+            "price": 35,
+            "priceCents": 3500,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Ingredients: Hibiscus, Cranberry, Pineapple, Orange, Turmeric, Ginger, Lemon, Agave, Alkaline Water, Bee Pollen\n\nBENEFITS\n\u00e2\u0080\u00a2 Promotes circulation & heart health\n\u00e2\u0080\u00a2 Supports immune & liver function\n\u00e2\u0080\u00a2 Reduces inflammation & fatigue\n\u00e2\u0080\u00a2 Rich in antioxidants & nutrients"
+      },
+      "tursoStaging": [
+        {
+          "id": "PNVAADP63DYUZYD32DAUUHHQ",
+          "name": "Floral Tide",
+          "squareItemId": "PNVAADP63DYUZYD32DAUUHHQ",
+          "active": 1,
+          "variationId": "7H53HMPV3LMZZZDVSV2VEZPT",
+          "squareVariationId": "7H53HMPV3LMZZZDVSV2VEZPT",
+          "size": "16oz",
+          "priceCents": 3600,
+          "currency": "USD",
+          "stock": -3,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "production",
+          "variationId": "7H53HMPV3LMZZZDVSV2VEZPT",
+          "sourceCents": 3600,
+          "squarePublicCents": 3500
+        },
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "7H53HMPV3LMZZZDVSV2VEZPT",
+          "sourceCents": 3600,
+          "squarePublicCents": 3500
+        },
+        {
+          "code": "NEGATIVE_PRODUCTION_STOREFRONT_STOCK",
+          "stock": -3
+        },
+        {
+          "code": "NEGATIVE_TURSO_STAGING_STOCK",
+          "stock": -3
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "QCU7NPCZFOVVX27GHTXTIGRJ",
+      "name": "Vitamin Sea Refresher",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "QCU7NPCZFOVVX27GHTXTIGRJ",
+        "name": "Vitamin Sea Refresher",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "I4GD26NQ5ZUTRLCAUYHDS55L",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Blue spirulina, lemon, sea moss, agave, and alkaline water. Topped with sparkling water."
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "QDZ5VIFHYIP243KIH4I5YW5R",
+      "name": "Spicy Bloom",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "QDZ5VIFHYIP243KIH4I5YW5R",
+        "name": "Spicy Bloom",
+        "slug": "spicy-bloom",
+        "price": 5.5,
+        "priceCents": 550,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": 0,
+        "currentStock": 0,
+        "variationId": "JRH3GPIUTSPNTTKCEHGRRZET",
+        "variations": [
+          {
+            "id": "JRH3GPIUTSPNTTKCEHGRRZET",
+            "name": "Regular",
+            "sku": "F034305",
+            "price": 5.5,
+            "priceCents": 550,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Hibiscus",
+            "benefits": []
+          },
+          {
+            "name": "Pineapple",
+            "benefits": []
+          },
+          {
+            "name": "Orange",
+            "benefits": []
+          },
+          {
+            "name": "Cranberry",
+            "benefits": []
+          },
+          {
+            "name": "Lemon",
+            "benefits": []
+          },
+          {
+            "name": "Jalape\u00c3\u00b1o",
+            "benefits": []
+          },
+          {
+            "name": "Sea Moss",
+            "benefits": []
+          },
+          {
+            "name": "Agave",
+            "benefits": []
+          },
+          {
+            "name": "Alkaline Water",
+            "benefits": []
+          }
+        ],
+        "description": "A tart floral shot with jalape\u00c3\u00b1o heat, citrus, cranberry, hibiscus, and sea moss."
+      },
+      "squarePublicReadback": {
+        "id": "QDZ5VIFHYIP243KIH4I5YW5R",
+        "name": "Spicy Bloom",
+        "slug": null,
+        "price": 5.5,
+        "priceCents": 550,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "JRH3GPIUTSPNTTKCEHGRRZET",
+            "name": "Regular",
+            "price": 5.5,
+            "priceCents": 550,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Hibiscus, Pineapple, Orange, Cranberry, Lemon, Jalape\u00c3\u00b1o, Sea Moss, Agave, Alkaline Water"
+      },
+      "tursoStaging": [
+        {
+          "id": "QDZ5VIFHYIP243KIH4I5YW5R",
+          "name": "Spicy Bloom",
+          "squareItemId": "QDZ5VIFHYIP243KIH4I5YW5R",
+          "active": 1,
+          "variationId": "JRH3GPIUTSPNTTKCEHGRRZET",
+          "squareVariationId": "JRH3GPIUTSPNTTKCEHGRRZET",
+          "size": "Regular",
+          "priceCents": 550,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "UNAVAILABLE_NO_PREORDER_CAPACITY_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "QW7AMSCF6WKT7OO2DMP5HC64",
+      "name": "Juice",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "QW7AMSCF6WKT7OO2DMP5HC64",
+        "name": "Juice",
+        "slug": null,
+        "price": 12.99,
+        "priceCents": 1299,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "YPYILKAEWRE44ATC6LRF4STH",
+            "name": "Regular",
+            "price": 12.99,
+            "priceCents": 1299,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "QZG2GHCF64WIWEO6KWNOSYWB",
+      "name": "Homemade Apple Cider",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "QZG2GHCF64WIWEO6KWNOSYWB",
+        "name": "Homemade Apple Cider",
+        "slug": "homemade-apple-cider",
+        "price": 6,
+        "priceCents": 600,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": 0,
+        "currentStock": 0,
+        "variationId": "X7ISEZVIJVYU5DUCPXGGKZQ3",
+        "variations": [
+          {
+            "id": "X7ISEZVIJVYU5DUCPXGGKZQ3",
+            "name": "Regular",
+            "sku": "643370G",
+            "price": 6,
+            "priceCents": 600,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "pineapple",
+            "icon": "\u00f0\u009f\u008d\u008d",
+            "benefits": [
+              "vitamin C",
+              "digestion"
+            ]
+          },
+          {
+            "name": "ginger",
+            "icon": "\u00f0\u009f\u00ab\u009a",
+            "benefits": [
+              "digestion",
+              "nausea relief",
+              "immunity"
+            ]
+          },
+          {
+            "name": "apple",
+            "icon": "\u00f0\u009f\u008d\u008e",
+            "benefits": [
+              "fiber",
+              "heart health",
+              "hydration"
+            ]
+          }
+        ],
+        "description": "Crafted from slow-simmered apples and infused with our signature A.P.G. blend of pineapple and ginger for a bright, uplifting twist. Lightly spiced and naturally sweet, this cider energizes the senses and supports immunity with every sip."
+      },
+      "squarePublicReadback": {
+        "id": "QZG2GHCF64WIWEO6KWNOSYWB",
+        "name": "Homemade Apple Cider",
+        "slug": null,
+        "price": 6,
+        "priceCents": 600,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "X7ISEZVIJVYU5DUCPXGGKZQ3",
+            "name": "Regular",
+            "price": 6,
+            "priceCents": 600,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Crafted from slow-simmered apples and infused with our signature A.P.G. blend of pineapple and ginger for a bright, uplifting twist. Lightly spiced and naturally sweet, this cider energizes the senses and supports immunity with every sip."
+      },
+      "tursoStaging": [
+        {
+          "id": "QZG2GHCF64WIWEO6KWNOSYWB",
+          "name": "Homemade Apple Cider",
+          "squareItemId": "QZG2GHCF64WIWEO6KWNOSYWB",
+          "active": 1,
+          "variationId": "X7ISEZVIJVYU5DUCPXGGKZQ3",
+          "squareVariationId": "X7ISEZVIJVYU5DUCPXGGKZQ3",
+          "size": "Regular",
+          "priceCents": 600,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "UNAVAILABLE_NO_PREORDER_CAPACITY_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "SIO6C24GTCLHGBOCJNRHPBF7",
+      "name": "Peach Black Tea",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "SIO6C24GTCLHGBOCJNRHPBF7",
+        "name": "Peach Black Tea",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "34GXW6YFEVGBDZCRJ2OZYWIT",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Description\nFresh brewed black tea with peach, lemonade, and cane sugar. Served over ice."
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "SSATSEXDDPFEFDU6HCVDUPHQ",
+      "name": "Gratitude Defense",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "SSATSEXDDPFEFDU6HCVDUPHQ",
+        "name": "Gratitude Defense",
+        "slug": "gratitude-defense",
+        "price": 6,
+        "priceCents": 600,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": 0,
+        "currentStock": 0,
+        "variationId": "KXSSG4AGO73322YJQJOKR2VG",
+        "variations": [
+          {
+            "id": "KXSSG4AGO73322YJQJOKR2VG",
+            "name": "",
+            "sku": null,
+            "price": 6,
+            "priceCents": 600,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "sea moss",
+            "icon": "\u00f0\u009f\u008c\u008a",
+            "benefits": [
+              "92 essential minerals"
+            ]
+          },
+          {
+            "name": "ginger",
+            "icon": "\u00f0\u009f\u00ab\u009a",
+            "benefits": [
+              "digestion",
+              "nausea relief",
+              "immunity"
+            ]
+          },
+          {
+            "name": "lemon",
+            "icon": "\u00f0\u009f\u008d\u008b",
+            "benefits": [
+              "vitamin C",
+              "alkalizing"
+            ]
+          },
+          {
+            "name": "cranberry",
+            "icon": "\u00f0\u009f\u00ab\u0090",
+            "benefits": [
+              "urinary health",
+              "antioxidants",
+              "vitamin C"
+            ]
+          },
+          {
+            "name": "apple",
+            "icon": "\u00f0\u009f\u008d\u008e",
+            "benefits": [
+              "fiber",
+              "heart health",
+              "hydration"
+            ]
+          },
+          {
+            "name": "elderberry",
+            "icon": "\u00f0\u009f\u00ab\u0090",
+            "benefits": [
+              "antioxidants",
+              "respiratory health"
+            ]
+          }
+        ],
+        "description": "Elderberry, Cranberry, Apple, Ginger, Lemon, Echinacea, Sea Moss\nStrong immune defense, digestive support, 92+ essential minerals"
+      },
+      "squarePublicReadback": {
+        "id": "SSATSEXDDPFEFDU6HCVDUPHQ",
+        "name": "Gratitude Defense",
+        "slug": null,
+        "price": 6,
+        "priceCents": 600,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "KXSSG4AGO73322YJQJOKR2VG",
+            "name": "Default",
+            "price": 6,
+            "priceCents": 600,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Elderberry, Cranberry, Apple, Ginger, Lemon, Echinacea, Sea Moss\nStrong immune defense, digestive support, 92+ essential minerals"
+      },
+      "tursoStaging": [
+        {
+          "id": "SSATSEXDDPFEFDU6HCVDUPHQ",
+          "name": "Gratitude Defense",
+          "squareItemId": "SSATSEXDDPFEFDU6HCVDUPHQ",
+          "active": 1,
+          "variationId": "KXSSG4AGO73322YJQJOKR2VG",
+          "squareVariationId": "KXSSG4AGO73322YJQJOKR2VG",
+          "size": "",
+          "priceCents": 600,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "UNAVAILABLE_NO_PREORDER_CAPACITY_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "U55F7IHXK7GWOGDFR5SQ6XQ2",
+      "name": "(a) Strawberry Pearls",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "U55F7IHXK7GWOGDFR5SQ6XQ2",
+        "name": "(a) Strawberry Pearls",
+        "slug": null,
+        "price": 0.5,
+        "priceCents": 50,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "A46S3BTTPREZWBO54ONGGWZK",
+            "name": "Regular",
+            "price": 0.5,
+            "priceCents": 50,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "U72YRTLGGBVTAXGS7NEDRXOC",
+      "name": "Blueberry Lemonade",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "U72YRTLGGBVTAXGS7NEDRXOC",
+        "name": "Blueberry Lemonade",
+        "slug": null,
+        "price": 10,
+        "priceCents": 1000,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "NCYJB3NGWOEUYVZ6FVVMHSQS",
+            "name": "Regular",
+            "price": 10,
+            "priceCents": 1000,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Blueberry, ginger, lemon, agave, sea moss, alkaline water\n\u00e2\u0086\u0092 Brain-boosting, antioxidant-rich, helps fight inflammation"
+      },
+      "tursoStaging": [
+        {
+          "id": "U72YRTLGGBVTAXGS7NEDRXOC",
+          "name": "Blueberry Lemonade",
+          "squareItemId": "U72YRTLGGBVTAXGS7NEDRXOC",
+          "active": 1,
+          "variationId": "NCYJB3NGWOEUYVZ6FVVMHSQS",
+          "squareVariationId": "NCYJB3NGWOEUYVZ6FVVMHSQS",
+          "size": "Regular",
+          "priceCents": 1000,
+          "currency": "USD",
+          "stock": -17,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NEGATIVE_TURSO_STAGING_STOCK",
+          "stock": -17
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "UO2JUDN5DSXE6Y4NXG5QIQCM",
+      "name": "Lychee ",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "UO2JUDN5DSXE6Y4NXG5QIQCM",
+        "name": "Lychee ",
+        "slug": null,
+        "price": 1,
+        "priceCents": 100,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "XTSB2OXSSJLYMNFOQPTCUUCY",
+            "name": "Regular",
+            "price": 1,
+            "priceCents": 100,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Sweet, floral jelly topping"
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "VLVSJPJB2OJNLJW7HOE4EJTB",
+      "name": "Apple Cranberry",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "VLVSJPJB2OJNLJW7HOE4EJTB",
+        "name": "Apple Cranberry",
+        "slug": null,
+        "price": 12.99,
+        "priceCents": 1299,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "INQLOCKPVYIETZVT3PE63HPU",
+            "name": "Default",
+            "price": 12.99,
+            "priceCents": 1299,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "A refreshing fusion of apple, pineapple, cranberry, lime, lemon, ginger, and mineral-rich sea moss. This blend supports digestion, boosts immunity, aids detox, and delivers natural energy. Packed with antioxidants and 92 essential minerals, it\u00e2\u0080\u0099s a crisp, tangy, and nourishing sip for daily wellness."
+      },
+      "tursoStaging": [
+        {
+          "id": "VLVSJPJB2OJNLJW7HOE4EJTB",
+          "name": "Apple Cranberry",
+          "squareItemId": "VLVSJPJB2OJNLJW7HOE4EJTB",
+          "active": 1,
+          "variationId": "INQLOCKPVYIETZVT3PE63HPU",
+          "squareVariationId": "INQLOCKPVYIETZVT3PE63HPU",
+          "size": "",
+          "priceCents": 1399,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "INQLOCKPVYIETZVT3PE63HPU",
+          "sourceCents": 1399,
+          "squarePublicCents": 1299
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "VQ3PGYYJYAC5DEZPDZO5IAKT",
+      "name": "Desert Glow",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "VQ3PGYYJYAC5DEZPDZO5IAKT",
+        "name": "Desert Glow",
+        "slug": "desert-glow",
+        "price": 12.99,
+        "priceCents": 1299,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": 0,
+        "currentStock": 0,
+        "variationId": "K4JKQGL6MCZRUTW4Q6IVUIMC",
+        "variations": [
+          {
+            "id": "K4JKQGL6MCZRUTW4Q6IVUIMC",
+            "name": "Regular",
+            "sku": null,
+            "price": 12.99,
+            "priceCents": 1299,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "sea moss",
+            "icon": "\u00f0\u009f\u008c\u008a",
+            "benefits": [
+              "92 essential minerals"
+            ]
+          },
+          {
+            "name": "ginger",
+            "icon": "\u00f0\u009f\u00ab\u009a",
+            "benefits": [
+              "digestion",
+              "nausea relief",
+              "immunity"
+            ]
+          },
+          {
+            "name": "lemon",
+            "icon": "\u00f0\u009f\u008d\u008b",
+            "benefits": [
+              "vitamin C",
+              "alkalizing"
+            ]
+          },
+          {
+            "name": "agave",
+            "icon": "\u00f0\u009f\u008d\u00af",
+            "benefits": [
+              "natural sweetener",
+              "low glycemic",
+              "energy"
+            ]
+          }
+        ],
+        "description": "A refreshing blend of prickly pear, ginger, sea moss, lemon, agave, and alkaline water, crafted with natural ingredients. Perfect for hydration and supporting overall wellness."
+      },
+      "squarePublicReadback": {
+        "id": "VQ3PGYYJYAC5DEZPDZO5IAKT",
+        "name": "Desert Glow",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "K4JKQGL6MCZRUTW4Q6IVUIMC",
+            "name": "Regular",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "A refreshing blend of prickly pear, ginger, sea moss, lemon, agave, and alkaline water, crafted with natural ingredients. Perfect for hydration and supporting overall wellness."
+      },
+      "tursoStaging": [
+        {
+          "id": "VQ3PGYYJYAC5DEZPDZO5IAKT",
+          "name": "Desert Glow ",
+          "squareItemId": "VQ3PGYYJYAC5DEZPDZO5IAKT",
+          "active": 1,
+          "variationId": "K4JKQGL6MCZRUTW4Q6IVUIMC",
+          "squareVariationId": "K4JKQGL6MCZRUTW4Q6IVUIMC",
+          "size": "Regular",
+          "priceCents": 1299,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "production",
+          "variationId": "K4JKQGL6MCZRUTW4Q6IVUIMC",
+          "sourceCents": 1299,
+          "squarePublicCents": 1199
+        },
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "K4JKQGL6MCZRUTW4Q6IVUIMC",
+          "sourceCents": 1299,
+          "squarePublicCents": 1199
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "W35DXUWTH7URNBW6ZFSDAHNG",
+      "name": "(a) Lg Tea Refresher ",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "W35DXUWTH7URNBW6ZFSDAHNG",
+        "name": "(a) Lg Tea Refresher ",
+        "slug": null,
+        "price": 10.99,
+        "priceCents": 1099,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "WFU7ZP3GMZTJPSXGRJINPGTO",
+            "name": "Regular",
+            "price": 10.99,
+            "priceCents": 1099,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "WWGWZ5BMAKS2IW6LGAWMBBNR",
+      "name": "Taro",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "WWGWZ5BMAKS2IW6LGAWMBBNR",
+        "name": "Taro",
+        "slug": null,
+        "price": 0.01,
+        "priceCents": 1,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "QA43U75KWINEWR7LUDNPTHQB",
+            "name": "Regular",
+            "price": 0.01,
+            "priceCents": 1,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Creamy taro milk tea made with jasmine tea and milk. Smooth and lightly sweet."
+      },
+      "tursoStaging": [
+        {
+          "id": "WWGWZ5BMAKS2IW6LGAWMBBNR",
+          "name": "Taro Boba ",
+          "squareItemId": "WWGWZ5BMAKS2IW6LGAWMBBNR",
+          "active": 1,
+          "variationId": "QA43U75KWINEWR7LUDNPTHQB",
+          "squareVariationId": "QA43U75KWINEWR7LUDNPTHQB",
+          "size": "Regular",
+          "priceCents": 975,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "ITEM_NAME_DIVERGENCE_REQUIRES_REVIEW",
+          "values": {
+            "squarePublic": "taro",
+            "tursoStaging": "taro boba"
+          }
+        },
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "QA43U75KWINEWR7LUDNPTHQB",
+          "sourceCents": 975,
+          "squarePublicCents": 1
+        },
+        {
+          "code": "SQUARE_PLACEHOLDER_PRICE",
+          "cents": [
+            1
+          ]
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "XKZXOZBGODJVNB5VKRQ3GYAT",
+      "name": "Lemonade",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "XKZXOZBGODJVNB5VKRQ3GYAT",
+        "name": "Lemonade",
+        "slug": null,
+        "price": 12.47,
+        "priceCents": 1247,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "IVWGUJH4IRI3X3LQATMQCLPY",
+            "name": "Regular",
+            "price": 12.47,
+            "priceCents": 1247,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "XUEOA3GWSGVUH5DPQQFSLEFC",
+      "name": "(b)  Pineapple Fruit",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "XUEOA3GWSGVUH5DPQQFSLEFC",
+        "name": "(b)  Pineapple Fruit",
+        "slug": null,
+        "price": 0.5,
+        "priceCents": 50,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "WL6QSXZGG2JAC47EWMINJD6L",
+            "name": "Regular",
+            "price": 0.5,
+            "priceCents": 50,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "XY2QUSN37ZPPI5SUTBP2XWKW",
+      "name": "(a) Sm Sweet Tea ",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "XY2QUSN37ZPPI5SUTBP2XWKW",
+        "name": "(a) Sm Sweet Tea ",
+        "slug": null,
+        "price": 4.99,
+        "priceCents": 499,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "FDXC7JKZJFIAS5X5EOXT6Y7B",
+            "name": "Regular",
+            "price": 4.99,
+            "priceCents": 499,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "XZBLCZKU2AW3FUBPYD2IE2O5",
+      "name": "Rooted in Gratitude",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "XZBLCZKU2AW3FUBPYD2IE2O5",
+        "name": "Rooted in Gratitude",
+        "slug": "rooted-in-gratitude",
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": true,
+        "inStock": false,
+        "stock": 0,
+        "currentStock": 0,
+        "variationId": "4QEYUKKHVUDNRSYYUIK6FPYF",
+        "variations": [
+          {
+            "id": "4QEYUKKHVUDNRSYYUIK6FPYF",
+            "name": "Regular",
+            "sku": "Y969342",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "sea moss",
+            "icon": "\u00f0\u009f\u008c\u008a",
+            "benefits": [
+              "92 essential minerals"
+            ]
+          },
+          {
+            "name": "pineapple",
+            "icon": "\u00f0\u009f\u008d\u008d",
+            "benefits": [
+              "vitamin C",
+              "digestion"
+            ]
+          },
+          {
+            "name": "ginger",
+            "icon": "\u00f0\u009f\u00ab\u009a",
+            "benefits": [
+              "digestion",
+              "nausea relief",
+              "immunity"
+            ]
+          },
+          {
+            "name": "lemon",
+            "icon": "\u00f0\u009f\u008d\u008b",
+            "benefits": [
+              "vitamin C",
+              "alkalizing"
+            ]
+          },
+          {
+            "name": "agave",
+            "icon": "\u00f0\u009f\u008d\u00af",
+            "benefits": [
+              "natural sweetener",
+              "low glycemic",
+              "energy"
+            ]
+          },
+          {
+            "name": "apple",
+            "icon": "\u00f0\u009f\u008d\u008e",
+            "benefits": [
+              "fiber",
+              "heart health",
+              "hydration"
+            ]
+          }
+        ],
+        "description": "Beet, pineapple, parsley, celery, lemon, ginger, apples, sea moss, agave, alkaline water \n\u00e2\u0086\u0092 Promotes circulation, liver detox, hydration, and inflammation relief"
+      },
+      "squarePublicReadback": {
+        "id": "XZBLCZKU2AW3FUBPYD2IE2O5",
+        "name": "Rooted in Gratitude",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "4QEYUKKHVUDNRSYYUIK6FPYF",
+            "name": "Regular",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Beet, pineapple, parsley, celery, lemon, ginger, apples, sea moss, agave, alkaline water \n\u00e2\u0086\u0092 Promotes circulation, liver detox, hydration, and inflammation relief"
+      },
+      "tursoStaging": [
+        {
+          "id": "XZBLCZKU2AW3FUBPYD2IE2O5",
+          "name": "Rooted in Gratitude",
+          "squareItemId": "XZBLCZKU2AW3FUBPYD2IE2O5",
+          "active": 1,
+          "variationId": "4QEYUKKHVUDNRSYYUIK6FPYF",
+          "squareVariationId": "4QEYUKKHVUDNRSYYUIK6FPYF",
+          "size": "Regular",
+          "priceCents": 1199,
+          "currency": "USD",
+          "stock": 0,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "UNAVAILABLE_NO_PREORDER_CAPACITY_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "Y3IM4R5YLLZ3FBONT6YIMSW7",
+      "name": "(a)  Sm Milk Tea ",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "Y3IM4R5YLLZ3FBONT6YIMSW7",
+        "name": "(a)  Sm Milk Tea ",
+        "slug": null,
+        "price": 9.99,
+        "priceCents": 999,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "FVIWLAJAANGZLKC25HBYCBJ7",
+            "name": "Regular",
+            "price": 9.99,
+            "priceCents": 999,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Light, refreshing aloe pieces (best with refreshers)"
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "YBS6LGXSQXEWSSJ6KMYNO4GA",
+      "name": "Sea moss",
+      "sources": [
+        "squarePublic"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "YBS6LGXSQXEWSSJ6KMYNO4GA",
+        "name": "Sea moss",
+        "slug": null,
+        "price": 35.99,
+        "priceCents": 3599,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "GJJBDU5F7TXTWETH5STKJU7A",
+            "name": "Regular",
+            "price": 35.99,
+            "priceCents": 3599,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": null
+      },
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "NO_AUTO_PUBLICATION_MERCHANT_SCOPE_NOT_ESTABLISHED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "YJ7KN2IT34JVXBOI5UHRSHZ4",
+      "name": "Healing Harmony",
+      "sources": [
+        "production",
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": {
+        "id": "YJ7KN2IT34JVXBOI5UHRSHZ4",
+        "name": "Healing Harmony",
+        "slug": "healing-harmony",
+        "price": 36,
+        "priceCents": 3600,
+        "checkoutReady": true,
+        "inStock": true,
+        "stock": 1,
+        "currentStock": 1,
+        "variationId": "JIYUFU7SUN3WUDK2FJ7CG7ZR",
+        "variations": [
+          {
+            "id": "JIYUFU7SUN3WUDK2FJ7CG7ZR",
+            "name": "",
+            "sku": null,
+            "price": 36,
+            "priceCents": 3600,
+            "currency": "USD",
+            "trackQuantity": false,
+            "inventoryAlertThreshold": null
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "sea moss",
+            "icon": "\u00f0\u009f\u008c\u008a",
+            "benefits": [
+              "92 essential minerals"
+            ]
+          }
+        ],
+        "description": "Soursop\nRich in antioxidants, supports immune health, may help reduce inflammation\nCinnamon\nHelps regulate blood sugar, anti-inflammatory, warming spice\nStar Anise\nSupports digestion, antimicrobial properties, aromatic flavor\nSea Moss\nProvides 92 minerals, collagen support for skin/joints, thyroid balance, gut + respiratory health\nAlkaline Water\nHydrating, helps maintain pH balance"
+      },
+      "squarePublicReadback": {
+        "id": "YJ7KN2IT34JVXBOI5UHRSHZ4",
+        "name": "Healing Harmony",
+        "slug": null,
+        "price": 35,
+        "priceCents": 3500,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "JIYUFU7SUN3WUDK2FJ7CG7ZR",
+            "name": "Default",
+            "price": 35,
+            "priceCents": 3500,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Ingredients\n\nSea Moss\nSoursop (Graviola)\nChai Tea\nCardamom\nFennel\nBlack Peppercorn\nGinger\nLocal Honey\nAlkaline Water\n\nSupports Digestive Health\nRich in Antioxidants\nWarming Herbal Blend\nSupports Immune Health\nMineral-Rich Nourishment\nSupports Overall Wellness"
+      },
+      "tursoStaging": [
+        {
+          "id": "YJ7KN2IT34JVXBOI5UHRSHZ4",
+          "name": "Healing Harmony",
+          "squareItemId": "YJ7KN2IT34JVXBOI5UHRSHZ4",
+          "active": 1,
+          "variationId": "JIYUFU7SUN3WUDK2FJ7CG7ZR",
+          "squareVariationId": "JIYUFU7SUN3WUDK2FJ7CG7ZR",
+          "size": "",
+          "priceCents": 3600,
+          "currency": "USD",
+          "stock": 1,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "production",
+          "variationId": "JIYUFU7SUN3WUDK2FJ7CG7ZR",
+          "sourceCents": 3600,
+          "squarePublicCents": 3500
+        },
+        {
+          "code": "VARIATION_PRICE_MISMATCH",
+          "source": "tursoStaging",
+          "variationId": "JIYUFU7SUN3WUDK2FJ7CG7ZR",
+          "sourceCents": 3600,
+          "squarePublicCents": 3500
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "YZ3UZVLXBZXBECFGQJLPC4Z4",
+      "name": "Pineapple Basil",
+      "sources": [
+        "squarePublic",
+        "tursoStaging"
+      ],
+      "production": null,
+      "squarePublicReadback": {
+        "id": "YZ3UZVLXBZXBECFGQJLPC4Z4",
+        "name": "Pineapple Basil",
+        "slug": null,
+        "price": 11.99,
+        "priceCents": 1199,
+        "checkoutReady": null,
+        "inStock": true,
+        "stock": null,
+        "currentStock": null,
+        "variationId": null,
+        "variations": [
+          {
+            "id": "DQBEZLKFX6LCTPJRED7OCO4C",
+            "name": "16oz",
+            "price": 11.99,
+            "priceCents": 1199,
+            "currency": "USD"
+          },
+          {
+            "id": "CK5KKPVKNSAH2GN2MC2FS2HP",
+            "name": "64oz",
+            "price": 47.96,
+            "priceCents": 4796,
+            "currency": "USD"
+          }
+        ],
+        "ingredients": null,
+        "description": "Pineapple Basil Lemonade: Pineapple Basil , lemons, alkaline water, agave."
+      },
+      "tursoStaging": [
+        {
+          "id": "YZ3UZVLXBZXBECFGQJLPC4Z4",
+          "name": "Pineapple Basil",
+          "squareItemId": "YZ3UZVLXBZXBECFGQJLPC4Z4",
+          "active": 1,
+          "variationId": "CK5KKPVKNSAH2GN2MC2FS2HP",
+          "squareVariationId": "CK5KKPVKNSAH2GN2MC2FS2HP",
+          "size": "64oz",
+          "priceCents": 4796,
+          "currency": "USD",
+          "stock": 28,
+          "stockActive": 1
+        },
+        {
+          "id": "YZ3UZVLXBZXBECFGQJLPC4Z4",
+          "name": "Pineapple Basil",
+          "squareItemId": "YZ3UZVLXBZXBECFGQJLPC4Z4",
+          "active": 1,
+          "variationId": "DQBEZLKFX6LCTPJRED7OCO4C",
+          "squareVariationId": "DQBEZLKFX6LCTPJRED7OCO4C",
+          "size": "16oz",
+          "priceCents": 1199,
+          "currency": "USD",
+          "stock": 28,
+          "stockActive": 1
+        }
+      ],
+      "merchantInstructions": null,
+      "findings": [],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "SNAPSHOT_PARITY_ONLY_NOT_PRODUCTION_CERTIFIED",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "cucumber-mint-ginger",
+      "name": "Cucumber Mint Ginger",
+      "sources": [
+        "production"
+      ],
+      "production": {
+        "id": "cucumber-mint-ginger",
+        "name": "Cucumber Mint Ginger",
+        "slug": "cucumber-mint-ginger",
+        "price": 9,
+        "priceCents": 900,
+        "checkoutReady": false,
+        "inStock": true,
+        "stock": 20,
+        "currentStock": null,
+        "variationId": "tog-9-cucumber-",
+        "variations": [
+          {
+            "id": "tog-0-cucumber-",
+            "name": "16oz bottle",
+            "price": 9,
+            "priceCents": 900
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Cucumber"
+          },
+          {
+            "name": "Mint"
+          },
+          {
+            "name": "Ginger"
+          },
+          {
+            "name": "Lime"
+          },
+          {
+            "name": "Agave"
+          },
+          {
+            "name": "Alkaline Water"
+          }
+        ],
+        "description": "Cucumber, mint, ginger, and lime in a clean market refresher."
+      },
+      "squarePublicReadback": null,
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NO_SQUARE_ITEM_IN_PUBLIC_SNAPSHOT",
+          "checkoutReady": false,
+          "inStock": true,
+          "stock": 20
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "elderberry-apple-gel",
+      "name": "Elderberry Apple Gel",
+      "sources": [
+        "production"
+      ],
+      "production": {
+        "id": "elderberry-apple-gel",
+        "name": "Elderberry Apple Gel",
+        "slug": "elderberry-apple-gel",
+        "price": 36,
+        "priceCents": 3600,
+        "checkoutReady": false,
+        "inStock": true,
+        "stock": 20,
+        "currentStock": null,
+        "variationId": "tog-15-elderberr",
+        "variations": [
+          {
+            "id": "tog-0-elderberr",
+            "name": "16oz jar",
+            "price": 36,
+            "priceCents": 3600
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Sea Moss"
+          },
+          {
+            "name": "Elderberry"
+          },
+          {
+            "name": "Apple"
+          },
+          {
+            "name": "Ginger"
+          },
+          {
+            "name": "Lemon"
+          },
+          {
+            "name": "Alkaline Water"
+          }
+        ],
+        "description": "Elderberry, apple, ginger, lemon, and sea moss in a fruit-forward gel."
+      },
+      "squarePublicReadback": null,
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NO_SQUARE_ITEM_IN_PUBLIC_SNAPSHOT",
+          "checkoutReady": false,
+          "inStock": true,
+          "stock": 20
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "electric-melon",
+      "name": "Electric Melon",
+      "sources": [
+        "production"
+      ],
+      "production": {
+        "id": "electric-melon",
+        "name": "Electric Melon",
+        "slug": "electric-melon",
+        "price": 10,
+        "priceCents": 1000,
+        "checkoutReady": false,
+        "inStock": true,
+        "stock": 4,
+        "currentStock": null,
+        "variationId": "tog-10-electric-",
+        "variations": [
+          {
+            "id": "tog-0-electric-",
+            "name": "16oz bottle",
+            "price": 10,
+            "priceCents": 1000
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Watermelon"
+          },
+          {
+            "name": "Lime"
+          },
+          {
+            "name": "Mint"
+          },
+          {
+            "name": "Ginger"
+          },
+          {
+            "name": "Sea Moss"
+          },
+          {
+            "name": "Agave"
+          },
+          {
+            "name": "Alkaline Water"
+          }
+        ],
+        "description": "Watermelon, lime, mint, ginger, and sea moss in a bright refresher."
+      },
+      "squarePublicReadback": null,
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NO_SQUARE_ITEM_IN_PUBLIC_SNAPSHOT",
+          "checkoutReady": false,
+          "inStock": true,
+          "stock": 4
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "floral-tide-gel",
+      "name": "Floral Tide Gel",
+      "sources": [
+        "production"
+      ],
+      "production": {
+        "id": "floral-tide-gel",
+        "name": "Floral Tide Gel",
+        "slug": "floral-tide-gel",
+        "price": 36,
+        "priceCents": 3600,
+        "checkoutReady": false,
+        "inStock": true,
+        "stock": 4,
+        "currentStock": null,
+        "variationId": "tog-17-floral-ti",
+        "variations": [
+          {
+            "id": "tog-0-floral-ti",
+            "name": "2oz sample",
+            "price": 11,
+            "priceCents": 1100
+          },
+          {
+            "id": "tog-1-floral-ti",
+            "name": "16oz jar",
+            "price": 36,
+            "priceCents": 3600
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Sea Moss"
+          },
+          {
+            "name": "Hibiscus"
+          },
+          {
+            "name": "Cranberry"
+          },
+          {
+            "name": "Pineapple"
+          },
+          {
+            "name": "Orange"
+          },
+          {
+            "name": "Turmeric"
+          },
+          {
+            "name": "Ginger"
+          },
+          {
+            "name": "Lemon"
+          },
+          {
+            "name": "Agave"
+          },
+          {
+            "name": "Bee Pollen"
+          },
+          {
+            "name": "Alkaline Water"
+          }
+        ],
+        "description": "A hibiscus-cranberry sea moss gel with citrus, ginger, turmeric, and bee pollen."
+      },
+      "squarePublicReadback": null,
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NO_SQUARE_ITEM_IN_PUBLIC_SNAPSHOT",
+          "checkoutReady": false,
+          "inStock": true,
+          "stock": 4
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "grateful-defense",
+      "name": "Elderberry Ginger Shot",
+      "sources": [
+        "production"
+      ],
+      "production": {
+        "id": "grateful-defense",
+        "name": "Elderberry Ginger Shot",
+        "slug": "grateful-defense",
+        "price": 5,
+        "priceCents": 500,
+        "checkoutReady": false,
+        "inStock": true,
+        "stock": 20,
+        "currentStock": null,
+        "variationId": "tog-19-grateful-",
+        "variations": [
+          {
+            "id": "tog-0-grateful-",
+            "name": "2oz shot",
+            "price": 5,
+            "priceCents": 500
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Elderberry"
+          },
+          {
+            "name": "Cranberry"
+          },
+          {
+            "name": "Apple"
+          },
+          {
+            "name": "Ginger"
+          },
+          {
+            "name": "Lemon"
+          },
+          {
+            "name": "Echinacea"
+          },
+          {
+            "name": "Sea Moss"
+          },
+          {
+            "name": "Alkaline Water"
+          }
+        ],
+        "description": "An elderberry, echinacea, ginger, lemon, cranberry, apple, and sea moss shot."
+      },
+      "squarePublicReadback": null,
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NO_SQUARE_ITEM_IN_PUBLIC_SNAPSHOT",
+          "checkoutReady": false,
+          "inStock": true,
+          "stock": 20
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "grateful-greens-gel",
+      "name": "Grateful Greens Gel",
+      "sources": [
+        "production"
+      ],
+      "production": {
+        "id": "grateful-greens-gel",
+        "name": "Grateful Greens Gel",
+        "slug": "grateful-greens-gel",
+        "price": 35,
+        "priceCents": 3500,
+        "checkoutReady": false,
+        "inStock": true,
+        "stock": 4,
+        "currentStock": null,
+        "variationId": "tog-13-grateful-",
+        "variations": [
+          {
+            "id": "tog-0-grateful-",
+            "name": "16oz jar",
+            "price": 35,
+            "priceCents": 3500
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Sea Moss"
+          },
+          {
+            "name": "Holy Basil"
+          },
+          {
+            "name": "Spirulina"
+          },
+          {
+            "name": "Chlorophyll"
+          },
+          {
+            "name": "Chlorella"
+          },
+          {
+            "name": "Local Honey"
+          },
+          {
+            "name": "Alkaline Water"
+          }
+        ],
+        "description": "A green sea moss gel with spirulina, chlorophyll, chlorella, holy basil, and honey."
+      },
+      "squarePublicReadback": null,
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NO_SQUARE_ITEM_IN_PUBLIC_SNAPSHOT",
+          "checkoutReady": false,
+          "inStock": true,
+          "stock": 4
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "healing-harmony-gel",
+      "name": "Soursop Spice Sea Moss Gel",
+      "sources": [
+        "production"
+      ],
+      "production": {
+        "id": "healing-harmony-gel",
+        "name": "Soursop Spice Sea Moss Gel",
+        "slug": "healing-harmony-gel",
+        "price": 35,
+        "priceCents": 3500,
+        "checkoutReady": false,
+        "inStock": true,
+        "stock": 20,
+        "currentStock": null,
+        "variationId": "tog-14-healing-h",
+        "variations": [
+          {
+            "id": "tog-0-healing-h",
+            "name": "16oz jar",
+            "price": 35,
+            "priceCents": 3500
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Sea Moss"
+          },
+          {
+            "name": "Soursop"
+          },
+          {
+            "name": "Cinnamon"
+          },
+          {
+            "name": "Star Anise"
+          },
+          {
+            "name": "Alkaline Water"
+          }
+        ],
+        "description": "A warm-spiced soursop sea moss gel with cinnamon and star anise."
+      },
+      "squarePublicReadback": null,
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NO_SQUARE_ITEM_IN_PUBLIC_SNAPSHOT",
+          "checkoutReady": false,
+          "inStock": true,
+          "stock": 20
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "peach-refresher",
+      "name": "Peach Refresher",
+      "sources": [
+        "production"
+      ],
+      "production": {
+        "id": "peach-refresher",
+        "name": "Peach Refresher",
+        "slug": "peach-refresher",
+        "price": 9,
+        "priceCents": 900,
+        "checkoutReady": false,
+        "inStock": true,
+        "stock": 20,
+        "currentStock": null,
+        "variationId": "tog-6-peach-ref",
+        "variations": [
+          {
+            "id": "tog-0-peach-ref",
+            "name": "16oz bottle",
+            "price": 9,
+            "priceCents": 900
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Peach"
+          },
+          {
+            "name": "Cucumber"
+          },
+          {
+            "name": "Mint"
+          },
+          {
+            "name": "Lime"
+          },
+          {
+            "name": "Agave"
+          },
+          {
+            "name": "Alkaline Water"
+          }
+        ],
+        "description": "A lighter peach cucumber mint refresher for hot market days."
+      },
+      "squarePublicReadback": null,
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NO_SQUARE_ITEM_IN_PUBLIC_SNAPSHOT",
+          "checkoutReady": false,
+          "inStock": true,
+          "stock": 20
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "peach-sea-moss-fizz",
+      "name": "Peach Sea Moss Fizz",
+      "sources": [
+        "production"
+      ],
+      "production": {
+        "id": "peach-sea-moss-fizz",
+        "name": "Peach Sea Moss Fizz",
+        "slug": "peach-sea-moss-fizz",
+        "price": 10,
+        "priceCents": 1000,
+        "checkoutReady": false,
+        "inStock": true,
+        "stock": 4,
+        "currentStock": null,
+        "variationId": "tog-7-peach-sea",
+        "variations": [
+          {
+            "id": "tog-0-peach-sea",
+            "name": "16oz bottle",
+            "price": 10,
+            "priceCents": 1000
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Peach"
+          },
+          {
+            "name": "Lemon"
+          },
+          {
+            "name": "Sea Moss"
+          },
+          {
+            "name": "Agave"
+          },
+          {
+            "name": "Sparkling Water"
+          }
+        ],
+        "description": "A sparkling peach sea moss refresher with lemon and agave."
+      },
+      "squarePublicReadback": null,
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NO_SQUARE_ITEM_IN_PUBLIC_SNAPSHOT",
+          "checkoutReady": false,
+          "inStock": true,
+          "stock": 4
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "strawberry-rose-ginger",
+      "name": "Strawberry Rose Ginger",
+      "sources": [
+        "production"
+      ],
+      "production": {
+        "id": "strawberry-rose-ginger",
+        "name": "Strawberry Rose Ginger",
+        "slug": "strawberry-rose-ginger",
+        "price": 9,
+        "priceCents": 900,
+        "checkoutReady": false,
+        "inStock": true,
+        "stock": 20,
+        "currentStock": null,
+        "variationId": "tog-8-strawberr",
+        "variations": [
+          {
+            "id": "tog-0-strawberr",
+            "name": "16oz bottle",
+            "price": 9,
+            "priceCents": 900
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Strawberry"
+          },
+          {
+            "name": "Rose"
+          },
+          {
+            "name": "Ginger"
+          },
+          {
+            "name": "Lime"
+          },
+          {
+            "name": "Agave"
+          },
+          {
+            "name": "Alkaline Water"
+          }
+        ],
+        "description": "A floral strawberry refresher with rose, ginger, lime, and agave."
+      },
+      "squarePublicReadback": null,
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NO_SQUARE_ITEM_IN_PUBLIC_SNAPSHOT",
+          "checkoutReady": false,
+          "inStock": true,
+          "stock": 20
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    },
+    {
+      "productId": "vitamin-sea",
+      "name": "Vitamin Sea",
+      "sources": [
+        "production"
+      ],
+      "production": {
+        "id": "vitamin-sea",
+        "name": "Vitamin Sea",
+        "slug": "vitamin-sea",
+        "price": 10,
+        "priceCents": 1000,
+        "checkoutReady": false,
+        "inStock": true,
+        "stock": 20,
+        "currentStock": null,
+        "variationId": "tog-11-vitamin-s",
+        "variations": [
+          {
+            "id": "tog-0-vitamin-s",
+            "name": "16oz bottle",
+            "price": 10,
+            "priceCents": 1000
+          }
+        ],
+        "ingredients": [
+          {
+            "name": "Orange"
+          },
+          {
+            "name": "Pineapple"
+          },
+          {
+            "name": "Lemon"
+          },
+          {
+            "name": "Ginger"
+          },
+          {
+            "name": "Sea Moss"
+          },
+          {
+            "name": "Agave"
+          },
+          {
+            "name": "Alkaline Water"
+          }
+        ],
+        "description": "A citrus-pineapple sea moss refresher preserved as a seasonal menu item."
+      },
+      "squarePublicReadback": null,
+      "tursoStaging": [],
+      "merchantInstructions": null,
+      "findings": [
+        {
+          "code": "NO_SQUARE_ITEM_IN_PUBLIC_SNAPSHOT",
+          "checkoutReady": false,
+          "inStock": true,
+          "stock": 20
+        }
+      ],
+      "actualCatalogMutationPerformed": false,
+      "requiredReleaseDisposition": "RELEASE_BLOCKED_PENDING_CATALOG_OR_STOCK_RECONCILIATION",
+      "runtimeEnforcement": "Not changed by this read-only report; see production.checkoutReady and production.inStock separately."
+    }
+  ]
+}

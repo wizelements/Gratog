@@ -1,11 +1,12 @@
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
+import {tursoPreviewSelected,TursoPreviewRefusal} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {createTursoPreviewBuyerOrder} from '@/lib/checkout/turso-preview-buyer.mjs';
 import { createOrderAtomic } from '@/lib/transactions';
 import { createHash, randomUUID } from 'crypto';
 import {
   getIdempotencyKeyFromHeaders,
-  withIdempotency,
   isValidIdempotencyKey,
   IdempotencyAdmissionError,
 } from '@/lib/idempotency';
@@ -46,6 +47,14 @@ export async function POST(request) {
         },
         { status: 400 }
       );
+    }
+
+    // Isolated, explicitly enabled feature Preview uses Turso exclusively.
+    // Any missing Preview credential or unsupported delivery mode fails closed;
+    // production continues the existing Mongo-backed checkout below.
+    if (tursoPreviewSelected()) {
+      const payload=await createTursoPreviewBuyerOrder(orderData,idempotencyKey);
+      return NextResponse.json(payload);
     }
 
     // Fulfillment restrictions must be checked before creating a payable order.
@@ -126,6 +135,11 @@ export async function POST(request) {
       throw err;
     }
 
+    // No payable guest checkout without a stable request identity.
+    if (!idempotencyKey) {
+      return NextResponse.json({ success: false, code: 'CHECKOUT_KEY_REQUIRED', error: 'Please restart checkout to safely prepare your order.' }, { status: 428 });
+    }
+    const checkoutRequestFingerprint = createHash('sha256').update(JSON.stringify(orderData)).digest('hex');
     const orderId = randomUUID();
     const timestamp = new Date();
     const storedFulfillment = buildStoredFulfillment(orderData, fulfillmentQuote);
@@ -133,6 +147,9 @@ export async function POST(request) {
     // Build order object — pricing comes from the server, not the client.
     const enhancedOrder = {
       id: orderId,
+      // Protected by a unique MongoDB index; never dedupe with a read-then-write cache.
+      checkoutAttemptKey: idempotencyKey,
+      checkoutRequestFingerprint,
       customerId: orderData.customer?.email || null,
       customerEmail: orderData.customer?.email,
       customerName: orderData.customer?.name,
@@ -219,57 +236,39 @@ export async function POST(request) {
       version: 1,
     };
 
-    // Wrap order creation in idempotency check
-    const createOrder = async () => {
-      try {
-        const order = await createOrderAtomic(enhancedOrder);
-
-        // INTENTIONAL NO-OP: reward points used to be fired here in
-        // parallel with /api/payments, which double-awarded every order.
-        // Rewards are now awarded only on confirmed payment success.
-
-        // Mint an order access token so the (guest) checkout can authorize
-        // its subsequent POST /api/payments call.
-        const accessToken = generateOrderAccessToken({
-          orderId: order.id,
-          customerEmail: order.customerEmail,
-          ttlMs: ORDER_ACCESS_TOKEN_TTL_MS,
-        });
-
-        return {
-          success: true,
-          order: {
-            id: order.id,
-            orderNumber: `TOG-${order.id.slice(-8)}`,
-            status: order.status,
-            paymentStatus: order.paymentStatus,
-            squareOrderId: order.squareOrderId || null,
-            squareCustomerId: order.squareCustomerId || null,
-            orderAccessToken: accessToken,
-            orderAccessTokenExpiresAt: accessToken
-              ? new Date(Date.now() + ORDER_ACCESS_TOKEN_TTL_MS).toISOString()
-              : null,
-            items: order.items,
-            pricing: {
-              subtotal: order.subtotal,
-              deliveryFee: order.deliveryFee || 0,
-              tip: order.deliveryTip || 0,
-              discount: order.couponDiscount || 0,
-              tax: order.tax || 0,
-              total: order.total,
-            },
-            fulfillment: order.fulfillment || null,
-            appliedCoupon: order.appliedCoupon,
+    const presentOrder = (order) => {
+      // Mint a fresh short-lived guest credential on every safe replay.
+      const accessToken = generateOrderAccessToken({
+        orderId: order.id,
+        customerEmail: order.customerEmail,
+        ttlMs: ORDER_ACCESS_TOKEN_TTL_MS,
+      });
+      return {
+        success: true,
+        order: {
+          id: order.id,
+          orderNumber: `TOG-${order.id.slice(-8)}`,
+          status: order.status,
+          paymentStatus: order.paymentStatus,
+          squareOrderId: order.squareOrderId || null,
+          squareCustomerId: order.squareCustomerId || null,
+          orderAccessToken: accessToken,
+          orderAccessTokenExpiresAt: accessToken
+            ? new Date(Date.now() + ORDER_ACCESS_TOKEN_TTL_MS).toISOString()
+            : null,
+          items: order.items,
+          pricing: {
+            subtotal: order.subtotal,
+            deliveryFee: order.deliveryFee || 0,
+            tip: order.deliveryTip || 0,
+            discount: order.couponDiscount || 0,
+            tax: order.tax || 0,
+            total: order.total,
           },
-        };
-      } catch (dbError) {
-        console.error('Atomic order creation failed:', dbError);
-
-        if (dbError.code === 'ECONNREFUSED' || dbError.message?.includes('timeout')) {
-          throw dbError; // Let retry logic handle it
-        }
-        throw new Error(`Order creation failed: ${dbError.message}`);
-      }
+          fulfillment: order.fulfillment || null,
+          appliedCoupon: order.appliedCoupon,
+        },
+      };
     };
 
     // Immutable server fingerprint binds this retry ID to one customer's
@@ -282,6 +281,12 @@ export async function POST(request) {
     );
     return NextResponse.json(result);
   } catch (error) {
+    if (error instanceof TursoPreviewRefusal) {
+      return NextResponse.json({success:false,code:error.code,error:'This checkout option is temporarily unavailable. No charge was made.'},{status:error.status});
+    }
+    if (error?.code === 'CHECKOUT_ATTEMPT_CONFLICT' || error?.code === 'CHECKOUT_LEDGER_MISSING') {
+      return NextResponse.json({success:false,code:'CHECKOUT_ATTEMPT_CONFLICT',error:'This checkout attempt cannot be reused for a different cart.'},{status:409});
+    }
     if (error instanceof IdempotencyAdmissionError) {
       return NextResponse.json({ success: false, code: error.code, error: error.message },
         { status: error.status, headers: { 'Retry-After': '2', 'Cache-Control': 'no-store' } });

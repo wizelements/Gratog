@@ -1,0 +1,66 @@
+name: Turso Recovery Full Regression (no secrets)
+on:
+  push:
+    branches:
+      - feat/turso-checkout-recovery-20261017
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-application-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      VERCEL_ENV: preview
+      SQUARE_ENVIRONMENT: sandbox
+      SQUARE_ACCESS_TOKEN: ci-square-placeholder-no-provider-connection
+      SQUARE_APPLICATION_ID: ci-square-app-placeholder
+      SQUARE_LOCATION_ID: ci-square-location-placeholder
+      SQUARE_WEBHOOK_SIGNATURE_KEY: ci-square-webhook-placeholder
+      RESEND_WEBHOOK_SECRET: ci-resend-webhook-placeholder
+      JWT_SECRET: ci-test-secret-at-least-32-characters-long
+      ADMIN_SETUP_SECRET: ci-test-admin-setup-secret
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install application dependencies
+        run: npm ci --include=dev
+      - name: Full unit and domain suite
+        run: npm test -- --reporter=dot
+      - name: Fail-closed Gratitude Square signature regression
+        run: npx vitest run tests/gratitude-square-webhook-signature.test.ts --reporter=verbose
+      - name: Explicit current skipped-test disposition inventory
+        run: node scripts/release/audit-skipped-tests.mjs
+      - name: Release gate regression (no deployment mutation)
+        run: node --test tests/release/turso-cutover-gates.test.mjs
+      - name: Ensure no phantom inventory or placeholder-price availability
+        run: npx vitest run tests/catalog-unknown-stock-safety.test.ts --reporter=verbose
+      - name: Strict application typecheck
+        run: npm run typecheck:ci
+      - name: Next.js build using nonlive test credentials
+        run: npm run build
+      - name: Final migration-contract check with Node SQLite
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '26'
+      - name: Isolated Turso Preview pricing and security contracts
+        run: node --test tests/migration/turso-preview-pricing.test.mjs tests/migration/turso-reverse-delta-plan.test.mjs tests/migration/turso-order-read.test.mjs tests/migration/turso-notification-delivery.test.mjs tests/migration/mongo-clone-reverse-delta.test.mjs
+      - name: Backup encryption and certification subscription ownership regressions
+        run: node --test tests/migration/mongo-snapshot-archive.test.mjs tests/migration/square-certification-subscription.test.mjs tests/migration/legacy-commerce-references.test.mjs tests/migration/turso-preview-ownership.test.mjs
+      - name: Provider truth and catalog authority regressions
+        run: node --experimental-vm-modules --test tests/release/*.test.mjs
+      - name: Restore report failure-injection regressions
+        run: python -m unittest discover -s tests/release -p 'test_staging_restore_report.py' -v
+      - name: Migration and 24-client inventory stress
+        run: |
+          node scripts/migrate/validate-schema.mjs
+          node --test tests/migration/turso-checkout-contract.test.mjs tests/migration/turso-sqlite-contention.test.mjs tests/migration/turso-migration-hygiene.test.mjs tests/migration/turso-commerce-adapter.test.mjs tests/migration/turso-order-admission.test.mjs tests/migration/turso-events.test.mjs tests/migration/turso-payment-finalization.test.mjs tests/migration/turso-catalog-authority.test.mjs

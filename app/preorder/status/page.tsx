@@ -73,6 +73,7 @@ interface PreorderStatus {
   customerPhone?: string | null;
   paymentStatus?: string | null;
   paymentUrl?: string | null;
+  privateDetailsAvailable?: boolean;
 }
 
 function normalizeStatus(status: string): keyof typeof STATUS_CONFIG {
@@ -101,6 +102,7 @@ function toOrderStatus(preorder: any): PreorderStatus {
     customerPhone: preorder.customer?.phone || preorder.customerPhone || null,
     paymentStatus: preorder.paymentStatus || null,
     paymentUrl: preorder.paymentUrl || null,
+    privateDetailsAvailable: preorder.privateDetailsAvailable === true,
   };
 }
 
@@ -111,7 +113,7 @@ function getLookupParam(value: string) {
 
   if (upper.startsWith('PRE-')) return { key: 'orderNumber', value: trimmed };
   if (/^[A-Z]{1,3}-/.test(upper)) return { key: 'waitlistNumber', value: trimmed };
-  if (digits.length >= 7) return { key: 'phone', value: trimmed };
+  // Phone-number lookup is intentionally disabled to protect customer privacy.
   return { key: 'waitlistNumber', value: trimmed };
 }
 
@@ -324,8 +326,8 @@ function OrderStatusCard({ order }: { order: PreorderStatus }) {
 
         <Separator />
 
-        {/* Order Items */}
-        <div>
+        {/* Product contents and prices require an authorized checkout token. */}
+        {order.privateDetailsAvailable ? <div>
           <h4 className="font-medium mb-3">Order Summary</h4>
           <div className="space-y-2">
             {order.items.map((item, index) => (
@@ -339,7 +341,11 @@ function OrderStatusCard({ order }: { order: PreorderStatus }) {
             <span>Total</span>
             <span>${order.total.toFixed(2)}</span>
           </div>
-        </div>
+        </div> : (
+          <div className="rounded-lg border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
+            Order items, personal details and secure payment links are only available from your original checkout session. Contact Taste of Gratitude with your reference if you need to resume payment.
+          </div>
+        )}
 
         {/* Instructions */}
         <div className="bg-emerald-50 rounded-lg p-4">
@@ -391,7 +397,7 @@ function OrderStatusContent() {
 
   const handleLookup = async (lookupValue = orderId) => {
     if (!lookupValue.trim()) {
-      setError("Please enter your waitlist number, preorder number, or phone");
+      setError("Please enter your waitlist or preorder reference");
       return;
     }
 
@@ -401,8 +407,17 @@ function OrderStatusContent() {
     try {
       const trimmed = lookupValue.trim();
       const { key: param, value } = getLookupParam(trimmed);
+      let token: string | null = null;
+      try {
+        if (param === 'orderNumber') {
+          token = window.sessionStorage.getItem(`tog_preorder_access_${value}`);
+        }
+      } catch {
+        // Public queue progress remains visible with private fields redacted.
+      }
       const response = await fetch(`/api/preorder/status?${param}=${encodeURIComponent(value)}`, {
         cache: 'no-store',
+        headers: token ? { 'x-order-access-token': token } : {},
       });
       const data = await response.json();
 
@@ -461,7 +476,7 @@ function OrderStatusContent() {
                   <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Ticket className="w-8 h-8 text-emerald-600" />
                   </div>
-                  <h2 className="font-semibold text-lg">Enter your waitlist, preorder, or phone</h2>
+                  <h2 className="font-semibold text-lg">Enter your waitlist or preorder reference</h2>
                   <p className="text-sm text-gray-500 mt-1">
                     Check your position in line and order status from the live preorder system.
                   </p>
@@ -471,12 +486,12 @@ function OrderStatusContent() {
                   <div>
                     <Label htmlFor="orderId">
                       <Ticket className="w-4 h-4 inline mr-1" />
-                      Waitlist, preorder, or phone
+                      Waitlist or preorder reference
                     </Label>
                     <Input
                       id="orderId"
                       type="text"
-                      placeholder="e.g., S-1201, PRE-..., or phone"
+                      placeholder="e.g., S-1201 or PRE-..."
                       value={orderId}
                       onChange={(e) => setOrderId(e.target.value)}
                       className="mt-1 text-center text-lg"

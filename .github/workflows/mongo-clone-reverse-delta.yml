@@ -1,0 +1,61 @@
+name: Isolated Mongo Restore and Reverse Delta Fixture Certification
+on:
+  push:
+    branches: [feat/turso-checkout-recovery-20261017]
+    paths:
+      - 'lib/checkout/mongo-clone-reverse-delta.mjs'
+      - 'lib/checkout/turso-reverse-delta-plan.mjs'
+      - 'scripts/release/certify-mongo-clone-reverse-delta.mjs'
+      - 'tests/migration/mongo-clone-reverse-delta*.mjs'
+      - 'tests/release/recovery-notification-holds.test.mjs'
+      - 'lib/staff-notifications.js'
+      - '.github/workflows/mongo-clone-reverse-delta.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-source-real-restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install pinned application dependencies without scripts or secrets
+        run: npm ci --include=dev --ignore-scripts --no-audit --no-fund
+      - name: Validate clone guards and recovery manifests
+        run: node --test tests/migration/mongo-clone-reverse-delta.test.mjs tests/release/recovery-notification-holds.test.mjs
+      - name: Start dedicated loopback-only disposable Mongo replica
+        run: |
+          set -euo pipefail
+          docker run -d --rm --name tog-recovery-drill-ci \
+            -p 127.0.0.1:27027:27017 mongo:7.0 --replSet rs0 --bind_ip_all
+          for n in $(seq 1 40); do
+            if docker exec tog-recovery-drill-ci mongosh --quiet \
+              --eval 'db.adminCommand({ping:1}).ok' 2>/dev/null | grep -qx 1; then break; fi
+            sleep 1
+          done
+          docker exec tog-recovery-drill-ci mongosh --quiet \
+            --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"localhost:27017"}]})'
+          for n in $(seq 1 40); do
+            if docker exec tog-recovery-drill-ci mongosh --quiet \
+              --eval 'db.hello().isWritablePrimary' 2>/dev/null | grep -qx true; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Restore synthetic archive and execute interrupted, resumed and duplicate replay
+        run: node scripts/release/certify-mongo-clone-reverse-delta.mjs
+      - name: Preserve nonsecret evidence and explicit production exclusions
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: mongo-clone-reverse-delta-fixture-${{ github.run_id }}
+          path: test-results/mongo-clone-reverse-delta-proof.json
+          if-no-files-found: error
+      - name: Remove dedicated Mongo fixture server
+        if: always()
+        run: docker rm -f tog-recovery-drill-ci || true

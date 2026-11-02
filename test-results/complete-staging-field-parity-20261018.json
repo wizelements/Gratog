@@ -1,0 +1,372 @@
+{
+  "kind": "COMPLETE_IMPORTED_STAGING_ROW_FIELD_PARITY",
+  "pass": true,
+  "readOnly": true,
+  "productionDatabaseWritten": false,
+  "tables": [
+    {
+      "name": "analytics_events",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "batch_audit_log",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "batch_campaigns",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "batch_reservations",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "campaign_email_sends",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "campaigns",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "checkout_notification_deliveries",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "checkout_notification_delivery_events",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "checkout_notification_outbox",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "checkout_stock_claim_items",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "checkout_stock_claims",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "customer_addresses",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "customer_references",
+      "sourceRows": 14,
+      "destinationRows": 14,
+      "sourceHash": "e6715e0b86857b4c8947c2fd2dfc35cea28814a1184567e7053d1718613b75d4",
+      "destinationHash": "e6715e0b86857b4c8947c2fd2dfc35cea28814a1184567e7053d1718613b75d4",
+      "pass": true
+    },
+    {
+      "name": "customers",
+      "sourceRows": 7,
+      "destinationRows": 7,
+      "sourceHash": "0c1ee1f6491b7ebaa41c48c897942f5dd3e357a88b5281a0d8bbb5e9de9bfcb8",
+      "destinationHash": "0c1ee1f6491b7ebaa41c48c897942f5dd3e357a88b5281a0d8bbb5e9de9bfcb8",
+      "pass": true
+    },
+    {
+      "name": "deleted_campaigns",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "fresh_batch_requests",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "idempotency_keys",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "inventory",
+      "sourceRows": 40,
+      "destinationRows": 40,
+      "sourceHash": "a201c4c368d6948619c35bd57d5cfe2be91e53fd75a78f02e46da4cbf812ff3d",
+      "destinationHash": "a201c4c368d6948619c35bd57d5cfe2be91e53fd75a78f02e46da4cbf812ff3d",
+      "pass": true
+    },
+    {
+      "name": "inventory_events",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "inventory_variations",
+      "sourceRows": 44,
+      "destinationRows": 44,
+      "sourceHash": "4d6ee0c0c2ef6342967852d09992cd73d36343d4890366c05160dbb282607a17",
+      "destinationHash": "4d6ee0c0c2ef6342967852d09992cd73d36343d4890366c05160dbb282607a17",
+      "pass": true
+    },
+    {
+      "name": "markets",
+      "sourceRows": 3,
+      "destinationRows": 3,
+      "sourceHash": "9257aac4880928ce53b9241297e41221dd280c108e6beab3fecc9e649074ce25",
+      "destinationHash": "9257aac4880928ce53b9241297e41221dd280c108e6beab3fecc9e649074ce25",
+      "pass": true
+    },
+    {
+      "name": "menu_products",
+      "sourceRows": 7,
+      "destinationRows": 7,
+      "sourceHash": "68b98b4474f61069066d76419d55c543aae607411307bfb9e42cb3b2045ea48f",
+      "destinationHash": "68b98b4474f61069066d76419d55c543aae607411307bfb9e42cb3b2045ea48f",
+      "pass": true
+    },
+    {
+      "name": "menu_tags",
+      "sourceRows": 6,
+      "destinationRows": 6,
+      "sourceHash": "71a10fee3a621bb1df0c64e51c022e816d0d6796e540a53ce973af28a116296e",
+      "destinationHash": "71a10fee3a621bb1df0c64e51c022e816d0d6796e540a53ce973af28a116296e",
+      "pass": true
+    },
+    {
+      "name": "menus",
+      "sourceRows": 1,
+      "destinationRows": 1,
+      "sourceHash": "6bed6b09fa4c0ce6a195babbcd00fede6dccdcc541460b8ea4e8537ca959ec68",
+      "destinationHash": "6bed6b09fa4c0ce6a195babbcd00fede6dccdcc541460b8ea4e8537ca959ec68",
+      "pass": true
+    },
+    {
+      "name": "migration_checkpoints",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "migration_runs",
+      "sourceRows": 1,
+      "destinationRows": 1,
+      "sourceHash": "7bd7be4c3bec8f64da2914df3c0a3fefecfe597475238ebc8c171110a7f78d64",
+      "destinationHash": "7bd7be4c3bec8f64da2914df3c0a3fefecfe597475238ebc8c171110a7f78d64",
+      "pass": true
+    },
+    {
+      "name": "migration_source_records",
+      "sourceRows": 2681,
+      "destinationRows": 2681,
+      "sourceHash": "5b586e8804d72f63851b427e95b78e6cdf9036a9eeeb04b3d0d539ee69012020",
+      "destinationHash": "5b586e8804d72f63851b427e95b78e6cdf9036a9eeeb04b3d0d539ee69012020",
+      "pass": true
+    },
+    {
+      "name": "operational_records",
+      "sourceRows": 1722,
+      "destinationRows": 1722,
+      "sourceHash": "08edb1f1f4a234d3b35ce87af3ce2ef5f469723006dd5728ed1b1364ec030e98",
+      "destinationHash": "08edb1f1f4a234d3b35ce87af3ce2ef5f469723006dd5728ed1b1364ec030e98",
+      "pass": true
+    },
+    {
+      "name": "order_items",
+      "sourceRows": 1236,
+      "destinationRows": 1236,
+      "sourceHash": "0f79894bbf3d31ea79af8b952e753e713ce4d58c1d37ce8d3c6c124ef2079b0b",
+      "destinationHash": "0f79894bbf3d31ea79af8b952e753e713ce4d58c1d37ce8d3c6c124ef2079b0b",
+      "pass": true
+    },
+    {
+      "name": "order_references",
+      "sourceRows": 969,
+      "destinationRows": 969,
+      "sourceHash": "fa2b6bd9ff072905ec63af40708235ca0c01079076f410bc3a8540aa633a23f4",
+      "destinationHash": "fa2b6bd9ff072905ec63af40708235ca0c01079076f410bc3a8540aa633a23f4",
+      "pass": true
+    },
+    {
+      "name": "orders",
+      "sourceRows": 864,
+      "destinationRows": 864,
+      "sourceHash": "5202ccfb03ab28d55fe4ab8de01f978c75cecbd323ffe4c6bd88cbfc8e74e4dc",
+      "destinationHash": "5202ccfb03ab28d55fe4ab8de01f978c75cecbd323ffe4c6bd88cbfc8e74e4dc",
+      "pass": true
+    },
+    {
+      "name": "payments",
+      "sourceRows": 3,
+      "destinationRows": 3,
+      "sourceHash": "f0591749f98bc8de3a1fea5b763d75c1351a037767f8cf28335f46bd416a1d6d",
+      "destinationHash": "f0591749f98bc8de3a1fea5b763d75c1351a037767f8cf28335f46bd416a1d6d",
+      "pass": true
+    },
+    {
+      "name": "product_variations",
+      "sourceRows": 44,
+      "destinationRows": 44,
+      "sourceHash": "6c6907c7a79fba580f766b1ac1b6a75744a1bb250441def4fa3f89473cd64bd3",
+      "destinationHash": "6c6907c7a79fba580f766b1ac1b6a75744a1bb250441def4fa3f89473cd64bd3",
+      "pass": true
+    },
+    {
+      "name": "products",
+      "sourceRows": 40,
+      "destinationRows": 40,
+      "sourceHash": "26f5a3b53882f57ce81d1f499c058e29ed6fd85c5693fd06624c1940a3a6db69",
+      "destinationHash": "26f5a3b53882f57ce81d1f499c058e29ed6fd85c5693fd06624c1940a3a6db69",
+      "pass": true
+    },
+    {
+      "name": "reward_accounts",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "reward_catalog",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "reward_passports",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "reward_redemptions",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "reward_referrals",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "reward_stamps",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "reward_transactions",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "runtime_counters",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "schema_migrations",
+      "sourceRows": 14,
+      "destinationRows": 14,
+      "sourceHash": "aef2e21f54af53139963d814d4c1c5bea427ca5929870ab8f4a3723c874d84c5",
+      "destinationHash": "aef2e21f54af53139963d814d4c1c5bea427ca5929870ab8f4a3723c874d84c5",
+      "pass": true
+    },
+    {
+      "name": "square_refund_entries",
+      "sourceRows": 0,
+      "destinationRows": 0,
+      "sourceHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "destinationHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass": true
+    },
+    {
+      "name": "webhook_events",
+      "sourceRows": 1,
+      "destinationRows": 1,
+      "sourceHash": "bf9b1a961f79ea8ff1fa56dadd26377b20103294c5e5dc86b22bf9bc656592d8",
+      "destinationHash": "bf9b1a961f79ea8ff1fa56dadd26377b20103294c5e5dc86b22bf9bc656592d8",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "tableCount": 45,
+  "totalVerifiedRows": 7697,
+  "verifiedAt": "2026-10-18T21:43:16.290Z"
+}

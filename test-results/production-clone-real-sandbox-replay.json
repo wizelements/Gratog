@@ -1,0 +1,61 @@
+{
+  "kind": "PRODUCTION_BACKUP_RESTORE_WITH_REAL_SANDBOX_REPLAY",
+  "pass": true,
+  "productionSourceWritten": false,
+  "productionPaymentsModified": false,
+  "providerEnvironment": "sandbox",
+  "finalProductionWriteFreezePerformed": false,
+  "productionDeploymentRollbackPerformed": false,
+  "productionCutoverAuthorized": false,
+  "checks": [
+    {
+      "name": "protected collector and certified deployed commit identities match",
+      "pass": true
+    },
+    {
+      "name": "authenticated provider evidence is fresh for the drill",
+      "pass": true
+    },
+    {
+      "name": "interruption rolls back new order payment refund and inventory atomically",
+      "pass": true
+    },
+    {
+      "name": "actual captured and refunded Sandbox order replays into the restored clone",
+      "pass": true
+    },
+    {
+      "name": "duplicate recovery replay changes neither money nor inventory",
+      "pass": true
+    },
+    {
+      "name": "delivered notifications are preserved under explicit resend holds",
+      "pass": true
+    },
+    {
+      "name": "all actual signed provider webhook event IDs survive rollback replay",
+      "pass": true
+    },
+    {
+      "name": "all 7919 historical documents survive except the verified one-unit inventory delta",
+      "pass": true
+    }
+  ],
+  "executedAt": "2026-10-18T21:28:59.739Z",
+  "archiveSha256": "d4e86858ca57846a1c4d05b99bcd4562b4efbeddfdfd74ead4c48e08cd5762c5",
+  "recoveryInputSha256": "59f2c0535b952b135ee2c02310c2723541ba4510611f90a3a73b78cd4ca32a0e",
+  "protectedCollectorRunId": "39167399729",
+  "authenticatedProviderReadbackAt": "2026-10-18T21:21:02.558Z",
+  "sourceSnapshotConsistent": true,
+  "sourceCollectionCount": 59,
+  "sourceDocumentCount": 7919,
+  "orderId": "269bc606-6b28-4891-959e-7349053ba1d8",
+  "paymentId": "07xAyvyCbhvmmOa0h2J9IrDMv2eZY",
+  "refundId": "07xAyvyCbhvmmOa0h2J9IrDMv2eZY_yaCRh2huuAVieL0UpjYYFeKLi0DErkxI4Fc85LHxmda",
+  "interruptionRollbackVerified": true,
+  "idempotentReplayVerified": true,
+  "historicalDataPreserved": true,
+  "capturedCents": 1199,
+  "refundedCents": 1199,
+  "notificationsHeld": 2
+}

@@ -177,10 +177,28 @@ describe('Component Import Safety', () => {
     return { importSuccessful, errorType };
   };
   
-  // These tests document which components have hydration issues
-  it.skip('WhatsNewModal should be importable in SSR context', async () => {
-    const result = await testComponentImport('../components/WhatsNewModal');
-    expect(result.errorType).not.toBe('ReferenceError');
+  // The removed WhatsNewModal module must not be referenced by active pages.
+  // Do not keep a permanently skipped import test for a nonexistent component.
+  it('retired WhatsNewModal has no active application references', async () => {
+    const { existsSync, readdirSync, readFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    expect(existsSync('components/WhatsNewModal.tsx')).toBe(false);
+    expect(existsSync('components/WhatsNewModal.jsx')).toBe(false);
+    expect(existsSync('components/WhatsNewModal.js')).toBe(false);
+    const activeFiles: string[] = [];
+    const scan = (directory: string) => {
+      for (const entry of readdirSync(directory, { withFileTypes: true })) {
+        const path = join(directory, entry.name);
+        if (entry.isDirectory()) scan(path);
+        else if (/\.(tsx?|jsx?)$/.test(entry.name) &&
+                 readFileSync(path, 'utf8').includes('WhatsNewModal')) {
+          activeFiles.push(path);
+        }
+      }
+    };
+    scan('app');
+    scan('components');
+    expect(activeFiles).toEqual([]);
   });
   
 

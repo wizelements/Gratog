@@ -7,7 +7,7 @@ test.describe('Real Georgia customer journeys — no charges, accounts or submit
     await page.goto('/');
     const mobileMenu = page.getByRole('button', { name: 'Open menu' });
     if (await mobileMenu.isVisible()) await mobileMenu.click();
-    await expect(page.getByRole('link', { name: 'Shop Online' }).first()).toHaveAttribute('href', '/catalog');
+    await expect(page.getByRole('link', { name: /^(Shop Online|Order for Yourself)$/ }).first()).toHaveAttribute('href', '/catalog');
     await expect(page.getByRole('link', { name: 'Market Preorders' }).first()).toHaveAttribute('href', '/weekly-menu');
     await expect(page.getByText('Orders fulfilled in Georgia only.', { exact: false }).first()).toBeVisible();
   });
@@ -80,10 +80,12 @@ test.describe('Real Georgia customer journeys — no charges, accounts or submit
 
   test('out-of-state order is rejected before an order or charge is created', async ({ request }) => {
     const response = await request.post('/api/orders/create', {
+      headers: { 'idempotency-key': 'qa-georgia-block-invalid-00001' },
       data: {
         customer: { name: 'Site QA', email: 'no-order@example.invalid' },
         cart: [{ id: 'qa-nonexistent-product', quantity: 1 }],
         fulfillmentType: 'shipping',
+        shippingMethod: 'standard',
         shippingAddress: { street: '123 Test Street', city: 'New York', state: 'NY', zip: '10001' },
       },
     });

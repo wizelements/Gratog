@@ -4,6 +4,7 @@ import { hashPassword, generateToken } from '@/lib/auth/jwt';
 import { createUser, initializeUserRewards, initializeUserChallenge } from '@/lib/db/users';
 import { sendWelcomeEmail } from '@/lib/email/service';
 import { connectToDatabase } from '@/lib/db-optimized';
+import {tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,12 +65,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate JWT token
-    const token = await generateToken(user.id, user.email);
+    const token = await generateToken(user.id, user.email, {passwordHash});
 
     // Reconcile pending_customers
     try {
-      const { db } = await connectToDatabase();
-      await db.collection('pending_customers').updateOne(
+      if (!tursoPreviewSelected()) {
+        const { db } = await connectToDatabase();
+        await db.collection('pending_customers').updateOne(
         { email: normalizedEmail },
         {
           $set: {
@@ -80,7 +82,8 @@ export async function POST(request: NextRequest) {
             convertedAt: new Date(),
           },
         }
-      );
+        );
+      }
     } catch (e) {
       console.warn('Pending customer reconciliation failed:', e);
     }

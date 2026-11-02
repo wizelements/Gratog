@@ -1,0 +1,49 @@
+name: Deployed read-only Playwright and Puppeteer audit
+on:
+  push:
+    branches: [feat/turso-checkout-recovery-20261017]
+    paths:
+      - 'scripts/release/browser-readonly-audit.cjs'
+      - '.github/workflows/deployed-readonly-browser-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  read-only-public-site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [playwright, puppeteer]
+    env:
+      BROWSER_ENGINE: ${{ matrix.engine }}
+      AUDIT_OUTPUT: test-results/deployed-browser-${{ matrix.engine }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked application and browser dependencies
+        run: |
+          npm ci --include=dev --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Install pinned independent Puppeteer driver in disposable directory
+        if: matrix.engine == 'puppeteer'
+        run: npm install --prefix "$RUNNER_TEMP/puppeteer-audit" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund puppeteer-core@25.12.0
+      - name: Inspect actual public pages without order, payment or notification writes
+        run: |
+          export BROWSER_EXECUTABLE="$(node -p 'require("playwright").chromium.executablePath()')"
+          export PUPPETEER_MODULE="$RUNNER_TEMP/puppeteer-audit/node_modules/puppeteer-core"
+          node scripts/release/browser-readonly-audit.cjs https://tasteofgratitude.shop
+      - name: Preserve successes, failures, unexecuted pages and real screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: deployed-readonly-${{ matrix.engine }}-${{ github.run_id }}
+          path: test-results/deployed-browser-${{ matrix.engine }}/
+          if-no-files-found: warn
+          retention-days: 14

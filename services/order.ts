@@ -137,6 +137,9 @@ function validateFulfillment(fulfillment: FulfillmentData): void {
     if (!fulfillment.pickup?.locationId) {
       throw new OrderCreationError('Pickup location is required', 'MISSING_PICKUP_LOCATION', 400);
     }
+    if (!fulfillment.pickup.date || Number.isNaN(fulfillment.pickup.date.getTime())) {
+      throw new OrderCreationError('Choose a valid pickup date', 'MISSING_PICKUP_DATE', 400);
+    }
   }
   
   if (fulfillment.type === 'shipping') {
@@ -230,7 +233,8 @@ export async function createOrder(
   if (fulfillment.type === 'pickup' && fulfillment.pickup) {
     payload.pickup = {
       locationId: fulfillment.pickup.locationId,
-      date: fulfillment.pickup.date?.toISOString() || new Date().toISOString(),
+      // Missing pickup date must never inject Date.now() into retry identity.
+      date: fulfillment.pickup.date?.toISOString(),
       instructions: sanitizeString(fulfillment.pickup.instructions, 500)
     };
     

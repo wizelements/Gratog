@@ -62,6 +62,7 @@ export async function PUT(request: NextRequest) {
 
     // Validate phone (optional)
     if (phone !== undefined && phone !== null && phone !== '') {
+      if(typeof phone!=='string')return NextResponse.json({success:false,error:'Phone must be a string'},{status:400});
       const digits = phone.replace(/\D/g, '');
       if (digits.length < 10 || digits.length > 15) {
         return NextResponse.json({ success: false, error: 'Phone must be 10-15 digits' }, { status: 400 });
@@ -73,6 +74,7 @@ export async function PUT(request: NextRequest) {
     if (phone !== undefined) updates.phone = phone;
 
     const updatedUser = await updateUser(decoded.userId, updates);
+    if(!updatedUser)return NextResponse.json({success:false,error:'Unauthorized'},{status:401});
 
     return NextResponse.json({
       success: true,

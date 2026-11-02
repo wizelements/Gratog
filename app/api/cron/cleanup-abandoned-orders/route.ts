@@ -6,19 +6,11 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import { sendEmail } from '@/lib/resend-email';
 import { canSendEmail, generateUnsubscribeToken } from '@/lib/email/service';
+import { unstartedPaymentMatch, guardedAbandonmentWriteFilter } from '@/lib/checkout/unstarted-payment';
 
 const RECOVERY_AFTER_MINUTES = 45;
 const ABANDON_AFTER_HOURS = 24;
 const MAX_RECOVERY_EMAILS = 30;
-
-const PENDING_PAYMENT_STATUSES = [
-  'pending',
-  'PENDING',
-  'PENDING_PAYMENT',
-  'payment_processing',
-  'processing',
-  'PROCESSING',
-];
 
 const TERMINAL_STATUSES = [
   'paid',
@@ -30,6 +22,14 @@ const TERMINAL_STATUSES = [
   'canceled',
   'refunded',
   'abandoned',
+];
+const NON_ABANDONABLE_ORDER_STATUSES = [
+  ...TERMINAL_STATUSES,
+  'payment_processing',
+  'PAYMENT_PROCESSING',
+  'processing',
+  'PROCESSING',
+  'PENDING_CONFIRMATION',
 ];
 
 function verifyCronAuth(request: NextRequest) {
@@ -85,8 +85,8 @@ function abandonedCandidateMatch(end: Date) {
           { createdAt: { $lte: end.toISOString() } },
         ],
       },
-      { paymentStatus: { $in: PENDING_PAYMENT_STATUSES } },
-      { status: { $nin: TERMINAL_STATUSES } },
+      unstartedPaymentMatch(),
+      { status: { $nin: NON_ABANDONABLE_ORDER_STATUSES } },
       { paymentId: { $exists: false } },
       { squarePaymentId: { $exists: false } },
       { abandonedAt: { $exists: false } },
@@ -156,8 +156,8 @@ async function handleCron(request: NextRequest) {
       .find({
         $and: [
           dateRangeMatch(recoveryStart, recoveryEnd),
-          { paymentStatus: { $in: PENDING_PAYMENT_STATUSES } },
-          { status: { $nin: TERMINAL_STATUSES } },
+          unstartedPaymentMatch(),
+          { status: { $nin: NON_ABANDONABLE_ORDER_STATUSES } },
           { paymentId: { $exists: false } },
           { squarePaymentId: { $exists: false } },
           { abandonedRecoverySentAt: { $exists: false } },
@@ -244,8 +244,10 @@ async function handleCron(request: NextRequest) {
     let releasedLocks = 0;
 
     if (abandonedOrderIds.length > 0) {
+      // Re-check the complete no-payment predicate atomically at mutation time.
+      // A customer may have entered Square between our initial find and this update.
       const updateResult = await db.collection('orders').updateMany(
-        { id: { $in: abandonedOrderIds } },
+        guardedAbandonmentWriteFilter(abandonedOrderIds, abandonedCandidateMatch(abandonBefore)),
         {
           $set: {
             status: 'abandoned',
@@ -257,18 +259,29 @@ async function handleCron(request: NextRequest) {
       );
       markedAbandoned = updateResult.modifiedCount;
 
-      const lockResult = await db.collection('inventory_locks').updateMany(
-        { orderId: { $in: abandonedOrderIds }, status: 'active' },
-        {
-          $set: {
-            status: 'released',
-            releasedAt: now,
-            releaseReason: 'abandoned_order_cleanup',
-            updatedAt: now,
-          },
+      // Only release legacy inventory locks for orders that *actually* transitioned.
+      // Orders that began payment after the initial read must retain their holds.
+      if (markedAbandoned > 0) {
+        const transitioned = await db.collection('orders').find(
+          { id: { $in: abandonedOrderIds }, abandonedAt: now },
+          { projection: { id: 1 } }
+        ).toArray();
+        const transitionedIds = transitioned.map((order: any) => order.id).filter(Boolean);
+        if (transitionedIds.length > 0) {
+          const lockResult = await db.collection('inventory_locks').updateMany(
+            { orderId: { $in: transitionedIds }, status: 'active' },
+            {
+              $set: {
+                status: 'released',
+                releasedAt: now,
+                releaseReason: 'abandoned_order_cleanup',
+                updatedAt: now,
+              },
+            }
+          );
+          releasedLocks = lockResult.modifiedCount;
         }
-      );
-      releasedLocks = lockResult.modifiedCount;
+      }
     }
 
     const durationMs = Date.now() - startedAt;

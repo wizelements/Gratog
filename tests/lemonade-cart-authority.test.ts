@@ -19,8 +19,8 @@ import { priceCart } from '@/lib/cart-pricing';
 
 const strawberry = {
   id: 'strawberry-bliss', name: 'Strawberry Bliss', category: 'lemonades',
-  price: 10, priceCents: 1000, inStock: true,
-  variations: [{ id: 'strawberry-16oz', name: '16oz bottle', price: 10, priceCents: 1000 }],
+  price: 11.99, priceCents: 1199, inStock: true,
+  variations: [{ id: 'strawberry-16oz', name: '16oz bottle', price: 11.99, priceCents: 1199 }],
 };
 const supplemint = {
   id: 'supplemint', name: 'SuppleMint', category: 'lemonades',
@@ -38,7 +38,7 @@ describe('server-authoritative pack checkout', () => {
     ledger.documents = [strawberry, supplemint, gel];
     ledger.coupon = null;
   });
-  it('repairs stale catalog pricing and charges exact four-pack total', async () => {
+  it('charges the exact approved four-pack total', async () => {
     const order = await priceCart({ items: [
       { productId: strawberry.id, variationId: 'strawberry-16oz', quantity: 2 },
       { productId: supplemint.id, variationId: 'supple-16oz', quantity: 2 },

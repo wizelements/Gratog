@@ -213,7 +213,7 @@ export async function GET(request: NextRequest) {
               priceCents: vPriceCents,
               currency: vPriceMoney.currency,
               stockQuantity,
-              inStock: inventory.verified && stockQuantity > 0,
+              inStock: inventory.verified && priceCents >= 100 && stockQuantity > 0,
             };
           })
           .filter(Boolean);
@@ -229,7 +229,8 @@ export async function GET(request: NextRequest) {
           priceCents,
           currency: priceMoney.currency,
           category,
-          available: inventory.verified && selectedStock > 0,
+          needsPriceReview: priceCents < 100,
+          available: inventory.verified && priceCents >= 100 && selectedStock > 0,
           inStock: inventory.verified && selectedStock > 0,
           stockQuantity: selectedStock,
           inventoryVerified: inventory.verified,

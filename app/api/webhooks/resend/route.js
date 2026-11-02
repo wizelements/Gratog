@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import crypto from 'crypto';
+import { tursoPreviewSelected, openTursoPreview } from '@/lib/checkout/turso-preview-runtime.mjs';
+import { recordVerifiedTursoResendEvent } from '@/lib/checkout/turso-notification-delivery.mjs';
 const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET;
 const SVIX_TOLERANCE_SECONDS = 5 * 60;
 
@@ -147,6 +149,13 @@ export async function POST(request) {
   try {
     svixId = request.headers.get('svix-id');
     const rawBody = await request.text();
+    const tursoPreview = tursoPreviewSelected();
+    // Isolated Preview only accepts signed Svix provider events. The legacy HMAC
+    // compatibility path and missing-secret development fallback are not valid here.
+    if (tursoPreview && (!svixId || !request.headers.get('svix-timestamp') ||
+        !request.headers.get('svix-signature') || !RESEND_WEBHOOK_SECRET)) {
+      return NextResponse.json({ error: 'Signed event required' }, { status: 401 });
+    }
     
     // Verify signature in production
     if (!verifyWebhookSignature(rawBody, request.headers)) {
@@ -154,6 +163,29 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
     
+    // The Turso staging outbox is a separate durable ledger. Never send a
+    // provider event from the Preview branch into the Mongo production handler.
+    // Provider signature verification above must complete before this boundary.
+    if (tursoPreview) {
+      const event = JSON.parse(rawBody);
+      // This endpoint certifies only the isolated QA outbox. Account-wide
+      // Production delivery events must never be persisted in staging.
+      if (!Array.isArray(event?.data?.to) || event.data.to.length !== 1 ||
+          String(event.data.to[0]).trim().toLowerCase() !== 'delivered@resend.dev') {
+        return NextResponse.json({received:true,ignored:true});
+      }
+      const previewDb = await openTursoPreview(); // asserts exact branch, DB and Sandbox identities
+      const reconciliation = await recordVerifiedTursoResendEvent(previewDb, {
+        eventId: svixId, event, signatureVerified: true,
+      });
+      return NextResponse.json({
+        received: reconciliation.received === true,
+        duplicate: reconciliation.duplicate === true,
+        matched: reconciliation.matched === true,
+        needsReconciliation: reconciliation.needsReconciliation === true,
+      });
+    }
+
     const event = JSON.parse(rawBody);
     const { type, data } = event;
     const emailId = getEventEmailId(data);

@@ -1,64 +1,18 @@
 export const dynamic = 'force-dynamic';
 
-import { logger } from '@/lib/logger';
-import { releaseLock } from '@/lib/inventory-lock';
-import { RateLimit } from '@/lib/redis';
-import { NextRequest, NextResponse } from 'next/server';
-import { hasInventoryMutationAuthority } from '@/lib/inventory/internal-authority';
+import { NextResponse } from 'next/server';
 
 /**
- * POST /api/inventory/release
- * Release inventory lock (called on cancel/abandon)
+ * Retired: this public legacy endpoint allowed client-controlled stock locks,
+ * confirmation, or release independently of a Square verified checkout.
+ * It was not atomic across orders; confirming also decremented stock without
+ * proof of captured payment. Inventory now changes only through the
+ * transactionally guarded server checkout and signed provider reconciliation.
  */
-export async function POST(request: NextRequest) {
-  // Never let an anonymous browser reserve, release, or confirm anyone's stock.
-  // Rate limiting alone cannot authenticate a payment or protect inventory.
-  if (!hasInventoryMutationAuthority(request.headers)) {
-    return NextResponse.json({ error: 'Unauthorized inventory operation' }, { status: 403 });
-  }
-  try {
-    // Rate limiting
-    const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    if (!RateLimit.check(`inventory_release:${clientIp}`, 30, 60)) {
-      return NextResponse.json(
-        { error: 'Too many requests. Please try again.' },
-        { status: 429 }
-      );
-    }
-
-    const body = await request.json();
-    const { lockId, orderId } = body;
-
-    if (!lockId && !orderId) {
-      return NextResponse.json(
-        { error: 'Either lockId or orderId is required' },
-        { status: 400 }
-      );
-    }
-
-    const success = await releaseLock(lockId, orderId);
-
-    if (success) {
-      logger.info('InventoryLock', 'Lock released', { lockId, orderId });
-
-      return NextResponse.json({
-        success: true,
-        message: 'Inventory lock released successfully',
-        releasedAt: new Date().toISOString()
-      });
-    } else {
-      logger.warn('InventoryLock', 'Lock not found for release', { lockId, orderId });
-
-      return NextResponse.json({
-        success: false,
-        error: 'Lock not found or already released'
-      }, { status: 404 });
-    }
-  } catch (error) {
-    logger.error('InventoryLock', 'Error in release endpoint', { error });
-    return NextResponse.json(
-      { error: 'Failed to release inventory lock' },
-      { status: 500 }
-    );
-  }
+export async function POST() {
+  return NextResponse.json({
+    success: false,
+    code: 'LEGACY_INVENTORY_MUTATION_RETIRED',
+    error: 'This inventory endpoint is no longer supported. Please use the standard checkout flow.',
+  }, { status: 410 });
 }

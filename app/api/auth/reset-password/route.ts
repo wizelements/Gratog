@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import { validatePassword } from '@/lib/auth/validation';
 import { hashPassword } from '@/lib/auth/jwt';
 import { connectToDatabase } from '@/lib/db-optimized';
+import {openTursoPreview,tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {consumeTursoPasswordReset} from '@/lib/auth/turso-customer-accounts.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +13,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { token, password, confirmPassword } = body;
 
-    if (!token || !password || !confirmPassword) {
+    if (typeof token!=='string'||!token||token.length>256||typeof password!=='string'||!password||password.length>1024||!confirmPassword) {
       return NextResponse.json(
         { success: false, error: 'Token, password, and confirmation are required' },
         { status: 400 }
@@ -37,6 +39,12 @@ export async function POST(request: NextRequest) {
 
     // Hash the token and find reset record
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    if (tursoPreviewSelected()) {
+      const valid=await consumeTursoPasswordReset(await openTursoPreview(),tokenHash,await hashPassword(password));
+      if(!valid)return NextResponse.json({success:false,error:'Invalid or expired reset token'},{status:400});
+      return NextResponse.json({success:true,message:'Password reset successfully'});
+    }
 
     const { db } = await connectToDatabase();
     const resetDoc = await db.collection('password_resets').findOne({

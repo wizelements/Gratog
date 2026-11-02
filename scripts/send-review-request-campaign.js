@@ -336,6 +336,7 @@ async function sendReviewRequest({ to, subject, html, text }) {
 }
 
 async function run() {
+  throw new Error('PUBLIC_REVIEWS_RETIRED: review campaigns are disabled until a supported review workflow exists');
   const summary = {
     mode: SEND_MODE ? 'send' : 'dry-run',
     baseUrl: BASE_URL,

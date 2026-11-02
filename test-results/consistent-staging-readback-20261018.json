@@ -1,0 +1,12 @@
+{
+  "pass": true,
+  "kind": "CONSISTENT_STAGING_DATABASE_READBACK",
+  "verifiedAt": "2026-10-18T21:38:38.270Z",
+  "orders": 864,
+  "linkedHistoricalPayments": 3,
+  "customerFacingReferences": 88,
+  "schemaVersions": 14,
+  "wrongDatabaseTokenDenied": true,
+  "productionDatabaseWritten": false,
+  "credentialsDisclosed": false
+}

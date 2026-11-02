@@ -1,0 +1,60 @@
+name: Isolated Mongo Replica-Set Checkout Race Certification
+on:
+  push:
+    branches:
+      - feat/turso-checkout-recovery-20261017
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mongodb-race:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MONGODB_URI: mongodb://127.0.0.1:27017/tog_checkout_race_ci?replicaSet=rs0&directConnection=true
+      DATABASE_PROVIDER: mongodb
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Isolate a real local-only Mongo replica set
+        run: |
+          set -euo pipefail
+          docker run -d --rm --name tog-mongo-race-ci             -p 127.0.0.1:27017:27017             mongo:7.0             --replSet rs0 --bind_ip_all
+          for n in $(seq 1 40); do
+            if docker exec tog-mongo-race-ci mongosh --quiet               --eval 'db.adminCommand({ping:1}).ok' 2>/dev/null | grep -qx 1; then
+              break
+            fi
+            sleep 2
+          done
+          docker exec tog-mongo-race-ci mongosh --quiet --eval             'rs.initiate({_id:"rs0",members:[{_id:0,host:"localhost:27017"}]})'
+          for n in $(seq 1 40); do
+            if docker exec tog-mongo-race-ci mongosh --quiet               --eval 'db.hello().isWritablePrimary' 2>/dev/null | grep -qx true; then
+              echo 'MONGO_REPLICA_PRIMARY_READY'
+              exit 0
+            fi
+            sleep 2
+          done
+          echo 'MONGO_REPLICA_SET_NOT_READY' >&2
+          exit 1
+      - name: Install CI dependencies
+        run: npm ci --include=dev --ignore-scripts --no-audit --no-fund
+      - name: Run all five actual replica-set checkout races
+        run: |
+          set -euo pipefail
+          if [[ "$MONGODB_URI" != *tog_checkout_race_ci* ]]; then
+            echo 'Unsafe test Mongo database identity' >&2
+            exit 1
+          fi
+          npx vitest run tests/integration/checkout-mongo-race.test.ts --reporter=verbose 2>&1 | tee /tmp/tog-mongo-race-ci.log
+          grep -Eq '5 passed' /tmp/tog-mongo-race-ci.log
+      - name: Remove disposable Mongo after test
+        if: always()
+        run: docker rm -f tog-mongo-race-ci || true

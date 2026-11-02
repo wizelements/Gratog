@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 import { connectToDatabase } from '@/lib/db-optimized';
+import {openTursoPreview,tursoPreviewSelected} from '@/lib/checkout/turso-preview-runtime.mjs';
+import {readTursoAccountRecord} from '@/lib/auth/turso-customer-accounts.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +24,11 @@ export async function GET(request) {
         { success: false, error: 'Invalid token' },
         { status: 401 }
       );
+    }
+
+    if(tursoPreviewSelected()){
+      const rewards=await readTursoAccountRecord(await openTursoPreview(),'rewards',decoded.userId);
+      return NextResponse.json({success:true,rewards:{points:rewards?.points??0,lifetimePoints:rewards?.lifetimePoints??0,history:rewards?.history??[]}});
     }
 
     const { db } = await connectToDatabase();
@@ -50,6 +57,7 @@ export async function GET(request) {
       }
     });
   } catch (error) {
+    if(error?.name==='TursoCustomerRefusal')return NextResponse.json({success:false,error:error.message},{status:error.status});
     console.error('Rewards fetch error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch rewards' },

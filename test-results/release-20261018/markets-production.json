@@ -1,0 +1,87 @@
+{
+  "evidenceType": "read_only_public_endpoint",
+  "observedVia": "authenticated_GratitudePC_Desktop_Commander",
+  "independentMongoReadback": false,
+  "independentSquareAdminReadback": false,
+  "url": "https://tasteofgratitude.shop/api/markets",
+  "observedAt": "2026-10-18T04:57:16.5045095Z",
+  "source": null,
+  "success": true,
+  "count": 3,
+  "products": [],
+  "markets": [
+    {
+      "id": "6aade2c50e2b028ead7833d1",
+      "name": "Airport District Night Market at The Hangar",
+      "address": "3361 Dogwood Dr",
+      "city": "Hapeville",
+      "state": "GA",
+      "zip": "30354",
+      "lat": 33.6628,
+      "lng": -84.4096,
+      "hours": "17:00-21:00",
+      "dayOfWeek": 5,
+      "description": "Evening Airport District market at Chattabrewchee The Hangar with local food, drinks, music, and vendors. Taste of Gratitude offers fresh products and preorder pickup on scheduled 1st and 3rd Fridays.",
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=3361%20Dogwood%20Dr%2C%20Hapeville%2C%20GA%2C%2030354",
+      "pickupDays": "1st & 3rd Friday night market pickup",
+      "preorderCutoff": "Preorder by Thursday evening for Friday pickup when the Hapeville market is scheduled.",
+      "parkingNotes": "Use The Hangar on-site parking and follow event/vendor parking guidance when posted.",
+      "recurrence": "first_third",
+      "isActive": true,
+      "featured": true,
+      "createdAt": "2026-09-19T01:17:56.433Z",
+      "updatedAt": "2026-09-19T01:17:56.433Z",
+      "addressLine": "3361 Dogwood Dr, Hapeville, GA, 30354",
+      "directionsIntegrity": {
+        "isValid": true,
+        "warnings": []
+      }
+    },
+    {
+      "id": "695dd01de122fc20e6efdef2",
+      "name": "DHA Dunwoody Farmers Market",
+      "address": "4770 N Peachtree Rd",
+      "city": "Dunwoody",
+      "state": "GA",
+      "zip": "30338",
+      "lat": 33.9354,
+      "lng": -84.2943,
+      "hours": "09:00-12:00",
+      "dayOfWeek": 6,
+      "description": "Community market hosted at Brook Run Park in Dunwoody with local wellness vendors and fresh seasonal goods.",
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=4770%20N%20Peachtree%20Rd%2C%20Dunwoody%2C%20GA%2C%2030338",
+      "isActive": true,
+      "featured": false,
+      "createdAt": "2026-01-07T03:16:45.870Z",
+      "updatedAt": "2026-01-07T03:16:45.870Z",
+      "addressLine": "4770 N Peachtree Rd, Dunwoody, GA, 30338",
+      "directionsIntegrity": {
+        "isValid": true,
+        "warnings": []
+      }
+    },
+    {
+      "id": "695dd01de122fc20e6efdef1",
+      "name": "Serenbe Farmers Market",
+      "address": "10950 Hutcheson Ferry Rd",
+      "city": "Palmetto",
+      "state": "GA",
+      "zip": "30268",
+      "lat": 33.4848,
+      "lng": -84.686,
+      "hours": "09:00-13:00",
+      "dayOfWeek": 6,
+      "description": "Our flagship location featuring the full product line. Look for the gold Taste of Gratitude banners at Booth #12.",
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=10950%20Hutcheson%20Ferry%20Rd%2C%20Palmetto%2C%20GA%2C%2030268",
+      "isActive": true,
+      "featured": true,
+      "createdAt": "2026-01-07T03:16:45.870Z",
+      "updatedAt": "2026-01-07T03:16:45.870Z",
+      "addressLine": "10950 Hutcheson Ferry Rd, Palmetto, GA, 30268",
+      "directionsIntegrity": {
+        "isValid": true,
+        "warnings": []
+      }
+    }
+  ]
+}

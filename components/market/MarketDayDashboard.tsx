@@ -130,10 +130,6 @@ export function MarketDayDashboard({ marketId = 'serenbe-farmers-market', classN
   const [refundReason, setRefundReason] = useState('');
   const [isProcessingRefund, setIsProcessingRefund] = useState(false);
 
-  // Mark paid dialog for Cash/CashApp
-  const [showMarkPaidDialog, setShowMarkPaidDialog] = useState(false);
-  const [markPaidOrder, setMarkPaidOrder] = useState<Order | null>(null);
-
   // Initialize audio
   useEffect(() => {
     audioRef.current = new Audio('/sounds/order-notification.mp3');
@@ -227,34 +223,6 @@ export function MarketDayDashboard({ marketId = 'serenbe-farmers-market', classN
         fetchData();
       } else {
         toast.error('Failed to update order');
-      }
-    } catch (error) {
-      toast.error('Network error');
-    }
-  };
-
-  const markOrderPaid = async (order: Order) => {
-    try {
-      const apiKey = localStorage.getItem('admin_token');
-      const response = await fetch(`/api/orders/${order.orderNumber}/status`, {
-        method: 'PATCH',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({ 
-          status: order.fulfillmentType === 'TODAY' ? 'CONFIRMED' : 
-                  order.fulfillmentType === 'PREORDER' ? 'PREORDER_CONFIRMED' : 'SHIPPING_CONFIRMED',
-          paymentStatus: 'PAID'
-        }),
-      });
-
-      if (response.ok) {
-        toast.success(`Payment confirmed for order ${order.orderNumber}`);
-        setShowMarkPaidDialog(false);
-        fetchData();
-      } else {
-        toast.error('Failed to confirm payment');
       }
     } catch (error) {
       toast.error('Network error');
@@ -407,25 +375,11 @@ export function MarketDayDashboard({ marketId = 'serenbe-farmers-market', classN
 
       {/* Action Buttons */}
       <div className="flex gap-2 mt-3 flex-wrap">
-        {/* Pending Payment - Show Mark Paid */}
+        {/* Financial status changes only after provider reconciliation. */}
         {order.status === 'PENDING_PAYMENT' && (
-          <>
-            <Button
-              size="sm"
-              onClick={() => { setMarkPaidOrder(order); setShowMarkPaidDialog(true); }}
-              className="bg-emerald-600 hover:bg-emerald-700"
-            >
-              <CheckCircle2 className="w-4 h-4 mr-1" />
-              Confirm Payment
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => openRefundDialog(order)}
-            >
-              Cancel
-            </Button>
-          </>
+          <p className="text-sm text-amber-800">
+            Awaiting verified payment. Confirm the transaction with the payment provider before fulfillment.
+          </p>
         )}
 
         {/* Confirmed - Start Preparing */}
@@ -873,39 +827,6 @@ export function MarketDayDashboard({ marketId = 'serenbe-farmers-market', classN
         </DialogContent>
       </Dialog>
 
-      {/* Mark Paid Dialog */}
-      <Dialog open={showMarkPaidDialog} onOpenChange={setShowMarkPaidDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Confirm Payment</DialogTitle>
-            <DialogDescription>
-              Mark order #{markPaidOrder?.orderNumber} as paid?
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-4">
-            <p className="text-sm text-muted-foreground">
-              Amount: <strong>${markPaidOrder?.total.toFixed(2)}</strong>
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Payment Method: <strong>{markPaidOrder?.paymentMethod}</strong>
-            </p>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowMarkPaidDialog(false)}>
-              Cancel
-            </Button>
-            <Button 
-              className="bg-emerald-600 hover:bg-emerald-700"
-              onClick={() => markPaidOrder && markOrderPaid(markPaidOrder)}
-            >
-              <CheckCircle2 className="w-4 h-4 mr-1" />
-              Confirm Payment Received
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

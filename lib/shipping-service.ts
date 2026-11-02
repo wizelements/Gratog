@@ -1,7 +1,7 @@
 /**
  * Shipping Service
  * Handles shipping rate calculations and label creation
- * Supports ShipEngine/EasyPost integration with fallback to flat rates
+ * Uses configured providers; missing configuration and provider failures never fabricate rates or tracking
  */
 
 import { createLogger } from '@/lib/logger';
@@ -54,41 +54,13 @@ export interface AddressValidation {
   suggestions?: ShippingAddress[];
 }
 
-// Default flat rates when no shipping API is configured
-const FLAT_RATES: ShippingRate[] = [
-  {
-    id: 'flat_standard',
-    carrier: 'USPS',
-    service: 'STANDARD',
-    serviceName: 'Standard Shipping (5-7 business days)',
-    rate: 6.99,
-    estimatedDays: 7
-  },
-  {
-    id: 'flat_express',
-    carrier: 'USPS',
-    service: 'EXPRESS',
-    serviceName: 'Express Shipping (2-3 business days)',
-    rate: 12.99,
-    estimatedDays: 3
-  },
-  {
-    id: 'flat_priority',
-    carrier: 'USPS',
-    service: 'PRIORITY',
-    serviceName: 'Priority Overnight (1 business day)',
-    rate: 24.99,
-    estimatedDays: 1
-  }
-];
-
 // Origin address (warehouse)
 const ORIGIN_ADDRESS: ShippingAddress = {
   name: 'Taste of Gratitude',
-  street: process.env.SHIPPING_ORIGIN_STREET || '123 Wellness Way',
-  city: process.env.SHIPPING_ORIGIN_CITY || 'Atlanta',
-  state: process.env.SHIPPING_ORIGIN_STATE || 'GA',
-  zip: process.env.SHIPPING_ORIGIN_ZIP || '30301',
+  street: process.env.SHIPPING_ORIGIN_STREET || '',
+  city: process.env.SHIPPING_ORIGIN_CITY || '',
+  state: process.env.SHIPPING_ORIGIN_STATE || '',
+  zip: process.env.SHIPPING_ORIGIN_ZIP || '',
   country: 'US'
 };
 
@@ -104,7 +76,9 @@ const DEFAULT_PACKAGE: PackageDimensions = {
  * Check if shipping API is configured
  */
 export function isShippingApiConfigured(): boolean {
-  return !!(process.env.SHIPENGINE_API_KEY || process.env.EASYPOST_API_KEY);
+  return process.env.SHIPPING_OPERATIONALLY_APPROVED === 'true' &&
+    Boolean(process.env.SHIPENGINE_API_KEY || process.env.EASYPOST_API_KEY) &&
+    Boolean(ORIGIN_ADDRESS.street && ORIGIN_ADDRESS.city && ORIGIN_ADDRESS.state && ORIGIN_ADDRESS.zip);
 }
 
 /**
@@ -116,6 +90,7 @@ export async function getShippingRates(
 ): Promise<ShippingRate[]> {
   const eligibility = validateGeorgiaDestination(toAddress);
   if (!eligibility.valid) throw new Error(eligibility.message);
+  if (!isShippingApiConfigured()) throw new Error('SHIPPING_NOT_CONFIGURED');
   logger.info('Getting shipping rates', { to: toAddress.zip });
 
   // Use API if configured
@@ -127,12 +102,7 @@ export async function getShippingRates(
     return await getEasyPostRates(toAddress, packageDimensions);
   }
 
-  // Return flat rates as fallback
-  logger.info('Using flat rate shipping (no API configured)');
-  return FLAT_RATES.map(rate => ({
-    ...rate,
-    deliveryDate: calculateDeliveryDate(rate.estimatedDays)
-  }));
+  throw new Error('SHIPPING_NOT_CONFIGURED');
 }
 
 /**
@@ -204,8 +174,8 @@ async function getShipEngineRates(
       deliveryDate: rate.estimated_delivery_date
     }));
   } catch (error) {
-    logger.error('ShipEngine API error, falling back to flat rates', { error: (error as Error).message });
-    return FLAT_RATES;
+    logger.error('ShipEngine rate request failed', { error: (error as Error).message });
+    throw new Error('SHIPPING_RATES_UNAVAILABLE');
   }
 }
 
@@ -269,8 +239,8 @@ async function getEasyPostRates(
       deliveryDate: rate.delivery_date
     }));
   } catch (error) {
-    logger.error('EasyPost API error, falling back to flat rates', { error: (error as Error).message });
-    return FLAT_RATES;
+    logger.error('EasyPost rate request failed', { error: (error as Error).message });
+    throw new Error('SHIPPING_RATES_UNAVAILABLE');
   }
 }
 
@@ -284,7 +254,10 @@ export async function validateAddress(address: ShippingAddress): Promise<Address
     return { valid: false, errors: ['Valid ZIP code is required'] };
   }
   const eligibility = validateGeorgiaDestination(address);
-  if (!eligibility.valid) return { valid: false, errors: [eligibility.message] };
+  if (!eligibility.valid) {
+    const invalidZip = !address.zip || !/^\d{5}(-\d{4})?$/.test(address.zip);
+    return { valid: false, errors: [eligibility.message, ...(invalidZip ? ['Valid ZIP code is required'] : [])] };
+  }
 
   // Basic validation
   const errors: string[] = [];
@@ -366,18 +339,8 @@ export async function createShipment(
   if (!eligibility.valid) throw new Error(eligibility.message);
   logger.info('Creating shipment', { orderId, rateId });
 
-  // For flat rates, generate mock tracking
-  if (rateId.startsWith('flat_')) {
-    const trackingNumber = `TOG${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-    const rate = FLAT_RATES.find(r => r.id === rateId) || FLAT_RATES[0];
-    
-    return {
-      trackingNumber,
-      carrier: rate.carrier,
-      service: rate.service,
-      estimatedDelivery: calculateDeliveryDate(rate.estimatedDays)
-    };
-  }
+  if (!isShippingApiConfigured() || !process.env.SHIPENGINE_API_KEY ||
+      !/^se-[a-zA-Z0-9_-]+$/.test(rateId)) throw new Error('SHIPPING_LABEL_NOT_CONFIGURED');
 
   // Use ShipEngine for label creation
   if (process.env.SHIPENGINE_API_KEY) {
@@ -396,6 +359,8 @@ export async function createShipment(
 
       if (response.ok) {
         const label = await response.json();
+        if (!label.tracking_number || !label.label_download?.pdf || !label.carrier_code || !label.service_code)
+          throw new Error('SHIPPING_LABEL_ACKNOWLEDGEMENT_MISSING');
         return {
           trackingNumber: label.tracking_number,
           labelUrl: label.label_download.pdf,
@@ -409,19 +374,15 @@ export async function createShipment(
     }
   }
 
-  // Fallback mock tracking
-  return {
-    trackingNumber: `TOG${Date.now()}`,
-    carrier: 'USPS',
-    service: 'STANDARD',
-    estimatedDelivery: calculateDeliveryDate(7)
-  };
+  throw new Error('SHIPPING_LABEL_UNAVAILABLE');
 }
 
 /**
  * Get tracking information
  */
 export async function getTrackingInfo(trackingNumber: string): Promise<any> {
+  if (!process.env.SHIPENGINE_API_KEY || !/^[a-zA-Z0-9_-]{5,100}$/.test(trackingNumber))
+    throw new Error('SHIPPING_TRACKING_NOT_CONFIGURED');
   logger.info('Getting tracking info', { trackingNumber });
 
   if (process.env.SHIPENGINE_API_KEY) {
@@ -443,18 +404,7 @@ export async function getTrackingInfo(trackingNumber: string): Promise<any> {
     }
   }
 
-  // Return mock tracking for demo
-  return {
-    trackingNumber,
-    status: 'in_transit',
-    statusDescription: 'Package is on its way',
-    events: [
-      {
-        occurredAt: new Date().toISOString(),
-        description: 'Package shipped'
-      }
-    ]
-  };
+  throw new Error('SHIPPING_TRACKING_UNAVAILABLE');
 }
 
 /**

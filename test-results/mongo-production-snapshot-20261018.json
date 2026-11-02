@@ -1,0 +1,370 @@
+{
+  "kind": "PRODUCTION_DERIVED_CONSISTENT_ENCRYPTED_SNAPSHOT",
+  "sourceReadOnly": true,
+  "snapshotConsistent": true,
+  "restoreVerified": false,
+  "productionCutoverAuthorized": false,
+  "pass": true,
+  "capturedAt": "2026-10-18T21:11:15.806Z",
+  "snapshotClusterTime": "{\"$timestamp\":{\"t\":1792357864,\"i\":13}}",
+  "archiveSha256": "d4e86858ca57846a1c4d05b99bcd4562b4efbeddfdfd74ead4c48e08cd5762c5",
+  "archiveBytes": 405517,
+  "collections": [
+    {
+      "name": "_verification_test",
+      "count": 0,
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "indexCount": 1
+    },
+    {
+      "name": "admin_users",
+      "count": 1,
+      "digest": "de24f4618369047239cb06b8052b9347f3cf2bf3075aa14f985180912dea9ecc",
+      "indexCount": 2
+    },
+    {
+      "name": "audit_log",
+      "count": 197,
+      "digest": "246c1b981070c5a96315b4704dc9b6527a59b7da01f49f4a0fdfe39c07fb9ac4",
+      "indexCount": 1
+    },
+    {
+      "name": "audit_logs",
+      "count": 26,
+      "digest": "40ced80e1eff64152bc2c40b259a18a6bb05dc6ecd865edb3c9003625fa8f1a2",
+      "indexCount": 1
+    },
+    {
+      "name": "challenges",
+      "count": 3,
+      "digest": "fdada5c22b10a6dfc1425c6015dade5980d8ca2a712df2735c9ba0dac970d5f2",
+      "indexCount": 1
+    },
+    {
+      "name": "contact_messages",
+      "count": 19,
+      "digest": "4e9cafce93e9b3731e40a433e37f8aafbe619f1fbb58745e3b21ec35899f2584",
+      "indexCount": 4
+    },
+    {
+      "name": "coupons",
+      "count": 0,
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "indexCount": 4
+    },
+    {
+      "name": "customer_passports",
+      "count": 9,
+      "digest": "ffb72c643007c8a3b51190812f38c454ba329c3dacfe262ff77c32ff936c4b58",
+      "indexCount": 1
+    },
+    {
+      "name": "customers",
+      "count": 7,
+      "digest": "1d785eebe7dbe6745ca89213d5d25edff30a555471f17b41fd4b77bf4ab79d20",
+      "indexCount": 1
+    },
+    {
+      "name": "dailyinventories",
+      "count": 0,
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "indexCount": 3
+    },
+    {
+      "name": "email_logs",
+      "count": 13,
+      "digest": "9557924746172ee8fb9a5bb79de80a4a180e440519be59cd1689cfc5584121b1",
+      "indexCount": 1
+    },
+    {
+      "name": "email_queue",
+      "count": 2,
+      "digest": "9b078b108de5a5a20477a04eb6ba0a714a393dac8728d77395fd930275129301",
+      "indexCount": 5
+    },
+    {
+      "name": "email_sends",
+      "count": 361,
+      "digest": "59f6ea278f4da810a87a0675e9bf181d352b13d9f4cd0e090cc10112a76a4772",
+      "indexCount": 6
+    },
+    {
+      "name": "gratitude_accounts",
+      "count": 1,
+      "digest": "ae6a7d3e4f7c8ac3b308e1367af3a75c8ed88328be60ec27b704b5304c2386de",
+      "indexCount": 1
+    },
+    {
+      "name": "idempotency_keys",
+      "count": 24,
+      "digest": "2bf25d262c7455088352b0357e7c12ccec058ae5f106ef7ca2adadaad219705e",
+      "indexCount": 1
+    },
+    {
+      "name": "inventory",
+      "count": 40,
+      "digest": "62ae37956f7355c2855a0e5de1a1268bebc3f34cea78857f69dcddee63182399",
+      "indexCount": 4
+    },
+    {
+      "name": "inventory_events",
+      "count": 856,
+      "digest": "4e7cf5de19608b2eaf2bda2f84508c3a6672cc8f296e446ed5c3b2b6a4916405",
+      "indexCount": 1
+    },
+    {
+      "name": "lead_intents",
+      "count": 15,
+      "digest": "2a2ec79abdc1d19fe5fe377057697dde35615c9395b0531290ac9b1615e8c0eb",
+      "indexCount": 1
+    },
+    {
+      "name": "learning_enrollments",
+      "count": 0,
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "indexCount": 3
+    },
+    {
+      "name": "learning_modules",
+      "count": 6,
+      "digest": "b8eaebecc761df330dfdc976c6da3654ff6f3e510ac077e5de6868d0c47d85eb",
+      "indexCount": 3
+    },
+    {
+      "name": "market_audit_log",
+      "count": 1,
+      "digest": "b5da9418e8cc20856fc0c53af119269927eab953832f8df6fff0d55f10c6346d",
+      "indexCount": 1
+    },
+    {
+      "name": "market_counters",
+      "count": 3,
+      "digest": "1532604f644ec91ceb0e2b3f9e7ef9dfd129d90d6800b37518ff41eb1191791c",
+      "indexCount": 1
+    },
+    {
+      "name": "market_schedules",
+      "count": 0,
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "indexCount": 4
+    },
+    {
+      "name": "marketorders",
+      "count": 10,
+      "digest": "dabd639a3db75850f78572cba45c1a8bfe2abe7f4ba62716d17a42251d65bbc1",
+      "indexCount": 5
+    },
+    {
+      "name": "markets",
+      "count": 3,
+      "digest": "c6fd55789787d65fdea6a58f25701a09a87c850536ce29a16cf6989ad1badd96",
+      "indexCount": 4
+    },
+    {
+      "name": "menu_audit_log",
+      "count": 1,
+      "digest": "1cded0097475babbebb209b3bc96012a96f722f8557573441d278520c10149ae",
+      "indexCount": 1
+    },
+    {
+      "name": "menus",
+      "count": 1,
+      "digest": "4238833738589c6da6c2f1cb99cc71feb6786d4755b99df50777dcc3fc5bdf6f",
+      "indexCount": 1
+    },
+    {
+      "name": "newsletter_subscribers",
+      "count": 34,
+      "digest": "15e1b08091e9dffbfe84a91d37978990b9530433b9e01ddecb41bbac494de5e4",
+      "indexCount": 3
+    },
+    {
+      "name": "orders",
+      "count": 854,
+      "digest": "518ff4d99d42d8852985f0a9f7c2f8063abc94c67749e04a9770f72ad28b7468",
+      "indexCount": 4
+    },
+    {
+      "name": "owner_alert_queue",
+      "count": 61,
+      "digest": "0a6ba85e440d128cee9f291e61fa27eab594375c2d83573b5d1ed126498dd705",
+      "indexCount": 1
+    },
+    {
+      "name": "passport_idempotency",
+      "count": 1,
+      "digest": "25db5211f2f1a05d80d79b845ef2beb0ac3c73bf1a42f31455d61868c83cb1bd",
+      "indexCount": 1
+    },
+    {
+      "name": "passports",
+      "count": 109,
+      "digest": "6079d178e08799bf1c387c78e5c35e7f2f13ed0071ad3f8ae59150022a60d759",
+      "indexCount": 1
+    },
+    {
+      "name": "password_resets",
+      "count": 1,
+      "digest": "3cccbf104a863abcb69d35f2c1f4bd73336e15fab963d9b6d86e272ad0469ad2",
+      "indexCount": 1
+    },
+    {
+      "name": "payment_records",
+      "count": 3,
+      "digest": "0c9e4634b1b86ec8daf6ec8bf75a1593f038f7d3f537822bda2010e7bf3067a9",
+      "indexCount": 5
+    },
+    {
+      "name": "payments",
+      "count": 3,
+      "digest": "49a6c8458d465a47f193a77c7961229e2d701471e0907d15d2e44cfc89c7f70f",
+      "indexCount": 1
+    },
+    {
+      "name": "pending_customers",
+      "count": 2,
+      "digest": "8b01012fc12abe50a2deab235176eb6df5dc645d9f5f906824c554f4510fc6a8",
+      "indexCount": 1
+    },
+    {
+      "name": "pre_orders",
+      "count": 2,
+      "digest": "8a55e9cbf888e22166d8840d1e68ad16c94a85c0c9c76e5ec8c114122f30a43c",
+      "indexCount": 1
+    },
+    {
+      "name": "product_reviews",
+      "count": 6,
+      "digest": "8be28837e53cf73a9a7c579ce5374faf1c7a2903866d266e371b3fd1b230956d",
+      "indexCount": 5
+    },
+    {
+      "name": "product_sync_log",
+      "count": 66,
+      "digest": "b49b3511815c5aa1ee7531fab107f5acc644dc41bbdb0043d4ec0a7f0903d469",
+      "indexCount": 1
+    },
+    {
+      "name": "products",
+      "count": 0,
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "indexCount": 7
+    },
+    {
+      "name": "products_unified",
+      "count": 0,
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "indexCount": 3
+    },
+    {
+      "name": "queuepositions",
+      "count": 1,
+      "digest": "86ccdd6d52cd982d5f3b0f6eed2e45dabf4760693d0c81e667d783d67223347e",
+      "indexCount": 8
+    },
+    {
+      "name": "quiz_results",
+      "count": 19,
+      "digest": "29fced4efd6db3be26025525c704ac278c241c6763ef28cd451376c20a72b4e5",
+      "indexCount": 4
+    },
+    {
+      "name": "reward_transactions",
+      "count": 1,
+      "digest": "1580c51b00d17485755de094a909491b9561954accaa66a6c6c28d72bba90e84",
+      "indexCount": 5
+    },
+    {
+      "name": "rewards",
+      "count": 3,
+      "digest": "bf27302c7dafc855d9b7268cdbbd5bc4203b284286c7e3af2c05f79019102fe9",
+      "indexCount": 1
+    },
+    {
+      "name": "scheduled_emails",
+      "count": 4,
+      "digest": "489ec20a52a81ff19356793487295db1a85e10518d7a747880d5b31564eb3dad",
+      "indexCount": 7
+    },
+    {
+      "name": "sessions",
+      "count": 0,
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "indexCount": 5
+    },
+    {
+      "name": "square_catalog_categories",
+      "count": 11,
+      "digest": "6461e351101c11f82acbebb092a46fcb88093dc89a59c5ed62098cb595f53118",
+      "indexCount": 2
+    },
+    {
+      "name": "square_catalog_items",
+      "count": 51,
+      "digest": "aa32b3ac9176942e53f20c8c3c1572946b2018f973de81913b494efbec3cf55c",
+      "indexCount": 3
+    },
+    {
+      "name": "square_inventory",
+      "count": 1,
+      "digest": "828ef1eeb96469d7bf62fcf0b63872373488709f670cfa314764fb6329b0c95b",
+      "indexCount": 1
+    },
+    {
+      "name": "square_sync_metadata",
+      "count": 2,
+      "digest": "36beaf0054322aaf95b642d8ba64a4befbd171236362570d2b9bdd4c616cca32",
+      "indexCount": 1
+    },
+    {
+      "name": "square_sync_queue",
+      "count": 39,
+      "digest": "27491645dcb3527d87d56b8330f832ca41753bb1658a87fb9b9c3a0641c21fe4",
+      "indexCount": 1
+    },
+    {
+      "name": "staff_notifications",
+      "count": 0,
+      "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "indexCount": 4
+    },
+    {
+      "name": "unified_analytics",
+      "count": 3940,
+      "digest": "d7ea4b90e81af985d606c3d0b30730816cc5c4158e1c28b778061607c8f61763",
+      "indexCount": 1
+    },
+    {
+      "name": "unified_metrics",
+      "count": 61,
+      "digest": "8edb1b1c7ed3af63b31b9b93af8d7ea841826b21a1fbee2cae2ef844ab511f1b",
+      "indexCount": 1
+    },
+    {
+      "name": "unified_products",
+      "count": 40,
+      "digest": "f67e83ce5e07227436668ec1298168d5d6f7e76e3f450e1cce20e206e8c9a319",
+      "indexCount": 6
+    },
+    {
+      "name": "users",
+      "count": 4,
+      "digest": "2618c210badd681571d0632ca4e3b37eafaa71150546b20f7210347923064c11",
+      "indexCount": 5
+    },
+    {
+      "name": "webhook_events_processed",
+      "count": 1,
+      "digest": "c3eb9db49090b920d53ae4e5a4683104593f2297c4e74fdda5d224d3804ffb3c",
+      "indexCount": 1
+    },
+    {
+      "name": "webhook_logs",
+      "count": 1000,
+      "digest": "04abd5ce53aa0aabda79de2344155e4ef3d69fa25414254aca2ab4c39ad358b1",
+      "indexCount": 1
+    }
+  ],
+  "collectionCount": 59,
+  "documentCount": 7919
+}

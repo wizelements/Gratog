@@ -63,6 +63,8 @@ export default function ReviewAndPay({
   const [serverTotal, setServerTotal] = useState<number | null>(null);
   const [serverPriceChanged, setServerPriceChanged] = useState(false);
   const orderRequestInFlight = useRef(false);
+  const activeOrderSnapshot = useRef<string | null>(null);
+  const currentCheckoutSnapshot = JSON.stringify({ cart, contact, fulfillment, tip, couponCode });
   const [orderAccessToken, setOrderAccessToken] = useState<string | null>(null);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
@@ -182,6 +184,21 @@ export default function ReviewAndPay({
     // Also lock synchronously; React's disabled button cannot protect against
     // two clicks or keyboard submissions in the same render frame.
     if (orderRequestInFlight.current) return;
+    // Canceling the Square payment form must NOT create a second pending order.
+    // The existing order remains payable through its original access token.
+    if (orderId && orderAccessToken && serverTotal !== null && serverTotal > 0 &&
+        activeOrderSnapshot.current === currentCheckoutSnapshot) {
+      setStep('payment');
+      return;
+    }
+    // Cart, contact or fulfillment changed: never pay the stale earlier order.
+    if (orderId && activeOrderSnapshot.current !== currentCheckoutSnapshot) {
+      setOrderId(null);
+      setOrderAccessToken(null);
+      setServerTotal(null);
+      setSquareOrderId(null);
+      activeOrderSnapshot.current = null;
+    }
     // Pre-validate before API call
     if (!validationResult.valid) {
       setOrderError(validationResult.error || 'Cart validation failed');
@@ -220,6 +237,27 @@ export default function ReviewAndPay({
         totals.deliveryFee
       );
       
+      const paymentState = String(orderResponse.order.paymentStatus || '').toUpperCase();
+      const orderState = String(orderResponse.order.status || '').toUpperCase();
+      const paidAlready = ['PAID', 'COMPLETED'].includes(paymentState) ||
+        ['CONFIRMED', 'PREORDER_CONFIRMED', 'SHIPPING_CONFIRMED', 'COMPLETED'].includes(orderState);
+      const paymentUncertain = ['PROCESSING', 'PAYMENT_PROCESSING', 'APPROVED'].includes(paymentState) ||
+        ['PROCESSING', 'PAYMENT_PROCESSING'].includes(orderState);
+      const notPayable = ['REFUNDED', 'CANCELLED', 'CANCELED'].includes(paymentState) ||
+        ['REFUNDED', 'CANCELLED', 'CANCELED'].includes(orderState);
+      if (paidAlready || paymentUncertain || notPayable) {
+        // An HTTP response can be lost after Square captures the charge.
+        // Resume verified order status instead of opening another card form.
+        const params = new URLSearchParams({ orderRef: orderResponse.order.id });
+        if (orderResponse.order.orderAccessToken) {
+          params.set('token', orderResponse.order.orderAccessToken);
+        }
+        if (paidAlready) clearCheckoutOrderAttempt();
+        router.replace(`/order/success?${params.toString()}`);
+        return;
+      }
+
+      activeOrderSnapshot.current = currentCheckoutSnapshot;
       setOrderId(orderResponse.order.id);
       // @ts-expect-error — type mismatch
       setSquareOrderId(orderResponse.order.squareOrderId);
