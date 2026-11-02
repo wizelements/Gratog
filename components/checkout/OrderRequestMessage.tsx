@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 
 type Props = {
   requestId: string;
@@ -15,7 +15,7 @@ export default function OrderRequestMessage({ requestId, email }: Props) {
   const submitting = useRef(false);
   const attemptId = useRef<string | null>(null);
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting.current || saved || message.trim().length < 5) return;
     submitting.current = true;
