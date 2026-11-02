@@ -87,4 +87,4 @@ export const POST=withAdminMiddleware(async request=>{
     if(e instanceof BatchPlanError)return error(e.code,422);
     return error('Unable to save isolated production batch plan',503);
   }
-},{permission:PERMISSIONS.INVENTORY_ADJUST,resource:'preview_batches',action:'approve',skipAudit:true});
+},{permission:PERMISSIONS.INVENTORY_ADJUST,resource:'preview_batches',action:'approve'});
