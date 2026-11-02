@@ -4,7 +4,9 @@
 import {mkdirSync,writeFileSync} from 'node:fs';
 const expected='libsql://gratog-migration-cert-20261018-swatkins.aws-us-east-1.turso.io';
 const e=process.env;
-if(e.GITHUB_EVENT_NAME!=='workflow_dispatch'||e.GITHUB_REF!=='refs/heads/feat/turso-completion-20261019'||
+const approvedRefs=new Set(['refs/heads/feat/turso-completion-20261019',
+  'refs/heads/feat/turso-lemonade-certification-20261027']);
+if(e.GITHUB_EVENT_NAME!=='workflow_dispatch'||!approvedRefs.has(e.GITHUB_REF)||
   !/^[a-f0-9]{40}$/.test(e.GITHUB_SHA||'')||e.TURSO_STAGING_DATABASE_URL!==expected||
   !e.TURSO_STAGING_AUTH_TOKEN||e.TURSO_STAGING_AUTH_TOKEN.length<24)
   throw Error('STAGING_READ_ONLY_IDENTITY_REQUIRED');
