@@ -13,6 +13,7 @@ import { PWADiagnostics } from '@/components/PWADiagnostics';
 import { BottomNav } from '@/components/BottomNav';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import WebsiteMessageButton from '@/components/WebsiteMessageButton';
 
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AnalyticsProvider } from '@/components/analytics/WebVitals';
@@ -177,6 +178,7 @@ export default function RootLayout({ children }) {
             <CookieConsent />
           </Suspense>
           <BottomNav />
+          <WebsiteMessageButton />
           <Toaster position="top-right" richColors />
           </AnalyticsProvider>
         </AuthProvider>
