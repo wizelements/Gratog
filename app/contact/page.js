@@ -133,7 +133,7 @@ export default function ContactPage() {
           </Card>
         </div>
 
-        <Card>
+        <Card id="send-message" className="scroll-mt-24">
           <CardHeader>
             <CardTitle>Send Us a Message</CardTitle>
           </CardHeader>
