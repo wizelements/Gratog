@@ -83,15 +83,19 @@ function Form() {
         Contact Taste of Gratitude through Square Messages with this reference.
         We'll review everything, confirm the final amount and then send a secure Square payment link.
       </p>
-      {result.squareTextUsPage
+      {result.squareSmsHref
+        ?<a href={result.squareSmsHref}
+            className="inline-block rounded-full bg-emerald-800 px-6 py-3 font-semibold text-white">
+            Text our verified Square business number</a>
+        :result.squareTextUsPage
         ?<a href={result.squareTextUsPage} target="_blank" rel="noopener noreferrer"
             className="inline-block rounded-full bg-emerald-800 px-6 py-3 font-semibold text-white">
-            Continue to Square Text Us</a>
+            Open Square-hosted contact page</a>
         :<p className="rounded-lg bg-amber-50 p-4 text-sm leading-6">
-            Our Square Text Us handoff link isn't verified yet. Our team has the saved
-            request. Check for an acknowledgement email, or <Link href="/contact"
-            className="font-semibold underline">contact us</Link> with the reference above.
-            We don't promise an immediate human response.
+            Square's native Text Us widget does not install on this independently hosted website.
+            Your request is saved. Send a website message below or <Link href="/contact"
+            className="font-semibold underline">contact our team</Link>.
+            No SMS or payment has been sent.
           </p>}
       <OrderRequestMessage requestId={result.requestId} email={email} />
       <button type="button" onClick={()=>navigator.clipboard?.writeText(reference)}
