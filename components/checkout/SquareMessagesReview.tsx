@@ -20,6 +20,7 @@ type Response = {
   paymentStatus:'not_charged';
   message:string;
   squareTextUsPage:string|null;
+  squareSmsHref?:string|null;
   emailStatus?:string;
 };
 
@@ -98,17 +99,22 @@ export default function SquareMessagesReview({cart,contact,fulfillment,onBack}: 
           We'll verify the products, timing and final delivery/shipping fees before sending a
           secure Square payment link. The website has already saved your itemized request.
         </p>
-        {result.squareTextUsPage ? (
+        {result.squareSmsHref ? (
+          <a href={result.squareSmsHref}
+            className="inline-flex min-h-12 items-center justify-center rounded-lg bg-emerald-800 px-6 py-3 font-semibold text-white">
+            Text our verified Square business number
+          </a>
+        ) : result.squareTextUsPage ? (
           <a href={result.squareTextUsPage} target="_blank" rel="noopener noreferrer"
             className="inline-flex min-h-12 items-center justify-center rounded-lg bg-emerald-800 px-6 py-3 font-semibold text-white">
-            Continue to Square Text Us
+            Open Square-hosted contact page
           </a>
         ) : (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
-            Square's direct Text Us handoff is not yet verified on this website.
-            Your request is saved and our team has been notified. Check your email for an
-            acknowledgement. You can also <Link href="/contact" className="underline">contact us</Link>
-            {' '}with the reference above. No response time is guaranteed.
+            Square's native Text Us widget is not supported on this independently hosted website.
+            Your request is saved. Send a website message below or
+            {' '}<Link href="/contact" className="underline">contact our team</Link>.
+            We will not describe a website message as SMS.
           </div>
         )}
         <OrderRequestMessage requestId={result.requestId} email={contact.email} />
