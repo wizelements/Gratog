@@ -4,6 +4,18 @@ import {
   validatedRequest, verifiedSquareTextUsPage, OrderRequestValidationError,
 } from '@/lib/commerce/nonmarket-order-request';
 
+const nextMonday = (() => {
+  const date = new Date();
+  date.setUTCHours(12, 0, 0, 0);
+  date.setUTCDate(date.getUTCDate() + ((1 - date.getUTCDay() + 7) % 7 || 7));
+  return date.toISOString().slice(0, 10);
+})();
+const nextTuesday = (() => {
+  const date = new Date(nextMonday + 'T12:00:00Z');
+  date.setUTCDate(date.getUTCDate() + 1);
+  return date.toISOString().slice(0, 10);
+})();
+
 const valid = {
   requestId:'a38235bd-103f-4d7b-a01c-75ca54df253c',
   items:[{slug:'calm-waters',quantity:2},{slug:'herbal-vibe',quantity:1}],
@@ -45,10 +57,10 @@ describe('Nonmarket Square Messages request: server-owned invariants', () => {
   });
   it('allows Browns Mill Monday requests but not market or Tuesday pickup',()=>{
     const pickup={...valid,fulfillmentType:'pickup',address:undefined,deliveryTimeSlot:undefined,
-      pickup:{locationId:'browns-mill',date:'2026-11-02'}};
+      pickup:{locationId:'browns-mill',date:nextMonday}};
     expect(validatedRequest(pickup).fulfillmentType).toBe('pickup');
-    rejects({...pickup,pickup:{locationId:'serenbe',date:'2026-11-02'}},'MARKET_FLOW_REQUIRED');
-    rejects({...pickup,pickup:{locationId:'browns-mill',date:'2026-11-03'}},'PICKUP_DAY_REQUIRED');
+    rejects({...pickup,pickup:{locationId:'serenbe',date:nextMonday}},'MARKET_FLOW_REQUIRED');
+    rejects({...pickup,pickup:{locationId:'browns-mill',date:nextTuesday}},'PICKUP_DAY_REQUIRED');
   });
   it('allows only Georgia destination review and avoids false shipping prices',()=>{
     expect(validatedRequest({...valid,fulfillmentType:'shipping'}).shippingMethod).toBe('merchant_quote_pending');
