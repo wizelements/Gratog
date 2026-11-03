@@ -343,7 +343,14 @@ try {
     items:[{slug:'calm-waters',quantity:2,priceCents:1},
       {slug:'herbal-vibe',quantity:1,priceCents:1}],
     customer:{name:'Isolated QA',email:'multi@qa-sandbox.invalid'},
-    fulfillmentType:'pickup',pickup:{locationId:'browns-mill',date:'2026-11-02'},
+    fulfillmentType:'pickup',pickup:{locationId:'browns-mill',date:(() => {
+      // Always choose an upcoming Monday; fixed 2026-11-02 expires as time passes.
+      const next=new Date();
+      next.setUTCHours(12,0,0,0);
+      const days=(1-next.getUTCDay()+7)%7 || 7;
+      next.setUTCDate(next.getUTCDate()+days);
+      return next.toISOString().slice(0,10);
+    })()},
     preorderAcknowledged:true,preorderTermsVersion:'2026-10-31',confirmedFulfillment:true,
   };
   const nonmarketNoAck=await post('/api/order-requests',{...nonmarketRequest,preorderAcknowledged:false});

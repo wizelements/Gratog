@@ -92,8 +92,8 @@ function Form() {
             className="inline-block rounded-full bg-emerald-800 px-6 py-3 font-semibold text-white">
             Open Square-hosted contact page</a>
         :<p className="rounded-lg bg-amber-50 p-4 text-sm leading-6">
-            Square's native Text Us widget does not install on this independently hosted website.
-            Your request is saved. Send a website message below or <Link href="/contact"
+            Square's native Text Us widget does not install on this independently hosted website. A verified Square SMS number is not yet configured.
+            Your request is saved. Send a website message below or <Link href="/text-us"
             className="font-semibold underline">contact our team</Link>.
             No SMS or payment has been sent.
           </p>}

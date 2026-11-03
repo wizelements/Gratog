@@ -125,7 +125,7 @@ describe('Custom-site customer message handoff: durable, no fake SMS', () => {
     const button = readFileSync('components/WebsiteMessageButton.tsx', 'utf8');
     const receipt = readFileSync('components/checkout/OrderRequestMessage.tsx', 'utf8');
     const admin = readFileSync('app/admin/nonmarket-orders/page.tsx', 'utf8');
-    expect(button).toContain('href="/contact?source=message-us#send-message"');
+    expect(button).toContain('href="/text-us"');
     expect(button).toContain('Message us');
     expect(receipt).toContain("fetch('/api/order-requests/message'");
     expect(receipt).toContain('not a Square text message');

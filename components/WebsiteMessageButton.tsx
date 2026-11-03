@@ -11,7 +11,7 @@ import { MessageCircle } from 'lucide-react';
  */
 export default function WebsiteMessageButton({ smsHref }: { smsHref?: string | null }) {
   const pathname = usePathname();
-  if (!pathname || ['/admin','/api','/checkout','/order-request','/contact',
+  if (!pathname || ['/admin','/api','/contact','/text-us',
     '/preorder','/order','/m/'].some(path => pathname.startsWith(path))) return null;
   return (
     <nav aria-label="Contact Taste of Gratitude"
@@ -23,11 +23,11 @@ export default function WebsiteMessageButton({ smsHref }: { smsHref?: string | n
           Text us
         </a>
       )}
-      <Link href="/contact?source=message-us#send-message"
-        aria-label="Message Taste of Gratitude on our website"
+      <Link href="/text-us"
+        aria-label="Contact Taste of Gratitude for questions and order assistance"
         className="inline-flex min-h-12 items-center gap-2 rounded-full border border-emerald-900 bg-white px-4 py-3 text-sm font-semibold text-emerald-950 shadow-lg transition-colors hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800">
         <MessageCircle className="h-5 w-5" aria-hidden="true" />
-        {smsHref ? 'Website message' : 'Message us'}
+        {smsHref ? 'More contact options' : 'Message us'}
       </Link>
     </nav>
   );

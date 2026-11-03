@@ -113,7 +113,7 @@ export default function SquareMessagesReview({cart,contact,fulfillment,onBack}: 
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
             Square's native Text Us widget is not supported on this independently hosted website.
             Your request is saved. Send a website message below or
-            {' '}<Link href="/contact" className="underline">contact our team</Link>.
+            {' '}<Link href="/text-us" className="underline">contact our team</Link>.
             We will not describe a website message as SMS.
           </div>
         )}
