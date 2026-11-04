@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { track } from '@/utils/analytics';
 import { PRODUCTS } from '@/data/products';
+import { getActiveMarketPickups } from '@/data/markets';
 
 const FLAVOR_PROFILES = [
   { value: 'tropical', label: 'Tropical', hint: 'pineapple, mango, coconut' },
@@ -46,8 +47,7 @@ const QUANTITY_OPTIONS = [
 
 const MARKET_OPTIONS = [
   { value: 'georgia_online_inquiry', label: 'Georgia online order — confirm delivery or shipping eligibility' },
-  { value: 'serenbe', label: 'Serenbe Farmers Market — Saturdays 9am–1pm' },
-  { value: 'dunwoody', label: 'Dunwoody Farmers Market — Saturdays 9am–12pm' },
+  ...getActiveMarketPickups().map(market => ({ value: market.id, label: `${market.name} — ${market.pickupDays}` })),
 ];
 
 interface RequestFlavorClientProps {
