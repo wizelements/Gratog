@@ -23,7 +23,7 @@ export default function WebsiteMessageButton({ smsHref }: { smsHref?: string | n
           Text us
         </a>
       )}
-      <Link href="/text-us"
+      <Link href="/text-us#message-form"
         aria-label="Contact Taste of Gratitude for questions and order assistance"
         className="inline-flex min-h-12 items-center gap-2 rounded-full border border-emerald-900 bg-white px-4 py-3 text-sm font-semibold text-emerald-950 shadow-lg transition-colors hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800">
         <MessageCircle className="h-5 w-5" aria-hidden="true" />
