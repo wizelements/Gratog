@@ -19,6 +19,8 @@ export interface MarketPickupLocation {
   recurrence?: 'weekly' | 'first_third';
 }
 
+// Paused locations stay here with isActive: false so they can be restored later.
+// Only Serenbe is publicly active as of November 4, 2026.
 export const MARKETS: MarketPickupLocation[] = [
   {
     id: 'hapeville-hangar',
@@ -36,7 +38,7 @@ export const MARKETS: MarketPickupLocation[] = [
     description: 'Find us at The Hangar for the Airport District Night Market on scheduled first and third Fridays. Stop by for fresh drinks, sea moss favorites, and pickup of confirmed preorders.',
     parkingNotes: 'Use The Hangar on-site parking and follow event/vendor parking guidance when posted.',
     mapsUrl: 'https://maps.google.com/?q=3361%20Dogwood%20Dr%2C%20Hapeville%2C%20GA%2030354',
-    isActive: true,
+    isActive: false,
     featured: true,
     recurrence: 'first_third',
   },
@@ -75,7 +77,7 @@ export const MARKETS: MarketPickupLocation[] = [
     description: 'Find our booth in Dunwoody, explore the weekly menu, and pick up any preordered favorites.',
     parkingNotes: 'Use market-designated parking and check the weekly booth map when available.',
     mapsUrl: 'https://maps.google.com/?q=4770%20N%20Peachtree%20Rd%2C%20Dunwoody%2C%20GA%2030338',
-    isActive: true,
+    isActive: false,
     featured: true,
   },
 ];
