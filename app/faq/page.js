@@ -85,7 +85,7 @@ const faqCategories = [
     questions: [
       {
         question: 'Where can I pick up my order?',
-        answer: 'Visit our Georgia markets for pickup, including scheduled Serenbe, Dunwoody and Hapeville events when available. See /markets for current details and preorder deadlines.'
+        answer: 'For market pickup, visit our Serenbe Farmers Market booth on scheduled Saturdays. See /markets for current details and preorder deadlines.'
       },
       {
         question: 'Do you offer local delivery?',
@@ -168,7 +168,7 @@ const faqCategories = [
       },
       {
         question: 'Can I visit your facility or kitchen?',
-        answer: 'Our prep space is not open for public visits, but you can meet the team at active market locations such as Serenbe and Dunwoody when scheduled. Check /markets for current pickup details.'
+        answer: 'Our prep space is not open for public visits, but you can meet our team at Serenbe Farmers Market on scheduled Saturdays. Check /markets for current pickup details.'
       }
     ]
   }
