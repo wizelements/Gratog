@@ -1,369 +1,73 @@
 export const dynamic = 'force-dynamic';
-
-/**
- * Hardened Admin Login Route
- * 
- * SECURITY:
- * - Rate limited (5 attempts per 15 minutes)
- * - Password validation with bcrypt
- * - Secure cookie settings
- * - CSRF token generation
- * - Comprehensive audit logging
- * - Account lockout after failed attempts
- */
-
+export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { connectToDatabase } from '@/lib/db-optimized';
-import { logger } from '@/lib/logger';
-import { 
-  generateAdminToken, 
-  generateCsrfToken,
-} from '@/lib/auth/unified-admin';
+import { randomBytes, createHash } from 'node:crypto';
+import { generateAdminToken } from '@/lib/admin-session';
+import { getTursoAdminClient, ensureTursoAdminSchema, authenticateTursoAdmin, logTursoAdminEvent } from '@/lib/auth/turso-admin-store.mjs';
 
-// ============================================================================
-// CONFIGURATION
-// ============================================================================
-
-const IS_PRODUCTION = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
-const MAX_LOGIN_ATTEMPTS = 5;
-const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
-
-// In-memory rate limiting (use Redis in production)
-const rateLimitStore = new Map<string, { count: number; resetAt: number; locked?: boolean; lockUntil?: number }>();
-type LoginRateLimit = { allowed: boolean; remaining: number; resetAt: number; locked?: boolean; lockUntil?: number };
-
-// ============================================================================
-// VALIDATION SCHEMA
-// ============================================================================
-
-const LoginSchema = z.object({
-  email: z.string().email('Invalid email address').min(1).max(254),
+const Login = z.object({
+  email: z.string().email().max(254),
   password: z.string().min(1).max(128),
-  rememberMe: z.boolean().optional().default(false),
+  rememberMe: z.boolean().optional().default(false)
 }).strict();
+const WINDOW = 15 * 60 * 1000;
 
-// ============================================================================
-// RATE LIMITING
-// ============================================================================
-
-function checkLoginRateLimit(key: string): LoginRateLimit {
+async function takeAttempt(db: any, ip: string) {
+  const key = createHash('sha256').update(ip).digest('hex');
   const now = Date.now();
-  const entry = rateLimitStore.get(key);
-  
-  // Check if locked
-  if (entry?.locked && entry.lockUntil && now < entry.lockUntil) {
-    return { 
-      allowed: false, 
-      remaining: 0, 
-      resetAt: entry.lockUntil,
-      locked: true,
-      lockUntil: entry.lockUntil,
-    };
-  }
-  
-  // Clear lock if expired
-  if (entry?.locked && entry.lockUntil && now >= entry.lockUntil) {
-    rateLimitStore.delete(key);
-  }
-  
-  if (!entry || now > entry.resetAt) {
-    return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS, resetAt: now + LOCKOUT_DURATION_MS };
-  }
-  
-  // Check if max attempts reached
-  if (entry.count >= MAX_LOGIN_ATTEMPTS) {
-    // Lock account
-    entry.locked = true;
-    entry.lockUntil = now + LOCKOUT_DURATION_MS;
-    return { 
-      allowed: false, 
-      remaining: 0, 
-      resetAt: entry.lockUntil,
-      locked: true,
-      lockUntil: entry.lockUntil,
-    };
-  }
-  
-  return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS - entry.count, resetAt: entry.resetAt };
+  await db.execute('CREATE TABLE IF NOT EXISTS tog_admin_login_limits (ip_hash TEXT PRIMARY KEY,count INTEGER NOT NULL,expires_at INTEGER NOT NULL)');
+  await db.execute({
+    sql: "INSERT INTO tog_admin_login_limits (ip_hash,count,expires_at) VALUES (?,1,?) ON CONFLICT(ip_hash) DO UPDATE SET count=CASE WHEN expires_at<? THEN 1 ELSE count+1 END,expires_at=CASE WHEN expires_at<? THEN excluded.expires_at ELSE expires_at END",
+    args: [key, now + WINDOW, now, now]
+  });
+  const rs = await db.execute({ sql: 'SELECT count FROM tog_admin_login_limits WHERE ip_hash=?', args: [key] });
+  return { key, allowed: Number(rs.rows[0]?.count) <= 5 };
 }
-
-function recordFailedAttempt(key: string): LoginRateLimit {
-  const now = Date.now();
-  const entry = rateLimitStore.get(key);
-  const resetAt = now + LOCKOUT_DURATION_MS;
-  
-  if (!entry || now > entry.resetAt) {
-    const next = { count: 1, resetAt };
-    rateLimitStore.set(key, next);
-    return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS - 1, resetAt };
-  }
-
-  entry.count++;
-
-  if (entry.count >= MAX_LOGIN_ATTEMPTS) {
-    entry.locked = true;
-    entry.lockUntil = now + LOCKOUT_DURATION_MS;
-    return {
-      allowed: false,
-      remaining: 0,
-      resetAt: entry.lockUntil,
-      locked: true,
-      lockUntil: entry.lockUntil,
-    };
-  }
-
-  return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS - entry.count, resetAt: entry.resetAt };
-}
-
-function rateLimitResponse(rateLimit: LoginRateLimit): NextResponse {
-  const retryAfter = rateLimit.lockUntil
-    ? Math.ceil((rateLimit.lockUntil - Date.now()) / 1000)
-    : 900;
-
-  return NextResponse.json(
-    {
-      success: false,
-      error: rateLimit.locked
-        ? 'Account temporarily locked due to too many failed attempts. Please try again later.'
-        : 'Too many login attempts. Please try again later.',
-      retryAfter,
-      locked: rateLimit.locked,
-    },
-    {
-      status: 429,
-      headers: { 'Retry-After': String(retryAfter) },
-    }
-  );
-}
-
-function invalidCredentialsResponse(rateLimit: LoginRateLimit): NextResponse {
-  if (rateLimit.locked) {
-    return rateLimitResponse(rateLimit);
-  }
-
-  const response: Record<string, unknown> = {
-    success: false,
-    error: 'Invalid credentials',
-  };
-
-  // Warn about remaining attempts
-  if (rateLimit.remaining <= 2) {
-    response.warning = `${rateLimit.remaining} attempts remaining before temporary lockout`;
-  }
-
-  return NextResponse.json(response, { status: 401 });
-}
-
-function getClientIp(request: NextRequest): string {
-  const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) return forwarded.split(',')[0].trim();
-  const realIp = request.headers.get('x-real-ip');
-  if (realIp) return realIp;
-  return 'unknown';
-}
-
-// ============================================================================
-// POST - Login
-// ============================================================================
+const fail = (status = 401, error = 'Invalid credentials') =>
+  NextResponse.json({ success: false, error }, { status, headers: { 'Cache-Control': 'no-store' } });
 
 export async function POST(request: NextRequest) {
-  const ip = getClientIp(request);
-  const rateLimitKey = `login:${ip}`;
-  
+  if (Number(request.headers.get('content-length') || 0) > 4096) return fail(413, 'Invalid request');
+  const data = Login.safeParse(await request.json().catch(() => null));
+  if (!data.success) return fail(400, 'Invalid credentials');
   try {
-    // Rate limiting check
-    const rateLimit = checkLoginRateLimit(rateLimitKey);
-    if (!rateLimit.allowed) {
-      const retryAfter = rateLimit.lockUntil 
-        ? Math.ceil((rateLimit.lockUntil - Date.now()) / 1000)
-        : 900;
-      
-      logger.warn('LOGIN', 'Rate limit exceeded', { 
-        ip, 
-        locked: rateLimit.locked,
-        retryAfter,
-      });
-      
-      return rateLimitResponse(rateLimit);
-    }
-    
-    // Parse and validate body
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        { success: false, error: 'Invalid JSON body' },
-        { status: 400 }
-      );
-    }
-    
-    const validation = LoginSchema.safeParse(body);
-    if (!validation.success) {
-      return NextResponse.json(
-        { success: false, error: validation.error.errors[0]?.message || 'Invalid input' },
-        { status: 400 }
-      );
-    }
-    
-    const { email, password, rememberMe } = validation.data;
-    const normalizedEmail = email.toLowerCase().trim();
-    
-    // Get database
-    const { db } = await connectToDatabase();
-    
-    // Find admin user
-    const admin = await db.collection('admin_users').findOne({
-      email: normalizedEmail,
+    const db = getTursoAdminClient();
+    await ensureTursoAdminSchema(db);
+    const ip = (request.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown';
+    const rate = await takeAttempt(db, ip);
+    if (!rate.allowed) return fail(429, 'Too many attempts. Please try again later.');
+    const account = await authenticateTursoAdmin(db, data.data.email.trim().toLowerCase(), data.data.password);
+    if (!account) return fail();
+
+    const updated = await db.execute({
+      sql: 'UPDATE tog_admin_users SET last_login_at=? WHERE id=? AND session_version=? AND is_active=1',
+      args: [Date.now(), account.id, account.session_version]
     });
-    
-    // Check if user exists and is active
-    if (!admin || admin.isActive === false) {
-      // Record failed attempt (even for non-existent users to prevent user enumeration)
-      const failedRateLimit = recordFailedAttempt(rateLimitKey);
-      
-      logger.warn('LOGIN', 'Failed login attempt - user not found or inactive', { 
-        email: normalizedEmail, 
-        ip,
-        remaining: failedRateLimit.remaining,
-      });
-      
-      // Generic error to prevent user enumeration
-      return invalidCredentialsResponse(failedRateLimit);
-    }
-
-    if (typeof admin.passwordHash !== 'string' || !admin.passwordHash) {
-      const failedRateLimit = recordFailedAttempt(rateLimitKey);
-
-      logger.warn('LOGIN', 'Failed login attempt - missing password hash', {
-        email: normalizedEmail,
-        ip,
-        remaining: failedRateLimit.remaining,
-      });
-
-      return invalidCredentialsResponse(failedRateLimit);
-    }
-    
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, admin.passwordHash);
-    
-    if (!isPasswordValid) {
-      // Record failed attempt
-      const updatedRateLimit = recordFailedAttempt(rateLimitKey);
-      
-      logger.warn('LOGIN', 'Failed login attempt - invalid password', { 
-        email: normalizedEmail, 
-        ip,
-        remaining: updatedRateLimit.remaining,
-      });
-      
-      // Generic error
-      return invalidCredentialsResponse(updatedRateLimit);
-    } else {
-      // Password valid - clear rate limit
-      rateLimitStore.delete(rateLimitKey);
-    }
-    
-    const adminId = admin.id || admin._id?.toString();
-
-    if (!adminId) {
-      logger.error('LOGIN', 'Admin record missing both id and _id', {
-        email: normalizedEmail,
-        ip,
-      });
-
-      return NextResponse.json(
-        { success: false, error: 'Login failed' },
-        { status: 500 }
-      );
-    }
-
-    // Generate JWT token
+    if (Number(updated.rowsAffected) !== 1) return fail(409, 'Account changed. Try again.');
+    await db.execute({ sql: 'DELETE FROM tog_admin_login_limits WHERE ip_hash=?', args: [rate.key] });
+    await logTursoAdminEvent(db, account.id, 'ADMIN_LOGIN_SUCCESS');
     const token = await generateAdminToken({
-      id: adminId,
-      email: admin.email,
-      role: admin.role,
-      name: admin.name,
+      id: String(account.id), email: String(account.email),
+      role: account.role as 'admin' | 'super_admin', name: String(account.name),
+      sessionVersion: Number(account.session_version)
     });
-    
-    // Generate CSRF token
-    const csrfToken = generateCsrfToken();
-    
-    // Update last login
-    await db.collection('admin_users').updateOne(
-      admin.id ? { id: admin.id } : { _id: admin._id },
-      { 
-        $set: { 
-          lastLogin: new Date(),
-          lastLoginIp: ip,
-        },
-        $push: {
-          loginHistory: {
-            $each: [{ date: new Date(), ip }],
-            $slice: -10, // Keep last 10 logins
-          },
-        },
-      }
-    );
-    
-    // Audit log
-    await db.collection('audit_logs').insertOne({
-      timestamp: new Date(),
-      adminId,
-      adminEmail: admin.email,
-      action: 'LOGIN_SUCCESS',
-      resource: 'auth',
-      details: { ip, userAgent: request.headers.get('user-agent') || 'unknown' },
-      ipAddress: ip,
-      userAgent: request.headers.get('user-agent') || 'unknown',
-      success: true,
-    });
-    
-    // Success response
-    logger.info('LOGIN', `Successful login: ${admin.email}`, { ip });
-    
     const response = NextResponse.json({
       success: true,
-      user: {
-        id: adminId,
-        email: admin.email,
-        name: admin.name,
-        role: admin.role,
-        mustChangePassword: admin.mustChangePassword || false,
-      },
-    });
-    
-    // Set auth cookie with appropriate expiration
-    const cookieMaxAge = rememberMe 
-      ? 30 * 24 * 60 * 60 // 30 days
-      : 7 * 24 * 60 * 60; // 7 days
-    
+      user: { id: account.id, email: account.email, role: account.role,
+        name: account.name, mustChangePassword: Number(account.must_change_password) === 1 }
+    }, { headers: { 'Cache-Control': 'no-store' } });
     response.cookies.set('admin_token', token, {
-      httpOnly: true,
-      secure: IS_PRODUCTION,
-      sameSite: 'strict',
-      path: '/',
-      maxAge: cookieMaxAge,
+      httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production',
+      path: '/', maxAge: 7 * 86400
     });
-    
-    // Set CSRF cookie
-    response.cookies.set('admin_csrf', csrfToken, {
-      httpOnly: false, // Must be readable by JS
-      secure: IS_PRODUCTION,
-      sameSite: 'strict',
-      path: '/',
-      maxAge: cookieMaxAge,
+    response.cookies.set('admin_csrf', randomBytes(32).toString('hex'), {
+      httpOnly: false, sameSite: 'strict', secure: process.env.NODE_ENV === 'production',
+      path: '/', maxAge: 7 * 86400
     });
-    
     return response;
-    
   } catch (error) {
-    logger.error('LOGIN', 'Login error', { error, ip });
-    return NextResponse.json(
-      { success: false, error: 'Login failed' },
-      { status: 500 }
-    );
+    console.error('TURSO_ADMIN_LOGIN_UNAVAILABLE', error instanceof Error ? error.message : 'error');
+    return fail(503, 'Admin login is temporarily unavailable.');
   }
 }

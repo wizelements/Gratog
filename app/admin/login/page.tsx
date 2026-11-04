@@ -15,7 +15,8 @@ import { toast } from 'sonner';
 export default function AdminLoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') || '/admin';
+  const intended = searchParams.get('redirect') || '/admin';
+  const redirect = intended.startsWith('/admin') && !intended.startsWith('//') ? intended : '/admin';
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

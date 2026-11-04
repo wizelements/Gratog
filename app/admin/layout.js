@@ -43,7 +43,7 @@ export default function AdminLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (pathname !== '/admin/login') {
+    if (!['/admin/login', '/admin/forgot-password', '/admin/reset-password'].includes(pathname)) {
       adminFetch('/api/admin/auth/me')
         .then(res => {
           if (!res.ok) return null;
@@ -70,7 +70,7 @@ export default function AdminLayout({ children }) {
   };
 
   // Login page - minimal layout without customer elements
-  if (pathname === '/admin/login') {
+  if (['/admin/login', '/admin/forgot-password', '/admin/reset-password'].includes(pathname)) {
     return (
       <>
         {children}
