@@ -24,7 +24,9 @@ describe('Square Messages independent storefront handoff', () => {
     expect(page).toContain('Send website message');
     expect(page).toContain('verifiedSquareSmsHref');
     expect(page).not.toContain('https://squareup.com/messages');
-    expect(button).toContain('href="/text-us"');
+    expect(button).toContain('"/contact?source=message-us#send-message"');
+    expect(button).toContain('smsHref ? "/text-us"');
+    expect(page).toContain("redirect('/contact?source=message-us#send-message')");
     expect(button).not.toContain("'/checkout'");
     expect(button).not.toContain("'/order-request'");
   });
