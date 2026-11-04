@@ -1,54 +1,27 @@
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+import { NextRequest, NextResponse } from 'next/server';
+import { randomBytes } from 'node:crypto';
+import { getAdminSession } from '@/lib/admin-session';
+import { getTursoAdminClient, ensureTursoAdminSchema, verifyAdminInTurso } from '@/lib/auth/turso-admin-store.mjs';
 
-/**
- * CSRF Token Endpoint
- * 
- * Returns a fresh CSRF token for the frontend.
- * Requires authentication.
- */
-
-import { NextResponse } from 'next/server';
-import { generateCsrfToken } from '@/lib/auth/unified-admin';
-import { withAdminMiddleware, AuthenticatedRequest } from '@/lib/middleware/admin';
-import { PERMISSIONS } from '@/lib/security';
-import { logger } from '@/lib/logger';
-
-export const GET = withAdminMiddleware(
-  async (request: AuthenticatedRequest) => {
-    try {
-      // Generate fresh CSRF token
-      const csrfToken = generateCsrfToken();
-      
-      // Set cookie
-      const response = NextResponse.json({
-        success: true,
-        csrfToken,
-      });
-      
-      response.cookies.set('admin_csrf', csrfToken, {
-        httpOnly: false, // Must be readable by JS
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        path: '/',
-        maxAge: 7 * 24 * 60 * 60, // 7 days
-      });
-      
-      logger.debug('CSRF', `CSRF token generated for ${request.admin.email}`);
-      
-      return response;
-      
-    } catch (error) {
-      logger.error('CSRF', 'Failed to generate CSRF token', error);
-      return NextResponse.json(
-        { success: false, error: 'Failed to generate CSRF token' },
-        { status: 500 }
-      );
+export async function GET(req: NextRequest) {
+  try {
+    const claim = await getAdminSession(req);
+    if (!claim) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+    const db = getTursoAdminClient();
+    await ensureTursoAdminSchema(db);
+    if (!(await verifyAdminInTurso(db, claim))) {
+      return NextResponse.json({ success: false, error: 'Session expired' }, { status: 401 });
     }
-  },
-  {
-    permission: PERMISSIONS.DASHBOARD_VIEW,
-    resource: 'auth',
-    action: 'csrf',
-    skipAudit: true, // Don't audit CSRF token generation (too noisy)
+    const csrfToken = randomBytes(32).toString('hex');
+    const response = NextResponse.json({ success: true, csrfToken }, { headers: { 'Cache-Control': 'no-store' } });
+    response.cookies.set('admin_csrf', csrfToken, {
+      httpOnly: false, secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict', path: '/', maxAge: 7 * 86400
+    });
+    return response;
+  } catch {
+    return NextResponse.json({ success: false, error: 'Security token unavailable' }, { status: 503 });
   }
-);
+}

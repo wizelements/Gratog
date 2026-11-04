@@ -22,6 +22,7 @@ export interface AdminTokenPayload {
   name?: string;
   iat?: number;
   exp?: number;
+  sessionVersion?: number;
 }
 
 export interface AdminSession {
@@ -29,6 +30,7 @@ export interface AdminSession {
   email: string;
   role: AdminRole;
   name?: string;
+  sessionVersion?: number;
 }
 
 // MEMORY FIX: Reuse TextEncoder instance instead of creating new one every time
@@ -74,7 +76,7 @@ export async function verifyAdminToken(token: string): Promise<AdminTokenPayload
     // Support both 'id' and 'userId' for backward compatibility
     const id = (payload.id || payload.userId) as string;
     const email = payload.email as string | undefined;
-    if (!id || !email) {
+    if (!id || !email || !Number.isSafeInteger(payload.sessionVersion) || Number(payload.sessionVersion) < 1) {
       return null;
     }
     
@@ -83,6 +85,7 @@ export async function verifyAdminToken(token: string): Promise<AdminTokenPayload
       email,
       role: payload.role,
       name: payload.name as string | undefined,
+      sessionVersion: Number(payload.sessionVersion),
     };
   } catch (error) {
     return null;
@@ -101,6 +104,7 @@ export async function generateAdminToken(admin: {
   email: string;
   role?: AdminRole;
   name?: string;
+  sessionVersion?: number;
 }): Promise<string> {
   const secretKey = getJwtSecretKey();
   
@@ -109,6 +113,7 @@ export async function generateAdminToken(admin: {
     email: admin.email,
     role: admin.role || 'admin',
     name: admin.name,
+    sessionVersion: admin.sessionVersion,
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -149,6 +154,8 @@ export async function refreshTokenIfNeeded(
       id: payload.id,
       email: payload.email,
       name: payload.name,
+      role: payload.role,
+      sessionVersion: payload.sessionVersion,
     });
     
     // Set new token in response
@@ -192,6 +199,7 @@ export async function getAdminSession(request: NextRequest | Request): Promise<A
     email: payload.email,
     role: payload.role,
     name: payload.name,
+    sessionVersion: payload.sessionVersion,
   };
 }
 

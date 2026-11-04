@@ -1,41 +1,21 @@
 export const dynamic = 'force-dynamic';
-
-/**
- * Admin Auth Me Route
- * 
- * Returns current admin user info for session validation.
- */
-
+export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminSession } from '@/lib/auth/unified-admin';
-import { logger } from '@/lib/logger';
+import { getAdminSession } from '@/lib/admin-session';
+import { getTursoAdminClient, ensureTursoAdminSchema, verifyAdminInTurso } from '@/lib/auth/turso-admin-store.mjs';
 
 export async function GET(request: NextRequest) {
   try {
-    const admin = await getAdminSession(request);
-    
-    if (!admin) {
-      return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
-        { status: 401 }
-      );
-    }
-    
+    const claim = await getAdminSession(request);
+    if (!claim) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+    const db = getTursoAdminClient();
+    await ensureTursoAdminSchema(db);
+    const admin = await verifyAdminInTurso(db, claim);
+    if (!admin) return NextResponse.json({ success: false, error: 'Session expired' }, { status: 401 });
     return NextResponse.json({
-      success: true,
-      user: {
-        id: admin.id,
-        email: admin.email,
-        name: admin.name,
-        role: admin.role,
-      },
-    });
-    
-  } catch (error) {
-    logger.error('AUTH', '/me error', error);
-    return NextResponse.json(
-      { success: false, error: 'Authentication failed' },
-      { status: 401 }
-    );
+      success: true, user: { id: admin.id, email: admin.email, role: admin.role, name: admin.name }
+    }, { headers: { 'Cache-Control': 'no-store' } });
+  } catch {
+    return NextResponse.json({ success: false, error: 'Admin session unavailable' }, { status: 503 });
   }
 }

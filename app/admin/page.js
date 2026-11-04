@@ -100,6 +100,7 @@ export default function AdminDashboard() {
   const [menus, setMenus] = useState([]);
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [unavailableSources, setUnavailableSources] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [lastLoadedAt, setLastLoadedAt] = useState(null);
 
@@ -113,6 +114,15 @@ export default function AdminDashboard() {
         adminFetch('/api/admin/menus', { skipCsrf: true }),
         adminFetch('/api/admin/markets', { skipCsrf: true }),
       ]);
+
+      // Never treat an unavailable backend as zero sales or zero inventory.
+      const sourceResults = [
+        ['orders', ordersResult], ['products', productsResult],
+        ['menus', menusResult], ['markets', marketsResult],
+      ];
+      setUnavailableSources(sourceResults.filter(([, r]) =>
+        r.status !== 'fulfilled' || !r.value.success
+      ).map(([name]) => name));
 
       if (ordersResult.status === 'fulfilled' && ordersResult.value.success) {
         setOrders(ordersResult.value.data?.orders || []);
@@ -206,6 +216,14 @@ export default function AdminDashboard() {
         </Button>
       </div>
 
+      {unavailableSources.length > 0 && (
+        <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-950">
+          <strong>Operational data unavailable.</strong> The following sources have not returned verified data:
+          {' '}{unavailableSources.join(', ')}. Missing data must not be interpreted as zero
+          orders, sales, or inventory during the Turso migration.
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card className="border-amber-200 bg-amber-50/60">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -214,7 +232,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-semibold text-amber-950">
-              {activeMenu?.title || 'No active menu'}
+              {unavailableSources.includes('menus') ? 'Unavailable' : (activeMenu?.title || 'No active menu')}
             </div>
             <p className="mt-1 text-sm text-amber-900/75">
               {activeMenu ? formatDateRange(activeMenu.weekStart, activeMenu.weekEnd) : 'Publish this week’s menu before market day.'}
@@ -231,9 +249,9 @@ export default function AdminDashboard() {
             <Package className="h-5 w-5 text-emerald-700" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{activeProducts.length}</div>
+            <div className="text-3xl font-bold">{unavailableSources.includes('products') ? '—' : activeProducts.length}</div>
             <p className="text-sm text-muted-foreground">
-              {lowStockProducts.length} need inventory attention
+              {unavailableSources.includes('products') ? '—' : lowStockProducts.length} need inventory attention
             </p>
             <Button asChild size="sm" variant="outline" className="mt-4">
               <Link href="/admin/inventory">Review inventory</Link>
@@ -247,7 +265,7 @@ export default function AdminDashboard() {
             <MapPin className="h-5 w-5 text-blue-700" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{activeMarkets.length}</div>
+            <div className="text-3xl font-bold">{unavailableSources.includes('markets') ? '—' : activeMarkets.length}</div>
             <p className="text-sm text-muted-foreground">
               Pickup locations currently shown to customers
             </p>
@@ -263,7 +281,7 @@ export default function AdminDashboard() {
             <ClipboardList className="h-5 w-5 text-emerald-700" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-emerald-950">{todaysPreorders.length}</div>
+            <div className="text-3xl font-bold text-emerald-950">{unavailableSources.includes('orders') ? '—' : todaysPreorders.length}</div>
             <p className="text-sm text-emerald-900/75">
               Preorder pickups requiring fulfillment focus
             </p>
@@ -283,7 +301,7 @@ export default function AdminDashboard() {
                 Open orders that still need operational attention.
               </p>
             </div>
-            <Badge variant="secondary">{openOrders.length} open</Badge>
+            <Badge variant="secondary">{unavailableSources.includes('orders') ? '—' : openOrders.length} open</Badge>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -335,7 +353,7 @@ export default function AdminDashboard() {
               <AlertTriangle className="mt-0.5 h-5 w-5 text-yellow-700" />
               <div>
                 <p className="font-medium">Inventory pressure</p>
-                <p className="text-sm">{lowStockProducts.length} product(s) low or out of stock.</p>
+                <p className="text-sm">{unavailableSources.includes('products') ? '—' : lowStockProducts.length} product(s) low or out of stock.</p>
               </div>
             </div>
 
@@ -343,7 +361,7 @@ export default function AdminDashboard() {
               <ShoppingCart className="mt-0.5 h-5 w-5 text-blue-700" />
               <div>
                 <p className="font-medium">Payment follow-up</p>
-                <p className="text-sm">{paymentAttentionOrders.length} open order(s) still pending payment.</p>
+                <p className="text-sm">{unavailableSources.includes('orders') ? '—' : paymentAttentionOrders.length} open order(s) still pending payment.</p>
               </div>
             </div>
 

@@ -1,85 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server';
-// IMPORTANT: this file runs on the Edge Runtime.
-// `lib/admin-session` only depends on `jose` (Edge-safe). Do NOT import
-// `lib/auth/unified-admin` here — it transitively imports the MongoDB layer
-// (lib/db-optimized → mongoose), which the Edge bundler rejects with
-// "Dynamic Code Evaluation not allowed in Edge Runtime". Both modules sign
-// with the same JWT_SECRET / HS256, so verifying tokens with admin-session
-// is fully interoperable with tokens issued by unified-admin.
+import { createClient } from '@libsql/client/web';
 import { verifyAdminToken } from '@/lib/admin-session';
 
-// Routes that the admin area exposes without authentication.
+let edgeTurso: ReturnType<typeof createClient> | null = null;
+
 const PUBLIC_ADMIN_ROUTES = ['/admin/login', '/admin/forgot-password', '/admin/reset-password'];
-
-// API routes under /api/admin that the admin login flow itself must reach
-// before any session exists.
 const PUBLIC_ADMIN_API_ROUTES = [
-  '/api/admin/auth/login',
-  '/api/admin/auth/logout',
-  '/api/admin/auth/reset-password',
+  '/api/admin/auth/login', '/api/admin/auth/logout', '/api/admin/auth/reset-password',
 ];
+const isPublic = (path: string) => [...PUBLIC_ADMIN_ROUTES, ...PUBLIC_ADMIN_API_ROUTES]
+  .some(entry => path === entry || path.startsWith(entry + '/'));
 
-const ADMIN_COOKIE_NAME = 'admin_token';
-
-function isPublicAdminPath(pathname: string): boolean {
-  if (
-    PUBLIC_ADMIN_ROUTES.some(
-      (route) => pathname === route || pathname.startsWith(route + '/')
-    )
-  ) {
-    return true;
+function deny(request: NextRequest): NextResponse {
+  if (request.nextUrl.pathname.startsWith('/api/admin')) {
+    return NextResponse.json({ success: false, error: 'Unauthorized', code: 'ADMIN_AUTH_REQUIRED' }, { status: 401 });
   }
-  if (
-    PUBLIC_ADMIN_API_ROUTES.some(
-      (route) => pathname === route || pathname.startsWith(route + '/')
-    )
-  ) {
-    return true;
-  }
-  return false;
+  const loginUrl = new URL('/admin/login', request.url);
+  loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
+  return NextResponse.redirect(loginUrl);
 }
 
-function unauthorizedApi(): NextResponse {
-  return NextResponse.json(
-    { success: false, error: 'Unauthorized', code: 'ADMIN_AUTH_REQUIRED' },
-    { status: 401 }
-  );
-}
-
+// All protected admin requests are bound to Turso's current session epoch.
+// A signed but revoked JWT, missing database, or inaccessible Turso fails closed.
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const path = request.nextUrl.pathname;
+  if (!path.startsWith('/admin') && !path.startsWith('/api/admin')) return NextResponse.next();
+  if (isPublic(path)) return NextResponse.next();
 
-  // Pass through non-admin paths untouched.
-  if (!pathname.startsWith('/admin') && !pathname.startsWith('/api/admin')) {
-    return NextResponse.next();
-  }
-
-  if (isPublicAdminPath(pathname)) {
-    return NextResponse.next();
-  }
-
-  // Cookie is the canonical source of admin identity. The legacy
-  // Authorization: Bearer <API_KEY> path is intentionally removed — admin
-  // identity is now ALWAYS a signed JWT (lib/auth/unified-admin.ts).
-  const token =
-    request.cookies.get(ADMIN_COOKIE_NAME)?.value ||
-    request.headers.get('authorization')?.replace('Bearer ', '');
-
+  const token = request.cookies.get('admin_token')?.value;
   const session = token ? await verifyAdminToken(token) : null;
+  if (!session?.id || !session.sessionVersion) return deny(request);
 
-  if (!session) {
-    // API: return 401 JSON; pages: redirect to login with intended path.
-    if (pathname.startsWith('/api/admin')) {
-      return unauthorizedApi();
-    }
-    const loginUrl = new URL('/admin/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(loginUrl);
+  const url = process.env.TURSO_DATABASE_URL;
+  const authToken = process.env.TURSO_AUTH_TOKEN;
+  if (!url || !authToken || !/^(libsql|https):\/\//.test(url) ||
+      (process.env.VERCEL_ENV === 'production' && /staging|preview|migration-cert|sandbox/i.test(url))) {
+    return deny(request);
   }
-
-  return NextResponse.next();
+  try {
+    const db = edgeTurso || (edgeTurso = createClient({ url, authToken }));
+    const rs = await db.execute({
+      sql: 'SELECT id FROM tog_admin_users WHERE id=? AND email=? AND role=? AND is_active=1 AND session_version=? LIMIT 1',
+      args: [session.id, session.email, session.role, session.sessionVersion]
+    });
+    if (rs.rows.length !== 1) return deny(request);
+    return NextResponse.next();
+  } catch {
+    return deny(request);
+  }
 }
-
-export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*'],
-};
+export const config = { matcher: ['/admin/:path*', '/api/admin/:path*'] };
