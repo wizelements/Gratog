@@ -21,7 +21,14 @@ describe('Square Messages independent storefront handoff', () => {
     const page = file('app/text-us/page.tsx');
     const button = file('components/WebsiteMessageButton.tsx');
     expect(page).toContain('Square\'s native Text Us button cannot be installed');
-    expect(page).toContain('<WebsiteMessageForm />');\n    expect(page).not.toContain('/contact?source=message-us');\n    const form = file('components/WebsiteMessageForm.tsx');\n    expect(form).toContain("fetch('/api/contact'");\n    expect(form).toContain('id="message-form"');\n    expect(form).toContain('not Square SMS');\n    expect(form).toContain('data.id');\n    expect(form).not.toContain('Square text sent');
+    expect(page).toContain('<WebsiteMessageForm />');
+    expect(page).not.toContain('/contact?source=message-us');
+    const form = file('components/WebsiteMessageForm.tsx');
+    expect(form).toContain("fetch('/api/contact'");
+    expect(form).toContain('id="message-form"');
+    expect(form).toContain('not Square SMS');
+    expect(form).toContain('data.id');
+    expect(form).not.toContain('Square text sent');
     expect(page).toContain('verifiedSquareSmsHref');
     expect(page).not.toContain('https://squareup.com/messages');
     expect(button).toContain('href="/text-us#message-form"');
