@@ -15,6 +15,8 @@ import * as bcrypt from 'bcryptjs';
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
+import { getAdminSession as getSignedAdminSession } from '@/lib/admin-session';
+import { getTursoAdminClient, ensureTursoAdminSchema, verifyAdminInTurso, logTursoAdminEvent } from '@/lib/auth/turso-admin-store.mjs';
 
 // ============================================================================
 // CONFIGURATION
@@ -231,42 +233,20 @@ export function shouldRotateToken(session: AdminSession): boolean {
  * Primary method for checking authentication
  */
 export async function getAdminSession(request: NextRequest): Promise<AdminSession | null> {
-  const token = extractTokenFromRequest(request);
-  
-  if (!token) {
-    return null;
-  }
-  
-  const session = await verifyAdminToken(token);
-  
-  if (!session) {
-    return null;
-  }
-  
-  // Additional validation: check if admin still exists and is active
+  // Revalidate signed session against live Turso; never trust an old Mongo JWT.
+  const claim = await getSignedAdminSession(request);
+  if (!claim || !claim.sessionVersion) return null;
   try {
-    const { db } = await connectToDatabase();
-    const admin = await db.collection('admin_users').findOne(
-      getAdminLookupQuery(session.id),
-      { projection: { isActive: 1, role: 1 } }
-    );
-    
-    if (!admin || admin.isActive === false) {
-      logger.warn('AUTH', 'Session valid but admin inactive or deleted', {
-        adminId: session.id,
-      });
-      return null;
-    }
-    
-    // Update session with current role from DB
-    session.role = admin.role;
-    
-  } catch (error) {
-    // Database error - don't fail auth, but log
-    logger.error('AUTH', 'Failed to verify admin in database', error);
+    const db = getTursoAdminClient();
+    await ensureTursoAdminSchema(db);
+    const admin = await verifyAdminInTurso(db, claim);
+    if (!admin) return null;
+    return { id: String(admin.id), email: String(admin.email),
+      role: String(admin.role), name: String(admin.name) };
+  } catch {
+    logger.error('AUTH', 'Turso admin session revalidation unavailable');
+    return null;
   }
-  
-  return session;
 }
 
 /**
@@ -583,12 +563,13 @@ export async function logAdminAction(
     ip: entry.ipAddress,
   });
   
-  // Persist async
+  // Turso is the only authoritative audit ledger. No Mongo fallback.
   try {
-    const { db } = await connectToDatabase();
-    await db.collection('audit_logs').insertOne(entry);
+    const db = getTursoAdminClient();
+    await ensureTursoAdminSchema(db);
+    await logTursoAdminEvent(db, admin.id, action, entry);
   } catch (error) {
-    logger.error('AUDIT', 'Failed to persist audit log', error);
+    logger.error('AUDIT', 'Failed to persist Turso admin audit', error);
   }
 }
 

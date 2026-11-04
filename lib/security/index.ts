@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/db-optimized';
+import { getTursoAdminClient, ensureTursoAdminSchema, logTursoAdminEvent } from '@/lib/auth/turso-admin-store.mjs';
 import { logger } from '@/lib/logger';
 
 // Re-export from unified auth
@@ -252,12 +252,13 @@ export async function logAdminAction(
     ip: entry.ipAddress,
   });
 
-  // Persist to database (async, don't wait)
+  // Persist to the same Turso security ledger as password and login events.
   try {
-    const { db } = await connectToDatabase();
-    await db.collection('audit_logs').insertOne(entry);
+    const db = getTursoAdminClient();
+    await ensureTursoAdminSchema(db);
+    await logTursoAdminEvent(db, admin.id, action, entry);
   } catch (error) {
-    logger.error('AUDIT', 'Failed to persist audit log to MongoDB', error);
+    logger.error('AUDIT', 'Failed to persist Turso admin audit log', error);
   }
 }
 
@@ -273,50 +274,39 @@ export async function getAuditLogs(
     endDate?: Date;
     success?: boolean;
   } = {},
-  pagination: {
-    page?: number;
-    limit?: number;
-  } = {}
+  pagination: { page?: number; limit?: number } = {}
 ): Promise<{ logs: AuditLogEntry[]; total: number; page: number; pages: number }> {
-  const { page = 1, limit = 50 } = pagination;
-  const skip = (page - 1) * limit;
-
-  const query: Record<string, unknown> = {};
-
-  if (filters.adminId) query.adminId = filters.adminId;
-  if (filters.action) query.action = filters.action;
-  if (filters.resource) query.resource = filters.resource;
-  if (filters.success !== undefined) query.success = filters.success;
-  
-  if (filters.startDate || filters.endDate) {
-    query.timestamp = {};
-    if (filters.startDate) (query.timestamp as Record<string, Date>).$gte = filters.startDate;
-    if (filters.endDate) (query.timestamp as Record<string, Date>).$lte = filters.endDate;
+  const page = Number(pagination.page ?? 1), limit = Number(pagination.limit ?? 50);
+  if (!Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(limit) || limit < 1 || limit > 100) {
+    throw new Error('ADMIN_AUDIT_PAGINATION_INVALID');
   }
-
-  try {
-    const { db } = await connectToDatabase();
-    
-    const [logs, total] = await Promise.all([
-      (db.collection('audit_logs') as any)
-        .find(query)
-        .sort({ timestamp: -1 })
-        .skip(skip)
-        .limit(limit)
-        .toArray(),
-      db.collection('audit_logs').countDocuments(query),
-    ]);
-
+  const db = getTursoAdminClient();
+  await ensureTursoAdminSchema(db);
+  const terms: string[] = [], args: any[] = [];
+  if (filters.adminId) { terms.push('admin_id=?'); args.push(filters.adminId); }
+  if (filters.action) { terms.push('action=?'); args.push(filters.action); }
+  if (filters.resource) { terms.push("json_extract(metadata_json,'$.resource')=?"); args.push(filters.resource); }
+  if (filters.success != null) { terms.push("json_extract(metadata_json,'$.success')=?"); args.push(filters.success ? 1 : 0); }
+  if (filters.startDate) { terms.push('occurred_at >= ?'); args.push(+new Date(filters.startDate)); }
+  if (filters.endDate) { terms.push('occurred_at <= ?'); args.push(+new Date(filters.endDate)); }
+  const where = terms.length ? ' WHERE ' + terms.join(' AND ') : '';
+  const count = await db.execute({ sql: 'SELECT COUNT(*) AS n FROM tog_admin_audit' + where, args });
+  const total = Number(count.rows[0]?.n || 0);
+  const result = await db.execute({
+    sql: 'SELECT admin_id,action,occurred_at,metadata_json FROM tog_admin_audit' + where +
+      ' ORDER BY occurred_at DESC,id DESC LIMIT ? OFFSET ?',
+    args: [...args, limit, (page - 1) * limit]
+  });
+  const logs = result.rows.map((row: any) => {
+    const data = JSON.parse(String(row.metadata_json));
     return {
-      logs,
-      total,
-      page,
-      pages: Math.ceil(total / limit),
-    };
-  } catch (error) {
-    logger.error('AUDIT', 'Failed to retrieve audit logs', error);
-    throw error;
-  }
+      ...data,
+      timestamp: new Date(Number(row.occurred_at)),
+      adminId: data.adminId || String(row.admin_id || ''),
+      action: String(row.action),
+    } as AuditLogEntry;
+  });
+  return { logs, total, page, pages: Math.ceil(total / limit) };
 }
 
 // ============================================================================
