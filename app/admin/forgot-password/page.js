@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
 
       if (response.ok) {
         setIsSubmitted(true);
-        toast.success('Check your email for reset instructions.');
+        toast.success('Request received. If this is an active admin account, check its inbox for a reset link.');
       } else {
         toast.error(data.error || 'Request failed. Please try again.');
       }
@@ -64,7 +64,7 @@ export default function ForgotPasswordPage() {
           {isSubmitted ? (
             <div className="space-y-4 text-center">
               <p className="text-sm text-muted-foreground">
-                If an account exists with that email, a password reset link has been sent. Check your inbox.
+                If this email belongs to an active administrator, a password reset link will be sent. Check your inbox and spam folder. The link expires after 30 minutes.
               </p>
               <Button asChild className="w-full bg-[#D4AF37] hover:bg-[#B8941F] text-white">
                 <Link href="/admin/login">Back to Login</Link>
@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@tasteofgratitude.shop"
+                  placeholder="Enter your admin email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
