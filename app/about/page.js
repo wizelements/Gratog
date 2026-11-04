@@ -52,8 +52,8 @@ export default function AboutPage() {
             <p>
               I brought my first batch to a local farmers market in Atlanta, and that changed everything.
               Watching someone try my sea moss gel for the first time at the Serenbe Market — their eyes going
-              wide — that&apos;s when I knew this was bigger than me. Now you can find us at Serenbe
-              and Dunwoody farmers markets, and every weekend I&apos;m still behind the table, still
+              wide — that&apos;s when I knew this was bigger than me. Now you can find us at the Serenbe
+              Farmers Market, where I&apos;m still behind the table each Saturday,
               making everything in small batches, still grateful.
             </p>
           </div>
