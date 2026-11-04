@@ -257,12 +257,9 @@ export async function POST(request: NextRequest) {
     logger.error('AdminReset', 'Reset request failed', {
       error: err instanceof Error ? err.message : String(err),
     });
-    // Return a service failure rather than claiming that recovery mail was
-    // sent when the email provider or database rejected it.
-    return NextResponse.json(
-      { success: false, error: 'Password recovery is temporarily unavailable. Contact site support.' },
-      { status: 503 }
-    );
+    // Never reveal account existence through provider-specific outages.
+    // Operational errors are logged; the public response stays generic.
+    return safeOk();
   }
   return safeOk();
 }
