@@ -23,8 +23,22 @@ export default function ContactPage() {
     subject: '',
     message: '',
   });
+  const [isWebsiteMessage, setIsWebsiteMessage] = useState(false);
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('request') === 'non-market-pickup') {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('source') === 'message-us') {
+      setIsWebsiteMessage(true);
+      setFormData((current) => ({ ...current,
+        subject: current.subject || 'Website message for Taste of Gratitude',
+      }));
+      if (window.location.hash === '#send-message') {
+        const frame = window.requestAnimationFrame(() => {
+          document.getElementById('send-message')?.scrollIntoView({ block: 'start' });
+        });
+        return () => window.cancelAnimationFrame(frame);
+      }
+    }
+    if (params.get('request') === 'non-market-pickup') {
       setFormData((current) => ({
         ...current,
         subject: 'Browns Mill non-market pickup request',
@@ -136,6 +150,13 @@ export default function ContactPage() {
         <Card id="send-message" className="scroll-mt-24">
           <CardHeader>
             <CardTitle>Send Us a Message</CardTitle>
+            {isWebsiteMessage && (
+              <p className="text-sm leading-6 text-stone-700">
+                This is a website message delivered to our team, not a Square SMS conversation.
+                We will review your question and respond using the contact details you provide.
+                No payment or inventory reservation occurs here.
+              </p>
+            )}
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
