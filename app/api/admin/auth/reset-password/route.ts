@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { sendEmail, isRealEmail } from '@/lib/resend-email';
+import { EMAIL_SENDERS } from '@/lib/email-config';
 import { logger } from '@/lib/logger';
 import { SUPPORT_EMAIL } from '@/lib/site-config';
 
@@ -70,9 +71,18 @@ async function requestReset(email: string, origin: string) {
     .collection('admin_users')
     .findOne({ email: email.toLowerCase(), isActive: { $ne: false } });
 
-  // Always return 200 — do not leak existence — but only generate a token
-  // if the admin really exists.
+  // Recover only an existing, active administrator. A reset request never
+  // creates a new privileged account or forwards a token to a third party.
   if (!admin) return;
+
+  // Durable per-account cooldown across serverless instances. This prevents
+  // repeated requests from flooding an admin's inbox after redeployments.
+  const recent = await db.collection('admin_password_resets').findOne({
+    email: admin.email,
+    createdAt: { $gt: new Date(Date.now() - RATE_WINDOW_MS) },
+    consumed: false,
+  });
+  if (recent) return;
 
   const token = crypto.randomBytes(32).toString('hex');
   const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
@@ -93,6 +103,9 @@ async function requestReset(email: string, origin: string) {
 
   const delivery = await sendEmail({
     to: admin.email,
+    // Password recovery must use the verified transactional sender, not the
+    // default hello sender or a mock delivery fallback.
+    from: process.env.ADMIN_PASSWORD_RESET_FROM || EMAIL_SENDERS.support.formatted,
     subject: 'Reset your Taste of Gratitude admin password',
     html: `
       <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto">
@@ -108,12 +121,12 @@ async function requestReset(email: string, origin: string) {
     customerEmail: admin.email,
   });
   // The adapter can report mock success or return a provider error without throwing.
-  if (!delivery?.success || delivery.provider !== 'resend') {
+  if (!delivery?.success || delivery.provider !== 'resend' || !delivery.messageId) {
     await db.collection('admin_password_resets').deleteOne({ tokenHash });
     throw new Error('ADMIN_RESET_EMAIL_DELIVERY_FAILED');
   }
 
-  logger.info('AdminReset', 'Reset link issued', { email: admin.email });
+  logger.info('AdminReset', 'Reset link accepted by email provider', { email: admin.email, messageId: delivery.messageId });
 }
 
 async function consumeReset(token: string, newPassword: string) {
@@ -136,7 +149,7 @@ async function consumeReset(token: string, newPassword: string) {
   const claim = await db
     .collection('admin_password_resets')
     .updateOne(
-      { _id: record._id, consumed: false },
+      { _id: record._id, consumed: false, expiresAt: { $gt: new Date() } },
       { $set: { consumed: true, consumedAt: new Date() } }
     );
   if (claim.modifiedCount !== 1) {
@@ -147,8 +160,8 @@ async function consumeReset(token: string, newPassword: string) {
   }
 
   const passwordHash = await bcrypt.hash(newPassword, 12);
-  await db.collection('admin_users').updateOne(
-    { email: record.email },
+  const updatedAdmin = await db.collection('admin_users').updateOne(
+    { email: record.email, isActive: { $ne: false } },
     {
       $set: {
         passwordHash,
@@ -159,6 +172,14 @@ async function consumeReset(token: string, newPassword: string) {
       },
     }
   );
+
+  if (updatedAdmin.modifiedCount !== 1) {
+    logger.error('AdminReset', 'Reset did not update an active admin', { email: record.email });
+    return NextResponse.json({ success: false, error: 'Reset could not be completed.' }, { status: 409 });
+  }
+
+  // Any older outstanding links for this admin must no longer be usable.
+  await db.collection('admin_password_resets').deleteMany({ email: record.email });
 
   logger.info('AdminReset', 'Password rotated via reset link', {
     email: record.email,
@@ -236,7 +257,12 @@ export async function POST(request: NextRequest) {
     logger.error('AdminReset', 'Reset request failed', {
       error: err instanceof Error ? err.message : String(err),
     });
-    // Still return 200 to avoid leakage.
+    // Return a service failure rather than claiming that recovery mail was
+    // sent when the email provider or database rejected it.
+    return NextResponse.json(
+      { success: false, error: 'Password recovery is temporarily unavailable. Contact site support.' },
+      { status: 503 }
+    );
   }
   return safeOk();
 }
