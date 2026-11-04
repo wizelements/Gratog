@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { verifiedSquareSmsHref } from '@/lib/square-messages-contact';
 import { verifiedSquareTextUsPage } from '@/lib/commerce/nonmarket-order-request';
 
@@ -14,6 +15,12 @@ export default function MessageUsPage() {
     process.env.SQUARE_MESSAGES_NUMBER_VERIFIED,
   );
   const hosted = verifiedSquareTextUsPage(process.env.SQUARE_TEXT_US_HOSTED_URL);
+  // A Square Online "Website" toggle does not install a texting widget here.
+  // Without a verified Square contact destination, send customers straight
+  // to the working website message form, never to another informational page.
+  if (!smsHref && !hosted) {
+    redirect('/contact?source=message-us#send-message');
+  }
   return (
     <main className="min-h-screen bg-[#faf8f2] px-4 py-10 text-stone-950">
       <div className="mx-auto max-w-xl space-y-6">
