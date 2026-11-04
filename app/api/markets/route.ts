@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getActiveMarkets } from '@/lib/markets/repository';
 import { logger } from '@/lib/logger';
 import { getActiveMarketPickups } from '@/data/markets';
 import {
@@ -43,9 +42,9 @@ function normalizePublicMarket(market: Record<string, any>) {
  */
 export async function GET() {
   try {
-    const dbMarkets = await getActiveMarkets();
-    const markets = (dbMarkets.length > 0 ? dbMarkets : getActiveMarketPickups())
-      .map((market) => normalizePublicMarket(market));
+    // Curated active locations are authoritative. A legacy database row must
+    // not reactivate a paused market or override the Serenbe-only schedule.
+    const markets = getActiveMarketPickups().map((market) => normalizePublicMarket(market));
 
     return NextResponse.json(
       {
