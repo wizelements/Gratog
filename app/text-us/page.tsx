@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import WebsiteMessageForm from '@/components/WebsiteMessageForm';
 import { verifiedSquareSmsHref } from '@/lib/square-messages-contact';
 import { verifiedSquareTextUsPage } from '@/lib/commerce/nonmarket-order-request';
 
@@ -25,44 +26,36 @@ export default function MessageUsPage() {
             We confirm inventory and final fees before sending a Square payment link.
           </p>
         </header>
-        <section className="space-y-4 rounded-2xl border border-stone-200 bg-white p-6">
-          {smsHref ? (
-            <>
-              <h2 className="text-xl font-bold">Text Taste of Gratitude</h2>
-              <p className="text-sm text-stone-700">Open your phone's messaging app to contact our verified Square Messages number.</p>
-              <a href={smsHref} className="inline-flex min-h-12 items-center rounded-full bg-emerald-800 px-6 py-3 font-bold text-white">Text us</a>
-            </>
-          ) : hosted ? (
-            <>
-              <h2 className="text-xl font-bold">Contact us through Square</h2>
-              <p className="text-sm leading-6 text-stone-700">
-                Square's Text Us control is available only on supported Square-hosted pages.
-                Look for that control on the page below.
-              </p>
-              <a href={hosted} target="_blank" rel="noopener noreferrer"
-                className="inline-flex min-h-12 items-center rounded-full bg-emerald-800 px-6 py-3 font-bold text-white">
-                Open Square contact page
-              </a>
-            </>
-          ) : (
-            <>
-              <h2 className="text-xl font-bold">Send a website message</h2>
-              <p className="text-sm leading-6 text-stone-700">
-                Square's native Text Us button cannot be installed on this independently hosted
-                website. A Square Messages texting number has not yet been verified for this site.
-                Your message will go to our website contact inbox, not Square SMS.
-              </p>
-              <Link href="/contact?source=message-us#send-message"
-                className="inline-flex min-h-12 items-center rounded-full bg-emerald-800 px-6 py-3 font-bold text-white">
-                Send website message
-              </Link>
-            </>
-          )}
-          <p className="border-t pt-4 text-xs leading-5 text-stone-600">
-            A message does not reserve inventory or create a paid order. Never send card numbers
-            through messages. Payment links are sent only after our team approves the request.
+        {smsHref ? (
+          <section className="space-y-3 rounded-2xl border border-stone-200 bg-white p-6">
+            <h2 className="text-xl font-bold">Text Taste of Gratitude</h2>
+            <p className="text-sm text-stone-700">
+              Open your phone's messaging app to contact our separately verified Square Messages number.
+            </p>
+            <a href={smsHref} className="inline-flex min-h-12 items-center rounded-full bg-emerald-800 px-6 py-3 font-bold text-white">
+              Text us
+            </a>
+          </section>
+        ) : hosted ? (
+          <section className="space-y-3 rounded-2xl border border-stone-200 bg-white p-6">
+            <h2 className="text-xl font-bold">Square-hosted contact option</h2>
+            <p className="text-sm leading-6 text-stone-700">
+              Square's Text Us control is available only on supported Square-hosted pages.
+              If it is not visible, use the website message form directly below.
+            </p>
+            <a href={hosted} target="_blank" rel="noopener noreferrer"
+              className="inline-flex min-h-12 items-center rounded-full border border-emerald-800 px-6 py-3 font-semibold text-emerald-900">
+              Open Square contact page
+            </a>
+          </section>
+        ) : (
+          <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+            Square's native Text Us button cannot be installed on this independently hosted website.
+            A Square Messages texting number has not yet been verified for this site.
+            Use the website form below to contact our team immediately—no second page required.
           </p>
-        </section>
+        )}
+        <WebsiteMessageForm />
         <section className="rounded-2xl border border-stone-200 bg-white p-6">
           <h2 className="text-lg font-bold">Ordering bottled products?</h2>
           <p className="mt-2 text-sm leading-6 text-stone-700">
