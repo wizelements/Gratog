@@ -39,7 +39,7 @@ export const MARKETS: MarketConfig[] = [
     days: ['Saturday'],
     description: 'Fresh sea moss products and wellness drinks',
     parkingInfo: 'Free parking at the Dunwoody Farmhouse',
-    isActive: true,
+    isActive: false,
   },
   {
     id: 'sandy-springs-market',
@@ -51,7 +51,7 @@ export const MARKETS: MarketConfig[] = [
     days: ['Saturday'],
     description: 'Saturday morning wellness essentials',
     parkingInfo: 'Free lot parking behind the community center',
-    isActive: true,
+    isActive: false,
   },
 ];
 
