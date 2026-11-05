@@ -1,365 +1,76 @@
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/db-optimized';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { logger } from '@/lib/logger';
-import { sendOwnerAlert } from '@/lib/owner-alerts';
-import crypto from 'crypto';
-const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET;
-const SVIX_TOLERANCE_SECONDS = 5 * 60;
+import { getMarketingClient, ensureMarketingSchema, unsubscribeMarketingEmail } from '@/lib/marketing/turso-store.mjs';
 
-/**
- * Verify Resend webhook signature.
- * Resend signs webhooks with Svix headers: svix-id, svix-timestamp,
- * svix-signature. Keep a legacy HMAC fallback for any older test tooling that
- * still posts `resend-signature` as hex(payload, secret).
- */
-function verifyWebhookSignature(payload, headers) {
-  if (!RESEND_WEBHOOK_SECRET) {
-    logger.warn('Webhook', 'RESEND_WEBHOOK_SECRET not configured');
-    return process.env.NODE_ENV !== 'production';
-  }
-
-  const svixId = headers.get('svix-id');
-  const svixTimestamp = headers.get('svix-timestamp');
-  const svixSignature = headers.get('svix-signature');
-
-  if (svixId && svixTimestamp && svixSignature) {
-    return verifySvixSignature(payload, {
-      id: svixId,
-      timestamp: svixTimestamp,
-      signature: svixSignature,
-    });
-  }
-
-  const legacySignature = headers.get('resend-signature');
-  if (!legacySignature) return false;
-
-  const expectedSignature = crypto
-    .createHmac('sha256', RESEND_WEBHOOK_SECRET)
-    .update(payload)
-    .digest('hex');
-
-  const actual = Buffer.from(legacySignature || '');
-  const expected = Buffer.from(expectedSignature);
-  return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
-}
-
-function verifySvixSignature(payload, { id, timestamp, signature }) {
-  const numericTimestamp = Number(timestamp);
-  if (!Number.isFinite(numericTimestamp)) return false;
-
-  const ageSeconds = Math.abs(Math.floor(Date.now() / 1000) - numericTimestamp);
-  if (ageSeconds > SVIX_TOLERANCE_SECONDS) {
-    logger.warn('Webhook', 'Rejected stale Resend webhook signature', { ageSeconds });
-    return false;
-  }
-
-  const secretBytes = RESEND_WEBHOOK_SECRET.startsWith('whsec_')
-    ? Buffer.from(RESEND_WEBHOOK_SECRET.slice('whsec_'.length), 'base64')
-    : Buffer.from(RESEND_WEBHOOK_SECRET, 'utf8');
-  const signedContent = `${id}.${timestamp}.${payload}`;
-  const expected = crypto
-    .createHmac('sha256', secretBytes)
-    .update(signedContent)
-    .digest('base64');
-
-  return signature
-    .split(' ')
-    .map(part => part.trim())
-    .filter(Boolean)
-    .some((part) => {
-      const [version, candidate] = part.split(',');
-      if (version !== 'v1' || !candidate) return false;
-
-      const actual = Buffer.from(candidate, 'base64');
-      const expectedBuffer = Buffer.from(expected, 'base64');
-      return actual.length === expectedBuffer.length && crypto.timingSafeEqual(actual, expectedBuffer);
-    });
-}
-
-function getEventEmailId(data = {}) {
-  return data.email_id || data.emailId || data.id || null;
-}
-
-function normalizeRecipientEmail(value) {
-  const raw = Array.isArray(value) ? value[0] : value;
-  return typeof raw === 'string' ? raw.trim().toLowerCase() : null;
-}
-
-function shouldPromoteStatus(status) {
-  return ['sent', 'delivered', 'delayed', 'bounced', 'complained', 'failed'].includes(status);
-}
-
-async function recordSuppression(db, status, data, emailId, webhookType) {
-  if (!['bounced', 'complained'].includes(status)) return;
-
-  const email = normalizeRecipientEmail(data?.to || data?.email);
-  if (!email) return;
-
-  const now = new Date();
-  const reason = status === 'complained' ? 'complaint' : 'bounce';
-
-  await db.collection('email_suppressions').updateOne(
-    { email, reason },
-    {
-      $set: {
-        email,
-        reason,
-        active: true,
-        source: 'resend_webhook',
-        provider: 'resend',
-        lastEventType: webhookType,
-        messageId: emailId,
-        updatedAt: now,
-      },
-      $setOnInsert: { createdAt: now },
-    },
-    { upsert: true }
-  );
-
-  if (status === 'complained') {
-    await db.collection('unsubscribes').updateOne(
-      { email },
-      {
-        $set: {
-          email,
-          source: 'resend_complaint',
-          unsubscribedAt: now,
-          updatedAt: now,
-        },
-        $setOnInsert: { createdAt: now },
-      },
-      { upsert: true }
-    );
-  }
-}
-
-/**
- * POST /api/webhooks/resend - Handle Resend webhook events
- * 
- * Events: email.sent, email.delivered, email.delivery_delayed,
- *         email.complained, email.bounced, email.opened, email.clicked
- */
-export async function POST(request) {
-  let db = null;
-  let svixId = null;
-
-  try {
-    svixId = request.headers.get('svix-id');
-    const rawBody = await request.text();
-    
-    // Verify signature in production
-    if (!verifyWebhookSignature(rawBody, request.headers)) {
-      logger.error('Webhook', 'Invalid Resend webhook signature');
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-    }
-    
-    const event = JSON.parse(rawBody);
-    const { type, data } = event;
-    const emailId = getEventEmailId(data);
-    
-    logger.info('Webhook', `Resend event received: ${type}`, { emailId, svixId });
-    
-    ({ db } = await connectToDatabase());
-
-    if (svixId) {
-      const existingEvent = await db.collection('resend_webhook_events').findOne(
-        { svixId },
-        { projection: { processedAt: 1 } }
-      );
-
-      if (existingEvent?.processedAt) {
-        return NextResponse.json({ received: true, duplicate: true });
-      }
-
-      await db.collection('resend_webhook_events').updateOne(
-        { svixId },
-        {
-          $set: {
-            svixId,
-            type,
-            messageId: emailId,
-            status: 'processing',
-            lastReceivedAt: new Date(),
-          },
-          $setOnInsert: { createdAt: new Date() },
-        },
-        { upsert: true }
-      );
-    }
-    
-    // Map Resend event types to our status
-    const statusMap = {
-      'email.sent': 'sent',
-      'email.delivered': 'delivered',
-      'email.delivery_delayed': 'delayed',
-      'email.failed': 'failed',
-      'email.suppressed': 'suppressed',
-      'email.complained': 'complained',
-      'email.bounced': 'bounced',
-      'email.opened': 'opened',
-      'email.clicked': 'clicked'
-    };
-    
-    const status = statusMap[type];
-    if (!status) {
-      logger.warn('Webhook', `Unknown Resend event type: ${type}`);
-      if (svixId) {
-        await db.collection('resend_webhook_events').updateOne(
-          { svixId },
-          { $set: { status: 'ignored', processedAt: new Date(), ignoredReason: 'unknown_event_type' } }
-        );
-      }
-      return NextResponse.json({ received: true, ignored: true });
-    }
-
-    await recordSuppression(db, status, data, emailId, type);
-    
-    // Update email_sends record (check both resendId and messageId for correlation)
-    let updateResult = { matchedCount: 0 };
-    if (emailId) {
-      updateResult = await db.collection('email_sends').updateOne(
-        {
-          $or: [
-            { resendId: emailId },
-            { messageId: emailId }
-          ]
-        },
-        {
-          $set: {
-            [`events.${status}`]: new Date(),
-            lastEventType: status,
-            lastEventAt: new Date(),
-            deliveryStatus: status,
-            updatedAt: new Date(),
-            ...(shouldPromoteStatus(status) && { status }),
-            ...(status === 'delivered' && { deliveredAt: new Date() }),
-            ...(status === 'bounced' && { bouncedAt: new Date() }),
-            ...(status === 'complained' && { complainedAt: new Date() }),
-          },
-          $push: {
-            eventLog: {
-              type: status,
-              timestamp: new Date(),
-              svixId,
-              data: {
-                to: data.to,
-                subject: data.subject,
-                ...(data.click && { clickedUrl: data.click.link }),
-                ...(data.bounce && { bounceType: data.bounce.type })
-              }
-            }
-          }
-        }
-      );
-    }
-    
-    // Signed provider evidence correlates to both market preorder requests
-    // and regular multi-item requests. Never equate provider acceptance with
-    // inbox delivery; bounces require an owner response.
-    if (emailId && status) {
-      for (const collectionName of ['preorder_requests', 'nonmarket_order_requests']) {
-        const collection = db.collection(collectionName);
-        const target = await collection.findOne({
-          'customerContact.email.messageId': emailId,
-        }, { projection: { _id: 1 } });
-        if (!target) continue;
-        await collection.updateOne({ _id: target._id }, {
-          $set: {
-            'customerContact.email.status': status,
-            'customerContact.email.deliveryVerified': status === 'delivered',
-            'customerContact.email.lastEventAt': new Date(),
-          },
-        });
-        if (['failed', 'bounced', 'complained', 'suppressed'].includes(status)) {
-          try {
-            await sendOwnerAlert({
-              sourceEventId: `preorder-contact:${emailId}:${status}`,
-              category: 'fresh_batch', severity: 'warning',
-              title: 'Order request customer email not delivered',
-              body: `Customer acknowledgement for request ${String(target._id).slice(-12)} was ${status}. Manual follow-up is required.`,
-              actionUrl: 'https://tasteofgratitude.shop/admin',
-              channel: 'all', eventAt: new Date().toISOString(),
-              metadata: { requestId: String(target._id), emailStatus: status },
-            });
-          } catch (alertError) {
-            logger.warn('Webhook', 'Could not send order request contact escalation',
-              { error: alertError instanceof Error ? alertError.message : String(alertError) });
-          }
-        }
-        break;
-      }
-    }
-
-    // Also update email_logs for individual emails
-    if (emailId) {
-      await db.collection('email_logs').updateOne(
-        { $or: [{ resendId: emailId }, { messageId: emailId }] },
-        {
-          $set: {
-            deliveryStatus: status,
-            lastEventAt: new Date(),
-            updatedAt: new Date(),
-          }
-        }
-      );
-    }
-    
-    // Update campaign stats if this was a campaign email
-    if (updateResult.matchedCount > 0) {
-      const emailSend = await db.collection('email_sends').findOne({
-        $or: [{ resendId: emailId }, { messageId: emailId }]
-      });
-      
-      if (emailSend?.campaignId) {
-        const statField = `stats.${status}`;
-        await db.collection('campaigns').updateOne(
-          { id: emailSend.campaignId },
-          { $inc: { [statField]: 1 } }
-        );
-      }
-    }
-
-    if (svixId) {
-      await db.collection('resend_webhook_events').updateOne(
-        { svixId },
-        {
-          $set: {
-            status: 'processed',
-            processedAt: new Date(),
-            emailSendMatched: updateResult.matchedCount > 0,
-          },
-        }
-      );
-    }
-    
-    return NextResponse.json({ received: true, status, matched: updateResult.matchedCount > 0 });
-    
-  } catch (error) {
-    logger.error('Webhook', 'Resend webhook error:', error);
-    if (db && svixId) {
-      await db.collection('resend_webhook_events').updateOne(
-        { svixId },
-        {
-          $set: {
-            status: 'failed',
-            failedAt: new Date(),
-            error: error?.message || String(error),
-          },
-        },
-        { upsert: true }
-      );
-    }
-    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
-  }
-}
-
-// Resend uses POST for webhooks
-export async function GET() {
-  return NextResponse.json({ 
-    status: 'ok',
-    message: 'Resend webhook endpoint active',
-    events: ['email.sent', 'email.delivered', 'email.delivery_delayed', 'email.bounced', 'email.suppressed', 'email.complained', 'email.opened', 'email.clicked']
+const toleranceSeconds = 300;
+function verifyWebhook(payload, headers) {
+  const secret = process.env.RESEND_WEBHOOK_SECRET;
+  if (!secret) return false;
+  const id = headers.get('svix-id');
+  const timestamp = headers.get('svix-timestamp');
+  const signature = headers.get('svix-signature');
+  if (!id || !timestamp || !signature) return false;
+  const seconds = Number(timestamp);
+  if (!Number.isFinite(seconds) || Math.abs(Math.floor(Date.now() / 1000) - seconds) > toleranceSeconds) return false;
+  const bytes = secret.startsWith('whsec_') ? Buffer.from(secret.slice(6), 'base64') : Buffer.from(secret, 'utf8');
+  const expected = createHmac('sha256', bytes).update(id + '.' + timestamp + '.' + payload).digest();
+  return signature.split(' ').some(part => {
+    const [version, value] = part.trim().split(',');
+    if (version !== 'v1' || !value) return false;
+    const actual = Buffer.from(value, 'base64');
+    return actual.length === expected.length && timingSafeEqual(actual, expected);
   });
+}
+const STATUS = {
+  'email.sent': 'sent',
+  'email.delivered': 'delivered',
+  'email.delivery_delayed': 'delayed',
+  'email.failed': 'failed',
+  'email.suppressed': 'suppressed',
+  'email.complained': 'complained',
+  'email.bounced': 'bounced',
+  'email.opened': 'opened',
+  'email.clicked': 'clicked'
+};
+function recipient(data) {
+  const value = Array.isArray(data?.to) ? data.to[0] : (data?.to || data?.email);
+  const email = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
+}
+export async function POST(request) {
+  const payload = await request.text().catch(() => '');
+  if (!payload || payload.length > 65536) return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+  if (!verifyWebhook(payload, request.headers)) return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+  let event;
+  try { event = JSON.parse(payload); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
+  const svixId = request.headers.get('svix-id');
+  const type = String(event?.type || '');
+  const status = STATUS[type] || 'ignored';
+  const data = event?.data || {};
+  const providerId = typeof (data.email_id || data.emailId || data.id) === 'string' ? (data.email_id || data.emailId || data.id) : null;
+  try {
+    const db = getMarketingClient();
+    await ensureMarketingSchema(db);
+    await db.execute({ sql: 'CREATE TABLE IF NOT EXISTS tog_marketing_webhook_events (id TEXT PRIMARY KEY,event_type TEXT NOT NULL,provider_id TEXT,processed_at INTEGER)', args: [] });
+    if (svixId) {
+      const row = await db.execute({ sql: 'SELECT processed_at FROM tog_marketing_webhook_events WHERE id=?', args: [svixId] });
+      if (row.rows[0]?.processed_at) return NextResponse.json({ received: true, duplicate: true });
+      await db.execute({ sql: 'INSERT OR IGNORE INTO tog_marketing_webhook_events (id,event_type,provider_id) VALUES(?,?,?)', args: [svixId, type, providerId] });
+    }
+    if (['bounced', 'complained', 'suppressed'].includes(status)) {
+      const email = recipient(data);
+      if (email) await unsubscribeMarketingEmail(db, email, 'resend_' + status);
+    }
+    if (svixId) {
+      await db.execute({ sql: 'UPDATE tog_marketing_webhook_events SET processed_at=? WHERE id=?', args: [Date.now(), svixId] });
+    }
+    return NextResponse.json({ received: true, status });
+  } catch (error) {
+    logger.error('ResendWebhook', 'Signed webhook processing failed', { code: error instanceof Error ? error.message : 'unknown' });
+    return NextResponse.json({ error: 'Webhook processing unavailable' }, { status: 503 });
+  }
 }
