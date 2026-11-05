@@ -5,6 +5,7 @@ import { connectToDatabase } from '@/lib/db-optimized';
 import { logger } from '@/lib/logger';
 import { sendOwnerAlert } from '@/lib/owner-alerts';
 import crypto from 'crypto';
+import { getMarketingClient, processMarketingResendEvent } from '@/lib/marketing/turso-store.mjs';
 const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET;
 const SVIX_TOLERANCE_SECONDS = 5 * 60;
 
@@ -137,7 +138,7 @@ async function recordSuppression(db, status, data, emailId, webhookType) {
 
 /**
  * POST /api/webhooks/resend - Handle Resend webhook events
- * 
+ *
  * Events: email.sent, email.delivered, email.delivery_delayed,
  *         email.complained, email.bounced, email.opened, email.clicked
  */
@@ -148,19 +149,34 @@ export async function POST(request) {
   try {
     svixId = request.headers.get('svix-id');
     const rawBody = await request.text();
-    
+
     // Verify signature in production
     if (!verifyWebhookSignature(rawBody, request.headers)) {
       logger.error('Webhook', 'Invalid Resend webhook signature');
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
-    
+
     const event = JSON.parse(rawBody);
     const { type, data } = event;
     const emailId = getEventEmailId(data);
-    
+
     logger.info('Webhook', `Resend event received: ${type}`, { emailId, svixId });
-    
+
+
+    // Market email events are handled by Turso. Leave the existing order-email
+    // handler untouched for messages that were not sent by the marketing system.
+    if (emailId && process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN) {
+      const marketingResult = await processMarketingResendEvent(getMarketingClient(), {
+        providerId: String(emailId),
+        eventId: svixId,
+        eventType: type,
+      });
+      if (marketingResult.matched) {
+        return NextResponse.json({ received: true, status: marketingResult.status,
+          duplicate: marketingResult.duplicate || false, source: 'marketing' });
+      }
+    }
+
     ({ db } = await connectToDatabase());
 
     if (svixId) {
@@ -188,7 +204,7 @@ export async function POST(request) {
         { upsert: true }
       );
     }
-    
+
     // Map Resend event types to our status
     const statusMap = {
       'email.sent': 'sent',
@@ -201,7 +217,7 @@ export async function POST(request) {
       'email.opened': 'opened',
       'email.clicked': 'clicked'
     };
-    
+
     const status = statusMap[type];
     if (!status) {
       logger.warn('Webhook', `Unknown Resend event type: ${type}`);
@@ -215,7 +231,7 @@ export async function POST(request) {
     }
 
     await recordSuppression(db, status, data, emailId, type);
-    
+
     // Update email_sends record (check both resendId and messageId for correlation)
     let updateResult = { matchedCount: 0 };
     if (emailId) {
@@ -254,7 +270,7 @@ export async function POST(request) {
         }
       );
     }
-    
+
     // Signed provider evidence correlates to both market preorder requests
     // and regular multi-item requests. Never equate provider acceptance with
     // inbox delivery; bounces require an owner response.
@@ -305,13 +321,13 @@ export async function POST(request) {
         }
       );
     }
-    
+
     // Update campaign stats if this was a campaign email
     if (updateResult.matchedCount > 0) {
       const emailSend = await db.collection('email_sends').findOne({
         $or: [{ resendId: emailId }, { messageId: emailId }]
       });
-      
+
       if (emailSend?.campaignId) {
         const statField = `stats.${status}`;
         await db.collection('campaigns').updateOne(
@@ -333,9 +349,9 @@ export async function POST(request) {
         }
       );
     }
-    
+
     return NextResponse.json({ received: true, status, matched: updateResult.matchedCount > 0 });
-    
+
   } catch (error) {
     logger.error('Webhook', 'Resend webhook error:', error);
     if (db && svixId) {
@@ -357,7 +373,7 @@ export async function POST(request) {
 
 // Resend uses POST for webhooks
 export async function GET() {
-  return NextResponse.json({ 
+  return NextResponse.json({
     status: 'ok',
     message: 'Resend webhook endpoint active',
     events: ['email.sent', 'email.delivered', 'email.delivery_delayed', 'email.bounced', 'email.suppressed', 'email.complained', 'email.opened', 'email.clicked']
