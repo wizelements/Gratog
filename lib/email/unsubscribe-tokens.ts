@@ -12,11 +12,11 @@
 import crypto from 'crypto';
 
 export function getUnsubscribeSecret(): string {
-  const secret =
-    process.env.JWT_SECRET ||
-    process.env.UNSUBSCRIBE_SECRET ||
-    'dev-only-insecure-unsubscribe-secret';
-  return secret;
+  const secret = process.env.JWT_SECRET || process.env.UNSUBSCRIBE_SECRET;
+  if (!secret && (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production')) {
+    throw new Error('UNSUBSCRIBE_SIGNING_SECRET_NOT_CONFIGURED');
+  }
+  return secret || 'dev-only-insecure-unsubscribe-secret';
 }
 
 export function b64urlEncode(input: Buffer | string): string {

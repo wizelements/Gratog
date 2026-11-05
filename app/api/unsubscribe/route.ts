@@ -32,23 +32,31 @@ async function remove(email: string, source: string) {
 }
 
 export async function GET(request: NextRequest) {
+  // GET must not unsubscribe: link scanners routinely prefetch email URLs.
   const token = request.nextUrl.searchParams.get('token');
   if (!token) return NextResponse.json({ success: false, error: 'Missing token' }, { status: 400 });
-  const email = verifyToken(token);
-  if (!email) return NextResponse.json({ success: false, error: 'Invalid unsubscribe link' }, { status: 400 });
-  return remove(email, 'one_click_get');
+  if (!verifyToken(token)) return NextResponse.json({ success: false, error: 'Invalid unsubscribe link' }, { status: 400 });
+  const url = new URL('/unsubscribe', request.url);
+  url.searchParams.set('token', token);
+  return NextResponse.redirect(url, { status: 303 });
 }
 export async function POST(request: NextRequest) {
-  const data = await request.json().catch(() => null);
-  if (!data || typeof data !== 'object') {
-    return NextResponse.json({ success: false, error: 'Invalid request' }, { status: 400 });
+  const contentType = request.headers.get('content-type') || '';
+  const urlToken = request.nextUrl.searchParams.get('token');
+  let token: string | null = null;
+  if (contentType.includes('application/x-www-form-urlencoded')) {
+    const form = await request.formData().catch(() => null);
+    if (form?.get('List-Unsubscribe') !== 'One-Click') {
+      return NextResponse.json({ success: false, error: 'Invalid one-click request' }, { status: 400 });
+    }
+    token = urlToken;
+  } else if (contentType.includes('application/json')) {
+    const data = await request.json().catch(() => null);
+    token = typeof data?.token === 'string' ? data.token : null;
+  } else {
+    return NextResponse.json({ success: false, error: 'Unsupported content type' }, { status: 415 });
   }
-  if (typeof data.token === 'string') {
-    const email = verifyToken(data.token);
-    if (!email) return NextResponse.json({ success: false, error: 'Invalid unsubscribe link' }, { status: 400 });
-    return remove(email, 'one_click_post');
-  }
-  const email = typeof data.email === 'string' ? data.email.trim().toLowerCase() : '';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return safeOk();
-  return remove(email, 'self_serve_post');
+  const email = token ? verifyToken(token) : null;
+  if (!email) return NextResponse.json({ success: false, error: 'Invalid unsubscribe link' }, { status: 400 });
+  return remove(email, 'one_click_post');
 }

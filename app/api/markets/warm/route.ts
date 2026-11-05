@@ -4,7 +4,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { getActiveMarketPickups } from '@/data/markets';
 import resend from '@/lib/email/resend-client';
-import { buildUnsubscribeUrl } from '@/lib/email/unsubscribe-tokens';
+import { buildUnsubscribeUrl, signEmail } from '@/lib/email/unsubscribe-tokens';
 import { logger } from '@/lib/logger';
 import {
   getMarketingClient,
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
             to: lead.email,
             subject: subject,
             html: emailHtml(message, market.shortName || market.name, market.id, week, lead.email),
-            headers: { 'List-Unsubscribe': '<' + buildUnsubscribeUrl('https://tasteofgratitude.shop', lead.email) + '>' }
+            headers: { 'List-Unsubscribe': '<https://tasteofgratitude.shop/api/unsubscribe?token=' + encodeURIComponent(signEmail(lead.email)) + '>', 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' }
           });
           const receiptId = response.data?.id;
           if (response.error || !receiptId) throw new Error('EMAIL_PROVIDER_NOT_ACCEPTED');

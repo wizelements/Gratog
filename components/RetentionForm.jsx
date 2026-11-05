@@ -27,7 +27,7 @@ export default function RetentionForm({
   successDescription = "We'll send the next menu drop, reminder, or follow-up for this request.",
   onSuccess,
 }) {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '', website: '', marketId: defaultMarket || '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '', website: '', marketId: defaultMarket || '', marketingConsent: false });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -79,7 +79,7 @@ export default function RetentionForm({
         ...safeMetadata,
       });
       setSuccess(true);
-      setForm({ name: '', email: '', phone: '', message: '', website: '', marketId: defaultMarket || '' });
+      setForm({ name: '', email: '', phone: '', message: '', website: '', marketId: defaultMarket || '', marketingConsent: false });
       if (typeof onSuccess === 'function') onSuccess(data);
     } catch (err) {
       track('lead_capture_failed', {
@@ -151,6 +151,14 @@ export default function RetentionForm({
             placeholder={messagePlaceholder}
             rows={compact ? 3 : 4}
           />
+        )}
+        {['email_signup', 'weekly_menu_email'].includes(intent) && (
+          <label className="flex items-start gap-3 text-sm leading-5 text-stone-600">
+            <input type="checkbox" required checked={form.marketingConsent}
+              onChange={(event) => setForm((current) => ({ ...current, marketingConsent: event.target.checked }))}
+              className="mt-1 h-4 w-4 accent-emerald-700" />
+            <span>Yes, email me Taste of Gratitude weekly menus and market updates. I can unsubscribe anytime.</span>
+          </label>
         )}
         {error && <p className="text-sm font-medium text-red-600">{error}</p>}
         <Button type="submit" disabled={loading} className="h-11 rounded-full bg-emerald-700 text-white hover:bg-emerald-800">

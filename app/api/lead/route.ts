@@ -16,6 +16,7 @@ const LeadSchema = z.object({
   message: z.string().max(1000).optional().or(z.literal('')),
   metadata: z.record(z.unknown()).optional(),
   website: z.string().optional(),
+  marketingConsent: z.boolean().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -39,6 +40,10 @@ export async function POST(request: NextRequest) {
   }
   if (needsMarketingEmail(lead.intent) && !lead.email) {
     return NextResponse.json({ success: false, error: 'Email is required for this signup' }, { status: 400 });
+  }
+
+  if ((lead.intent === 'weekly_menu_email' || lead.intent === 'email_signup') && lead.marketingConsent !== true) {
+    return NextResponse.json({ success: false, error: 'Please confirm your email subscription consent' }, { status: 400 });
   }
 
   const metadata = lead.metadata || {};
@@ -66,6 +71,7 @@ export async function POST(request: NextRequest) {
       marketId,
       campaign,
       metadata,
+      marketingConsent: lead.marketingConsent === true,
     });
     return NextResponse.json({ success: true, persisted: true, id, message: 'Thanks — your request has been saved.' });
   } catch (error) {
