@@ -115,11 +115,11 @@ const EXPERIENCE_STEPS = [
 const FAQ_ITEMS = [
   {
     question: 'Should I preorder or shop at the booth?',
-    answer: 'Preorder if you have a favorite in mind. You’re also welcome to stop by and see what’s available at the booth.',
+    answer: 'If you have a favorite, send a preorder early. You’re always welcome to stop by and see what’s fresh.',
   },
   {
     question: 'When should I place a preorder?',
-    answer: 'The earlier you order, the better the selection. Check the Serenbe preorder deadline before ordering.',
+    answer: 'We make small batches, so it helps to order early. Check the deadline on the Serenbe menu.',
   },
   {
     question: 'Where do I pick up my order?',
@@ -127,7 +127,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'Will there be walk-up inventory?',
-    answer: 'Walk-up selection depends on what we bring that day. Preorder if you want to make sure a particular item is reserved.',
+    answer: 'We bring what’s fresh that day. Send a preorder request if you have your heart set on a favorite; we’ll confirm availability.',
   },
 ];
 
@@ -480,13 +480,13 @@ export default function MarketsPage() {
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8 lg:py-16">
           <div>
             <p className="mb-4 inline-flex rounded-full border border-emerald-200 bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-800 shadow-sm">
-              Georgia market pickup • small-batch favorites
+              Fresh flavors • Serenbe Farmers Market
             </p>
             <h1 className="max-w-3xl text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-stone-950 sm:text-5xl lg:text-6xl">
               Find us at Serenbe Farmers Market.
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-700 sm:text-xl">
-              Visit us at Serenbe for fresh lemonades, juices, and sea moss favorites. Browse the menu and arrange pickup for confirmed preorders. We currently accept Georgia orders only.
+              Come say hello, explore fresh flavors, and take home your favorites. You can also check the weekly menu before visiting. Orders are currently for Georgia only.
             </p>
 
             <div className="mt-7 grid gap-3 sm:flex sm:flex-wrap">
@@ -628,7 +628,7 @@ export default function MarketsPage() {
               </div>
             ) : (
               <div className="rounded-2xl border border-white/15 bg-white/10 p-5 text-emerald-50">
-                Fresh products are syncing now. You can still start from the catalog or check Serenbe pickup details.
+                We couldn’t load today’s favorites. You can still browse the menu or check Serenbe pickup details.
               </div>
             )}
           </div>
@@ -664,12 +664,12 @@ export default function MarketsPage() {
             <div>
               <h2 className="text-3xl font-semibold tracking-tight">Found something you love?</h2>
               <p className="mt-3 max-w-2xl text-emerald-50/90">
-                Explore the weekly menu, review Serenbe pickup details before placing your order.
+                Explore the weekly menu and see how to arrange Serenbe pickup.
               </p>
             </div>
             <div className="grid gap-3 sm:flex">
               <Button asChild className="h-12 rounded-full bg-white px-6 text-emerald-950 hover:bg-emerald-50">
-                <Link href="/preorder">Shop This Week</Link>
+                <Link href="/preorder">See This Week’s Menu</Link>
               </Button>
               <Button asChild variant="outline" className="h-12 rounded-full border-white/30 bg-transparent px-6 text-white hover:bg-white/10 hover:text-white">
                 <Link href="/weekly-menu">View Weekly Menu</Link>
@@ -682,7 +682,7 @@ export default function MarketsPage() {
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-emerald-900/10 bg-white/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-2xl backdrop-blur md:hidden" aria-label="Market quick actions">
         <div className="grid grid-cols-2 gap-3">
           <Button asChild className="h-12 rounded-full bg-emerald-700 text-white hover:bg-emerald-800">
-            <Link href="/preorder">Shop This Week</Link>
+            <Link href="/preorder">See This Week’s Menu</Link>
           </Button>
           <Button asChild variant="outline" className="h-12 rounded-full border-emerald-200 text-emerald-900 hover:bg-emerald-50">
             <a href="#market-list">Serenbe Details</a>

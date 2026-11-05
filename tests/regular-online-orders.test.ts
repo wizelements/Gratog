@@ -14,7 +14,7 @@ describe('regular Georgia customers can order without selecting a market', () =>
   it('gives standard shoppers a direct shopping route from the homepage and catalog', () => {
     const home = read('components/home/HomePageClient.jsx');
     const catalog = read('components/catalog/CatalogPageClient.jsx');
-    expect(home).toContain('<Link href="/catalog">Shop for local delivery');
+    expect(home).toContain('<Link href="/order-request">Start an order');
     expect(home).toContain('<Link href="/weekly-menu"');
     expect(catalog).toContain('No market visit required for eligible orders');
     expect(catalog).toContain('Enter your complete address in checkout');
@@ -50,7 +50,7 @@ describe('regular Georgia customers can order without selecting a market', () =>
     const catalog = read('components/catalog/CatalogPageClient.jsx');
     const home = read('components/home/HomePageClient.jsx');
     expect(catalog).toContain('Only eligible items and confirmed options can proceed to payment.');
-    expect(home).toContain('product eligibility at checkout');
+    expect(home).toContain('Pickup and delivery depend on your location and what’s available.');
     expect(catalog).not.toMatch(/nationwide shipping|all (?:products|items) ship/i);
   });
 });

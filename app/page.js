@@ -3,7 +3,7 @@ export const revalidate = 300; // Revalidate every 5 minutes
 
 export const metadata = {
   title: 'Taste of Gratitude | Fresh Georgia Drinks & Sea Moss',
-  description: 'Handcrafted sea moss gels, lemonades and fresh market drinks. Currently accepting Georgia orders only, with local market pickup and eligible in-state fulfillment.',
+  description: 'Small-batch lemonades, juices, and sea moss made with care in Atlanta. Visit us at Serenbe or ask about Georgia pickup and delivery.',
   keywords: [
     'small-batch sea moss Atlanta',
     'Atlanta farmers market juices',
@@ -17,8 +17,8 @@ export const metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'Taste of Gratitude | Weekly Market Preorders',
-    description: 'Taste of Gratitude makes small-batch market favorites for Georgia customers. Georgia orders only, with scheduled pickup and eligible delivery or shipping.',
+    title: 'Taste of Gratitude | Fresh Drinks & Sea Moss in Atlanta',
+    description: 'Small-batch drinks and sea moss, made with gratitude. See us at Serenbe or ask about pickup and delivery in Georgia.',
     url: 'https://tasteofgratitude.shop',
     siteName: 'Taste of Gratitude',
     locale: 'en_US',
@@ -26,8 +26,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary',
-    title: 'Taste of Gratitude | Weekly Market Preorders',
-    description: 'Shop fresh sea moss and drinks for pickup at Georgia markets, with eligible in-state fulfillment. Georgia orders only.',
+    title: 'Taste of Gratitude | Fresh Drinks & Sea Moss in Atlanta',
+    description: 'Find fresh lemonades, juices, and sea moss. Visit our Serenbe booth or ask about Georgia pickup and delivery.',
   },
 };
 

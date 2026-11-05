@@ -20,7 +20,7 @@ describe('Square Messages independent storefront handoff', () => {
   it('keeps a visible, truthful contact fallback on the website and checkout', () => {
     const page = file('app/text-us/page.tsx');
     const button = file('components/WebsiteMessageButton.tsx');
-    expect(page).toContain('Square\'s native Text Us button cannot be installed');
+    expect(page).toContain('Texting isn’t available here right now');
     expect(page).toContain('Send website message');
     expect(page).toContain('verifiedSquareSmsHref');
     expect(page).not.toContain('https://squareup.com/messages');

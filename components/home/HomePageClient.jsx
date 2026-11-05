@@ -33,10 +33,10 @@ import {
 } from '@/data/weeklyMenu';
 
 const ORDERING_STEPS = [
-  { icon: ShoppingBag, title: 'Choose your favorites', text: 'Browse the regular shop, choose your sizes, and add eligible items to your cart.' },
-  { icon: Truck, title: 'Check your delivery address', text: 'At checkout, enter your full Atlanta-area address. We confirm eligibility and available delivery options before payment.' },
-  { icon: Package, title: 'Review your order', text: 'Confirm the item prices, delivery fee, and available time before placing your order.' },
-  { icon: CheckCircle2, title: 'Receive confirmation', text: 'After successful payment, check your order confirmation for the confirmed fulfillment details.' },
+  { icon: ShoppingBag, title: 'Choose your favorites', text: 'Explore the menu and pick the flavors you love.' },
+  { icon: Truck, title: 'Check your delivery address', text: 'Tell us your Georgia address so we can check delivery options.' },
+  { icon: Package, title: 'Review your order', text: 'We’ll confirm what’s available, your pickup or delivery details, and the full price.' },
+  { icon: CheckCircle2, title: 'Receive confirmation', text: 'Once everything is confirmed, pay securely through Square.' },
 ];
 
 function availabilityLabel(product) {
@@ -138,42 +138,42 @@ export default function HomePageClient({
               Handcrafted in Atlanta • Georgia orders only
             </p>
             <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-              Your favorite flavors. No market trip required.
+              Fresh favorites. No market trip needed.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90 sm:text-xl">
-              Ordering drinks or sea moss just for yourself? Shop online for eligible Atlanta-area delivery. Market visits are optional, and non-market pickup requests are handled separately.
+              Craving a fresh lemonade, juice, or sea moss? Browse your favorites and ask about pickup or local delivery. Or come see us at Serenbe.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild className="h-14 rounded-full bg-white px-8 text-base font-bold text-emerald-950 hover:bg-emerald-50">
-                <Link href="/catalog">Shop for local delivery <ArrowRight className="ml-2 inline h-5 w-5" aria-hidden="true" /></Link>
+                <Link href="/order-request">Start an order <ArrowRight className="ml-2 inline h-5 w-5" aria-hidden="true" /></Link>
               </Button>
               <Button asChild variant="outline" className="h-14 rounded-full border-white/30 bg-transparent px-8 text-base font-bold text-white hover:bg-white/10 hover:text-white">
-                <Link href="/contact?request=non-market-pickup">Request non-market pickup</Link>
+                <Link href="/markets">Visit us at Serenbe</Link>
               </Button>
             </div>
             <p className="mt-4 text-sm leading-6 text-emerald-50/80">
-              Delivery is confirmed from your full address and product eligibility at checkout; it is not guaranteed by ZIP code alone. Browns Mill-area Monday pickup (12–5) is being arranged and is not an online reservation yet. We confirm the meeting address before any pickup order.
+              Pickup and delivery depend on your location and what’s available. We’ll confirm the details and total before you pay. Monday Browns Mill pickup is by request only.
             </p>
           </div>
 
           <div className="rounded-[2rem] border border-white/20 bg-white/95 p-6 text-stone-950 shadow-2xl shadow-emerald-950/40">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Start with how you want to get it</p>
-            <h2 className="mt-3 text-3xl font-semibold">Ordering for yourself?</h2>
-            <p className="mt-3 leading-7 text-stone-600">You do not have to visit a farmers market to shop with us.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Choose what works for you</p>
+            <h2 className="mt-3 text-3xl font-semibold">Pickup or delivery?</h2>
+            <p className="mt-3 leading-7 text-stone-600">You can enjoy Taste of Gratitude without making a market trip.</p>
             <div className="mt-5 grid gap-3">
               <div className="rounded-2xl bg-emerald-50 p-4">
                 <p className="flex items-center gap-2 font-semibold text-emerald-950"><Truck className="h-5 w-5" aria-hidden="true" /> Local delivery</p>
-                <p className="mt-1 text-sm text-stone-700">Browse products, add to cart, then enter your address to check available delivery and fees.</p>
+                <p className="mt-1 text-sm text-stone-700">Tell us what you’d like and where you are. We’ll check delivery and share the total first.</p>
                 <Link href="/catalog" className="mt-2 inline-flex min-h-10 items-center font-semibold text-emerald-800 underline underline-offset-4">Start a delivery order</Link>
               </div>
               <div className="rounded-2xl bg-stone-100 p-4">
                 <p className="flex items-center gap-2 font-semibold"><MapPin className="h-5 w-5" aria-hidden="true" /> Pickup without a market</p>
-                <p className="mt-1 text-sm text-stone-700">Browns Mill area, Mondays 12–5, is planned. Booking is not live; request an appointment and wait for location confirmation.</p>
+                <p className="mt-1 text-sm text-stone-700">Ask about Monday pickup from 12–5 PM. We’ll confirm the time and meeting spot before you go.</p>
                 <Link href="/contact?request=non-market-pickup" className="mt-2 inline-flex min-h-10 items-center font-semibold text-emerald-800 underline underline-offset-4">Ask about neighborhood pickup</Link>
               </div>
               <div className="rounded-2xl border border-stone-200 bg-white p-4">
                 <p className="flex items-center gap-2 font-semibold"><Store className="h-5 w-5" aria-hidden="true" /> Prefer a market?</p>
-                <p className="mt-1 text-sm text-stone-700">Market preorders are a separate option, not required for regular delivery orders.</p>
+                <p className="mt-1 text-sm text-stone-700">Stop by the booth or arrange pickup for a confirmed market preorder.</p>
                 <Link href="/weekly-menu" className="mt-2 inline-flex min-h-10 items-center font-semibold text-emerald-800 underline underline-offset-4">Browse market preorders</Link>
               </div>
             </div>
@@ -188,7 +188,7 @@ export default function HomePageClient({
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Browse the regular online shop</p>
               <h2 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Find your favorites.</h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">
-                Order for yourself without a market visit. Product availability and eligible delivery options are checked before payment. For market-only items, use the separate market preorder menu.
+                Browse lemonades, juices, and sea moss favorites. For Serenbe pickup, check the weekly menu. For delivery or another pickup, send us your order details.
               </p>
             </div>
             <Button asChild className="h-12 rounded-full bg-emerald-700 px-6 text-white hover:bg-emerald-800">
@@ -212,9 +212,9 @@ export default function HomePageClient({
       <section className="border-y border-emerald-900/10 bg-white py-14">
         <div className="container">
           <div className="mb-8 text-center">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">How to order for yourself</p>
-            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">From your cart to your door.</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-stone-600">Choose eligible products for local delivery without selecting a farmers market.</p>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Ordering made simple</p>
+            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Your favorites, your way.</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-stone-600">Tell us what you love. We’ll help with the next steps.</p>
           </div>
           <div className="grid gap-4 md:grid-cols-4">
             {ORDERING_STEPS.map(({ icon: Icon, title, text }, index) => (
@@ -282,18 +282,18 @@ export default function HomePageClient({
           <div>
             <Truck className="h-8 w-8 text-emerald-200" aria-hidden="true" />
             <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em] text-emerald-200">Interested in delivery?</p>
-            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Want Taste of Gratitude delivered?</h2>
+            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Fresh favorites, brought to you.</h2>
             <p className="mt-4 max-w-2xl leading-8 text-emerald-50/90">
-              You can begin an eligible Atlanta-area delivery order in our regular shop right now. Enter your full address during checkout to check service and any delivery fee. For routes we do not yet serve, leave your neighborhood so we can plan future service.
+              Tell us what you’d like and where you are. We’ll let you know if delivery is available and confirm the cost before you pay.
             </p>
             <Button asChild className="mt-6 h-12 rounded-full bg-white px-7 font-bold text-emerald-950 hover:bg-emerald-50">
-              <Link href="/catalog">Shop for local delivery <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" /></Link>
+              <Link href="/order-request">Start an order <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" /></Link>
             </Button>
             <div className="mt-6 grid gap-3">
               {[
                 'Choose products from the regular online shop',
                 'Enter your complete delivery address during checkout',
-                'Only pay after reviewing available fulfillment and fees',
+                'Review the final total before paying',
               ].map((item) => (
                 <p key={item} className="flex items-start gap-3 text-sm text-emerald-50">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-200" aria-hidden="true" />
@@ -306,7 +306,7 @@ export default function HomePageClient({
             intent="scheduled_delivery_interest"
             source="homepage_delivery"
             title="Outside our current delivery area?"
-            description="Share your neighborhood or ZIP and preferred day to hear if a future route opens. This form is not an order."
+            description="Tell us your neighborhood and preferred day. We’ll let you know if delivery becomes available. This won’t place an order."
             cta="Keep me updated"
             collectMessage
             messagePlaceholder="Neighborhood or ZIP + preferred delivery day/time"

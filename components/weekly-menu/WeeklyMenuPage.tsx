@@ -50,10 +50,10 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
         <div className="container grid gap-10 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
           <div>
             <p className="mb-5 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-50">
-              Fresh weekly drop • {weeklyMenu.dateRange || 'small-batch'}
+              Fresh this week • {weeklyMenu.dateRange || 'small-batch'}
             </p>
             <h1 className="max-w-4xl text-balance text-4xl font-semibold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
-              Georgia favorites, fresh every market week.
+              Fresh favorites for your Serenbe visit.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90 sm:text-xl">
               {weeklyMenu.preorderLanguage}
@@ -71,7 +71,7 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
             </div>
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
               {[
-                { label: 'Menu drops', value: 'Every week' },
+                { label: 'Menu updates', value: 'Weekly' },
                 { label: 'Order area', value: 'Georgia only' },
                 { label: 'Batch style', value: 'Small-batch' },
               ].map((stat) => (
@@ -88,7 +88,7 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
               <Mail className="h-6 w-6 text-emerald-700" aria-hidden="true" />
               <h2 className="mt-3 text-2xl font-semibold text-stone-950">Weekly menu email</h2>
               <p className="mt-2 text-sm leading-6 text-stone-600">
-                Drop your email and pick your preferred market. We send one menu email before market day with a direct preorder link.
+                Get the menu by email before market day, along with a link to preorder for Serenbe.
               </p>
               <div className="mt-5">
                 <RetentionForm
@@ -162,7 +162,7 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
           <div className="grid gap-4 md:grid-cols-3">
             {[
               { icon: Mail, title: 'Get the menu email', text: 'Know what is fresh before you arrive.' },
-              { icon: ShoppingBag, title: 'Reserve your batch', text: 'Use the direct link to preorder for your market.' },
+              { icon: ShoppingBag, title: 'Send your preorder', text: 'Choose your favorites for Serenbe pickup. We’ll confirm availability.' },
               { icon: Package, title: 'Pick up fresh', text: 'Grab your order at the booth and taste what is new.' },
             ].map(({ icon: Icon, title, text }, index) => (
               <div key={title} className="rounded-[1.5rem] border border-stone-200 bg-[#fbfaf5] p-5">
@@ -194,7 +194,7 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
           </div>
           <div className="rounded-[2rem] border border-emerald-900/10 bg-white p-6 shadow-sm sm:p-8">
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Market pickup</p>
-            <h2 className="mt-2 text-2xl font-semibold text-stone-950">Choose the market closest to you.</h2>
+            <h2 className="mt-2 text-2xl font-semibold text-stone-950">Pick up your favorites at Serenbe.</h2>
             <div className="mt-5 grid gap-3">
               {markets.map((market) => (
                 <div key={market.id} className="flex items-center justify-between rounded-2xl border border-stone-100 bg-stone-50 p-4">
@@ -238,7 +238,7 @@ export default function WeeklyMenuPage({ markets, weeklyProducts, weeklyMenu }: 
             intent="weekly_menu_email"
             source="weekly_menu_footer"
             title="Get weekly menu emails"
-            description="Drop your email and preferred market."
+            description="Leave your email to get the weekly menu."
             cta="Email me the menu"
             collectEmail
             collectPhone={false}

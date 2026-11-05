@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Weekly Menu | Taste of Gratitude Farmers Market Pickup',
-  description: 'Get the fresh weekly sea moss gels, lemonades, refreshers, and shots menu for Atlanta farmers market pickup. Drop your email to get the menu before market day.',
+  description: 'Explore this week’s lemonades, sea moss, and market favorites at Serenbe. Get the menu by email before your visit.',
   alternates: { canonical: '/weekly-menu' },
 };
 

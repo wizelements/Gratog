@@ -42,17 +42,16 @@ export default function OrderRequestMessage({ requestId, email }: Props) {
   return (
     <section aria-labelledby="message-order-heading" className="rounded-xl border border-emerald-200 bg-white p-5">
       <h3 id="message-order-heading" className="text-lg font-bold text-emerald-950">
-        Questions about this request?
+        Have a question about your order?
       </h3>
       <p className="mt-2 text-sm leading-6 text-stone-700">
-        Send a message directly to the Taste of Gratitude order inbox. This is
-        a secure website message—not a Square text message. Our team can follow up
-        using the email on your request. Nothing here reserves stock or collects payment.
+        Send us a note here and we’ll reply by email. This form goes to our team,
+        not to your phone’s text messages. Your items aren’t held or charged yet.
       </p>
       {saved ? (
         <div role="status" className="mt-4 rounded-lg bg-emerald-50 p-4 text-sm text-emerald-950">
-          Your message was saved for our team. No SMS or payment was sent.
-          You can send another question from the contact page.
+          Thanks for reaching out. We have your note and will follow up by email.
+          You haven’t been charged.
         </div>
       ) : (
         <form onSubmit={submit} className="mt-4 space-y-3">
@@ -66,12 +65,12 @@ export default function OrderRequestMessage({ requestId, email }: Props) {
             className="w-full rounded-lg border border-stone-300 bg-white px-3 py-3 text-base text-stone-950"
           />
           <p className="text-xs text-stone-600">
-            Reference: {requestId.slice(-12)} · Reply contact: {email}
+            Order reference: {requestId.slice(-12)} · We’ll reply to: {email}
           </p>
           {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-900">{error}</p>}
           <button type="submit" disabled={busy || message.trim().length < 5}
             className="min-h-12 rounded-lg bg-emerald-800 px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">
-            {busy ? 'Saving your message…' : 'Send website message'}
+            {busy ? 'Saving your message…' : 'Send my note'}
           </button>
         </form>
       )}

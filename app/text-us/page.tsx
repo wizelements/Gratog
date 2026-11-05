@@ -28,36 +28,35 @@ export default function MessageUsPage() {
           <p className="text-xs font-bold uppercase tracking-widest text-emerald-800">Taste of Gratitude</p>
           <h1 className="mt-3 text-3xl font-bold">Message our team</h1>
           <p className="mt-3 text-sm leading-6 text-stone-700">
-            Ask about drinks, sea moss, pickup, local delivery or a saved order request.
-            We confirm inventory and final fees before sending a Square payment link.
+            Questions about a flavor, pickup, or delivery? We’re happy to help.
+            We’ll confirm your order and total before sending a secure payment link.
           </p>
         </header>
         <section className="space-y-4 rounded-2xl border border-stone-200 bg-white p-6">
           {smsHref ? (
             <>
               <h2 className="text-xl font-bold">Text Taste of Gratitude</h2>
-              <p className="text-sm text-stone-700">Open your phone's messaging app to contact our verified Square Messages number.</p>
+              <p className="text-sm text-stone-700">Tap below to open your phone’s text messages. We’ll be glad to hear from you.</p>
               <a href={smsHref} className="inline-flex min-h-12 items-center rounded-full bg-emerald-800 px-6 py-3 font-bold text-white">Text us</a>
             </>
           ) : hosted ? (
             <>
               <h2 className="text-xl font-bold">Contact us through Square</h2>
               <p className="text-sm leading-6 text-stone-700">
-                Square's Text Us control is available only on supported Square-hosted pages.
-                Look for that control on the page below.
+                You can reach our team using the button below.
+                We’ll be glad to help.
               </p>
               <a href={hosted} target="_blank" rel="noopener noreferrer"
                 className="inline-flex min-h-12 items-center rounded-full bg-emerald-800 px-6 py-3 font-bold text-white">
-                Open Square contact page
+                Message our team
               </a>
             </>
           ) : (
             <>
               <h2 className="text-xl font-bold">Send a website message</h2>
               <p className="text-sm leading-6 text-stone-700">
-                Square's native Text Us button cannot be installed on this independently hosted
-                website. A Square Messages texting number has not yet been verified for this site.
-                Your message will go to our website contact inbox, not Square SMS.
+                Texting isn’t available here right now, but you can still send us a note.
+                We’ll follow up using the contact details you share.
               </p>
               <Link href="/contact?source=message-us#send-message"
                 className="inline-flex min-h-12 items-center rounded-full bg-emerald-800 px-6 py-3 font-bold text-white">
@@ -66,18 +65,18 @@ export default function MessageUsPage() {
             </>
           )}
           <p className="border-t pt-4 text-xs leading-5 text-stone-600">
-            A message does not reserve inventory or create a paid order. Never send card numbers
-            through messages. Payment links are sent only after our team approves the request.
+            A message doesn’t place or pay for an order. We’ll confirm what’s available and
+            send a secure payment link when you’re ready. Please don’t text card details.
           </p>
         </section>
         <section className="rounded-2xl border border-stone-200 bg-white p-6">
-          <h2 className="text-lg font-bold">Ordering bottled products?</h2>
+          <h2 className="text-lg font-bold">Ready to order?</h2>
           <p className="mt-2 text-sm leading-6 text-stone-700">
-            Save your itemized request first. We can then match your reference number to the
-            correct products and fulfillment details before issuing a Square payment link.
+            Choose your favorite drinks or sea moss, then tell us how you’d like to get them.
+            We’ll check availability and confirm the full price before you pay.
           </p>
           <Link href="/order-request" className="mt-4 inline-block font-bold text-emerald-800 underline">
-            Build an order request
+            Start an order
           </Link>
         </section>
       </div>
