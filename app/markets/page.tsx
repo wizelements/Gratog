@@ -100,7 +100,7 @@ const TRUST_POINTS = [
 const EXPERIENCE_STEPS = [
   {
     title: 'Preorder your favorites',
-    text: 'Pick what you love and select your market pickup location.',
+    text: 'Choose your favorites for pickup at Serenbe.',
   },
   {
     title: 'Come say hello at the booth',
@@ -108,7 +108,7 @@ const EXPERIENCE_STEPS = [
   },
   {
     title: 'Freshly made for market day',
-    text: 'We prepare small batches throughout the week for our local markets.',
+    text: 'We prepare small batches for our Serenbe market day.',
   },
 ];
 
@@ -119,11 +119,11 @@ const FAQ_ITEMS = [
   },
   {
     question: 'When should I place a preorder?',
-    answer: 'The earlier you order, the better the selection. Check the pickup location for any ordering deadlines.',
+    answer: 'The earlier you order, the better the selection. Check the Serenbe preorder deadline before ordering.',
   },
   {
     question: 'Where do I pick up my order?',
-    answer: 'Choose your market before checkout, then pick up during that market window. Your confirmation will include the selected pickup details.',
+    answer: 'Pick up at Serenbe Farmers Market during the confirmed pickup window. Your confirmation will include the details.',
   },
   {
     question: 'Will there be walk-up inventory?',
@@ -188,7 +188,7 @@ function MarketCard({ market }: { market: PublicMarket }) {
         <div className="min-w-0">
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
-              {market.featured ? 'Featured market' : 'Market pickup'}
+              {'Serenbe market pickup'}
             </span>
             <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
               Next: {nextMarketLabel}
@@ -483,17 +483,17 @@ export default function MarketsPage() {
               Georgia market pickup • small-batch favorites
             </p>
             <h1 className="max-w-3xl text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-stone-950 sm:text-5xl lg:text-6xl">
-              Come see us at a Georgia market.
+              Find us at Serenbe Farmers Market.
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-700 sm:text-xl">
-              Taste our lemonades, explore sea moss favorites and pick up confirmed preorders at participating Georgia markets. We currently accept Georgia orders only.
+              Visit us at Serenbe for fresh lemonades, juices, and sea moss favorites. Browse the menu and arrange pickup for confirmed preorders. We currently accept Georgia orders only.
             </p>
 
             <div className="mt-7 grid gap-3 sm:flex sm:flex-wrap">
               <Button asChild className="min-h-[52px] rounded-full bg-emerald-700 px-7 text-base font-semibold text-white shadow-lg shadow-emerald-900/15 hover:bg-emerald-800">
                 <a href="#market-list">
                   <MapPin className="h-5 w-5" aria-hidden="true" />
-                  Find a market
+                  Serenbe hours & directions
                 </a>
               </Button>
               <Button asChild variant="outline" className="min-h-[52px] rounded-full border-emerald-200 bg-white px-7 text-base font-semibold text-emerald-900 hover:bg-emerald-50">
@@ -544,14 +544,14 @@ export default function MarketsPage() {
             <div>
               <p className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-emerald-800">
                 <MapPin className="h-4 w-4" aria-hidden="true" />
-                Pickup markets
+                Our market location
               </p>
               <h2 className="mt-2 text-3xl font-semibold tracking-tight text-stone-950 sm:text-4xl">
-                See when and where to visit us.
+                Visit us at Serenbe.
               </h2>
             </div>
             <p className="max-w-xl text-base leading-7 text-stone-600">
-              Find market locations, hours, pickup details, and directions all in one place.
+              See our Serenbe schedule, pickup details, and directions.
             </p>
           </div>
 
@@ -628,7 +628,7 @@ export default function MarketsPage() {
               </div>
             ) : (
               <div className="rounded-2xl border border-white/15 bg-white/10 p-5 text-emerald-50">
-                Fresh products are syncing now. You can still start from the catalog or choose a pickup market.
+                Fresh products are syncing now. You can still start from the catalog or check Serenbe pickup details.
               </div>
             )}
           </div>
@@ -664,7 +664,7 @@ export default function MarketsPage() {
             <div>
               <h2 className="text-3xl font-semibold tracking-tight">Found something you love?</h2>
               <p className="mt-3 max-w-2xl text-emerald-50/90">
-                Explore the weekly menu, select your pickup market, and review the details before placing your order.
+                Explore the weekly menu, review Serenbe pickup details before placing your order.
               </p>
             </div>
             <div className="grid gap-3 sm:flex">
@@ -685,7 +685,7 @@ export default function MarketsPage() {
             <Link href="/preorder">Shop This Week</Link>
           </Button>
           <Button asChild variant="outline" className="h-12 rounded-full border-emerald-200 text-emerald-900 hover:bg-emerald-50">
-            <a href="#market-list">Find Market</a>
+            <a href="#market-list">Serenbe Details</a>
           </Button>
         </div>
       </nav>
