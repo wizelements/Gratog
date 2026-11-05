@@ -14,8 +14,8 @@ describe('Dedicated market QR channel', () => {
   it('resolves only active canonical markets and supported old QR aliases', () => {
     expect(resolveMarketQrId('serenbe')).toBe('serenbe');
     expect(resolveMarketQrId('serenbe-farmers-market')).toBe('serenbe');
-    expect(resolveMarketQrId('dunwoody-farmers-market')).toBe('dunwoody');
-    expect(resolveMarketQrId('hapeville-hangar')).toBe('hapeville-hangar');
+    expect(resolveMarketQrId('dunwoody-farmers-market')).toBeNull();
+    expect(resolveMarketQrId('hapeville-hangar')).toBeNull();
     expect(resolveMarketQrId('sandy-springs-market')).toBeNull();
     expect(resolveMarketQrId('../../admin')).toBeNull();
     expect(resolveMarketQrId(null)).toBeNull();

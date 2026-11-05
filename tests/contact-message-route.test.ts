@@ -26,7 +26,7 @@ describe('Website Message us routing regression', () => {
     expect(page).toContain('id="send-message"');
     expect(page).toContain("params.get('source') === 'message-us'");
     expect(page).toContain("scrollIntoView({ block: 'start' })");
-    expect(page).toContain('not a Square SMS conversation');
+    expect(page).toContain('This form doesn’t place an order or charge you.');
     expect(page).toContain("fetch('/api/contact'");
     expect(api).toContain("db.collection('contact_messages').insertOne");
     expect(api).toContain("export async function POST");

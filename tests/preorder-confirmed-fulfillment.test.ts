@@ -78,7 +78,7 @@ describe('customer-confirmed future-batch preorders',()=>{
     expect(route).not.toContain('SQUARE_ACCESS_TOKEN');
     expect(page).toContain('/order-request');
     const unified=read('app/order-request/page.tsx');
-    expect(unified).toContain('No charge is made now');
+    expect(unified).toContain('Nothing is charged yet');
     expect(unified).toContain('confirmedFulfillment:consent');
     expect(quick).toContain('/order-request?product=');
     expect(detail).toContain('/order-request?product=');

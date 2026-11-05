@@ -71,7 +71,7 @@ describe('customer-facing content quality', () => {
     expect(weeklyCount).toBeGreaterThan(0);
     expect(weeklyCount).toBeLessThan(catalogCount);
     expect(homepage).toContain("getWeeklyMenuProducts('all').slice(0, 6)");
-    expect(homepage).toContain('Your favorite flavors. No market trip required.');
+    expect(homepage).toContain('Fresh favorites. No market trip needed.');
     expect(homepage).toContain('id="delivery"');
     expect(homepage).toContain('id="events"');
     expect(`${homepage}\n${homepageServer}`).not.toContain('initialCatalogCount');
