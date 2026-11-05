@@ -128,7 +128,7 @@ describe('Custom-site customer message handoff: durable, no fake SMS', () => {
     expect(button).toContain('"/contact?source=message-us#send-message"');
     expect(button).toContain('Message us');
     expect(receipt).toContain("fetch('/api/order-requests/message'");
-    expect(receipt).toContain('not a Square text message');
+    expect(receipt).toContain('not to your phone’s text messages');
     expect(admin).toContain('customerMessages.map');
     expect(admin).toContain('Reply by email');
   });

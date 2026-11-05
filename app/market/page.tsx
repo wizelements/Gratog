@@ -3,7 +3,7 @@ import { getActiveMarketPickups } from '@/data/markets';
 
 export const metadata = {
   title: 'Market Menus | Taste of Gratitude',
-  description: 'Find the right Taste of Gratitude farmers market and explore the current booth menu by QR.',
+  description: 'See what’s on the menu at our Serenbe Farmers Market booth.',
 };
 
 export default function MarketLandingPage() {
@@ -13,11 +13,10 @@ export default function MarketLandingPage() {
       <header className="bg-emerald-950 px-5 py-12 text-white">
         <div className="mx-auto max-w-4xl">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200">Taste of Gratitude</p>
-          <h1 className="mt-3 text-3xl font-bold sm:text-4xl">Find your market menu</h1>
+          <h1 className="mt-3 text-3xl font-bold sm:text-4xl">See what’s fresh at Serenbe</h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-emerald-100">
-            Select the market you're visiting to explore bottled lemonades, fresh juices, sea moss
-            and the prepared drinks served by our team. Browse freely; digital stock is not
-            confirmed until our booth team verifies today's selection.
+            Take a look at our lemonades, juices, sea moss, and drinks made at the booth.
+            We’ll confirm what’s available when you visit.
           </p>
         </div>
       </header>
@@ -30,15 +29,14 @@ export default function MarketLandingPage() {
               <p className="mt-2 text-sm font-medium text-stone-700">{market.pickupDays}</p>
               <Link href={`/m/${encodeURIComponent(market.id)}`}
                 className="mt-5 inline-block rounded-full bg-emerald-800 px-5 py-3 text-sm font-semibold text-white">
-                View this market's menu
+                See the Serenbe menu
               </Link>
             </article>
           ))}
         </div>
         <p className="mt-8 text-sm text-stone-600">
-          Digital market purchasing is not active until market inventory and Square payment
-          verification are completed. Prepared boba, refreshers, teas and shots are ordered at
-          the booth, not online.
+          You can explore the menu here. For now, please order boba, refreshers, teas,
+          and shots directly at the booth. Ask our team about bottled items and pickup.
         </p>
       </section>
     </main>

@@ -27,7 +27,7 @@ const faqCategories = [
     questions: [
       {
         question: 'What is sea moss and what are its benefits?',
-        answer: 'Sea moss (Irish moss) is a mineral-containing seaweed that customers often use as part of a daily routine. Taste of Gratitude keeps the education ingredient-focused and avoids medical claims: choose the products that fit your flavor, routine, and guidance from your healthcare provider.'
+        answer: 'Sea moss is a mineral-containing seaweed. Many people enjoy it in smoothies, drinks, or meals. Choose what works for your routine, and ask a healthcare professional if you have questions about iodine or medication.'
       },
       {
         question: 'How should I consume sea moss gel?',
@@ -35,7 +35,7 @@ const faqCategories = [
       },
       {
         question: 'Are your products made with clean ingredients?',
-        answer: 'Our weekly menu is ingredient-forward, small-batch, and made with real fruits, herbs, roots, sea moss, alkaline water, agave, or honey depending on the product. We avoid using "all-natural" as a broad marketing claim; instead, check each product page for its full ingredient list and allergens.'
+        answer: 'We make small batches with fruits, herbs, roots, and other ingredients that vary by flavor. Check each product’s ingredient list for exactly what’s inside and any allergens.'
       },
       {
         question: 'What is the shelf life of sea moss products?',
@@ -58,7 +58,7 @@ const faqCategories = [
     questions: [
       {
         question: 'How do I place an order?',
-        answer: 'Browse our catalog, add products to your cart, and proceed to checkout. Orders are currently for Georgia only. Choose a Georgia market pickup, or an eligible delivery or shipping address within Georgia. Complete your payment securely through Square.'
+        answer: 'For Serenbe pickup, see the weekly menu and follow the preorder steps. For other pickup, delivery, or Georgia shipping, send us your order details. We’ll confirm availability and the full price before you pay through Square.'
       },
       {
         question: 'What payment methods do you accept?',
@@ -74,7 +74,7 @@ const faqCategories = [
       },
       {
         question: 'How do I use a coupon code?',
-        answer: 'Enter your coupon code at checkout in the "Coupon Code" field before completing payment. Coupons can be earned through our Spin & Win wheel, loyalty rewards, or promotional campaigns. Check your email for exclusive offers!'
+        answer: 'Have a current discount code? Mention it when you contact us, and we’ll check whether it applies before payment. Watch our emails for any new offers.'
       }
     ]
   },
@@ -89,11 +89,11 @@ const faqCategories = [
       },
       {
         question: 'Do you offer local delivery?',
-        answer: 'Local delivery is available only to eligible Georgia addresses within our active service area. Enter your Georgia address at checkout for availability and any delivery fee.'
+        answer: 'Local delivery depends on your address and what you’re ordering. Share your Georgia address with your order request and we’ll confirm availability and any delivery fee before you pay.'
       },
       {
         question: 'Do you ship outside Georgia?',
-        answer: 'We currently accept shipping orders to Georgia addresses only, for eligible products. Available methods, delivery estimates, and charges are shown before payment. We do not ship outside Georgia.'
+        answer: 'We currently consider shipping requests within Georgia only. We’ll check whether your items can ship and confirm the timing and cost before you pay.'
       },
       {
         question: 'How long does shipping take?',
@@ -116,7 +116,7 @@ const faqCategories = [
     questions: [
       {
         question: 'Will Taste of Gratitude have a rewards program?',
-        answer: 'We are building a rewards direction for recurring customers, including loyalty, referrals, reviews, and reorder reminders. Join the weekly menu email list to be first to know when the Gratitude Passport goes live.'
+        answer: 'We’re working on ways to thank our regulars. Join the weekly menu emails for news when a rewards program is ready.'
       },
       {
         question: 'Can I get coupons or discounts right now?',
@@ -135,7 +135,7 @@ const faqCategories = [
       },
       {
         question: 'Do you offer market events or pop-ups?',
-        answer: 'Seasonal workshops at our market locations are in planning. Subscribe to the newsletter or follow us on social media for event announcements.'
+        answer: 'We share event news by email and on social media. For now, you can find us at Serenbe.'
       },
       {
         question: 'Can I share my sea moss journey on your platform?',

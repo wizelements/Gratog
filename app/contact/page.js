@@ -29,7 +29,7 @@ export default function ContactPage() {
     if (params.get('source') === 'message-us') {
       setIsWebsiteMessage(true);
       setFormData((current) => ({ ...current,
-        subject: current.subject || 'Website message for Taste of Gratitude',
+        subject: current.subject || 'Question for Taste of Gratitude',
       }));
       if (window.location.hash === '#send-message') {
         const frame = window.requestAnimationFrame(() => {
@@ -41,8 +41,8 @@ export default function ContactPage() {
     if (params.get('request') === 'non-market-pickup') {
       setFormData((current) => ({
         ...current,
-        subject: 'Browns Mill non-market pickup request',
-        message: 'I would like to ask about Monday pickup between 12 PM and 5 PM in the Browns Mill area. Please confirm the available appointment and meeting location before I order.',
+        subject: 'Question about Monday Browns Mill pickup',
+        message: 'Hi! Could you tell me if Monday pickup between 12 and 5 PM near Browns Mill is available? Thanks!',
       }));
     }
   }, []);
@@ -67,7 +67,7 @@ export default function ContactPage() {
         throw new Error(data.error || 'Failed to send message.');
       }
       
-      toast.success('Message sent successfully! We\'ll get back to you soon.');
+      toast.success('Message sent! Thanks for reaching out.');
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (err) {
       setError(err.message || 'Failed to send message. Please try again.');
@@ -87,9 +87,9 @@ export default function ContactPage() {
     <main className="container py-16">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Get in Touch</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">We’d love to hear from you</h1>
           <p className="text-muted-foreground text-lg">
-            Have questions? We'd love to hear from you!
+            Ask about a flavor, your order, or where to find us. We’re here to help.
           </p>
         </div>
 
@@ -149,12 +149,12 @@ export default function ContactPage() {
 
         <Card id="send-message" className="scroll-mt-24">
           <CardHeader>
-            <CardTitle>Send Us a Message</CardTitle>
+            <CardTitle>Send us a note</CardTitle>
             {isWebsiteMessage && (
               <p className="text-sm leading-6 text-stone-700">
-                This is a website message delivered to our team, not a Square SMS conversation.
-                We will review your question and respond using the contact details you provide.
-                No payment or inventory reservation occurs here.
+                Your note goes straight to our team.
+                We’ll reply using the details you share.
+                This form doesn’t place an order or charge you.
               </p>
             )}
           </CardHeader>
@@ -219,7 +219,7 @@ export default function ContactPage() {
                 className="w-full bg-emerald-800 hover:bg-emerald-900 text-white"
                 size="lg"
               >
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+                {isSubmitting ? 'Sending…' : 'Send my message'}
               </Button>
             </form>
           </CardContent>
