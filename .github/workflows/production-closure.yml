@@ -66,6 +66,9 @@ jobs:
       - name: Georgia fulfillment and customer copy regression
         run: npx vitest run tests/georgia-only-orders.test.ts tests/regular-online-orders.test.ts tests/preorder-confirmed-fulfillment.test.ts tests/preorder-customer-acknowledgement.test.ts tests/nonmarket-square-messages-requests.test.ts tests/order-request-messaging.test.ts tests/market-stock-reservations.test.ts tests/order-admission.test.ts tests/square-inventory-truth.test.ts tests/market-qr-policy.test.ts tests/square-messages-site-handoff.test.ts tests/contact-message-route.test.ts tests/content-quality.test.ts tests/catalog-indexability.test.ts tests/inventory-preorder-boundaries.test.ts tests/cart-price-preview.test.ts tests/full-site-closure.test.ts tests/checkout-order-consistency.test.ts tests/payment-retry-reconciliation.test.ts tests/product-owner-truth.test.ts tests/blue-lotus-availability-reconcile.test.ts tests/unit/cart-pricing.spec.ts --reporter=verbose
 
+      - name: Turso shared-admin recovery security and lifecycle
+        run: node --test tests/turso-admin-recovery.test.mjs
+
       - name: Navigation coherence
         run: npx vitest run tests/navigation-coherence.test.ts --reporter=verbose
 
