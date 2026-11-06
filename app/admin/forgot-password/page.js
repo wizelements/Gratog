@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
 
       if (response.ok) {
         setIsSubmitted(true);
-        toast.success('Request received. If this is an active admin account, check its inbox for a reset link.');
+        toast.success('Request received. If this is an approved recovery contact, check the owner inbox.');
       } else {
         toast.error(data.error || 'Request failed. Please try again.');
       }
@@ -64,7 +64,7 @@ export default function ForgotPasswordPage() {
           {isSubmitted ? (
             <div className="space-y-4 text-center">
               <p className="text-sm text-muted-foreground">
-                If this email belongs to an active administrator, a password reset link will be sent. Check your inbox and spam folder. The link expires after 30 minutes.
+                If these details match an approved recovery contact, check the owner’s email inbox and spam folder. The link expires in 30 minutes.
               </p>
               <Button asChild className="w-full bg-[#D4AF37] hover:bg-[#B8941F] text-white">
                 <Link href="/admin/login">Back to Login</Link>
@@ -73,11 +73,12 @@ export default function ForgotPasswordPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Admin email or recovery name</Label>
                 <Input
                   id="email"
-                  type="email"
-                  placeholder="Enter your admin email"
+                  type="text"
+                  autoComplete="username"
+                  placeholder="Email or approved recovery name"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -85,7 +86,7 @@ export default function ForgotPasswordPage() {
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                Enter the email address associated with your admin account and we'll send you a link to reset your password.
+                We’ll send a secure link to the approved owner inbox. Once verified, you can choose a new password for the Taste of Gratitude admin login.
               </p>
               <Button
                 type="submit"
