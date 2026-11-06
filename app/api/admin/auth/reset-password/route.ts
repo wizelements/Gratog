@@ -5,12 +5,12 @@ import { z } from 'zod';
 import { getTursoAdminClient, ensureTursoAdminSchema, issueTursoAdminReset, consumeTursoAdminReset } from '@/lib/auth/turso-admin-store.mjs';
 import { sendTursoAdminResetEmail } from '@/lib/auth/turso-admin-mailer.mjs';
 
-const RequestReset = z.object({ email: z.string().email().max(254) }).strict();
+const RequestReset = z.object({ email: z.string().trim().min(3).max(254) }).strict();
 const FinishReset = z.object({ token: z.string().regex(/^[a-f0-9]{64}$/),
   newPassword: z.string().min(12).max(128) }).strict();
 const safe = () => NextResponse.json({
   success: true,
-  message: 'If that address belongs to an authorized administrator, check its inbox for a reset link.'
+  message: 'If those details match an approved recovery contact, check the owner inbox for a reset link.'
 }, { headers: { 'Cache-Control': 'no-store' } });
 
 export async function POST(request: NextRequest) {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const parsed = RequestReset.safeParse(body);
     if (!parsed.success) return safe(); // prevent administrator enumeration
     try {
-      await issueTursoAdminReset(db, parsed.data.email.trim().toLowerCase(), sendTursoAdminResetEmail);
+      await issueTursoAdminReset(db, parsed.data.email, sendTursoAdminResetEmail);
     } catch (error) {
       // Do not distinguish active from inactive addresses through email failures.
       console.error('TURSO_ADMIN_RESET_EMAIL_FAILED', error instanceof Error ? error.message : 'error');

@@ -7,7 +7,7 @@ import {
   ensureTursoAdminSchema, adminByEmail, authenticateTursoAdmin,
   issueTursoAdminReset, consumeTursoAdminReset,
   changeTursoAdminPassword, verifyAdminInTurso, isOwnerEmail,
-  getTursoAdminClient
+  getTursoAdminClient, SHARED_ADMIN_EMAIL, resolveAdminRecoveryInbox
 } from '../lib/auth/turso-admin-store.mjs';
 
 function createTestDb() {
@@ -21,14 +21,24 @@ test('Turso admin onboarding and recovery are owner-only, single-use and revokin
     await ensureTursoAdminSchema(db);
     const owner = await adminByEmail(db, 'silverwatkins@gmail.com');
     const partner = await adminByEmail(db, 'jenneisha.glover@gmail.com');
+    const shared = await adminByEmail(db, SHARED_ADMIN_EMAIL);
     assert.ok(owner?.id);
     assert.ok(partner?.id);
+    assert.ok(shared?.id);
     assert.notEqual(owner.id, partner.id);
+    assert.notEqual(shared.id, owner.id);
+    assert.notEqual(shared.id, partner.id);
     assert.equal(owner.password_hash, null);
     assert.equal(await authenticateTursoAdmin(db, 'silverwatkins@gmail.com', 'wrong'), null);
     assert.equal(await adminByEmail(db, 'unknown@x.com'), null);
     assert.equal(isOwnerEmail('SilverWatkins@GMAIL.com'), true);
     assert.equal(isOwnerEmail('outsider@gmail.com'), false);
+    assert.equal(resolveAdminRecoveryInbox('Silver Watkins'), 'silverwatkins@gmail.com');
+    assert.equal(resolveAdminRecoveryInbox(' SILVERWATKINS@gmail.com '), 'silverwatkins@gmail.com');
+    assert.equal(resolveAdminRecoveryInbox('genisha.glover@gmail.com'), 'jenneisha.glover@gmail.com');
+    assert.equal(resolveAdminRecoveryInbox('jenneisha.glover@gmail.com'), 'jenneisha.glover@gmail.com');
+    assert.equal(resolveAdminRecoveryInbox(SHARED_ADMIN_EMAIL), 'silverwatkins@gmail.com');
+    assert.equal(resolveAdminRecoveryInbox('not an owner'), null);
 
     let emailedToken;
     let recipient;
@@ -41,10 +51,10 @@ test('Turso admin onboarding and recovery are owner-only, single-use and revokin
     };
     assert.equal((await issueTursoAdminReset(db, 'outsider@gmail.com', send)).requested, false);
     assert.equal(calls, 0);
-    assert.equal((await issueTursoAdminReset(db, 'silverwatkins@gmail.com', send)).requested, true);
+    assert.equal((await issueTursoAdminReset(db, 'Silver Watkins', send)).requested, true);
     assert.equal(recipient, 'silverwatkins@gmail.com');
     assert.match(emailedToken, /^[a-f0-9]{64}$/);
-    assert.equal((await issueTursoAdminReset(db, 'silverwatkins@gmail.com', send)).throttled, true);
+    assert.equal((await issueTursoAdminReset(db, 'genisha.glover@gmail.com', send)).throttled, true);
     assert.equal(calls, 1);
 
     // Cannot use another token or a short password, even with an active account.
@@ -52,7 +62,7 @@ test('Turso admin onboarding and recovery are owner-only, single-use and revokin
     assert.equal(await consumeTursoAdminReset(db, emailedToken, 'short'), false);
     assert.equal(await consumeTursoAdminReset(db, emailedToken, 'VeryStrongPassword1!'), true);
     assert.equal(await consumeTursoAdminReset(db, emailedToken, 'VeryStrongPassword2!'), false);
-    const loggedIn = await authenticateTursoAdmin(db, 'silverwatkins@gmail.com', 'VeryStrongPassword1!');
+    const loggedIn = await authenticateTursoAdmin(db, SHARED_ADMIN_EMAIL, 'VeryStrongPassword1!');
     assert.ok(loggedIn?.id);
     assert.equal(Number(loggedIn.session_version), 2);
     assert.equal(await verifyAdminInTurso(db, { id: loggedIn.id, email: loggedIn.email, role: loggedIn.role, sessionVersion: 1 }), null);
@@ -61,7 +71,30 @@ test('Turso admin onboarding and recovery are owner-only, single-use and revokin
     assert.equal(await changeTursoAdminPassword(db, loggedIn, 'incorrect', 'AnotherStrongPassword1!'), false);
     assert.equal(await changeTursoAdminPassword(db, loggedIn, 'VeryStrongPassword1!', 'AnotherStrongPassword1!'), true);
     assert.equal(await authenticateTursoAdmin(db, 'silverwatkins@gmail.com', 'VeryStrongPassword1!'), null);
-    assert.ok(await authenticateTursoAdmin(db, 'silverwatkins@gmail.com', 'AnotherStrongPassword1!'));
+    assert.ok(await authenticateTursoAdmin(db, SHARED_ADMIN_EMAIL, 'AnotherStrongPassword1!'));
+    assert.equal(await authenticateTursoAdmin(db, 'silverwatkins@gmail.com', 'AnotherStrongPassword1!'), null);
+    assert.equal((await adminByEmail(db, 'silverwatkins@gmail.com')).password_hash, null);
+    assert.equal((await adminByEmail(db, 'jenneisha.glover@gmail.com')).password_hash, null);
+  } finally { db.close(); }
+});
+
+test('Approved alternative recovery inbox updates only the shared admin', async () => {
+  const db = createTestDb();
+  try {
+    await ensureTursoAdminSchema(db);
+    let token;
+    let inbox;
+    const result = await issueTursoAdminReset(db, 'genisha.glover@gmail.com', async ({ email, token: linkToken }) => {
+      inbox = email;
+      token = linkToken;
+      return 'owner-recovery-delivery';
+    });
+    assert.equal(result.requested, true);
+    assert.equal(inbox, 'jenneisha.glover@gmail.com');
+    assert.equal(await consumeTursoAdminReset(db, token, 'NewSharedAdminPassword1!'), true);
+    assert.ok(await authenticateTursoAdmin(db, SHARED_ADMIN_EMAIL, 'NewSharedAdminPassword1!'));
+    assert.equal(await authenticateTursoAdmin(db, 'jenneisha.glover@gmail.com', 'NewSharedAdminPassword1!'), null);
+    assert.equal(await consumeTursoAdminReset(db, token, 'DifferentPassword1!'), false);
   } finally { db.close(); }
 });
 
