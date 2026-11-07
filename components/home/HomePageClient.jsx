@@ -21,7 +21,7 @@ import RetentionForm from '@/components/RetentionForm';
 import { JsonLd } from '@/components/JsonLd';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { MARKETS } from '@/data/markets';
+import { getActiveMarketPickups } from '@/data/markets';
 import {
   getCategoryLabel,
   normalizeProductKey,
@@ -243,7 +243,7 @@ export default function HomePageClient({
             </Button>
           </div>
           <div className="grid gap-5 lg:grid-cols-3">
-            {MARKETS.slice(0, 3).map((market) => (
+            {getActiveMarketPickups().slice(0, 3).map((market) => (
               <article key={market.id} className="rounded-[1.5rem] border border-emerald-900/10 bg-white p-6 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                   <div>
