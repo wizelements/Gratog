@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     let nearbyMarkets = [];
     if (location?.lat && location?.lng) {
       const locationResult = await sendLocationNotification(email, location);
-      if (locationResult.sent) {
+      if (locationResult.sent && 'market' in locationResult && 'distance' in locationResult) {
         nearbyMarkets = [{ name: locationResult.market, distance: locationResult.distance }];
       }
     }
