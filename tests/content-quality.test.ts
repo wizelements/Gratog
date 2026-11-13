@@ -212,8 +212,8 @@ describe('authentic founder story', () => {
     expect(about).toContain('local juice bar');
     expect(about).toContain('Ted’s Gym');
     expect(about).toContain('small-batch');
-    expect(about).not.toMatch(/Then my sister|Then a neighbor|eyes going wide|miracle promises\\./i);
-    expect(about).toContain('Our products aren’t miracle');
+    expect(about).not.toMatch(/Then my sister|Then a neighbor|eyes going wide/i);
+    expect(about).toContain('I don’t believe food needs big promises');
   });
 });
 
