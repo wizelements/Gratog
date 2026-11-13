@@ -203,6 +203,20 @@ describe('customer-facing content quality', () => {
   });
 });
 
+describe('authentic founder story', () => {
+  it('preserves Jenneisha’s actual journey and the Ted’s Gym turning point', () => {
+    const about = read('app/about/page.js');
+    expect(about).toContain('Jenneisha Glover');
+    expect(about).toContain('South Bend, Indiana');
+    expect(about).toContain('In 2019');
+    expect(about).toContain('local juice bar');
+    expect(about).toContain('Ted’s Gym');
+    expect(about).toContain('small-batch');
+    expect(about).not.toMatch(/Then my sister|Then a neighbor|eyes going wide|miracle promises\\./i);
+    expect(about).toContain('Our products aren’t miracle');
+  });
+});
+
 describe('weekly-menu email acquisition contract', () => {
   beforeEach(() => {
     vi.clearAllMocks();
