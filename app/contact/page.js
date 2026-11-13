@@ -64,13 +64,13 @@ export default function ContactPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to send message.');
+        throw new Error(data.error || 'We couldn’t send your message. Please try again.');
       }
       
       toast.success('Message sent! Thanks for reaching out.');
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (err) {
-      setError(err.message || 'Failed to send message. Please try again.');
+      setError(err.message || 'We couldn’t send your message. Please try again or email us.');
     } finally {
       setIsSubmitting(false);
     }
@@ -89,7 +89,7 @@ export default function ContactPage() {
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">We’d love to hear from you</h1>
           <p className="text-muted-foreground text-lg">
-            Ask about a flavor, your order, or where to find us. We’re here to help.
+            Questions about a flavor, an order, or visiting Serenbe? Send a note and we’ll get back to you.
           </p>
         </div>
 
@@ -127,7 +127,7 @@ export default function ContactPage() {
                   href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Phone Support Request')}`}
                   className="text-sm text-muted-foreground hover:text-emerald-700 transition-colors"
                 >
-                  Request a callback by email
+                  Email us to request a call
                 </a>
               )}
               <p className="text-xs text-muted-foreground mt-1">{SUPPORT_HOURS_LABEL}</p>
@@ -149,12 +149,11 @@ export default function ContactPage() {
 
         <Card id="send-message" className="scroll-mt-24">
           <CardHeader>
-            <CardTitle>Send us a note</CardTitle>
+            <CardTitle>Send a message</CardTitle>
             {isWebsiteMessage && (
               <p className="text-sm leading-6 text-stone-700">
-                Your note goes straight to our team.
-                We’ll reply using the details you share.
-                This form doesn’t place an order or charge you.
+                We’ll reply using the email address you share.
+                Sending a message doesn’t place an order or charge you.
               </p>
             )}
           </CardHeader>
@@ -219,7 +218,7 @@ export default function ContactPage() {
                 className="w-full bg-emerald-800 hover:bg-emerald-900 text-white"
                 size="lg"
               >
-                {isSubmitting ? 'Sending…' : 'Send my message'}
+                {isSubmitting ? 'Sending…' : 'Send message'}
               </Button>
             </form>
           </CardContent>
