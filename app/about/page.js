@@ -58,9 +58,9 @@ export default function AboutPage() {
           <p>
             That’s where Taste of Gratitude came from. The name reflects how thankful
             I am for another chance to make choices that feel right for me—and for the
-            people who have supported this journey. Our products aren’t miracle
-            promises. They’re drinks and foods made with care, real ingredients,
-            and plenty of gratitude.
+            people who have supported this journey. I don’t believe food needs big promises to mean something. I simply
+            want to share fresh flavors, thoughtful choices, and the gratitude
+            that brought me here.
           </p>
           <p>
             Today, you can meet us at Serenbe Farmers Market, explore our small-batch
