@@ -16,7 +16,7 @@ export default function Footer() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
             <div className="flex items-center gap-2 text-emerald-800">
               <Mail className="h-5 w-5 text-emerald-600" />
-              <span className="font-medium text-sm">Get weekly menu drops, pickup reminders, and restock notes</span>
+              <span className="font-medium text-sm">Get the weekly menu and Serenbe pickup updates</span>
             </div>
             <NewsletterSignup variant="inline" />
           </div>
@@ -31,7 +31,7 @@ export default function Footer() {
               Taste of Gratitude
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              Fresh sea moss gels, lemonades, and more, prepared in small batches. Currently accepting Georgia orders only: market pickup, with delivery or shipping where available.
+              Fresh lemonades, juices, and sea moss, made in small batches in Atlanta. Visit us at Serenbe or ask about Georgia pickup and delivery.
             </p>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[emerald-600]/10 rounded-full text-xs font-semibold text-[emerald-600]">
               Georgia orders only • Small batch
@@ -39,7 +39,7 @@ export default function Footer() {
             <div className="mt-4 space-y-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Lock className="h-4 w-4 text-emerald-600" aria-hidden="true" />
-                Secure Square checkout
+                Secure payments with Square
               </div>
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-emerald-600" aria-hidden="true" />
@@ -63,7 +63,7 @@ export default function Footer() {
                   className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
-                  Shop This Week
+                  This Week’s Menu
                 </Link>
               </li>
               <li>
@@ -81,7 +81,7 @@ export default function Footer() {
                   className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
-                  Scheduled Delivery
+                  Ask About Delivery
                 </Link>
               </li>
 
@@ -91,16 +91,7 @@ export default function Footer() {
                   className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
-                  Find Us at Markets
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/catalog"
-                  className="text-muted-foreground hover:text-[emerald-600] transition-colors inline-flex items-center gap-2 group"
-                >
-                  <span className="w-0 group-hover:w-2 h-0.5 bg-[emerald-600] transition-all" />
-                  Shop
+                  Visit Us at Serenbe
                 </Link>
               </li>
               <li>
@@ -216,7 +207,7 @@ export default function Footer() {
           <div>
             <h4 id="social-heading" className="font-semibold mb-4 text-lg">Connect With Us</h4>
             <p className="text-sm text-muted-foreground mb-4">
-              Follow new menus, market booth updates, and fresh product photos.
+              See new flavors, Serenbe updates, and what we’re making.
             </p>
             <div className="flex space-x-3" aria-label="Follow Taste of Gratitude on social media">
               <a

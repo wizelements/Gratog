@@ -1,10 +1,10 @@
 export const metadata = {
   title: 'Founder Story | Taste of Gratitude',
-  description: 'Meet the founder behind Taste of Gratitude and learn how a personal sea moss routine became an Atlanta farmers market brand.',
+  description: 'Meet founder Jenneisha Glover and learn how her personal health journey, fresh juices and a Ted’s Gym request led to Taste of Gratitude.',
   alternates: { canonical: '/about' },
   openGraph: {
     title: 'Founder Story | Taste of Gratitude',
-    description: 'From kitchen batches to Atlanta farmers markets: the founder story behind Taste of Gratitude.',
+    description: 'Jenneisha’s journey from South Bend to Atlanta, fresh juices, Ted’s Gym, and Taste of Gratitude.',
     url: 'https://tasteofgratitude.shop/about',
     images: [{ url: '/images/gratog-bg.PNG', width: 1200, height: 630 }],
   },

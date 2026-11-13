@@ -1,163 +1,113 @@
-import Image from 'next/image';
-import { Card, CardContent } from '@/components/ui/card';
-import { Leaf, Heart, Award, Users } from 'lucide-react';
+import Link from 'next/link';
+import { Heart, Leaf, MapPin, MessageCircle } from 'lucide-react';
+
+export const metadata = {
+  title: 'Our Story | Taste of Gratitude',
+  description: 'Meet Jenneisha Glover and discover the personal journey, Atlanta juice-bar experience, and Ted’s Gym request behind Taste of Gratitude.',
+};
 
 export default function AboutPage() {
   return (
-    <div className="flex flex-col">
-      {/* Hero */}
-      <section className="relative h-[400px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="https://images.unsplash.com/photo-1518495973542-4542c06a5843?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwyfHxob2xpc3RpYyUyMHdlbGxuZXNzfGVufDB8fHx8MTc1OTgwOTQzNXww&ixlib=rb-4.1.0&q=85"
-            alt="Natural market ingredients and market-inspired small-batch food"
-            fill
-            className="object-cover brightness-50"
-          />
+    <main className="bg-[#fbfaf5] text-stone-950">
+      <section className="bg-gradient-to-br from-emerald-950 via-emerald-900 to-stone-950 px-4 py-16 text-white sm:py-24">
+        <div className="mx-auto max-w-4xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-200">Our story</p>
+          <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">
+            Taste of Gratitude began with a fresh start.
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50">
+            A personal journey, a love for making fresh food, and a request from a gym
+            grew into the Atlanta business we share with you today.
+          </p>
+          <p className="mt-5 text-base font-semibold text-emerald-100">Jenneisha Glover · Founder</p>
         </div>
-        <div className="absolute inset-0 bg-black/40 z-[1]" />
-        <div className="container relative z-10 text-center text-white">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 drop-shadow-lg">Our Story</h1>
-          <p className="text-xl max-w-2xl mx-auto drop-shadow-md">
-            From my kitchen to the farmers market — made with gratitude, every single jar
+      </section>
+
+      <section className="mx-auto max-w-3xl px-5 py-14 sm:py-20" aria-labelledby="jenneisha-story">
+        <h2 id="jenneisha-story" className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          Hi, I’m Jenneisha.
+        </h2>
+        <div className="mt-7 space-y-6 text-lg leading-8 text-stone-700">
+          <p>
+            Before Taste of Gratitude, I was trying to find my way back to feeling good
+            in my own body. I had struggled with stomach issues, my weight, and habits
+            I wanted to change. In my early twenties, a frightening experience with
+            my breathing made me realize I needed to take better care of myself.
+          </p>
+          <p>
+            I started moving more, learning about food, growing what I could, and
+            making fresh juices. I made progress and had setbacks, too. Through all of
+            it, I kept learning and sharing what I was discovering with the people around me.
+          </p>
+          <p>
+            In 2019, I visited Atlanta from South Bend, Indiana. I connected with the
+            community I found here and eventually made Atlanta my home. I drove Lyft
+            while getting settled and worked at a local juice bar. That experience taught
+            me about ingredients, flavor, and what people really enjoyed. But seeing
+            how juices were processed to last longer also reminded me why I loved
+            making fresh juice in the first place.
+          </p>
+          <p>
+            I began making my own juices and sea moss products. Sea moss wasn’t
+            something the companies I worked for offered, so I learned to prepare it
+            myself and started sharing it alongside what I knew about fresh food.
+            Then a customer asked if I could make products for <strong className="text-stone-900">Ted’s Gym</strong>.
+            That invitation helped me see that something I’d started for myself
+            could become something I made for my community.
+          </p>
+          <p>
+            That’s where Taste of Gratitude came from. The name reflects how thankful
+            I am for another chance to make choices that feel right for me—and for the
+            people who have supported this journey. I don’t believe food needs big promises to mean something. I simply
+            want to share fresh flavors, thoughtful choices, and the gratitude
+            that brought me here.
+          </p>
+          <p>
+            Today, you can meet us at Serenbe Farmers Market, explore our small-batch
+            lemonades, juices, and sea moss, and ask me what goes into each one.
+            I’m glad you’re here.
           </p>
         </div>
       </section>
 
-      {/* Jenneisha's Story */}
-      <section className="container py-16">
-        <div className="max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center">
-            Hi, I&apos;m Jenneisha
-          </h2>
-          <div className="space-y-5 text-lg text-muted-foreground leading-relaxed content-readable mx-auto">
-            <p>
-              A few years ago, I was going through one of those seasons where everything felt heavy.
-              I was exhausted, run down, and honestly just looking for something — anything — that
-              would help me feel like myself again. That&apos;s when I started making sea moss gel
-              in my own kitchen. Not for a business. Just for me.
-            </p>
-            <p>
-              It became a quiet weekly routine. Soaking, blending, pouring — there was something grounding
-              about the process. The routine itself made me feel more present and more grateful for the small
-              things. So I made a jar for my mom. Then my sister. Then a neighbor. Before I knew it,
-              people were asking, <em>&ldquo;Can you make me one too?&rdquo;</em>
-            </p>
-            <p>
-              That&apos;s how Taste of Gratitude was born — not from a business plan, but from a
-              kitchen full of mason jars and a feeling I wanted to share. The name came naturally.
-              Every jar I made reminded me of what I was grateful for: my energy shifting,
-              my family showing up, the chance to create something with my hands.
-            </p>
-            <p>
-              I brought my first batch to a local farmers market in Atlanta, and that changed everything.
-              Watching someone try my sea moss gel for the first time at the Serenbe Market — their eyes going
-              wide — that&apos;s when I knew this was bigger than me. Now you can find us at the Serenbe
-              Farmers Market, where I&apos;m still behind the table each Saturday,
-              making everything in small batches, still grateful.
-            </p>
-          </div>
-        </div>
-
-      </section>
-
-      {/* Process */}
-      <section className="bg-stone-50 py-16">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-gray-900">How each batch comes together</h2>
-            <p className="mt-3 text-gray-600">
-              Simple ingredients, careful prep, and weekly market freshness.
-            </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {[
-              ['🫧 Soak', 'Sea moss is cleaned and soaked with care before each batch.'],
-              ['🫐 Blend', 'Each flavor is blended in small batches with real, visible ingredients.'],
-              ['🤝 Share', 'Jars are prepared fresh for market pickup, samples, and conversations.'],
-            ].map(([title, text]) => (
-              <div key={title} className="rounded-xl border border-stone-200 bg-white p-6">
-                <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-gray-600">{text}</p>
-              </div>
-            ))}
+      <section className="border-y border-emerald-900/10 bg-white px-5 py-14" aria-labelledby="our-approach">
+        <div className="mx-auto max-w-5xl">
+          <h2 id="our-approach" className="text-center text-3xl font-semibold">What matters to us</h2>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl border border-stone-200 p-6">
+              <Leaf className="h-7 w-7 text-emerald-800" aria-hidden="true" />
+              <h3 className="mt-4 text-lg font-semibold">Know what you’re enjoying</h3>
+              <p className="mt-2 leading-7 text-stone-700">Real ingredients and clear descriptions, so you can choose what works for you.</p>
+            </div>
+            <div className="rounded-2xl border border-stone-200 p-6">
+              <Heart className="h-7 w-7 text-emerald-800" aria-hidden="true" />
+              <h3 className="mt-4 text-lg font-semibold">Made in small batches</h3>
+              <p className="mt-2 leading-7 text-stone-700">We make our favorites with care and leave room for fresh, seasonal ideas.</p>
+            </div>
+            <div className="rounded-2xl border border-stone-200 p-6">
+              <MessageCircle className="h-7 w-7 text-emerald-800" aria-hidden="true" />
+              <h3 className="mt-4 text-lg font-semibold">A conversation, not a sales pitch</h3>
+              <p className="mt-2 leading-7 text-stone-700">Curious about a flavor or ingredient? Ask us. We love sharing what we make.</p>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="container py-16">
-        {/* Values */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="text-center">
-            <CardContent className="pt-6">
-              <div className="icon-container mx-auto mb-4">
-                <Leaf className="h-8 w-8 text-emerald-700" />
-              </div>
-              <h3 className="font-semibold mb-2">Ingredients You Can See</h3>
-              <p className="text-sm text-muted-foreground">
-                Real ingredients, nothing hidden. We&apos;ll always tell you exactly what&apos;s in the jar.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center">
-            <CardContent className="pt-6">
-              <div className="icon-container mx-auto mb-4">
-                <Heart className="h-8 w-8 text-emerald-700" />
-              </div>
-              <h3 className="font-semibold mb-2">Small Batch, Big Intention</h3>
-              <p className="text-sm text-muted-foreground">
-                Every jar is hand-prepared in small batches — never mass-produced, always made with care.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center">
-            <CardContent className="pt-6">
-              <div className="icon-container mx-auto mb-4">
-                <Award className="h-8 w-8 text-emerald-700" />
-              </div>
-              <h3 className="font-semibold mb-2">Sourced with Care</h3>
-              <p className="text-sm text-muted-foreground">
-                We select sea moss and ingredients from suppliers we trust for quality and transparency, and we are working toward documented wildcrafting verification.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center">
-            <CardContent className="pt-6">
-              <div className="icon-container mx-auto mb-4">
-                <Users className="h-8 w-8 text-emerald-700" />
-              </div>
-              <h3 className="font-semibold mb-2">Real Market Presence</h3>
-              <p className="text-sm text-muted-foreground">
-                We show up every weekend at Atlanta farmers markets. Come say hi — we love meeting our people.
-              </p>
-            </CardContent>
-          </Card>
+      <section className="bg-emerald-950 px-5 py-14 text-center text-white">
+        <MapPin className="mx-auto h-8 w-8 text-emerald-200" aria-hidden="true" />
+        <h2 className="mt-4 text-3xl font-semibold">Come meet us at Serenbe.</h2>
+        <p className="mx-auto mt-3 max-w-xl leading-7 text-emerald-50">
+          Try a flavor, ask a question, or bring home something fresh. We’d love to see you.
+        </p>
+        <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+          <Link href="/markets" className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-7 py-3 font-semibold text-emerald-950 hover:bg-emerald-50">
+            Visit us at the market
+          </Link>
+          <Link href="/weekly-menu" className="inline-flex min-h-12 items-center justify-center rounded-full border border-emerald-200 px-7 py-3 font-semibold text-white hover:bg-white/10">
+            Explore this week’s menu
+          </Link>
         </div>
       </section>
-
-      {/* CTA */}
-      <section className="bg-gradient-to-r from-emerald-900 to-teal-900 py-16">
-        <div className="container text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Come Find Us at the Market
-          </h2>
-          <p className="text-lg text-emerald-100/80 max-w-2xl mx-auto mb-8">
-            The best way to experience Taste of Gratitude is in person. Try the gel,
-            and let me tell you the story behind each flavor.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="/markets" className="px-8 py-3 rounded-full bg-emerald-700 text-white font-semibold hover:bg-emerald-800">
-              See Where We&apos;ll Be
-            </a>
-            <a href="/weekly-menu" className="px-8 py-3 rounded-full border border-emerald-700 text-emerald-700 font-semibold hover:bg-emerald-50">
-              Shop This Week&apos;s Menu
-            </a>
-          </div>
-        </div>
-      </section>
-    </div>
+    </main>
   );
 }

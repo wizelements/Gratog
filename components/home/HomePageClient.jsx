@@ -34,9 +34,9 @@ import {
 
 const ORDERING_STEPS = [
   { icon: ShoppingBag, title: 'Choose your favorites', text: 'Explore the menu and pick the flavors you love.' },
-  { icon: Truck, title: 'Check your delivery address', text: 'Tell us your Georgia address so we can check delivery options.' },
-  { icon: Package, title: 'Review your order', text: 'We’ll confirm what’s available, your pickup or delivery details, and the full price.' },
-  { icon: CheckCircle2, title: 'Receive confirmation', text: 'Once everything is confirmed, pay securely through Square.' },
+  { icon: Truck, title: 'Choose pickup or delivery', text: 'Tell us how you’d like to get your order. We’ll check what’s available in Georgia.' },
+  { icon: Package, title: 'Get the details', text: 'We’ll confirm your items, pickup or delivery arrangements, and full price.' },
+  { icon: CheckCircle2, title: 'Pay securely', text: 'You won’t be charged when you send a request. Pay through Square after we confirm it.' },
 ];
 
 function availabilityLabel(product) {
@@ -141,7 +141,7 @@ export default function HomePageClient({
               Fresh favorites. No market trip needed.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/90 sm:text-xl">
-              Craving a fresh lemonade, juice, or sea moss? Browse your favorites and ask about pickup or local delivery. Or come see us at Serenbe.
+              Fresh lemonades, juices, and sea moss, made in small batches in Atlanta. Order for pickup or ask about local delivery—or visit us at Serenbe.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild className="h-14 rounded-full bg-white px-8 text-base font-bold text-emerald-950 hover:bg-emerald-50">
@@ -159,7 +159,7 @@ export default function HomePageClient({
           <div className="rounded-[2rem] border border-white/20 bg-white/95 p-6 text-stone-950 shadow-2xl shadow-emerald-950/40">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Choose what works for you</p>
             <h2 className="mt-3 text-3xl font-semibold">Pickup or delivery?</h2>
-            <p className="mt-3 leading-7 text-stone-600">You can enjoy Taste of Gratitude without making a market trip.</p>
+            <p className="mt-3 leading-7 text-stone-600">Pick what works for you. We’ll confirm the details before you pay.</p>
             <div className="mt-5 grid gap-3">
               <div className="rounded-2xl bg-emerald-50 p-4">
                 <p className="flex items-center gap-2 font-semibold text-emerald-950"><Truck className="h-5 w-5" aria-hidden="true" /> Local delivery</p>
@@ -214,7 +214,7 @@ export default function HomePageClient({
           <div className="mb-8 text-center">
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Ordering made simple</p>
             <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Your favorites, your way.</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-stone-600">Tell us what you love. We’ll help with the next steps.</p>
+            <p className="mx-auto mt-3 max-w-2xl text-stone-600">Choose your favorites, tell us how you’d like to receive them, and we’ll confirm the details before you pay.</p>
           </div>
           <div className="grid gap-4 md:grid-cols-4">
             {ORDERING_STEPS.map(({ icon: Icon, title, text }, index) => (
@@ -351,19 +351,19 @@ export default function HomePageClient({
         <div className="container grid gap-8 lg:grid-cols-2">
           <div className="rounded-[2rem] bg-white p-6 shadow-sm">
             <Heart className="h-8 w-8 text-emerald-700" aria-hidden="true" />
-            <p className="mt-4 text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Made with care. Shared with gratitude.</p>
-            <h2 className="mt-2 text-3xl font-semibold">It started with a simple act of sharing.</h2>
+            <p className="mt-4 text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">The story behind every batch</p>
+            <h2 className="mt-2 text-3xl font-semibold">Meet Jenneisha. Discover what started it all.</h2>
             <p className="mt-4 leading-8 text-stone-700">
-              Jenneisha first began making and sharing sea moss at home. What started with family grew into new flavors, familiar faces, and meaningful connections at local farmers markets.
+              Jenneisha’s own journey led her to fresh juice, making sea moss, and a request to create products for Ted’s Gym. Today, she brings those small-batch favorites to Atlanta and Serenbe.
             </p>
             <Button asChild variant="outline" className="mt-6 h-11 rounded-full border-emerald-200 text-emerald-800 hover:bg-emerald-50">
-              <Link href="/about">Read our story</Link>
+              <Link href="/about">Meet our founder</Link>
             </Button>
           </div>
           <div className="rounded-[2rem] bg-white p-6 shadow-sm">
             <Mail className="h-8 w-8 text-emerald-700" aria-hidden="true" />
-            <p className="mt-4 text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Can’t find your favorite?</p>
-            <h2 className="mt-2 text-3xl font-semibold">Tell us what you’d love to see next.</h2>
+            <p className="mt-4 text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Have a flavor in mind?</p>
+            <h2 className="mt-2 text-3xl font-semibold">Tell us what you’re craving.</h2>
             <p className="mt-4 leading-8 text-stone-700">
               Missing a favorite flavor? Send us a request. We’ll confirm what’s available, the price, and pickup details before you place an order.
             </p>
@@ -378,7 +378,7 @@ export default function HomePageClient({
         <div className="container grid gap-6 lg:grid-cols-[1fr_0.8fr] lg:items-center">
           <div>
             <Mail className="h-8 w-8 text-emerald-200" aria-hidden="true" />
-            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">See what’s fresh next week.</h2>
+            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">Good things are coming next week.</h2>
             <p className="mt-3 max-w-2xl leading-7 text-emerald-50/90">
               Get the next menu, market pickup reminders, and first word on returning favorites.
             </p>

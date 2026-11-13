@@ -72,6 +72,9 @@ describe('customer-facing content quality', () => {
     expect(weeklyCount).toBeLessThan(catalogCount);
     expect(homepage).toContain("getWeeklyMenuProducts('all').slice(0, 6)");
     expect(homepage).toContain('Fresh favorites. No market trip needed.');
+    expect(homepage).toContain('Ted’s Gym');
+    expect(homepage).toContain('Choose pickup or delivery');
+    expect(homepage).toContain('You won’t be charged when you send a request');
     expect(homepage).toContain('id="delivery"');
     expect(homepage).toContain('id="events"');
     expect(`${homepage}\n${homepageServer}`).not.toContain('initialCatalogCount');
@@ -197,6 +200,20 @@ describe('customer-facing content quality', () => {
     expect(privacy).not.toMatch(/Twilio|updates via email, plus optional SMS/i);
     expect(terms).toMatch(/Order confirmations and available order updates will be sent by email/);
     expect(terms).not.toMatch(/SMS updates|text updates/i);
+  });
+});
+
+describe('authentic founder story', () => {
+  it('preserves Jenneisha’s actual journey and the Ted’s Gym turning point', () => {
+    const about = read('app/about/page.js');
+    expect(about).toContain('Jenneisha Glover');
+    expect(about).toContain('South Bend, Indiana');
+    expect(about).toContain('In 2019');
+    expect(about).toContain('local juice bar');
+    expect(about).toContain('Ted’s Gym');
+    expect(about).toContain('small-batch');
+    expect(about).not.toMatch(/Then my sister|Then a neighbor|eyes going wide/i);
+    expect(about).toContain('I don’t believe food needs big promises');
   });
 });
 
