@@ -103,17 +103,6 @@ function resolveMarketId(lead: LeadRecord): string | null {
     : null;
 }
 
-function isUnsubscribed(lead: LeadRecord): boolean {
-  if (lead.unsubscribed === true) return true;
-  if (lead.unsubscribedAt) return true;
-  if (lead.optOutAt) return true;
-  const meta = lead.metadata || {};
-  if (meta.optOutAt) return true;
-  if (meta.unsubscribedAt) return true;
-  if (meta.unsubscribed === true) return true;
-  return false;
-}
-
 async function loadBodyFromStdin(): Promise<string> {
   if (process.stdin.isTTY) return BODY;
   let data = '';
