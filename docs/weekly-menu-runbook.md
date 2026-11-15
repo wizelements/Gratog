@@ -46,7 +46,7 @@ NEXT_PUBLIC_TELEGRAM_CHANNEL_URL=https://t.me/tasteofgratitude
 
 ## Step 1 — Finalize the weekly menu
 
-1. Decide the week date (the upcoming Saturday by default): `2026-07-11`.
+1. Decide the upcoming approved Serenbe market date and verify it against the current schedule.
 2. Prepare:
    - Subject line
    - Body text (plain text; the script turns it into HTML)
@@ -60,19 +60,19 @@ NEXT_PUBLIC_TELEGRAM_CHANNEL_URL=https://t.me/tasteofgratitude
 ```bash
 npx tsx scripts/weekly-menu-broadcast.ts \
   --dry-run \
-  --week 2026-07-11 \
-  --subject "This week's menu: Golden Glow, Kissed by Gods, Grateful Defense" \
-  --body "Fresh small batches ready for Saturday pickup at Serenbe and Dunwoody."
+  --week YYYY-MM-DD \
+  --subject "This week at Serenbe" \
+  --body "See the verified weekly menu and request availability for Serenbe pickup."
 ```
 
 You can also pipe the body from a file:
 
 ```bash
-cat docs/weekly-menu-copy/2026-07-11.txt | \
+cat docs/weekly-menu-copy/approved-week.txt | \
   npx tsx scripts/weekly-menu-broadcast.ts \
   --dry-run \
-  --week 2026-07-11 \
-  --subject "This week's menu"
+  --week YYYY-MM-DD \
+  --subject "This week at Serenbe"
 ```
 
 The dry-run prints:
@@ -112,7 +112,7 @@ The script will:
 2. Inspect `broadcast_logs` in MongoDB:
 
 ```js
-db.broadcast_logs.find({ campaignWeek: '2026-07-11' }).sort({ sentAt: -1 })
+db.broadcast_logs.find({ campaignWeek: 'YYYY-MM-DD' }).sort({ sentAt: -1 })
 ```
 
 3. Check Resend dashboard for bounces, complaints, and delivery events.
