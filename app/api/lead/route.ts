@@ -17,6 +17,9 @@ const LeadSchema = z.object({
   website: z.string().optional(),
 });
 
+// Only explicit newsletter subscription actions qualify as marketing consent.
+const MARKETING_EMAIL_INTENTS = new Set(['weekly_menu_email', 'email_signup']);
+
 const EMAIL_REQUIRED_INTENTS = new Set([
   'weekly_menu_email',
   'email_signup',
@@ -95,7 +98,7 @@ export async function POST(request: NextRequest) {
       { upsert: true }
     );
 
-    if (document.email && intentRequiresEmail(document.intent)) {
+    if (document.email && MARKETING_EMAIL_INTENTS.has(document.intent)) {
       await db.collection('newsletter_subscribers').updateOne(
         { email: document.email },
         {
@@ -108,6 +111,10 @@ export async function POST(request: NextRequest) {
             marketInterest,
             sourceCampaign,
             subscribedAt: now,
+            marketingConsent: true,
+            consentPurpose: document.intent,
+            consentSource: document.source,
+            consentAt: now,
           },
           $setOnInsert: { createdAt: now },
         },
