@@ -6,7 +6,7 @@
  * verification receipts and a value-first action queue. It NEVER emails,
  * posts, changes products, deploys, spends or reads customer/order records.
  */
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { auditMarketingSite } from './tog-marketing-live-readonly.mjs';
 
@@ -157,8 +157,20 @@ export function growthBriefMarkdown(brief) {
   return lines.join('\n');
 }
 
+export async function loadCurrentPublicAudit(file, clock = () => new Date()) {
+  const content = await readFile(file, 'utf8');
+  const audit = JSON.parse(content);
+  const at = Date.parse(audit?.auditedAt || '');
+  const ageMs = clock().getTime() - at;
+  if (!Number.isFinite(at) || ageMs < 0 || ageMs > 10 * 60 * 1000) {
+    throw new Error('STALE_PUBLIC_AUDIT');
+  }
+  return audit;
+}
+
 async function main() {
-  const audit = await auditMarketingSite();
+  const fromFile = process.argv[2] === '--audit-file' ? process.argv[3] : null;
+  const audit = fromFile ? await loadCurrentPublicAudit(fromFile) : await auditMarketingSite();
   const brief = buildOpeeGrowthBrief(audit);
   await mkdir('test-results', { recursive: true });
   await Promise.all([
