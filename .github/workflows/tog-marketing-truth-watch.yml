@@ -1,7 +1,8 @@
 name: Taste of Gratitude Marketing Truth Watch
 
-# GET-only evidence; never contacts customers, sends broadcasts, changes prices,
-# updates live inventory, or authenticates to Square/Resend.
+# OPEE MAX daily public-GET evidence and non-sending marketing action briefs.
+# Never contacts customers, sends broadcasts, changes prices, updates live
+# inventory, or authenticates to Square/Resend.
 on:
   schedule:
     - cron: '0 12 * * *'
@@ -11,12 +12,16 @@ on:
     paths:
       - 'scripts/tog-marketing-live-readonly.mjs'
       - 'tests/release/tog-marketing-live-readonly.test.mjs'
+      - 'scripts/opee-tog-growth-operator.mjs'
+      - 'tests/release/opee-tog-growth-operator.test.mjs'
       - '.github/workflows/tog-marketing-truth-watch.yml'
   push:
     branches: [main]
     paths:
       - 'scripts/tog-marketing-live-readonly.mjs'
       - 'tests/release/tog-marketing-live-readonly.test.mjs'
+      - 'scripts/opee-tog-growth-operator.mjs'
+      - 'tests/release/opee-tog-growth-operator.test.mjs'
       - '.github/workflows/tog-marketing-truth-watch.yml'
 
 permissions:
@@ -35,20 +40,27 @@ jobs:
           node-version: '22'
       - name: Verify audit safety and negative controls
         run: node --test tests/release/tog-marketing-live-readonly.test.mjs
+      - name: Verify OPEE marketing decision engine fail-closed
+        run: node --test tests/release/opee-tog-growth-operator.test.mjs
       - name: Verify live public pages (no credentials or writes)
         run: node scripts/tog-marketing-live-readonly.mjs
+      - name: Generate OPEE reviewed-only growth opportunities from fresh receipt
+        run: node scripts/opee-tog-growth-operator.mjs --audit-file test-results/marketing-live-readonly.json
       - name: Publish audit truth without implying marketing certification
         if: always()
         run: |
           if test -f test-results/marketing-live-readonly.json; then
             node -e 'const r=require("./test-results/marketing-live-readonly.json"); console.log("RESULT="+r.result+" CHECKS="+r.passed+"/"+r.checked+" CERTIFIED="+r.certified);'
           fi
-          echo 'This GET-only check does NOT certify Square payments, inventory, live email deliverability, subscriptions, Resend webhooks, or Grok Bot execution.' >> "$GITHUB_STEP_SUMMARY"
-      - name: Save JSON evidence for Grokbot and OPEE
+          echo 'OPEE READ-ONLY: no paid ads, publication or customer marketing sends. This does NOT certify Square checkout, inventory, consent, Resend delivery, subscriber lifecycle, or OPEE device dispatch.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Save JSON and owner-reviewable action artifacts for OPEE
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: tog-marketing-truth
-          path: test-results/marketing-live-readonly.json
+          path: |
+            test-results/marketing-live-readonly.json
+            test-results/opee-tog-growth-brief.json
+            test-results/opee-tog-growth-brief.md
           retention-days: 30
           if-no-files-found: warn
