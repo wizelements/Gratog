@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import FlavorFinder from '@/components/market/FlavorFinder';
 import { notFound } from 'next/navigation';
 import { getActiveMarketPickups } from '@/data/markets';
 import { getStorefrontCatalogSnapshot } from '@/lib/storefront-products';
@@ -81,6 +82,8 @@ export default async function MarketQrPage({ params }: PageProps) {
           </p>
         </section>
 
+        <FlavorFinder lemonades={entries.filter((item) => item.kind === 'lemonade')} />
+
         <section id="bottled-menu" aria-labelledby="bottled-heading" className="scroll-mt-5">
           <h2 id="bottled-heading" className="text-2xl font-bold">Bottled drinks & sea moss</h2>
           <p className="mt-2 text-sm leading-6 text-stone-600">
@@ -94,7 +97,7 @@ export default async function MarketQrPage({ params }: PageProps) {
               <p className="mt-1 text-sm text-stone-600">{group.detail}</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 {entries.filter(item => item.kind === group.id).map(item => (
-                  <article key={item.slug} className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                  <article id={`flavor-${item.slug}`} key={item.slug} className="scroll-mt-5 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
                     <div className="flex items-start justify-between gap-3">
                       <h4 className="font-bold leading-6">{item.name}</h4>
                       <span className="shrink-0 text-lg font-bold tabular-nums text-emerald-800">
