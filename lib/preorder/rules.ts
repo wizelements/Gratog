@@ -3,8 +3,10 @@
  * Single source of truth for market schedules, cutoffs, and preorder constraints
  */
 
+import { getActiveMarketPickups } from '@/data/markets';
+
 export const MARKET_CONFIGS = {
-  'serenbe': { prefix: 'S', day: 'Saturday', hours: '9:00 AM - 1:00 PM', name: 'Serenbe Farmers Market', cutoffDay: 'Friday', cutoffHour: 18 },
+  'serenbe': { prefix: 'S', day: 'Saturday', hours: '9:00 AM - 12:00 PM', name: 'Serenbe Farmers Market', cutoffDay: 'Friday', cutoffHour: 18 },
   'dunwoody': { prefix: 'D', day: 'Saturday', hours: '9:00 AM - 12:00 PM', name: 'Dunwoody Farmers Market', cutoffDay: 'Friday', cutoffHour: 18 },
 } as const;
 
@@ -16,7 +18,7 @@ export const PREORDER_RULES = {
 } as const;
 
 export function isValidMarketId(id: string): id is MarketId {
-  return id in MARKET_CONFIGS;
+  return id in MARKET_CONFIGS && getActiveMarketPickups().some((market) => market.id === id);
 }
 
 export function getNextMarketDate(dayName: string): Date {

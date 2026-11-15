@@ -178,7 +178,7 @@ export const PRODUCTS: MarketProduct[] = [
     name: 'Kissed by Gods',
     category: 'lemonades',
     weeklyStatus: 'active',
-    price: 11,
+    price: 11.99,
     sizes: ['16oz bottle'],
     ingredients: ['Basil', 'Chlorophyll', 'Ginger', 'Lemon', 'Sea Moss', 'Agave', 'Alkaline Water'],
     shortDescription: 'A bright green lemonade with basil, ginger, lemon, chlorophyll, and sea moss.',

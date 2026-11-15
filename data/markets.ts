@@ -52,7 +52,7 @@ export const MARKETS: MarketPickupLocation[] = [
     zip: '30268',
     addressLine: '10950 Hutcheson Ferry Rd, Chattahoochee Hills, GA 30268',
     dayOfWeek: 6,
-    hours: '09:00-13:00',
+    hours: '09:00-12:00',
     pickupDays: 'Saturday market pickup',
     preorderCutoff: 'When preorders are open, order by Friday evening for Saturday pickup.',
     description: 'Visit our Serenbe booth for small-batch lemonades, sea moss gels, refreshers, and a chance to explore new flavors.',

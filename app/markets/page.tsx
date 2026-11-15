@@ -398,34 +398,8 @@ export default function MarketsPage() {
         setProducts(transformedProducts);
       } catch (error) {
         console.error('Failed to fetch products:', error);
-        setProducts([
-          {
-            id: 'fallback-golden-glow-gel',
-            name: 'Golden Glow Gel',
-            category: 'sea-moss',
-            emoji: '🌿',
-            price: 36,
-            isPopular: true,
-            description: 'Pineapple, orange, turmeric, ginger, honey, and sea moss in a golden gel.',
-          },
-          {
-            id: 'fallback-kissed-by-gods',
-            name: 'Kissed by Gods',
-            category: 'lemonades',
-            emoji: '🍋',
-            price: 11,
-            description: 'Basil, chlorophyll, ginger, lemon, sea moss, agave, and alkaline water.',
-          },
-          {
-            id: 'fallback-grateful-defense',
-            name: 'Elderberry Ginger Shot',
-            category: 'shots',
-            emoji: '🥃',
-            price: 5,
-            isNew: true,
-            description: 'Elderberry, cranberry, apple, ginger, lemon, echinacea, sea moss, and alkaline water.',
-          },
-        ]);
+        // Never invent a sellable menu or price when the live catalog is unavailable.
+        setProducts([]);
       } finally {
         setLoading(false);
       }
