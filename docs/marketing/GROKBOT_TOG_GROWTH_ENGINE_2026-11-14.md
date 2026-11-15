@@ -1,4 +1,6 @@
 # OPEE MAX × GROKBOT — Taste of Gratitude Growth Intelligence Engine
+> **ARCHIVED — SUPERSEDED ON 2026-11-15.** This earlier external-bot design is historical reference only. The active, authorized Taste of Gratitude marketing owner is OPEE MAX, using `docs/marketing/OPEE_TOG_GROWTH_OPERATIONS.md`, its existing VORAX governance, and the repository's scheduled read-only workflow. **Do not activate any third-party bot or external agent on the basis of the archived instructions below.**
+
 **Status:** IMPLEMENTATION DIRECTIVE / NOT DEPLOYED OR CERTIFIED
 **Owner:** Taste of Gratitude; implementation through authorized Grokbot/OPEE and the canonical Gratog repo
 **Date:** 2026-11-14 (America/New_York)
