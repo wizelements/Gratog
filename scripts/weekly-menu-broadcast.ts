@@ -23,6 +23,8 @@ import { connectToDatabase } from '../lib/db-optimized.js';
 import { logger } from '../lib/logger.js';
 import { buildUnsubscribeUrl } from '../lib/email/unsubscribe-tokens.js';
 import { Resend } from 'resend';
+import { canReceiveWeeklyMenu, normalizeRecipientEmail } from '../lib/marketing/weekly-email-eligibility.js';
+import { getActiveMarketPickups } from '../data/markets.js';
 
 interface LeadRecord {
   id?: string;
@@ -35,6 +37,8 @@ interface LeadRecord {
   optOutAt?: Date | string;
   source?: string;
   intent?: string;
+  marketingConsent?: boolean;
+  consentPurpose?: string;
 }
 
 const args = parseArgs(process.argv.slice(2));
@@ -93,23 +97,10 @@ function weeklyMenuUrl(): string {
 
 function resolveMarketId(lead: LeadRecord): string | null {
   const meta = lead.metadata || {};
-  return (
-    lead.marketInterest ||
-    meta.marketId ||
-    meta.landingMarketId ||
-    null
-  );
-}
-
-function isUnsubscribed(lead: LeadRecord): boolean {
-  if (lead.unsubscribed === true) return true;
-  if (lead.unsubscribedAt) return true;
-  if (lead.optOutAt) return true;
-  const meta = lead.metadata || {};
-  if (meta.optOutAt) return true;
-  if (meta.unsubscribedAt) return true;
-  if (meta.unsubscribed === true) return true;
-  return false;
+  const requested = lead.marketInterest || meta.marketId || meta.landingMarketId || null;
+  return typeof requested === 'string' && getActiveMarketPickups().some(market => market.id === requested)
+    ? requested
+    : null;
 }
 
 async function loadBodyFromStdin(): Promise<string> {
@@ -185,47 +176,32 @@ async function logBroadcast(db: any, entry: Record<string, any>) {
 }
 
 async function loadLeads(db: any): Promise<LeadRecord[]> {
-  // Primary source: newsletter_subscribers (deduplicated, market-aware).
-  const subscriberCursor = db.collection('newsletter_subscribers').find({
+  // Do not harvest transactional contacts or legacy lead_intents for marketing.
+  // Subscribers without explicit consent provenance are excluded at send time.
+  const subscribers: LeadRecord[] = await db.collection('newsletter_subscribers').find({
     email: { $exists: true, $nin: [null, ''] },
-  });
-  const subscribers: LeadRecord[] = await subscriberCursor.toArray();
+  }).toArray();
+  return subscribers.map((subscriber) => ({
+    ...subscriber,
+    email: normalizeRecipientEmail(subscriber.email),
+  }));
+}
 
-  // Fallback / enrichment: lead_intents for weekly_menu_texts.
-  const intentCursor = db.collection('lead_intents').find({
-    intent: 'weekly_menu_texts',
-    email: { $exists: true, $nin: [null, ''] },
-  });
-  const intents: LeadRecord[] = await intentCursor.toArray();
-
-  // Merge by email, preferring subscriber records but enriching market interest.
-  const byEmail = new Map<string, LeadRecord>();
-  for (const s of subscribers) {
-    const email = s.email.trim().toLowerCase();
-    byEmail.set(email, {
-      ...s,
-      email,
-      marketInterest: s.marketInterest || s.metadata?.marketId || s.metadata?.landingMarketId || null,
-    });
+async function loadSuppressedEmails(db: any): Promise<Set<string>> {
+  // Any read failure aborts the run before any provider sends.
+  const [optOuts, suppressed, unsubscribedCustomers, optOutPreferences, accountOptOuts] = await Promise.all([
+    db.collection('unsubscribes').find({}).project({ email: 1 }).toArray(),
+    db.collection('email_suppressions').find({ active: { $ne: false } }).project({ email: 1 }).toArray(),
+    db.collection('customers').find({ unsubscribed: true }).project({ email: 1 }).toArray(),
+    db.collection('user_preferences').find({ marketing: false }).project({ email: 1 }).toArray(),
+    db.collection('users').find({ 'emailPreferences.marketing': false }).project({ email: 1 }).toArray(),
+  ]);
+  const emails = new Set<string>();
+  for (const record of [...optOuts, ...suppressed, ...unsubscribedCustomers, ...optOutPreferences, ...accountOptOuts]) {
+    const email = normalizeRecipientEmail(record.email);
+    if (email) emails.add(email);
   }
-  for (const intent of intents) {
-    const email = intent.email.trim().toLowerCase();
-    const existing = byEmail.get(email);
-    if (existing) {
-      const marketId = resolveMarketId(intent);
-      if (marketId && !existing.marketInterest) {
-        existing.marketInterest = marketId;
-      }
-      continue;
-    }
-    byEmail.set(email, {
-      ...intent,
-      email,
-      marketInterest: resolveMarketId(intent),
-    });
-  }
-
-  return Array.from(byEmail.values());
+  return emails;
 }
 
 async function main() {
@@ -236,6 +212,10 @@ async function main() {
   }
   if (!process.env.MONGODB_URI) {
     console.error('Error: MONGODB_URI is required to load leads.');
+    process.exit(1);
+  }
+  if (!DRY_RUN && (!args['owner-approved'] || process.env.TOG_MARKETING_SEND_CERTIFIED !== 'true')) {
+    console.error('Live marketing is blocked until owner approval and independent consent/checkout certification.');
     process.exit(1);
   }
   if (!process.env.RESEND_API_KEY && !DRY_RUN) {
@@ -250,11 +230,8 @@ async function main() {
   const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
   const { db } = await connectToDatabase();
 
-  const allLeads = await loadLeads(db);
-  const eligible = allLeads.filter((lead) => {
-    if (!lead.email || !lead.email.includes('@')) return false;
-    return !isUnsubscribed(lead);
-  });
+  const [allLeads, suppressedEmails] = await Promise.all([loadLeads(db), loadSuppressedEmails(db)]);
+  const eligible = allLeads.filter((lead) => canReceiveWeeklyMenu(lead, suppressedEmails));
 
   const byMarket: Record<string, LeadRecord[]> = {};
   const noMarket: LeadRecord[] = [];
