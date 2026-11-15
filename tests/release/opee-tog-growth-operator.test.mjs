@@ -1,6 +1,9 @@
 import { describe, it } from 'node:test';
+import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import assert from 'node:assert/strict';
-import { buildOpeeGrowthBrief, growthBriefMarkdown } from '../../scripts/opee-tog-growth-operator.mjs';
+import { buildOpeeGrowthBrief, growthBriefMarkdown, loadCurrentPublicAudit } from '../../scripts/opee-tog-growth-operator.mjs';
 
 const checks = [
   'single_active_market','approved_serenbe_window','market_page_hours',
@@ -65,7 +68,29 @@ describe('OPEE marketing operator — bounded daily execution', () => {
     assert.ok(!/cure|detox|reduce inflammation|guaranteed/i.test(brief.draft.copy));
   });
 
-  it('keeps the scheduled workflow and code separate from customers, paid ads, Grok Bot and direct messaging', () => {
+  it('accepts only a fresh public audit receipt and refuses stale evidence', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'opee-tog-evidence-'));
+    const file = join(dir, 'audit.json');
+    try {
+      await writeFile(file, JSON.stringify(audited));
+      const valid = await loadCurrentPublicAudit(file, clock);
+      assert.equal(valid.auditedAt, audited.auditedAt);
+      await assert.rejects(
+        loadCurrentPublicAudit(file, () => new Date('2026-11-15T12:12:00Z')),
+        /STALE_PUBLIC_AUDIT/
+      );
+      await assert.rejects(
+        loadCurrentPublicAudit(file, () => new Date('2026-11-15T11:59:00Z')),
+        /STALE_PUBLIC_AUDIT/
+      );
+      await writeFile(file, '{broken-json');
+      await assert.rejects(loadCurrentPublicAudit(file, clock), /JSON/);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('keeps the scheduled workflow and code separate from customers, paid ads, direct messaging', () => {
     const brief = buildOpeeGrowthBrief(audited, clock);
     assert.deepEqual(brief.permissions.disallowedActions,
       ['email','sms','dm','social_post','paid_ad','customer_import',
