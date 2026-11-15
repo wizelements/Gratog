@@ -23,7 +23,7 @@ export const MARKETS: MarketConfig[] = [
     shortName: 'Serenbe',
     address: '10640 Serenbe Trail, Chattahoochee Hills, GA 30268',
     coordinates: { lat: 33.5407, lng: -84.7241 },
-    hours: { open: '09:00', close: '13:00' },
+    hours: { open: '09:00', close: '12:00' },
     days: ['Saturday'],
     description: 'Handcrafted sea moss gel, juices, and wellness drinks every Saturday',
     parkingInfo: 'Free parking at the Farmhouse entrance',
