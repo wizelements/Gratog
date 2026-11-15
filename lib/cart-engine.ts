@@ -60,7 +60,7 @@ export const MARKET_CONFIG = {
     id: 'serenbe',
     name: 'Serenbe Farmers Market',
     day: 'Saturday',
-    hours: '9am-1pm',
+    hours: '9am-12pm',
     location: 'Serenbe',
     allowsPreorder: true,
   },
@@ -70,7 +70,7 @@ export const MARKET_CONFIG = {
     day: 'Saturday', 
     hours: '9am-12pm',
     location: 'Dunwoody',
-    allowsPreorder: true,
+    allowsPreorder: false,
   },
   'sandy-springs': {
     id: 'sandy-springs',
@@ -78,7 +78,7 @@ export const MARKET_CONFIG = {
     day: 'Sunday',
     hours: '10am-1pm',
     location: 'Sandy Springs',
-    allowsPreorder: true,
+    allowsPreorder: false,
   },
   shipping: {
     id: 'shipping',
@@ -177,6 +177,11 @@ export function validateCartForFulfillment(
   if (!marketKey) {
     return { valid: false, error: 'Please select a fulfillment method', code: 'NO_FULFILLMENT' };
   }
+
+  // Preserve legacy cart IDs while failing closed for paused pickup markets.
+  if (marketKey === 'dunwoody' || marketKey === 'sandy-springs') {
+    return { valid: false, error: 'Pickup at this market is currently paused. Please choose Serenbe pickup or a verified available fulfillment option.', code: 'MARKET_PAUSED' };
+  }
   
   // @ts-ignore — type fix needed
   const market = MARKET_CONFIG[marketKey];
@@ -191,7 +196,7 @@ export function validateCartForFulfillment(
       const itemNames = marketExclusiveItems.map((i: any) => i.name).join(', ');
       return {
         valid: false,
-        error: `${itemNames} ${marketExclusiveItems.length > 1 ? 'are' : 'is'} only available for market pickup at Serenbe (Saturdays 9am-1pm) or Dunwoody (Saturdays 9am-12pm). Please select a market pickup option or remove ${marketExclusiveItems.length > 1 ? 'these items' : 'this item'}.`,
+        error: `${itemNames} ${marketExclusiveItems.length > 1 ? 'are' : 'is'} only available for market pickup at Serenbe (Saturdays 9am-12pm). Please select Serenbe market pickup or remove ${marketExclusiveItems.length > 1 ? 'these items' : 'this item'}.`,
         code: 'MARKET_EXCLUSIVE_REQUIRED'
       };
     }
