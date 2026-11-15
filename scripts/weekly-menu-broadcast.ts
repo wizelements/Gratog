@@ -189,14 +189,15 @@ async function loadLeads(db: any): Promise<LeadRecord[]> {
 
 async function loadSuppressedEmails(db: any): Promise<Set<string>> {
   // Any read failure aborts the run before any provider sends.
-  const [optOuts, suppressed, unsubscribedCustomers, optOutPreferences] = await Promise.all([
+  const [optOuts, suppressed, unsubscribedCustomers, optOutPreferences, accountOptOuts] = await Promise.all([
     db.collection('unsubscribes').find({}).project({ email: 1 }).toArray(),
     db.collection('email_suppressions').find({ active: { $ne: false } }).project({ email: 1 }).toArray(),
     db.collection('customers').find({ unsubscribed: true }).project({ email: 1 }).toArray(),
     db.collection('user_preferences').find({ marketing: false }).project({ email: 1 }).toArray(),
+    db.collection('users').find({ 'emailPreferences.marketing': false }).project({ email: 1 }).toArray(),
   ]);
   const emails = new Set<string>();
-  for (const record of [...optOuts, ...suppressed, ...unsubscribedCustomers, ...optOutPreferences]) {
+  for (const record of [...optOuts, ...suppressed, ...unsubscribedCustomers, ...optOutPreferences, ...accountOptOuts]) {
     const email = normalizeRecipientEmail(record.email);
     if (email) emails.add(email);
   }
