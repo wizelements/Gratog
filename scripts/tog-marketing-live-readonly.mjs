@@ -72,7 +72,7 @@ export async function auditMarketingSite(fetcher = globalThis.fetch, clock = () 
     failed,
     checks,
     certified: false,
-    certificationMeaning: 'Public GET checks are not evidence of payment, inventory, consent, deliverability, webhook or Grokbot routine certification.',
+    certificationMeaning: 'Public GET checks are not evidence of payment, inventory, consent, deliverability, webhook or OPEE dispatch certification.',
   };
 }
 
