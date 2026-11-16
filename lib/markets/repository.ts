@@ -314,8 +314,8 @@ export async function seedDefaultMarkets(): Promise<{ seeded: number }> {
       },
       {
         name: 'Serenbe Farmers Market',
-        address: '10950 Hutcheson Ferry Rd',
-        city: 'Palmetto',
+        address: '10640 Serenbe Lane',
+        city: 'Chattahoochee Hills',
         state: 'GA',
         zip: '30268',
         lat: 33.4848,
@@ -323,7 +323,7 @@ export async function seedDefaultMarkets(): Promise<{ seeded: number }> {
         hours: '09:00-13:00',
         dayOfWeek: 6,
         description:
-          'Our flagship location featuring the full product line. Look for the gold Taste of Gratitude banners at Booth #12.',
+          'Our flagship location featuring the full product line. Look for the Taste of Gratitude booth; confirm your exact pickup location before travel.',
         mapsUrl: 'https://maps.google.com/?q=Serenbe+Farmers+Market',
         isActive: true,
         featured: true,
