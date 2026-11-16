@@ -62,7 +62,42 @@ export interface SquareResponse<T> {
   success: boolean;
   data?: T;
   errors?: SquareError[];
+  /** Non-2xx is an observed result. Unknown means the network/response
+   * outcome may have been committed by Square, even without a response. */
+  httpStatus?: number;
+  outcomeUnknown?: boolean;
 }
+
+/** Only an explicit issuer/payment-method decline permits a fresh charge
+ * attempt. Timeouts, 429, 5xx and unparseable success responses NEVER do. */
+const FINAL_DECLINES = new Set([
+  'CARD_DECLINED', 'GENERIC_DECLINE', 'CVV_FAILURE',
+  'ADDRESS_VERIFICATION_FAILURE', 'EXPIRATION_FAILURE',
+  'CARD_EXPIRED', 'INSUFFICIENT_FUNDS', 'PAN_FAILURE',
+  'CARD_NOT_SUPPORTED', 'CARD_TOKEN_EXPIRED', 'INVALID_CARD',
+  'INVALID_ACCOUNT', 'VERIFY_CVV_FAILURE', 'VERIFY_AVS_FAILURE',
+  'CARD_DECLINED_CALL_ISSUER', 'CARD_DECLINED_VERIFICATION_REQUIRED',
+]);
+export function isDefinitiveSquarePaymentDecline(
+  result: SquareResponse<unknown>
+): boolean {
+  return result.success === false && !result.outcomeUnknown &&
+    [400, 402].includes(result.httpStatus ?? 0) &&
+    Boolean(result.errors?.some(error =>
+      error.category === 'PAYMENT_METHOD_ERROR' && FINAL_DECLINES.has(error.code)));
+}
+
+/** An explicit malformed/unauthorized link request is not a payable link.
+ * All ambiguous transport, server and throttle failures retain their holds. */
+export function isDefinitiveSquareLinkFailure(
+  result: SquareResponse<unknown>
+): boolean {
+  return result.success === false && !result.outcomeUnknown &&
+    [400, 401, 403, 404, 422].includes(result.httpStatus ?? 0) &&
+    Boolean(result.errors?.some(error =>
+      ['INVALID_REQUEST_ERROR', 'AUTHENTICATION_ERROR'].includes(error.category)));
+}
+
 
 async function squareRequest<T>(
   endpoint: string,
@@ -78,19 +113,29 @@ async function squareRequest<T>(
       body: body ? JSON.stringify(body) : undefined
     });
 
-    const data = await response.json();
+    // A successful HTTP response with an unreadable body is ambiguous:
+    // Square may have committed the operation already.
+    const data = await response.json().catch(() => null);
+    if (data === null) {
+      return { success: false, outcomeUnknown: true, httpStatus: response.status,
+        errors: [{ category: 'NETWORK_ERROR', code: 'UNREADABLE_SQUARE_RESPONSE',
+          detail: 'Square outcome unknown; reconcile before retry' }] };
+    }
 
     if (!response.ok) {
       return {
         success: false,
+        httpStatus: response.status,
+        outcomeUnknown: response.status === 429 || response.status >= 500,
         errors: data.errors || [{ category: 'API_ERROR', code: 'UNKNOWN', detail: 'Request failed' }]
       };
     }
 
-    return { success: true, data };
+    return { success: true, data, httpStatus: response.status };
   } catch (error) {
     return {
       success: false,
+      outcomeUnknown: true,
       errors: [{
         category: 'NETWORK_ERROR',
         code: 'FETCH_FAILED',
@@ -479,7 +524,8 @@ export async function createPaymentLink(
     };
   }
 
-  return { success: false, errors: result.errors };
+  return { success: false, errors: result.errors,
+    httpStatus: result.httpStatus, outcomeUnknown: result.outcomeUnknown };
 }
 
 export async function updateOrderState(

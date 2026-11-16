@@ -8,6 +8,14 @@ on:
       - 'scripts/current-commerce-scope-audit.mjs'
       - '.github/workflows/real-square-sandbox-certification.yml'
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/certify-square-sandbox.mjs'
+      - '.github/workflows/real-square-sandbox-certification.yml'
+      - 'lib/square-api.ts'
+      - 'app/api/payments/route.ts'
+      - 'app/api/preorder/route.ts'
 
 permissions:
   contents: read
