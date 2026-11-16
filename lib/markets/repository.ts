@@ -320,7 +320,7 @@ export async function seedDefaultMarkets(): Promise<{ seeded: number }> {
         zip: '30268',
         lat: 33.4848,
         lng: -84.686,
-        hours: '09:00-13:00',
+        hours: '09:00-12:00',
         dayOfWeek: 6,
         description:
           'Our flagship location featuring the full product line. Look for the Taste of Gratitude booth; confirm your exact pickup location before travel.',
