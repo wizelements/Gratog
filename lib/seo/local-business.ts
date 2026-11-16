@@ -193,8 +193,8 @@ export function getLocalSEOMetadata(location: MarketLocation) {
 export const atlantaMarkets: MarketLocation[] = [
   {
     name: 'Serenbe Farmers Market',
-    address: '10950 Hutcheson Ferry Rd',
-    city: 'Palmetto',
+    address: '10640 Serenbe Lane',
+    city: 'Chattahoochee Hills',
     state: 'GA',
     zip: '30268',
     lat: 33.4848,
