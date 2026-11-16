@@ -199,8 +199,8 @@ export const atlantaMarkets: MarketLocation[] = [
     zip: '30268',
     lat: 33.4848,
     lng: -84.6860,
-    hours: '09:00-13:00',
-    description: 'Our flagship location featuring the full product line. Look for the gold Taste of Gratitude banners at Booth #12.',
+    hours: '09:00-12:00',
+    description: 'Find Taste of Gratitude at the Serenbe Farmers Market; confirm pickup details before visiting.',
   },
   {
     name: 'DHA Dunwoody Farmers Market',
