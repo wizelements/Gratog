@@ -40,5 +40,10 @@ describe('Serenbe market pickup directions', () => {
     expect(serenbeSection).toContain("hours: '09:00-12:00'");
     expect(serenbeSection).not.toContain('Booth #12');
     expect(serenbeSection).not.toContain("hours: '09:00-13:00'");
+    const repository = readFileSync(resolve(process.cwd(), 'lib/markets/repository.ts'), 'utf8');
+    const repoStart = repository.indexOf("name: 'Serenbe Farmers Market'");
+    const repoEnd = repository.indexOf("name: 'DHA Dunwoody Farmers Market'", repoStart);
+    expect(repository.slice(repoStart, repoEnd)).toContain("hours: '09:00-12:00'");
+    expect(repository.slice(repoStart, repoEnd)).not.toContain("hours: '09:00-13:00'");
   });
 });
