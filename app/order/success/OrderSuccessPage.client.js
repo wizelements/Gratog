@@ -244,7 +244,7 @@ export default function OrderSuccessPage() {
                           {order.fulfillment.type === 'pickup_dunwoody' ? 'DHA Dunwoody Farmers Market' : 'Serenbe Farmers Market'}
                         </h3>
                         <p className="text-sm text-gray-600">
-                          {order.fulfillment.type === 'pickup_dunwoody' ? 'Brook Run Park, 4770 N Peachtree Rd, Dunwoody, GA 30338' : '10950 Hutcheson Ferry Rd, Palmetto, GA 30268'}
+                          {order.fulfillment.type === 'pickup_dunwoody' ? 'Brook Run Park, 4770 N Peachtree Rd, Dunwoody, GA 30338' : '10640 Serenbe Lane, Chattahoochee Hills, GA 30268'}
                         </p>
                       </div>
                       
@@ -252,10 +252,10 @@ export default function OrderSuccessPage() {
                         <div className="text-sm font-semibold mb-1">⏰ PICKUP TIME</div>
                         <div className="text-xl font-bold mb-1">This Saturday</div>
                         <div className="text-lg">
-                          {order.fulfillment.type === 'pickup_dunwoody' ? '9:00 AM - 12:00 PM' : '9:00 AM - 1:00 PM'}
+                          {order.fulfillment.type === 'pickup_dunwoody' ? '9:00 AM - 12:00 PM' : '9:00 AM - 12:00 PM'}
                         </div>
                         <div className="text-sm mt-2 bg-black/20 py-2 px-3 rounded">
-                          ✨ Your order will be ready by 9:30 AM
+                          ✨ Please check your confirmed pickup time
                         </div>
                       </div>
                       
@@ -268,7 +268,7 @@ export default function OrderSuccessPage() {
                           </div>
                           <div className="flex items-start gap-2">
                             <div className="bg-white rounded-full p-1 text-xs font-bold w-5 h-5 flex items-center justify-center flex-shrink-0">2</div>
-                            <span className="text-gray-700">Look for {order.fulfillment.type === 'pickup_dunwoody' ? 'the Taste of Gratitude setup at DHA Dunwoody Farmers Market' : 'the gold "Taste of Gratitude" booth (#12)'}</span>
+                            <span className="text-gray-700">Look for {order.fulfillment.type === 'pickup_dunwoody' ? 'the Taste of Gratitude setup at DHA Dunwoody Farmers Market' : 'the Taste of Gratitude booth'}</span>
                           </div>
                           <div className="flex items-start gap-2">
                             <div className="bg-white rounded-full p-1 text-xs font-bold w-5 h-5 flex items-center justify-center flex-shrink-0">3</div>
@@ -288,7 +288,7 @@ export default function OrderSuccessPage() {
                           onClick={() => {
                             const mapUrl = order.fulfillment.type === 'pickup_dunwoody'
                               ? 'https://maps.google.com/?q=Brook+Run+Park+4770+N+Peachtree+Rd+Dunwoody+GA+30338'
-                              : 'https://maps.google.com/?q=10950+Hutcheson+Ferry+Rd+Palmetto+GA+30268';
+                              : 'https://maps.google.com/?q=10640+Serenbe+Lane+Chattahoochee+Hills+GA+30268';
                             window.open(mapUrl, '_blank');
                           }}
                           className="flex-1"
@@ -365,7 +365,7 @@ export default function OrderSuccessPage() {
                     {order?.fulfillment?.type === 'pickup_market' && (
                       <div className="text-muted-foreground">
                         Serenbe Farmers Market<br />
-                        Saturdays 9:00 AM - 1:00 PM
+                        Saturdays 9:00 AM - 12:00 PM
                       </div>
                     )}
                     
