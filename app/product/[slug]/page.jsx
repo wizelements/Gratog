@@ -180,11 +180,11 @@ export async function generateMetadata({ params }) {
     if (curatedProduct) {
       return {
         title: curatedProduct.seoTitle,
-        description: curatedProduct.seoDescription,
+        description: safeProductCopy(curatedProduct.seoDescription),
         alternates: { canonical: `/product/${curatedProduct.slug}` },
         openGraph: {
           title: curatedProduct.name,
-          description: curatedProduct.seoDescription,
+          description: safeProductCopy(curatedProduct.seoDescription),
           images: [{ url: curatedProduct.image }]
         }
       };

@@ -46,7 +46,7 @@ describe('public Square product copy claims guard', () => {
       id: 'id1', name: 'Melon Rita', price: 11.99, stock: 25, checkoutReady: false,
       description: 'Juicy melon. Boosts immunity.',
       seoDescription: 'Refreshing melon. Anti-inflammatory effects.',
-      benefits: ['Detox', 'Refreshing flavor'],
+      benefits: ['Detox', 'Refreshing flavor'], wellnessSupport: ['Thyroid health', 'Citrus finish'],
       ingredients: [{ name: 'lime', notes: 'Tart citrus. Aids thyroid health.' }],
       variations: [{ id: 'v', priceCents: 1199 }],
     };
@@ -54,6 +54,7 @@ describe('public Square product copy claims guard', () => {
     expect(sanitized.description).toBe('Juicy melon.');
     expect(sanitized.seoDescription).toBe('Refreshing melon.');
     expect(sanitized.benefits).toEqual(['Refreshing flavor']);
+    expect(sanitized.wellnessSupport).toEqual(['Citrus finish']);
     expect(sanitized.ingredients[0].notes).toBe('Tart citrus.');
     expect(sanitized.variations).toEqual(item.variations);
     expect(sanitized.price).toBe(11.99);
