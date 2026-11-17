@@ -15,6 +15,7 @@ import { logger } from '@/lib/logger';
 import { readSquareLiveInventory, inventoryForVariation } from '@/lib/square-live-inventory';
 import { findUnapprovedCurrentMenuItem } from '@/lib/order-admission';
 import { approvedUnitPriceCents } from '@/lib/merchant-pricing';
+import { sanitizePublicProductCopy } from '@/lib/public-product-copy';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -157,7 +158,7 @@ export async function GET(request: NextRequest) {
         return {
           id: item.id,
           name: data.name,
-          description: data.description,
+          description: sanitizePublicProductCopy(data.description, ''),
           price: priceCents / 100,
           priceCents,
           currency: priceMoney.currency,

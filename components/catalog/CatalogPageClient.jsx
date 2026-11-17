@@ -770,7 +770,7 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                 </div>
                 <div className="text-left">
                   <p className="font-semibold text-gray-900">100% Small-batch</p>
-                  <p className="text-sm text-gray-600">Rich Mineral Content</p>
+                  <p className="text-sm text-gray-600">Ingredient-Forward Choices</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -787,8 +787,8 @@ function CatalogContent({ initialProducts = [], initialCategories = [] } = {}) {
                   <Heart className="h-6 w-6 text-stone-700" aria-hidden="true" />
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-gray-900">Community Trusted</p>
-                  <p className="text-sm text-gray-600">Positive Customer Feedback</p>
+                  <p className="font-semibold text-gray-900">Friendly Market Service</p>
+                  <p className="text-sm text-gray-600">Ask Us About Ingredients</p>
                 </div>
               </div>
             </div>
