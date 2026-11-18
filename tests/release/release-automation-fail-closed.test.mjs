@@ -30,3 +30,7 @@ test('a verified manifest never asserts CI is a production release approval', ()
   assert.doesNotMatch(workflow, /"security": true/);
   assert.match(workflow, /needs: \[verify\]/);
 });
+
+test('workflow job condition is YAML quoted to preserve colon-bearing release prefixes', () => {
+  assert.match(workflow, /\n\s+if: "\$\{\{ github\.event_name == 'push'.*'release:'\)\) \}\}"/);
+});
