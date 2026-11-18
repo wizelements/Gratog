@@ -1,4 +1,4 @@
-name: Release Automation — Fail-Closed CI Evidence
+name: Taste of Gratitude Verified Release Gate
 
 # This is a CI gate, NOT authorization to publish or change merchant data.
 # Every release still needs independent review, preview and post-deploy evidence.
@@ -120,7 +120,7 @@ jobs:
   release-notes:
     name: Release Notes After Verified CI
     needs: [verify]
-    if: ${{ github.event_name == 'push' && (startsWith(github.event.head_commit.message, 'chore: release') || startsWith(github.event.head_commit.message, 'release:')) }}
+    if: "${{ github.event_name == 'push' && (startsWith(github.event.head_commit.message, 'chore: release') || startsWith(github.event.head_commit.message, 'release:')) }}"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout exact revision

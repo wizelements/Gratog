@@ -165,7 +165,7 @@ describe('batch-decision-engine', () => {
         { ownerApproved: true, ingredientAvailable: true, upcomingMarket: true }
       );
 
-      expect(decision.standardGallonPriceCents).toBe(8800); // $11 * 8 bottles
+      expect(decision.standardGallonPriceCents).toBe(9592); // approved $11.99 bottle x 8
     });
 
     it('uses curated bottle price for refresher gallon price', () => {

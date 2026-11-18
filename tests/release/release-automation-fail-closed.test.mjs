@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
-const workflow = readFileSync('.github/workflows/release-automation.yml', 'utf8');
+const workflow = readFileSync('.github/workflows/tog-verified-release-gate.yml', 'utf8');
+
+test('replaced manually disabled legacy workflow with active-name candidate', () => {
+  assert.equal(existsSync('.github/workflows/release-automation.yml'), false);
+  assert.equal(existsSync('.github/workflows/tog-verified-release-gate.yml'), true);
+});
 
 test('release gate runs on every main PR and main push', () => {
   assert.match(workflow, /pull_request:\s*\n\s+branches: \[main\]/);
@@ -24,4 +29,8 @@ test('a verified manifest never asserts CI is a production release approval', ()
   assert.match(workflow, /merchantSellabilityReadback: 'PENDING'/);
   assert.doesNotMatch(workflow, /"security": true/);
   assert.match(workflow, /needs: \[verify\]/);
+});
+
+test('workflow job condition is YAML quoted to preserve colon-bearing release prefixes', () => {
+  assert.match(workflow, /\n\s+if: "\$\{\{ github\.event_name == 'push'.*'release:'\)\) \}\}"/);
 });
