@@ -36,7 +36,7 @@ export function HeroSection() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-sm font-medium mb-6"
             >
               <Star className="w-4 h-4 fill-current" />
-              <span>Rich Mineral Content</span>
+              <span>Small-Batch Crafted</span>
             </motion.div>
 
             {/* Title */}

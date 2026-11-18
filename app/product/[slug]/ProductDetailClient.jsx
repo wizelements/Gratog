@@ -182,7 +182,9 @@ export default function ProductDetailClient({ product, slug }) {
   const intendedUse =
     product.intendedUse ||
     'Explore the ingredients, flavor, and serving suggestions to see if this is right for you.';
-  const customerQuote = product.customerQuote || product.testimonial || null;
+  const customerQuote = product.testimonialVerified === true
+    ? (product.customerQuote || product.testimonial || null)
+    : null;
   const allergens = Array.isArray(product.allergens) ? product.allergens.filter(Boolean) : [];
   const pickupInfo = product.pickupAvailability || pickupGuidance;
   const shippingInfo = `Georgia shipping destinations only, for eligible items. ${product.shippingAvailability || 'Shipping options and fees are confirmed before payment.'}`;

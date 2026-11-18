@@ -2,6 +2,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { connectToDatabase } from '@/lib/db-optimized';
 import { UNIFIED_PRODUCTS_COLLECTION } from '@/lib/product-sync-engine';
 import ProductDetailClient from './ProductDetailClient';
+import { sanitizePublicProductCopy } from '@/lib/public-product-copy';
 import {
   getProductBySlugOrId,
   mergeWithCuratedProduct,
@@ -35,19 +36,8 @@ async function findProductBySlug(db, slug) {
 const PRODUCT_COPY_FALLBACK = 'Small-batch sea moss gel made with simple ingredients and market pickup options.';
 const STORAGE_COPY_FALLBACK = 'Keep refrigerated. Use a clean spoon each time and follow the freshness window on the label.';
 
-const PRODUCT_CLAIM_PATTERNS = [
-  /\b92\s+(?:essential\s+)?minerals?\b/i,
-  /\b(?:cure|treat|prevent|heal)\b/i,
-  /\b(?:arthritis|diabetes|cancer|blood pressure|thyroid disease)\b/i,
-];
-
 function safeProductCopy(value, fallback = PRODUCT_COPY_FALLBACK) {
-  if (typeof value !== 'string') return fallback;
-
-  const copy = value.trim();
-  if (!copy) return fallback;
-
-  return PRODUCT_CLAIM_PATTERNS.some((pattern) => pattern.test(copy)) ? fallback : copy;
+  return sanitizePublicProductCopy(value, fallback);
 }
 
 function serializeVariation(variation) {
@@ -105,6 +95,7 @@ function serializeProductForClient(sourceProduct) {
     howToUse: safeProductCopy(product.howToUse || product.usageInstructions, ''),
     usageInstructions: safeProductCopy(product.usageInstructions, ''),
     intendedUse: safeProductCopy(product.intendedUse, ''),
+    testimonialVerified: product.testimonialVerified === true,
     customerQuote: safeProductCopy(product.customerQuote || product.testimonial, ''),
     testimonial: safeProductCopy(product.testimonial, ''),
     flavorNotes: safeProductCopy(product.flavorNotes || product.tastingNotes || product.flavorProfile || product.shortDescription || product.description),
@@ -189,11 +180,11 @@ export async function generateMetadata({ params }) {
     if (curatedProduct) {
       return {
         title: curatedProduct.seoTitle,
-        description: curatedProduct.seoDescription,
+        description: safeProductCopy(curatedProduct.seoDescription),
         alternates: { canonical: `/product/${curatedProduct.slug}` },
         openGraph: {
           title: curatedProduct.name,
-          description: curatedProduct.seoDescription,
+          description: safeProductCopy(curatedProduct.seoDescription),
           images: [{ url: curatedProduct.image }]
         }
       };

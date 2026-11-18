@@ -4,6 +4,7 @@
  */
 
 import { approvedUnitPriceCents } from './merchant-pricing';
+import { sanitizePublicProductCopy } from './public-product-copy';
 import { findUnapprovedCurrentMenuItem } from './order-admission';
 
 const SQUARE_VERSION = '2025-10-16';
@@ -143,7 +144,7 @@ export async function getSquareCatalog(options: {
         return {
           id: obj.id,
           name: item.name || 'Unnamed Product',
-          description: item.description || item.description_plaintext,
+          description: sanitizePublicProductCopy(item.description || item.description_plaintext, ''),
           price: approvedBlueLotus
             ? approvedVariation ? 36 : 0
             : (approvedUnitPriceCents({ id: obj.id, name: item.name }) ??
@@ -213,7 +214,7 @@ export async function getSquareProduct(id: string): Promise<CatalogItem | null> 
     const product: CatalogItem = {
       id: obj.id,
       name: item.name || 'Unnamed Product',
-      description: item.description || item.description_plaintext,
+      description: sanitizePublicProductCopy(item.description || item.description_plaintext, ''),
       price: approvedBlueLotus
         ? approvedVariation ? 36 : 0
         : (approvedUnitPriceCents({ id: obj.id, name: item.name }) ??
