@@ -158,7 +158,7 @@ describe('fresh-batch volume math', () => {
 
 describe('fresh-batch pricing', () => {
   it('derives gallon price from curated lemonade bottle price', () => {
-    expect(standardGallonPriceCents('kissed-by-gods')).toBe(8800);
+    expect(standardGallonPriceCents('kissed-by-gods')).toBe(9592); // 8 x $11.99
     expect(standardGallonPriceCents('strawberry-bliss')).toBe(9592);
   });
 
