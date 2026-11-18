@@ -1,4 +1,4 @@
-name: Release Automation — Fail-Closed CI Evidence
+name: Taste of Gratitude Verified Release Gate
 
 # This is a CI gate, NOT authorization to publish or change merchant data.
 # Every release still needs independent review, preview and post-deploy evidence.
