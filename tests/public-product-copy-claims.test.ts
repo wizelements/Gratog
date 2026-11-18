@@ -73,4 +73,31 @@ describe('public Square product copy claims guard', () => {
     expect(output[0]).toEqual(products[0]);
     expect(output[1].description).toBe('Strawberry and lime.');
   });
+  it('removes live-generated claim stories from catalog cards without changing sellability', () => {
+    const common = { id: 'square-unchanged', price: 12.99, available: false, inStock: false, checkoutReady: false, menuIds: ['original-menu'] };
+    const apg = sanitizePublicProduct({
+      ...common,
+      name: 'Always Pursue Gratitude',
+      benefitStory: 'Always Pursue Gratitude unites sea moss, pineapple and ginger to deliver 92 essential minerals, immune support and thyroid health in every delicious serving.',
+      ingredients: [{ name: 'sea moss' }, { name: 'pineapple' }, { name: 'ginger' }],
+    });
+    const herbal = sanitizePublicProduct({
+      ...common,
+      name: 'Herbal Vibe',
+      benefitStory: 'Herbal Vibe unites pineapple, ginger and lemon to deliver vitamin C, digestion and anti-inflammatory in every delicious serving.',
+      description: 'Bright pineapple, ginger and lemon in a small-batch juice.',
+    });
+    expect(apg.benefitStory).toBe('');
+    expect(herbal.benefitStory).toBe('');
+    expect(herbal.description).toBe('Bright pineapple, ginger and lemon in a small-batch juice.');
+    for (const item of [apg, herbal]) {
+      expect(item.id).toBe(common.id);
+      expect(item.price).toBe(common.price);
+      expect(item.available).toBe(false);
+      expect(item.inStock).toBe(false);
+      expect(item.checkoutReady).toBe(false);
+      expect(item.menuIds).toEqual(['original-menu']);
+    }
+  });
+
 });
