@@ -81,6 +81,9 @@ jobs:
       - name: Single Vercel deployment authority regression
         run: node --test tests/release/single-deployment-authority.test.mjs
 
+      - name: Release fail-closed policy regression
+        run: node --test tests/release/release-automation-fail-closed.test.mjs
+
       - name: Typecheck
         run: npm run typecheck:ci
 
