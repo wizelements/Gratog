@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { quoteLemonadeBundle } from '@/lib/preorder/lemonade-bundle-offers';
+import { listAvailableLemonadeBundleChoices, quoteLemonadeBundle } from '@/lib/preorder/lemonade-bundle-offers';
 
 const flavors = [
   'strawberry-bliss',
@@ -83,5 +83,23 @@ describe('proposed lemonade bundle quotes (isolated from checkout)', () => {
       .toMatchObject({ valid: false, code: 'BUNDLE_SELECTION_INVALID' });
     expect(quoteLemonadeBundle('4', catalog.slice(0,4).map(p=>p.id), catalog))
       .toMatchObject({ valid: false, code: 'BUNDLE_SIZE_INVALID' });
+  });
+
+  it('lists only unique eligible in-stock flavors for the visual builder', () => {
+    const aliases = [
+      ...catalog,
+      { ...catalog[1], id: 'duplicate-pineapple-mango', slug: 'pineapple-mango-lemonade' },
+      { ...catalog[2], id: 'sold-out', inStock: false },
+      { ...catalog[3], id: 'wrong-price', price: 9.99, priceCents: 999 },
+    ];
+    const choices = listAvailableLemonadeBundleChoices(aliases);
+    expect(choices).toHaveLength(6);
+    expect(choices.map(p => p.id)).toEqual(catalog.map(p => p.id));
+  });
+
+  it('fails closed when the storefront catalog is missing', () => {
+    expect(listAvailableLemonadeBundleChoices(null as any)).toEqual([]);
+    expect(quoteLemonadeBundle(4, catalog.slice(0, 4).map(p => p.id), null as any))
+      .toMatchObject({ valid: false, code: 'CATALOG_UNAVAILABLE' });
   });
 });
