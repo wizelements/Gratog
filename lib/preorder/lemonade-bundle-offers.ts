@@ -97,6 +97,33 @@ function isAvailableForFuturePreorder(p: CatalogLemonadeCandidate): boolean {
   );
 }
 
+/** Current-menu choices for the visual builder only. Checkout MUST revalidate
+ * against the server-resolved catalog; the browser never authorizes a discount.
+ * Collapse aliases so a flavor cannot appear twice under different product IDs.
+ */
+export function listAvailableLemonadeBundleChoices(
+  catalog: ReadonlyArray<CatalogLemonadeCandidate>,
+): Array<{ id: string; name: string }> {
+  if (!Array.isArray(catalog)) return [];
+  const flavors = new Set<string>();
+  const available: Array<{ id: string; name: string }> = [];
+  for (const product of catalog) {
+    if (!product || !isAvailableForFuturePreorder(product)) continue;
+    const flavor = canonicalFlavor(product);
+    const listedCents = Number.isSafeInteger(product.priceCents)
+      ? product.priceCents
+      : typeof product.price === 'number' && Number.isFinite(product.price)
+        ? Math.round(product.price * 100) : null;
+    const variation = product.variationId || product.catalogObjectId ||
+      product.variations?.[0]?.id;
+    if (!ELIGIBLE_CANONICAL_FLAVORS.has(flavor) || listedCents !== 1199 ||
+        !variation || !product.id || !product.name || flavors.has(flavor)) continue;
+    flavors.add(flavor);
+    available.push({ id: product.id, name: product.name });
+  }
+  return available;
+}
+
 /** No trust in client-provided price, slug, or category: resolve IDs in catalog. */
 export function quoteLemonadeBundle(
   requestedSize: unknown,
