@@ -20,11 +20,11 @@ export async function GET(request) {
     // Market locations mapping
     const marketLocations = {
       'Serenbe': {
-        address: 'Serenbe Farmers Market, 10950 Hutcheson Ferry Rd, Palmetto, GA 30268',
+        address: 'Serenbe Farmers Market, 10640 Serenbe Lane, Chattahoochee Hills, GA 30268',
         description: 'Visit us at Serenbe Farmers Market for fresh sea moss products'
       },
       serenbe: {
-        address: 'Serenbe Farmers Market, 10950 Hutcheson Ferry Rd, Palmetto, GA 30268',
+        address: 'Serenbe Farmers Market, 10640 Serenbe Lane, Chattahoochee Hills, GA 30268',
         description: 'Visit us at Serenbe Farmers Market for fresh sea moss products'
       },
       dunwoody: {

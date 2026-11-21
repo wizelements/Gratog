@@ -193,14 +193,14 @@ export function getLocalSEOMetadata(location: MarketLocation) {
 export const atlantaMarkets: MarketLocation[] = [
   {
     name: 'Serenbe Farmers Market',
-    address: '10950 Hutcheson Ferry Rd',
-    city: 'Palmetto',
+    address: '10640 Serenbe Lane',
+    city: 'Chattahoochee Hills',
     state: 'GA',
     zip: '30268',
     lat: 33.4848,
     lng: -84.6860,
-    hours: '09:00-13:00',
-    description: 'Our flagship location featuring the full product line. Look for the gold Taste of Gratitude banners at Booth #12.',
+    hours: '09:00-12:00',
+    description: 'Find Taste of Gratitude at the Serenbe Farmers Market; confirm pickup details before visiting.',
   },
   {
     name: 'DHA Dunwoody Farmers Market',
