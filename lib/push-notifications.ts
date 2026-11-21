@@ -314,17 +314,7 @@ export const MARKET_LOCATIONS = [
     hours: 'Saturday 9am-1pm',
     geofenceRadius: 5, // miles
     notificationRadius: 10 // miles
-  },
-  {
-    id: 'dunwoody',
-    name: 'DHA Dunwoody Market',
-    address: 'Perimeter Church, 9500 Medlock Bridge Rd, Johns Creek, GA 30097',
-    coordinates: { lat: 34.0431, lng: -84.1983 },
-    hours: 'Saturday 9am-12pm',
-    geofenceRadius: 3,
-    notificationRadius: 8
-  }
-];
+  },];
 
 /**
  * Calculate distance between two coordinates (Haversine formula)
@@ -384,14 +374,15 @@ export async function sendLocationNotification(email: any, location: any) {
   
   const market = nearby[0]; // Closest market
   
-  await sendNotification(email, NOTIFICATION_TYPES.NEARBY_MARKET, {
+  const delivery = await sendNotification(email, NOTIFICATION_TYPES.NEARBY_MARKET, {
     marketId: market.id,
     marketName: market.name,
     distance: market.distance,
     address: market.address
   });
   
-  return { sent: true, market: market.name, distance: market.distance };
+  const sent = Object.values(delivery).some(Boolean);
+  return { sent, market: market.name, distance: market.distance, ...(sent ? {} : { reason: 'delivery_unavailable' }) };
 }
 
 // ============================================================================
@@ -437,36 +428,10 @@ export async function sendNotification(email: any, type: any, data: any) {
 /**
  * Send push notification via Web Push API
  */
-async function sendPushNotification(email: any, notification: any) {
-  try {
-    const { db } = await connectToDatabase();
-    const subscription = await db.collection('push_subscriptions').findOne({ 
-      email, 
-      isActive: true 
-    });
-    
-    if (!subscription) {
-      return false;
-    }
-    
-    // Note: Actual web-push library would be used here
-    // This is a placeholder for the implementation
-    logger.info('PushNotifications', 'Sending push notification', { 
-      email, 
-      title: notification.title 
-    });
-    
-    // Update last used
-    await db.collection('push_subscriptions').updateOne(
-      { email },
-      { $set: { lastUsed: new Date() } }
-    );
-    
-    return true;
-  } catch (error) {
-    logger.error('PushNotifications', 'Push notification failed', { error, email });
-    return false;
-  }
+async function sendPushNotification(_email: any, _notification: any) {
+  // Subscriptions are not proof of delivery. No provider-backed sender exists
+  // in this implementation, so never report an unattempted push as sent.
+  return false;
 }
 
 /**
@@ -538,8 +503,12 @@ export async function sendBulkNotification(emails: any, type: any, data: any) {
   
   for (const email of emails) {
     try {
-      await sendNotification(email, type, data);
-      results.sent++;
+      const delivery = await sendNotification(email, type, data);
+      if (Object.values(delivery).some(Boolean)) {
+        results.sent++;
+      } else {
+        results.skipped++;
+      }
     } catch (error) {
       results.failed++;
       logger.error('PushNotifications', 'Bulk notification failed', { error, email });
